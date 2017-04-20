@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.tairanchina:core-beego-api:1.0.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://D:/develop/maven/repo/com/tairanchina/core-beego-api/1.0.0-SNAPSHOT/core-beego-api-1.0.0-20160922.115119-22.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://D:/develop/maven/repo/com/tairanchina/core-beego-api/1.0.0-SNAPSHOT/core-beego-api-1.0.0-20160922.115119-22-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://D:/develop/maven/repo/com/tairanchina/core-beego-api/1.0.0-SNAPSHOT/core-beego-api-1.0.0-20160922.115119-22-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

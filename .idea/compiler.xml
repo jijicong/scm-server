@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="scm-api" />
+        <module name="scm-biz" />
+        <module name="scm-common" />
+        <module name="scm-dao" />
+        <module name="scm-service-consumer" />
+        <module name="scm-service-provider" />
+        <module name="scm-test" />
+        <module name="scm-util" />
+        <module name="scm-web" />
+        <module name="score-api" />
+        <module name="score-biz" />
+        <module name="score-common" />
+        <module name="score-dao" />
+        <module name="score-service-consumer" />
+        <module name="score-service-provider" />
+        <module name="score-test" />
+        <module name="score-util" />
+        <module name="score-web" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="scm-api" target="1.8" />
+      <module name="scm-biz" target="1.8" />
+      <module name="scm-common" target="1.8" />
+      <module name="scm-dao" target="1.8" />
+      <module name="scm-service-consumer" target="1.8" />
+      <module name="scm-service-provider" target="1.8" />
+      <module name="scm-test" target="1.8" />
+      <module name="scm-util" target="1.8" />
+      <module name="scm-web" target="1.8" />
+      <module name="scm_server" target="1.8" />
+      <module name="score-api" target="1.8" />
+      <module name="score-biz" target="1.8" />
+      <module name="score-common" target="1.8" />
+      <module name="score-dao" target="1.8" />
+      <module name="score-service-consumer" target="1.8" />
+      <module name="score-service-provider" target="1.8" />
+      <module name="score-test" target="1.8" />
+      <module name="score-util" target="1.8" />
+      <module name="score-web" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/scm-api/scm-api.iml" filepath="$PROJECT_DIR$/scm-api/scm-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-biz/scm-biz.iml" filepath="$PROJECT_DIR$/scm-biz/scm-biz.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-common/scm-common.iml" filepath="$PROJECT_DIR$/scm-common/scm-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-dao/scm-dao.iml" filepath="$PROJECT_DIR$/scm-dao/scm-dao.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-service-consumer/scm-service-consumer.iml" filepath="$PROJECT_DIR$/scm-service-consumer/scm-service-consumer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-service-provider/scm-service-provider.iml" filepath="$PROJECT_DIR$/scm-service-provider/scm-service-provider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-test/scm-test.iml" filepath="$PROJECT_DIR$/scm-test/scm-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-util/scm-util.iml" filepath="$PROJECT_DIR$/scm-util/scm-util.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm-web/scm-web.iml" filepath="$PROJECT_DIR$/scm-web/scm-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scm_server.iml" filepath="$PROJECT_DIR$/scm_server.iml" />
+    </modules>
+  </component>
+</project>

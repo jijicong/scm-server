@@ -9,15 +9,15 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>score-biz</module>
-        <module>score-web</module>
-        <module>score-common</module>
-        <module>score-dao</module>
-        <module>score-service-consumer</module>
-        <module>score-util</module>
-        <module>score-test</module>
-        <module>score-service-provider</module>
-        <module>score-api</module>
+        <module>scm-biz</module>
+        <module>scm-web</module>
+        <module>scm-common</module>
+        <module>scm-dao</module>
+        <module>scm-service-consumer</module>
+        <module>scm-util</module>
+        <module>scm-test</module>
+        <module>scm-service-provider</module>
+        <module>scm-api</module>
     </modules>
 
     <properties>

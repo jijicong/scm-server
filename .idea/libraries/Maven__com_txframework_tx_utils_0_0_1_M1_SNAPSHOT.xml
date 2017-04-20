@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.txframework:tx-utils:0.0.1.M1-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://D:/develop/maven/repo/com/txframework/tx-utils/0.0.1.M1-SNAPSHOT/tx-utils-0.0.1.M1-20170103.070157-29.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://D:/develop/maven/repo/com/txframework/tx-utils/0.0.1.M1-SNAPSHOT/tx-utils-0.0.1.M1-20170103.070157-29-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://D:/develop/maven/repo/com/txframework/tx-utils/0.0.1.M1-SNAPSHOT/tx-utils-0.0.1.M1-20170103.070157-29-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

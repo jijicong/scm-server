@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="scm-web:war">
+    <output-path>$PROJECT_DIR$/scm-web/target</output-path>
+    <root id="archive" name="scm-web-1.0-SNAPSHOT.war">
+      <element id="artifact" artifact-name="scm-web:war exploded" />
+    </root>
+  </artifact>
+</component>
