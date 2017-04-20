@@ -51,12 +51,8 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     }
 
     @Override
-    public int selectCount(T record) {
-        return 0;
+    public List<T> selectByExample(Object example) {
+        return mapper.selectByExample(example);
     }
 
-    @Override
-    public T selectByPrimaryKey(PK key) {
-        return mapper.selectByPrimaryKey(key);
-    }
 }

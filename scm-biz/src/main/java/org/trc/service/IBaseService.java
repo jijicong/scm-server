@@ -24,8 +24,6 @@ public interface IBaseService<T,PK> {
 
     List<T> select(T record);
 
-    int selectCount(T record);
-
-    T selectByPrimaryKey(PK key);
+    List<T> selectByExample(Object example);
 
 }
