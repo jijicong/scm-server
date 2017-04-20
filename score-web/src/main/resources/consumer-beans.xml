@@ -1,0 +1,11 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<!-- 订阅服务 -->
+	<!-- 生成远程服务代理，可以和本地bean一样使用beegoService -->
+	<dubbo:reference id="beegoService" interface="com.tairanchina.beego.api.service.BeegoService" />
+	<!--<dubbo:reference id="authService" interface="com.trc.mall.service.AuthService" version="${dubbo.reference.version}"/>-->
+
+</beans>

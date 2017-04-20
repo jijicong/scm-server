@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <!-- 将多个配置文件读取到容器中，交给Spring管理 -->
+    <bean id="myPropertyConfigurer" class="org.trc.spring.TrPropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:config/dev/score-jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+    <!-- 注解扫描范围 -->
+    <context:component-scan base-package="org.trc.service.impl" />
+
+    <import resource="classpath:config/resource-tx.xml"/>
+
+</beans>
