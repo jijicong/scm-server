@@ -9,6 +9,7 @@
 */
 package org.trc.util;
 
+import javax.ws.rs.QueryParam;
 import java.util.List;
 
 /** 
@@ -21,31 +22,36 @@ import java.util.List;
 public class Pagination<T> {
 
 	/**
-	 * 总记录条数
-	 */
-	private int count;
-	/**
 	 * 分页起始记录数
 	 */
+	@QueryParam("start")
 	private int start;
 	/**
 	 * 分页每页记录数
 	 */
+	@QueryParam("limit")
 	private int limit;
-	
 	/**
-	 * 记录集
+	 * 当前页数
 	 */
-	private List<T> datas;
+	@QueryParam("pageIndex")
+	private int pageIndex;
+	/**
+	 * 排序字段
+	 */
+	@QueryParam("field")
+	private String field;
+	/**
+	 * 排序方向:ASC-升序，DESC-倒序
+	 */
+	@QueryParam("direction")
+	private String direction = "ASC";
+	/**
+	 * 是否有效
+	 */
+	@QueryParam("isValid")
+	private String isValid;
 
-	
-	public int getCount() {
-		return count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
-	}
 
 	public int getStart() {
 		return start;
@@ -63,13 +69,43 @@ public class Pagination<T> {
 		this.limit = limit;
 	}
 
-	public List<T> getDatas() {
-		return datas;
+	public int getPageIndex() {
+		return pageIndex;
+	}
+	public void setPageIndex(int pageIndex) {
+		this.pageIndex = pageIndex;
 	}
 
-	public void setDatas(List<T> datas) {
-		this.datas = datas;
+	public String getField() {
+		return field;
 	}
 
+	public void setField(String field) {
+		this.field = field;
+	}
+
+	public String getDirection() {
+		return direction;
+	}
+
+	public void setDirection(String direction) {
+		this.direction = direction;
+	}
+
+	public String getIsValid() {
+		return isValid;
+	}
+
+	public void setIsValid(String isValid) {
+		this.isValid = isValid;
+	}
+
+	/**
+	 * 获取排序表达式
+	 * @return
+	 */
+	public String getOrderBy(){
+		return field+" "+direction;
+	}
 
 }

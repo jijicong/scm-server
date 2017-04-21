@@ -3,6 +3,9 @@ package org.trc.biz;
 import com.alibaba.fastjson.JSONObject;
 import org.trc.domain.score.Dict;
 import org.trc.domain.score.DictType;
+import org.trc.form.DictForm;
+import org.trc.form.DictTypeForm;
+import org.trc.util.PageResult;
 
 import java.util.List;
 
@@ -10,6 +13,14 @@ import java.util.List;
  * Created by hzwdx on 2017/4/19.
  */
 public interface IConfigBiz {
+
+    /**
+     * 字典类型分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    public PageResult dictTypePage(DictTypeForm form) throws Exception;
 
     /**
      * 查询字典类型列表
@@ -47,6 +58,13 @@ public interface IConfigBiz {
      */
     public int deleteDictTypeById(Long id) throws Exception;
 
+    /**
+     * 字典类型分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    public PageResult dictPage(DictForm form) throws Exception;
     /**
      * 查询字典列表
      * @param json

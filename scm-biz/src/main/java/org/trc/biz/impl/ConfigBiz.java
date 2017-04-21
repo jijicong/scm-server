@@ -2,17 +2,25 @@ package org.trc.biz.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.IConfigBiz;
+import org.trc.domain.score.Auth;
 import org.trc.domain.score.Dict;
 import org.trc.domain.score.DictType;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.DBException;
+import org.trc.form.DictForm;
+import org.trc.form.DictTypeForm;
+import org.trc.mapper.score.IDictTypeMapper;
 import org.trc.service.IDictService;
 import org.trc.service.IDictTypeService;
 import org.trc.util.CommonUtil;
+import org.trc.util.PageResult;
 import org.trc.util.ValidateUtil;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.StringUtil;
 
 import java.util.Date;
 import java.util.List;
@@ -27,6 +35,23 @@ public class ConfigBiz implements IConfigBiz {
     private IDictTypeService dictTypeService;
     @Autowired
     private IDictService dictService;
+
+    @Override
+    public PageResult dictTypePage(DictTypeForm form) throws Exception {
+        Example example = new Example(DictType.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(StringUtil.isNotEmpty(form.getName())) {
+            criteria.andLike("name", "%" + form.getName() + "%");
+        }
+        if(StringUtil.isNotEmpty(form.getIsValid())) {
+            criteria.andEqualTo("isValid", form.getIsValid());
+        }
+        if(StringUtil.isNotEmpty(form.getField())) {
+            example.setOrderByClause(form.getOrderBy());
+        }
+        //分页查询
+        return dictTypeService.pagination(example, form.getPageIndex(), form.getLimit());
+    }
 
     @Override
     public List<DictType> queryDictTypes() throws Exception {
@@ -116,6 +141,26 @@ public class ConfigBiz implements IConfigBiz {
         if(count == 0)
             throw new DBException(CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]删除字典类型失败").toString());
         return count;
+    }
+
+    @Override
+    public PageResult dictPage(DictForm form) throws Exception {
+        Example example = new Example(Dict.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(StringUtil.isNotEmpty(form.getTypeNo())) {
+            criteria.andEqualTo("typeNo", form.getTypeNo());
+        }
+        if(StringUtil.isNotEmpty(form.getName())) {
+            criteria.andLike("name", "%" + form.getName() + "%");
+        }
+        if(StringUtil.isNotEmpty(form.getIsValid())) {
+            criteria.andEqualTo("isValid", form.getIsValid());
+        }
+        if(StringUtil.isNotEmpty(form.getField())) {
+            example.setOrderByClause(form.getOrderBy());
+        }
+        //分页查询
+        return dictTypeService.pagination(example, form.getPageIndex(), form.getLimit());
     }
 
     @Override

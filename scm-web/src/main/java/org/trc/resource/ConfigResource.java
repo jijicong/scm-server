@@ -5,6 +5,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.ConfigBiz;
+import org.trc.form.DictForm;
+import org.trc.form.DictTypeForm;
 import org.trc.util.AppResult;
 import org.trc.util.CommonUtil;
 import org.trc.util.ResultUtil;
@@ -24,6 +26,13 @@ public class ConfigResource {
 
     @Autowired
     private ConfigBiz configBiz;
+
+    @GET
+    @Path("/dictTypePage")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult dictTypePage(@BeanParam DictTypeForm form) throws Exception{
+        return ResultUtil.createSucssAppResult("字典类型分页查询成功", configBiz.dictTypePage(form));
+    }
 
     @GET
     @Path("/queryDictTypes")
@@ -80,6 +89,12 @@ public class ConfigResource {
         return ResultUtil.createSucssAppResult("删除字典类型成功", configBiz.deleteDictTypeById(param.getLong("id")));
     }
 
+    @GET
+    @Path("/dictPage")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult dictPage(@BeanParam DictForm form) throws Exception{
+        return ResultUtil.createSucssAppResult("字典分页查询成功", configBiz.dictPage(form));
+    }
 
     @GET
     @Path("/queryDicts")

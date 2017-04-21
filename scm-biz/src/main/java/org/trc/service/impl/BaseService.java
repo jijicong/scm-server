@@ -1,9 +1,17 @@
 package org.trc.service.impl;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.trc.domain.score.DictType;
 import org.trc.service.IBaseService;
+import org.trc.util.PageResult;
+import org.trc.util.Pagination;
 import tk.mybatis.mapper.common.Mapper;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 
@@ -14,6 +22,17 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
 
     @Autowired
     private Mapper<T> mapper;
+
+    @Override
+    public PageResult pagination(Example example, int page, int limit) {
+        int totalCount = mapper.selectCountByExample(example);
+        PageHelper.startPage(page+1, limit);
+        List<T> list = mapper.selectByExample(example);
+        PageResult pageResult = new PageResult();
+        pageResult.setResults(totalCount);
+        pageResult.setRows(list);
+        return pageResult;
+    }
 
     @Override
     public int insert(T record) {
