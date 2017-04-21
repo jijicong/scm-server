@@ -12,7 +12,7 @@ public class DictForm  extends Pagination<Dict> {
     /**
      * 字典类型编码
      */
-    @QueryParam("name")
+    @QueryParam("typeNo")
     private String typeNo;
     /**
      * 字典名称

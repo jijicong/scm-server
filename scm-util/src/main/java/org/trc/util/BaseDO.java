@@ -1,5 +1,6 @@
 package org.trc.util;
 
+import javax.ws.rs.FormParam;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -7,9 +8,9 @@ import java.util.Date;
  * Created by hzwdx on 2017/4/19.
  */
 public class BaseDO implements Serializable{
-
+    @FormParam("isValid")
     private String isValid; //是否有效:0-否,1-是
-
+    @FormParam("createOperator")
     private String createOperator; //创建人
 
     private Date createTime; //创建时间

@@ -12,8 +12,8 @@ import org.apache.commons.lang.StringUtils;
  */
 public enum ValidEnum {
 
-	VALID("1","有效"),
-	NOVALID("0","");
+	VALID("1","启用"),
+	NOVALID("0","停用");
 	
 	private String code; 
 	private String name; 

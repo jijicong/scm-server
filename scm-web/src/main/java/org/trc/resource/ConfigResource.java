@@ -5,6 +5,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.ConfigBiz;
+import org.trc.domain.score.Dict;
+import org.trc.domain.score.DictType;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
 import org.trc.util.AppResult;
@@ -45,20 +47,8 @@ public class ConfigResource {
     @Path("/saveDictType")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveDictType(@FormParam("id") String id, @FormParam("code") String code, @FormParam("name") String name,
-                                  @FormParam("description") String description, @FormParam("isValid") String isValid) throws Exception {
-        JSONObject param = new JSONObject();
-        if(StringUtils.isNotEmpty(id))
-            param.put("id", id);
-        if(StringUtils.isNotEmpty(code))
-            param.put("code", code);
-        if(StringUtils.isNotEmpty(name))
-            param.put("name", name);
-        if(StringUtils.isNotEmpty(description))
-            param.put("description", description);
-        if(StringUtils.isNotEmpty(isValid))
-            param.put("isValid", isValid);
-        return ResultUtil.createSucssAppResult("保存字典类型成功", configBiz.saveDictType(param));
+    public AppResult saveDictType(@BeanParam DictType dictType) throws Exception {
+        return ResultUtil.createSucssAppResult("保存字典类型成功", configBiz.saveDictType(dictType));
     }
 
 
@@ -96,31 +86,25 @@ public class ConfigResource {
         return ResultUtil.createSucssAppResult("字典分页查询成功", configBiz.dictPage(form));
     }
 
-    @GET
+    /*@GET
     @Path("/queryDicts")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult queryDicts(@Context HttpServletRequest request) throws Exception{
         JSONObject param = CommonUtil.getJsonParams(request);
         return ResultUtil.createSucssAppResult("查询字典列表成功", configBiz.queryDicts(param));
+    }*/
+    @GET
+    @Path("/queryDicts")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult queryDicts(@BeanParam Dict dict) throws Exception{
+        return ResultUtil.createSucssAppResult("查询字典列表成功", configBiz.queryDicts(dict));
     }
 
     @POST
     @Path("/saveDict")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveDict(@FormParam("id") String id, @FormParam("typeNo") String typeNo, @FormParam("name") String name,
-                              @FormParam("value") String value, @FormParam("isValid") String isValid) throws Exception{
-        JSONObject param = new JSONObject();
-        if(StringUtils.isNotEmpty(id))
-            param.put("id", id);
-        if(StringUtils.isNotEmpty(value))
-            param.put("value", value);
-        if(StringUtils.isNotEmpty(name))
-            param.put("name", name);
-        if(StringUtils.isNotEmpty(typeNo))
-            param.put("typeNo", typeNo);
-        if(StringUtils.isNotEmpty(isValid))
-            param.put("isValid", isValid);
-        return ResultUtil.createSucssAppResult("保存字典成功", configBiz.saveDict(param));
+    public AppResult saveDict(@BeanParam Dict dict) throws Exception{
+        return ResultUtil.createSucssAppResult("保存字典成功", configBiz.saveDict(dict));
     }
 
     @GET

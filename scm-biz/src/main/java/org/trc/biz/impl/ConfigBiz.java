@@ -2,18 +2,17 @@ package org.trc.biz.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageHelper;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.IConfigBiz;
-import org.trc.domain.score.Auth;
 import org.trc.domain.score.Dict;
 import org.trc.domain.score.DictType;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.DBException;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
-import org.trc.mapper.score.IDictTypeMapper;
 import org.trc.service.IDictService;
 import org.trc.service.IDictTypeService;
 import org.trc.util.CommonUtil;
@@ -46,8 +45,12 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
+        example.orderBy("isValid").desc();
         if(StringUtil.isNotEmpty(form.getField())) {
-            example.setOrderByClause(form.getOrderBy());
+            if(StringUtils.equals("DESC", form.getDirection().toUpperCase()))
+                example.orderBy(form.getField()).desc();
+            else
+                example.orderBy(form.getField()).asc();
         }
         //分页查询
         return dictTypeService.pagination(example, form.getPageIndex(), form.getLimit());
@@ -65,23 +68,18 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int saveDictType(JSONObject json) throws Exception{
-        ValidateUtil.jsonParamNullCheck(json, "code:类型编码","name:类型名称","isValid:是否有效");
+    public int saveDictType(DictType dictType) throws Exception{
         int count = 0;
-        if(json.containsKey("id")){
+        if(null != dictType.getId()){
             //修改
-            /*DictType tmp = dictTypeService.selectByPrimaryKey(Long.parseLong(json.getString("id")));
-            if(null == tmp)
-                throw new DBException(CommonUtil.joinStr("根据主键ID[id=",json.getString("id"),"]查询字典类型为空").toString());
-            CommonUtil.setBeanProperty(tmp, json);*/
             DictType tmp = new DictType();
-            tmp.setId(Long.parseLong(json.getString("id")));
+            tmp.setId(dictType.getId());
             tmp = dictTypeService.selectOne(tmp);
-            setDictType(tmp, json);
+            BeanUtils.copyProperties(dictType, tmp);
+            tmp.setUpdateTime(new Date());
             count = dictTypeService.updateByPrimaryKey(tmp);
         }else{
             //新增
-            DictType dictType = JSON.toJavaObject(json, DictType.class);
             CommonUtil.setBaseDO(dictType);
             count = dictTypeService.insert(dictType);
             if(count == 0)
@@ -90,22 +88,9 @@ public class ConfigBiz implements IConfigBiz {
         return count;
     }
 
-    private void setDictType(DictType dictType, JSONObject json){
-        if(json.containsKey("code"))
-            dictType.setCode(json.getString("code"));
-        if(json.containsKey("name"))
-            dictType.setName(json.getString("name"));
-        if(json.containsKey("description"))
-            dictType.setDescription(json.getString("description"));
-        if(json.containsKey("isValid"))
-            dictType.setIsValid(json.getString("isValid"));
-        dictType.setUpdateTime(new Date());
-    }
-
 
     @Override
     public DictType findDictTypeById(Long id)throws Exception {
-        //DictType dictType = dictTypeService.selectByPrimaryKey(id);
         DictType dictType = new DictType();
         dictType.setId(id);
         dictType = dictTypeService.selectOne(dictType);
@@ -128,14 +113,10 @@ public class ConfigBiz implements IConfigBiz {
 
     @Override
     public int deleteDictTypeById(Long id) throws Exception {
-        /*int count = dictTypeService.deleteByPrimaryKey(id);
-        if(count == 0)
-            throw new DBException(CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]删除字典类型失败").toString());
-        return count;*/
         DictType tmp = new DictType();
         tmp.setId(id);
         tmp = dictTypeService.selectOne(tmp);
-        tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+        tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
         tmp.setUpdateTime(new Date());
         int count = dictTypeService.updateByPrimaryKey(tmp);
         if(count == 0)
@@ -156,19 +137,21 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
+        example.orderBy("typeNo").asc().orderBy("isValid").desc();
         if(StringUtil.isNotEmpty(form.getField())) {
-            example.setOrderByClause(form.getOrderBy());
+            if(StringUtils.equals("DESC", form.getDirection().toUpperCase()))
+                example.orderBy(form.getField()).desc();
+            else
+                example.orderBy(form.getField()).asc();
         }
         //分页查询
-        return dictTypeService.pagination(example, form.getPageIndex(), form.getLimit());
+        return dictService.pagination(example, form.getPageIndex(), form.getLimit());
     }
 
     @Override
-    public List<Dict> queryDicts(JSONObject json) throws Exception{
-        Dict dict = new Dict();
-        dict.setIsValid(ZeroToNineEnum.ONE.getCode());
-        if(json.containsKey("typeNo"))
-            dict.setTypeNo(json.getString("typeNo"));
+    public List<Dict> queryDicts(Dict dict) throws Exception{
+        if(StringUtils.isEmpty(dict.getIsValid()))
+            dict.setIsValid(ZeroToNineEnum.ONE.getCode());
         List<Dict> dicts = dictService.select(dict);
         if(null == dicts)
             throw new DBException(CommonUtil.joinStr("根据查询条件", CommonUtil.getDBOperateCondition(dict).toJSONString(), "的字典类型结果为空值null").toString());
@@ -176,19 +159,19 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int saveDict(JSONObject json) throws Exception{
-        ValidateUtil.jsonParamNullCheck(json, "typeNo:类型编码","name:属性名称","value:属性值","isValid:是否有效");
+    public int saveDict(Dict dict) throws Exception{
+        //ValidateUtil.jsonParamNullCheck(json, "typeNo:类型编码","name:属性名称","value:属性值","isValid:是否有效");
         int count = 0;
-        if(json.containsKey("id")){
+        if(null != dict.getId()){
             //修改
             Dict tmp = new Dict();
-            tmp.setId(Long.parseLong(json.getString("id")));
+            tmp.setId(dict.getId());
             tmp = dictService.selectOne(tmp);
-            setDict(tmp, json);
+            BeanUtils.copyProperties(dict, tmp);
+            tmp.setUpdateTime(new Date());
             count = dictService.updateByPrimaryKey(tmp);
         }else{
             //新增
-            Dict dict = JSON.toJavaObject(json, Dict.class);
             CommonUtil.setBaseDO(dict);
             count = dictService.insert(dict);
             if(count == 0)
@@ -197,21 +180,8 @@ public class ConfigBiz implements IConfigBiz {
         return count;
     }
 
-    private void setDict(Dict dict, JSONObject json){
-        if(json.containsKey("typeNo"))
-            dict.setTypeNo(json.getString("typeNo"));
-        if(json.containsKey("name"))
-            dict.setName(json.getString("name"));
-        if(json.containsKey("value"))
-            dict.setValue(json.getString("value"));
-        if(json.containsKey("isValid"))
-            dict.setIsValid(json.getString("isValid"));
-        dict.setUpdateTime(new Date());
-    }
-
     @Override
     public Dict findDictById(Long id) throws Exception {
-        //Dict dict = dictService.selectByPrimaryKey(id);
         Dict dict = new Dict();
         dict.setId(id);
         dict = dictService.selectOne(dict);
@@ -222,18 +192,29 @@ public class ConfigBiz implements IConfigBiz {
 
     @Override
     public int deleteDictById(Long id) throws Exception {
-        /*int count = dictService.deleteByPrimaryKey(id);
-        if(count == 0)
-            throw new DBException(CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]删除字典失败").toString());
-        return count;*/
         Dict tmp = new Dict();
         tmp.setId(id);
         tmp = dictService.selectOne(tmp);
-        tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+        tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
         tmp.setUpdateTime(new Date());
         int count = dictService.updateByPrimaryKey(tmp);
         if(count == 0)
             throw new DBException(CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]删除字典失败").toString());
         return count;
     }
+
+  /*  public static void main(String[] args){
+        DictType t1 = new DictType();
+        t1.setId(1l);
+        t1.setCode("1");
+        t1.setName("n1");
+        DictType t2 = new DictType();
+        t2.setId(2l);
+        t2.setCode("2");
+        t2.setName("n2");
+        BeanUtils.copyProperties(t1, t2);
+        System.out.println(JSON.toJSON(t1));
+        System.out.println(JSON.toJSON(t2));
+    }*/
+
 }

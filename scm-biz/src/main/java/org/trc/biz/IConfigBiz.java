@@ -31,10 +31,10 @@ public interface IConfigBiz {
 
     /**
      * 保存字典类型
-     * @param json
+     * @param dictType
      * @return
      */
-    public int saveDictType(JSONObject json) throws Exception;
+    public int saveDictType(DictType dictType) throws Exception;
 
     /**
      *根据主键查询字典类型
@@ -67,17 +67,17 @@ public interface IConfigBiz {
     public PageResult dictPage(DictForm form) throws Exception;
     /**
      * 查询字典列表
-     * @param json
+     * @param dict
      * @return
      */
-    public List<Dict> queryDicts(JSONObject json) throws Exception;
+    public List<Dict> queryDicts(Dict dict) throws Exception;
 
     /**
      * 保存字典
-     * @param json
+     * @param dict
      * @return
      */
-    public int saveDict(JSONObject json) throws Exception;
+    public int saveDict(Dict dict) throws Exception;
 
     /**
      * 根据类型编号查询字典

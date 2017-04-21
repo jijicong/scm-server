@@ -26,6 +26,8 @@ public interface IBaseService<T,PK> {
 
     int updateByPrimaryKeySelective(T record);
 
+    int updateByExample(T t, Example example);
+
     T selectOne(T record);
 
     List<T> select(T record);

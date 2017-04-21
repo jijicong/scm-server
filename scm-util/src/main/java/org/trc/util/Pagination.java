@@ -100,12 +100,5 @@ public class Pagination<T> {
 		this.isValid = isValid;
 	}
 
-	/**
-	 * 获取排序表达式
-	 * @return
-	 */
-	public String getOrderBy(){
-		return field+" "+direction;
-	}
 
 }

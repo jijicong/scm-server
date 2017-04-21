@@ -60,6 +60,11 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     }
 
     @Override
+    public int updateByExample(T t, Example example) {
+        return mapper.updateByExample(t, example);
+    }
+
+    @Override
     public T selectOne(T record) {
         return mapper.selectOne(record);
     }
