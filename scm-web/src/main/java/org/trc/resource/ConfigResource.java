@@ -1,7 +1,6 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.ConfigBiz;
@@ -9,10 +8,7 @@ import org.trc.domain.score.Dict;
 import org.trc.domain.score.DictType;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
-import org.trc.util.AppResult;
-import org.trc.util.CommonUtil;
-import org.trc.util.ResultUtil;
-import org.trc.util.ValidateUtil;
+import org.trc.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -32,8 +28,8 @@ public class ConfigResource {
     @GET
     @Path("/dictTypePage")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult dictTypePage(@BeanParam DictTypeForm form) throws Exception{
-        return ResultUtil.createSucssAppResult("字典类型分页查询成功", configBiz.dictTypePage(form));
+    public AppResult dictTypePage(@BeanParam DictTypeForm form, @BeanParam Pagenation<DictType> page) throws Exception{
+        return ResultUtil.createSucssAppResult("字典类型分页查询成功", configBiz.dictTypePage(form, page));
     }
 
     @GET
@@ -82,17 +78,10 @@ public class ConfigResource {
     @GET
     @Path("/dictPage")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult dictPage(@BeanParam DictForm form) throws Exception{
-        return ResultUtil.createSucssAppResult("字典分页查询成功", configBiz.dictPage(form));
+    public AppResult dictPage(@BeanParam DictForm form, @BeanParam Pagenation<Dict> page) throws Exception{
+        return ResultUtil.createSucssAppResult("字典分页查询成功", configBiz.dictPage(form, page));
     }
 
-    /*@GET
-    @Path("/queryDicts")
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult queryDicts(@Context HttpServletRequest request) throws Exception{
-        JSONObject param = CommonUtil.getJsonParams(request);
-        return ResultUtil.createSucssAppResult("查询字典列表成功", configBiz.queryDicts(param));
-    }*/
     @GET
     @Path("/queryDicts")
     @Produces(MediaType.APPLICATION_JSON)

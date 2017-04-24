@@ -10,13 +10,12 @@
 package org.trc.util;
 
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.CollectionUtils;
-import org.trc.exception.DataException;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.DataHandlerException;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -24,7 +23,10 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** 
  * @ClassName: BeanToMapUtil 
@@ -101,7 +103,7 @@ public class BeanToMapUtil {
 					.append("的属性值").append(propVal)
 					.append("异常,异常信息:").append(e.getMessage());
 			log.error(builder.toString());
-			throw new DataException(builder.toString(), e);
+			throw new DataHandlerException(ExceptionEnum.MAPJ_TO_AVA_BEAN_EXCEPTION, builder.toString());
 		} 
 		return obj;
     } 
@@ -147,11 +149,11 @@ public class BeanToMapUtil {
 				}
 			}
 		} catch (IllegalAccessException e) {
-			throw new DataException("javaBean转map异常", e);
+			throw new DataHandlerException(ExceptionEnum.JAVA_BEAN_TO_MAP_EXCEPTION, e.getMessage());
 		} catch (InvocationTargetException e) {
-			throw new DataException("javaBean转map异常", e);
+			throw new DataHandlerException(ExceptionEnum.JAVA_BEAN_TO_MAP_EXCEPTION, e.getMessage());
 		} catch (IntrospectionException e) {
-			throw new DataException("javaBean转map异常", e);
+			throw new DataHandlerException(ExceptionEnum.JAVA_BEAN_TO_MAP_EXCEPTION, e.getMessage());
 		}
 		return returnMap;
     } 

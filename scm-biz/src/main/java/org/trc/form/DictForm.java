@@ -1,14 +1,15 @@
 package org.trc.form;
 
 import org.trc.domain.score.Dict;
-import org.trc.util.Pagination;
+import org.trc.util.Pagenation;
+import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
 
 /**
  * Created by hzwdx on 2017/4/21.
  */
-public class DictForm  extends Pagination<Dict> {
+public class DictForm extends QueryModel{
     /**
      * 字典类型编码
      */

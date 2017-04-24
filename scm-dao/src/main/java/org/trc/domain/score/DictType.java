@@ -1,6 +1,8 @@
 package org.trc.domain.score;
 
 import com.sun.istack.internal.NotNull;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.util.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -16,11 +18,15 @@ public class DictType extends BaseDO{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("code")
-    @NotNull
+    @NotEmpty
+    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
     private String code;
     @FormParam("name")
+    @NotEmpty
+    @Length(max = 64, message = "字典类型名称字母和数字不能超过32个,汉字不能超过32个")
     private String name;
     @FormParam("description")
+    @Length(max = 512, message = "字典类型说明字母和数字不能超过512个,汉字不能超过256个")
     private String description;
 
     public Long getId() {

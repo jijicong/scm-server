@@ -1,5 +1,7 @@
 package org.trc.domain.score;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.util.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -15,10 +17,16 @@ public class Dict extends BaseDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("typeNo")
+    @NotEmpty
+    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
     private String typeNo;
+    @NotEmpty
+    @Length(max = 64, message = "字典名称字母和数字不能超过64个,汉字不能超过32个")
     @FormParam("name")
     private String name;
     @FormParam("value")
+    @NotEmpty
+    @Length(max = 64, message = "字典值字母和数字不能超过64个,汉字不能超过32个")
     private String value;
 
     public Long getId() {

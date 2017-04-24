@@ -1,9 +1,8 @@
 package org.trc.service;
 
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
-import org.trc.util.PageResult;
-import org.trc.util.Pagination;
+import org.trc.util.Pagenation;
+import org.trc.util.QueryModel;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.List;
 @Service
 public interface IBaseService<T,PK> {
 
-    PageResult pagination(Example example, int page, int limit);
+    Pagenation<T> pagination(Example example, Pagenation<T> pagenation, QueryModel queryModel);
 
     int insert(T record);
 

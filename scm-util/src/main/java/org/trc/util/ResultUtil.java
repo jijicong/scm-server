@@ -11,6 +11,7 @@ package org.trc.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
 import org.trc.exception.ParamValidException;
 
@@ -66,7 +67,7 @@ public class ResultUtil {
 					jsonObject.getString(AppResult.DATABUFFER),
 					jsonObject.getString(AppResult.RESULT));
 		}else{
-			throw new ParamValidException("获取AppResult的参数不是AppResult格式");
+			throw new ParamValidException(ExceptionEnum.PARAM_CHECK_EXCEPTION, "获取AppResult的参数不是AppResult格式");
 		}
 		return appResult;
 	}

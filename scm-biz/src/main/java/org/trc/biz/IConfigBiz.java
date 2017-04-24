@@ -1,11 +1,10 @@
 package org.trc.biz;
 
-import com.alibaba.fastjson.JSONObject;
 import org.trc.domain.score.Dict;
 import org.trc.domain.score.DictType;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
-import org.trc.util.PageResult;
+import org.trc.util.Pagenation;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public interface IConfigBiz {
      * @return
      * @throws Exception
      */
-    public PageResult dictTypePage(DictTypeForm form) throws Exception;
+    public Pagenation<DictType> dictTypePage(DictTypeForm form, Pagenation<DictType> page) throws Exception;
 
     /**
      * 查询字典类型列表
@@ -64,7 +63,7 @@ public interface IConfigBiz {
      * @return
      * @throws Exception
      */
-    public PageResult dictPage(DictForm form) throws Exception;
+    public Pagenation<Dict> dictPage(DictForm form, Pagenation<Dict> page) throws Exception;
     /**
      * 查询字典列表
      * @param dict
