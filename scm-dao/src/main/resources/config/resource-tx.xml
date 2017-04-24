@@ -20,6 +20,19 @@
         <property name="dataSource" ref="resource-dataSource" />
     </bean>
 
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT"/>
+            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT" />
+            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT" />
+            <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT" />
+            <tx:method name="del*" propagation="REQUIRED" isolation="DEFAULT" />
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:advisor pointcut="execution(* org.trc.biz.*.*(..))" advice-ref="txAdvice" />
+    </aop:config>
+
     <!-- 开启注解事务机制 -->
     <tx:annotation-driven transaction-manager="transactionManager" />
 

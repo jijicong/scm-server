@@ -16,7 +16,8 @@
         </property>
     </bean>
     <!-- 注解扫描范围 -->
-    <context:component-scan base-package="org.trc.service.impl" />
+    <!--<context:component-scan base-package="org.trc.service.impl" />-->
+    <context:component-scan base-package="org.trc" />
 
     <import resource="classpath:config/resource-tx.xml"/>
 
