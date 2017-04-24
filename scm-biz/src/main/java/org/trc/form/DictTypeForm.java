@@ -4,7 +4,6 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.util.QueryModel;
 
-import javax.validation.constraints.Size;
 import javax.ws.rs.QueryParam;
 
 /**
