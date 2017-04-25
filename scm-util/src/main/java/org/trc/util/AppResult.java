@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
-public class AppResult {
+public class AppResult<T> {
 	
 	public static final String APPCODE = "appcode";
 	public static final String DATABUFFER = "databuffer";
@@ -12,12 +12,12 @@ public class AppResult {
 
 	private String appcode;
 	private String databuffer;
-	private Object result;
+	private T result;
 	
 	public AppResult(){
 	}
 	
-	public AppResult(String appcode, String databuffer, Object result){
+	public AppResult(String appcode, String databuffer, T result){
 		this.appcode = appcode;
 		this.databuffer = databuffer;
 		this.result = result;
@@ -70,7 +70,7 @@ public class AppResult {
 	public Object getResult() {
 		return result;
 	}
-	public void setResult(Object result) {
+	public void setResult(T result) {
 		this.result = result;
 	}
 	

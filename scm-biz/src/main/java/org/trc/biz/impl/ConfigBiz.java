@@ -80,15 +80,15 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int updateDictType(DictTypeForm dictTypeForm, Long id) throws Exception {
+    public int updateDictType(DictType dictType, Long id) throws Exception {
         if(null == id){
             String msg = CommonUtil.joinStr("修改字典类型参数ID为空").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         int count = 0;
-        DictType dictType = new DictType();
-        BeanUtils.copyProperties(dictTypeForm, dictType);
+        /*DictType dictType = new DictType();
+        BeanUtils.copyProperties(dictTypeForm, dictType);*/
         dictType.setId(id);
         dictType.setUpdateTime(new Date());
         count = dictTypeService.updateByPrimaryKeySelective(dictType);
@@ -201,15 +201,15 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int updateDict(DictForm dictForm, Long id) throws Exception {
+    public int updateDict(Dict dict, Long id) throws Exception {
         if(null == id){
             String msg = CommonUtil.joinStr("修改字典参数ID为空").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         int count = 0;
-        Dict dict = new Dict();
-        BeanUtils.copyProperties(dictForm, dict);
+        /*Dict dict = new Dict();
+        BeanUtils.copyProperties(dictForm, dict);*/
         dict.setId(id);
         dict.setUpdateTime(new Date());
         count = dictService.updateByPrimaryKeySelective(dict);

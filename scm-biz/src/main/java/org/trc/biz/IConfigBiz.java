@@ -37,12 +37,12 @@ public interface IConfigBiz {
 
     /**
      * 修改字典类型
-     * @param dictTypeForm
+     * @param dictType
      * @param id
      * @return
      * @throws Exception
      */
-    public int updateDictType(DictTypeForm dictTypeForm, Long id) throws Exception;
+    public int updateDictType(DictType dictType, Long id) throws Exception;
 
     /**
      *根据主键查询字典类型
@@ -89,12 +89,12 @@ public interface IConfigBiz {
 
     /**
      * 更新字典
-     * @param dictForm
+     * @param dict
      * @param id
      * @return
      * @throws Exception
      */
-    public int updateDict(DictForm dictForm, Long id) throws Exception;
+    public int updateDict(Dict dict, Long id) throws Exception;
 
     /**
      * 根据类型编号查询字典

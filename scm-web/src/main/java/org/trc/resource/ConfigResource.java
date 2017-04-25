@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.ConfigBiz;
@@ -10,13 +9,13 @@ import org.trc.enums.ValidEnum;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
 import org.trc.util.AppResult;
-import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by hzwdx on 2017/4/24.
@@ -40,7 +39,7 @@ public class ConfigResource {
     @GET
     @Path("dictTypes")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult queryDictTypes(@BeanParam DictTypeForm dictTypeForm, @QueryParam("callback") String callback) throws Exception{
+    public AppResult<List<DictType>> queryDictTypes(@BeanParam DictTypeForm dictTypeForm, @QueryParam("callback") String callback) throws Exception{
         //return CommonUtil.getJsonpResult(configBiz.queryDictTypes(dictTypeForm), callback, "查询字典类型列表成功");
         return ResultUtil.createSucssAppResult("查询字典类型列表成功", configBiz.queryDictTypes(dictTypeForm));
     }
@@ -49,7 +48,7 @@ public class ConfigResource {
     @Path("dictType")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveDictType(@BeanParam DictType dictType, @QueryParam("callback") String callback) throws Exception{
+    public AppResult     saveDictType(@BeanParam DictType dictType, @QueryParam("callback") String callback) throws Exception{
         //return CommonUtil.getJsonpResult(configBiz.saveDictType(dictType), callback, "保存字典类型成功");
         return ResultUtil.createSucssAppResult("保存字典类型成功", configBiz.saveDictType(dictType));
     }
@@ -57,9 +56,9 @@ public class ConfigResource {
     @PUT
     @Path("dictType/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateDictType(@BeanParam  DictTypeForm dictTypeForm, @PathParam("id") Long id, @QueryParam("callback") String callback) throws Exception{
+    public AppResult updateDictType(@BeanParam  DictType dictType, @PathParam("id") Long id, @QueryParam("callback") String callback) throws Exception{
         //return CommonUtil.getJsonpResult(configBiz.updateDictType(dictTypeForm,id), callback, "修改字典类型成功");
-        return ResultUtil.createSucssAppResult("修改字典类型成功", configBiz.updateDictType(dictTypeForm,id));
+        return ResultUtil.createSucssAppResult("修改字典类型成功", configBiz.updateDictType(dictType,id));
     }
 
     @GET
@@ -114,9 +113,9 @@ public class ConfigResource {
     @PUT
     @Path("dict/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateDict(@BeanParam  DictForm dictForm, @PathParam("id") Long id, @QueryParam("callback") String callback) throws Exception{
+    public AppResult updateDict(@BeanParam Dict dict,@PathParam("id") Long id, @QueryParam("callback") String callback) throws Exception{
         //return CommonUtil.getJsonpResult(configBiz.updateDict(dictForm,id), callback, "修改字典成功");
-        return ResultUtil.createSucssAppResult("修改字典成功", configBiz.updateDict(dictForm,id));
+        return ResultUtil.createSucssAppResult("修改字典成功", configBiz.updateDict(dict,id));
     }
 
     @GET
