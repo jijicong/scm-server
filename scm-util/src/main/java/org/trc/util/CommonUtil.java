@@ -127,6 +127,8 @@ public class CommonUtil {
 	 */
 	public static Map<String, Object> getRequestParam(HttpServletRequest request){
 		Map<String, Object> paramMap = new HashMap<String, Object>();
+		if(null == request)
+			return paramMap;
 		Enumeration<String> params = request.getParameterNames();
 		while(params.hasMoreElements()){
 			String paramName = String.valueOf(params.nextElement());
@@ -150,7 +152,7 @@ public class CommonUtil {
 	public static String[] getMethodParams(Class<?> calzz, String methodName) throws Exception{
 		ClassPool pool = ClassPool.getDefault();  
 		CtClass cc = null;
-		/*
+		/**
 		 * 此处异常处理是在被拦截的类已经被代理的情况下，获取到被代理的类
 		 */
 		try {
@@ -245,10 +247,11 @@ public class CommonUtil {
 			baseDO.setIsValid(ZeroToNineEnum.ONE.getCode());
 		baseDO.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 		//baseDO.setCreateOperator("");//FIXME
+		Date currentDate = new Date();
 		if(null == baseDO.getCreateTime())
-			baseDO.setCreateTime(new Date());
+			baseDO.setCreateTime(currentDate);
 		if(null == baseDO.getUpdateTime())
-			baseDO.setUpdateTime(new Date());
+			baseDO.setUpdateTime(currentDate);
 	}
 
 	/**
@@ -288,11 +291,16 @@ public class CommonUtil {
 		return map;
 	}
 
-
-	public static void main(String[] args){
-		JSONObject json = new JSONObject();
-		json.put("test", "2222");
-		System.out.println(jsonToMap(json));
+	/**
+	 * 获取jsonp格式结果
+	 * @param result
+	 * @param msg
+	 * @return
+	 */
+	public static String getJsonpResult(Object result, String callback, String msg){
+		AppResult appResult = ResultUtil.createSucssAppResult(msg, result);
+		return callback+"("+JSON.toJSONString(appResult)+")";
 	}
+
 
 }

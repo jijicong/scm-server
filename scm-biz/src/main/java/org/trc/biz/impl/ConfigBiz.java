@@ -2,7 +2,10 @@ package org.trc.biz.impl;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.IConfigBiz;
@@ -31,6 +34,8 @@ import java.util.List;
 @Service("configBiz")
 public class ConfigBiz implements IConfigBiz {
 
+    private Log log = LogFactory.getLog(ConfigBiz.class);
+
     @Autowired
     private IDictTypeService dictTypeService;
     @Autowired
@@ -52,9 +57,11 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public List<DictType> queryDictTypes() throws Exception {
+    public List<DictType> queryDictTypes(DictTypeForm dictTypeForm) throws Exception {
         DictType dictType = new DictType();
-        dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
+        if(StringUtils.isEmpty(dictTypeForm.getIsValid())){
+            dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         return dictTypeService.select(dictType);
     }
@@ -62,38 +69,61 @@ public class ConfigBiz implements IConfigBiz {
     @Override
     public int saveDictType(DictType dictType) throws Exception{
         int count = 0;
-        if(null != dictType.getId()){
-            //修改
-            DictType tmp = new DictType();
-            tmp.setId(dictType.getId());
-            tmp = dictTypeService.selectOne(tmp);
-            BeanUtils.copyProperties(dictType, tmp);
-            tmp.setUpdateTime(new Date());
-            count = dictTypeService.updateByPrimaryKey(tmp);
-        }else{
-            //新增
-            CommonUtil.setBaseDO(dictType);
-            count = dictTypeService.insert(dictType);
-            if(count == 0)
-                throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,
-                        CommonUtil.joinStr("保存字典类型",JSON.toJSONString(dictType),"到数据库失败").toString());
+        CommonUtil.setBaseDO(dictType);
+        count = dictTypeService.insert(dictType);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("保存字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
+        }
+        return count;
+    }
+
+    @Override
+    public int updateDictType(DictTypeForm dictTypeForm, Long id) throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("修改字典类型参数ID为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        int count = 0;
+        DictType dictType = new DictType();
+        BeanUtils.copyProperties(dictTypeForm, dictType);
+        dictType.setId(id);
+        dictType.setUpdateTime(new Date());
+        count = dictTypeService.updateByPrimaryKeySelective(dictType);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
         return count;
     }
 
     @Override
     public DictType findDictTypeById(Long id)throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("根据ID查询字典类型参数ID为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
         DictType dictType = new DictType();
         dictType.setId(id);
         dictType = dictTypeService.selectOne(dictType);
-        if(null == dictType)
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_QUERY_EXCEPTION,
-                    CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]查询字典类型为空").toString());
+        if(null == dictType) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询字典类型为空").toString();
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_QUERY_EXCEPTION,msg);
+        }
         return dictType;
     }
 
     @Override
     public DictType findDictTypeByTypeNo(String typeNo) throws Exception{
+        if(StringUtils.isEmpty(typeNo)){
+            String msg = CommonUtil.joinStr("根据类型编码查询字典类型参数typeNo为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
         DictType dictType = new DictType();
         dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -103,15 +133,21 @@ public class ConfigBiz implements IConfigBiz {
 
     @Override
     public int deleteDictTypeById(Long id) throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("根据ID删除字典类型参数ID为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
         DictType tmp = new DictType();
         tmp.setId(id);
         tmp = dictTypeService.selectOne(tmp);
         tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
         tmp.setUpdateTime(new Date());
         int count = dictTypeService.updateByPrimaryKey(tmp);
-        if(count == 0)
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,
-                    CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]删除字典类型失败").toString());
+        if(count == 0) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]删除字典类型失败").toString();
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,msg);
+        }
         return count;
     }
 
@@ -134,9 +170,13 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public List<Dict> queryDicts(Dict dict) throws Exception{
-        if(StringUtils.isEmpty(dict.getIsValid()))
+    public List<Dict> queryDicts(DictForm dictForm) throws Exception{
+        Dict dict = new Dict();
+        BeanUtils.copyProperties(dictForm,dict);
+        if(StringUtils.isEmpty(dictForm.getIsValid())){
             dict.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }
+        dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         return dictService.select(dict);
     }
 
@@ -145,45 +185,77 @@ public class ConfigBiz implements IConfigBiz {
         int count = 0;
         if(null != dict.getId()){
             //修改
-            Dict tmp = new Dict();
-            tmp.setId(dict.getId());
-            tmp = dictService.selectOne(tmp);
-            BeanUtils.copyProperties(dict, tmp);
-            tmp.setUpdateTime(new Date());
-            count = dictService.updateByPrimaryKey(tmp);
+            dict.setUpdateTime(new Date());
+            count = dictService.updateByPrimaryKeySelective(dict);
         }else{
             //新增
             CommonUtil.setBaseDO(dict);
             count = dictService.insert(dict);
-            if(count == 0)
-                throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,
-                        CommonUtil.joinStr("保存字典",JSON.toJSONString(dict),"到数据库失败").toString());
+        }
+        if(count == 0){
+            String msg = CommonUtil.joinStr("保存字典",JSON.toJSONString(dict),"到数据库失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,msg);
+        }
+        return count;
+    }
+
+    @Override
+    public int updateDict(DictForm dictForm, Long id) throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("修改字典参数ID为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        int count = 0;
+        Dict dict = new Dict();
+        BeanUtils.copyProperties(dictForm, dict);
+        dict.setId(id);
+        dict.setUpdateTime(new Date());
+        count = dictService.updateByPrimaryKeySelective(dict);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改字典",JSON.toJSONString(dict),"数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
         return count;
     }
 
     @Override
     public Dict findDictById(Long id) throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("根据ID查询字典参数ID为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
         Dict dict = new Dict();
         dict.setId(id);
         dict = dictService.selectOne(dict);
-        if(null == dict)
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_QUERY_EXCEPTION,
-                    CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]查询字典为空").toString());
+        if(null == dict){
+            String msg = CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]查询字典为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_QUERY_EXCEPTION,msg);
+        }
         return dict;
     }
 
     @Override
     public int deleteDictById(Long id) throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("根据ID删除字典参数ID为空").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
         Dict tmp = new Dict();
         tmp.setId(id);
-        tmp = dictService.selectOne(tmp);
         tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
         tmp.setUpdateTime(new Date());
-        int count = dictService.updateByPrimaryKey(tmp);
-        if(count == 0)
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,
-                    CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]删除字典失败").toString());
+        int count = dictService.updateByPrimaryKeySelective(tmp);
+        if(count == 0) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]删除字典失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
+        }
         return count;
     }
 

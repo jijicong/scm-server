@@ -23,10 +23,10 @@ public interface IConfigBiz {
 
     /**
      * 查询字典类型列表
-     * @param
      * @return
+     * @throws Exception
      */
-    public List<DictType> queryDictTypes() throws Exception;
+    public List<DictType> queryDictTypes(DictTypeForm dictTypeForm) throws Exception;
 
     /**
      * 保存字典类型
@@ -34,6 +34,15 @@ public interface IConfigBiz {
      * @return
      */
     public int saveDictType(DictType dictType) throws Exception;
+
+    /**
+     * 修改字典类型
+     * @param dictTypeForm
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    public int updateDictType(DictTypeForm dictTypeForm, Long id) throws Exception;
 
     /**
      *根据主键查询字典类型
@@ -66,10 +75,10 @@ public interface IConfigBiz {
     public Pagenation<Dict> dictPage(DictForm form, Pagenation<Dict> page) throws Exception;
     /**
      * 查询字典列表
-     * @param dict
+     * @param dictForm
      * @return
      */
-    public List<Dict> queryDicts(Dict dict) throws Exception;
+    public List<Dict> queryDicts(DictForm dictForm) throws Exception;
 
     /**
      * 保存字典
@@ -77,6 +86,15 @@ public interface IConfigBiz {
      * @return
      */
     public int saveDict(Dict dict) throws Exception;
+
+    /**
+     * 更新字典
+     * @param dictForm
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    public int updateDict(DictForm dictForm, Long id) throws Exception;
 
     /**
      * 根据类型编号查询字典

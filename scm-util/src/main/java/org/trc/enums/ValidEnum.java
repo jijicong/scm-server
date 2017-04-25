@@ -1,5 +1,7 @@
 package org.trc.enums;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -57,6 +59,25 @@ public enum ValidEnum {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 *
+	 * @Title: toJSONArray
+	 * @Description: 转换成json数组
+	 * @param @return
+	 * @return JSONArray
+	 * @throws
+	 */
+	public static JSONArray toJSONArray(){
+		JSONArray array = new JSONArray();
+		for(ValidEnum sexEnum : ValidEnum.values()){
+			JSONObject obj = new JSONObject();
+			obj.put("code", sexEnum.getCode());
+			obj.put("name", sexEnum.getName());
+			array.add(obj);
+		}
+		return array;
 	}
 
 	public String getName() {

@@ -1,6 +1,7 @@
 package org.trc.util;
 
 import javax.ws.rs.FormParam;
+import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.Date;
 

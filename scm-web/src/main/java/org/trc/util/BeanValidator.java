@@ -9,6 +9,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
+import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -31,6 +33,12 @@ public class BeanValidator {
      * @throws ValidationException 如果参数校验不成功则抛出此异常
      */
     public void validate(Object object) {
+        /*if(object instanceof Integer || object instanceof Long || object instanceof String ||
+                object instanceof Double || object instanceof Collection<?> || object instanceof Array){
+            return;
+        }*/
+        if(null == object)
+            return;
         //执行验证
         Set<ConstraintViolation<Object>> constraintViolations = validator.validate(object);
         Iterator<ConstraintViolation<Object>> it = constraintViolations.iterator();

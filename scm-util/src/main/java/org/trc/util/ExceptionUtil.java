@@ -3,6 +3,10 @@ package org.trc.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.PermissionDeniedDataAccessException;
+import org.springframework.dao.QueryTimeoutException;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
@@ -42,6 +46,16 @@ public class ExceptionUtil {
 			} else if (StringUtils.equals(exceptionName, ConfigException.class.getSimpleName())) {
 				ConfigException configException = (ConfigException)e;
 				exceptionEnum = configException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, DuplicateKeyException.class.getSimpleName())) {
+				exceptionEnum = ExceptionEnum.DATABASE_DUPLICATE_KEY_EXCEPTION;
+			}else if (StringUtils.equals(exceptionName, PermissionDeniedDataAccessException.class.getSimpleName())) {
+				exceptionEnum = ExceptionEnum.DATABASE_PERMISSION_DENIED_EXCEPTION;
+			}else if (StringUtils.equals(exceptionName, QueryTimeoutException.class.getSimpleName())) {
+				exceptionEnum = ExceptionEnum.DATABASE_QUERY_TIME_OUT_EXCEPTION;
+			}else if (StringUtils.equals(exceptionName, DeadlockLoserDataAccessException.class.getSimpleName())) {
+				exceptionEnum = ExceptionEnum.DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION;
+			}else{
+				exceptionEnum = ExceptionEnum.SYSTEM_EXCEPTION;
 			}
 		} catch (Exception e2) {
 			excepMsg = "系统未捕获未知异常";

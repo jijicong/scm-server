@@ -20,6 +20,11 @@ public class DictForm extends QueryModel{
      */
     @QueryParam("name")
     private String name;
+    /**
+     * 字典值
+     */
+    @QueryParam("value")
+    private String value;
 
     public String getTypeNo() {
         return typeNo;
@@ -37,4 +42,11 @@ public class DictForm extends QueryModel{
         this.name = name;
     }
 
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 }

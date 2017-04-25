@@ -20,6 +20,8 @@ public enum ExceptionEnum {
      * 权限管理:900开头
      * 外部调用:1000开头
      * 通用功能:2000开头
+     * 数据库:3000开头
+     * 系统异常:4000开头
      */
     PARAM_CHECK_EXCEPTION("2000100","参数校验错误"),
     CONFIG_DICT_QUERY_EXCEPTION("100101","数据字典查询异常"),
@@ -27,6 +29,13 @@ public enum ExceptionEnum {
 
     JAVA_BEAN_TO_MAP_EXCEPTION("2000100","JavaBean转Map数据转换异常"),
     MAPJ_TO_AVA_BEAN_EXCEPTION("2000100","Map转JavaBean数据转换异常"),
+
+    DATABASE_DUPLICATE_KEY_EXCEPTION("3000100","数据库主键重复异常"),
+    DATABASE_PERMISSION_DENIED_EXCEPTION("3000100","数据库数据访问权限异常"),
+    DATABASE_QUERY_TIME_OUT_EXCEPTION("3000100","数据库查询超时异常"),
+    DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION("3000100","数据库死锁访问数据异常"),
+
+    SYSTEM_EXCEPTION("4000100","系统异常"),
 
     NOVALID("0","停用");
 

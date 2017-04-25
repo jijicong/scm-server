@@ -16,6 +16,12 @@ public class DictTypeForm extends QueryModel{
     @QueryParam("name")
     @Length(max = 64)
     private String name;
+    @QueryParam("code")
+    @Length(max = 64)
+    private String code;
+    @QueryParam("name")
+    @Length(max = 64)
+    private String description;
 
     public String getName() {
         return name;
@@ -25,4 +31,19 @@ public class DictTypeForm extends QueryModel{
         this.name = name;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
