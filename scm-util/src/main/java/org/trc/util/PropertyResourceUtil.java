@@ -11,6 +11,8 @@ package org.trc.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,7 +27,8 @@ import java.util.Properties;
  *  
  */
 public class PropertyResourceUtil {
-	static Log log = LogFactory.getLog(PropertyResourceUtil.class);
+
+	private final static Logger log = LoggerFactory.getLogger(PropertyResourceUtil.class);
 	
 	private final static String PROPERTY_FILE = "config.properties";
 	/**
@@ -60,9 +63,9 @@ public class PropertyResourceUtil {
 			fis.close();// 关闭流
 			propertyVal = prop.getProperty(properyKey);
 		} catch (FileNotFoundException e) {
-			log.warn(e);
+			log.error(e.getMessage(),e);
 		}catch (IOException e) {
-			log.warn(e);
+			log.error(e.getMessage(),e);
 		}
 		return propertyVal;
 	}

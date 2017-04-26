@@ -3,6 +3,8 @@ package org.trc.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
@@ -19,7 +21,7 @@ import org.trc.exception.ParamValidException;
  *  
  */
 public class ExceptionUtil {
-	private static Log log = LogFactory.getLog(ExceptionUtil.class); 	
+	private final static Logger log = LoggerFactory.getLogger(ExceptionUtil.class);
 	/**
 	 *
 	* @Title: handlerException 

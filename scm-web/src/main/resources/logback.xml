@@ -15,18 +15,17 @@
 		</encoder>
 	</appender>
 
-	<appender name="Info" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/info/scm-web.log</file>
+	<appender name="debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/scm-web/scm-web-debug.log</file>
 		<append>true</append>
 		<charset>UTF-8</charset>
-
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
+			<level>DEBUG</level>
 		</filter>
 
 		<!-- 每小时生成日志文件 -->
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/info/scm-web.%d{yyyy-MM-dd-HH}-info.log.gz
+			<fileNamePattern>${LOG_HOME}/scm-web/scm-web.%d{yyyy-MM-dd-HH}-debug.log.gz
 			</fileNamePattern>
 			<!-- 日志文件保留15天 -->
 			<maxHistory>360</maxHistory>
@@ -38,30 +37,30 @@
 		</encoder>
 	</appender>
 
-	<appender name="Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/error/scm-web-error.log</file>
+	<appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/scm-web/scm-web.log</file>
 		<append>true</append>
 		<charset>UTF-8</charset>
-
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>ERROR</level>
+			<level>INFO</level>
 		</filter>
 
+		<!-- 每小时生成日志文件 -->
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/error/scm-web.%d{yyyy-MM-dd-HH}-error.log.gz
+			<fileNamePattern>${LOG_HOME}/scm-web/scm-web.%d{yyyy-MM-dd-HH}-info.log.gz
 			</fileNamePattern>
+			<!-- 日志文件保留15天 -->
 			<maxHistory>360</maxHistory>
 		</rollingPolicy>
 
-		<!-- encoders are assigned the type
-         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+		<!-- 格式化输出 -->
 		<encoder>
 			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<appender name="myibatis" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/error/scm-web-myibatis.log</file>
+	<appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/scm-web/scm-web-error.log</file>
 		<append>true</append>
 		<charset>UTF-8</charset>
 
@@ -70,7 +69,7 @@
 		</filter>
 
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/error/scm-web-myibatis.%d{yyyy-MM-dd-HH}-error.log.gz
+			<fileNamePattern>${LOG_HOME}/scm-web/scm-web.%d{yyyy-MM-dd-HH}-error.log.gz
 			</fileNamePattern>
 			<maxHistory>360</maxHistory>
 		</rollingPolicy>
@@ -105,6 +104,9 @@
 
 	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />
+		<appender-ref ref="debug" />
+		<appender-ref ref="info" />
+		<appender-ref ref="error" />
 	</root>
 
 </configuration>

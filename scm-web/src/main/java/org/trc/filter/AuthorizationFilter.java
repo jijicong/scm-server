@@ -4,8 +4,8 @@ import com.tairanchina.beego.api.model.BeegoToken;
 import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
 import com.tairanchina.beego.api.service.BeegoService;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ import java.io.IOException;
 @Component
 public class AuthorizationFilter implements ContainerRequestFilter {
 
-    private Log logger = LogFactory.getLog(AuthorizationFilter.class);
+    private final static Logger log = LoggerFactory.getLogger(AuthorizationFilter.class);
 
     @Value("${app.id}")
     private String appId = "62AA8318264C4875B449F57881487269";

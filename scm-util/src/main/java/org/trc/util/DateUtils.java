@@ -10,8 +10,8 @@
 package org.trc.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,8 +29,8 @@ import java.util.Date;
  * @author liuzh
  */
 public class DateUtils {
-	
-	private static Log log = LogFactory.getLog(DateUtils.class);
+
+	private final static Logger log = LoggerFactory.getLogger(DateUtils.class);
 	
 	public static final String COMPACT_DATE_FORMAT = "yyyyMMdd";
 	public static final String YM = "yyyyMM";
@@ -217,7 +217,7 @@ public class DateUtils {
 		try {
 			return localSimpleDateFormat.parse(paramString);
 		} catch (ParseException localParseException) {
-			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()));
+			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()).toString());
 		}
 		return null;
 	}
@@ -240,7 +240,7 @@ public class DateUtils {
 		try {
 			return localSimpleDateFormat.parse(converDateStr(paramString));
 		} catch (ParseException localParseException) {
-			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()));
+			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()).toString());
 		}
 		return null;
 	}
@@ -253,7 +253,7 @@ public class DateUtils {
 		try {
 			return localSimpleDateFormat.parse(paramString);
 		} catch (ParseException localParseException) {
-			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()));
+			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()).toString());
 		}
 		return null;
 	}
@@ -266,7 +266,7 @@ public class DateUtils {
 		try {
 			return getYM(localSimpleDateFormat.parse(paramString));
 		} catch (ParseException localParseException) {
-			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()));
+			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()).toString());
 		}
 		return null;
 	}

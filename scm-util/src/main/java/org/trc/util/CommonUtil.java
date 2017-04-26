@@ -21,6 +21,8 @@ import javassist.bytecode.MethodInfo;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.trc.enums.ZeroToNineEnum;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,8 +39,8 @@ import java.util.*;
  *  
  */
 public class CommonUtil {
-	
-	private static Log log = LogFactory.getLog(CommonUtil.class);
+
+	private final static Logger log = LoggerFactory.getLogger(CommonUtil.class);
 
 	public static final String HTTP_SERVLET_REQUEST = "HttpServletRequest";
 	public static final String MODEL_MAP = "ModelMap";

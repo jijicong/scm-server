@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,7 @@ import java.util.List;
 @Service("configBiz")
 public class ConfigBiz implements IConfigBiz {
 
-    private Log log = LogFactory.getLog(ConfigBiz.class);
+    private final static Logger log = LoggerFactory.getLogger(ConfigBiz.class);
 
     @Autowired
     private IDictTypeService dictTypeService;

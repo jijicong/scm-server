@@ -2,18 +2,17 @@ package org.trc.aop;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.enums.ResultEnum;
 import org.trc.util.*;
-
+import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -24,7 +23,7 @@ import java.util.Date;
 @Aspect
 public class JerseyServiceAop {
 
-    private Log log = LogFactory.getLog(JerseyServiceAop.class);
+    private final static Logger log = LoggerFactory.getLogger(JerseyServiceAop.class);
 
     @Autowired
     private BeanValidator beanValidator;
@@ -45,7 +44,7 @@ public class JerseyServiceAop {
         String endfix = "<<<<<";
         String[] paramNames = CommonUtil.getMethodParams(targetClass, method.getName());//获取参数名称数组
         if(log.isInfoEnabled()){
-            log.error(prefix+"开始调用"+targetClass.getName()+"方法"+method.getName()+", 参数："+
+            log.info(prefix+"开始调用"+targetClass.getName()+"方法"+method.getName()+", 参数："+
                     CommonUtil.getMethodParam(paramNames, point.getArgs(),paramTypes)+". 开始时间"+
                     DateUtils.dateToString(start, DateUtils.DATETIME_FORMAT));
         }

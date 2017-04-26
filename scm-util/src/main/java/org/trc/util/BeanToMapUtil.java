@@ -11,8 +11,8 @@ package org.trc.util;
 
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.DataHandlerException;
@@ -36,8 +36,8 @@ import java.util.Map;
  *  
  */
 public class BeanToMapUtil {
-	
-	private static Log log = LogFactory.getLog(BeanToMapUtil.class);
+
+	private final static Logger log = LoggerFactory.getLogger(BeanToMapUtil.class);
 
     /** 
      * 将一个 Map 对象转化为一个 JavaBean 
