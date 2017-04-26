@@ -87,8 +87,6 @@ public class ConfigBiz implements IConfigBiz {
             throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         int count = 0;
-        /*DictType dictType = new DictType();
-        BeanUtils.copyProperties(dictTypeForm, dictType);*/
         dictType.setId(id);
         dictType.setUpdateTime(new Date());
         count = dictTypeService.updateByPrimaryKeySelective(dictType);
@@ -208,8 +206,6 @@ public class ConfigBiz implements IConfigBiz {
             throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         int count = 0;
-        /*Dict dict = new Dict();
-        BeanUtils.copyProperties(dictForm, dict);*/
         dict.setId(id);
         dict.setUpdateTime(new Date());
         count = dictService.updateByPrimaryKeySelective(dict);
