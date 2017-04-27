@@ -1,7 +1,6 @@
 package org.trc.form;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
@@ -9,7 +8,7 @@ import javax.ws.rs.QueryParam;
 /**
  * Created by hzwdx on 2017/4/21.
  */
-public class DictTypeForm extends QueryModel{
+public class DictTypeForm extends QueryModel {
     /**
      * 字典类型名称
      */
@@ -19,7 +18,7 @@ public class DictTypeForm extends QueryModel{
     @QueryParam("code")
     @Length(max = 64)
     private String code;
-    @QueryParam("name")
+    @QueryParam("description")
     @Length(max = 64)
     private String description;
 

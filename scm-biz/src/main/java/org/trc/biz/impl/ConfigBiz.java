@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.IConfigBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
 import org.trc.service.IDictService;
@@ -66,6 +68,12 @@ public class ConfigBiz implements IConfigBiz {
 
     @Override
     public int saveDictType(DictType dictType) throws Exception{
+        DictType tmp = findDictTypeByTypeNo(dictType.getCode());
+        if(null != tmp){
+            String msg = CommonUtil.joinStr("字典类型编码为[code=",dictType.getCode(),"]的数据已存在,请使用其他编码").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
+        }
         int count = 0;
         ParamsUtil.setBaseDO(dictType);
         count = dictTypeService.insert(dictType);
@@ -82,7 +90,7 @@ public class ConfigBiz implements IConfigBiz {
         if(null == id){
             String msg = CommonUtil.joinStr("修改字典类型参数ID为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         int count = 0;
         dictType.setId(id);
@@ -101,7 +109,7 @@ public class ConfigBiz implements IConfigBiz {
         if(null == id){
             String msg = CommonUtil.joinStr("根据ID查询字典类型参数ID为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         DictType dictType = new DictType();
         dictType.setId(id);
@@ -118,7 +126,7 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtils.isEmpty(typeNo)){
             String msg = CommonUtil.joinStr("根据类型编码查询字典类型参数typeNo为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         DictType dictType = new DictType();
         dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -132,7 +140,7 @@ public class ConfigBiz implements IConfigBiz {
         if(null == id){
             String msg = CommonUtil.joinStr("根据ID删除字典类型参数ID为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         DictType tmp = new DictType();
         tmp.setId(id);
@@ -201,7 +209,7 @@ public class ConfigBiz implements IConfigBiz {
         if(null == id){
             String msg = CommonUtil.joinStr("修改字典参数ID为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         int count = 0;
         dict.setId(id);
@@ -220,7 +228,7 @@ public class ConfigBiz implements IConfigBiz {
         if(null == id){
             String msg = CommonUtil.joinStr("根据ID查询字典参数ID为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         Dict dict = new Dict();
         dict.setId(id);
@@ -238,7 +246,7 @@ public class ConfigBiz implements IConfigBiz {
         if(null == id){
             String msg = CommonUtil.joinStr("根据ID删除字典参数ID为空").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         Dict tmp = new Dict();
         tmp.setId(id);

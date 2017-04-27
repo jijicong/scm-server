@@ -1,15 +1,7 @@
-/**   
-* @Title: ParamException.java 
-* @Package com.hoo.exception 
-* @Description: TODO(用一句话描述该文件做什么) 
-* @author 吴东雄
-* @date 2015年11月18日 下午12:35:07 
-* Copyright (c) 2015, 杭州海适云承科技有限公司 All Rights Reserved.
-* @version V1.0   
-*/
 package org.trc.exception;
 
-import org.trc.enums.ExceptionEnum;
+
+import org.trc.enums.CommonExceptionEnum;
 
 /**
  * 参数校验异常
@@ -19,23 +11,23 @@ public class ParamValidException extends RuntimeException{
     /**
      * 异常枚举
      */
-    private ExceptionEnum exceptionEnum;
+    private CommonExceptionEnum exceptionEnum;
     /**
      * 错误信息
      */
     private String message;
 
-    public ParamValidException(ExceptionEnum exceptionEnum, String message){
+    public ParamValidException(CommonExceptionEnum exceptionEnum, String message){
         super(message);
         this.exceptionEnum = exceptionEnum;
         this.message = message;
     }
 
-    public ExceptionEnum getExceptionEnum() {
+    public CommonExceptionEnum getExceptionEnum() {
         return exceptionEnum;
     }
 
-    public void setExceptionEnum(ExceptionEnum exceptionEnum) {
+    public void setExceptionEnum(CommonExceptionEnum exceptionEnum) {
         this.exceptionEnum = exceptionEnum;
     }
 

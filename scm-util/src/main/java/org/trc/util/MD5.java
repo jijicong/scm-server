@@ -1,12 +1,3 @@
-/**  
- * @Title:  MD5.java   
- * @Package com.hoo.util   
- * @Description:    TODO(用一句话描述该文件做什么)   
- * @author libin 
- * @date:   2016年7月20日 下午4:48:43   
- * Copyright (c) 2016, 杭州海适云承科技有限公司 All Rights Reserved. 
- * @version V1.0
- */
 package org.trc.util;
 
 import java.security.MessageDigest;

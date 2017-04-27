@@ -1,12 +1,3 @@
-/**   
-* @Title: PropertyResourceUtil.java 
-* @Package com.hoo.util 
-* @Description: TODO(用一句话描述该文件做什么) 
-* @author 吴东雄
-* @date 2015年3月23日 下午12:32:03 
-* Copyright (c) 2015, 杭州海适云承科技有限公司 All Rights Reserved.
-* @version V1.0   
-*/
 package org.trc.util;
 
 import org.slf4j.Logger;

@@ -1,14 +1,13 @@
 package org.trc.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.dao.QueryTimeoutException;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
@@ -35,6 +34,7 @@ public class ExceptionUtil {
 	public static String handlerException(Exception e, Class<?> targetClass, String invokingMethodName){
 		StringBuilder builder = new StringBuilder();
 		ExceptionEnum exceptionEnum = null;
+		CommonExceptionEnum commonExceptionEnum = null;
 		String excepMsg = "";
 		String errorDtl = "";
 		String excepCode = "";
@@ -44,7 +44,7 @@ public class ExceptionUtil {
 					exceptionName.lastIndexOf(".") + 1, exceptionName.length());
 			if (StringUtils.equals(exceptionName, ParamValidException.class.getSimpleName())) {
 				ParamValidException paramValidException = (ParamValidException)e;
-				exceptionEnum = paramValidException.getExceptionEnum();
+				commonExceptionEnum = paramValidException.getExceptionEnum();
 			} else if (StringUtils.equals(exceptionName, ConfigException.class.getSimpleName())) {
 				ConfigException configException = (ConfigException)e;
 				exceptionEnum = configException.getExceptionEnum();
@@ -66,6 +66,10 @@ public class ExceptionUtil {
 		if(null != exceptionEnum){
 			excepCode = exceptionEnum.getCode();
 			excepMsg = exceptionEnum.getMessage();
+			errorDtl = e.getMessage();
+		}else if(null != commonExceptionEnum){
+			excepCode = commonExceptionEnum.getCode();
+			excepMsg = commonExceptionEnum.getMessage();
 			errorDtl = e.getMessage();
 		}
 		builder = new StringBuilder();
