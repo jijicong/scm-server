@@ -3,7 +3,6 @@ package org.trc.exception;
 /**
  * Created by hzwdx on 2017/4/22.
  */
-
 import org.trc.enums.ExceptionEnum;
 
 /**
