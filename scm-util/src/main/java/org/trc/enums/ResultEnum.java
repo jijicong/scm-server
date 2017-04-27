@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
  */
 public enum ResultEnum {
 
-	SUCCESS("0","成功"),
-	FAILURE("1","失败");
+	SUCCESS("1","成功"),
+	FAILURE("0","失败");
 	
 	private String code; 
 	private String name; 
