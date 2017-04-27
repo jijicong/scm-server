@@ -1,8 +1,6 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.ConfigBiz;
@@ -19,7 +17,6 @@ import org.trc.util.ResultUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -33,14 +30,6 @@ public class ConfigResource {
 
     @Autowired
     private ConfigBiz configBiz;
-
-//    @GET
-//    @Path(SupplyConstants.Config.DictType.DICT_TYPE_PAGE)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response dictTypePage(@BeanParam DictTypeForm form, @BeanParam Pagenation<DictType> page, @QueryParam("callback") String callback) throws Exception{
-//        Pagenation<DictType> dictTypePagenation = configBiz.dictTypePage(form, page);
-//        return Response.status(Response.Status.OK).entity(JSON.toJSONString(dictTypePagenation)).type(MediaType.APPLICATION_JSON).encoding(ENCODING).build();
-//    }
 
     @GET
     @Path(SupplyConstants.Config.DictType.DICT_TYPE_PAGE)
@@ -99,21 +88,11 @@ public class ConfigResource {
         return configBiz.dictPage(form, page);
     }
 
-    /*@GET
+    @GET
     @Path(SupplyConstants.Config.Dict.DICT_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<Dict>> queryDicts(@BeanParam DictForm dictForm, @QueryParam("callback") String callback) throws Exception{
         return ResultUtil.createSucssAppResult("查询字典列表成功", configBiz.queryDicts(dictForm));
-    }*/
-
-    @GET
-    @Path(SupplyConstants.Config.Dict.DICT_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response queryDicts(@BeanParam DictForm dictForm, @QueryParam("callback") String callback) throws Exception{
-        List<Dict> dicts = configBiz.queryDicts(dictForm);
-        JSON.DEFFAULT_DATE_FORMAT = "yyyy-MM-dd";
-        System.out.println(JSON.toJSONString(dicts, SerializerFeature.WriteDateUseDateFormat));
-        return Response.status(Response.Status.OK).entity(JSON.toJSONString(dicts, SerializerFeature.WriteDateUseDateFormat)).type(MediaType.APPLICATION_JSON).encoding(ENCODING).build();
     }
 
     @POST
@@ -149,11 +128,6 @@ public class ConfigResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> queryValidList(HttpServletRequest request){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
-    }
-
-    public static void main(String[] args){
-
-
     }
 
 }
