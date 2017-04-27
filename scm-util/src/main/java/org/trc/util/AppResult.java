@@ -53,8 +53,7 @@ public class AppResult<T> {
 				jsonObject.getString("result"));
 		return appResult;
 	}
-	
-	
+
 	public String getAppcode() {
 		return appcode;
 	}
@@ -73,7 +72,5 @@ public class AppResult<T> {
 	public void setResult(T result) {
 		this.result = result;
 	}
-	
-	
-	
+
 }

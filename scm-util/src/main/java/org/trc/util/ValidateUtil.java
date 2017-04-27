@@ -27,7 +27,6 @@ import java.util.Map;
  */
 public class ValidateUtil {
 
-	
 	/**
 	 * 
 	* @Title: paramCheck 

@@ -1,6 +1,6 @@
 package org.trc.form;
 
-import org.trc.domain.score.Dict;
+import org.trc.domain.dict.Dict;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 

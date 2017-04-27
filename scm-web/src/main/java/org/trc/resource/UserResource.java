@@ -1,8 +1,6 @@
 package org.trc.resource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.service.impl.AuthService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,9 +13,6 @@ import javax.ws.rs.core.MediaType;
 @Path("/user")
 @Component
 public class UserResource {
-
-    @Autowired
-    private AuthService authService;
 
 //    @Autowired
 //    private BeegoService beegoService;

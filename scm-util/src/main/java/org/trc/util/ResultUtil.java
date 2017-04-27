@@ -39,7 +39,6 @@ public class ResultUtil {
 	public static boolean isAppResultFormate(String result){
 		try {
 			JSONObject jsonObject = JSON.parseObject(result);
-
 			if(jsonObject.containsKey("appcode")){
 				return true;
 			}else{
@@ -115,7 +114,7 @@ public class ResultUtil {
 	 * @return
 	 */
 	public static AppResult createSucssAppResult(String databuffer, Object result){
-		AppResult appResult= new AppResult(ResultEnum.SUCCESS.getCode(), databuffer, result);
+		AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), databuffer, result);
 		return appResult;
 	}
 	
@@ -128,7 +127,7 @@ public class ResultUtil {
 	* @throws
 	 */
 	public static AppResult createFailAppResult(String databuffer){
-		AppResult appResult= new AppResult(ResultEnum.FAILURE.getCode(), databuffer, "");
+		AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), databuffer, "");
 		return appResult;
 	}
 	

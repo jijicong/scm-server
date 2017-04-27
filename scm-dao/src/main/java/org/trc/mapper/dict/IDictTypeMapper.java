@@ -1,6 +1,6 @@
-package org.trc.mapper.score;
+package org.trc.mapper.dict;
 
-import org.trc.domain.score.DictType;
+import org.trc.domain.dict.DictType;
 import org.trc.util.BaseMapper;
 
 public interface IDictTypeMapper extends BaseMapper<DictType> {

@@ -1,7 +1,7 @@
 package org.trc.service.impl;
 
 import org.springframework.stereotype.Service;
-import org.trc.domain.score.Dict;
+import org.trc.domain.dict.Dict;
 import org.trc.service.IDictService;
 
 /**

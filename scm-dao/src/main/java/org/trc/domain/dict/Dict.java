@@ -1,8 +1,8 @@
-package org.trc.domain.score;
+package org.trc.domain.dict;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.util.BaseDO;
+import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

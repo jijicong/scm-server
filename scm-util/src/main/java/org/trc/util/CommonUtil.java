@@ -19,11 +19,8 @@ import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;
 import javassist.bytecode.MethodInfo;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.trc.enums.ZeroToNineEnum;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MultivaluedMap;
@@ -240,21 +237,7 @@ public class CommonUtil {
 		return sb.toString();
 	}
 
-	/**
-	 * 设置BaseDO公共属性
-	 * @param baseDO
-	 */
-	public static void setBaseDO(BaseDO baseDO){
-		if(StringUtils.isEmpty(baseDO.getIsValid()))
-			baseDO.setIsValid(ZeroToNineEnum.ONE.getCode());
-		baseDO.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-		//baseDO.setCreateOperator("");//FIXME
-		Date currentDate = new Date();
-		if(null == baseDO.getCreateTime())
-			baseDO.setCreateTime(currentDate);
-		if(null == baseDO.getUpdateTime())
-			baseDO.setUpdateTime(currentDate);
-	}
+
 
 	/**
 	 *获取数据库操作条件

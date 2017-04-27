@@ -1,7 +1,7 @@
 package org.trc.biz;
 
-import org.trc.domain.score.Dict;
-import org.trc.domain.score.DictType;
+import org.trc.domain.dict.Dict;
+import org.trc.domain.dict.DictType;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
 import org.trc.util.Pagenation;

@@ -2,28 +2,24 @@ package org.trc.biz.impl;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.IConfigBiz;
-import org.trc.domain.score.Dict;
-import org.trc.domain.score.DictType;
+import org.trc.domain.dict.Dict;
+import org.trc.domain.dict.DictType;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
 import org.trc.service.IDictService;
 import org.trc.service.IDictTypeService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
-import sun.security.krb5.internal.PAData;
+import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -71,7 +67,7 @@ public class ConfigBiz implements IConfigBiz {
     @Override
     public int saveDictType(DictType dictType) throws Exception{
         int count = 0;
-        CommonUtil.setBaseDO(dictType);
+        ParamsUtil.setBaseDO(dictType);
         count = dictTypeService.insert(dictType);
         if(count == 0){
             String msg = CommonUtil.joinStr("保存字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
@@ -189,7 +185,7 @@ public class ConfigBiz implements IConfigBiz {
             count = dictService.updateByPrimaryKeySelective(dict);
         }else{
             //新增
-            CommonUtil.setBaseDO(dict);
+            ParamsUtil.setBaseDO(dict);
             count = dictService.insert(dict);
         }
         if(count == 0){

@@ -1,6 +1,6 @@
 package org.trc.service;
 
-import org.trc.domain.score.DictType;
+import org.trc.domain.dict.DictType;
 
 /**
  * Created by hzwdx on 2017/4/19.

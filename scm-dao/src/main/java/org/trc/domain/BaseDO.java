@@ -1,7 +1,9 @@
-package org.trc.util;
+package org.trc.domain;
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
 
 import javax.ws.rs.FormParam;
-import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -14,8 +16,10 @@ public class BaseDO implements Serializable{
     @FormParam("createOperator")
     private String createOperator; //创建人
 
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime; //创建时间
 
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime; //更新时间
 
     private String isDeleted; //是否删除:0-否,1-是

@@ -1,19 +1,17 @@
-package org.trc.domain.score;
+package org.trc.domain.dict;
 
-import com.sun.istack.internal.NotNull;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.util.BaseDO;
+import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.QueryParam;
 
 @Table(name = "dict_type")
-public class DictType extends BaseDO{
+public class DictType extends BaseDO {
     @FormParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
