@@ -16,7 +16,7 @@ public class ConfigException extends RuntimeException {
      */
     private String message;
 
-    public ConfigException(ExceptionEnum exceptionEnum, String message){
+    public ConfigException(ExceptionEnum exceptionEnum, String message) {
         super(message);
         this.exceptionEnum = exceptionEnum;
         this.message = message;

@@ -1,7 +1,7 @@
 package org.trc.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.trc.enums.ExceptionEnum;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
 
 import javax.ws.rs.QueryParam;
@@ -141,7 +141,7 @@ public class QueryModel {
                 String[] orderBySplit = orderBy.split(ORDER_SPLIT);
                 String[] orderSplit = order.split(ORDER_SPLIT);
                 if(orderBySplit != orderSplit)
-                    throw new ParamValidException(ExceptionEnum.PARAM_CHECK_EXCEPTION,
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,
                             CommonUtil.joinStr("分页查询排序字段[",orderBy,"]和排序方向[",order,"]不相符").toString());
             }
         }

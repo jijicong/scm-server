@@ -1,12 +1,3 @@
-/**   
-* @Title: CommonUtil.java 
-* @Package com.hoo.util 
-* @Description: TODO(用一句话描述该文件做什么) 
-* @author 吴东雄
-* @date 2016年3月16日 下午10:48:14 
-* Copyright (c) 2016, 杭州海适云承科技有限公司 All Rights Reserved.
-* @version V1.0   
-*/
 package org.trc.util;
 
 import com.alibaba.fastjson.JSON;
@@ -276,16 +267,6 @@ public class CommonUtil {
 		return map;
 	}
 
-	/**
-	 * 获取jsonp格式结果
-	 * @param result
-	 * @param msg
-	 * @return
-	 */
-	public static String getJsonpResult(Object result, String callback, String msg){
-		AppResult appResult = ResultUtil.createSucssAppResult(msg, result);
-		return callback+"("+JSON.toJSONString(appResult)+")";
-	}
 
 
 }

@@ -1,11 +1,11 @@
 package org.trc.enums;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by hzwdx on 2017/4/22.
  */
-public enum ExceptionEnum {
+public enum ExceptionEnum{
     /**
      * 异常编码按模块划分：
      * 系统管理:000开头
@@ -19,21 +19,16 @@ public enum ExceptionEnum {
      * 审批管理:800开头
      * 权限管理:900开头
      * 外部调用:1000开头
-     * 通用功能:2000开头
      * 数据库:3000开头
      * 系统异常:4000开头
      */
-    PARAM_CHECK_EXCEPTION("2000100","参数校验错误"),
     CONFIG_DICT_QUERY_EXCEPTION("100101","数据字典查询异常"),
     CONFIG_DICT_UPDATE_EXCEPTION("100102","数据字典更新异常"),
 
-    JAVA_BEAN_TO_MAP_EXCEPTION("2000100","JavaBean转Map数据转换异常"),
-    MAPJ_TO_AVA_BEAN_EXCEPTION("2000100","Map转JavaBean数据转换异常"),
-
     DATABASE_DUPLICATE_KEY_EXCEPTION("3000100","数据库主键重复异常"),
-    DATABASE_PERMISSION_DENIED_EXCEPTION("3000100","数据库数据访问权限异常"),
-    DATABASE_QUERY_TIME_OUT_EXCEPTION("3000100","数据库查询超时异常"),
-    DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION("3000100","数据库死锁访问数据异常"),
+    DATABASE_PERMISSION_DENIED_EXCEPTION("3000101","数据库数据访问权限异常"),
+    DATABASE_QUERY_TIME_OUT_EXCEPTION("3000102","数据库查询超时异常"),
+    DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION("3000103","数据库死锁访问数据异常"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
 
@@ -54,11 +49,11 @@ public enum ExceptionEnum {
      * @Description: 根据枚举编码获取枚举
      * @param @param name
      * @param @return
-     * @return ExceptionEnum
+     * @return CommonExceptionEnum
      * @throws
      */
-    public static ExceptionEnum getExceptionEnumByCode(String code){
-        for(ExceptionEnum exceptionEnum : ExceptionEnum.values()){
+    public static CommonExceptionEnum getExceptionEnumByCode(String code){
+        for(CommonExceptionEnum exceptionEnum : CommonExceptionEnum.values()){
             if(StringUtils.equals(exceptionEnum.getCode(), code)){
                 return exceptionEnum;
             }

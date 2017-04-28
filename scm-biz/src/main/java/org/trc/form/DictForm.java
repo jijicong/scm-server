@@ -1,7 +1,5 @@
 package org.trc.form;
 
-import org.trc.domain.dict.Dict;
-import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
@@ -9,7 +7,7 @@ import javax.ws.rs.QueryParam;
 /**
  * Created by hzwdx on 2017/4/21.
  */
-public class DictForm extends QueryModel{
+public class DictForm extends QueryModel {
     /**
      * 字典类型编码
      */

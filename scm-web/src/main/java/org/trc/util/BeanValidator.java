@@ -1,6 +1,7 @@
 package org.trc.util;
 
 import org.springframework.stereotype.Component;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ParamValidException;
 
@@ -46,7 +47,7 @@ public class BeanValidator {
                 break;
         }
         if(null != constraintViolation)
-            throw new ParamValidException(ExceptionEnum.PARAM_CHECK_EXCEPTION,CommonUtil.joinStr("参数",constraintViolation.getPropertyPath().toString(),constraintViolation.getMessage()).toString());
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,CommonUtil.joinStr("参数",constraintViolation.getPropertyPath().toString(),constraintViolation.getMessage()).toString());
     }
 
 }

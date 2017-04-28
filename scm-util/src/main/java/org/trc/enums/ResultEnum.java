@@ -1,12 +1,3 @@
-/**   
-* @Title: ResultEnum.java 
-* @Package com.hoo.enums 
-* @Description: TODO(用一句话描述该文件做什么) 
-* @author 吴东雄
-* @date 2016年1月15日 下午3:23:10 
-* Copyright (c) 2016, 杭州海适云承科技有限公司 All Rights Reserved.
-* @version V1.0   
-*/
 package org.trc.enums;
 
 import org.apache.commons.lang.StringUtils;
