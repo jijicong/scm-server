@@ -242,6 +242,20 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    public List<Dict> findDictsByTypeNo(String typeNo) throws Exception {
+        if(StringUtils.isEmpty(typeNo)){
+            String msg = CommonUtil.joinStr("根据类型编码查询字典参数typeNo为空").toString();
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        Dict dict = new Dict();
+        dict.setIsValid(ZeroToNineEnum.ONE.getCode());
+        dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        dict.setTypeNo(typeNo);
+        return dictService.select(dict);
+    }
+
+    @Override
     public int deleteDictById(Long id) throws Exception {
         if(null == id){
             String msg = CommonUtil.joinStr("根据ID删除字典参数ID为空").toString();

@@ -104,6 +104,13 @@ public interface IConfigBiz {
     public Dict findDictById(Long id) throws Exception;
 
     /**
+     * 根据类型编号查询字典列表
+     * @param typeNo
+     * @return
+     */
+    public List<Dict> findDictsByTypeNo(String typeNo) throws Exception;
+
+    /**
      * 根据主键删除字典
      * @param id
      * @return
