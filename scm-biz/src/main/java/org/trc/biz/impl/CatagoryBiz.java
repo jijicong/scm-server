@@ -13,7 +13,7 @@ import tk.mybatis.mapper.entity.Example;
 /**
  * Created by hzqph on 2017/4/28.
  */
-@Service("brandBiz")
+@Service("catagoryBiz")
 public class CatagoryBiz implements ICatagoryBiz {
     @Autowired
     private IBrandService brandService;
