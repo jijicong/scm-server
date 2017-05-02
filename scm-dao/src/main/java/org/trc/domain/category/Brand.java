@@ -1,0 +1,98 @@
+package org.trc.domain.category;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.trc.domain.BaseDO;
+
+
+/**
+ * Created by hzqph on 2017/4/27.
+ */
+public class Brand extends BaseDO {
+        private Long id;//主键ID
+        private String name;//品牌名称
+        private String brandCode;//品牌编码
+        private String source;//来源:scm-系统自行添加，trc-泰然城导入
+        private String alise;//品牌别名
+        private String webUrl;//品牌网址
+        private String logo;//品牌LOGO的图片路径
+        private Integer sort;//序号
+        private String lastEditOperator;//最新更新人
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getBrandCode() {
+        return brandCode;
+    }
+
+    public void setBrandCode(String brandCode) {
+        this.brandCode = brandCode;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getAlise() {
+        return alise;
+    }
+
+    public void setAlise(String alise) {
+        this.alise = alise;
+    }
+
+    public String getWebUrl() {
+        return webUrl;
+    }
+
+    public void setWebUrl(String webUrl) {
+        this.webUrl = webUrl;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public Integer getSort() {
+        return sort;
+    }
+
+    public void setSort(Integer sort) {
+        this.sort = sort;
+    }
+
+    public String getLastEditOperator() {
+        return lastEditOperator;
+    }
+
+    public void setLastEditOperator(String lastEditOperator) {
+        this.lastEditOperator = lastEditOperator;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+}
