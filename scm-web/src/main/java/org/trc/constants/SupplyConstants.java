@@ -56,5 +56,21 @@ public class SupplyConstants {
 
     }
 
+    public static final class Category{
 
+        //根路径
+        public static final String ROOT = "catagory";
+        /**
+         * 品牌管理
+         */
+        public static final class Brand{
+            //字典分页查询路径
+            public static final String Brand_PAGE = "brandPage";
+            //字典列表查询路径
+            public static final String Brand_LIST = "brands";
+            //字典路径
+            public static final String Brand = "brand";
+        }
+
+    }
 }

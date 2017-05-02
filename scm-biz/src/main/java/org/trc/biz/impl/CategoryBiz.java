@@ -3,7 +3,7 @@ package org.trc.biz.impl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.ICatagoryBiz;
+import org.trc.biz.ICategoryBiz;
 import org.trc.domain.category.Brand;
 import org.trc.form.BrandForm;
 import org.trc.service.IBrandService;
@@ -13,8 +13,8 @@ import tk.mybatis.mapper.entity.Example;
 /**
  * Created by hzqph on 2017/4/28.
  */
-@Service("catagoryBiz")
-public class CatagoryBiz implements ICatagoryBiz {
+@Service("categoryBiz")
+public class CategoryBiz implements ICategoryBiz {
     @Autowired
     private IBrandService brandService;
 
