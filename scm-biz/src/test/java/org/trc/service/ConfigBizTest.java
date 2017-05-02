@@ -48,7 +48,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
 
     private Dict createDict(){
         Dict dict = new Dict();
-        dict.setTypeNo("testWdx");
+        dict.setTypeCode("testWdx");
         dict.setName("testWdx");
         dict.setValue("testWdx");
         dict.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -193,7 +193,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
              * 测试字典分页查询dictPage
              */
             DictForm dictForm = new DictForm();
-            dictForm.setTypeNo("testWdx");
+            dictForm.setTypeCode("testWdx");
             dictForm.setName("testWdx");
             dictForm.setIsValid(ZeroToNineEnum.ONE.getCode());
             Pagenation<Dict> page = new Pagenation<Dict>();

@@ -53,10 +53,10 @@ public interface IConfigBiz {
 
     /**
      * 根据类型编号查询字典类型
-     * @param typeNo
+     * @param typeCode
      * @return
      */
-    public DictType findDictTypeByTypeNo(String typeNo) throws Exception;
+    public DictType findDictTypeByTypeNo(String typeCode) throws Exception;
 
     /**
      * 根据主键删除
@@ -105,10 +105,10 @@ public interface IConfigBiz {
 
     /**
      * 根据类型编号查询字典列表
-     * @param typeNo
+     * @param typeCode
      * @return
      */
-    public List<Dict> findDictsByTypeNo(String typeNo) throws Exception;
+    public List<Dict> findDictsByTypeNo(String typeCode) throws Exception;
 
     /**
      * 根据主键删除字典

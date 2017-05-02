@@ -122,8 +122,8 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public DictType findDictTypeByTypeNo(String typeNo) throws Exception{
-        if(StringUtils.isEmpty(typeNo)){
+    public DictType findDictTypeByTypeNo(String typeCode) throws Exception{
+        if(StringUtils.isEmpty(typeCode)){
             String msg = CommonUtil.joinStr("根据类型编码查询字典类型参数typeNo为空").toString();
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
@@ -131,7 +131,7 @@ public class ConfigBiz implements IConfigBiz {
         DictType dictType = new DictType();
         dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        dictType.setCode(typeNo);
+        dictType.setCode(typeCode);
         return dictTypeService.selectOne(dictType);
     }
 
@@ -159,8 +159,8 @@ public class ConfigBiz implements IConfigBiz {
     public Pagenation<Dict> dictPage(DictForm queryModel, Pagenation<Dict> page) throws Exception {
         Example example = new Example(Dict.class);
         Example.Criteria criteria = example.createCriteria();
-        if(StringUtil.isNotEmpty(queryModel.getTypeNo())) {
-            criteria.andEqualTo("typeNo", queryModel.getTypeNo());
+        if(StringUtil.isNotEmpty(queryModel.getTypeCode())) {
+            criteria.andEqualTo("typeCode", queryModel.getTypeCode());
         }
         if(StringUtil.isNotEmpty(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
@@ -168,7 +168,7 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
-        example.orderBy("typeNo").asc().orderBy("isValid").desc();
+        example.orderBy("typeCode").asc().orderBy("isValid").desc();
         //分页查询
         return dictService.pagination(example, page, queryModel);
     }
@@ -242,16 +242,16 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public List<Dict> findDictsByTypeNo(String typeNo) throws Exception {
-        if(StringUtils.isEmpty(typeNo)){
-            String msg = CommonUtil.joinStr("根据类型编码查询字典参数typeNo为空").toString();
+    public List<Dict> findDictsByTypeNo(String typeCode) throws Exception {
+        if(StringUtils.isEmpty(typeCode)){
+            String msg = CommonUtil.joinStr("根据类型编码查询字典参数typeCode为空").toString();
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         Dict dict = new Dict();
         dict.setIsValid(ZeroToNineEnum.ONE.getCode());
         dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        dict.setTypeNo(typeNo);
+        dict.setTypeCode(typeCode);
         return dictService.select(dict);
     }
 

@@ -16,10 +16,10 @@ public class Dict extends BaseDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @FormParam("typeNo")
+    @FormParam("typeCode")
     @NotEmpty
     @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
-    private String typeNo;
+    private String typeCode;
     @NotEmpty
     @Length(max = 64, message = "字典名称字母和数字不能超过64个,汉字不能超过32个")
     @FormParam("name")
@@ -37,12 +37,12 @@ public class Dict extends BaseDO {
         this.id = id;
     }
 
-    public String getTypeNo() {
-        return typeNo;
+    public String getTypeCode() {
+        return typeCode;
     }
 
-    public void setTypeNo(String typeNo) {
-        this.typeNo = typeNo == null ? null : typeNo.trim();
+    public void setTypeCode(String typeCode) {
+        this.typeCode = typeCode;
     }
 
     public String getName() {

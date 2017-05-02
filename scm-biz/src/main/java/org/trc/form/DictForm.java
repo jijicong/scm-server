@@ -11,8 +11,8 @@ public class DictForm extends QueryModel {
     /**
      * 字典类型编码
      */
-    @QueryParam("typeNo")
-    private String typeNo;
+    @QueryParam("typeCode")
+    private String typeCode;
     /**
      * 字典名称
      */
@@ -24,12 +24,12 @@ public class DictForm extends QueryModel {
     @QueryParam("value")
     private String value;
 
-    public String getTypeNo() {
-        return typeNo;
+    public String getTypeCode() {
+        return typeCode;
     }
 
-    public void setTypeNo(String typeNo) {
-        this.typeNo = typeNo;
+    public void setTypeCode(String typeCode) {
+        this.typeCode = typeCode;
     }
 
     public String getName() {
