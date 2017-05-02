@@ -1,8 +1,9 @@
-package org.trc.service.impl;
+package org.trc.service.impl.config;
 
 import org.springframework.stereotype.Service;
 import org.trc.domain.dict.Dict;
-import org.trc.service.IDictService;
+import org.trc.service.config.IDictService;
+import org.trc.service.impl.BaseService;
 
 /**
  * Created by hzwdx on 2017/4/19.

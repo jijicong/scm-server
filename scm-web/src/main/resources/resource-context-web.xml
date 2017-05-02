@@ -11,7 +11,7 @@
     <bean id="myPropertyConfigurer" class="org.trc.spring.TrPropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:config/dev/score-jdbc.properties</value>
+                <!--<value>classpath:config/scm-jdbc.propertiesties</value>-->
             </list>
         </property>
     </bean>

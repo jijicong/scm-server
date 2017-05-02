@@ -3,7 +3,6 @@ package org.trc.service;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
@@ -16,8 +15,6 @@ import org.trc.domain.dict.DictType;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.DictForm;
 import org.trc.form.DictTypeForm;
-import org.trc.service.impl.DictService;
-import org.trc.service.impl.DictTypeService;
 import org.trc.util.Pagenation;
 
 import javax.annotation.Resource;

@@ -12,7 +12,7 @@
         <property name="locations">
             <list>
                 <value>classpath:**/config.properties</value>
-                <value>classpath:**/score-jdbc.properties</value>
+                <value>classpath:config/dev/scm-jdbc.properties</value>
             </list>
         </property>
     </bean>
