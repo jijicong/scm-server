@@ -1,4 +1,4 @@
-package org.trc.mapper.score.category;
+package org.trc.mapper.category;
 
 import org.trc.domain.category.Brand;
 import org.trc.util.BaseMapper;
