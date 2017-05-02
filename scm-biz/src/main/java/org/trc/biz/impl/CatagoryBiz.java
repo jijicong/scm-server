@@ -3,20 +3,18 @@ package org.trc.biz.impl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.IBrandBiz;
+import org.trc.biz.ICatagoryBiz;
 import org.trc.domain.category.Brand;
 import org.trc.form.BrandForm;
 import org.trc.service.IBrandService;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
-
 /**
  * Created by hzqph on 2017/4/28.
  */
 @Service("brandBiz")
-public class BrandBiz implements IBrandBiz {
+public class CatagoryBiz implements ICatagoryBiz {
     @Autowired
     private IBrandService brandService;
 

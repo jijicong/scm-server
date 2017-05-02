@@ -7,7 +7,7 @@ import org.trc.util.Pagenation;
 /**
  * Created by hzqph on 2017/4/27.
  */
-public interface IBrandBiz {
+public interface ICatagoryBiz {
 
     public Pagenation<Brand> brandPage(BrandForm form,Pagenation<Brand> page)throws Exception;
 }
