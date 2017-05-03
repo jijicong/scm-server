@@ -70,6 +70,8 @@ public class SupplyConstants {
             public static final String Brand_LIST = "brands";
             //字典路径
             public static final String Brand = "brand";
+
+            public static final String Brand_Status="brand/state";
         }
 
     }

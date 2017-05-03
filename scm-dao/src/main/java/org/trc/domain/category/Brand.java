@@ -4,6 +4,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.trc.domain.BaseDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 
 
@@ -12,6 +15,8 @@ import javax.ws.rs.FormParam;
  */
 public class Brand extends BaseDO {
         @FormParam("id")
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;//主键ID
         @FormParam("name")
         private String name;//品牌名称
