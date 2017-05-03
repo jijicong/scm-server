@@ -21,4 +21,5 @@
 
     <import resource="classpath:config/resource-tx.xml"/>
 
+
 </beans>

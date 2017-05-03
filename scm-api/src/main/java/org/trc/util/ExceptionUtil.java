@@ -10,6 +10,7 @@ import org.springframework.dao.QueryTimeoutException;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
+import org.trc.exception.FileException;
 import org.trc.exception.ParamValidException;
 
 /** 
@@ -48,6 +49,9 @@ public class ExceptionUtil {
 			} else if (StringUtils.equals(exceptionName, ConfigException.class.getSimpleName())) {
 				ConfigException configException = (ConfigException)e;
 				exceptionEnum = configException.getExceptionEnum();
+			} else if (StringUtils.equals(exceptionName, FileException.class.getSimpleName())) {
+				FileException fileException = (FileException)e;
+				exceptionEnum = fileException.getExceptionEnum();
 			}else if (StringUtils.equals(exceptionName, DuplicateKeyException.class.getSimpleName())) {
 				exceptionEnum = ExceptionEnum.DATABASE_DUPLICATE_KEY_EXCEPTION;
 			}else if (StringUtils.equals(exceptionName, PermissionDeniedDataAccessException.class.getSimpleName())) {

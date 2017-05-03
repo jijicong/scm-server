@@ -23,7 +23,7 @@ import java.util.List;
  * Created by hzwdx on 2017/4/24.
  */
 @Component
-@Path("config")
+@Path(SupplyConstants.Config.ROOT)
 public class ConfigResource {
 
     public static final String ENCODING = "UTF-8";

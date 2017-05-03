@@ -73,4 +73,19 @@ public class SupplyConstants {
         }
 
     }
+
+    /**
+     *七牛
+     */
+    public static final class QinNiu{
+
+        //根路径
+        public static final String ROOT = "qinniu";
+        //供应链测试token
+        public static final String TEST_TOKEN = "testToken";
+        //供应链正式token
+        public static final String PRODUCT_TOKEN = "productToken";
+    }
+
+
 }

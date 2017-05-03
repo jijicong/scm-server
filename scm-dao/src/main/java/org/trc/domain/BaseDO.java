@@ -1,6 +1,7 @@
 package org.trc.domain;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.ws.rs.FormParam;
@@ -12,8 +13,10 @@ import java.util.Date;
  */
 public class BaseDO implements Serializable{
     @FormParam("isValid")
+    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
     private String isValid; //是否有效:0-否,1-是
     @FormParam("createOperator")
+    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
     private String createOperator; //创建人
 
     @JsonSerialize(using = CustomDateSerializer.class)
