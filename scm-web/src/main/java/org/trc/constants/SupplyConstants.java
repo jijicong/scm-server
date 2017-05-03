@@ -73,7 +73,25 @@ public class SupplyConstants {
         }
 
     }
+    /**
+     * 系统管理：仓库，渠道，授权
+     */
+    public static final class System {
+        //根路径
+        public static final String ROOT = "system";
 
+        /**
+         * 渠道管理
+         */
+        public static final class Channel {
+            //渠道分页查询
+            public static final String CHANNEL_PAGE = "channelPage";
+            //渠道名查询
+            public static final String CHANNEL = "channel";
+            //状态的修改
+            public static final String UPDATE_STATE = "channel/updateState";
+        }
+    }
     /**
      *七牛
      */
