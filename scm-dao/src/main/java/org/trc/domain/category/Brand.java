@@ -2,31 +2,36 @@ package org.trc.domain.category;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
 
 
 /**
  * Created by hzqph on 2017/4/27.
  */
+@Table(name = "brand")
 public class Brand extends BaseDO {
         @FormParam("id")
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;//主键ID
         @FormParam("name")
+        @NotEmpty
+        @Length(max = 50, message = "品牌名称不超过50个字符")
         private String name;//品牌名称
         @FormParam("brandCode")
         private String brandCode;//品牌编码
         @FormParam("source")
         private String source;//来源:scm-系统自行添加，trc-泰然城导入
         @FormParam("alise")
+        @Length(max = 50, message = "品牌别名不超过50个字符")
         private String alise;//品牌别名
         @FormParam("webUrl")
+        @Length(max = 50, message = "品牌网址不超过50个字符")
         private String webUrl;//品牌网址
         @FormParam("logo")
         private String logo;//品牌LOGO的图片路径
@@ -34,6 +39,8 @@ public class Brand extends BaseDO {
         private Integer sort;//序号
         @FormParam("lastEditOperator")
         private String lastEditOperator;//最新更新人
+        @Transient
+        private int num;//
 
     public Long getId() {
         return id;
@@ -105,6 +112,14 @@ public class Brand extends BaseDO {
 
     public void setLastEditOperator(String lastEditOperator) {
         this.lastEditOperator = lastEditOperator;
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
     }
 
     @Override
