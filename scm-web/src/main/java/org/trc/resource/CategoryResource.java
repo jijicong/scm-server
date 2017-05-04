@@ -38,7 +38,7 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Config.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryValidList(HttpServletRequest request){
+    public AppResult<JSONArray> queryValidList(){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
     }
 

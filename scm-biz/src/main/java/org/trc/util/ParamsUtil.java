@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.trc.domain.BaseDO;
 import org.trc.enums.ZeroToNineEnum;
 
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -21,7 +22,7 @@ public class ParamsUtil {
         }
         baseDO.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         baseDO.setCreateOperator("test");//FIXME
-        Date currentDate = new Date();
+        Date currentDate = Calendar.getInstance().getTime();
         if(null == baseDO.getCreateTime())
             baseDO.setCreateTime(currentDate);
         if(null == baseDO.getUpdateTime())
