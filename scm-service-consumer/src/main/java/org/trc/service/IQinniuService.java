@@ -1,11 +1,15 @@
 package org.trc.service;
 
+import com.qiniu.storage.model.BatchStatus;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
+import com.qiniu.util.StringMap;
+import org.trc.config.BaseThumbnailSize;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hzwdx on 2017/5/3.
@@ -16,20 +20,24 @@ public interface IQinniuService {
      * @return
      */
     public Auth getAuth() throws Exception;
-    /**
-     * 获取token
-     * @return
-     */
-    public String getToken() throws Exception;
 
     /**
-     *上传
-     * @param inputStream 文件流
-     * @param fileName 文件名称
+     * 获取token
+     * @param stringMap 持久化参数map，可为空
      * @return
      * @throws Exception
      */
-    public DefaultPutRet upload(InputStream inputStream, String fileName) throws Exception;
+    public String getToken(StringMap stringMap) throws Exception;
+
+    /**
+     * 上传
+     * @param inputStream 文件流
+     * @param fileName 文件名称
+     * @param baseThumbnailSize 缩略图尺寸配置对象
+     * @return
+     * @throws Exception
+     */
+    public DefaultPutRet upload(InputStream inputStream, String fileName, BaseThumbnailSize baseThumbnailSize) throws Exception;
 
     /**
      * 下载
@@ -46,16 +54,20 @@ public interface IQinniuService {
      * @return
      * @throws Exception
      */
-    public String getThumbnail(String fileName, int width, int height) throws Exception;
+    public String getThumbnail(String fileName, Integer width, Integer height) throws Exception;
 
     /**
-     *获取缩略图地址列表
-     * @param fileNames 文件名，多个用逗号","分割
-     * @param width 缩略图的宽
-     * @param height 缩略图的高
+     * 批量获取文件信息
+     * @param fileNames
      * @return
-     * @throws Exception
      */
-    public List<String> getThumbnails(String fileNames, int width, int height) throws Exception;
+    public List<BatchStatus> batchGetFileInfo(String[] fileNames) throws Exception;
+
+    /**
+     * 批量获取文件url
+     * @param fileNames
+     * @return
+     */
+    public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception;
 
 }

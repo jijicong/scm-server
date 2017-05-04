@@ -99,12 +99,28 @@ public class SupplyConstants {
      */
     public static final class QinNiu{
 
+        /**
+         * 用到七牛存储的系统功能模块
+         */
+        public static final class Module{
+            //属性管理
+            public static final String PROPERTY = "property";
+            //供应商管理
+            public static final String SUPPLY = "supply";
+        }
+
+
         //根路径
         public static final String ROOT = "qinniu";
-        //供应链测试token
-        public static final String TEST_TOKEN = "testToken";
-        //供应链正式token
-        public static final String PRODUCT_TOKEN = "productToken";
+        //上传路径
+        public static final String UPLOAD = "upload";
+        //下载路径
+        public static final String DOWNLOAD = "download";
+        //缩略图
+        public static final String THUMBNAIL = "thumbnail";
+        //批量获取url
+        public static final String URLS = "urls";
+
     }
 
 
