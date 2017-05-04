@@ -35,7 +35,7 @@
         <!--alibaba druid -->
         <druid.version>1.0.28</druid.version>
         <!--mysql-connector-java-->
-        <mysql-connector-java.version>6.0.5</mysql-connector-java.version>
+        <mysql-connector-java.version>5.1.41</mysql-connector-java.version>
         <!--tk.mybatis-->
         <tk.mybatis.version>3.3.9</tk.mybatis.version>
         <!--com.github.pagehelper-->
