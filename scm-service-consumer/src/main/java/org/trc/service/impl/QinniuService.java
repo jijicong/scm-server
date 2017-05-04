@@ -95,6 +95,32 @@ public class QinniuService implements IQinniuService{
         return map;
     }
 
+    @Override
+    public Map<String, Object> batchDelete(String[] fileNames) throws Exception {
+        BucketManager.BatchOperations batchOperations = new BucketManager.BatchOperations();
+        batchOperations.addDeleteOp(qinniuForm.getBucket(), fileNames);
+        Response response = getBucketManager().batch(batchOperations);
+        BatchStatus[] batchStatusList = response.jsonToObject(BatchStatus[].class);
+        StringBuilder builder = new StringBuilder();
+        int success = 0;
+        int fialure = 0;
+        for (int i = 0; i < fileNames.length; i++) {
+            BatchStatus status = batchStatusList[i];
+            if (status.code == 200) {
+                success++;
+                System.out.println("delete success");
+            } else {
+                fialure++;
+                builder.append("文件").append(fileNames[i]).append("删除失败，错误信息：").append(status.data.error).append(";");
+            }
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("success", success);
+        map.put("fialure", fialure);
+        map.put("msg", builder.toString());
+        return map;
+    }
+
     /**
      * 获取文件url
      * @param fileName 文件名称

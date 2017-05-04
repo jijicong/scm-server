@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.trc.util.ResultUtil;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
-import java.util.Calendar;
 
 /**
  * Created by hzwdx on 2017/5/3.
@@ -24,8 +22,6 @@ public class QiniuResource {
 
     //逗号
     private static final String DOU_HAO = ",";
-    //文件名称标志字符
-    public static final String FILE_FLAG = ".";
 
     @Autowired
     private IQinniuBiz qinniuBiz;
@@ -41,10 +37,9 @@ public class QiniuResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult upload(@FormDataParam("Filedata") InputStream fileInputStream,
-                            @FormDataParam("Filedata") FormDataContentDisposition disposition, @PathParam("module") String module) throws Exception {
-        String imageName = String.format("%s/%s", module, Calendar.getInstance().getTimeInMillis()
-                + disposition.getFileName());
-        return ResultUtil.createSucssAppResult("上传成功",qinniuBiz.upload(fileInputStream, imageName, module));
+                            @FormDataParam("Filedata") FormDataContentDisposition disposition,
+                            @PathParam("module") String module) throws Exception {
+        return ResultUtil.createSucssAppResult("上传成功",qinniuBiz.upload(fileInputStream, disposition.getFileName(), module));
     }
 
     @GET
@@ -81,11 +76,18 @@ public class QiniuResource {
         return ResultUtil.createSucssAppResult("批量获取url成功",qinniuBiz.batchGetFileUrl(fileNames2));
     }
 
-    private void checkFileName(String fileName){
-
+    /**
+     * 批量获取多个文件的url
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.QinNiu.DELETE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult delete(@QueryParam("fileNames") String fileNames) throws Exception {
+        String[] fileNames2 = fileNames.split(DOU_HAO);
+        return ResultUtil.createSucssAppResult("删除成功",qinniuBiz.batchDelete(fileNames2));
     }
-
-
 
 
 }
