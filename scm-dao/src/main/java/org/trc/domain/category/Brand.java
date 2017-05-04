@@ -4,15 +4,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
 
 
 /**
  * Created by hzqph on 2017/4/27.
  */
+@Table(name = "brand")
 public class Brand extends BaseDO {
         @FormParam("id")
         @Id
@@ -34,6 +33,8 @@ public class Brand extends BaseDO {
         private Integer sort;//序号
         @FormParam("lastEditOperator")
         private String lastEditOperator;//最新更新人
+        @Transient
+        private int num;//
 
     public Long getId() {
         return id;
@@ -105,6 +106,14 @@ public class Brand extends BaseDO {
 
     public void setLastEditOperator(String lastEditOperator) {
         this.lastEditOperator = lastEditOperator;
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
     }
 
     @Override
