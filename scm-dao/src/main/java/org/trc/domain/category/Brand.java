@@ -21,17 +21,17 @@ public class Brand extends BaseDO {
         private Long id;//主键ID
         @FormParam("name")
         @NotEmpty
-        @Length(max = 50, message = "品牌名称不超过50个字符")
+        @Length(max = 50, message = "品牌名称不得超过50个字符")
         private String name;//品牌名称
         @FormParam("brandCode")
         private String brandCode;//品牌编码
         @FormParam("source")
         private String source;//来源:scm-系统自行添加，trc-泰然城导入
         @FormParam("alise")
-        @Length(max = 50, message = "品牌别名不超过50个字符")
+        @Length(max = 50, message = "品牌别名不得超过50个字符")
         private String alise;//品牌别名
         @FormParam("webUrl")
-        @Length(max = 50, message = "品牌网址不超过50个字符")
+        @Length(max = 50, message = "品牌网址不得超过50个字符")
         private String webUrl;//品牌网址
         @FormParam("logo")
         private String logo;//品牌LOGO的图片路径

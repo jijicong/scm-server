@@ -14,7 +14,7 @@ import org.trc.enums.ValidEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.BrandForm;
-import org.trc.service.IBrandService;
+import org.trc.service.category.IBrandService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;

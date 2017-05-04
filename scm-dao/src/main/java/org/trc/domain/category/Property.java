@@ -1,20 +1,37 @@
-package org.trc.domain.classify;
+package org.trc.domain.category;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.ws.rs.FormParam;
+
+@Table(name = "property")
 public class Property extends BaseDO {
-
+    @FormParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
-
-    private String description;
-
-    private String typeCode;
-
-    private String valueType;
-
-    private Integer sort;
+    @NotEmpty
+    @FormParam("name")
+    @Length(max=10,message="属性名称不得超过10个字符")
+    private String name;//属性名称
+    @Length(max=10,message="属性描述不得超过20个字符")
+    @FormParam("description")
+    private String description;//属性描述
+    @NotEmpty
+    @FormParam("typeCode")
+    private String typeCode;//属性类型编码
+    @NotEmpty
+    @FormParam("valueType")
+    private String valueType;//属性值类型
+    @NotEmpty
+    @FormParam("sort")
+    private Integer sort;//排序
 
     public Long getId() {
         return id;
