@@ -1,17 +1,29 @@
-package org.trc.domain.classify;
+package org.trc.domain.category;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.ws.rs.FormParam;
+
+@Table(name="property_value ")
 public class PropertyValue extends BaseDO {
-
+    @FormParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("propertyId")
     private Long propertyId;
-
+    @NotEmpty
+    @FormParam("value")
     private String value;
-
+    @FormParam("picture")
     private String picture;
-
+    @NotEmpty
+    @FormParam("sort")
     private Integer sort;
 
     public Long getId() {

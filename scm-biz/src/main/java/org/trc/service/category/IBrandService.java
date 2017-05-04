@@ -1,6 +1,7 @@
-package org.trc.service;
+package org.trc.service.category;
 
 import org.trc.domain.category.Brand;
+import org.trc.service.IBaseService;
 
 /**
  * Created by hzqph on 2017/4/27.

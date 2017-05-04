@@ -14,13 +14,14 @@ import org.trc.enums.ValidEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.BrandForm;
-import org.trc.service.IBrandService;
+import org.trc.service.category.IBrandService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by hzqph on 2017/4/28.
@@ -51,7 +52,14 @@ public class CategoryBiz implements ICategoryBiz {
         }
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
-        return brandService.pagination(example,page,queryModel);
+        Pagenation<Brand> pagenation=brandService.pagination(example,page,queryModel);
+        List<Brand> list=pagenation.getResult();
+        int num=1;
+        for (Brand brand:list) {
+            brand.setNum(num++);
+        }
+        pagenation.setResult(list);
+        return pagenation;
     }
 
     @Override

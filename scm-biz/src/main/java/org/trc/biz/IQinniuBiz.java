@@ -3,19 +3,21 @@ package org.trc.biz;
 import com.qiniu.storage.model.DefaultPutRet;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hzwdx on 2017/5/3.
  */
 public interface IQinniuBiz {
     /**
-     *上传
+     * 上传
      * @param inputStream 文件流
      * @param fileName 文件名称
-     * @return
+     * @param module 系统模块
+     * @return String 文件路径
      * @throws Exception
      */
-    public DefaultPutRet upload(InputStream inputStream, String fileName) throws Exception;
+    public String upload(InputStream inputStream, String fileName, String module) throws Exception;
 
     /**
      * 下载
@@ -35,13 +37,19 @@ public interface IQinniuBiz {
     public String getThumbnail(String fileName, int width, int height) throws Exception;
 
     /**
-     *获取缩略图地址列表
-     * @param fileNames 文件名，多个用逗号","分割
-     * @param width 缩略图的宽
-     * @param height 缩略图的高
+     * 批量获取多个文件的url
+     * @param fileNames 文件名称数组
      * @return
      * @throws Exception
      */
-    public List<String> getThumbnails(String fileNames, int width, int height) throws Exception;
+    public Map<String, String>  batchGetFileUrl(String[] fileNames) throws Exception;
+
+    /**
+     * 批量删除
+     * @param fileNames
+     * @return map,{success:成功数,fialure:失败数,msg:错误信息}
+     * @throws Exception
+     */
+    public Map<String, Object> batchDelete(String[] fileNames) throws Exception;
 
 }
