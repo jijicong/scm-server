@@ -126,4 +126,34 @@ public class SupplyConstants {
     }
 
 
+    /**
+     * 供应商管理
+     */
+    public static final class Supply {
+        //根路径
+        public static final String ROOT = "supply";
+
+        /**
+         * 下拉列表
+         */
+        public static final class SelectList {
+            //是否启用
+            public static final String VALID_LIST = "validList";
+        }
+
+        /**
+         * 字典类型
+         */
+        public static final class Supplier {
+            //字典类型分页查询路径
+            public static final String DICT_TYPE_PAGE = "supplierPage";
+            //字典类型列表查询路径
+            public static final String DICT_TYPE_LIST = "suppliers";
+            //字典类型路径
+            public static final String DICT_TYPE = "supplier";
+        }
+    }
+
+
+
 }
