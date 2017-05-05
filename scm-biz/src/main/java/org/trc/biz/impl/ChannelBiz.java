@@ -4,15 +4,17 @@ import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.trc.biz.ISystemBiz;
+import org.trc.biz.IChannelBiz;
 import org.trc.domain.System.Channel;
-import org.trc.domain.dict.DictType;
+import org.trc.domain.System.Warehouse;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.ChannelForm;
+import org.trc.form.WarehouseForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.System.IWarehouseService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -28,16 +30,16 @@ import java.util.List;
  * Created by sone on 2017/5/2.
  */
 @Service
-public class SystemBiz implements ISystemBiz{
+public class ChannelBiz implements IChannelBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(SystemBiz.class);
+    private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
 
     @Resource
     private IChannelService channelService;
 
     @Override
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) throws Exception {
-        Example example = new Example(DictType.class);
+        Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
         if(StringUtil.isNotEmpty(form.getName())) {
             criteria.andLike("name", "%" + form.getName() + "%");
@@ -47,11 +49,7 @@ public class SystemBiz implements ISystemBiz{
         }
         example.orderBy("updateTime").desc();
         Pagenation<Channel> pagenation = channelService.pagination(example,page,form);
-        List<Channel> channels = pagenation.getResult();
-        int sort=0; //排序号
-        for (Channel channel : channels){
-            channel.setSort(++sort);
-        }
+
         return pagenation;
     }
 
@@ -77,10 +75,7 @@ public class SystemBiz implements ISystemBiz{
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
         //查询当前的序列位置
-        int dataLen = channelService.select(new Channel()).size();
-        if(dataLen>999){
-            throw new RuntimeException("程序需要升级");
-        }
+        int dataLen = channelService.select(new Channel()).size();//TODO
         channel.setCode(serialUtil.getMoveOrderNo("QD",3,dataLen));//TODO
         ParamsUtil.setBaseDO(channel);
         int count=0;
@@ -132,7 +127,7 @@ public class SystemBiz implements ISystemBiz{
     }
 
     @Override
-    public int updateState(Channel channel) throws Exception {
+    public int updateChannelState(Channel channel) throws Exception {
         Long id = channel.getId();
         String state = channel.getIsValid();
         int stateInt = Integer.parseInt(state);
