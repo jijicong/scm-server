@@ -49,7 +49,7 @@ public class ExceptionUtil {
 			} else if (StringUtils.equals(exceptionName, ConfigException.class.getSimpleName())) {
 				ConfigException configException = (ConfigException)e;
 				exceptionEnum = configException.getExceptionEnum();
-			} else if (StringUtils.equals(exceptionName, FileException.class.getSimpleName())) {
+			}else if (StringUtils.equals(exceptionName, FileException.class.getSimpleName())) {
 				FileException fileException = (FileException)e;
 				exceptionEnum = fileException.getExceptionEnum();
 			}else if (StringUtils.equals(exceptionName, DuplicateKeyException.class.getSimpleName())) {

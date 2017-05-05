@@ -76,23 +76,30 @@ public class SupplyConstants {
 
     }
     /**
-     * 系统管理：仓库，渠道，授权
+     * 渠道管理
      */
-    public static final class System {
+    public static final class Channel {
         //根路径
         public static final String ROOT = "system";
-
-        /**
-         * 渠道管理
-         */
-        public static final class Channel {
-            //渠道分页查询
-            public static final String CHANNEL_PAGE = "channelPage";
-            //渠道名查询
-            public static final String CHANNEL = "channel";
-            //状态的修改
-            public static final String UPDATE_STATE = "channel/updateState";
-        }
+        //渠道分页查询
+        public static final String CHANNEL_PAGE = "channelPage";
+        //渠道名查询
+        public static final String CHANNEL = "channel";
+        //状态的修改
+        public static final String UPDATE_STATE = "channel/updateState";
+    }
+    /**
+     * 仓库管理
+     */
+    public static final class Warehouse{
+        //根路径
+        public static final String ROOT = "system";
+        //仓库分页查询
+        public static final String WAREHOUSE_PAGE = "warehousePage";
+        //仓库名查询
+        public static final String WAREHOUSE = "warehouse";
+        //状态的修改
+        public static final String UPDATE_STATE = "warehouse/updateState";
     }
     /**
      *七牛
@@ -124,6 +131,36 @@ public class SupplyConstants {
         public static final String URLS = "urls";
 
     }
+
+
+    /**
+     * 供应商管理
+     */
+    public static final class Supply {
+        //根路径
+        public static final String ROOT = "supply";
+
+        /**
+         * 下拉列表
+         */
+        public static final class SelectList {
+            //是否启用
+            public static final String VALID_LIST = "validList";
+        }
+
+        /**
+         * 字典类型
+         */
+        public static final class Supplier {
+            //字典类型分页查询路径
+            public static final String DICT_TYPE_PAGE = "supplierPage";
+            //字典类型列表查询路径
+            public static final String DICT_TYPE_LIST = "suppliers";
+            //字典类型路径
+            public static final String DICT_TYPE = "supplier";
+        }
+    }
+
 
 
 }

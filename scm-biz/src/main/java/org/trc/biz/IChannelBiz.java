@@ -7,7 +7,8 @@ import org.trc.util.Pagenation;
 /**
  * Created by sone on 2017/5/2.
  */
-public interface ISystemBiz {
+public interface IChannelBiz {
+
     /**
      * 分页查询渠道信息
      * @param form  渠道查询条件
@@ -46,10 +47,11 @@ public interface ISystemBiz {
     public Channel findChannelById(Long id) throws Exception;
 
     /**
-     * 状态修改
+     * 渠道状态修改
      * @param channel
      * @return
      * @throws Exception
      */
-    public int updateState(Channel channel) throws Exception;
+    public int updateChannelState(Channel channel) throws Exception;
+
 }
