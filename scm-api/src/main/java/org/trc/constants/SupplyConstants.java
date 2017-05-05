@@ -112,10 +112,12 @@ public class SupplyConstants {
 
         //根路径
         public static final String ROOT = "qinniu";
-        //上传路径
+        //上传
         public static final String UPLOAD = "upload";
-        //下载路径
+        //下载
         public static final String DOWNLOAD = "download";
+        //删除
+        public static final String DELETE = "delete";
         //缩略图
         public static final String THUMBNAIL = "thumbnail";
         //批量获取url

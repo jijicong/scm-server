@@ -1,6 +1,8 @@
 package org.trc.biz.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.qiniu.storage.model.BatchStatus;
 import com.qiniu.storage.model.DefaultPutRet;
 import org.apache.commons.lang.StringUtils;
@@ -13,9 +15,12 @@ import org.trc.config.BaseThumbnailSize;
 import org.trc.config.PropertyThumbnailSize;
 import org.trc.constants.SupplyConstants;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.PicTypeEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.FileException;
+import org.trc.exception.ParamValidException;
 import org.trc.service.IQinniuService;
+import org.trc.service.impl.QinniuService;
 import org.trc.util.CommonUtil;
 
 import java.io.InputStream;
@@ -36,6 +41,13 @@ public class QinniuBiz implements IQinniuBiz{
 
     @Override
     public String upload(InputStream inputStream, String fileName, String module) throws Exception {
+        //文件名称检查
+        fileTypeCheck(fileName);
+        if(null == inputStream){
+            String msg = String.format("%s%s%s", "上传文件", fileName, "为空");
+            log.error(msg);
+            throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, msg);
+        }
         DefaultPutRet defaultPutRet = null;
         try{
             /**
@@ -60,6 +72,8 @@ public class QinniuBiz implements IQinniuBiz{
 
     @Override
     public String download(String fileName) throws Exception {
+        //文件名称检查
+        fileTypeCheck(fileName);
         String url = "";
         try{
             url = qinniuService.download(fileName);
@@ -73,6 +87,8 @@ public class QinniuBiz implements IQinniuBiz{
 
     @Override
     public String getThumbnail(String fileName, int width, int height) throws Exception {
+        //文件名称检查
+        fileTypeCheck(fileName);
         String url = "";
         try{
             url = qinniuService.getThumbnail(fileName, width, height);
@@ -88,4 +104,41 @@ public class QinniuBiz implements IQinniuBiz{
     public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception {
         return qinniuService.batchGetFileUrl(fileNames);
     }
+
+    @Override
+    public Map<String, Object> batchDelete(String[] fileNames) throws Exception {
+        return qinniuService.batchDelete(fileNames);
+    }
+
+
+    /**
+     * 文件名称检查
+     * @param fileName
+     */
+    private void fileTypeCheck(String fileName){
+        if(StringUtils.isEmpty(fileName)){
+            throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, "文件名称为空");
+        }
+        if(fileName.indexOf(QinniuService.FILE_FLAG) == -1){
+            String msg = String.format("%s%s%s", "文件名", fileName, "名称错误");
+            log.error(msg);
+            throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, msg);
+        }
+        String[] tmps = fileName.split("\\"+QinniuService.FILE_FLAG);
+        JSONArray jsonArray = PicTypeEnum.toJSONArray();
+        boolean flag = false;
+        for(Object obj : jsonArray){
+            JSONObject json = (JSONObject)obj;
+            if(StringUtils.equals(json.getString("code"), tmps[1].toUpperCase())){
+                flag = true;
+                break;
+            }
+        }
+        if(!flag){
+            String msg = String.format("%s%s%s", "文件名", fileName, "不是允许的图片格式");
+            log.error(msg);
+            throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, msg);
+        }
+    }
+
 }

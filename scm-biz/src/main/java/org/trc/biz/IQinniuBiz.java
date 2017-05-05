@@ -44,4 +44,12 @@ public interface IQinniuBiz {
      */
     public Map<String, String>  batchGetFileUrl(String[] fileNames) throws Exception;
 
+    /**
+     * 批量删除
+     * @param fileNames
+     * @return map,{success:成功数,fialure:失败数,msg:错误信息}
+     * @throws Exception
+     */
+    public Map<String, Object> batchDelete(String[] fileNames) throws Exception;
+
 }
