@@ -4,10 +4,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
 
 @Table(name = "property")
@@ -32,7 +29,8 @@ public class Property extends BaseDO {
     @NotEmpty
     @FormParam("sort")
     private Integer sort;//排序
-
+    @Transient
+    private int num;//序号
     public Long getId() {
         return id;
     }
@@ -81,4 +79,11 @@ public class Property extends BaseDO {
         this.sort = sort;
     }
 
+    public int getNum() {
+        return num;
+    }
+
+    public void setNum(int num) {
+        this.num = num;
+    }
 }

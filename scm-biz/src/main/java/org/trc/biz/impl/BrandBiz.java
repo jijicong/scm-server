@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.ICategoryBiz;
+import org.trc.biz.IBrandBiz;
 import org.trc.domain.category.Brand;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
@@ -15,6 +15,7 @@ import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.BrandForm;
 import org.trc.service.category.IBrandService;
+import org.trc.service.category.IPropertyService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -26,14 +27,15 @@ import java.util.List;
 /**
  * Created by hzqph on 2017/4/28.
  */
-@Service("categoryBiz")
-public class CategoryBiz implements ICategoryBiz {
+@Service("brandBiz")
+public class BrandBiz implements IBrandBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(CategoryBiz.class);
+    private final static Logger log = LoggerFactory.getLogger(BrandBiz.class);
 
     @Autowired
     private IBrandService brandService;
-
+    @Autowired
+    private IPropertyService propertyService;
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example=new Example(Brand.class);
@@ -138,6 +140,5 @@ public class CategoryBiz implements ICategoryBiz {
         }
         return count;
     }
-
 
 }

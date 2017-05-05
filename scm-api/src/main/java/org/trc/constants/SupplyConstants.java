@@ -65,13 +65,13 @@ public class SupplyConstants {
          */
         public static final class Brand{
             //字典分页查询路径
-            public static final String Brand_PAGE = "brandPage";
+            public static final String BRAND_PAGE = "brandPage";
             //字典列表查询路径
-            public static final String Brand_LIST = "brands";
+            public static final String BRAND_LIST = "brands";
             //字典路径
-            public static final String Brand = "brand";
+            public static final String BRAND = "brand";
 
-            public static final String Brand_Status="brand/state";
+            public static final String BRAND_STATE ="brand/state";
         }
 
     }

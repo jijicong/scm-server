@@ -1,13 +1,15 @@
 package org.trc.biz;
 
 import org.trc.domain.category.Brand;
+import org.trc.domain.category.Property;
 import org.trc.form.BrandForm;
+import org.trc.form.PropertyForm;
 import org.trc.util.Pagenation;
 
 /**
  * Created by hzqph on 2017/4/27.
  */
-public interface ICategoryBiz {
+public interface IBrandBiz {
 
     /**
      * 品牌分页
@@ -50,4 +52,5 @@ public interface ICategoryBiz {
      * @throws Exception
      */
     public int updateBrandStatus(Brand brand)throws Exception;
+
 }
