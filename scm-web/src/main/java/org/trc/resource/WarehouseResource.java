@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
-import org.trc.form.WarehouseForm;
+import org.trc.form.system.WarehouseForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -44,6 +44,20 @@ public class WarehouseResource {
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveChannel(@BeanParam Warehouse warehouse) throws Exception{
         return  ResultUtil.createSucssAppResult("保存成功",warehouseBiz.saveWarehouse(warehouse));
+    }
+    //仓库修改
+    @PUT
+    @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateChannel(@BeanParam Warehouse warehouse, @PathParam("id") Long id) throws  Exception{
+        return  ResultUtil.createSucssAppResult("修改仓库信息成功",warehouseBiz.updateWarehouse(warehouse,id));
+    }
+    //根据id查询
+    @GET
+    @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Warehouse> findDictTypeById(@PathParam("id") Long id) throws Exception{
+        return ResultUtil.createSucssAppResult("查询渠道成功", warehouseBiz.findWarehouseById(id));
     }
     //仓库状态的修改
     @POST

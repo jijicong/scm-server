@@ -6,15 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.biz.IChannelBiz;
 import org.trc.domain.System.Channel;
-import org.trc.domain.System.Warehouse;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.ChannelForm;
-import org.trc.form.WarehouseForm;
+import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
-import org.trc.service.System.IWarehouseService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -24,7 +21,6 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by sone on 2017/5/2.

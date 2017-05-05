@@ -1,7 +1,7 @@
 package org.trc.biz;
 
 import org.trc.domain.System.Channel;
-import org.trc.form.ChannelForm;
+import org.trc.form.system.ChannelForm;
 import org.trc.util.Pagenation;
 
 /**

@@ -1,7 +1,7 @@
 package org.trc.biz;
 
 import org.trc.domain.System.Warehouse;
-import org.trc.form.WarehouseForm;
+import org.trc.form.system.WarehouseForm;
 import org.trc.util.Pagenation;
 
 /**
@@ -30,6 +30,21 @@ public interface IWarehouseBiz {
      * @return  分页信息及当前页面的数据
      */
     Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) throws Exception;
+    /**
+     * 更新仓库
+     * @param warehouse 仓库信息
+     * @param id 主键
+     * @return 整数改变
+     * @throws Exception
+     */
+    public int updateWarehouse(Warehouse warehouse,Long id) throws Exception;
+    /**
+     * 根据id查询仓库
+     * @param id 主键
+     * @return 仓库实例
+     * @throws Exception
+     */
+    public Warehouse findWarehouseById(Long id) throws Exception;
     /**
      * 仓库状态修改
      * @param warehouse

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
-import org.trc.form.ChannelForm;
+import org.trc.form.system.ChannelForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;

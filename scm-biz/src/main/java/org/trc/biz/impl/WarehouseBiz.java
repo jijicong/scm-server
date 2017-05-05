@@ -10,8 +10,7 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.WarehouseForm;
-import org.trc.service.System.IChannelService;
+import org.trc.form.system.WarehouseForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
@@ -21,6 +20,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * Created by sone on 2017/5/5.
@@ -105,6 +105,30 @@ public class WarehouseBiz implements IWarehouseBiz{
             String msg = CommonUtil.joinStr("修改仓库",JSON.toJSONString(warehouse),"数据库操作失败").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
+        }
+        return count;
+    }
+
+    @Override
+    public Warehouse findWarehouseById(Long id) throws Exception {
+        return null;
+    }
+
+    @Override
+    public int updateWarehouse(Warehouse warehouse, Long id) throws Exception {
+        if(null == id){
+            String msg = CommonUtil.joinStr("修改仓库参数ID为空").toString();
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        int count = 0;
+        warehouse.setId(id);
+        warehouse.setUpdateTime(new Date());
+        count = warehouseService.updateByPrimaryKeySelective(warehouse);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改仓库",JSON.toJSONString(warehouse),"数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
         return count;
     }

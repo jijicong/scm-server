@@ -1,4 +1,4 @@
-package org.trc.service.System.impl;
+package org.trc.service.impl.system;
 
 import org.springframework.stereotype.Service;
 import org.trc.domain.System.Warehouse;
