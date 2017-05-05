@@ -1,4 +1,4 @@
-package org.trc.service.category.impl;
+package org.trc.service.impl.category;
 
 import org.trc.domain.category.PropertyValue;
 import org.trc.service.category.IPropertyValueService;

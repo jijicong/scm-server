@@ -6,11 +6,8 @@ import org.trc.biz.IPropertyBiz;
 import org.trc.domain.category.Property;
 import org.trc.form.PropertyForm;
 import org.trc.service.category.IPropertyService;
-import org.trc.service.category.impl.PropertyService;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
-
-import java.util.List;
 
 /**
  * Created by hzqph on 2017/5/5.
