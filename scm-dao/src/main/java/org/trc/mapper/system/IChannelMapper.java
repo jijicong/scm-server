@@ -4,7 +4,7 @@ import org.trc.domain.System.Channel;
 import org.trc.util.BaseMapper;
 
 /**
- * Created by hzdaa on 2017/5/2.
+ * Created by sone on 2017/5/2.
  */
 public interface IChannelMapper extends BaseMapper<Channel>{
 }
