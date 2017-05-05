@@ -54,14 +54,7 @@ public class BrandBiz implements IBrandBiz {
         }
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
-        Pagenation<Brand> pagenation=brandService.pagination(example,page,queryModel);
-        List<Brand> list=pagenation.getResult();
-        int num=1;
-        for (Brand brand:list) {
-            brand.setNum(num++);
-        }
-        pagenation.setResult(list);
-        return pagenation;
+        return brandService.pagination(example,page,queryModel);
     }
 
     @Override

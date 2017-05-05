@@ -29,8 +29,6 @@ public class Property extends BaseDO {
     @NotEmpty
     @FormParam("sort")
     private Integer sort;//排序
-    @Transient
-    private int num;//序号
     public Long getId() {
         return id;
     }
@@ -79,11 +77,4 @@ public class Property extends BaseDO {
         this.sort = sort;
     }
 
-    public int getNum() {
-        return num;
-    }
-
-    public void setNum(int num) {
-        this.num = num;
-    }
 }

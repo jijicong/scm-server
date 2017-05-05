@@ -59,7 +59,7 @@ public class SupplyConstants {
     public static final class Category{
 
         //根路径
-        public static final String ROOT = "catagory";
+        public static final String ROOT = "category";
         /**
          * 品牌管理
          */

@@ -33,13 +33,6 @@ public class PropertyBiz implements IPropertyBiz {
         }
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
-        Pagenation<Property> pagenation=propertyService.pagination(example,page,queryModel);
-        List<Property> list=pagenation.getResult();
-        int num=1;
-        for (Property property:list) {
-            property.setNum(num++);
-        }
-        pagenation.setResult(list);
-        return pagenation;
+        return propertyService.pagination(example,page,queryModel);
     }
 }

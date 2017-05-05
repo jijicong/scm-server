@@ -3,6 +3,7 @@ package org.trc.resource;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.IBrandBiz;
 import org.trc.biz.impl.BrandBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
@@ -25,7 +26,7 @@ import java.util.UUID;
 @Path(SupplyConstants.Category.ROOT)
 public class BrandResource {
     @Autowired
-    private BrandBiz brandBiz;
+    private IBrandBiz brandBiz;
 
     @GET
     @Path(SupplyConstants.Category.Brand.BRAND_PAGE)
