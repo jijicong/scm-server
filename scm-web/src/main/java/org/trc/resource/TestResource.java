@@ -3,7 +3,7 @@ package org.trc.resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
-import org.trc.form.DictForm;
+import org.trc.form.config.DictForm;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;

@@ -1,31 +1,25 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.qinniu;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.qiniu.storage.model.BatchStatus;
 import com.qiniu.storage.model.DefaultPutRet;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.IQinniuBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.config.BaseThumbnailSize;
 import org.trc.config.PropertyThumbnailSize;
 import org.trc.constants.SupplyConstants;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.PicTypeEnum;
-import org.trc.exception.ConfigException;
 import org.trc.exception.FileException;
-import org.trc.exception.ParamValidException;
 import org.trc.service.IQinniuService;
 import org.trc.service.impl.QinniuService;
 import org.trc.util.CommonUtil;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**

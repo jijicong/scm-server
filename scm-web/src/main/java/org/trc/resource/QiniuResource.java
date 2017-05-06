@@ -4,7 +4,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.IQinniuBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;

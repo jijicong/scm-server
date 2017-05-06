@@ -1,4 +1,4 @@
-package org.trc.biz;
+package org.trc.biz.qinniu;
 
 import com.qiniu.storage.model.DefaultPutRet;
 import java.io.InputStream;

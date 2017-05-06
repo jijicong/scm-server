@@ -1,4 +1,4 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.config;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.IConfigBiz;
+import org.trc.biz.config.IConfigBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
 import org.trc.enums.CommonExceptionEnum;
@@ -15,8 +15,8 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.DictForm;
-import org.trc.form.DictTypeForm;
+import org.trc.form.config.DictForm;
+import org.trc.form.config.DictTypeForm;
 import org.trc.service.config.IDictService;
 import org.trc.service.config.IDictTypeService;
 import org.trc.util.CommonUtil;
@@ -25,6 +25,7 @@ import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class ConfigBiz implements IConfigBiz {
         if(count == 0){
             String msg = CommonUtil.joinStr("保存字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_SAVE_EXCEPTION, msg);
         }
         return count;
     }
@@ -94,7 +95,7 @@ public class ConfigBiz implements IConfigBiz {
         }
         int count = 0;
         dictType.setId(id);
-        dictType.setUpdateTime(new Date());
+        dictType.setUpdateTime(Calendar.getInstance().getTime());
         count = dictTypeService.updateByPrimaryKeySelective(dictType);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
@@ -146,7 +147,7 @@ public class ConfigBiz implements IConfigBiz {
         tmp.setId(id);
         tmp = dictTypeService.selectOne(tmp);
         tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
-        tmp.setUpdateTime(new Date());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = dictTypeService.updateByPrimaryKey(tmp);
         if(count == 0) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]删除字典类型失败").toString();
@@ -189,7 +190,7 @@ public class ConfigBiz implements IConfigBiz {
         int count = 0;
         if(null != dict.getId()){
             //修改
-            dict.setUpdateTime(new Date());
+            dict.setUpdateTime(Calendar.getInstance().getTime());
             count = dictService.updateByPrimaryKeySelective(dict);
         }else{
             //新增
@@ -199,7 +200,7 @@ public class ConfigBiz implements IConfigBiz {
         if(count == 0){
             String msg = CommonUtil.joinStr("保存字典",JSON.toJSONString(dict),"到数据库失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_SAVE_EXCEPTION,msg);
         }
         return count;
     }
@@ -213,7 +214,7 @@ public class ConfigBiz implements IConfigBiz {
         }
         int count = 0;
         dict.setId(id);
-        dict.setUpdateTime(new Date());
+        dict.setUpdateTime(Calendar.getInstance().getTime());
         count = dictService.updateByPrimaryKeySelective(dict);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改字典",JSON.toJSONString(dict),"数据库操作失败").toString();
@@ -265,7 +266,7 @@ public class ConfigBiz implements IConfigBiz {
         Dict tmp = new Dict();
         tmp.setId(id);
         tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
-        tmp.setUpdateTime(new Date());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = dictService.updateByPrimaryKeySelective(tmp);
         if(count == 0) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]删除字典失败").toString();

@@ -1,9 +1,9 @@
-package org.trc.biz;
+package org.trc.biz.config;
 
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
-import org.trc.form.DictForm;
-import org.trc.form.DictTypeForm;
+import org.trc.form.config.DictForm;
+import org.trc.form.config.DictTypeForm;
 import org.trc.util.Pagenation;
 
 import java.util.List;
