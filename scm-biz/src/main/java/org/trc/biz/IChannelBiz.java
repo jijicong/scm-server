@@ -4,6 +4,8 @@ import org.trc.domain.System.Channel;
 import org.trc.form.system.ChannelForm;
 import org.trc.util.Pagenation;
 
+import java.util.List;
+
 /**
  * Created by sone on 2017/5/2.
  */
@@ -53,5 +55,13 @@ public interface IChannelBiz {
      * @throws Exception
      */
     public int updateChannelState(Channel channel) throws Exception;
+
+    /**
+     * 查询渠道列表
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    public List<Channel> channelList(ChannelForm form) throws Exception;
 
 }

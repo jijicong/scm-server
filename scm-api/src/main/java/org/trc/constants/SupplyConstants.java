@@ -83,6 +83,8 @@ public class SupplyConstants {
         public static final String ROOT = "system";
         //渠道分页查询
         public static final String CHANNEL_PAGE = "channelPage";
+        //渠道列表
+        public static final String CHANNEL_LIST = "channels";
         //渠道名查询
         public static final String CHANNEL = "channel";
         //状态的修改

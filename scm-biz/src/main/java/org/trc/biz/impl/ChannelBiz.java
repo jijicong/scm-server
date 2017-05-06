@@ -1,13 +1,17 @@
 package org.trc.biz.impl;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.trc.biz.IChannelBiz;
 import org.trc.domain.System.Channel;
+import org.trc.domain.dict.Dict;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
@@ -21,6 +25,7 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/2.
@@ -146,5 +151,16 @@ public class ChannelBiz implements IChannelBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
         return count;
+    }
+
+    @Override
+    public List<Channel> channelList(ChannelForm form) throws Exception {
+        Channel channel = new Channel();
+        BeanUtils.copyProperties(form,channel);
+        if(StringUtils.isEmpty(form.getIsValid())){
+            channel.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }
+        channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return channelService.select(channel);
     }
 }
