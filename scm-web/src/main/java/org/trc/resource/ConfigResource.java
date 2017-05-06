@@ -130,11 +130,5 @@ public class ConfigResource {
         return ResultUtil.createSucssAppResult("删除字典成功", configBiz.deleteDictById(id));
     }
 
-    @GET
-    @Path(SupplyConstants.Config.SelectList.VALID_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryValidList(HttpServletRequest request){
-        return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
-    }
 
 }
