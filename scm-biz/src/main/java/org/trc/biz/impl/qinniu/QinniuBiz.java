@@ -46,7 +46,7 @@ public class QinniuBiz implements IQinniuBiz{
         try{
             /**
              * FIXME
-             */
+             *//*
             BaseThumbnailSize baseThumbnailSize = new BaseThumbnailSize();
             if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.PROPERTY)){//属性管理
                 baseThumbnailSize = new PropertyThumbnailSize();
@@ -54,7 +54,9 @@ public class QinniuBiz implements IQinniuBiz{
                 //baseThumbnailSize = new PropertyThumbnailSize();
             }else {
                 //
-            }
+            }*/
+            BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
+            fileName = module + "/" + fileName;
             defaultPutRet = qinniuService.upload(inputStream, fileName, baseThumbnailSize);
         }catch (Exception e){
             String msg = CommonUtil.joinStr("上传文件",fileName,"异常").toString();
@@ -100,8 +102,9 @@ public class QinniuBiz implements IQinniuBiz{
     }
 
     @Override
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception {
-        return qinniuService.batchDelete(fileNames);
+    public Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception {
+        BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
+        return qinniuService.batchDelete(fileNames, baseThumbnailSize);
     }
 
 
@@ -133,6 +136,21 @@ public class QinniuBiz implements IQinniuBiz{
             log.error(msg);
             throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, msg);
         }
+    }
+
+    private BaseThumbnailSize getBaseThumbnailSize(String module){
+        /**
+         * FIXME
+         */
+        BaseThumbnailSize baseThumbnailSize = new BaseThumbnailSize();
+        if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.PROPERTY)){//属性管理
+            baseThumbnailSize = new PropertyThumbnailSize();
+        }else if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.SUPPLY)){//供应商管理
+            //baseThumbnailSize = new PropertyThumbnailSize();
+        }else {
+            //
+        }
+        return baseThumbnailSize;
     }
 
 }

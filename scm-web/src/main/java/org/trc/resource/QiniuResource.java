@@ -6,12 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.form.UploadResponse;
 import org.trc.util.AppResult;
+import org.trc.util.CommonUtil;
 import org.trc.util.ResultUtil;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by hzwdx on 2017/5/3.
@@ -22,6 +28,10 @@ public class QiniuResource {
 
     //逗号
     private static final String DOU_HAO = ",";
+    //缩略图宽度
+    private static final int WIDTH = 150;
+    //缩略图高度
+    private static final int HEIGHT = 150;
 
     @Autowired
     private IQinniuBiz qinniuBiz;
@@ -39,7 +49,16 @@ public class QiniuResource {
     public AppResult upload(@FormDataParam("Filedata") InputStream fileInputStream,
                             @FormDataParam("Filedata") FormDataContentDisposition disposition,
                             @PathParam("module") String module) throws Exception {
-        return ResultUtil.createSucssAppResult("上传成功",qinniuBiz.upload(fileInputStream, disposition.getFileName(), module));
+        String key = qinniuBiz.upload(fileInputStream, disposition.getFileName(), module);
+        UploadResponse uploadResponse = new UploadResponse();
+        uploadResponse.setKey(key);
+        uploadResponse.setFileName(disposition.getFileName());
+        //获取图片缩略图url
+        String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
+        uploadResponse.setUrl(url);
+        List<UploadResponse> list = new ArrayList<UploadResponse>();
+        list.add(uploadResponse);
+        return ResultUtil.createSucssAppResult("上传成功",list);
     }
 
     @GET
@@ -82,11 +101,11 @@ public class QiniuResource {
      * @throws Exception
      */
     @GET
-    @Path(SupplyConstants.QinNiu.DELETE)
+    @Path(SupplyConstants.QinNiu.DELETE+"/{module}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult delete(@QueryParam("fileNames") String fileNames) throws Exception {
+    public AppResult delete(@QueryParam("fileNames") String fileNames, @PathParam("module") String module) throws Exception {
         String[] fileNames2 = fileNames.split(DOU_HAO);
-        return ResultUtil.createSucssAppResult("删除成功",qinniuBiz.batchDelete(fileNames2));
+        return ResultUtil.createSucssAppResult("删除成功",qinniuBiz.batchDelete(fileNames2, module));
     }
 
 

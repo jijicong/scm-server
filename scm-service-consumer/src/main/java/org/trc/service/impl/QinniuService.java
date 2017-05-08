@@ -96,9 +96,10 @@ public class QinniuService implements IQinniuService{
     }
 
     @Override
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception {
+    public Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception {
+        String[] newFileNames = getDeleteFileNames(fileNames, baseThumbnailSize);
         BucketManager.BatchOperations batchOperations = new BucketManager.BatchOperations();
-        batchOperations.addDeleteOp(qinniuForm.getBucket(), fileNames);
+        batchOperations.addDeleteOp(qinniuForm.getBucket(), newFileNames);
         Response response = getBucketManager().batch(batchOperations);
         BatchStatus[] batchStatusList = response.jsonToObject(BatchStatus[].class);
         StringBuilder builder = new StringBuilder();
@@ -119,6 +120,26 @@ public class QinniuService implements IQinniuService{
         map.put("fialure", fialure);
         map.put("msg", builder.toString());
         return map;
+    }
+
+    private String[] getDeleteFileNames(String[] fileNames, BaseThumbnailSize baseThumbnailSize){
+        List<String> fileList = new ArrayList<String>();
+        if(null != baseThumbnailSize){
+            for(String fileName : fileNames){
+                fileList.add(fileName);
+                String[] fileNameSplit = fileName.split("\\"+FILE_FLAG);
+                for(ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()){
+                    if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),size.getIsValid())){
+                        //缩略图名称
+                        String thumbnailName = String.format("%s_%s_%s%s%s", fileNameSplit[0], size.getWidth(), size.getHeight(), FILE_FLAG, fileNameSplit[1]);
+                        fileList.add(thumbnailName);
+                    }
+                }
+            }
+            return fileList.toArray(new String[fileList.size()]);
+        }else{
+            return fileNames;
+        }
     }
 
     /**
@@ -147,7 +168,6 @@ public class QinniuService implements IQinniuService{
      */
     private StringMap getPersistentOpfs(String bucket, String fileName, BaseThumbnailSize baseThumbnailSize){
         StringMap putPolicy = new StringMap();
-        //数据处理指令，支持多个指令
         String[] fileNames = fileName.split("\\"+FILE_FLAG);
         List<String> thumbnailCmds = new ArrayList<String>();
         for(ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()){

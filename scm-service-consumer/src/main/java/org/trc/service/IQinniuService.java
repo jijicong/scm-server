@@ -76,6 +76,6 @@ public interface IQinniuService {
      * @return map,{success:成功数,fialure:失败数,msg:错误信息}
      * @throws Exception
      */
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception;
+    public Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception;
 
 }

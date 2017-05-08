@@ -47,9 +47,10 @@ public interface IQinniuBiz {
     /**
      * 批量删除
      * @param fileNames
+     * @param  module 系统模块
      * @return map,{success:成功数,fialure:失败数,msg:错误信息}
      * @throws Exception
      */
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception;
+    public Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception;
 
 }
