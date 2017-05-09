@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.trc.config.BaseThumbnailSize;
 import org.trc.config.ThumbnailSize;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.form.FileUrl;
 import org.trc.form.QinniuForm;
 import org.trc.service.IQinniuService;
 
@@ -82,17 +83,20 @@ public class QinniuService implements IQinniuService{
     }
 
     @Override
-    public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+    public List<FileUrl> batchGetFileUrl(String[] fileNames) throws Exception {
+        List<FileUrl> fileUrls = new ArrayList<FileUrl>();
         String domainOfBucket = qinniuForm.getDomainOfBucket();
         String firstFileUrl = download(fileNames[0]);
         String[] firstFileUrlSplit = firstFileUrl.split("\\"+URL_PARAM_SPLIT);
         String tokenParam = firstFileUrlSplit[1];
         for(String fileName : fileNames){
             String encodedFileName = URLEncoder.encode(fileName, "utf-8");
-            map.put(fileName, String.format("%s/%s%s%s", domainOfBucket, encodedFileName, URL_PARAM_SPLIT, tokenParam));
+            FileUrl fileUrl = new FileUrl();
+            fileUrl.setFileKey(fileName);
+            fileUrl.setUrl(String.format("%s/%s%s%s", domainOfBucket, encodedFileName, URL_PARAM_SPLIT, tokenParam));
+            fileUrls.add(fileUrl);
         }
-        return map;
+        return fileUrls;
     }
 
     @Override

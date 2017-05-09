@@ -8,12 +8,9 @@ import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.form.UploadResponse;
 import org.trc.util.AppResult;
-import org.trc.util.CommonUtil;
 import org.trc.util.ResultUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -66,7 +63,7 @@ public class QiniuResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult download(@QueryParam("fileName") String fileName) throws Exception {
-       return ResultUtil.createSucssAppResult("获取缩略图成功", qinniuBiz.download(fileName));
+       return ResultUtil.createSucssAppResult("下载成功", qinniuBiz.download(fileName));
     }
 
     /**
@@ -90,9 +87,9 @@ public class QiniuResource {
     @GET
     @Path(SupplyConstants.QinNiu.URLS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult urls(@QueryParam("fileNames") String fileNames) throws Exception {
+    public AppResult urls(@QueryParam("fileNames") String fileNames, @QueryParam("thumbnail") String thumbnail) throws Exception {
         String[] fileNames2 = fileNames.split(DOU_HAO);
-        return ResultUtil.createSucssAppResult("批量获取url成功",qinniuBiz.batchGetFileUrl(fileNames2));
+        return ResultUtil.createSucssAppResult("批量获取url成功",qinniuBiz.batchGetFileUrl(fileNames2, thumbnail));
     }
 
     /**

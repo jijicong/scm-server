@@ -1,6 +1,7 @@
 package org.trc.biz.qinniu;
 
-import com.qiniu.storage.model.DefaultPutRet;
+import org.trc.form.FileUrl;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +40,11 @@ public interface IQinniuBiz {
     /**
      * 批量获取多个文件的url
      * @param fileNames 文件名称数组
+     * @param thumbnail 是否带缩略:0-否,1-是
      * @return
      * @throws Exception
      */
-    public Map<String, String>  batchGetFileUrl(String[] fileNames) throws Exception;
+    public List<FileUrl> batchGetFileUrl(String[] fileNames, String thumbnail) throws Exception;
 
     /**
      * 批量删除

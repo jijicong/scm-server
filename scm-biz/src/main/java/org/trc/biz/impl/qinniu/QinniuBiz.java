@@ -14,12 +14,16 @@ import org.trc.config.PropertyThumbnailSize;
 import org.trc.constants.SupplyConstants;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.PicTypeEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.FileException;
+import org.trc.form.FileUrl;
 import org.trc.service.IQinniuService;
 import org.trc.service.impl.QinniuService;
 import org.trc.util.CommonUtil;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +36,8 @@ public class QinniuBiz implements IQinniuBiz{
 
     @Autowired
     private IQinniuService qinniuService;
+    @Autowired
+    private BaseThumbnailSize baseThumbnailSize;
 
     @Override
     public String upload(InputStream inputStream, String fileName, String module) throws Exception {
@@ -44,17 +50,6 @@ public class QinniuBiz implements IQinniuBiz{
         }
         DefaultPutRet defaultPutRet = null;
         try{
-            /**
-             * FIXME
-             *//*
-            BaseThumbnailSize baseThumbnailSize = new BaseThumbnailSize();
-            if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.PROPERTY)){//属性管理
-                baseThumbnailSize = new PropertyThumbnailSize();
-            }else if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.SUPPLY)){//供应商管理
-                //baseThumbnailSize = new PropertyThumbnailSize();
-            }else {
-                //
-            }*/
             BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
             fileName = module + "/" + fileName;
             defaultPutRet = qinniuService.upload(inputStream, fileName, baseThumbnailSize);
@@ -97,8 +92,23 @@ public class QinniuBiz implements IQinniuBiz{
     }
 
     @Override
-    public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception {
-        return qinniuService.batchGetFileUrl(fileNames);
+    public List<FileUrl> batchGetFileUrl(String[] fileNames, String thumbnail) throws Exception {
+        List<String> files = new ArrayList<String>();
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), thumbnail)){
+            for(String fileName : fileNames){
+                String[] fileNameSplit = fileName.split("\\"+QinniuService.FILE_FLAG);
+                //缩略图名称
+                String thumbnailName = String.format("%s_%s_%s%s%s", fileNameSplit[0], baseThumbnailSize.getThumbnailSizes().get(0).getWidth(), baseThumbnailSize.getThumbnailSizes().get(0).getHeight(), QinniuService.FILE_FLAG, fileNameSplit[1]);
+                files.add(thumbnailName);
+            }
+            List<FileUrl> fileUrls = qinniuService.batchGetFileUrl(files.toArray(new String[files.size()]));
+            for(int i=0; i< fileUrls.size(); i++){
+                fileUrls.get(i).setFileKey(fileNames[i]);
+            }
+            return fileUrls;
+        }else{
+            return qinniuService.batchGetFileUrl(fileNames);
+        }
     }
 
     @Override
