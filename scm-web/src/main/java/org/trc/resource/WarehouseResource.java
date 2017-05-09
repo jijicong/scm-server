@@ -13,6 +13,7 @@ import org.trc.util.ResultUtil;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/4.
@@ -31,17 +32,6 @@ public class WarehouseResource {
         return warehouseBiz.warehousePage(form,page);
     }
 
-    @GET
-    @Path(SupplyConstants.Warehouse.PROVINCE_CITY)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<TreeNode> findProvinceCity() throws Exception{
-        /**
-         * 1.查询所有的省市信息
-         * 2.使用json对象转化
-         * 3.返回给前台
-         */
-        return ResultUtil.createSucssAppResult("查询省市成功",warehouseBiz.findProvinceCity());
-    }
     //根据仓库名查询渠道
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
@@ -65,13 +55,6 @@ public class WarehouseResource {
     public AppResult updateChannel(@BeanParam Warehouse warehouse, @PathParam("id") Long id) throws  Exception{
         return  ResultUtil.createSucssAppResult("修改仓库信息成功",warehouseBiz.updateWarehouse(warehouse,id));
     }
-    //根据id查询
-    @GET
-    @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Warehouse> findDictTypeById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("查询渠道成功", warehouseBiz.findWarehouseById(id));
-    }
     //仓库状态的修改
     @POST
     @Path(SupplyConstants.Warehouse.UPDATE_STATE)
@@ -79,5 +62,11 @@ public class WarehouseResource {
     public AppResult updateWarehouseState(@BeanParam Warehouse warehouse) throws Exception{
         return ResultUtil.createSucssAppResult("状态修改成功",warehouseBiz.updateWarehouseState(warehouse));
     }
-
+    //根据id查询
+    @GET
+    @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Warehouse> findWarehouseById(@PathParam("id") Long id) throws Exception{
+        return ResultUtil.createSucssAppResult("查询仓库成功", warehouseBiz.findWarehouseById(id));
+    }
 }

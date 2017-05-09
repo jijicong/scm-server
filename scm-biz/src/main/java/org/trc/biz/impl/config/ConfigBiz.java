@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
+import org.trc.domain.util.TreeNode;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -19,12 +20,14 @@ import org.trc.form.config.DictForm;
 import org.trc.form.config.DictTypeForm;
 import org.trc.service.config.IDictService;
 import org.trc.service.config.IDictTypeService;
+import org.trc.service.util.ILocationUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import javax.annotation.Resource;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -41,6 +44,8 @@ public class ConfigBiz implements IConfigBiz {
     private IDictTypeService dictTypeService;
     @Autowired
     private IDictService dictService;
+    @Resource
+    private ILocationUtilService locationUtilService;
 
     @Override
     public Pagenation<DictType> dictTypePage(DictTypeForm queryModel, Pagenation<DictType> page) throws Exception {
@@ -275,5 +280,8 @@ public class ConfigBiz implements IConfigBiz {
         }
         return count;
     }
-
+    @Override
+    public List<TreeNode> findProvinceCity() {
+        return locationUtilService.getTreeNodeFromLocation();
+    }
 }

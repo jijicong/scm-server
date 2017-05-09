@@ -2,6 +2,7 @@ package org.trc.biz.config;
 
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
+import org.trc.domain.util.TreeNode;
 import org.trc.form.config.DictForm;
 import org.trc.form.config.DictTypeForm;
 import org.trc.util.Pagenation;
@@ -118,4 +119,9 @@ public interface IConfigBiz {
      */
     public int deleteDictById(Long id) throws Exception;
 
+    /**
+     * 查询省市的集合
+     * @return
+     */
+    public List<TreeNode> findProvinceCity();
 }

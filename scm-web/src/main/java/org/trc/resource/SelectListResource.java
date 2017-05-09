@@ -7,6 +7,8 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.impl.config.ConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
+import org.trc.domain.util.TreeNode;
+import org.trc.enums.ClearanceEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
@@ -16,6 +18,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * 下拉列表资源
@@ -32,12 +35,14 @@ public class SelectListResource {
     private static final String SUPPLIER_NATURE = "supplierNature";
     //供应商类型字典类型编码
     private static final String SUPPLIER_TYPE = "supplierType";
+    //仓库类型字典类型编码
+    private static final String WAREHOUSE_TYPE="warehouseType";
 
 
     @GET
     @Path(SupplyConstants.Config.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryValidList(HttpServletRequest request){
+    public AppResult<JSONArray> queryValidList(){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
     }
 
@@ -54,6 +59,30 @@ public class SelectListResource {
     public AppResult<Dict> supplierType() throws Exception{
         return ResultUtil.createSucssAppResult("查询供应商性质成功", configBiz.findDictsByTypeNo(SUPPLIER_TYPE));
     }
+    //清关
+    @GET
+    @Path(SupplyConstants.Config.SelectList.IS_CUSTOM_CLEARANCE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> queryisClearanceList(){
+        return ResultUtil.createSucssAppResult("成功", ClearanceEnum.toJSONArray());
+    }
 
+    @GET
+    @Path(SupplyConstants.SelectList.WAREHOUSE_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> warehouseType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询仓库类型成功", configBiz.findDictsByTypeNo(WAREHOUSE_TYPE));
+    }
+    @GET
+    @Path(SupplyConstants.SelectList.PROVINCE_CITY)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<TreeNode> findProvinceCity() throws Exception{
+        /**
+         * 1.查询所有的省市信息
+         * 2.使用json对象转化
+         * 3.返回给前台
+         */
+        return configBiz.findProvinceCity();
+    }
 
 }

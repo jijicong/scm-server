@@ -5,16 +5,13 @@ import org.trc.domain.util.TreeNode;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.Pagenation;
 
+import java.util.List;
+
 /**
  * 仓库管理
  * Created by sone on 2017/5/5.
  */
 public interface IWarehouseBiz {
-    /**
-     * 查询省市
-     * @return 返回省市的json对象
-     */
-    public TreeNode findProvinceCity();
     /**
      * 仓库保存
      * @param warehouse 仓库信息

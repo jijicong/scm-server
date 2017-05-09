@@ -29,6 +29,8 @@ public class SupplyConstants {
         public static final class SelectList{
             //是否启用
             public static final String VALID_LIST = "validList";
+            //海外仓的是否支持清关
+            public static final String IS_CUSTOM_CLEARANCE="clearance";
         }
         /**
          * 字典类型
@@ -102,8 +104,6 @@ public class SupplyConstants {
         public static final String WAREHOUSE = "warehouse";
         //状态的修改
         public static final String UPDATE_STATE = "warehouse/updateState";
-        //省市
-        public static final String PROVINCE_CITY="province";
     }
     /**
      *七牛
@@ -170,8 +170,12 @@ public class SupplyConstants {
         public static final String SUPPLIER_NATURE = "supplierNature";
         //供应商类型
         public static final String SUPPLIER_TYPE= "supplierType";
-    }
+        //仓库类型字典类型编码
+        public static final String WAREHOUSE_TYPE="warehouseType";
+        //省市
+        public static final String PROVINCE_CITY="province";
 
+    }
 
 
 }

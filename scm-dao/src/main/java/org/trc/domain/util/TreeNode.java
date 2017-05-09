@@ -13,7 +13,16 @@ public class TreeNode implements Serializable{
             {"id":"121","text":"高青","leaf":true}*/
     private String id; //这里的id相当于Location中的code
     private String text;//Location中的 province city district
+    private boolean isleaf;
     private List<TreeNode> children;//子节点
+
+    public boolean isIsleaf() {
+        return isleaf;
+    }
+
+    public void setIsleaf(boolean isleaf) {
+        this.isleaf = isleaf;
+    }
 
     public String getId() {
         return id;

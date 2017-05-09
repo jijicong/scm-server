@@ -19,7 +19,6 @@ public class area implements Serializable {
     private String city;
     private String district;
     private Long parent;
-
     public area(){}
     public area(Long parent){
         this.parent=parent;

@@ -10,12 +10,12 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Created by hzdaa on 2017/5/6.
+ * Created by sone on 2017/5/6.
  */
 @Service
 public class LocationUtilService extends BaseService<area,Long> implements ILocationUtilService {
 
-    public TreeNode getTreeNodeFromLocation(){
+    public List<TreeNode> getTreeNodeFromLocation(){
          //1.获得location
         area area =new area();
         area.setId(1L);
@@ -91,6 +91,7 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
                 TreeNode treeNode=new TreeNode();
                 treeNode.setId(area1.getCode());
                 treeNode.setText(area1.getDistrict());
+                treeNode.setIsleaf(true);
                 singleList.add(treeNode);
                 cityTreeNode.setChildren(singleList);
                 continue;
@@ -105,6 +106,7 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
             for (area area2 : districtAreaList) {
                 TreeNode treeNode=new TreeNode();
                 treeNode.setId(area2.getCode());
+                treeNode.setIsleaf(true);
                 if(area2.getDistrict()!=null){
                     treeNode.setText(area2.getDistrict());
                 }
@@ -112,6 +114,7 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
             }
             cityTreeNode.setChildren(treeNodeDistrictList);//设置子节点
         }
-        return  node;
+        List<TreeNode> nodeList = node.getChildren();
+        return  nodeList;
     }
 }

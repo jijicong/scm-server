@@ -33,13 +33,11 @@ import java.util.*;
 public class WarehouseBiz implements IWarehouseBiz {
 
     private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
+    private final static String  SERIALNAME="CK";
+    private final static Integer LENGTH=5;
 
     @Resource
     private IWarehouseService warehouseService;
-
-    @Resource
-    private ILocationUtilService locationUtilService;
-
     @Resource
     private ISerialUtilService serialUtilService;
 
@@ -67,11 +65,9 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        Serial serial = serialUtilService.selectSerialByname("CK");
+        String code = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+        warehouse.setCode(code);//仓库的流水号为CK00000
 
-        int countVersionChange=serialUtilService.updateSeralByName("CK",serial.getNumber()+1,serial.getNumber());
-
-        warehouse.setCode(serialUtil.getMoveOrderNo("CK", 5,serial.getNumber() ));//仓库的流水号为CK00000
         ParamsUtil.setBaseDO(warehouse);
         int count = 0;
         count = warehouseService.insert(warehouse);
@@ -157,9 +153,5 @@ public class WarehouseBiz implements IWarehouseBiz {
         return count;
     }
 
-    @Override
-    public TreeNode findProvinceCity() {
-        return locationUtilService.getTreeNodeFromLocation();
-    }
 
 }

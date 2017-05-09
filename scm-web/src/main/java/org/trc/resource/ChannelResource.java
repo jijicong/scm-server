@@ -53,7 +53,7 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Channel> findDictTypeById(@PathParam("id") Long id) throws Exception{
+    public AppResult<Channel> findChannelById(@PathParam("id") Long id) throws Exception{
         return ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.findChannelById(id));
     }
 
@@ -78,8 +78,5 @@ public class ChannelResource {
     public AppResult<Channel> channels(@BeanParam ChannelForm channelForm) throws Exception{
         return ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.channelList(channelForm));
     }
-
-
-
 
 }

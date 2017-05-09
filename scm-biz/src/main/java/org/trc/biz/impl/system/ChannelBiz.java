@@ -16,6 +16,7 @@ import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -34,9 +35,13 @@ import java.util.List;
 public class ChannelBiz implements IChannelBiz {
 
     private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
-
+    private final static String  SERIALNAME="QD";
+    private final static Integer LENGTH=3;
     @Resource
     private IChannelService channelService;
+
+    @Resource
+    private ISerialUtilService serialUtilService;
 
     @Override
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) throws Exception {
@@ -53,7 +58,6 @@ public class ChannelBiz implements IChannelBiz {
 
         return pagenation;
     }
-
     @Override
     public Channel findChannelByName(String name) throws Exception{
         if(StringUtil.isEmpty(name) || name==null){
@@ -66,7 +70,6 @@ public class ChannelBiz implements IChannelBiz {
         channel.setName(name);
         return channelService.selectOne(channel);
     }
-
     @Override
     public int saveChannel(Channel channel) throws Exception {
         Channel tmp = findChannelByName(channel.getName());
@@ -76,8 +79,8 @@ public class ChannelBiz implements IChannelBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
         //查询当前的序列位置
-        int dataLen = channelService.select(new Channel()).size();//TODO
-        channel.setCode(serialUtil.getMoveOrderNo("QD",3,dataLen));//TODO
+        String code = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+        channel.setCode(code);
         ParamsUtil.setBaseDO(channel);
         int count=0;
         count=channelService.insert(channel);
@@ -100,8 +103,6 @@ public class ChannelBiz implements IChannelBiz {
         channel.setId(id);
         channel.setUpdateTime(new Date());
         count = channelService.updateByPrimaryKeySelective(channel);
-       // channelService.insertSelective();
-       // channelService.insert()
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
             log.error(msg);
