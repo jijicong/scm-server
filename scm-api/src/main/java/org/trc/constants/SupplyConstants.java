@@ -102,6 +102,8 @@ public class SupplyConstants {
         public static final String WAREHOUSE = "warehouse";
         //状态的修改
         public static final String UPDATE_STATE = "warehouse/updateState";
+        //省市
+        public static final String PROVINCE_CITY="province";
     }
     /**
      *七牛
