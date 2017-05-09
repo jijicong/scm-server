@@ -1,4 +1,4 @@
-package org.trc.biz;
+package org.trc.biz.system;
 
 import org.trc.domain.System.Channel;
 import org.trc.form.system.ChannelForm;

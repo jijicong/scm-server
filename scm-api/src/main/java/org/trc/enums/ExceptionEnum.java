@@ -49,6 +49,8 @@ public enum ExceptionEnum{
     DATABASE_QUERY_TIME_OUT_EXCEPTION("3000102","数据库查询超时异常"),
     DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION("3000103","数据库死锁访问数据异常"),
 
+    DATABASE_DATA_VERSION_EXCEPTION("3000104","数据库的流水记录正在使用"),
+
     SYSTEM_EXCEPTION("4000100","系统异常"),
 
     NOVALID("0","停用");

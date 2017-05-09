@@ -1,9 +1,10 @@
 package org.trc.resource;
 
 import org.springframework.stereotype.Component;
-import org.trc.biz.IWarehouseBiz;
+import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.util.TreeNode;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -28,6 +29,18 @@ public class WarehouseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page) throws Exception{
         return warehouseBiz.warehousePage(form,page);
+    }
+
+    @GET
+    @Path(SupplyConstants.Warehouse.PROVINCE_CITY)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<TreeNode> findProvinceCity() throws Exception{
+        /**
+         * 1.查询所有的省市信息
+         * 2.使用json对象转化
+         * 3.返回给前台
+         */
+        return ResultUtil.createSucssAppResult("查询省市成功",warehouseBiz.findProvinceCity());
     }
     //根据仓库名查询渠道
     @GET

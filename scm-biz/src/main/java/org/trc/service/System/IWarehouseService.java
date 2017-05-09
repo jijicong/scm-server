@@ -9,4 +9,5 @@ import org.trc.service.IBaseService;
  */
 public interface IWarehouseService extends IBaseService<Warehouse,Long>{
 
+
 }

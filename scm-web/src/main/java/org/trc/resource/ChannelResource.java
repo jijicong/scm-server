@@ -1,7 +1,7 @@
 package org.trc.resource;
 
 import org.springframework.stereotype.Component;
-import org.trc.biz.IChannelBiz;
+import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.form.system.ChannelForm;
