@@ -1,4 +1,4 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.trc.biz.IChannelBiz;
+import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
 import org.trc.domain.dict.Dict;
 import org.trc.enums.CommonExceptionEnum;
