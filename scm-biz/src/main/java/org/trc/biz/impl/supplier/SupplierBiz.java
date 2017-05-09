@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.supplier.ISupplierBiz;
+import org.trc.domain.supplier.Certificate;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
@@ -15,7 +16,9 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.service.supplier.ICertificateService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
@@ -35,8 +38,15 @@ public class SupplierBiz implements ISupplierBiz {
 
     private final static Logger log = LoggerFactory.getLogger(SupplierBiz.class);
 
+    private final static String  SERIALNAME="GYS";
+    private final static Integer LENGTH=6;
+
     @Autowired
     private ISupplierService supplierService;
+    @Autowired
+    private ICertificateService certificateService;
+    @Autowired
+    private ISerialUtilService serialUtilService;
 
     @Override
     public Pagenation<Supplier> SupplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -81,7 +91,23 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    public int saveSupplier(Supplier supplier) throws Exception {
+    public int saveSupplier(Supplier supplier, Certificate certificate) throws Exception {
+        String supplierCode = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+        saveSupplierBase(supplier, supplierCode);
+        certificate.setSupplierId(supplier.getId());
+        certificate.setSupplierCode(supplier.getSupplierCode());
+        saveCertificate(certificate);
+        return 1;
+    }
+
+    /**
+     * 保存供应商基础信息
+     * @param supplier
+     * @param supplierCode
+     * @return
+     * @throws Exception
+     */
+    private int saveSupplierBase(Supplier supplier, String supplierCode) throws Exception {
         int count = 0;
         if(null != supplier.getId()){
             //修改
@@ -90,10 +116,35 @@ public class SupplierBiz implements ISupplierBiz {
         }else{
             //新增
             ParamsUtil.setBaseDO(supplier);
+            supplier.setSupplierCode(supplierCode);
             count = supplierService.insert(supplier);
         }
         if(count == 0){
             String msg = CommonUtil.joinStr("保存供应商", JSON.toJSONString(supplier),"到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION,msg);
+        }
+        return count;
+    }
+
+    /**
+     * 保存证件信息
+     * @param certificate
+     * @return
+     */
+    private int saveCertificate(Certificate certificate){
+        int count = 0;
+        if(null != certificate.getId()){
+            //修改
+            certificate.setUpdateTime(Calendar.getInstance().getTime());
+            count = certificateService.updateByPrimaryKeySelective(certificate);
+        }else{
+            //新增
+            ParamsUtil.setBaseDO(certificate);
+            count = certificateService.insert(certificate);
+        }
+        if(count == 0){
+            String msg = CommonUtil.joinStr("保存供应商证件图片", JSON.toJSONString(certificate),"到数据库失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION,msg);
         }

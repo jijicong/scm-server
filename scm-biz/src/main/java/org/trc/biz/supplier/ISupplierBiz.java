@@ -1,5 +1,6 @@
 package org.trc.biz.supplier;
 
+import org.trc.domain.supplier.Certificate;
 import org.trc.domain.supplier.Supplier;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.Pagenation;
@@ -29,9 +30,10 @@ public interface ISupplierBiz {
     /**
      * 保存供应商
      * @param Supplier
+     * @param certificate
      * @return
      */
-    public int saveSupplier(Supplier Supplier) throws Exception;
+    public int saveSupplier(Supplier Supplier, Certificate certificate) throws Exception;
 
     /**
      * 修改供应商

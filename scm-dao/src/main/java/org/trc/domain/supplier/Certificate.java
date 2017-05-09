@@ -1,41 +1,62 @@
 package org.trc.domain.supplier;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.domain.util.CommonDO;
+import org.trc.domain.util.ScmDO;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
 import java.util.Date;
 
-public class Certificate {
+public class Certificate extends ScmDO {
+    @FormParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("supplierId")
     private Long supplierId;
-
+    @FormParam("supplierCode")
+    @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
-
+    @FormParam("businessLicence")
+    @Length(max = 64, message = "营业执照长度不能超过64个")
     private String businessLicence;
-
+    @FormParam("businessLicencePic")
+    @Length(max = 256, message = "营业执照图片路径长度不能超过256个")
     private String businessLicencePic;
-
+    @FormParam("organRegistraCodeCertificate")
+    @Length(max = 64, message = "组织机构代码证长度不能超过64个")
     private String organRegistraCodeCertificate;
-
+    @FormParam("organRegistraCodeCertificatePic")
+    @Length(max = 256, message = "组织机构代码证图片路径长度不能超过256个")
     private String organRegistraCodeCertificatePic;
-
+    @FormParam("taxRegistrationCertificate")
+    @Length(max = 64, message = "税务登记证长度不能超过64个")
     private String taxRegistrationCertificate;
-
+    @FormParam("taxRegistrationCertificatePic")
+    @Length(max = 256, message = "税务登记证图片路径长度不能超过256个")
     private String taxRegistrationCertificatePic;
-
+    @FormParam("multiCertificateCombineNo")
+    @Length(max = 64, message = "证合一证号长度不能超过64个")
     private String multiCertificateCombineNo;
-
+    @FormParam("multiCertificateCombinePic")
+    @Length(max = 256, message = "证合一证图片路径长度不能超过256个")
     private String multiCertificateCombinePic;
-
+    @FormParam("legalPersonIdCard")
+    @NotEmpty
+    @Length(max = 32, message = "法人身份证长度不能超过32个")
     private String legalPersonIdCard;
-
+    @FormParam("legalPersonIdCardPic1")
+    @NotEmpty
+    @Length(max = 256, message = "法人身份证正面图片路径长度不能超过256个")
     private String legalPersonIdCardPic1;
-
+    @FormParam("legalPersonIdCardPic2")
+    @NotEmpty
+    @Length(max = 256, message = "法人身份证背面v 图片路径长度不能超过256个")
     private String legalPersonIdCardPic2;
-
-    private String isDeleted;
-
-    private Date createTime;
-
-    private Date updateTime;
 
     public Long getId() {
         return id;
@@ -149,27 +170,4 @@ public class Certificate {
         this.legalPersonIdCardPic2 = legalPersonIdCardPic2 == null ? null : legalPersonIdCardPic2.trim();
     }
 
-    public String getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted == null ? null : isDeleted.trim();
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
 }

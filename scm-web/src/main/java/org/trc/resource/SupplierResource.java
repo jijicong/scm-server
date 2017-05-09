@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
+import org.trc.domain.supplier.Certificate;
 import org.trc.domain.supplier.Supplier;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
@@ -42,8 +43,8 @@ public class SupplierResource {
     @POST
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplier(@BeanParam Supplier supplier) throws Exception{
-        return ResultUtil.createSucssAppResult("保存字典成功", supplierBiz.saveSupplier(supplier));
+    public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate) throws Exception{
+        return ResultUtil.createSucssAppResult("保存字典成功", supplierBiz.saveSupplier(supplier, certificate));
     }
 
     @PUT
