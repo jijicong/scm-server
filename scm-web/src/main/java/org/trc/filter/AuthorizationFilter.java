@@ -23,19 +23,19 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     private final static Logger log = LoggerFactory.getLogger(AuthorizationFilter.class);
 
-    @Value("${app.id}")
+    /*@Value("${app.id}")
     private String appId = "62AA8318264C4875B449F57881487269";
     @Value("${app.key}")
     private String appKey = "$2a$10$GVYvws0vYpXBzSGXlxcu4OnSR9efqymhaCH7Txwl0pky5mBzSCHfi";
 
     @Resource
-    private BeegoService beegoService;
+    private BeegoService beegoService;*/
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String token = _getToken(requestContext);
         if(StringUtils.isNotBlank(token)){
-            BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(
+            /*BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(
                     appId,
                     appKey,
                     token);
@@ -43,7 +43,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
             if(null != beegoToken){
                 String userId = beegoToken.getUserId();
                 requestContext.setProperty("userId", userId);
-            }
+            }*/
         }else{
             requestContext.setProperty("userId", "-----");
         }

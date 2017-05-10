@@ -17,6 +17,8 @@ public interface IBaseService<T,PK> {
 
     int insert(T record);
 
+    int insertList(List<T> records);
+
     int insertSelective(T record);
 
     int deleteByPrimaryKey(PK key);

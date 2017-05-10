@@ -8,6 +8,7 @@ import org.trc.service.IBaseService;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import tk.mybatis.mapper.common.Mapper;
+import tk.mybatis.mapper.common.MySqlMapper;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
@@ -19,6 +20,8 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
 
     @Autowired
     private Mapper<T> mapper;
+    @Autowired
+    private MySqlMapper<T> mySqlMapper;
 
     @Override
     public Pagenation<T> pagination(Example example, Pagenation<T> pagenation, QueryModel queryModel) {
@@ -45,6 +48,11 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     @Override
     public int insert(T record) {
         return mapper.insert(record);
+    }
+
+    @Override
+    public int insertList(List<T> records) {
+        return mySqlMapper.insertList(records);
     }
 
     @Override

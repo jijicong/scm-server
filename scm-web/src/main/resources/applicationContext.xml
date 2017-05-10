@@ -18,7 +18,7 @@
         </property>
     </bean>
     <!-- 本地提供服务 -->
-    <import resource="classpath:zookeeper.xml"/>
+   <!-- <import resource="classpath:zookeeper.xml"/>-->
     <import resource="classpath:consumer-beans.xml"/>
     <import resource="classpath:resource-context-web.xml"/>
     <import resource="comsumer-applicationContext.xml"/>

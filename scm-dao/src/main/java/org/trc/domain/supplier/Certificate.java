@@ -55,8 +55,38 @@ public class Certificate extends ScmDO {
     private String legalPersonIdCardPic1;
     @FormParam("legalPersonIdCardPic2")
     @NotEmpty
-    @Length(max = 256, message = "法人身份证背面v 图片路径长度不能超过256个")
+    @Length(max = 256, message = "法人身份证背面图片路径长度不能超过256个")
     private String legalPersonIdCardPic2;
+    @FormParam("businessLicenceStartDate")
+    @Length(max = 20, message = "营业执照有效期开始日期长度不能超过20个")
+    private String businessLicenceStartDate;
+    @FormParam("businessLicenceEndDate")
+    @Length(max = 20, message = "营业执照有效期截止日期长度不能超过20个")
+    private String businessLicenceEndDate;
+    @FormParam("organRegistraStartDate")
+    @Length(max = 20, message = "组织结构代码证有效期开始日期长度不能超过20个")
+    private String organRegistraStartDate;
+    @FormParam("organRegistraEndDate")
+    @Length(max = 20, message = "组织结构代码证有效期截止日期长度不能超过20个")
+    private String organRegistraEndDate;
+    @FormParam("taxRegistrationStartDate")
+    @Length(max = 20, message = "税务登记证有效期开始日期长度不能超过20个")
+    private String taxRegistrationStartDate;
+    @FormParam("taxRegistrationEndDate")
+    @Length(max = 20, message = "税务登记证有效期截止日期长度不能超过20个")
+    private String taxRegistrationEndDate;
+    @FormParam("multiCertificateStartDate")
+    @Length(max = 20, message = "多证合一有效期开始日期长度不能超过20个")
+    private String multiCertificateStartDate;
+    @FormParam("multiCertificateEndDate")
+    @Length(max = 20, message = "多证合一有效期截止日期长度不能超过20个")
+    private String multiCertificateEndDate;
+    @FormParam("idCardStartDate")
+    @Length(max = 20, message = "法人身份证有效期开始日期长度不能超过20个")
+    private String idCardStartDate;
+    @FormParam("idCardEndDate")
+    @Length(max = 20, message = "法人身份证有效期截止日期长度不能超过20个")
+    private String idCardEndDate;
 
     public Long getId() {
         return id;
@@ -170,4 +200,83 @@ public class Certificate extends ScmDO {
         this.legalPersonIdCardPic2 = legalPersonIdCardPic2 == null ? null : legalPersonIdCardPic2.trim();
     }
 
+    public String getBusinessLicenceStartDate() {
+        return businessLicenceStartDate;
+    }
+
+    public void setBusinessLicenceStartDate(String businessLicenceStartDate) {
+        this.businessLicenceStartDate = businessLicenceStartDate;
+    }
+
+    public String getBusinessLicenceEndDate() {
+        return businessLicenceEndDate;
+    }
+
+    public void setBusinessLicenceEndDate(String businessLicenceEndDate) {
+        this.businessLicenceEndDate = businessLicenceEndDate;
+    }
+
+    public String getOrganRegistraStartDate() {
+        return organRegistraStartDate;
+    }
+
+    public void setOrganRegistraStartDate(String organRegistraStartDate) {
+        this.organRegistraStartDate = organRegistraStartDate;
+    }
+
+    public String getOrganRegistraEndDate() {
+        return organRegistraEndDate;
+    }
+
+    public void setOrganRegistraEndDate(String organRegistraEndDate) {
+        this.organRegistraEndDate = organRegistraEndDate;
+    }
+
+    public String getTaxRegistrationStartDate() {
+        return taxRegistrationStartDate;
+    }
+
+    public void setTaxRegistrationStartDate(String taxRegistrationStartDate) {
+        this.taxRegistrationStartDate = taxRegistrationStartDate;
+    }
+
+    public String getTaxRegistrationEndDate() {
+        return taxRegistrationEndDate;
+    }
+
+    public void setTaxRegistrationEndDate(String taxRegistrationEndDate) {
+        this.taxRegistrationEndDate = taxRegistrationEndDate;
+    }
+
+    public String getMultiCertificateStartDate() {
+        return multiCertificateStartDate;
+    }
+
+    public void setMultiCertificateStartDate(String multiCertificateStartDate) {
+        this.multiCertificateStartDate = multiCertificateStartDate;
+    }
+
+    public String getMultiCertificateEndDate() {
+        return multiCertificateEndDate;
+    }
+
+    public void setMultiCertificateEndDate(String multiCertificateEndDate) {
+        this.multiCertificateEndDate = multiCertificateEndDate;
+    }
+
+    public String getIdCardStartDate() {
+        return idCardStartDate;
+    }
+
+    public void setIdCardStartDate(String idCardStartDate) {
+        this.idCardStartDate = idCardStartDate;
+    }
+
+    public String getIdCardEndDate() {
+        return idCardEndDate;
+    }
+
+    public void setIdCardEndDate(String idCardEndDate) {
+        this.idCardEndDate = idCardEndDate;
+    }
 }
