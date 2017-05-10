@@ -75,16 +75,40 @@ public class SupplyConstants {
          * 品牌管理
          */
         public static final class Brand{
-            //字典分页查询路径
+            //品牌分页查询路径
             public static final String BRAND_PAGE = "brandPage";
-            //字典列表查询路径
+            //品牌列表查询路径
             public static final String BRAND_LIST = "brands";
-            //字典路径
+            //品牌路径
             public static final String BRAND = "brand";
 
             public static final String BRAND_STATE ="brand/state";
         }
 
+        /**
+         * 属性管理
+         */
+        public static final class Property{
+            //属性分页查询路径
+            public static final String PROPERTY_PAGE = "propertyPage";
+            //属性列表查询路径
+            public static final String PROPERTY_LIST = "propertys";
+            //属性路径
+            public static final String PROPERTY = "property";
+
+            public static final String PROPERTY_STATE ="property/state";
+        }
+
+        /**
+         * 属性值管理
+         */
+        public static final class PropertyValue{
+            //属性值列表查询路径
+            public static final String PROPERTY_VALUE_LIST = "propertyValues";
+            //属性值路径
+            public static final String PROPERTY_VALUE = "propertyValue";
+
+        }
     }
     /**
      * 渠道管理
