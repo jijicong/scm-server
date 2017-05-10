@@ -85,6 +85,8 @@ public class SupplyConstants {
             public static final String BRAND_STATE ="brand/state";
         }
 
+
+
         /**
          * 属性管理
          */
@@ -107,6 +109,16 @@ public class SupplyConstants {
             public static final String PROPERTY_VALUE_LIST = "propertyValues";
             //属性值路径
             public static final String PROPERTY_VALUE = "propertyValue";
+
+        }
+
+
+        /**
+         * 分类管理
+         */
+        public static final class  Classify{
+            public static  final String CLASSIFY_TREE = "classifytree";
+            public  static  final  String  CLASSIFY ="classify";
 
         }
     }
