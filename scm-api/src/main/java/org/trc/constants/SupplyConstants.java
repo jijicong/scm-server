@@ -5,6 +5,15 @@ package org.trc.constants;
  */
 public class SupplyConstants {
 
+    /**
+     * 符号
+     */
+    public static final class Symbol{
+        public static final String COMMA = ",";//逗号
+        public static final String MINUS = "-";//减号
+    }
+
+
     public static final class Route {
         public static final class Home{
             public static final String ROOT = "home";
