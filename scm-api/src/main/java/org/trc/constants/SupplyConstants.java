@@ -29,6 +29,8 @@ public class SupplyConstants {
         public static final class SelectList{
             //是否启用
             public static final String VALID_LIST = "validList";
+            //海外仓的是否支持清关
+            public static final String IS_CUSTOM_CLEARANCE="clearance";
         }
         /**
          * 字典类型
@@ -107,6 +109,8 @@ public class SupplyConstants {
         public static final String ROOT = "system";
         //渠道分页查询
         public static final String CHANNEL_PAGE = "channelPage";
+        //渠道列表
+        public static final String CHANNEL_LIST = "channels";
         //渠道名查询
         public static final String CHANNEL = "channel";
         //状态的修改
@@ -162,29 +166,40 @@ public class SupplyConstants {
      */
     public static final class Supply {
         //根路径
-        public static final String ROOT = "supply";
+        public static final String ROOT = "supplier";
 
         /**
-         * 下拉列表
-         */
-        public static final class SelectList {
-            //是否启用
-            public static final String VALID_LIST = "validList";
-        }
-
-        /**
-         * 字典类型
+         * 供应商
          */
         public static final class Supplier {
-            //字典类型分页查询路径
-            public static final String DICT_TYPE_PAGE = "supplierPage";
-            //字典类型列表查询路径
-            public static final String DICT_TYPE_LIST = "suppliers";
-            //字典类型路径
-            public static final String DICT_TYPE = "supplier";
+            //供应商分页查询路径
+            public static final String SUPPLIER_PAGE = "supplierPage";
+            //供应商列表查询路径
+            public static final String SUPPLIER_LIST = "suppliers";
+            //供应商路径
+            public static final String SUPPLIER = "supplier";
         }
     }
 
+
+    /**
+     * 下拉列表
+     */
+    public static final class SelectList {
+        //下拉列表根路径
+        public static final String ROOT = "select";
+        //是否启用
+        public static final String VALID_LIST = "validList";
+        //供应商性质
+        public static final String SUPPLIER_NATURE = "supplierNature";
+        //供应商类型
+        public static final String SUPPLIER_TYPE= "supplierType";
+        //仓库类型字典类型编码
+        public static final String WAREHOUSE_TYPE="warehouseType";
+        //省市
+        public static final String PROVINCE_CITY="province";
+
+    }
 
 
 }

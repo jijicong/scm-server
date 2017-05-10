@@ -1,6 +1,7 @@
 package org.trc.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.validator.constraints.Length;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
 
@@ -12,14 +13,14 @@ import javax.ws.rs.QueryParam;
 public class QueryModel {
 
     @QueryParam("isValid")
+    @Length(max = 2, message = "是否启用编码长度不能超过2个")
     private String isValid;
-
-    public String getIsValid() {
-        return isValid;
-    }
-    public void setIsValid(String isValid) {
-        this.isValid = isValid;
-    }
+    @QueryParam("startDate")
+    @Length(max = 10, message = "开始日期长度不能超过2个")
+    private String startDate;//开始日期，格式：yyyy-mm-dd
+    @QueryParam("endDate")
+    @Length(max = 10, message = "截止日期长度不能超过2个")
+    private String endDate;//截止日期，格式：yyyy-mm-dd
 
     /**
      * 排序方向变量
@@ -145,6 +146,29 @@ public class QueryModel {
                             CommonUtil.joinStr("分页查询排序字段[",orderBy,"]和排序方向[",order,"]不相符").toString());
             }
         }
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
 }

@@ -23,7 +23,12 @@ public enum ExceptionEnum{
      * 系统异常:4000开头
      */
     CONFIG_DICT_QUERY_EXCEPTION("100101","数据字典查询异常"),
-    CONFIG_DICT_UPDATE_EXCEPTION("100102","数据字典更新异常"),
+    CONFIG_DICT_SAVE_EXCEPTION("100102","数据字典保存异常"),
+    CONFIG_DICT_UPDATE_EXCEPTION("100103","数据字典更新异常"),
+
+    SUPPLIER_QUERY_EXCEPTION("300100","供应商查询异常"),
+    SUPPLIER_SAVE_EXCEPTION("300101","供应商保存异常"),
+    SUPPLIER_UPDATE_EXCEPTION("300102","供应商更新异常"),
 
     FILE_UPLOAD_EXCEPTION("1000100","文件上传异常"),
     FILE_DOWNLOAD_EXCEPTION("1000101","文件下载异常"),
@@ -50,6 +55,8 @@ public enum ExceptionEnum{
     DATABASE_PERMISSION_DENIED_EXCEPTION("3000101","数据库数据访问权限异常"),
     DATABASE_QUERY_TIME_OUT_EXCEPTION("3000102","数据库查询超时异常"),
     DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION("3000103","数据库死锁访问数据异常"),
+
+    DATABASE_DATA_VERSION_EXCEPTION("3000104","数据库的流水记录正在使用"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
 

@@ -1,9 +1,10 @@
 package org.trc.resource;
 
 import org.springframework.stereotype.Component;
-import org.trc.biz.IWarehouseBiz;
+import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.util.TreeNode;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -12,6 +13,7 @@ import org.trc.util.ResultUtil;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/4.
@@ -29,6 +31,7 @@ public class WarehouseResource {
     public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page) throws Exception{
         return warehouseBiz.warehousePage(form,page);
     }
+
     //根据仓库名查询渠道
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
@@ -52,13 +55,6 @@ public class WarehouseResource {
     public AppResult updateChannel(@BeanParam Warehouse warehouse, @PathParam("id") Long id) throws  Exception{
         return  ResultUtil.createSucssAppResult("修改仓库信息成功",warehouseBiz.updateWarehouse(warehouse,id));
     }
-    //根据id查询
-    @GET
-    @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Warehouse> findDictTypeById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("查询渠道成功", warehouseBiz.findWarehouseById(id));
-    }
     //仓库状态的修改
     @POST
     @Path(SupplyConstants.Warehouse.UPDATE_STATE)
@@ -66,5 +62,11 @@ public class WarehouseResource {
     public AppResult updateWarehouseState(@BeanParam Warehouse warehouse) throws Exception{
         return ResultUtil.createSucssAppResult("状态修改成功",warehouseBiz.updateWarehouseState(warehouse));
     }
-
+    //根据id查询
+    @GET
+    @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Warehouse> findWarehouseById(@PathParam("id") Long id) throws Exception{
+        return ResultUtil.createSucssAppResult("查询仓库成功", warehouseBiz.findWarehouseById(id));
+    }
 }

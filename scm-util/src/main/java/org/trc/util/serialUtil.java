@@ -5,9 +5,6 @@ package org.trc.util;
  * Created by sone on 2017/5/3.
  */
 public  class serialUtil {
-    static {
-
-    }
     /**
      * 产生流水号  默认从1开始
      * @param prefix   前缀

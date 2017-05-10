@@ -1,5 +1,6 @@
 package org.trc.config;
 
+import org.springframework.stereotype.Component;
 import org.trc.enums.ZeroToNineEnum;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Created by hzwdx on 2017/5/4.
  */
+@Component
 public class BaseThumbnailSize {
 
     private List<ThumbnailSize> thumbnailSizes;

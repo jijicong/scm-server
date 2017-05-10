@@ -1,17 +1,22 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.trc.biz.IChannelBiz;
+import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
+import org.trc.domain.dict.Dict;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -21,6 +26,7 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/2.
@@ -29,9 +35,13 @@ import java.util.Date;
 public class ChannelBiz implements IChannelBiz {
 
     private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
-
+    private final static String  SERIALNAME="QD";
+    private final static Integer LENGTH=3;
     @Resource
     private IChannelService channelService;
+
+    @Resource
+    private ISerialUtilService serialUtilService;
 
     @Override
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) throws Exception {
@@ -48,7 +58,6 @@ public class ChannelBiz implements IChannelBiz {
 
         return pagenation;
     }
-
     @Override
     public Channel findChannelByName(String name) throws Exception{
         if(StringUtil.isEmpty(name) || name==null){
@@ -61,7 +70,6 @@ public class ChannelBiz implements IChannelBiz {
         channel.setName(name);
         return channelService.selectOne(channel);
     }
-
     @Override
     public int saveChannel(Channel channel) throws Exception {
         Channel tmp = findChannelByName(channel.getName());
@@ -71,8 +79,8 @@ public class ChannelBiz implements IChannelBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
         //查询当前的序列位置
-        int dataLen = channelService.select(new Channel()).size();//TODO
-        channel.setCode(serialUtil.getMoveOrderNo("QD",3,dataLen));//TODO
+        String code = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+        channel.setCode(code);
         ParamsUtil.setBaseDO(channel);
         int count=0;
         count=channelService.insert(channel);
@@ -95,8 +103,6 @@ public class ChannelBiz implements IChannelBiz {
         channel.setId(id);
         channel.setUpdateTime(new Date());
         count = channelService.updateByPrimaryKeySelective(channel);
-       // channelService.insertSelective();
-       // channelService.insert()
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
             log.error(msg);
@@ -146,5 +152,16 @@ public class ChannelBiz implements IChannelBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
         return count;
+    }
+
+    @Override
+    public List<Channel> channelList(ChannelForm form) throws Exception {
+        Channel channel = new Channel();
+        BeanUtils.copyProperties(form,channel);
+        if(StringUtils.isEmpty(form.getIsValid())){
+            channel.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }
+        channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return channelService.select(channel);
     }
 }

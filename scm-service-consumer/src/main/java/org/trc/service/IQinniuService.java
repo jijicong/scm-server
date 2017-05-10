@@ -5,8 +5,8 @@ import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 import org.trc.config.BaseThumbnailSize;
+import org.trc.form.FileUrl;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -65,10 +65,10 @@ public interface IQinniuService {
 
     /**
      * 批量获取文件url
-     * @param fileNames
+     * @param fileNames 文件名称，多个用逗号分隔
      * @return
      */
-    public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception;
+    public List<FileUrl> batchGetFileUrl(String[] fileNames) throws Exception;
 
     /**
      * 批量删除
@@ -76,6 +76,6 @@ public interface IQinniuService {
      * @return map,{success:成功数,fialure:失败数,msg:错误信息}
      * @throws Exception
      */
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception;
+    public Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception;
 
 }

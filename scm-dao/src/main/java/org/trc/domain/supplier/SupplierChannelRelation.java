@@ -1,6 +1,8 @@
 package org.trc.domain.supplier;
 
-public class SupplierChannelRelation {
+import org.trc.domain.BaseDO;
+
+public class SupplierChannelRelation extends BaseDO{
     private Long id;
 
     private Long supplierId;

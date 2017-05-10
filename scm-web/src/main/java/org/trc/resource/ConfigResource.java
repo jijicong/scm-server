@@ -3,13 +3,13 @@ package org.trc.resource;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.impl.ConfigBiz;
+import org.trc.biz.impl.config.ConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
 import org.trc.enums.ValidEnum;
-import org.trc.form.DictForm;
-import org.trc.form.DictTypeForm;
+import org.trc.form.config.DictForm;
+import org.trc.form.config.DictTypeForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -130,11 +130,5 @@ public class ConfigResource {
         return ResultUtil.createSucssAppResult("删除字典成功", configBiz.deleteDictById(id));
     }
 
-    @GET
-    @Path(SupplyConstants.Config.SelectList.VALID_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryValidList(HttpServletRequest request){
-        return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
-    }
 
 }

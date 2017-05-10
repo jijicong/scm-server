@@ -1,7 +1,7 @@
 package org.trc.resource;
 
 import org.springframework.stereotype.Component;
-import org.trc.biz.IChannelBiz;
+import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.form.system.ChannelForm;
@@ -53,7 +53,7 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Channel> findDictTypeById(@PathParam("id") Long id) throws Exception{
+    public AppResult<Channel> findChannelById(@PathParam("id") Long id) throws Exception{
         return ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.findChannelById(id));
     }
 
@@ -71,4 +71,12 @@ public class ChannelResource {
     public AppResult updateChannelState(@BeanParam Channel channel) throws Exception{
        return ResultUtil.createSucssAppResult("状态修改成功",channelBiz.updateChannelState(channel));
     }
+
+    @GET
+    @Path(SupplyConstants.Channel.CHANNEL_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Channel> channels(@BeanParam ChannelForm channelForm) throws Exception{
+        return ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.channelList(channelForm));
+    }
+
 }

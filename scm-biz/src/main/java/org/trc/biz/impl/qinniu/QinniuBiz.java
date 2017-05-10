@@ -1,24 +1,22 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.qinniu;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.qiniu.storage.model.BatchStatus;
 import com.qiniu.storage.model.DefaultPutRet;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.IQinniuBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.config.BaseThumbnailSize;
 import org.trc.config.PropertyThumbnailSize;
 import org.trc.constants.SupplyConstants;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.PicTypeEnum;
-import org.trc.exception.ConfigException;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.FileException;
-import org.trc.exception.ParamValidException;
+import org.trc.form.FileUrl;
 import org.trc.service.IQinniuService;
 import org.trc.service.impl.QinniuService;
 import org.trc.util.CommonUtil;
@@ -38,6 +36,8 @@ public class QinniuBiz implements IQinniuBiz{
 
     @Autowired
     private IQinniuService qinniuService;
+    @Autowired
+    private BaseThumbnailSize baseThumbnailSize;
 
     @Override
     public String upload(InputStream inputStream, String fileName, String module) throws Exception {
@@ -50,17 +50,8 @@ public class QinniuBiz implements IQinniuBiz{
         }
         DefaultPutRet defaultPutRet = null;
         try{
-            /**
-             * FIXME
-             */
-            BaseThumbnailSize baseThumbnailSize = new BaseThumbnailSize();
-            if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.PROPERTY)){//属性管理
-                baseThumbnailSize = new PropertyThumbnailSize();
-            }else if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.SUPPLY)){//供应商管理
-                //baseThumbnailSize = new PropertyThumbnailSize();
-            }else {
-                //
-            }
+            BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
+            fileName = module + "/" + fileName;
             defaultPutRet = qinniuService.upload(inputStream, fileName, baseThumbnailSize);
         }catch (Exception e){
             String msg = CommonUtil.joinStr("上传文件",fileName,"异常").toString();
@@ -101,13 +92,29 @@ public class QinniuBiz implements IQinniuBiz{
     }
 
     @Override
-    public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception {
-        return qinniuService.batchGetFileUrl(fileNames);
+    public List<FileUrl> batchGetFileUrl(String[] fileNames, String thumbnail) throws Exception {
+        List<String> files = new ArrayList<String>();
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), thumbnail)){
+            for(String fileName : fileNames){
+                String[] fileNameSplit = fileName.split("\\"+QinniuService.FILE_FLAG);
+                //缩略图名称
+                String thumbnailName = String.format("%s_%s_%s%s%s", fileNameSplit[0], baseThumbnailSize.getThumbnailSizes().get(0).getWidth(), baseThumbnailSize.getThumbnailSizes().get(0).getHeight(), QinniuService.FILE_FLAG, fileNameSplit[1]);
+                files.add(thumbnailName);
+            }
+            List<FileUrl> fileUrls = qinniuService.batchGetFileUrl(files.toArray(new String[files.size()]));
+            for(int i=0; i< fileUrls.size(); i++){
+                fileUrls.get(i).setFileKey(fileNames[i]);
+            }
+            return fileUrls;
+        }else{
+            return qinniuService.batchGetFileUrl(fileNames);
+        }
     }
 
     @Override
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception {
-        return qinniuService.batchDelete(fileNames);
+    public Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception {
+        BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
+        return qinniuService.batchDelete(fileNames, baseThumbnailSize);
     }
 
 
@@ -139,6 +146,21 @@ public class QinniuBiz implements IQinniuBiz{
             log.error(msg);
             throw new FileException(ExceptionEnum.FILE_UPLOAD_EXCEPTION, msg);
         }
+    }
+
+    private BaseThumbnailSize getBaseThumbnailSize(String module){
+        /**
+         * FIXME
+         */
+        BaseThumbnailSize baseThumbnailSize = new BaseThumbnailSize();
+        if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.PROPERTY)){//属性管理
+            baseThumbnailSize = new PropertyThumbnailSize();
+        }else if(StringUtils.equals(module, SupplyConstants.QinNiu.Module.SUPPLY)){//供应商管理
+            //baseThumbnailSize = new PropertyThumbnailSize();
+        }else {
+            //
+        }
+        return baseThumbnailSize;
     }
 
 }

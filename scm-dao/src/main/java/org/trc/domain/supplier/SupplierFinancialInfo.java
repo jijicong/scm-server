@@ -1,8 +1,10 @@
 package org.trc.domain.supplier;
 
+import org.trc.domain.BaseDO;
+
 import java.util.Date;
 
-public class SupplierFinancialInfo {
+public class SupplierFinancialInfo extends BaseDO{
     private Long id;
 
     private Long supplierId;
@@ -13,11 +15,6 @@ public class SupplierFinancialInfo {
 
     private String bankAccount;
 
-    private String isDeleted;
-
-    private Date createTime;
-
-    private Date updateTime;
 
     public Long getId() {
         return id;
@@ -59,27 +56,4 @@ public class SupplierFinancialInfo {
         this.bankAccount = bankAccount == null ? null : bankAccount.trim();
     }
 
-    public String getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted == null ? null : isDeleted.trim();
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
 }
