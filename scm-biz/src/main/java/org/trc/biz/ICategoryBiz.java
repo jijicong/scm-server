@@ -1,53 +1,45 @@
 package org.trc.biz;
 
-import org.trc.domain.category.Brand;
-import org.trc.form.BrandForm;
-import org.trc.util.Pagenation;
+import org.trc.domain.category.Category;
+import org.trc.form.CategoryForm;
+import org.trc.form.TreeNode;
+
+import java.util.List;
 
 /**
- * Created by hzqph on 2017/4/27.
+ * Created by hzszy on 2017/5/5.
  */
 public interface ICategoryBiz {
-
+    public List<Category> queryClassify(CategoryForm classifyForm) throws Exception;
     /**
-     * 品牌分页
-     * @param form
-     * @param page
-     * @return
-     * @throws Exception
-     */
-    public Pagenation<Brand> brandPage(BrandForm form,Pagenation<Brand> page)throws Exception;
-
-    /**
-     * 保存品牌
-     * @param brand
-     * @return
-     * @throws Exception
-     */
-    public int saveBrand(Brand brand)throws Exception;
-
-    /**
-     * 根据id查询单个品牌
+     * 修改
+     * @param category
      * @param id
      * @return
      * @throws Exception
      */
-    public Brand findBrandById(Long id)throws Exception;
+    public int updateCategory(Category category, Long id) throws Exception;
 
     /**
-     * 更新品牌信息
-     * @param brand
-     * @param id
+     * 保存
+     */
+    public int saveClassify(Category category) throws Exception;
+    /**
+     * 根据主键删除
+     */
+    public int deleteCategory(Long id) throws  Exception;
+
+    /**
+     * 获取分了树节点
+     * @param categoryForm
      * @return
      * @throws Exception
      */
-    public int updateBrand(Brand brand ,Long id)throws Exception;
+    public List<TreeNode> getTreeNode(CategoryForm categoryForm) throws Exception;
 
     /**
-     * 更新品牌信息
-     * @param brand
-     * @return
-     * @throws Exception
+     * 测试
      */
-    public int updateBrandStatus(Brand brand)throws Exception;
+    public int queryCount() throws Exception;
+
 }

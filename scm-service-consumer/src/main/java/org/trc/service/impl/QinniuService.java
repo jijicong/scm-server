@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.trc.config.BaseThumbnailSize;
 import org.trc.config.ThumbnailSize;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.form.FileUrl;
 import org.trc.form.QinniuForm;
 import org.trc.service.IQinniuService;
 
@@ -82,23 +83,27 @@ public class QinniuService implements IQinniuService{
     }
 
     @Override
-    public Map<String, String> batchGetFileUrl(String[] fileNames) throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+    public List<FileUrl> batchGetFileUrl(String[] fileNames) throws Exception {
+        List<FileUrl> fileUrls = new ArrayList<FileUrl>();
         String domainOfBucket = qinniuForm.getDomainOfBucket();
         String firstFileUrl = download(fileNames[0]);
         String[] firstFileUrlSplit = firstFileUrl.split("\\"+URL_PARAM_SPLIT);
         String tokenParam = firstFileUrlSplit[1];
         for(String fileName : fileNames){
             String encodedFileName = URLEncoder.encode(fileName, "utf-8");
-            map.put(fileName, String.format("%s/%s%s%s", domainOfBucket, encodedFileName, URL_PARAM_SPLIT, tokenParam));
+            FileUrl fileUrl = new FileUrl();
+            fileUrl.setFileKey(fileName);
+            fileUrl.setUrl(String.format("%s/%s%s%s", domainOfBucket, encodedFileName, URL_PARAM_SPLIT, tokenParam));
+            fileUrls.add(fileUrl);
         }
-        return map;
+        return fileUrls;
     }
 
     @Override
-    public Map<String, Object> batchDelete(String[] fileNames) throws Exception {
+    public Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception {
+        String[] newFileNames = getDeleteFileNames(fileNames, baseThumbnailSize);
         BucketManager.BatchOperations batchOperations = new BucketManager.BatchOperations();
-        batchOperations.addDeleteOp(qinniuForm.getBucket(), fileNames);
+        batchOperations.addDeleteOp(qinniuForm.getBucket(), newFileNames);
         Response response = getBucketManager().batch(batchOperations);
         BatchStatus[] batchStatusList = response.jsonToObject(BatchStatus[].class);
         StringBuilder builder = new StringBuilder();
@@ -119,6 +124,26 @@ public class QinniuService implements IQinniuService{
         map.put("fialure", fialure);
         map.put("msg", builder.toString());
         return map;
+    }
+
+    private String[] getDeleteFileNames(String[] fileNames, BaseThumbnailSize baseThumbnailSize){
+        List<String> fileList = new ArrayList<String>();
+        if(null != baseThumbnailSize){
+            for(String fileName : fileNames){
+                fileList.add(fileName);
+                String[] fileNameSplit = fileName.split("\\"+FILE_FLAG);
+                for(ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()){
+                    if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),size.getIsValid())){
+                        //缩略图名称
+                        String thumbnailName = String.format("%s_%s_%s%s%s", fileNameSplit[0], size.getWidth(), size.getHeight(), FILE_FLAG, fileNameSplit[1]);
+                        fileList.add(thumbnailName);
+                    }
+                }
+            }
+            return fileList.toArray(new String[fileList.size()]);
+        }else{
+            return fileNames;
+        }
     }
 
     /**
@@ -147,7 +172,6 @@ public class QinniuService implements IQinniuService{
      */
     private StringMap getPersistentOpfs(String bucket, String fileName, BaseThumbnailSize baseThumbnailSize){
         StringMap putPolicy = new StringMap();
-        //数据处理指令，支持多个指令
         String[] fileNames = fileName.split("\\"+FILE_FLAG);
         List<String> thumbnailCmds = new ArrayList<String>();
         for(ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()){

@@ -5,6 +5,15 @@ package org.trc.constants;
  */
 public class SupplyConstants {
 
+    /**
+     * 符号
+     */
+    public static final class Symbol{
+        public static final String COMMA = ",";//逗号
+        public static final String MINUS = "-";//减号
+    }
+
+
     public static final class Route {
         public static final class Home{
             public static final String ROOT = "home";
@@ -29,6 +38,8 @@ public class SupplyConstants {
         public static final class SelectList{
             //是否启用
             public static final String VALID_LIST = "validList";
+            //海外仓的是否支持清关
+            public static final String IS_CUSTOM_CLEARANCE="clearance";
         }
         /**
          * 字典类型
@@ -59,40 +70,85 @@ public class SupplyConstants {
     public static final class Category{
 
         //根路径
-        public static final String ROOT = "catagory";
+        public static final String ROOT = "category";
         /**
          * 品牌管理
          */
         public static final class Brand{
-            //字典分页查询路径
-            public static final String Brand_PAGE = "brandPage";
-            //字典列表查询路径
-            public static final String Brand_LIST = "brands";
-            //字典路径
-            public static final String Brand = "brand";
+            //品牌分页查询路径
+            public static final String BRAND_PAGE = "brandPage";
+            //品牌列表查询路径
+            public static final String BRAND_LIST = "brands";
+            //品牌路径
+            public static final String BRAND = "brand";
 
-            public static final String Brand_Status="brand/state";
+            public static final String BRAND_STATE ="brand/state";
         }
 
-    }
-    /**
-     * 系统管理：仓库，渠道，授权
-     */
-    public static final class System {
-        //根路径
-        public static final String ROOT = "system";
+
 
         /**
-         * 渠道管理
+         * 属性管理
          */
-        public static final class Channel {
-            //渠道分页查询
-            public static final String CHANNEL_PAGE = "channelPage";
-            //渠道名查询
-            public static final String CHANNEL = "channel";
-            //状态的修改
-            public static final String UPDATE_STATE = "channel/updateState";
+        public static final class Property{
+            //属性分页查询路径
+            public static final String PROPERTY_PAGE = "propertyPage";
+            //属性列表查询路径
+            public static final String PROPERTY_LIST = "propertys";
+            //属性路径
+            public static final String PROPERTY = "property";
+
+            public static final String PROPERTY_STATE ="property/state";
         }
+
+        /**
+         * 属性值管理
+         */
+        public static final class PropertyValue{
+            //属性值列表查询路径
+            public static final String PROPERTY_VALUE_LIST = "propertyValues";
+            //属性值路径
+            public static final String PROPERTY_VALUE = "propertyValue";
+
+        }
+
+
+        /**
+         * 分类管理
+         */
+        public static final class  Classify{
+            public static  final String CLASSIFY_TREE = "classifytree";
+            public  static  final  String  CLASSIFY ="classify";
+
+        }
+    }
+    /**
+     * 渠道管理
+     */
+    public static final class Channel {
+        //根路径
+        public static final String ROOT = "system";
+        //渠道分页查询
+        public static final String CHANNEL_PAGE = "channelPage";
+        //渠道列表
+        public static final String CHANNEL_LIST = "channels";
+        //渠道名查询
+        public static final String CHANNEL = "channel";
+        //状态的修改
+        public static final String UPDATE_STATE = "channel/updateState";
+    }
+    /**
+     * 仓库管理
+     */
+    public static final class Warehouse{
+        //根路径
+        public static final String ROOT = "system";
+        //仓库分页查询
+        public static final String WAREHOUSE_PAGE = "warehousePage";
+        //仓库名查询
+        public static final String WAREHOUSE = "warehouse";
+        //状态的修改
+        public static final String UPDATE_STATE = "warehouse/updateState";
     }
     /**
      *七牛
@@ -122,6 +178,47 @@ public class SupplyConstants {
         public static final String THUMBNAIL = "thumbnail";
         //批量获取url
         public static final String URLS = "urls";
+
+    }
+
+
+    /**
+     * 供应商管理
+     */
+    public static final class Supply {
+        //根路径
+        public static final String ROOT = "supplier";
+
+        /**
+         * 供应商
+         */
+        public static final class Supplier {
+            //供应商分页查询路径
+            public static final String SUPPLIER_PAGE = "supplierPage";
+            //供应商列表查询路径
+            public static final String SUPPLIER_LIST = "suppliers";
+            //供应商路径
+            public static final String SUPPLIER = "supplier";
+        }
+    }
+
+
+    /**
+     * 下拉列表
+     */
+    public static final class SelectList {
+        //下拉列表根路径
+        public static final String ROOT = "select";
+        //是否启用
+        public static final String VALID_LIST = "validList";
+        //供应商性质
+        public static final String SUPPLIER_NATURE = "supplierNature";
+        //供应商类型
+        public static final String SUPPLIER_TYPE= "supplierType";
+        //仓库类型字典类型编码
+        public static final String WAREHOUSE_TYPE="warehouseType";
+        //省市
+        public static final String PROVINCE_CITY="province";
 
     }
 

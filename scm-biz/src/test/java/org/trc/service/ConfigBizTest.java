@@ -9,12 +9,12 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.transaction.annotation.Transactional;
-import org.trc.biz.IConfigBiz;
+import org.trc.biz.config.IConfigBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.form.DictForm;
-import org.trc.form.DictTypeForm;
+import org.trc.form.config.DictForm;
+import org.trc.form.config.DictTypeForm;
 import org.trc.util.Pagenation;
 
 import javax.annotation.Resource;

@@ -4,13 +4,9 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
 
-@Table(name = "property")
 public class Property extends BaseDO {
     @FormParam("id")
     @Id
@@ -31,8 +27,10 @@ public class Property extends BaseDO {
     private String valueType;//属性值类型
     @NotEmpty
     @FormParam("sort")
-    private Integer sort;//排序
-
+    private String sort;//排序
+    @Transient
+    @FormParam("gridValue")
+    private String gridValue;
     public Long getId() {
         return id;
     }
@@ -73,12 +71,19 @@ public class Property extends BaseDO {
         this.valueType = valueType == null ? null : valueType.trim();
     }
 
-    public Integer getSort() {
+    public String getSort() {
         return sort;
     }
 
-    public void setSort(Integer sort) {
+    public void setSort(String sort) {
         this.sort = sort;
     }
 
+    public String getGridValue() {
+        return gridValue;
+    }
+
+    public void setGridValue(String gridValue) {
+        this.gridValue = gridValue;
+    }
 }

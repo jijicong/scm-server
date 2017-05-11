@@ -11,7 +11,7 @@ import javax.ws.rs.FormParam;
 /**
  * Created by sone on 2017/5/2.
  */
-@Table(name = "channel")
+//@Table(name = "channel")
 public class Channel extends BaseDO{
     @FormParam("id")
     @Id
@@ -28,16 +28,7 @@ public class Channel extends BaseDO{
     @FormParam("remark")
     @Length(max = 1024,message = "字典类型名称字母和数字不能超过1024个,汉字不能超过512个")
     private String remark;
-    @Transient
-    private Integer sort;
 
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
 
     public String getRemark() {
         return remark;
