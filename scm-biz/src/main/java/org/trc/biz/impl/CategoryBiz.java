@@ -34,10 +34,8 @@ public class CategoryBiz implements ICategoryBiz{
     public List<Category> queryClassify(CategoryForm categoryForm) throws Exception {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
-//        List<Long> secondIds = new ArrayList<Long>();
-//          criteria.andIn("parentId",secondIds);
+
         criteria.andEqualTo("level", ZeroToNineEnum.TWO.getCode());
-//        List<Classify> thirdClassifyList = classifyService.selectByExample(example);
 
 
         return categoryService.selectByExample(example);
