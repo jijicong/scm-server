@@ -5,8 +5,9 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
-import org.trc.domain.supplier.Certificate;
-import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.*;
+import org.trc.form.supplier.SupplierBrandForm;
+import org.trc.form.supplier.SupplierCategoryForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -59,6 +60,20 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> findSupplierById(@PathParam("id") Long id) throws Exception{
         return ResultUtil.createSucssAppResult("查询字典成功", supplierBiz.findSupplierById(id));
+    }
+
+    @GET
+    @Path(SupplyConstants.Supply.SupplierCategory.SUPPLIER_CATEGORY_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<SupplierCategory> querySupplierCategory(@BeanParam SupplierCategoryForm form) throws Exception{
+        return supplierBiz.querySupplierCategory(form);
+    }
+
+    @GET
+    @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<SupplierBrand > querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception{
+        return supplierBiz.querySupplierBrand(form);
     }
 
 

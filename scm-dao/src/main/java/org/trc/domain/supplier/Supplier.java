@@ -7,6 +7,7 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 
 public class Supplier extends BaseDO{
@@ -73,6 +74,10 @@ public class Supplier extends BaseDO{
     @NotEmpty
     @Length(max = 64, message = "联系人长度不能超过64个")
     private String contact;
+    @Transient
+    @FormParam("channel")
+    @NotEmpty
+    private String channel;
 
     public Long getId() {
         return id;
@@ -216,5 +221,13 @@ public class Supplier extends BaseDO{
 
     public void setContact(String contact) {
         this.contact = contact;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
 }

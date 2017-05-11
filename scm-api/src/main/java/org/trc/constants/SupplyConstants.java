@@ -5,6 +5,15 @@ package org.trc.constants;
  */
 public class SupplyConstants {
 
+    /**
+     * 符号
+     */
+    public static final class Symbol{
+        public static final String COMMA = ",";//逗号
+        public static final String MINUS = "-";//减号
+    }
+
+
     public static final class Route {
         public static final class Home{
             public static final String ROOT = "home";
@@ -76,6 +85,8 @@ public class SupplyConstants {
             public static final String BRAND_STATE ="brand/state";
         }
 
+
+
         /**
          * 属性管理
          */
@@ -98,6 +109,16 @@ public class SupplyConstants {
             public static final String PROPERTY_VALUE_LIST = "propertyValues";
             //属性值路径
             public static final String PROPERTY_VALUE = "propertyValue";
+
+        }
+
+
+        /**
+         * 分类管理
+         */
+        public static final class  Classify{
+            public static  final String CLASSIFY_TREE = "classifytree";
+            public  static  final  String  CLASSIFY ="classify";
 
         }
     }
@@ -179,6 +200,28 @@ public class SupplyConstants {
             //供应商路径
             public static final String SUPPLIER = "supplier";
         }
+
+        /**
+         * 供应商分类
+         */
+        public static final class SupplierCategory {
+            //供应商分类列表查询路径
+            public static final String SUPPLIER_CATEGORY_LIST = "supplierCategorys";
+            //供应商分类路径
+            public static final String SUPPLIER_CATEGORY = "supplierCategory";
+        }
+
+        /**
+         * 供应商品牌
+         */
+        public static final class SupplierBrand {
+            //供应商分类列表查询路径
+            public static final String SUPPLIER_BRAND_LIST = "supplierBrands";
+            //供应商分类路径
+            public static final String SUPPLIER_BRAND = "supplierBrand";
+        }
+
+
     }
 
 

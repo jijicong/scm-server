@@ -2,30 +2,32 @@ package org.trc.biz.impl.supplier;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.util.Asserts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.trc.biz.supplier.ISupplierBiz;
-import org.trc.domain.supplier.Certificate;
-import org.trc.domain.supplier.Supplier;
+import org.trc.constants.SupplyConstants;
+import org.trc.domain.supplier.*;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
+import org.trc.form.supplier.SupplierBrandForm;
+import org.trc.form.supplier.SupplierCategoryForm;
 import org.trc.form.supplier.SupplierForm;
-import org.trc.service.supplier.ICertificateService;
-import org.trc.service.supplier.ISupplierService;
+import org.trc.service.impl.supplier.SupplierCategoryService;
+import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.util.CommonUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +42,14 @@ public class SupplierBiz implements ISupplierBiz {
 
     private final static String  SERIALNAME="GYS";
     private final static Integer LENGTH=6;
+    //供应商类型：国内供应商
+    private static final String INTERNAL_SUPPLIER = "internalSupplier";
+    //供应商类型：海外供应商
+    private static final String OVERSEAS_SUPPLIER = "overseasSupplier";
+    //证件类型:普通三证
+    private static final String NORMAL_THREE_CERTIFICATE = "normalThreeCertificate";
+    //证件类型:多证合一
+    private static final String MULTI_CERTIFICATE_UNION = "multiCertificateUnion";
 
     @Autowired
     private ISupplierService supplierService;
@@ -47,6 +57,12 @@ public class SupplierBiz implements ISupplierBiz {
     private ICertificateService certificateService;
     @Autowired
     private ISerialUtilService serialUtilService;
+    @Autowired
+    private ISupplierChannelRelationService supplierChannelRelationService;
+    @Autowired
+    private ISupplierCategoryService supplierCategoryService;
+    @Autowired
+    private ISupplierBrandService supplierBrandService;
 
     @Override
     public Pagenation<Supplier> SupplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -92,12 +108,79 @@ public class SupplierBiz implements ISupplierBiz {
 
     @Override
     public int saveSupplier(Supplier supplier, Certificate certificate) throws Exception {
+        //参数校验
+        supplierSaveCheck(supplier, certificate);
         String supplierCode = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+        //保存供应商
         saveSupplierBase(supplier, supplierCode);
+        //保存证件
         certificate.setSupplierId(supplier.getId());
         certificate.setSupplierCode(supplier.getSupplierCode());
         saveCertificate(certificate);
+        //保存供应商渠道关系
+        List<SupplierChannelRelation> supplierChannelRelations = new ArrayList<SupplierChannelRelation>();
+        /**渠道channels，格式："渠道ID-渠道编号,...",多个渠道用逗号分隔,
+         * 每个渠道里面包含渠道ID和渠道编号(渠道ID和编号用"-"号分隔)
+         */
+        String channels = supplier.getChannel();
+        String[] sp1 = channels.split(SupplyConstants.Symbol.COMMA);
+        for(String c : sp1){
+            Assert.doesNotContain(c, "\\"+SupplyConstants.Symbol.MINUS, "供应商新增提交的渠道参数中渠道信息必须是[渠道ID-渠道编号]格式");
+            String[] sp2 = c.split(SupplyConstants.Symbol.MINUS);
+            SupplierChannelRelation supplierChannelRelation = new SupplierChannelRelation();
+            supplierChannelRelation.setSupplierId(supplier.getId());
+            supplierChannelRelation.setSupplierCode(supplierCode);
+            supplierChannelRelation.setChannelId(Long.parseLong(sp2[0]));
+            supplierChannelRelation.setChannelCode(sp2[1]);
+            supplierChannelRelations.add(supplierChannelRelation);
+        }
+        saveSupplierChannelRelation(supplierChannelRelations);
         return 1;
+    }
+
+    /**
+     * 保存供应商参数校验
+     * @param supplier
+     * @param certificate
+     */
+    private void supplierSaveCheck(Supplier supplier, Certificate certificate){
+        if(StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())){//国内供应商
+            AssertUtil.notEmpty(supplier.getCertificateTypeId(), "证件类型ID不能为空");
+            AssertUtil.notEmpty(certificate.getLegalPersonIdCard(), "法人身份证不能为空");
+            AssertUtil.notEmpty(certificate.getLegalPersonIdCardPic1(), "法人身份证正面图片不能为空");
+            AssertUtil.notEmpty(certificate.getLegalPersonIdCardPic2(), "法人身份证背面图片不能为空");
+            AssertUtil.notEmpty(certificate.getIdCardStartDate(), "法人身份证有效期开始日期不能为空");
+            AssertUtil.notEmpty(certificate.getIdCardEndDate(), "法人身份证有效期截止日期不能为空");
+            if(StringUtils.equals(NORMAL_THREE_CERTIFICATE, supplier.getCertificateTypeId())){//普通三证
+                AssertUtil.notEmpty(certificate.getBusinessLicence(), "营业执照不能为空");
+                AssertUtil.notEmpty(certificate.getBusinessLicencePic(), "营业执照证件图片不能为空");
+                AssertUtil.notEmpty(certificate.getOrganRegistraCodeCertificate(), "组织机构代码证不能为空");
+                AssertUtil.notEmpty(certificate.getOrganRegistraCodeCertificatePic(), "组织机构代码证图片不能为空");
+                AssertUtil.notEmpty(certificate.getTaxRegistrationCertificate(), "税务登记证不能为空");
+                AssertUtil.notEmpty(certificate.getTaxRegistrationCertificatePic(), "税务登记证证件图片不能为空");
+                AssertUtil.notEmpty(certificate.getBusinessLicenceStartDate(), "营业执照有效期开始日期不能为空");
+                AssertUtil.notEmpty(certificate.getBusinessLicenceEndDate(), "营业执照有效期截止日期不能为空");
+                AssertUtil.notEmpty(certificate.getOrganRegistraStartDate(), "组织机构代码证效期开始日期不能为空");
+                AssertUtil.notEmpty(certificate.getOrganRegistraEndDate(), "组织机构代码证有效期截止日期不能为空");
+                AssertUtil.notEmpty(certificate.getTaxRegistrationStartDate(), "税务登记证有效期开始日期不能为空");
+                AssertUtil.notEmpty(certificate.getTaxRegistrationEndDate(), "税务登记证有效期截止日期不能为空");
+            }else if(StringUtils.equals(MULTI_CERTIFICATE_UNION, supplier.getCertificateTypeId())){//多证合一
+                AssertUtil.notEmpty(certificate.getMultiCertificateCombineNo(), "多证合一证号不能为空");
+                AssertUtil.notEmpty(certificate.getMultiCertificateCombinePic(), "多证合一证件图片不能为空");
+            }else {
+                String msg = String.format("证件类型ID[%s]错误", supplier.getCertificateTypeId());
+                log.error(msg);
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            }
+        }else if(StringUtils.equals(OVERSEAS_SUPPLIER, supplier.getSupplierTypeCode())){//国外供应商
+            AssertUtil.notEmpty(supplier.getCountry(), "所在国家不能为空");
+            AssertUtil.notEmpty(certificate.getMultiCertificateCombinePic(), "多证合一证件图片不能为空");
+        }else {
+            String msg = String.format("供应商类型编码[%s]错误", supplier.getSupplierTypeCode());
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+
     }
 
     /**
@@ -151,6 +234,15 @@ public class SupplierBiz implements ISupplierBiz {
         return count;
     }
 
+    /**
+     * 保存供应商渠道关系
+     * @param supplierChannelRelations
+     * @return
+     */
+    private int saveSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations){
+        return supplierChannelRelationService.insertList(supplierChannelRelations);
+    }
+
     @Override
     public int updateSupplier(Supplier supplier, Long id) throws Exception {
         if(null == id){
@@ -187,4 +279,22 @@ public class SupplierBiz implements ISupplierBiz {
         }
         return supplier;
     }
+
+    @Override
+    public List<SupplierCategory> querySupplierCategory(SupplierCategoryForm form) throws Exception {
+        SupplierCategory supplierCategory = new SupplierCategory();
+        BeanUtils.copyProperties(form,supplierCategory);
+        supplierCategory.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return supplierCategoryService.select(supplierCategory);
+    }
+
+    @Override
+    public List<SupplierBrand> querySupplierBrand(SupplierBrandForm form) throws Exception {
+        SupplierBrand supplierBrand = new SupplierBrand();
+        BeanUtils.copyProperties(form,supplierBrand);
+        supplierBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return supplierBrandService.select(supplierBrand);
+    }
+
+
 }

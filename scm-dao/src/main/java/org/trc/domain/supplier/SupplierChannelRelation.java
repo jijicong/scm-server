@@ -1,16 +1,27 @@
 package org.trc.domain.supplier;
 
-import org.trc.domain.BaseDO;
+import org.hibernate.validator.constraints.Length;
 
-public class SupplierChannelRelation extends BaseDO{
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
+
+public class SupplierChannelRelation{
+
+    @FormParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("supplierId")
     private Long supplierId;
-
+    @FormParam("channelId")
     private Long channelId;
-
+    @FormParam("supplierCode")
+    @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
-
+    @FormParam("channelCode")
+    @Length(max = 32, message = "渠道编号长度不能超过32个")
     private String channelCode;
 
     public Long getId() {
