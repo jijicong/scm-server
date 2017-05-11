@@ -3,13 +3,12 @@ package org.trc.resource;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.IBrandBiz;
-import org.trc.biz.impl.BrandBiz;
+import org.trc.biz.category.IBrandBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.enums.BrandSourceEnum;
 import org.trc.enums.ValidEnum;
-import org.trc.form.BrandForm;
+import org.trc.form.category.BrandForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -17,6 +16,7 @@ import org.trc.util.ResultUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -64,6 +64,20 @@ public class BrandResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Brand> findBrandById(@PathParam("id") Long id) throws Exception{
         return ResultUtil.createSucssAppResult("查询品牌成功", brandBiz.findBrandById(id));
+    }
+
+    @GET
+    @Path(SupplyConstants.Category.Brand.BRAND_LIST_SEARCH +"/{name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findBrandByName(@PathParam("name") String name) throws Exception{
+        List<Brand> list=brandBiz.findBrandsByName(name);
+        Integer flag=0;
+        if(null==list||list.size()<1){
+            flag=null;
+        }else{
+            flag=1;
+        }
+        return ResultUtil.createSucssAppResult("查询品牌成功", flag);
     }
 
     @PUT

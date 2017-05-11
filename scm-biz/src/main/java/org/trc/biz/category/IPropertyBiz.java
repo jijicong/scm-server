@@ -1,8 +1,8 @@
-package org.trc.biz;
+package org.trc.biz.category;
 
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
-import org.trc.form.PropertyForm;
+import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
 
 import java.util.List;

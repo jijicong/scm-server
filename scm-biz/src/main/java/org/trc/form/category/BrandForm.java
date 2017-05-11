@@ -1,4 +1,4 @@
-package org.trc.form;
+package org.trc.form.category;
 
 import org.trc.util.QueryModel;
 

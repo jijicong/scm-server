@@ -1,18 +1,18 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import org.trc.biz.ICategoryBiz;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.domain.category.Category;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.CategoryForm;
-import org.trc.form.TreeNode;
+import org.trc.form.category.CategoryForm;
+import org.trc.domain.category.TreeNode;
 import org.trc.service.category.ICategoryService;
 import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;

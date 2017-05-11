@@ -1,17 +1,12 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSONObject;
-import com.sun.deploy.panel.IProperty;
-import org.hibernate.validator.internal.xml.PropertyType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import org.trc.biz.IPropertyBiz;
+import org.trc.biz.category.IPropertyBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
-import org.trc.form.PropertyForm;
+import org.trc.form.category.PropertyForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
