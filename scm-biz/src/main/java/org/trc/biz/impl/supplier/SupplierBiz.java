@@ -11,18 +11,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.supplier.Certificate;
-import org.trc.domain.supplier.Supplier;
-import org.trc.domain.supplier.SupplierChannelRelation;
+import org.trc.domain.supplier.*;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
+import org.trc.form.supplier.SupplierBrandForm;
+import org.trc.form.supplier.SupplierCategoryForm;
 import org.trc.form.supplier.SupplierForm;
-import org.trc.service.supplier.ICertificateService;
-import org.trc.service.supplier.ISupplierChannelRelationService;
-import org.trc.service.supplier.ISupplierService;
+import org.trc.service.impl.supplier.SupplierCategoryService;
+import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
@@ -60,6 +59,10 @@ public class SupplierBiz implements ISupplierBiz {
     private ISerialUtilService serialUtilService;
     @Autowired
     private ISupplierChannelRelationService supplierChannelRelationService;
+    @Autowired
+    private ISupplierCategoryService supplierCategoryService;
+    @Autowired
+    private ISupplierBrandService supplierBrandService;
 
     @Override
     public Pagenation<Supplier> SupplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -276,4 +279,22 @@ public class SupplierBiz implements ISupplierBiz {
         }
         return supplier;
     }
+
+    @Override
+    public List<SupplierCategory> querySupplierCategory(SupplierCategoryForm form) throws Exception {
+        SupplierCategory supplierCategory = new SupplierCategory();
+        BeanUtils.copyProperties(form,supplierCategory);
+        supplierCategory.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return supplierCategoryService.select(supplierCategory);
+    }
+
+    @Override
+    public List<SupplierBrand> querySupplierBrand(SupplierBrandForm form) throws Exception {
+        SupplierBrand supplierBrand = new SupplierBrand();
+        BeanUtils.copyProperties(form,supplierBrand);
+        supplierBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return supplierBrandService.select(supplierBrand);
+    }
+
+
 }

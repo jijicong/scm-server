@@ -1,10 +1,8 @@
 package org.trc.domain.supplier;
 
-import org.trc.domain.BaseDO;
+import org.trc.domain.util.ScmDO;
 
-import java.util.Date;
-
-public class SupplierCategory extends BaseDO{
+public class SupplierCategory extends ScmDO {
     private Long id;
 
     private String supplierId;

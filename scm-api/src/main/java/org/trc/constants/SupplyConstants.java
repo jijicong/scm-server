@@ -200,6 +200,28 @@ public class SupplyConstants {
             //供应商路径
             public static final String SUPPLIER = "supplier";
         }
+
+        /**
+         * 供应商分类
+         */
+        public static final class SupplierCategory {
+            //供应商分类列表查询路径
+            public static final String SUPPLIER_CATEGORY_LIST = "supplierCategorys";
+            //供应商分类路径
+            public static final String SUPPLIER_CATEGORY = "supplierCategory";
+        }
+
+        /**
+         * 供应商品牌
+         */
+        public static final class SupplierBrand {
+            //供应商分类列表查询路径
+            public static final String SUPPLIER_BRAND_LIST = "supplierBrands";
+            //供应商分类路径
+            public static final String SUPPLIER_BRAND = "supplierBrand";
+        }
+
+
     }
 
 
