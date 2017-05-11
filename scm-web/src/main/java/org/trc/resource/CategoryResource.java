@@ -2,10 +2,11 @@ package org.trc.resource;
 
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.trc.biz.impl.CategoryBiz;
+import org.springframework.stereotype.Component;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
-import org.trc.form.CategoryForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
 
@@ -16,11 +17,11 @@ import java.util.Calendar;
 /**
  * Created by hzszy on 2017/5/10.
  */
+@Component
+@Path(SupplyConstants.Category.ROOT)
 public class CategoryResource {
     @Autowired
-    private CategoryBiz categoryBiz;
-
-
+    private ICategoryBiz categoryBiz;
     @GET
     @Path(SupplyConstants.Category.Classify.CLASSIFY_TREE)
     @Produces(MediaType.APPLICATION_JSON)

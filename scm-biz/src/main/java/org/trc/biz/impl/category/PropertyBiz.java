@@ -1,4 +1,4 @@
-package org.trc.biz.impl;
+package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -8,15 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.trc.biz.IPropertyBiz;
-import org.trc.domain.category.Brand;
+import org.trc.biz.category.IPropertyBiz;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.PropertyForm;
+import org.trc.form.category.PropertyForm;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.util.CommonUtil;
@@ -25,7 +24,6 @@ import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 

@@ -1,7 +1,8 @@
 package org.trc.biz.supplier;
 
-import org.trc.domain.supplier.Certificate;
-import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.*;
+import org.trc.form.supplier.SupplierBrandForm;
+import org.trc.form.supplier.SupplierCategoryForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.Pagenation;
 
@@ -50,6 +51,21 @@ public interface ISupplierBiz {
      * @return
      */
     public Supplier findSupplierById(Long id) throws Exception;
-    
+
+    /**
+     * 查询供应商代理分类列表
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    public List<SupplierCategory> querySupplierCategory(SupplierCategoryForm form) throws Exception;
+
+    /**
+     * 查询供应商代理品牌列表
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    public List<SupplierBrand> querySupplierBrand(SupplierBrandForm form) throws Exception;
     
 }

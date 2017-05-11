@@ -1,8 +1,8 @@
-package org.trc.biz;
+package org.trc.biz.category;
 
 import org.trc.domain.category.Category;
-import org.trc.form.CategoryForm;
-import org.trc.form.TreeNode;
+import org.trc.form.category.CategoryForm;
+import org.trc.form.category.TreeNode;
 
 import java.util.List;
 
