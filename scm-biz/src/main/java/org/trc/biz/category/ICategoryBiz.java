@@ -2,7 +2,7 @@ package org.trc.biz.category;
 
 import org.trc.domain.category.Category;
 import org.trc.form.category.CategoryForm;
-import org.trc.domain.category.TreeNode;
+import org.trc.form.category.TreeNode;
 
 import java.util.List;
 

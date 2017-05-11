@@ -12,7 +12,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.CategoryForm;
-import org.trc.domain.category.TreeNode;
+import org.trc.form.category.TreeNode;
 import org.trc.service.category.ICategoryService;
 import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;

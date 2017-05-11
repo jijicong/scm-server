@@ -1,4 +1,4 @@
-package org.trc.domain.category;
+package org.trc.form.category;
 
 import java.util.List;
 
