@@ -36,6 +36,7 @@ import java.util.List;
 @Service("configBiz")
 public class ConfigBiz implements IConfigBiz {
 
+
     private final static Logger log = LoggerFactory.getLogger(ConfigBiz.class);
 
     @Autowired
@@ -236,7 +237,7 @@ public class ConfigBiz implements IConfigBiz {
         }
     }
     @Override
-    public List<AreaTreeNode> findProvinceCity() {
+    public List<AreaTreeNode> findProvinceCity()  throws Exception {
         return locationUtilService.getTreeNodeFromLocation();
     }
 }

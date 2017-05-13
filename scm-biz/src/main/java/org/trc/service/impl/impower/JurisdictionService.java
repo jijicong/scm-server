@@ -8,6 +8,6 @@ import org.trc.service.impower.IJurisdictionService;
 /**
  * Created by sone on 2017/5/11.
  */
-@Service
+@Service("jurisdictionService")
 public class JurisdictionService extends BaseService<Jurisdiction,Long> implements IJurisdictionService{
 }

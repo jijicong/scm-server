@@ -10,5 +10,5 @@ import java.util.List;
  * Created by sone on 2017/5/6.
  */
 public interface ILocationUtilService extends IBaseService<area,Long>{
-    public List<AreaTreeNode> getTreeNodeFromLocation();
+     List<AreaTreeNode> getTreeNodeFromLocation() throws Exception;
 }

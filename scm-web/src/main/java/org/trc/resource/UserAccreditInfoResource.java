@@ -7,12 +7,10 @@ import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -32,10 +30,12 @@ public class UserAccreditInfoResource {
     public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception{
         return userAccreditInfoBiz.UserAccreditInfoPage(form,page);
     }
-   /* @GET
+    @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult*/
+    public AppResult findUserAccreditInfoByName(@QueryParam("name") String name) throws Exception{
+        return  ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoByName(name)==null ? null :"1");
+    }
 
 
 }

@@ -8,6 +8,6 @@ import org.trc.service.impl.BaseService;
 /**
  * Created by sone on 2017/5/4.
  */
-@Service
+@Service("warehouseService")
 public class WarehouseService extends BaseService<Warehouse,Long> implements IWarehouseService{
 }

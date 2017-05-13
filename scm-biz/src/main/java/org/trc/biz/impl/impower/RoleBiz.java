@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Created by sone on 2017/5/11.
  */
-@Service
+@Service("roleBiz")
 public class RoleBiz implements IRoleBiz{
 
     private final static Logger log = LoggerFactory.getLogger(RoleBiz.class);

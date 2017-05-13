@@ -8,6 +8,6 @@ import org.trc.service.impl.BaseService;
 /**
  * Created by sone on 2017/5/2.
  */
-@Service
+@Service("channelService")
 public class ChannelService extends BaseService<Channel,Long> implements IChannelService{
 }
