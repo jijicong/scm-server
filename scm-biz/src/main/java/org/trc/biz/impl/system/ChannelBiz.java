@@ -8,7 +8,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
-import org.trc.domain.dict.Dict;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -20,7 +19,6 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
-import org.trc.util.serialUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -58,12 +56,11 @@ public class ChannelBiz implements IChannelBiz {
 
         return pagenation;
     }
-    @Override
+
     public Channel findChannelByName(String name) throws Exception{
         if(StringUtil.isEmpty(name) || name==null){
             String msg = CommonUtil.joinStr("根据渠道名称查询渠道的参数name为空").toString();
             log.error(msg);
-
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         Channel channel=new Channel();

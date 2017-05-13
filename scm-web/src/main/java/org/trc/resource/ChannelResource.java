@@ -71,7 +71,6 @@ public class ChannelResource {
     public AppResult updateChannelState(@BeanParam Channel channel) throws Exception{
        return ResultUtil.createSucssAppResult("状态修改成功",channelBiz.updateChannelState(channel));
     }
-
     @GET
     @Path(SupplyConstants.Channel.CHANNEL_LIST)
     @Produces(MediaType.APPLICATION_JSON)

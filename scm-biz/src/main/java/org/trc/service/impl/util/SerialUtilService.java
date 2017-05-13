@@ -8,7 +8,7 @@ import org.trc.mapper.util.ISerialMapper;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.impl.BaseService;
 import org.trc.util.CommonUtil;
-import org.trc.util.serialUtil;
+import org.trc.util.SerialUtil;
 
 import javax.annotation.Resource;
 
@@ -32,7 +32,7 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
 
         int countVersionChange=this.updateSeralByName(name,serial.getNumber()+1,serial.getNumber());
 
-        String code=serialUtil.getMoveOrderNo(name, length,serial.getNumber() );
+        String code= SerialUtil.getMoveOrderNo(name, length,serial.getNumber() );
         return code;
     }
     @Override

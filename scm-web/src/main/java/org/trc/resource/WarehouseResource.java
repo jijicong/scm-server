@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.util.TreeNode;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -13,7 +12,6 @@ import org.trc.util.ResultUtil;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 /**
  * Created by sone on 2017/5/4.
@@ -31,7 +29,6 @@ public class WarehouseResource {
     public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page) throws Exception{
         return warehouseBiz.warehousePage(form,page);
     }
-
     //根据仓库名查询渠道
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE)

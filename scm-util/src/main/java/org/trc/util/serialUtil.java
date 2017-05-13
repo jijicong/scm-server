@@ -4,7 +4,7 @@ package org.trc.util;
  * 序列号工具类
  * Created by sone on 2017/5/3.
  */
-public  class serialUtil {
+public  class SerialUtil {
     /**
      * 产生流水号  默认从1开始
      * @param prefix   前缀

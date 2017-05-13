@@ -153,6 +153,47 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "warehouse/updateState";
     }
     /**
+     * 授权信息
+     */
+    public static final class UserAccreditInfo{
+        //根路径
+        public static final String ROOT = "accredit";
+        //授权信息分页查询
+        public static final String ACCREDIT_PAGE = "accreditInfoPage";
+        //授权的用户使用名查询
+        public static final String ACCREDIT = "accreditInfo";
+        //状态的修改
+        public static final String UPDATE_STATE = "accreditInfo/updateState";
+    }
+    /**
+     * 角色信息
+     */
+    public static final class Role{
+        //根路径
+        public static final String ROOT = "accredit";
+        //授权信息分页查询
+        public static final String ROLE_PAGE = "rolePage";
+        //授权的用户使用名查询
+        public static final String ROLE = "role";
+        //状态的修改
+        public static final String UPDATE_STATE = "role/updateState";
+    }
+    /**
+     * 资源（权限）
+     */
+    public static final class Jurisdiction{
+        //根路径
+        public static final String ROOT = "accredit";
+        //资源分页分页查询---unused
+        //public static final String ACCREDIT_PAGE = "jurisdictionPage";
+        //全局资源资源查询
+        public static final String JURISDICTION_WHOLE = "jurisdictionWhole";
+        //渠道资源查询
+        public static final String JURISDICTION_CHANNEL = "jurisdictionChannel";
+        //状态的修改--unused
+        //public static final String UPDATE_STATE = "jurisdiction/updateState";
+    }
+    /**
      *七牛
      */
     public static final class QinNiu{
@@ -250,6 +291,8 @@ public class SupplyConstants {
         public static final String WAREHOUSE_TYPE="warehouseType";
         //省市
         public static final String PROVINCE_CITY="province";
+        //角色类型字典类型编码
+        public static final String ROLE_TYPE="roleType";
 
     }
 
