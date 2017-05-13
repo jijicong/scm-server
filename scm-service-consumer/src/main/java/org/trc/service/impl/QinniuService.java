@@ -29,7 +29,7 @@ import java.util.*;
  * Created by hzwdx on 2017/5/3.
  */
 @Service("qinniuService")
-public class QinniuService implements IQinniuService{
+public class QinniuService implements IQinniuService {
 
     //url地址和参数分隔符号
     public static final String URL_PARAM_SPLIT = "?";
@@ -42,7 +42,7 @@ public class QinniuService implements IQinniuService{
     private QinniuForm qinniuForm;
 
     @Override
-    public Auth getAuth() throws Exception{
+    public Auth getAuth() throws Exception {
         return Auth.create(qinniuForm.getAccessKey(), qinniuForm.getSecretKey());
     }
 
@@ -54,27 +54,27 @@ public class QinniuService implements IQinniuService{
     @Override
     public DefaultPutRet upload(InputStream inputStream, String fileName, BaseThumbnailSize baseThumbnailSize) throws Exception {
         StringMap stringMap = null;
-        if(null != baseThumbnailSize){
+        if (null != baseThumbnailSize) {
             stringMap = getPersistentOpfs(qinniuForm.getBucket(), fileName, baseThumbnailSize);
         }
-        Response response = getUploadManager().put(inputStream,fileName,getToken(stringMap), stringMap, null);
+        Response response = getUploadManager().put(inputStream, fileName, getToken(stringMap), stringMap, null);
         return new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
     }
 
     @Override
     public String download(String fileName) throws Exception {
-        String url = getUrl(fileName,null,null);
+        String url = getUrl(fileName, null, null);
         return getAuth().privateDownloadUrl(url);
     }
 
     @Override
     public String getThumbnail(String fileName, Integer width, Integer height) throws Exception {
-        String url = getUrl(fileName,width, height);
+        String url = getUrl(fileName, width, height);
         return getAuth().privateDownloadUrl(url);
     }
 
     @Override
-    public List<BatchStatus> batchGetFileInfo(String[] fileNames) throws Exception{
+    public List<BatchStatus> batchGetFileInfo(String[] fileNames) throws Exception {
         BucketManager.BatchOperations batchOperations = new BucketManager.BatchOperations();
         batchOperations.addStatOps(qinniuForm.getBucket(), fileNames);
         Response response = getBucketManager().batch(batchOperations);
@@ -87,9 +87,9 @@ public class QinniuService implements IQinniuService{
         List<FileUrl> fileUrls = new ArrayList<FileUrl>();
         String domainOfBucket = qinniuForm.getDomainOfBucket();
         String firstFileUrl = download(fileNames[0]);
-        String[] firstFileUrlSplit = firstFileUrl.split("\\"+URL_PARAM_SPLIT);
+        String[] firstFileUrlSplit = firstFileUrl.split("\\" + URL_PARAM_SPLIT);
         String tokenParam = firstFileUrlSplit[1];
-        for(String fileName : fileNames){
+        for (String fileName : fileNames) {
             String encodedFileName = URLEncoder.encode(fileName, "utf-8");
             FileUrl fileUrl = new FileUrl();
             fileUrl.setFileKey(fileName);
@@ -126,14 +126,14 @@ public class QinniuService implements IQinniuService{
         return map;
     }
 
-    private String[] getDeleteFileNames(String[] fileNames, BaseThumbnailSize baseThumbnailSize){
+    private String[] getDeleteFileNames(String[] fileNames, BaseThumbnailSize baseThumbnailSize) {
         List<String> fileList = new ArrayList<String>();
-        if(null != baseThumbnailSize){
-            for(String fileName : fileNames){
+        if (null != baseThumbnailSize) {
+            for (String fileName : fileNames) {
                 fileList.add(fileName);
-                String[] fileNameSplit = fileName.split("\\"+FILE_FLAG);
-                for(ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()){
-                    if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),size.getIsValid())){
+                String[] fileNameSplit = fileName.split("\\" + FILE_FLAG);
+                for (ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()) {
+                    if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), size.getIsValid())) {
                         //缩略图名称
                         String thumbnailName = String.format("%s_%s_%s%s%s", fileNameSplit[0], size.getWidth(), size.getHeight(), FILE_FLAG, fileNameSplit[1]);
                         fileList.add(thumbnailName);
@@ -141,25 +141,26 @@ public class QinniuService implements IQinniuService{
                 }
             }
             return fileList.toArray(new String[fileList.size()]);
-        }else{
+        } else {
             return fileNames;
         }
     }
 
     /**
      * 获取文件url
+     *
      * @param fileName 文件名称
-     * @param width 缩略图宽度
-     * @param height 缩略图高度
+     * @param width    缩略图宽度
+     * @param height   缩略图高度
      * @return
      */
     private String getUrl(String fileName, Integer width, Integer height) throws Exception {
         String url = "";
         String domainOfBucket = qinniuForm.getDomainOfBucket();
         String encodedFileName = URLEncoder.encode(fileName, "utf-8");
-        if(null == width || null == height){
+        if (null == width || null == height) {
             url = String.format("%s/%s", domainOfBucket, encodedFileName);
-        }else {
+        } else {
             String imageView2Mode = String.format("imageView2/1/w/%s/h/%s", width, height);
             url = String.format("%s/%s?%s", domainOfBucket, encodedFileName, imageView2Mode);
         }
@@ -168,14 +169,15 @@ public class QinniuService implements IQinniuService{
 
     /**
      * 获取上传文图片持久化参数
+     *
      * @return
      */
-    private StringMap getPersistentOpfs(String bucket, String fileName, BaseThumbnailSize baseThumbnailSize){
+    private StringMap getPersistentOpfs(String bucket, String fileName, BaseThumbnailSize baseThumbnailSize) {
         StringMap putPolicy = new StringMap();
-        String[] fileNames = fileName.split("\\"+FILE_FLAG);
+        String[] fileNames = fileName.split("\\" + FILE_FLAG);
         List<String> thumbnailCmds = new ArrayList<String>();
-        for(ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()){
-            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),size.getIsValid())){
+        for (ThumbnailSize size : baseThumbnailSize.getThumbnailSizes()) {
+            if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), size.getIsValid())) {
                 //缩略图名称
                 String thumbnailName = String.format("%s_%s_%s%s%s", fileNames[0], size.getWidth(), size.getHeight(), FILE_FLAG, fileNames[1]);
                 String thumbnail = String.format("%s:%s", bucket, thumbnailName);
@@ -195,21 +197,23 @@ public class QinniuService implements IQinniuService{
 
     /**
      * 获取配置对象
+     *
      * @return
      */
-    private Configuration getConfiguration(){
+    private Configuration getConfiguration() {
         return new Configuration(Zone.zone0());
     }
 
     /**
      * 获取上传管理类
+     *
      * @return
      */
-    private UploadManager getUploadManager(){
+    private UploadManager getUploadManager() {
         return new UploadManager(getConfiguration());
     }
 
-    private BucketManager getBucketManager() throws Exception{
+    private BucketManager getBucketManager() throws Exception {
         return new BucketManager(getAuth(), getConfiguration());
     }
 

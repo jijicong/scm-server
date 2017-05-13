@@ -24,7 +24,9 @@ import java.util.UUID;
  */
 @Component
 @Path(SupplyConstants.Category.ROOT)
+
 public class BrandResource {
+
     @Autowired
     private IBrandBiz brandBiz;
 

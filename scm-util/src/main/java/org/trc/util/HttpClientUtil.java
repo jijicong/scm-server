@@ -30,6 +30,7 @@ import java.util.Map;
  *
  */
 public class HttpClientUtil {
+
     private static PoolingHttpClientConnectionManager cm;
     private static String EMPTY_STR = "";
     private static String UTF_8 = "UTF-8";
