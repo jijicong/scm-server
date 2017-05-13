@@ -223,6 +223,13 @@ public class SupplyConstants {
             public static final String SUPPLIER_BRAND = "supplierBrand";
         }
 
+        /**
+         * 供应商申请审批
+         */
+        public static final class SupplierApply {
+            //供应商申请审批分页
+            public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
+        }
 
     }
 

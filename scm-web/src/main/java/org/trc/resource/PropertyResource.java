@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.form.category.PropertyForm;
@@ -57,5 +58,12 @@ public class PropertyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Property> findPropertyById(@PathParam("id") Long id) throws Exception {
         return ResultUtil.createSucssAppResult("属性查询成功",propertyBiz.findPropertyById(id));
+    }
+
+    @POST
+    @Path(SupplyConstants.Category.Property.PROPERTY_STATE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateBrandStatus(@BeanParam Property Property)throws Exception{
+        return ResultUtil.createSucssAppResult("更新属性状态成功", propertyBiz.updatePropertyStatus(Property));
     }
 }
