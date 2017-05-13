@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by sone on 2017/5/8.
  */
-public class TreeNode implements Serializable{
+public class AreaTreeNode implements Serializable{
     /*{"id" : "1","text":"山东","children":[
         {"id":"11","text":"济南","leaf":false},
         {"id":"12","text":"淄博","leaf":false,"children":[
@@ -14,7 +14,7 @@ public class TreeNode implements Serializable{
     private String id; //这里的id相当于Location中的code
     private String text;//Location中的 province city district
     private boolean isleaf;
-    private List<TreeNode> children;//子节点
+    private List<AreaTreeNode> children;//子节点
 
     public boolean isIsleaf() {
         return isleaf;
@@ -40,20 +40,12 @@ public class TreeNode implements Serializable{
         this.text = text;
     }
 
-    public List<TreeNode> getChildren() {
+    public List<AreaTreeNode> getChildren() {
         return children;
     }
 
-    public void setChildren(List<TreeNode> children) {
+    public void setChildren(List<AreaTreeNode> children) {
         this.children = children;
     }
 
-    @Override
-    public String toString() {
-        return "TreeNode{" +
-                "id='" + id + '\'' +
-                ", text='" + text + '\'' +
-                ", children=" + children +
-                '}';
-    }
 }

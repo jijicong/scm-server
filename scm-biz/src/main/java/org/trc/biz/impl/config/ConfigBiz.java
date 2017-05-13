@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
-import org.trc.domain.util.TreeNode;
+import org.trc.domain.util.AreaTreeNode;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -29,7 +29,6 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -281,7 +280,7 @@ public class ConfigBiz implements IConfigBiz {
         return count;
     }
     @Override
-    public List<TreeNode> findProvinceCity() {
+    public List<AreaTreeNode> findProvinceCity() {
         return locationUtilService.getTreeNodeFromLocation();
     }
 }

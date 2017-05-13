@@ -4,16 +4,14 @@ import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.config.IConfigBiz;
-import org.trc.biz.impl.config.ConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
-import org.trc.domain.util.TreeNode;
+import org.trc.domain.util.AreaTreeNode;
 import org.trc.enums.ClearanceEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -37,7 +35,8 @@ public class SelectListResource {
     private static final String SUPPLIER_TYPE = "supplierType";
     //仓库类型字典类型编码
     private static final String WAREHOUSE_TYPE="warehouseType";
-
+    //角色类型字典类型编码
+    private static final String ROLE_TYPE="roleType";
 
     @GET
     @Path(SupplyConstants.Config.SelectList.VALID_LIST)
@@ -76,13 +75,19 @@ public class SelectListResource {
     @GET
     @Path(SupplyConstants.SelectList.PROVINCE_CITY)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<TreeNode> findProvinceCity() throws Exception{
+    public List<AreaTreeNode> findProvinceCity() throws Exception{
         /**
          * 1.查询所有的省市信息
          * 2.使用json对象转化
          * 3.返回给前台
          */
         return configBiz.findProvinceCity();
+    }
+    @GET
+    @Path(SupplyConstants.SelectList.ROLE_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> roleType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询仓库类型成功", configBiz.findDictsByTypeNo(ROLE_TYPE));
     }
 
 }

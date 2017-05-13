@@ -6,20 +6,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.util.Serial;
-import org.trc.domain.util.TreeNode;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.WarehouseForm;
-import org.trc.service.util.ILocationUtilService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
-import org.trc.util.serialUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -67,7 +63,6 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         String code = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
         warehouse.setCode(code);//仓库的流水号为CK00000
-
         ParamsUtil.setBaseDO(warehouse);
         int count = 0;
         count = warehouseService.insert(warehouse);

@@ -1,11 +1,8 @@
 package org.trc.biz.system;
 
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.util.TreeNode;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.Pagenation;
-
-import java.util.List;
 
 /**
  * 仓库管理
