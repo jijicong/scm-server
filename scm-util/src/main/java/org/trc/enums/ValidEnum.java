@@ -26,7 +26,6 @@ public enum ValidEnum {
 	}
 	
 	/**
-	 * 
 	* @Title: getValidEnumByName 
 	* @Description: 根据枚举名称获取枚举
 	* @param @param name

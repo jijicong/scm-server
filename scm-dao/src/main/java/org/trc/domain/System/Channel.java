@@ -11,7 +11,6 @@ import javax.ws.rs.FormParam;
 /**
  * Created by sone on 2017/5/2.
  */
-//@Table(name = "channel")
 public class Channel extends BaseDO{
     @FormParam("id")
     @Id
@@ -19,14 +18,14 @@ public class Channel extends BaseDO{
     private Long id;
     @FormParam("code")
     @NotEmpty
-    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max = 32, message = "渠道编码字母和数字不能超过32个,汉字不能超过16个")
     private String code;
     @FormParam("name")
     @NotEmpty
-    @Length(max = 64, message = "字典类型名称字母和数字不能超过64个,汉字不能超过32个")
+    @Length(max = 64, message = "渠道名称字母和数字不能超过64个,汉字不能超过32个")
     private String name;
     @FormParam("remark")
-    @Length(max = 1024,message = "字典类型名称字母和数字不能超过1024个,汉字不能超过512个")
+    @Length(max = 1024,message = "渠道备注字母和数字不能超过1024个,汉字不能超过512个")
     private String remark;
 
 

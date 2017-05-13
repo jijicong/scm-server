@@ -46,4 +46,6 @@ public interface IPropertyBiz {
     public List<PropertyValue> queryListByPropertyId(Long propertyId)throws Exception;
 
     public Property findPropertyById(Long id)throws Exception;
+
+    public int updatePropertyStatus(Property property)throws Exception;
 }

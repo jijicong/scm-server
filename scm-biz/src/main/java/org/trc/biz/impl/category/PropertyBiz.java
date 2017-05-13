@@ -13,6 +13,7 @@ import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.PropertyForm;
@@ -132,7 +133,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     public List<PropertyValue> queryListByPropertyId(Long propertyId)throws Exception{
-        validateBeanNotNull(propertyId,ExceptionEnum.CATEGORY_PROPERTY_VALUE_QUERY_EXCEPTION,"");
+        validateBeanNotNull(propertyId,ExceptionEnum.CATEGORY_PROPERTY_VALUE_QUERY_EXCEPTION,"属性管理模块属性值查询失败propertyId："+propertyId);
         Example example=new Example(PropertyValue.class);
         Example.Criteria criteria=example.createCriteria();
         criteria.andEqualTo("propertyId",propertyId);
@@ -157,6 +158,25 @@ public class PropertyBiz implements IPropertyBiz {
             throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_QUERY_EXCEPTION,msg);
         }
         return property;
+    }
+
+    @Override
+    public int updatePropertyStatus(Property property) throws Exception {
+        validateBeanNotNull(property,ExceptionEnum.CATEGORY_PROPERTY_UPDATE_EXCEPTION,"根据属性ID更新属性状态，属性信息为空");
+        Property updateProperty=new Property();
+        updateProperty.setId(property.getId());
+        if (property.getIsValid().equals(ValidEnum.VALID.getCode())){
+            updateProperty.setIsValid(ValidEnum.NOVALID.getCode());
+        }else{
+            updateProperty.setIsValid(ValidEnum.VALID.getCode());
+        }
+        int count=propertyService.updateByPrimaryKeySelective(updateProperty);
+        if (count<1){
+            String msg=CommonUtil.joinStr("根据主键ID[id=",updateProperty.getId().toString(),"]更新属性状态失败").toString();
+            log.error(msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION,msg);
+        }
+        return count;
     }
 
     /**
