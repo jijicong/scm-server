@@ -14,7 +14,7 @@ public class AssertUtil extends Assert{
      * @param msg
      */
     public static void notBlank(String str, String msg){
-        if(StringUtils.isEmpty(str))
+        if(StringUtils.isBlank(str))
             throw new IllegalArgumentException(msg);
     }
 
