@@ -9,10 +9,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 public class Supplier extends BaseDO{
 
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

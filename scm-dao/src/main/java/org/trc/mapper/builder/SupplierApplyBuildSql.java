@@ -7,13 +7,13 @@ import java.util.Map;
 /**
  * Created by hzqph on 2017/5/12.
  */
-public class SupplierApplybuildSql {
+public class SupplierApplyBuildSql {
         //你要查询主表的名称
         final String fromTable = "apply_for_supplier a";
 
         //动态拼写你要写的sql语句
         public String querySupplierApplyList(Map<String,Object> map){
-            String fileds = "a.id as 'id',a.apply_code as 'applyCode',b.supplier_name as 'supplierName'," +
+            String fields = "a.id as 'id',a.apply_code as 'applyCode',b.supplier_name as 'supplierName'," +
                     "a.supplier_code as 'supplierCode',b.supplier_kind_code as 'supplierKindCode',a.status as 'status',a.create_time as 'createTime'";
             String leftJoin="supplier b on a.supplier_id=b.id";
             String where="a.status=1";
@@ -40,7 +40,7 @@ public class SupplierApplybuildSql {
             sql.LEFT_OUTER_JOIN(leftJoin);
             sql.WHERE(where);
             sql.FROM(fromTable);
-            sql.SELECT(fileds);
+            sql.SELECT(fields);
             return sql.toString();
         }
 

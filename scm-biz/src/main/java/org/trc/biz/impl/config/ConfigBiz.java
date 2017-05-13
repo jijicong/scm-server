@@ -11,16 +11,15 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
 import org.trc.domain.util.AreaTreeNode;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.config.DictForm;
 import org.trc.form.config.DictTypeForm;
 import org.trc.service.config.IDictService;
 import org.trc.service.config.IDictTypeService;
 import org.trc.service.util.ILocationUtilService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -36,6 +35,7 @@ import java.util.List;
  */
 @Service("configBiz")
 public class ConfigBiz implements IConfigBiz {
+
 
     private final static Logger log = LoggerFactory.getLogger(ConfigBiz.class);
 
@@ -72,50 +72,37 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int saveDictType(DictType dictType) throws Exception{
+    public void saveDictType(DictType dictType) throws Exception{
         DictType tmp = findDictTypeByTypeNo(dictType.getCode());
         if(null != tmp){
             String msg = CommonUtil.joinStr("字典类型编码为[code=",dictType.getCode(),"]的数据已存在,请使用其他编码").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
-        int count = 0;
         ParamsUtil.setBaseDO(dictType);
-        count = dictTypeService.insert(dictType);
+        int count = dictTypeService.insert(dictType);
         if(count == 0){
             String msg = CommonUtil.joinStr("保存字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_SAVE_EXCEPTION, msg);
         }
-        return count;
     }
 
     @Override
-    public int updateDictType(DictType dictType, Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("修改字典类型参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
-        int count = 0;
-        dictType.setId(id);
+    public void updateDictType(DictType dictType) throws Exception {
+        AssertUtil.notNull(dictType.getId(), "字典类型ID不能为空");
         dictType.setUpdateTime(Calendar.getInstance().getTime());
-        count = dictTypeService.updateByPrimaryKeySelective(dictType);
+        int count = dictTypeService.updateByPrimaryKeySelective(dictType);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改字典类型",JSON.toJSONString(dictType),"数据库操作失败").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
-        return count;
     }
 
     @Override
     public DictType findDictTypeById(Long id)throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("根据ID查询字典类型参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(id, "根据ID查询字典类型参数ID为空");
         DictType dictType = new DictType();
         dictType.setId(id);
         dictType = dictTypeService.selectOne(dictType);
@@ -128,11 +115,7 @@ public class ConfigBiz implements IConfigBiz {
 
     @Override
     public DictType findDictTypeByTypeNo(String typeCode) throws Exception{
-        if(StringUtils.isEmpty(typeCode)){
-            String msg = CommonUtil.joinStr("根据类型编码查询字典类型参数typeNo为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notBlank(typeCode, "根据类型编码查询字典类型参数typeNo为空");
         DictType dictType = new DictType();
         dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -141,12 +124,8 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int deleteDictTypeById(Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("根据ID删除字典类型参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+    public void deleteDictTypeById(Long id) throws Exception {
+        AssertUtil.notNull(id, "字典类型ID不能为空");
         DictType tmp = new DictType();
         tmp.setId(id);
         tmp = dictTypeService.selectOne(tmp);
@@ -157,7 +136,6 @@ public class ConfigBiz implements IConfigBiz {
             String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]删除字典类型失败").toString();
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,msg);
         }
-        return count;
     }
 
     @Override
@@ -190,7 +168,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int saveDict(Dict dict) throws Exception{
+    public void saveDict(Dict dict) throws Exception{
         int count = 0;
         if(null != dict.getId()){
             //修改
@@ -206,35 +184,23 @@ public class ConfigBiz implements IConfigBiz {
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_SAVE_EXCEPTION,msg);
         }
-        return count;
     }
 
     @Override
-    public int updateDict(Dict dict, Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("修改字典参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
-        int count = 0;
-        dict.setId(id);
+    public void updateDict(Dict dict) throws Exception {
+        AssertUtil.notNull(dict.getId(), "字典ID不能为空");
         dict.setUpdateTime(Calendar.getInstance().getTime());
-        count = dictService.updateByPrimaryKeySelective(dict);
+        int count = dictService.updateByPrimaryKeySelective(dict);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改字典",JSON.toJSONString(dict),"数据库操作失败").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
-        return count;
     }
 
     @Override
     public Dict findDictById(Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("根据ID查询字典参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(id, "根据ID查询字典参数ID不能为空");
         Dict dict = new Dict();
         dict.setId(id);
         dict = dictService.selectOne(dict);
@@ -248,11 +214,7 @@ public class ConfigBiz implements IConfigBiz {
 
     @Override
     public List<Dict> findDictsByTypeNo(String typeCode) throws Exception {
-        if(StringUtils.isEmpty(typeCode)){
-            String msg = CommonUtil.joinStr("根据类型编码查询字典参数typeCode为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notBlank(typeCode, "根据类型编码查询字典参数typeCode为空");
         Dict dict = new Dict();
         dict.setIsValid(ZeroToNineEnum.ONE.getCode());
         dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -261,12 +223,8 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public int deleteDictById(Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("根据ID删除字典参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+    public void deleteDictById(Long id) throws Exception {
+        AssertUtil.notNull(id, "字典ID不能为空");
         Dict tmp = new Dict();
         tmp.setId(id);
         tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
@@ -277,10 +235,9 @@ public class ConfigBiz implements IConfigBiz {
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
-        return count;
     }
     @Override
-    public List<AreaTreeNode> findProvinceCity() {
+    public List<AreaTreeNode> findProvinceCity()  throws Exception {
         return locationUtilService.getTreeNodeFromLocation();
     }
 }

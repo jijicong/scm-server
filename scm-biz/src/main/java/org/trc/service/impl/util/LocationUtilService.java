@@ -12,10 +12,10 @@ import java.util.List;
 /**
  * Created by sone on 2017/5/6.
  */
-@Service
+@Service("locationUtilService")
 public class LocationUtilService extends BaseService<area,Long> implements ILocationUtilService {
 
-    public List<AreaTreeNode> getTreeNodeFromLocation(){
+    public List<AreaTreeNode> getTreeNodeFromLocation() throws Exception{
          //1.获得location
         area area =new area();
         area.setId(1L);

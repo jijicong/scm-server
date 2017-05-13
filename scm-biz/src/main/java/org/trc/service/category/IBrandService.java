@@ -8,5 +8,4 @@ import org.trc.service.IBaseService;
  */
 public interface IBrandService extends IBaseService<Brand,Long> {
 
-
 }

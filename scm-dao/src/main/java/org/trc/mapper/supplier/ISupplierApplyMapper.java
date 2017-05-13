@@ -1,12 +1,10 @@
 package org.trc.mapper.supplier;
 
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectProvider;
 import org.trc.domain.supplier.SupplierApply;
-import org.trc.mapper.builder.SupplierApplybuildSql;
+import org.trc.mapper.builder.SupplierApplyBuildSql;
 import org.trc.util.BaseMapper;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -15,9 +13,9 @@ import java.util.Map;
  */
 public interface ISupplierApplyMapper extends BaseMapper<SupplierApply>{
 
-    @SelectProvider(type = SupplierApplybuildSql.class, method = "querySupplierApplyList")
+    @SelectProvider(type = SupplierApplyBuildSql.class, method = "querySupplierApplyList")
     public List<SupplierApply> querySupplierApplyList(Map<String,Object> map);
 
-    @SelectProvider(type = SupplierApplybuildSql.class, method = "queryCountSupplierApply")
+    @SelectProvider(type = SupplierApplyBuildSql.class, method = "queryCountSupplierApply")
     public int queryCountSupplierApply(Map<String,Object> map);
 }

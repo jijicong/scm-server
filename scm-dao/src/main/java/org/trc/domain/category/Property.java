@@ -6,17 +6,20 @@ import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 public class Property extends BaseDO {
-    @FormParam("id")
+
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotEmpty
     @FormParam("name")
-    @Length(max=10,message="属性名称不得超过10个字符")
+    @Length(max = 10, message = "属性名称不得超过10个字符")
     private String name;//属性名称
-    @Length(max=10,message="属性描述不得超过20个字符")
+    @Length(max = 10, message = "属性描述不得超过20个字符")
     @FormParam("description")
     private String description;//属性描述
     @NotEmpty
@@ -31,6 +34,7 @@ public class Property extends BaseDO {
     @Transient
     @FormParam("gridValue")
     private String gridValue;
+
     public Long getId() {
         return id;
     }

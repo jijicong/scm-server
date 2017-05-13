@@ -71,8 +71,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
             /**
              * 测试保存字典类型saveDictType
              */
-            int num1 = configBiz.saveDictType(dictType);
-            Assert.assertEquals(1, num1);
+            configBiz.saveDictType(dictType);
             /**
              * 测试字典类型分页查询dictTypePage
              */
@@ -106,13 +105,11 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
             DictType dictType2 = new DictType();
             dictType2.setName("testWdx2");
             dictType2.setUpdateTime(new Date());
-            int updateNum = configBiz.updateDictType(dictType2, dictType.getId());
-            Assert.assertEquals(updateNum, updateNum);
+            configBiz.updateDictType(dictType2);
             /**
              *测试根据主键删除字典类型deleteDictTypeById
              */
-            int delNum = configBiz.deleteDictTypeById(dictType.getId());
-            Assert.assertEquals(1, delNum);
+            configBiz.deleteDictTypeById(dictType.getId());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -124,7 +121,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
          */
         try{
             DictType dictType = createDictType();
-            configBiz.updateDictType(dictType, null);
+            configBiz.updateDictType(dictType);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -165,7 +162,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
          * 修改字典参数updateDict
          */
         try{
-            configBiz.updateDict(new Dict(), null);
+            configBiz.updateDict(new Dict());
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -187,8 +184,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
             /**
              * 测试保存字典saveDict
              */
-            int num1 = configBiz.saveDict(dict);
-            Assert.assertEquals(1, num1);
+            configBiz.saveDict(dict);
             /**
              * 测试字典分页查询dictPage
              */
@@ -210,13 +206,11 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
             Dict dict2 = new Dict();
             dict2.setName("testWdx2");
             dict2.setUpdateTime(new Date());
-            int updateNum = configBiz.updateDict(dict2, dict.getId());
-            Assert.assertEquals(updateNum, updateNum);
+            configBiz.updateDict(dict2);
             /**
              *测试根据主键删除字典deleteDictById
              */
-            int delNum = configBiz.deleteDictById(dict.getId());
-            Assert.assertEquals(1, delNum);
+            configBiz.deleteDictById(dict.getId());
         }catch (Exception e){
             e.printStackTrace();
         }

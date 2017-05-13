@@ -18,14 +18,14 @@ public interface IQinniuBiz {
      * @return String 文件路径
      * @throws Exception
      */
-    public String upload(InputStream inputStream, String fileName, String module) throws Exception;
+    String upload(InputStream inputStream, String fileName, String module) throws Exception;
 
     /**
      * 下载
      * @param fileName
      * @return
      */
-    public String download(String fileName) throws Exception;
+    String download(String fileName) throws Exception;
 
     /**
      * 获取缩略图地址
@@ -35,7 +35,7 @@ public interface IQinniuBiz {
      * @return
      * @throws Exception
      */
-    public String getThumbnail(String fileName, int width, int height) throws Exception;
+    String getThumbnail(String fileName, int width, int height) throws Exception;
 
     /**
      * 批量获取多个文件的url
@@ -44,7 +44,7 @@ public interface IQinniuBiz {
      * @return
      * @throws Exception
      */
-    public List<FileUrl> batchGetFileUrl(String[] fileNames, String thumbnail) throws Exception;
+    List<FileUrl> batchGetFileUrl(String[] fileNames, String thumbnail) throws Exception;
 
     /**
      * 批量删除
@@ -53,6 +53,6 @@ public interface IQinniuBiz {
      * @return map,{success:成功数,fialure:失败数,msg:错误信息}
      * @throws Exception
      */
-    public Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception;
+    Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception;
 
 }

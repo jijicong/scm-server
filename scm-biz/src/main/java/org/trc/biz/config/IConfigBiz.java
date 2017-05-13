@@ -34,16 +34,16 @@ public interface IConfigBiz {
      * @param dictType
      * @return
      */
-    public int saveDictType(DictType dictType) throws Exception;
+    public void saveDictType(DictType dictType) throws Exception;
 
     /**
      * 修改字典类型
      * @param dictType
-     * @param id
+     * @param
      * @return
      * @throws Exception
      */
-    public int updateDictType(DictType dictType, Long id) throws Exception;
+    public void updateDictType(DictType dictType) throws Exception;
 
     /**
      *根据主键查询字典类型
@@ -65,7 +65,7 @@ public interface IConfigBiz {
      * @return
      * @throws Exception
      */
-    public int deleteDictTypeById(Long id) throws Exception;
+    public void deleteDictTypeById(Long id) throws Exception;
 
     /**
      * 字典类型分页查询
@@ -86,7 +86,7 @@ public interface IConfigBiz {
      * @param dict
      * @return
      */
-    public int saveDict(Dict dict) throws Exception;
+    public void saveDict(Dict dict) throws Exception;
 
     /**
      * 更新字典
@@ -95,7 +95,7 @@ public interface IConfigBiz {
      * @return
      * @throws Exception
      */
-    public int updateDict(Dict dict, Long id) throws Exception;
+    public  void updateDict(Dict dict) throws Exception;
 
     /**
      * 根据类型编号查询字典
@@ -117,11 +117,11 @@ public interface IConfigBiz {
      * @return
      * @throws Exception
      */
-    public int deleteDictById(Long id) throws Exception;
+    public void deleteDictById(Long id) throws Exception;
 
     /**
      * 查询省市的集合
      * @return
      */
-    public List<AreaTreeNode> findProvinceCity();
+    public List<AreaTreeNode> findProvinceCity() throws Exception;
 }

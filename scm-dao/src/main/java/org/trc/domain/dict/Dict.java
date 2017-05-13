@@ -8,11 +8,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 //@Table(name = "dict")
 //@NameStyle(Style.normal)
 public class Dict extends BaseDO {
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

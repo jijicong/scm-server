@@ -23,18 +23,22 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Created by sone on 2017/5/2.
  */
-@Service
+@Service("channelBiz")
 public class ChannelBiz implements IChannelBiz {
 
     private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
+
     private final static String  SERIALNAME="QD";
+
     private final static Integer LENGTH=3;
+
     @Resource
     private IChannelService channelService;
 
@@ -69,14 +73,17 @@ public class ChannelBiz implements IChannelBiz {
     }
     @Override
     public int saveChannel(Channel channel) throws Exception {
+
         Channel tmp = findChannelByName(channel.getName());
         if(null != tmp){
             String msg = CommonUtil.joinStr("渠道名称[name=",channel.getName(),"]的数据已存在,请使用其他名称").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-        //查询当前的序列位置
-        String code = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+
+        String code = serialUtilService.getSerialCode(SERIALNAME,LENGTH);//查询当前的序列位置
+
+
         channel.setCode(code);
         ParamsUtil.setBaseDO(channel);
         int count=0;
@@ -98,7 +105,7 @@ public class ChannelBiz implements IChannelBiz {
         }
         int count = 0;
         channel.setId(id);
-        channel.setUpdateTime(new Date());
+        channel.setUpdateTime(Calendar.getInstance().getTime());
         count = channelService.updateByPrimaryKeySelective(channel);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
@@ -142,6 +149,7 @@ public class ChannelBiz implements IChannelBiz {
         Channel updateChannel=new Channel();
         updateChannel.setId(channel.getId());
         updateChannel.setIsValid(channel.getIsValid());
+        updateChannel.setUpdateTime(Calendar.getInstance().getTime());
         int count=channelService.updateByPrimaryKeySelective(updateChannel);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();

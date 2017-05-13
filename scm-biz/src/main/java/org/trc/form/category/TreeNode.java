@@ -16,11 +16,17 @@ public class TreeNode {
     private List<TreeNode> children;
 
     private int sort;
+
     private String isValid;
+
     private int level;
+
     private String fullPathId;
+
     private String categoryCode;
+
     private String source;
+
     private String isLeaf;
 
     public String getCategoryCode() {
@@ -87,9 +93,7 @@ public class TreeNode {
         this.id = id;
     }
 
-    public String getText() {
-        return text;
-    }
+    public String getText() {return text;}
 
     public void setText(String text) {
         this.text = text;

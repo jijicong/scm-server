@@ -36,14 +36,16 @@ public class PropertyResource {
     @Path(SupplyConstants.Category.Property.PROPERTY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveProperty(@BeanParam Property property)throws Exception{
-        return ResultUtil.createSucssAppResult("属性保存成功",propertyBiz.saveProperty(property));
+        propertyBiz.saveProperty(property);
+        return ResultUtil.createSucssAppResult("属性保存成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Category.Property.PROPERTY +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateProperty(@BeanParam Property property, @PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("属性更改成功",propertyBiz.updateProperty(property,id));
+    public AppResult updateProperty(@BeanParam Property property) throws Exception{
+        propertyBiz.updateProperty(property);
+        return ResultUtil.createSucssAppResult("属性更改成功","");
     }
 
     @GET
@@ -64,6 +66,7 @@ public class PropertyResource {
     @Path(SupplyConstants.Category.Property.PROPERTY_STATE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Property Property)throws Exception{
-        return ResultUtil.createSucssAppResult("更新属性状态成功", propertyBiz.updatePropertyStatus(Property));
+        propertyBiz.updatePropertyStatus(Property);
+        return ResultUtil.createSucssAppResult("更新属性状态成功", "");
     }
 }

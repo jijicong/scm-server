@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
@@ -18,6 +19,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
 import org.trc.service.category.IBrandService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -37,30 +39,31 @@ public class BrandBiz implements IBrandBiz {
     private IBrandService brandService;
     @Autowired
     private IQinniuBiz qinniuBiz;
+
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
-        Example example=new Example(Brand.class);
-        Example.Criteria criteria=example.createCriteria();
-        if(!StringUtils.isBlank(queryModel.getName())){
-            criteria.andLike("name","%"+ queryModel.getName()+"%");
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        if(!StringUtils.isBlank(queryModel.getIsValid())){
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
-        if(!StringUtils.isBlank(queryModel.getStartUpdateTime())){
+        if (!StringUtils.isBlank(queryModel.getStartUpdateTime())) {
             criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
         }
-        if(!StringUtils.isBlank(queryModel.getEndUpdateTime())){
-            criteria.andLessThan("updateTime",queryModel.getEndUpdateTime());
+        if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
+            criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
         }
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
-        Pagenation<Brand> pagenation=brandService.pagination(example,page,queryModel);
+        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         //得到所有图片的缩略图,并以fileKey为key，url为value的形式封装成map
-        List<Brand> brandList=pagenation.getResult();
-        Map<String,String> fileUrlMap=constructFileUrlMap(brandList);
-        for (Brand brand:brandList) {
-            if(!StringUtils.isBlank(brand.getLogo())){
+        List<Brand> brandList = pagenation.getResult();
+        Map<String, String> fileUrlMap = constructFileUrlMap(brandList);
+        for (Brand brand : brandList) {
+            if (!StringUtils.isBlank(brand.getLogo())) {
                 brand.setLogo(fileUrlMap.get(brand.getLogo()));
             }
         }
@@ -69,115 +72,95 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    public int saveBrand(Brand brand) throws Exception {
-        int count=0;
-        if(null!=brand.getId()){
-            brand.setUpdateTime(new Date());
-            count=brandService.updateByPrimaryKeySelective(brand);
-        }else{
-            ParamsUtil.setBaseDO(brand);
-            count=brandService.insert(brand);
-        }
-        if(count<1){
-            String msg= CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand),"到数据库失败").toString();
+    public void saveBrand(Brand brand) throws Exception {
+        AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
+        ParamsUtil.setBaseDO(brand);
+        int count = brandService.insert(brand);
+        if (count < 1) {
+            String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION,msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
         }
-        return count;
     }
 
     @Override
     public Brand findBrandById(Long id) throws Exception {
-        if(null==id){
-            String msg=CommonUtil.joinStr("根据ID查询品牌明细参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
-        Brand brand=new Brand();
+        AssertUtil.notNull(id, "根据ID查询品牌明细,参数ID不能为空");
+        Brand brand = new Brand();
         brand.setId(id);
-        brand=brandService.selectOne(brand);
-        if (null==brand){
-            String msg=CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]查询品牌明细为空").toString();
+        brand = brandService.selectOne(brand);
+        if (null == brand) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询品牌明细为空").toString();
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION,msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
         return brand;
     }
 
     @Override
-    public int updateBrand(Brand brand, Long id) throws Exception {
-        if (null==id){
-            String msg=CommonUtil.joinStr("根据ID更新品牌信息参数ID为空").toString();
+    public void updateBrand(Brand brand) throws Exception {
+        AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
+        brand.setUpdateTime(Calendar.getInstance().getTime());
+        int count = brandService.updateByPrimaryKeySelective(brand);
+        if (count < 1) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", brand.getId().toString(), "]更新品牌明细失败").toString();
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION,msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
-        brand.setId(id);
-        brand.setUpdateTime(new Date());
-        int count =brandService.updateByPrimaryKeySelective(brand);
-        if (count<1){
-            String msg=CommonUtil.joinStr("根据主键ID[id=",id.toString(),"]更新品牌明细失败").toString();
-            log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION,msg);
-        }
-        return count;
     }
 
     @Override
-    public int updateBrandStatus(Brand brand) throws Exception {
-        if(null==brand||null==brand.getId()){
-            String msg=CommonUtil.joinStr("需要更新品牌状态的bean为空").toString();
-            log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION,msg);
-        }
-        Brand updateBrand=new Brand();
+    public void updateBrandStatus(Brand brand) throws Exception {
+        AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
+        Brand updateBrand = new Brand();
         updateBrand.setId(brand.getId());
-        if (brand.getIsValid().equals(ValidEnum.VALID.getCode())){
+        if (brand.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateBrand.setIsValid(ValidEnum.NOVALID.getCode());
-        }else{
+        } else {
             updateBrand.setIsValid(ValidEnum.VALID.getCode());
         }
-        int count=brandService.updateByPrimaryKeySelective(updateBrand);
-        if (count<1){
-            String msg=CommonUtil.joinStr("根据主键ID[id=",brand.getId().toString(),"]更新品牌明细失败").toString();
+        int count = brandService.updateByPrimaryKeySelective(updateBrand);
+        if (count < 1) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", brand.getId().toString(), "]更新品牌明细失败").toString();
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION,msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
-        return count;
     }
 
     @Override
     public List<Brand> findBrandsByName(String name) throws Exception {
-        if(StringUtils.isBlank(name)){
-            String msg=CommonUtil.joinStr("根据品牌名称查询品牌明细参数name为空").toString();
+        if (StringUtils.isBlank(name)) {
+            String msg = CommonUtil.joinStr("根据品牌名称查询品牌明细参数name为空").toString();
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        Example example=new Example(Brand.class);
-        Example.Criteria criteria=example.createCriteria();
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("name", name);
-        List<Brand> brandList=brandService.selectByExample(example);
+        List<Brand> brandList = brandService.selectByExample(example);
         return brandList;
     }
 
-    private Map<String,String> constructFileUrlMap(List<Brand> brandList)throws Exception{
-        Set<String> urlSet=new HashSet<>();
-        for (Brand brand:brandList) {
-            if(!StringUtils.isBlank(brand.getLogo())){
+    private Map<String, String> constructFileUrlMap(List<Brand> brandList) throws Exception {
+        Set<String> urlSet = new HashSet<>();
+        for (Brand brand : brandList) {
+            if (!StringUtils.isBlank(brand.getLogo())) {
                 urlSet.add(brand.getLogo());
             }
         }
-        if(null!=urlSet&&urlSet.size()>0){
-            String[] urlStr=new String[urlSet.size()];
+        if (null != urlSet && urlSet.size() > 0) {
+            String[] urlStr = new String[urlSet.size()];
             urlSet.toArray(urlStr);
-            List<FileUrl> fileUrlList=qinniuBiz.batchGetFileUrl(urlStr, ZeroToNineEnum.ONE.getCode());
-            if(null!=fileUrlList&&fileUrlList.size()>0){
-                Map<String,String> fileUrlMap=new HashMap<>();
-                for (FileUrl fileUrl :fileUrlList) {
-                    fileUrlMap.put(fileUrl.getFileKey(),fileUrl.getUrl());
+            List<FileUrl> fileUrlList = qinniuBiz.batchGetFileUrl(urlStr, ZeroToNineEnum.ONE.getCode());
+            if (null != fileUrlList && fileUrlList.size() > 0) {
+                Map<String, String> fileUrlMap = new HashMap<>();
+                for (FileUrl fileUrl : fileUrlList) {
+                    fileUrlMap.put(fileUrl.getFileKey(), fileUrl.getUrl());
                 }
                 return fileUrlMap;
             }
         }
         return null;
     }
+
 }

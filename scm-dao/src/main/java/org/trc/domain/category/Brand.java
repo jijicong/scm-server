@@ -8,6 +8,7 @@ import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 
 /**
@@ -15,32 +16,33 @@ import javax.ws.rs.FormParam;
  */
 @Table(name = "brand")
 public class Brand extends BaseDO {
-        @FormParam("id")
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;//主键ID
-        @FormParam("name")
-        @NotEmpty
-        @Length(max = 50, message = "品牌名称不得超过50个字符")
-        private String name;//品牌名称
-        @FormParam("brandCode")
-        private String brandCode;//品牌编码
-        @FormParam("source")
-        private String source;//来源:scm-系统自行添加，trc-泰然城导入
-        @FormParam("alise")
-        @Length(max = 50, message = "品牌别名不得超过50个字符")
-        private String alise;//品牌别名
-        @FormParam("webUrl")
-        @Length(max = 50, message = "品牌网址不得超过50个字符")
-        private String webUrl;//品牌网址
-        @FormParam("logo")
-        private String logo;//品牌LOGO的图片路径
-        @FormParam("sort")
-        private Integer sort;//序号
-        @FormParam("lastEditOperator")
-        private String lastEditOperator;//最新更新人
-        @Transient
-        private int num;//
+
+    @PathParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;//主键ID
+    @FormParam("name")
+    @NotEmpty
+    @Length(max = 50, message = "品牌名称不得超过50个字符")
+    private String name;//品牌名称
+    @FormParam("brandCode")
+    private String brandCode;//品牌编码
+    @FormParam("source")
+    private String source;//来源:scm-系统自行添加，trc-泰然城导入
+    @FormParam("alise")
+    @Length(max = 50, message = "品牌别名不得超过50个字符")
+    private String alise;//品牌别名
+    @FormParam("webUrl")
+    @Length(max = 50, message = "品牌网址不得超过50个字符")
+    private String webUrl;//品牌网址
+    @FormParam("logo")
+    private String logo;//品牌LOGO的图片路径
+    @FormParam("sort")
+    private Integer sort;//序号
+    @FormParam("lastEditOperator")
+    private String lastEditOperator;//最新更新人
+    @Transient
+    private int num;//
 
     public Long getId() {
         return id;

@@ -14,10 +14,10 @@ public interface ISerialUtilService extends IBaseService<Serial,Long> {
      * @param length
      * @return
      */
-    public String getSerilCode(String name,int length);
+    String getSerialCode(String name,int length) throws Exception;
 
-    public Serial selectSerialByname(String name);
+    Serial selectSerialByName(String name) throws Exception;
 
-    public  int updateSeralByName(String name,int number,int originalNumber);
+    int updateSerialByName(String name,int number,int originalNumber) throws Exception;
 
 }

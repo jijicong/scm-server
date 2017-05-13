@@ -10,4 +10,5 @@ import org.trc.service.impl.BaseService;
  */
 @Service("propertyService")
 public class PropertyService extends BaseService<Property,Long> implements IPropertyService {
+
 }

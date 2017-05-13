@@ -37,6 +37,8 @@ public class SelectListResource {
     private static final String WAREHOUSE_TYPE="warehouseType";
     //角色类型字典类型编码
     private static final String ROLE_TYPE="roleType";
+    //用户类型字典类型编码
+    private static final String USER_TYPE="userType";
 
     @GET
     @Path(SupplyConstants.Config.SelectList.VALID_LIST)
@@ -87,7 +89,13 @@ public class SelectListResource {
     @Path(SupplyConstants.SelectList.ROLE_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> roleType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询仓库类型成功", configBiz.findDictsByTypeNo(ROLE_TYPE));
+        return ResultUtil.createSucssAppResult("查询角色类型成功", configBiz.findDictsByTypeNo(ROLE_TYPE));
+    }
+    @GET
+    @Path(SupplyConstants.SelectList.USER_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> userType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询用户类型成功", configBiz.findDictsByTypeNo(USER_TYPE));
     }
 
 }

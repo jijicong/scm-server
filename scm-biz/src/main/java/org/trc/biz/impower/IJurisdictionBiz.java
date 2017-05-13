@@ -13,12 +13,12 @@ public interface IJurisdictionBiz {
      * @return 资源权限集合
      * @throws Exception
      */
-    public List<Jurisdiction> findWholeJurisdiction() throws Exception;
+    List<Jurisdiction> findWholeJurisdiction() throws Exception;
     /**
      * 查询渠道的资源权限
      * @return 资源权限集合
      * @throws Exception
      */
-    public List<Jurisdiction> findChannelJurisdiction() throws Exception;
+    List<Jurisdiction> findChannelJurisdiction() throws Exception;
 
 }

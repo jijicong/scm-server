@@ -30,54 +30,53 @@ public class SupplierResource {
     @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Supplier> supplierPage(@BeanParam SupplierForm form, @BeanParam Pagenation<Supplier> page) throws Exception{
+    public Pagenation<Supplier> supplierPage(@BeanParam SupplierForm form, @BeanParam Pagenation<Supplier> page) throws Exception {
         return supplierBiz.SupplierPage(form, page);
     }
 
     @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Supplier>> querySuppliers(@BeanParam SupplierForm form) throws Exception{
+    public AppResult<List<Supplier>> querySuppliers(@BeanParam SupplierForm form) throws Exception {
         return ResultUtil.createSucssAppResult("查询供应商列表成功", supplierBiz.querySuppliers(form));
     }
 
     @POST
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate) throws Exception{
-        return ResultUtil.createSucssAppResult("保存字典成功", supplierBiz.saveSupplier(supplier, certificate));
+    public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate) throws Exception {
+        supplierBiz.saveSupplier(supplier, certificate);
+        return ResultUtil.createSucssAppResult("保存字典成功", "");
     }
 
     @PUT
-    @Path(SupplyConstants.Supply.Supplier.SUPPLIER+"/{id}")
+    @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSupplier(@BeanParam Supplier supplier,@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("修改字典成功", supplierBiz.updateSupplier(supplier,id));
+    public AppResult updateSupplier(@BeanParam Supplier supplier) throws Exception {
+        supplierBiz.updateSupplier(supplier);
+        return ResultUtil.createSucssAppResult("修改字典成功", "");
     }
 
     @GET
-    @Path(SupplyConstants.Supply.Supplier.SUPPLIER+"/{id}")
+    @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> findSupplierById(@PathParam("id") Long id) throws Exception{
+    public AppResult<Dict> findSupplierById(@PathParam("id") Long id) throws Exception {
         return ResultUtil.createSucssAppResult("查询字典成功", supplierBiz.findSupplierById(id));
     }
 
     @GET
     @Path(SupplyConstants.Supply.SupplierCategory.SUPPLIER_CATEGORY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<SupplierCategory> querySupplierCategory(@BeanParam SupplierCategoryForm form) throws Exception{
+    public List<SupplierCategory> querySupplierCategory(@BeanParam SupplierCategoryForm form) throws Exception {
         return supplierBiz.querySupplierCategory(form);
     }
 
     @GET
     @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<SupplierBrand > querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception{
+    public List<SupplierBrand> querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception {
         return supplierBiz.querySupplierBrand(form);
     }
-
-
-
 
 
 }
