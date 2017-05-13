@@ -16,7 +16,7 @@ public interface ISerialUtilService extends IBaseService<Serial,Long> {
      */
     String getSerialCode(String name,int length) throws Exception;
 
-    Serial selectSerialByname(String name) throws Exception;
+    Serial selectSerialByName(String name) throws Exception;
 
     int updateSerialByName(String name,int number,int originalNumber) throws Exception;
 
