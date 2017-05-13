@@ -8,6 +8,7 @@ import org.trc.domain.util.ScmDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import java.util.Date;
 
@@ -55,7 +56,8 @@ public class SupplierBrand extends ScmDO {
     @NotEmpty
     @Length(max = 256, message = "资质证明图片路径长度不能超过256个")
     private String aptitudePic;
-
+    @Transient
+    private String brandName;
     public Long getId() {
         return id;
     }
@@ -142,5 +144,13 @@ public class SupplierBrand extends ScmDO {
 
     public void setAptitudePic(String aptitudePic) {
         this.aptitudePic = aptitudePic;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 }

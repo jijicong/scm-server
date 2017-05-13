@@ -15,6 +15,7 @@ import javax.ws.rs.FormParam;
  */
 @Table(name = "category")
 public class Category extends BaseDO {
+
     @FormParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

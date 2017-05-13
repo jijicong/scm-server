@@ -9,8 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
 
-@Table(name="property_value ")
 public class PropertyValue extends BaseDO {
+
     @FormParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

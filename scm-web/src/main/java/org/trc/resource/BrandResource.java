@@ -58,7 +58,8 @@ public class BrandResource {
         brand.setBrandCode(UUID.randomUUID().toString().replaceAll("-", ""));
         brand.setLastEditOperator("小明");
         brand.setCreateOperator("小明");
-        return ResultUtil.createSucssAppResult("保存品牌成功", brandBiz.saveBrand(brand));
+        brandBiz.saveBrand(brand);
+        return ResultUtil.createSucssAppResult("保存品牌成功", "");
     }
 
     @GET
@@ -86,13 +87,15 @@ public class BrandResource {
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrand(@BeanParam Brand brand,@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("更新品牌成功", brandBiz.updateBrand(brand,id));
+        brandBiz.updateBrand(brand);
+        return ResultUtil.createSucssAppResult("更新品牌成功", "");
     }
 
     @POST
     @Path(SupplyConstants.Category.Brand.BRAND_STATE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Brand brand)throws Exception{
-        return ResultUtil.createSucssAppResult("更新品牌状态成功", brandBiz.updateBrandStatus(brand));
+        brandBiz.updateBrandStatus(brand);
+        return ResultUtil.createSucssAppResult("更新品牌状态成功", "");
     }
 }

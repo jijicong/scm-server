@@ -12,52 +12,57 @@ import java.util.List;
 public interface IBrandBiz {
 
     /**
-     * 品牌分页
+     * 品牌信息分页
+     *
      * @param form
      * @param page
      * @return
      * @throws Exception
      */
-    public Pagenation<Brand> brandPage(BrandForm form,Pagenation<Brand> page)throws Exception;
+    Pagenation<Brand> brandPage(BrandForm form, Pagenation<Brand> page) throws Exception;
 
     /**
-     * 保存品牌
+     * 保存品牌信息
+     *
      * @param brand
      * @return
      * @throws Exception
      */
-    public int saveBrand(Brand brand)throws Exception;
+    void saveBrand(Brand brand) throws Exception;
 
     /**
-     * 根据id查询单个品牌
+     * 根据品牌id查询单个品牌
+     *
      * @param id
      * @return
      * @throws Exception
      */
-    public Brand findBrandById(Long id)throws Exception;
+    Brand findBrandById(Long id) throws Exception;
 
     /**
      * 更新品牌信息
-     * @param brand
-     * @param id
-     * @return
-     * @throws Exception
-     */
-    public int updateBrand(Brand brand ,Long id)throws Exception;
-
-    /**
-     * 更新品牌信息
+     *
      * @param brand
      * @return
      * @throws Exception
      */
-    public int updateBrandStatus(Brand brand)throws Exception;
+    void updateBrand(Brand brand) throws Exception;
+
+    /**
+     * 更新品牌状态信息
+     *
+     * @param brand
+     * @return
+     * @throws Exception
+     */
+    void updateBrandStatus(Brand brand) throws Exception;
 
     /**
      * 根据品牌名称查询品牌列表
+     *
      * @param name
      * @return
      * @throws Exception
      */
-    public List<Brand> findBrandsByName(String name)throws  Exception;
+    List<Brand> findBrandsByName(String name) throws Exception;
 }

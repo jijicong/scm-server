@@ -3,6 +3,7 @@ package org.trc.resource;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
@@ -22,6 +23,7 @@ import java.util.Calendar;
 public class CategoryResource {
     @Autowired
     private ICategoryBiz categoryBiz;
+
     @GET
     @Path(SupplyConstants.Category.Classify.CLASSIFY_TREE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -33,7 +35,6 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CLASSIFY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveClassify(@BeanParam Category category) throws Exception {
-
         category.setCreateOperator("test");
         category.setCreateTime(Calendar.getInstance().getTime());
         category.setUpdateTime(Calendar.getInstance().getTime());

@@ -23,23 +23,24 @@ import java.util.Map;
  */
 @Service("supplierApplyBiz")
 public class SupplierApplyBiz implements ISupplierApplyBiz {
+
     private final static Logger log = LoggerFactory.getLogger(SupplierApplyBiz.class);
     @Autowired
     private ISupplierApplyService supplierApplyService;
 
     @Override
     public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel) throws Exception {
-        PageHelper.startPage(page.getPageNo(),page.getPageSize());
-        Map<String,Object> map=new HashMap<>();
-        map.put("supplierName",queryModel.getSupplierName());
-        map.put("contact",queryModel.getContact());
-        map.put("supplierCode",queryModel.getSupplierCode());
-        map.put("status",queryModel.getStatus());
-        map.put("startTime",queryModel.getStartDate());
-        map.put("endTime",queryModel.getEndDate());
-        List<SupplierApply> list=supplierApplyService.querySupplierApplyList(map);
+        PageHelper.startPage(page.getPageNo(), page.getPageSize());
+        Map<String, Object> map = new HashMap<>();
+        map.put("supplierName", queryModel.getSupplierName());
+        map.put("contact", queryModel.getContact());
+        map.put("supplierCode", queryModel.getSupplierCode());
+        map.put("status", queryModel.getStatus());
+        map.put("startTime", queryModel.getStartDate());
+        map.put("endTime", queryModel.getEndDate());
+        List<SupplierApply> list = supplierApplyService.querySupplierApplyList(map);
 
-        int count =supplierApplyService.queryCountSupplierApply(map);
+        int count = supplierApplyService.queryCountSupplierApply(map);
         page.setTotalCount(count);
         page.setResult(list);
         return page;

@@ -13,10 +13,12 @@ import java.util.Map;
 /**
  * Created by hzqph on 2017/5/12.
  */
-@Service("SupplierApplyService")
+@Service("supplierApplyService")
 public class SupplierApplyService extends BaseService<SupplierApply,Long> implements ISupplierApplyService {
+
     @Autowired
     private ISupplierApplyMapper mapper;
+
     @Override
     public List<SupplierApply> querySupplierApplyList(Map<String, Object> map) {
         return mapper.querySupplierApplyList(map);
