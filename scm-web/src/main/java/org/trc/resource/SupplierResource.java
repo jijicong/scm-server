@@ -45,14 +45,16 @@ public class SupplierResource {
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate) throws Exception{
-        return ResultUtil.createSucssAppResult("保存字典成功", supplierBiz.saveSupplier(supplier, certificate));
+        supplierBiz.saveSupplier(supplier, certificate);
+        return ResultUtil.createSucssAppResult("保存字典成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSupplier(@BeanParam Supplier supplier,@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("修改字典成功", supplierBiz.updateSupplier(supplier,id));
+    public AppResult updateSupplier(@BeanParam Supplier supplier) throws Exception{
+        supplierBiz.updateSupplier(supplier);
+        return ResultUtil.createSucssAppResult("修改字典成功", "");
     }
 
     @GET

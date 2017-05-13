@@ -16,5 +16,5 @@ public interface ISupplierApplyBiz {
      * @return
      * @throws Exception
      */
-    public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel)throws Exception;
+    Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel)throws Exception;
 }

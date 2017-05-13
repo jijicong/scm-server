@@ -19,7 +19,7 @@ public interface IQinniuService {
      * 获取七牛授权对象
      * @return
      */
-    public Auth getAuth() throws Exception;
+    Auth getAuth() throws Exception;
 
     /**
      * 获取token
@@ -27,7 +27,7 @@ public interface IQinniuService {
      * @return
      * @throws Exception
      */
-    public String getToken(StringMap stringMap) throws Exception;
+    String getToken(StringMap stringMap) throws Exception;
 
     /**
      * 上传
@@ -37,14 +37,14 @@ public interface IQinniuService {
      * @return
      * @throws Exception
      */
-    public DefaultPutRet upload(InputStream inputStream, String fileName, BaseThumbnailSize baseThumbnailSize) throws Exception;
+    DefaultPutRet upload(InputStream inputStream, String fileName, BaseThumbnailSize baseThumbnailSize) throws Exception;
 
     /**
      * 下载
      * @param fileName
      * @return
      */
-    public String download(String fileName) throws Exception;
+    String download(String fileName) throws Exception;
 
     /**
      * 获取缩略图地址
@@ -54,21 +54,21 @@ public interface IQinniuService {
      * @return
      * @throws Exception
      */
-    public String getThumbnail(String fileName, Integer width, Integer height) throws Exception;
+    String getThumbnail(String fileName, Integer width, Integer height) throws Exception;
 
     /**
      * 批量获取文件信息
      * @param fileNames
      * @return
      */
-    public List<BatchStatus> batchGetFileInfo(String[] fileNames) throws Exception;
+    List<BatchStatus> batchGetFileInfo(String[] fileNames) throws Exception;
 
     /**
      * 批量获取文件url
      * @param fileNames 文件名称，多个用逗号分隔
      * @return
      */
-    public List<FileUrl> batchGetFileUrl(String[] fileNames) throws Exception;
+    List<FileUrl> batchGetFileUrl(String[] fileNames) throws Exception;
 
     /**
      * 批量删除
@@ -76,6 +76,6 @@ public interface IQinniuService {
      * @return map,{success:成功数,fialure:失败数,msg:错误信息}
      * @throws Exception
      */
-    public Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception;
+    Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception;
 
 }

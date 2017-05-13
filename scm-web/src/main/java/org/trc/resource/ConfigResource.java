@@ -1,20 +1,17 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.config.ConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
-import org.trc.enums.ValidEnum;
 import org.trc.form.config.DictForm;
 import org.trc.form.config.DictTypeForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -50,14 +47,16 @@ public class ConfigResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveDictType(@BeanParam DictType dictType) throws Exception{
-        return ResultUtil.createSucssAppResult("保存字典类型成功", configBiz.saveDictType(dictType));
+        configBiz.saveDictType(dictType);
+        return ResultUtil.createSucssAppResult("保存字典类型成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Config.DictType.DICT_TYPE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateDictType(@BeanParam  DictType dictType, @PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("修改字典类型成功", configBiz.updateDictType(dictType,id));
+    public AppResult updateDictType(@BeanParam  DictType dictType) throws Exception{
+        configBiz.updateDictType(dictType);
+        return ResultUtil.createSucssAppResult("修改字典类型成功", "");
     }
 
     @GET
@@ -78,7 +77,8 @@ public class ConfigResource {
     @Path(SupplyConstants.Config.DictType.DICT_TYPE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult deleteDictTypeById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("删除字典类型成功", configBiz.deleteDictTypeById(id));
+        configBiz.deleteDictTypeById(id);
+        return ResultUtil.createSucssAppResult("删除字典类型成功", "");
     }
 
     @GET
@@ -99,14 +99,16 @@ public class ConfigResource {
     @Path(SupplyConstants.Config.Dict.DICT)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveDict(@BeanParam Dict dict) throws Exception{
-        return ResultUtil.createSucssAppResult("保存字典成功", configBiz.saveDict(dict));
+        configBiz.saveDict(dict);
+        return ResultUtil.createSucssAppResult("保存字典成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Config.Dict.DICT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateDict(@BeanParam Dict dict,@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("修改字典成功", configBiz.updateDict(dict,id));
+    public AppResult updateDict(@BeanParam Dict dict) throws Exception{
+        configBiz.updateDict(dict);
+        return ResultUtil.createSucssAppResult("修改字典成功", "");
     }
 
     @GET
@@ -127,7 +129,8 @@ public class ConfigResource {
     @Path(SupplyConstants.Config.Dict.DICT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult deleteDictById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("删除字典成功", configBiz.deleteDictById(id));
+        configBiz.deleteDictById(id);
+        return ResultUtil.createSucssAppResult("删除字典成功", "");
     }
 
 
