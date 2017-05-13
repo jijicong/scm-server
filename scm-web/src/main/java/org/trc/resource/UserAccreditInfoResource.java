@@ -5,6 +5,7 @@ import org.trc.biz.impower.IUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.form.impower.UserAccreditInfoForm;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 import javax.annotation.Resource;
@@ -31,6 +32,10 @@ public class UserAccreditInfoResource {
     public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception{
         return userAccreditInfoBiz.UserAccreditInfoPage(form,page);
     }
+   /* @GET
+    @Path(SupplyConstants.UserAccreditInfo.ACCREDIT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult*/
 
 
 }

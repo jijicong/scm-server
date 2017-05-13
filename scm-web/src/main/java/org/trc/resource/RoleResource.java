@@ -28,7 +28,7 @@ public class RoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Role> warehousePage(@BeanParam RoleForm form, @BeanParam Pagenation<Role> page) throws Exception{
+    public Pagenation<Role> rolePage(@BeanParam RoleForm form, @BeanParam Pagenation<Role> page) throws Exception{
         return roleBiz.rolePage(form,page);
     }
     @POST
@@ -47,9 +47,9 @@ public class RoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findWarehouseByName(@QueryParam("name") String name ) throws Exception{
+    public AppResult findRoleByName(@QueryParam("name") String name ) throws Exception{
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
-        return  ResultUtil.createSucssAppResult("查询仓库成功", roleBiz.findRoleByName(name)==null ? null :"1");
+        return  ResultUtil.createSucssAppResult("查询角色成功", roleBiz.findRoleByName(name)==null ? null :"1");
     }
 
 }

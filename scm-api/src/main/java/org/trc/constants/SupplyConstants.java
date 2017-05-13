@@ -293,7 +293,8 @@ public class SupplyConstants {
         public static final String PROVINCE_CITY="province";
         //角色类型字典类型编码
         public static final String ROLE_TYPE="roleType";
-
+        //用户类型字典类型编码
+        public static final String USER_TYPE="userType";
     }
 
 
