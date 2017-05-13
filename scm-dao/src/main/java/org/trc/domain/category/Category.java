@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 /**
  * Created by hzszy on 2017/5/5.
@@ -16,7 +18,7 @@ import javax.ws.rs.FormParam;
 @Table(name = "category")
 public class Category extends BaseDO {
 
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

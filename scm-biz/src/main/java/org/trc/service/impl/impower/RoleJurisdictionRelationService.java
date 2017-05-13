@@ -9,6 +9,6 @@ import org.trc.service.impower.IRoleJurisdictionRelationService;
 /**
  * Created by sone on 2017/5/11.
  */
-@Service
+@Service("roleJurisdictionRelationService")
 public class RoleJurisdictionRelationService extends BaseService<RoleJurisdictionRelation,Long> implements IRoleJurisdictionRelationService{
 }

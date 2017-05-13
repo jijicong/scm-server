@@ -8,5 +8,5 @@ import org.trc.service.impower.IUserAccreditRoleRelationService;
 /**
  * Created by sone on 2017/5/11.
  */
-@Service
+@Service("userAccreditRoleRelationService")
 public class UserAccreditRoleRelationService extends BaseService<UserAccreditRoleRelation,Long> implements IUserAccreditRoleRelationService{}

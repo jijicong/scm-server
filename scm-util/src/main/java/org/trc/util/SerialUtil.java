@@ -21,7 +21,7 @@ public  class SerialUtil {
 
     public static String getNo(int account,int len) {
         int i = account;
-        i += 1;
+        //i += 1;
         String rs = "" + i;
         for (int j = rs.length(); j < len; j++) {
             rs = "0" + rs;

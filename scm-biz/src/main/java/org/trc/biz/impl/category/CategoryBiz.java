@@ -2,91 +2,79 @@ package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.domain.category.Category;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
-import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
 import org.trc.service.category.ICategoryService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
+
 import java.util.*;
 
 /**
  * Created by hzszy on 2017/5/5.
  */
-@Service
-public class CategoryBiz implements ICategoryBiz{
+@Service("categoryBiz")
+public class CategoryBiz implements ICategoryBiz {
+
     private final static org.slf4j.Logger log = LoggerFactory.getLogger(CategoryBiz.class);
-    @Resource
+
+    @Autowired
     private ICategoryService categoryService;
 
     @Override
-    public List<Category> queryClassify(CategoryForm categoryForm) throws Exception {
-        Example example = new Example(Category.class);
-        Example.Criteria criteria = example.createCriteria();
+    public void updateCategory(Category category) throws Exception {
 
-        criteria.andEqualTo("level", ZeroToNineEnum.TWO.getCode());
-
-
-        return categoryService.selectByExample(example);
-    }
-
-    @Override
-    public int updateCategory(Category category, Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("修改分类参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
         int count = 0;
-        category.setId(id);
-        category.setUpdateTime(new Date());
+        category.setUpdateTime(Calendar.getInstance().getTime());
         count = categoryService.updateByPrimaryKeySelective(category);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category),"数据库操作失败").toString();
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
-        return count;
+
     }
 
     @Override
-    public int deleteCategory(Long id) throws Exception {
-        return 0;
-    }
+    public void saveClassify(Category category) throws Exception {
 
-    @Override
-    public int saveClassify(Category category) throws Exception {
-        int count =0;
-        if (null !=category.getId()){
+        int count = 0;
+        if (null != category.getId()) {
             //修改
             category.setUpdateTime(Calendar.getInstance().getTime());
             count = categoryService.updateByPrimaryKeySelective(category);
-        }else {
+        } else {
             //add
             ParamsUtil.setBaseDO(category);
             count = categoryService.insert(category);
         }
-        if(count == 0){
-            String msg = CommonUtil.joinStr("保存分类", JSON.toJSONString(category),"到数据库失败").toString();
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存分类", JSON.toJSONString(category), "到数据库失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION,msg);
+            throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
-        return count;
     }
 
+    /**
+     * 查询树
+     *
+     * @param categoryForm
+     * @return
+     * @throws Exception
+     */
     @Override
-    public List<TreeNode> getTreeNode(CategoryForm categoryForm) throws Exception {
+    public List<TreeNode> getTreeNode() throws Exception {
         /**
          * 1、查询根节点
          */
@@ -94,12 +82,13 @@ public class CategoryBiz implements ICategoryBiz{
         Example.Criteria criteria = example.createCriteria();
         criteria.andIsNull("parentId");
         example.orderBy("sort").asc();
-        List<Category> rootClassifyList  = categoryService.selectByExample(example);
+        List<Category> rootClassifyList = categoryService.selectByExample(example);
         List<TreeNode> rootTreeNodeList = new ArrayList<TreeNode>();
         List<Long> firstIds = new ArrayList<Long>();
 
         //查询节点数据库操作
         for (int i = 0; i < rootClassifyList.size(); i++) {
+
             TreeNode rootTreeNode1 = new TreeNode();
             rootTreeNode1.setId(rootClassifyList.get(i).getId().toString());
             rootTreeNode1.setText(rootClassifyList.get(i).getName());
@@ -112,63 +101,86 @@ public class CategoryBiz implements ICategoryBiz{
             rootTreeNode1.setIsLeaf(rootClassifyList.get(i).getIsLeaf());
             rootTreeNodeList.add(rootTreeNode1);
             firstIds.add(rootClassifyList.get(i).getId());
+
         }
-        Map<Long, List<TreeNode>> firstMap =  handlerNextTreeNode(firstIds);
+
+        Map<Long, List<TreeNode>> firstMap = handlerNextTreeNode(firstIds);
+
         /**
          * 2、查询第二级分类节点
          */
         //查询所有父节点是根节点ID的记录
-        Example exampleLevel2  =new Example(Category.class);
-        criteria=  exampleLevel2.createCriteria();
+        Example exampleLevel2 = new Example(Category.class);
+        criteria = exampleLevel2.createCriteria();
         criteria.andEqualTo("level", ZeroToNineEnum.TWO.getCode().toString());
         exampleLevel2.orderBy("sort").asc();
         List<Category> secondClassifyList = categoryService.selectByExample(exampleLevel2);
-//        List<TreeNode> secondTreeNodeList = new ArrayList<TreeNode>();
+        AssertUtil.notNull(secondClassifyList, "查询第二级分类节点为空");
         List<Long> secondIds = new ArrayList<Long>();
-        for(Category cls : secondClassifyList){
+        for (Category cls : secondClassifyList) {
+
             secondIds.add(cls.getId());
         }
         /**
          * 3、查询和组装所有第二级节点相关的第三级节点数据
          */
 
-        Map<Long, List<TreeNode>> map =  handlerNextTreeNode(secondIds);
+        Map<Long, List<TreeNode>> map = handlerNextTreeNode(secondIds);
+
         for (Map.Entry<Long, List<TreeNode>> entry : firstMap.entrySet()) {
+
             List<TreeNode> secondList = entry.getValue();
-            for(TreeNode treeNode : secondList){
+            for (TreeNode treeNode : secondList) {
                 treeNode.setChildren(map.get(Long.parseLong(treeNode.getId())));
             }
+
         }
-        for (int i = 0; i <rootTreeNodeList.size() ; i++) {
+        for (int i = 0; i < rootTreeNodeList.size(); i++) {
+
             rootTreeNodeList.get(i).setChildren(firstMap.get(firstIds.get(i)));
+
         }
 
         return rootTreeNodeList;
+
     }
 
+    /**
+     * 查询分类编码是否存在
+     *
+     * @param categoryCode
+     * @return
+     * @throws Exception
+     */
     @Override
-    public int queryCount() throws Exception {
+    public Category findCategoryByCategoryCode(String categoryCode) throws Exception {
 
-        return  categoryService.queryCategoryCount();
+        AssertUtil.notBlank(categoryCode,"根据分类编码查询分类的参数categoryCode为空");
+        Category category = new Category();
+        category.setCategoryCode(categoryCode);
+        return categoryService.selectOne(category);
+
     }
 
     /**
      * 查询组装下一级ID
+     *
      * @param parentIds 父节点ID
      * @return
      */
-   private  Map<Long,List<TreeNode>> handlerNextTreeNode(List<Long> parentIds){
+    private Map<Long, List<TreeNode>> handlerNextTreeNode(List<Long> parentIds) {
+
         //根据第上级节点ID列表批量查询下级节点
-        Example example  =new Example(Category.class);
-        Example.Criteria criteria  = example.createCriteria();
-        criteria.andIn("parentId",parentIds);
-        List<Category> nextCategoryList = categoryService.selectByExample(example);
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("parentId", parentIds);
         example.orderBy("sort").asc();
-       Map<Long, List<TreeNode>> map = new HashMap<Long, List<TreeNode>>();
-        for(Long id : parentIds){
+        List<Category> nextCategoryList = categoryService.selectByExample(example);
+        Map<Long, List<TreeNode>> map = new HashMap<Long, List<TreeNode>>();
+        for (Long id : parentIds) {
             List<TreeNode> nextTreeNodeList = new ArrayList<TreeNode>();
-            for(Category cls : nextCategoryList){
-                if(id.toString() .equals( cls.getParentId())){
+            for (Category cls : nextCategoryList) {
+                if (id.toString().equals(cls.getParentId())) {
                     TreeNode nextTreeNode = new TreeNode();
                     nextTreeNode.setId(cls.getId().toString());
                     nextTreeNode.setText(cls.getName());

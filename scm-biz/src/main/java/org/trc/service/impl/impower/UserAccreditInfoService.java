@@ -8,6 +8,6 @@ import org.trc.service.impower.IUserAccreditInfoService;
 /**
  * Created by sone on 2017/5/11.
  */
-@Service
+@Service("userAccreditInfoService")
 public class UserAccreditInfoService extends BaseService<UserAccreditInfo,Long> implements IUserAccreditInfoService {
 }

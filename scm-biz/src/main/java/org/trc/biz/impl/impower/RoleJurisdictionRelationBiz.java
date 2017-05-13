@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by sone on 2017/5/12.
  */
-@Service
+@Service("roleJurisdictionRelationBiz")
 public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz {
 
     private final static Logger log = LoggerFactory.getLogger(RoleJurisdictionRelationBiz.class);

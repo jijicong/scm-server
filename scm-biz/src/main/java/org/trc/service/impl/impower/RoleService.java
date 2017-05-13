@@ -8,6 +8,6 @@ import org.trc.service.impower.IRoleService;
 /**
  * Created by sone on 2017/5/11.
  */
-@Service
+@Service("roleService")
 public class RoleService extends BaseService<Role ,Long> implements IRoleService{
 }

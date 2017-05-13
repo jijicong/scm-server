@@ -25,20 +25,24 @@ import java.util.*;
 /**
  * Created by sone on 2017/5/5.
  */
-@Service
+@Service("warehouseBiz")
 public class WarehouseBiz implements IWarehouseBiz {
 
     private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
+
     private final static String  SERIALNAME="CK";
+
     private final static Integer LENGTH=5;
 
     @Resource
     private IWarehouseService warehouseService;
+
     @Resource
     private ISerialUtilService serialUtilService;
 
     @Override
     public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) throws Exception {
+
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(form.getName())) {
@@ -50,10 +54,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         example.orderBy("updateTime").desc();
         Pagenation<Warehouse> pagenation = warehouseService.pagination(example, page, form);
         return pagenation;
+
     }
 
     @Override
     public int saveWarehouse(Warehouse warehouse) throws Exception {
+
         Warehouse tmp = findWarehouseByName(warehouse.getName());
         if (null != tmp) {
             String msg = CommonUtil.joinStr("仓库名称[name=", warehouse.getName(), "]的数据已存在,请使用其他名称").toString();
@@ -61,7 +67,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        String code = serialUtilService.getSerilCode(SERIALNAME,LENGTH);
+        String code = serialUtilService.getSerialCode(SERIALNAME,LENGTH);
         warehouse.setCode(code);//仓库的流水号为CK00000
         ParamsUtil.setBaseDO(warehouse);
         int count = 0;
@@ -72,10 +78,12 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
         return count;
+
     }
 
     @Override
     public Warehouse findWarehouseByName(String name) throws Exception {
+
         if (StringUtil.isEmpty(name) || name == null) {
             String msg = CommonUtil.joinStr("根据渠道名称查询渠道的参数name为空").toString();
             log.error(msg);
@@ -84,10 +92,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         Warehouse warehouse = new Warehouse();
         warehouse.setName(name);
         return warehouseService.selectOne(warehouse);
+
     }
 
     @Override
     public int updateWarehouseState(Warehouse warehouse) throws Exception {
+
         Long id = warehouse.getId();
         String state = warehouse.getIsValid();
         int stateInt = Integer.parseInt(state);
@@ -103,6 +113,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         Warehouse updateWarehouse = new Warehouse();
         updateWarehouse.setId(warehouse.getId());
         updateWarehouse.setIsValid(warehouse.getIsValid());
+        updateWarehouse.setUpdateTime(Calendar.getInstance().getTime());
         int count = warehouseService.updateByPrimaryKeySelective(updateWarehouse);
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
@@ -110,6 +121,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
         return count;
+
     }
 
     @Override
@@ -131,6 +143,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     public int updateWarehouse(Warehouse warehouse, Long id) throws Exception {
+
         if (null == id) {
             String msg = CommonUtil.joinStr("修改仓库参数ID为空").toString();
             log.error(msg);
@@ -138,7 +151,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
         int count = 0;
         warehouse.setId(id);
-        warehouse.setUpdateTime(new Date());
+        warehouse.setUpdateTime(Calendar.getInstance().getTime());
         count = warehouseService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
@@ -146,6 +159,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
         return count;
+
     }
 
 
