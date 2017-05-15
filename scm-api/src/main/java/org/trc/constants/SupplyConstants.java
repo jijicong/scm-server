@@ -180,6 +180,8 @@ public class SupplyConstants {
         public static final String ROLE_PAGE = "rolePage";
         //授权的用户使用名查询
         public static final String ROLE = "role";
+        //角色用户授权入口
+        public static final String ROLE_ACCREDITINFO="roleAccreditInfo";
         //状态的修改
         public static final String UPDATE_STATE = "role/updateState";
     }

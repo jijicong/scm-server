@@ -42,7 +42,6 @@ public class RoleResource {
         role.setIsValid(roleAdd.getIsValid());
         return  ResultUtil.createSucssAppResult("保存成功",roleBiz.saveRole(role,roleAdd.getRoleJurisdiction()));
     }
-
     //根据角色名查询角色
     @GET
     @Path(SupplyConstants.Role.ROLE)
@@ -50,6 +49,14 @@ public class RoleResource {
     public AppResult findRoleByName(@QueryParam("name") String name ) throws Exception{
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
         return  ResultUtil.createSucssAppResult("查询角色成功", roleBiz.findRoleByName(name)==null ? null :"1");
+    }
+    //根据角色的id 查询使用该角色的用户数量，以及启用状态
+    @GET
+    @Path(SupplyConstants.Role.ROLE_ACCREDITINFO)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId) throws Exception{
+        roleBiz.findRoleAndAccreditInfoByRoleId(roleId);
+        return  null;
     }
 
 }

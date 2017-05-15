@@ -27,29 +27,25 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
     private ISerialMapper iserialMapper;
 
     @Override
+    @Transactional
     public Serial selectSerialByName(String name) {
         return iserialMapper.selectSerialByname(name);
     }
 
     @Override
+    @Transactional
     public String getSerialCode(String name, int length) throws Exception{
 
-        Serial serial = this.selectSerialByName(name);
+        Serial serial = this.selectSerialByName(name);//查询序列号
 
-        boolean sign=true;
-        //int countVersionChange=0;
         int number=serial.getNumber();
-        while (sign){
-            number+=1;
-            try {
-                this.updateSerialByName(name,number,serial.getNumber());
-                sign=false;
-            }catch (ConfigException conf){
-                String msg = CommonUtil.joinStr("流水的版本[vesionMark=", (serial.getNumber()+1) + "", "]的数据已存在,请再次提交").toString();
-                log.error(msg+" || "+conf.getMessage());
-            }
-        }
+
+        number+=1;
+
+        this.updateSerialByName(name,number,serial.getNumber());
+
         String code= SerialUtil.getMoveOrderNo(name, length,number);
+
         return code;
 
     }
@@ -59,9 +55,11 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
      * 2.拿到可用的流水号之后，以防，外部调用的方法本身出异常（占用流水号）
      */
     @Override
+    @Transactional
     public int updateSerialByName(String name, int number,int originalNumber) throws Exception {
 
         int countVersionChange = iserialMapper.updateSerialVersionByName(name,number,originalNumber);
+
         if(countVersionChange==0) {
             String msg = CommonUtil.joinStr("流水的版本[vesionMark=", number + "", "]的数据已存在,请再次提交").toString();
             throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);

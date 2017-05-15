@@ -29,7 +29,7 @@ public interface IChannelBiz {
      *保存渠道
      * @return 整数改变
      */
-    int saveChannel(Channel channel) throws Exception;
+    void saveChannel(Channel channel) throws Exception;
 
     /**
      * 更新渠道
@@ -38,7 +38,7 @@ public interface IChannelBiz {
      * @return 整数改变
      * @throws Exception
      */
-    int updateChannel(Channel channel,Long id) throws Exception;
+    void updateChannel(Channel channel) throws Exception;
 
     /**
      * 根据id查询渠道
@@ -54,14 +54,7 @@ public interface IChannelBiz {
      * @return
      * @throws Exception
      */
-    int updateChannelState(Channel channel) throws Exception;
+    void updateChannelState(Channel channel) throws Exception;
 
-    /**
-     * 查询渠道列表
-     * @param form
-     * @return
-     * @throws Exception
-     */
-    List<Channel> channelList(ChannelForm form) throws Exception;
 
 }
