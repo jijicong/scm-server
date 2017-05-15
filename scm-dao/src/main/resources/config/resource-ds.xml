@@ -26,7 +26,7 @@
     <!-- 定义SqlSessionFactory-->
     <bean id="resource-sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="resource-dataSource"/>
-        <property name="mapperLocations" value="classpath:/org/trc/mapper/**/*.xml"/>
+        <property name="mapperLocations" value="classpath:/mappings/**/*.xml"/>
         <property name="typeAliasesPackage" value="org.trc.domain"/>
         <property name="plugins">
             <array>
