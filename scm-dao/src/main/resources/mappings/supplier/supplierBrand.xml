@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.supplier.ISupplierBrandMapper">
+    <resultMap id="supplierBrandMap" type="org.trc.domain.supplier.SupplierBrand">
+        <result property="id" column="id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="brandCode" column="brand_code"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="proxyAptitudeId" column="proxy_aptitude_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="brandName" column="brand_name"/>
+    </resultMap>
+
+    <select id="selectListBySupplierIds" resultMap="supplierBrandMap">
+        SELECT  a.id,a.supplier_id,b.name,a.create_time,a.update_time
+        FROM supplier_brand a
+        LEFT JOIN  brand b on a.brand_id =b.id
+        <where>
+            a.supplier_id IN
+            <foreach collection="supplierIds" index="index" item="item" close=")" open="(" separator=",">
+                  #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

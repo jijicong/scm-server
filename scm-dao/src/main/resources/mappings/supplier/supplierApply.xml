@@ -29,7 +29,7 @@
         LEFT JOIN supplier b ON a.supplier_id=b.id
     </sql>
 
-    <select id="querySupplierApplyList" resultMap="supplierApplyMap" parameterType="java.util.Map">
+    <select id="selectList" resultMap="supplierApplyMap" parameterType="java.util.Map">
         SELECT
         <include refid="supplierApplyColumns"/>
         FROM apply_for_supplier a
@@ -39,24 +39,30 @@
                 AND b.supplier_name = #{supplierName}
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND b.supplier_code = #{supplierCode}
+                AND a.supplier_code = #{supplierCode}
             </if>
             <if test="contact != null and contact != ''">
                 AND b.contact = #{contact}
             </if>
-            <if test="status != null and status != ''">
-                AND b.status = #{status}
-            </if>
+            <choose>
+                <when test="status != null and status != ''">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status!=0
+                </otherwise>
+            </choose>
             <if test="startTime != null and startTime != ''">
-                AND b.create_time > #{startTime}
+                AND a.create_time > #{startTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                AND b.create_time &lt; #{endTime}
+                AND a.create_time &lt; #{endTime}
             </if>
         </where>
+        ORDER BY a.status ASC
     </select>
 
-    <select id="queryCountSupplierApply" resultType="java.lang.Integer" parameterType="java.util.Map">
+    <select id="selectSupplierApplyCount" resultType="java.lang.Integer" parameterType="java.util.Map">
         SELECT COUNT(0)
         FROM apply_for_supplier a
         <include refid="supplierApplyJoins"/>
@@ -65,20 +71,35 @@
                 AND b.supplier_name = #{supplierName}
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND b.supplier_code = #{supplierCode}
+                AND a.supplier_code = #{supplierCode}
             </if>
             <if test="contact != null and contact != ''">
                 AND b.contact = #{contact}
             </if>
-            <if test="status != null and status != ''">
-                AND b.status = #{status}
-            </if>
+            <choose>
+                <when test="status != null and status != ''">
+                    AND a.status = #{status}
+                </when>
+                <otherwise>
+                    AND a.status!=0
+                </otherwise>
+            </choose>
             <if test="startTime != null and startTime != ''">
-                AND b.create_time > #{startTime}
+                AND a.create_time > #{startTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                AND b.create_time &lt; #{endTime}
+                AND a.create_time &lt; #{endTime}
             </if>
+        </where>
+    </select>
+
+    <select id="selectOneById" resultMap="supplierApplyMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="supplierApplyColumns"/>
+        FROM apply_for_supplier a
+        <include refid="supplierApplyJoins"/>
+        <where>
+            AND a.id=#{id}
         </where>
     </select>
 </mapper>

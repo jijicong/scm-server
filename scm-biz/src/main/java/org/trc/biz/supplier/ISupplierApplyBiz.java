@@ -17,4 +17,12 @@ public interface ISupplierApplyBiz {
      * @throws Exception
      */
     Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel)throws Exception;
+
+    /**
+     * 根据supplierApplyId查询单条记录
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    SupplierApply selectOneById(Long id)throws Exception;
 }

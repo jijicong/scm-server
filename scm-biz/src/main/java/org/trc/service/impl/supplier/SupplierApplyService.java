@@ -20,12 +20,17 @@ public class SupplierApplyService extends BaseService<SupplierApply,Long> implem
     private ISupplierApplyMapper mapper;
 
     @Override
-    public List<SupplierApply> querySupplierApplyList(Map<String, Object> map) {
-        return mapper.querySupplierApplyList(map);
+    public List<SupplierApply> selectList(Map<String, Object> map) {
+        return mapper.selectList(map);
     }
 
     @Override
-    public int queryCountSupplierApply(Map<String, Object> map) {
-        return mapper.queryCountSupplierApply(map);
+    public int selectCount(Map<String, Object> map) {
+        return mapper.selectSupplierApplyCount(map);
+    }
+
+    @Override
+    public SupplierApply selectOneById(Long id) {
+        return mapper.selectOneById(id);
     }
 }

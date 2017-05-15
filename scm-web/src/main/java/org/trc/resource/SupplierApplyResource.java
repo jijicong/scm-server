@@ -7,12 +7,11 @@ import org.trc.domain.category.Property;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.form.category.PropertyForm;
 import org.trc.form.supplier.SupplierApplyForm;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.awt.*;
 
@@ -29,9 +28,14 @@ public class SupplierApplyResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page)throws Exception{
-        return supplierApplyBiz.supplierApplyPage(page,form);
+    public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page) throws Exception {
+        return supplierApplyBiz.supplierApplyPage(page, form);
     }
 
-
+    @GET
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult selectOneById(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("供应商审核信息查询成功", supplierApplyBiz.selectOneById(id));
+    }
 }

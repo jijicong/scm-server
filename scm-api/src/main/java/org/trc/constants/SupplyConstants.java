@@ -270,6 +270,10 @@ public class SupplyConstants {
         public static final class SupplierApply {
             //供应商申请审批分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
+
+            //供应商申请审核信息路径
+            public static final String  SUPPLIER_APPLY= "supplierApply";
+
         }
 
     }
