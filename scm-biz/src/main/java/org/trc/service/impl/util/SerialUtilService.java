@@ -27,14 +27,14 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
     private ISerialMapper iserialMapper;
 
     @Override
-    public Serial selectSerialByname(String name) {
+    public Serial selectSerialByName(String name) {
         return iserialMapper.selectSerialByname(name);
     }
 
     @Override
     public String getSerialCode(String name, int length) throws Exception{
 
-        Serial serial = this.selectSerialByname(name);
+        Serial serial = this.selectSerialByName(name);
 
         boolean sign=true;
         //int countVersionChange=0;
@@ -61,7 +61,7 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
     @Override
     public int updateSerialByName(String name, int number,int originalNumber) throws Exception {
 
-        int countVersionChange = iserialMapper.updateSeralVersionByName(name,number,originalNumber);
+        int countVersionChange = iserialMapper.updateSerialVersionByName(name,number,originalNumber);
         if(countVersionChange==0) {
             String msg = CommonUtil.joinStr("流水的版本[vesionMark=", number + "", "]的数据已存在,请再次提交").toString();
             throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);

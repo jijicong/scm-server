@@ -15,6 +15,6 @@ public interface ISerialMapper extends BaseMapper<Serial> {
 
     //根据名字修改版本号
     @Update("update serial set number=#{number} WHERE name=#{name} and number=#{originalNumber}")
-    public int updateSeralVersionByName(@Param("name") String name,@Param("number") int number,@Param("originalNumber") int originalNumber);
+    public int updateSerialVersionByName(@Param("name") String name,@Param("number") int number,@Param("originalNumber") int originalNumber);
 
 }

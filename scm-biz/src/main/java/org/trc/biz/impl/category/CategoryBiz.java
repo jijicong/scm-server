@@ -1,6 +1,7 @@
 package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,10 +27,58 @@ import java.util.*;
 @Service("categoryBiz")
 public class CategoryBiz implements ICategoryBiz {
 
-    private final static org.slf4j.Logger log = LoggerFactory.getLogger(CategoryBiz.class);
+    private final static Logger log = LoggerFactory.getLogger(CategoryBiz.class);
 
     @Autowired
     private ICategoryService categoryService;
+
+    /**
+     * 根据父类id，查找子分类，isRecursive为true，递归查找所有，否则只查一级子分类
+     *  null, false
+     *  null, true
+     *  xx
+     * @param parentId
+     * @param isRecursive
+     * @return
+     */
+    @Override
+    public List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception{
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(null == parentId) {
+            criteria.andIsNull("parentId");
+        }else{
+            criteria.andEqualTo("parentId", parentId);
+        }
+        example.orderBy("sort").asc();
+        List<Category> childCategoryList = categoryService.selectByExample(example);
+        List<TreeNode> childNodeList = new ArrayList<>();
+        for(Category category : childCategoryList){
+            TreeNode treeNode = new TreeNode();
+            treeNode.setId(category.getId().toString());
+            treeNode.setText(category.getName());
+            treeNode.setSort(category.getSort());
+            treeNode.setIsValid(category.getIsValid());
+            treeNode.setLevel(category.getLevel());
+            treeNode.setFullPathId(category.getFullPathId());
+            treeNode.setSource(category.getSource());
+            treeNode.setCategoryCode(category.getCategoryCode());
+            treeNode.setIsLeaf(category.getIsLeaf());
+            childNodeList.add(treeNode);
+        }
+        if(childNodeList.size()==0){
+            return childNodeList;
+        }
+        if(isRecursive == true){
+            for(TreeNode childNode : childNodeList){
+                List<TreeNode> nextChildCategoryList = getNodes(Long.parseLong(childNode.getId()), isRecursive);
+                if(nextChildCategoryList.size() > 0 ) {
+                    childNode.setChildren(nextChildCategoryList);
+                }
+            }
+        }
+        return childNodeList;
+    }
 
     @Override
     public void updateCategory(Category category) throws Exception {
@@ -69,7 +118,6 @@ public class CategoryBiz implements ICategoryBiz {
     /**
      * 查询树
      *
-     * @param categoryForm
      * @return
      * @throws Exception
      */

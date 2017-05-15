@@ -10,11 +10,12 @@ import java.util.List;
  */
 public interface ICategoryBiz {
 
+    List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception;
+
     /**
      * 修改
      *
      * @param category
-     * @param id
      * @return
      * @throws Exception
      */
@@ -28,7 +29,6 @@ public interface ICategoryBiz {
     /**
      * 获取分类树节点
      *
-     * @param categoryForm
      * @return
      * @throws Exception
      */
