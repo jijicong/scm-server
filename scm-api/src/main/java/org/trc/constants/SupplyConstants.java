@@ -124,8 +124,9 @@ public class SupplyConstants {
             //添加，修改分类
             public  static  final  String  CLASSIFY ="classify";
             //修改排序
-            public static final  String CLASSIFY_SORT="classifysort";
-
+            public static final  String CLASSIFY_SORT ="classifysort";
+            //修改状态
+            public  static  final  String  UPDATE_STATE ="classify/updateState";
 
         }
     }

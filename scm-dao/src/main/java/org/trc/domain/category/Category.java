@@ -28,6 +28,7 @@ public class Category extends BaseDO {
     private String fullPathId;
 
     @FormParam("categoryCode")
+    @NotEmpty
     @Length(max = 32, message = "分类编码字母和数字不能超过64个,汉字不能超过32个")
     private String categoryCode;
 

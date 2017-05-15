@@ -42,5 +42,15 @@ public interface ICategoryBiz {
      * @throws Exception
      */
     Category findCategoryByCategoryCode(String categoryCategory) throws Exception;
+    /**
+     * 是否为叶子节点
+     */
+    int isLeaf(Long id) throws  Exception;
 
+    /**
+     *更新排序
+     */
+    void updateSort(List<Category> categoryList) throws  Exception;
+
+    void updateState(Category category) throws Exception;
 }

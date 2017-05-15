@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.domain.category.Category;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.form.category.TreeNode;
@@ -56,7 +57,7 @@ public class CategoryBiz implements ICategoryBiz {
         for(Category category : childCategoryList){
             TreeNode treeNode = new TreeNode();
             treeNode.setId(category.getId().toString());
-            treeNode.setText(category.getName());
+            treeNode.setName(category.getName());
             treeNode.setSort(category.getSort());
             treeNode.setIsValid(category.getIsValid());
             treeNode.setLevel(category.getLevel());
@@ -80,6 +81,11 @@ public class CategoryBiz implements ICategoryBiz {
         return childNodeList;
     }
 
+    /**
+     * 修改分类
+     * @param category
+     * @throws Exception
+     */
     @Override
     public void updateCategory(Category category) throws Exception {
 
@@ -95,19 +101,20 @@ public class CategoryBiz implements ICategoryBiz {
 
     }
 
+    /**
+     * 添加分类
+     * @param category
+     * @throws Exception
+     */
     @Override
     public void saveClassify(Category category) throws Exception {
 
         int count = 0;
-        if (null != category.getId()) {
-            //修改
-            category.setUpdateTime(Calendar.getInstance().getTime());
-            count = categoryService.updateByPrimaryKeySelective(category);
-        } else {
-            //add
-            ParamsUtil.setBaseDO(category);
-            count = categoryService.insert(category);
-        }
+//        AssertUtil.notNull(category.getId(),"根据分类ID修改分类参数ID为空");
+        //add
+        ParamsUtil.setBaseDO(category);
+        count = categoryService.insert(category);
+
         if (count == 0) {
             String msg = CommonUtil.joinStr("保存分类", JSON.toJSONString(category), "到数据库失败").toString();
             log.error(msg);
@@ -139,7 +146,7 @@ public class CategoryBiz implements ICategoryBiz {
 
             TreeNode rootTreeNode1 = new TreeNode();
             rootTreeNode1.setId(rootClassifyList.get(i).getId().toString());
-            rootTreeNode1.setText(rootClassifyList.get(i).getName());
+            rootTreeNode1.setName(rootClassifyList.get(i).getName());
             rootTreeNode1.setSort(rootClassifyList.get(i).getSort());
             rootTreeNode1.setIsValid(rootClassifyList.get(i).getIsValid());
             rootTreeNode1.setLevel(rootClassifyList.get(i).getLevel());
@@ -210,6 +217,51 @@ public class CategoryBiz implements ICategoryBiz {
 
     }
 
+    @Override
+    public int isLeaf(Long id) throws Exception {
+
+        AssertUtil.notNull(id,"根据分类ID查询分类的参数id为空");
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("parentId",id);
+        return categoryService.selectByExample(example).size();
+    }
+
+    /**
+     * 更新排序
+     * @param categoryList
+     * @throws Exception
+     */
+    @Override
+    public void updateSort(List<Category> categoryList) throws Exception {
+          categoryService.updateCategorySort(categoryList);
+    }
+
+    /**
+     * 分类状态修改
+     * @param category
+     * @throws Exception
+     */
+    @Override
+    public void updateState(Category category) throws Exception {
+        AssertUtil.notNull(category.getId(),"类目管理模块修改分类信息失败，分类信息为空");
+        Category updateCategory = new Category();
+        updateCategory.setId(category.getId());
+        if (category.getIsValid().equals(ValidEnum.VALID.getCode())) {
+            updateCategory.setIsValid(ValidEnum.NOVALID.getCode());
+        } else {
+            updateCategory.setIsValid(ValidEnum.VALID.getCode());
+        }
+        updateCategory.setUpdateTime(Calendar.getInstance().getTime());
+        int count=categoryService.updateByPrimaryKeySelective(updateCategory);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(category),"数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
+        }
+
+    }
+
     /**
      * 查询组装下一级ID
      *
@@ -231,7 +283,7 @@ public class CategoryBiz implements ICategoryBiz {
                 if (id.toString().equals(cls.getParentId())) {
                     TreeNode nextTreeNode = new TreeNode();
                     nextTreeNode.setId(cls.getId().toString());
-                    nextTreeNode.setText(cls.getName());
+                    nextTreeNode.setName(cls.getName());
                     nextTreeNode.setIsValid(cls.getIsValid());
                     nextTreeNode.setSort(cls.getSort());
                     nextTreeNode.setLevel(cls.getLevel());
