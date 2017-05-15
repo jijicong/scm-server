@@ -43,21 +43,24 @@ public class WarehouseResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveChannel(@BeanParam Warehouse warehouse) throws Exception{
-        return  ResultUtil.createSucssAppResult("保存成功",warehouseBiz.saveWarehouse(warehouse));
+        warehouseBiz.saveWarehouse(warehouse);
+        return  ResultUtil.createSucssAppResult("保存成功","");
     }
     //仓库修改
     @PUT
     @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateChannel(@BeanParam Warehouse warehouse, @PathParam("id") Long id) throws  Exception{
-        return  ResultUtil.createSucssAppResult("修改仓库信息成功",warehouseBiz.updateWarehouse(warehouse,id));
+    public AppResult updateChannel(@BeanParam Warehouse warehouse) throws  Exception{
+        warehouseBiz.updateWarehouse(warehouse);
+        return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
     }
     //仓库状态的修改
     @POST
-    @Path(SupplyConstants.Warehouse.UPDATE_STATE)
+    @Path(SupplyConstants.Warehouse.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateWarehouseState(@BeanParam Warehouse warehouse) throws Exception{
-        return ResultUtil.createSucssAppResult("状态修改成功",warehouseBiz.updateWarehouseState(warehouse));
+        warehouseBiz.updateWarehouseState(warehouse);
+        return ResultUtil.createSucssAppResult("状态修改成功","");
     }
     //根据id查询
     @GET

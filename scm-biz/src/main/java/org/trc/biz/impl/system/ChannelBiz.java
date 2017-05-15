@@ -10,12 +10,14 @@ import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -33,11 +35,11 @@ import java.util.List;
 @Service("channelBiz")
 public class ChannelBiz implements IChannelBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(ChannelBiz.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
 
-    private final static String  SERIALNAME="QD";
+    private final static String  SERIALNAME = "QD";
 
-    private final static Integer LENGTH=3;
+    private final static Integer LENGTH = 3;
 
     @Resource
     private IChannelService channelService;
@@ -49,10 +51,10 @@ public class ChannelBiz implements IChannelBiz {
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) throws Exception {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
-        if(StringUtil.isNotEmpty(form.getName())) {
+        if(!StringUtils.isBlank(form.getName())) {
             criteria.andLike("name", "%" + form.getName() + "%");
         }
-        if(StringUtil.isNotEmpty(form.getIsValid())) {
+        if(!StringUtils.isBlank(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
         example.orderBy("updateTime").desc();
@@ -62,9 +64,9 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     public Channel findChannelByName(String name) throws Exception{
-        if(StringUtil.isEmpty(name) || name==null){
+        if(StringUtils.isBlank(name)){
             String msg = CommonUtil.joinStr("根据渠道名称查询渠道的参数name为空").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         Channel channel=new Channel();
@@ -72,56 +74,46 @@ public class ChannelBiz implements IChannelBiz {
         return channelService.selectOne(channel);
     }
     @Override
-    public int saveChannel(Channel channel) throws Exception {
+    public void saveChannel(Channel channel) throws Exception {
 
+        AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
-        if(null != tmp){
-            String msg = CommonUtil.joinStr("渠道名称[name=",channel.getName(),"]的数据已存在,请使用其他名称").toString();
-            log.error(msg);
+        if (null != tmp) {
+            String msg = CommonUtil.joinStr("渠道名称[name=", channel.getName(), "]的数据已存在,请使用其他名称").toString();
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-
         String code = serialUtilService.getSerialCode(SERIALNAME,LENGTH);//查询当前的序列位置
-
-
         channel.setCode(code);
         ParamsUtil.setBaseDO(channel);
         int count=0;
         count=channelService.insert(channel);
         if(count == 0){
             String msg = CommonUtil.joinStr("保存渠道", JSON.toJSONString(channel),"数据库操作失败").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-        return count;
+
     }
 
     @Override
-    public int updateChannel(Channel channel, Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("修改渠道参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+    public void updateChannel(Channel channel) throws Exception {
+        AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
         int count = 0;
-        channel.setId(id);
         channel.setUpdateTime(Calendar.getInstance().getTime());
         count = channelService.updateByPrimaryKeySelective(channel);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
-        return count;
+
     }
 
     @Override
     public Channel findChannelById(Long id) throws Exception {
-        if(null == id){
-            String msg = CommonUtil.joinStr("根据ID查询渠道参数ID为空").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+
+        AssertUtil.notNull(id, "根据ID查询渠道明细,参数ID不能为空");
         Channel channel = new Channel();
         channel.setId(id);
         channel = channelService.selectOne(channel);
@@ -130,43 +122,28 @@ public class ChannelBiz implements IChannelBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_QUERY_EXCEPTION,msg);
         }
         return channel;
+
     }
 
     @Override
-    public int updateChannelState(Channel channel) throws Exception {
-        Long id = channel.getId();
-        String state = channel.getIsValid();
-        int stateInt = Integer.parseInt(state);
-        if(stateInt==1){
-            channel.setIsValid(0+"");
-        }else if(stateInt==0){
-            channel.setIsValid(1+"");
-        }else {
-            String msg = CommonUtil.joinStr("参数的状态值不符合要求").toString();
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+    public void updateChannelState(Channel channel) throws Exception {
+
+        AssertUtil.notNull(channel,"渠道管理模块修改渠道信息失败，仓库信息为空");
         Channel updateChannel=new Channel();
         updateChannel.setId(channel.getId());
-        updateChannel.setIsValid(channel.getIsValid());
+        if (channel.getIsValid().equals(ValidEnum.VALID.getCode())) {
+            updateChannel.setIsValid(ValidEnum.NOVALID.getCode());
+        } else {
+            updateChannel.setIsValid(ValidEnum.VALID.getCode());
+        }
         updateChannel.setUpdateTime(Calendar.getInstance().getTime());
         int count=channelService.updateByPrimaryKeySelective(updateChannel);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
-        return count;
+
     }
 
-    @Override
-    public List<Channel> channelList(ChannelForm form) throws Exception {
-        Channel channel = new Channel();
-        BeanUtils.copyProperties(form,channel);
-        if(StringUtils.isEmpty(form.getIsValid())){
-            channel.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }
-        channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        return channelService.select(channel);
-    }
 }
