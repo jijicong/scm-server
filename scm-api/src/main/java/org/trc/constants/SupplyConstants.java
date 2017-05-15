@@ -119,8 +119,13 @@ public class SupplyConstants {
          * 分类管理
          */
         public static final class  Classify{
+            //查询树
             public static  final String CLASSIFY_TREE = "classifytree";
+            //添加，修改分类
             public  static  final  String  CLASSIFY ="classify";
+            //修改排序
+            public static final  String CLASSIFY_SORT="classifysort";
+
 
         }
     }
