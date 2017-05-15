@@ -24,25 +24,22 @@ public class Category extends BaseDO {
     private Long id;
 
     @FormParam("fullPathId")
-    @NotEmpty
     @Length(max = 64, message = "全路径ID字母和数字不能超过64个,汉字不能超过32个")
     private String fullPathId;
 
     @FormParam("categoryCode")
-    @NotEmpty
     @Length(max = 32, message = "分类编码字母和数字不能超过64个,汉字不能超过32个")
     private String categoryCode;
 
     @FormParam("sort")
-    private int sort;
+    private Integer sort;
 
     @FormParam("source")
-    @NotEmpty
     @Length(max = 32)
     private String source;
 
     @FormParam("level")
-    private int level;
+    private Integer level;
 
     @FormParam("name")
     @Length(max = 128, message = "节点内容字母和数字不能超过128个,汉字不能超过64个")
@@ -50,7 +47,6 @@ public class Category extends BaseDO {
 
     @FormParam("isLeaf")
     @Length(max = 2)
-    @NotEmpty
     private String isLeaf;
 
     @FormParam("parentId")
@@ -100,14 +96,6 @@ public class Category extends BaseDO {
         this.source = source;
     }
 
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
     public String getName() {
         return name;
     }
@@ -124,19 +112,27 @@ public class Category extends BaseDO {
         this.isLeaf = isLeaf;
     }
 
-    public int getSort() {
-        return sort;
-    }
-
-    public void setSort(int sort) {
-        this.sort = sort;
-    }
-
     public String getClassifyDescribe() {
         return classifyDescribe;
     }
 
     public void setClassifyDescribe(String classifyDescribe) {
         this.classifyDescribe = classifyDescribe;
+    }
+
+    public Integer getSort() {
+        return sort;
+    }
+
+    public void setSort(Integer sort) {
+        this.sort = sort;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 }
