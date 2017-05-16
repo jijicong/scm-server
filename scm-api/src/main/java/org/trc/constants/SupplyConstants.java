@@ -120,8 +120,14 @@ public class SupplyConstants {
          * 分类管理
          */
         public static final class  Classify{
+            //查询树
             public static  final String CLASSIFY_TREE = "classifytree";
+            //添加，修改分类
             public  static  final  String  CLASSIFY ="classify";
+            //修改排序
+            public static final  String CLASSIFY_SORT ="classifysort";
+            //修改状态
+            public  static  final  String  UPDATE_STATE ="classify/updateState";
 
         }
     }
@@ -176,6 +182,8 @@ public class SupplyConstants {
         public static final String ROLE_PAGE = "rolePage";
         //授权的用户使用名查询
         public static final String ROLE = "role";
+        //角色用户授权入口
+        public static final String ROLE_ACCREDITINFO="roleAccreditInfo";
         //状态的修改
         public static final String UPDATE_STATE = "role/updateState";
     }
@@ -271,6 +279,10 @@ public class SupplyConstants {
         public static final class SupplierApply {
             //供应商申请审批分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
+
+            //供应商申请审核信息路径
+            public static final String  SUPPLIER_APPLY= "supplierApply";
+
         }
 
     }

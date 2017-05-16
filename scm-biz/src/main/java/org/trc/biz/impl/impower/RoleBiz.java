@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IRoleBiz;
 import org.trc.biz.impower.IRoleJurisdictionRelationBiz;
+import org.trc.biz.impower.IUserAccreditInfoRoleRelationBiz;
 import org.trc.domain.impower.Role;
 import org.trc.domain.impower.RoleJurisdictionRelation;
 import org.trc.enums.CommonExceptionEnum;
@@ -16,6 +17,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.impower.RoleForm;
 import org.trc.service.impower.IRoleJurisdictionRelationService;
 import org.trc.service.impower.IRoleService;
+import org.trc.service.impower.IUserAccreditRoleRelationService;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -32,11 +34,22 @@ import java.util.List;
 @Service("roleBiz")
 public class RoleBiz implements IRoleBiz{
 
-    private final static Logger log = LoggerFactory.getLogger(RoleBiz.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(RoleBiz.class);
     @Resource
     private IRoleService roleService;
     @Resource
     private IRoleJurisdictionRelationBiz roleJurisdictionRelationBiz;
+    @Resource
+    private IUserAccreditInfoRoleRelationBiz userAccreditInfoRoleRelationBiz;
+
+    @Override
+    @Transactional
+    public int findRoleAndAccreditInfoByRoleId(Long roleId) throws Exception {
+
+        int num = userAccreditInfoRoleRelationBiz.findRoleAndAccreditInfoByRoleId(roleId);
+        return num;
+
+    }
 
     @Override
     public Pagenation<Role> rolePage(RoleForm form, Pagenation<Role> page) {
@@ -61,7 +74,7 @@ public class RoleBiz implements IRoleBiz{
         Role tmp = findRoleByName(role.getName());
         if (null != tmp) {
             String msg = CommonUtil.joinStr("角色名称[name=", role.getName(), "]的数据已存在,请使用其他名称").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
         int count=0;
@@ -69,7 +82,7 @@ public class RoleBiz implements IRoleBiz{
         count=roleService.insert(role);
         if(count==0){
             String msg = CommonUtil.joinStr("保存角色", JSON.toJSONString(role), "数据库操作失败").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
         count+=(roleJurisdictionRelationBiz.saveRoleJurisdictionRelationS(roleJurisdiction,role.getId()));
@@ -79,7 +92,7 @@ public class RoleBiz implements IRoleBiz{
     public Role findRoleByName(String name) throws Exception {
         if(StringUtil.isEmpty(name)  || name==null){
             String msg=CommonUtil.joinStr("根据角色名称查询角色的参数name为空").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         Role role = new Role();

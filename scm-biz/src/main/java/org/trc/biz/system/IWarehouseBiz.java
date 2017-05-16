@@ -15,14 +15,14 @@ public interface IWarehouseBiz {
      * @return  int 插入的数量
      * @throws Exception
      */
-    public int saveWarehouse(Warehouse warehouse) throws Exception;
+    void saveWarehouse(Warehouse warehouse) throws Exception;
     /**
      * 根据仓库名称查找仓库（仓库名是否被使用）
      * @param name 仓库名
      * @return WarehouseBiz
      * @throws Exception
      */
-    public Warehouse findWarehouseByName(String name) throws Exception;
+    Warehouse findWarehouseByName(String name) throws Exception;
     /**
      * 分页查询仓库信息
      * @param form  仓库查询条件
@@ -33,23 +33,22 @@ public interface IWarehouseBiz {
     /**
      * 更新仓库
      * @param warehouse 仓库信息
-     * @param id 主键
      * @return 整数改变
      * @throws Exception
      */
-    public int updateWarehouse(Warehouse warehouse,Long id) throws Exception;
+    void updateWarehouse(Warehouse warehouse) throws Exception;
     /**
      * 根据id查询仓库
      * @param id 主键
      * @return 仓库实例
      * @throws Exception
      */
-    public Warehouse findWarehouseById(Long id) throws Exception;
+    Warehouse findWarehouseById(Long id) throws Exception;
     /**
      * 仓库状态修改
      * @param warehouse
      * @return
      * @throws Exception
      */
-    public int updateWarehouseState(Warehouse warehouse) throws Exception;
+    void updateWarehouseState(Warehouse warehouse) throws Exception;
 }

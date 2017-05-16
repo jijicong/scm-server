@@ -49,7 +49,18 @@ public interface IPropertyBiz {
      */
     List<PropertyValue> queryListByPropertyId(Long propertyId) throws Exception;
 
+    /**
+     * 根据属性id查询属性信息
+     * @param id
+     * @return
+     * @throws Exception
+     */
     Property findPropertyById(Long id) throws Exception;
 
+    /**
+     * 根据属性id修改属性信息
+     * @param property
+     * @throws Exception
+     */
     void updatePropertyStatus(Property property) throws Exception;
 }

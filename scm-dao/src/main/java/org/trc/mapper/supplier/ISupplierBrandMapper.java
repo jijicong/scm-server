@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Created by hzwdx on 2017/5/5.
  */
-public interface ISupplierBrandMapper extends BaseMapper<SupplierBrand>{
+public interface ISupplierBrandMapper extends BaseMapper<SupplierBrand> {
 
+    List<SupplierBrand> selectListBySupplierIds(@Param(value="supplierIds") Long ...supplierIds);
 }

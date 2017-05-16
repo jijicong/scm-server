@@ -47,7 +47,7 @@ public class SupplierApply extends BaseDO {
     private String supplierName;//供应商名称
     @Transient
     private String supplierKindCode;//供应商性质编号
-
+    private String brandNames;
     public Long getId() {
         return id;
     }
@@ -141,5 +141,13 @@ public class SupplierApply extends BaseDO {
 
     public void setSupplierKindCode(String supplierKindCode) {
         this.supplierKindCode = supplierKindCode;
+    }
+
+    public String getBrandNames() {
+        return brandNames;
+    }
+
+    public void setBrandNames(String brandNames) {
+        this.brandNames = brandNames;
     }
 }

@@ -7,12 +7,13 @@ import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 /**
  * Created by sone on 2017/5/2.
  */
 public class Channel extends BaseDO{
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
