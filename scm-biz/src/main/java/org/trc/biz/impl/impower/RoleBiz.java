@@ -33,21 +33,40 @@ import java.util.Calendar;
 public class RoleBiz implements IRoleBiz{
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RoleBiz.class);
+
+    private final static Long SYS_ROLE_ID=1L; //系统角色的id
     @Resource
     private IRoleService roleService;
     @Resource
     private IRoleJurisdictionRelationBiz roleJurisdictionRelationBiz;
 
-    @Override
-    public RoleExpand findRoleExpandById(Long id) throws Exception {
 
-        return null;
+    @Override
+    public Role findRoleById(Long roleId) throws Exception {
+        /*
+         根据id查询角色对象
+         */
+        AssertUtil.notNull(roleId,"根据角色id，查询角色，角色的id为空");
+        Role role = new Role();
+        role.setId(roleId);
+        Role queryRole = roleService.selectOne(role);
+        if(null == queryRole) {
+            String msg = CommonUtil.joinStr("根据主键ID[id=", roleId.toString(), "]查询角色为空").toString();
+            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION,msg);
+        }
+        return queryRole;
+
     }
 
     @Override
     public void updateRoleState(Role role) throws Exception {
         AssertUtil.notNull(role,"根据角色对象，修改角色的状态，角色对象为空");
         Role updateRole = new Role();
+        if(role.getId()==SYS_ROLE_ID){ //防止恶意修改系统角色的状态
+            String tip="系统角色的状态不能被修改";
+            LOGGER.error(tip);
+            throw  new ConfigException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION,tip);
+        }
         updateRole.setId(role.getId());
         if (role.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateRole.setIsValid(ValidEnum.NOVALID.getCode());
@@ -61,7 +80,7 @@ public class RoleBiz implements IRoleBiz{
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
-        //roleService.
+
     }
 
     @Override

@@ -21,4 +21,19 @@ public interface IJurisdictionBiz {
      */
     List<Jurisdiction> findChannelJurisdiction() throws Exception;
 
+    /**
+     * 根据角色的id，查询被选中的全局权限
+     * @param roleId
+     * @return
+     * @throws Exception
+     */
+    List<Jurisdiction> findWholeJurisdictionAndCheckedByRoleId(Long roleId) throws Exception;
+
+    /**
+     *根据角色的id，查询被选中的渠道权限
+     * @param roleId
+     * @return
+     * @throws Exception
+     */
+    List<Jurisdiction> findChannelJurisdictionAndCheckedByRoleId(Long roleId) throws Exception;
 }

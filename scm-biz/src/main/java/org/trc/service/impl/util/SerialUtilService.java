@@ -43,9 +43,12 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
         number+=1;
 
         this.updateSerialByName(name,number,serial.getNumber());
-
+        //获得最大的数
+        int temp = SerialUtil.jointNineByLen(length);
+        if(number>temp){
+            return name+temp;
+        }
         String code= SerialUtil.getMoveOrderNo(name, length,number);
-
         return code;
 
     }

@@ -24,7 +24,7 @@ public class RoleResource {
     @Resource
     private IRoleBiz roleBiz;
 
-    //仓库分页查询
+    //角色分页查询
     @GET
     @Path(SupplyConstants.Role.ROLE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -55,8 +55,9 @@ public class RoleResource {
     @Path(SupplyConstants.Role.ROLE_ACCREDITINFO)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult findNumFromRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId) throws Exception{
-        System.out.println(roleId);
+
         return  ResultUtil.createSucssAppResult("查询角色数量成功",roleBiz.findNumFromRoleAndAccreditInfoByRoleId(roleId));
+
     }
     //修改角色的状态
     @POST
@@ -70,8 +71,8 @@ public class RoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<RoleExpand> findRoleById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("查询角色成功",roleBiz.findRoleExpandById(id));
+    public AppResult<Role> findRoleById(@PathParam("id") Long id) throws Exception{
+        return ResultUtil.createSucssAppResult("查询角色成功",roleBiz.findRoleById(id));
     }
 
 }

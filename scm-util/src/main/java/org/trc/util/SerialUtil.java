@@ -28,9 +28,19 @@ public  class SerialUtil {
         }
         return rs;
     }
+    //根据接受的长度，拼接9 ：列入 len=3   拼3个9
+    public  static int jointNineByLen(int len){
+        String temp="";
+        for (int i=0;i<len;i++){
+            temp=temp+"9";
+        }
+        return  Integer.parseInt(temp);
+    }
+
 
     public static void main(String[] args) {
-        String test = getMoveOrderNo("QD",5,1);
-        System.out.println(test);
+       // String test = getMoveOrderNo("QD",5,1);
+       // System.out.println(test);
+        System.out.println(jointNineByLen(3));
     }
 }

@@ -15,7 +15,7 @@ public interface IRoleBiz {
      * @return
      * @throws Exception
      */
-    RoleExpand findRoleExpandById(Long id) throws Exception;
+    Role findRoleById(Long roleId) throws Exception;
     /**
      * 更新角色的状态
      * @param role  角色对象

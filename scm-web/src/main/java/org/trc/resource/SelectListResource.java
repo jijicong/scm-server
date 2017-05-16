@@ -78,12 +78,14 @@ public class SelectListResource {
     @Path(SupplyConstants.SelectList.PROVINCE_CITY)
     @Produces(MediaType.APPLICATION_JSON)
     public List<AreaTreeNode> findProvinceCity() throws Exception{
+
         /**
          * 1.查询所有的省市信息
          * 2.使用json对象转化
          * 3.返回给前台
          */
         return configBiz.findProvinceCity();
+
     }
     @GET
     @Path(SupplyConstants.SelectList.ROLE_TYPE)
