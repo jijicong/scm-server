@@ -2,19 +2,20 @@ package org.trc.resource;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.form.UploadResponse;
 import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by hzwdx on 2017/5/3.
@@ -22,6 +23,8 @@ import java.util.List;
 @Component
 @Path(SupplyConstants.QinNiu.ROOT)
 public class QiniuResource {
+
+    private final static Logger log = LoggerFactory.getLogger(QiniuResource.class);
 
     //逗号
     private static final String DOU_HAO = ",";
@@ -33,6 +36,35 @@ public class QiniuResource {
     @Autowired
     private IQinniuBiz qinniuBiz;
 
+/*    *//**
+     * 文件上传
+     * @param fileInputStream
+     * @param disposition
+     * @return
+     *//*
+    @POST
+    @Path(SupplyConstants.QinNiu.UPLOAD+"/{module}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult upload(@FormDataParam("Filedata") InputStream fileInputStream,
+                            @FormDataParam("Filedata") FormDataContentDisposition disposition,
+                            @PathParam("module") String module, @FormDataParam("fileName") String fileName) throws Exception {
+        AssertUtil.notBlank(disposition.getFileName(), "上传文件名称不能为空");
+        AssertUtil.notBlank(fileName, "上传文件名称不能为空");
+        String fileExt = fileName.split("\\"+SupplyConstants.Symbol.FILE_NAME_SPLIT)[1];
+        String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, fileExt);
+        String key = qinniuBiz.upload(fileInputStream, newFileName, module);
+        UploadResponse uploadResponse = new UploadResponse();
+        uploadResponse.setKey(key);
+        uploadResponse.setFileName(fileName);
+        //获取图片缩略图url
+        String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
+        uploadResponse.setUrl(url);
+        List<UploadResponse> list = new ArrayList<UploadResponse>();
+        list.add(uploadResponse);
+        return ResultUtil.createSucssAppResult("上传成功",list);
+    }*/
+
     /**
      * 文件上传
      * @param fileInputStream
@@ -43,19 +75,28 @@ public class QiniuResource {
     @Path(SupplyConstants.QinNiu.UPLOAD+"/{module}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult upload(@FormDataParam("Filedata") InputStream fileInputStream,
+    public UploadResponse upload(@FormDataParam("Filedata") InputStream fileInputStream,
                             @FormDataParam("Filedata") FormDataContentDisposition disposition,
-                            @PathParam("module") String module) throws Exception {
-        String key = qinniuBiz.upload(fileInputStream, disposition.getFileName(), module);
-        UploadResponse uploadResponse = new UploadResponse();
-        uploadResponse.setKey(key);
-        uploadResponse.setFileName(disposition.getFileName());
-        //获取图片缩略图url
-        String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
-        uploadResponse.setUrl(url);
-        List<UploadResponse> list = new ArrayList<UploadResponse>();
-        list.add(uploadResponse);
-        return ResultUtil.createSucssAppResult("上传成功",list);
+                            @PathParam("module") String module, @FormDataParam("fileName") String fileName) throws Exception {
+        UploadResponse uploadResponse = new UploadResponse(true);
+        try{
+            AssertUtil.notBlank(disposition.getFileName(), "上传文件名称不能为空");
+            AssertUtil.notBlank(fileName, "上传文件名称不能为空");
+            String fileExt = fileName.split("\\"+SupplyConstants.Symbol.FILE_NAME_SPLIT)[1];
+            String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, fileExt);
+            String key = qinniuBiz.upload(fileInputStream, newFileName, module);
+            uploadResponse.setKey(key);
+            uploadResponse.setFileName(fileName);
+            //获取图片缩略图url
+            String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
+            uploadResponse.setUrl(url);
+        }catch (Exception e){
+            String msg = String.format("%s%s%s%s", "上传文件", fileName, "异常,异常信息：",e.getMessage());
+            log.error(msg, e);
+            uploadResponse.setSuccess(false);
+            uploadResponse.setErrorMsg(msg);
+        }
+        return uploadResponse;
     }
 
     @GET

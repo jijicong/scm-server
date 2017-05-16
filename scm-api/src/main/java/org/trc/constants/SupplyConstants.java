@@ -11,6 +11,7 @@ public class SupplyConstants {
     public static final class Symbol{
         public static final String COMMA = ",";//逗号
         public static final String MINUS = "-";//减号
+        public static final String FILE_NAME_SPLIT = ".";//文件名称分隔符
     }
 
 
