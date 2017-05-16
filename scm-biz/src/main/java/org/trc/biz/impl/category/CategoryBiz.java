@@ -224,7 +224,18 @@ public class CategoryBiz implements ICategoryBiz {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("parentId",id);
-        return categoryService.selectByExample(example).size();
+        return categoryService.selectByExample(example).size();//需要用select（*） count
+    }
+    /**
+     * 更新是否叶子节点
+     */
+    @Override
+    public void updateIsLeaf(Category category) throws Exception {
+        AssertUtil.notNull(category.getParentId(),"根据分类ID查询分类父节点的参数id为空");
+        Category categoryParent = new Category();
+        categoryParent.setId(category.getParentId());
+        categoryParent.setIsLeaf("0");
+        categoryService.updateByPrimaryKeySelective(categoryParent);
     }
 
     /**
@@ -261,6 +272,7 @@ public class CategoryBiz implements ICategoryBiz {
         }
 
     }
+
 
     /**
      * 查询组装下一级ID

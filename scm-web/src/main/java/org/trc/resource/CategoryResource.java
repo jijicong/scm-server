@@ -59,7 +59,7 @@ public class CategoryResource {
         AssertUtil.notNull(category.getIsValid(), "添加分类时isValid参数不能为空");
         category.setCreateOperator("test");
         category.setSource("scm");
-        category.setIsLeaf("0");
+        category.setIsLeaf("1");
         category.setCreateTime(Calendar.getInstance().getTime());
         category.setUpdateTime(Calendar.getInstance().getTime());
         categoryBiz.saveClassify(category);
@@ -72,6 +72,9 @@ public class CategoryResource {
             category.setFullPathId(category.getFullPathId() + "|" + category.getId());
         }
         categoryBiz.updateCategory(category);
+        if (category.getLevel()!=1&&categoryBiz.isLeaf(category.getParentId())!=0){
+            categoryBiz.updateIsLeaf(category);
+        }
         return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 

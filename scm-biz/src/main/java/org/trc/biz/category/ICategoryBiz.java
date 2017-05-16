@@ -53,4 +53,6 @@ public interface ICategoryBiz {
     void updateSort(List<Category> categoryList) throws  Exception;
 
     void updateState(Category category) throws Exception;
+
+    void updateIsLeaf(Category category) throws  Exception;
 }

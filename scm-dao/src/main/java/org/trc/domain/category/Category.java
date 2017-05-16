@@ -51,17 +51,17 @@ public class Category extends BaseDO {
     private String isLeaf;
 
     @FormParam("parentId")
-    private String parentId;
+    private Long parentId;
 
     @FormParam("classifyDescribe")
     @Length(max = 40, message = "分类描述字母和数字不能超过40个,汉字不能超过20个")
     private String classifyDescribe;
 
-    public String getParentId() {
+    public Long getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(Long parentId) {
         this.parentId = parentId;
     }
 
