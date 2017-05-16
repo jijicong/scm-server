@@ -117,6 +117,7 @@ public class BrandBiz implements IBrandBiz {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
         Brand updateBrand = new Brand();
         updateBrand.setId(brand.getId());
+        updateBrand.setUpdateTime(Calendar.getInstance().getTime());
         if (brand.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateBrand.setIsValid(ValidEnum.NOVALID.getCode());
         } else {

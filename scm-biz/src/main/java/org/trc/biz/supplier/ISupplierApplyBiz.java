@@ -1,5 +1,6 @@
 package org.trc.biz.supplier;
 
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.form.supplier.SupplierApplyForm;
 import org.trc.util.Pagenation;
@@ -25,4 +26,6 @@ public interface ISupplierApplyBiz {
      * @throws Exception
      */
     SupplierApply selectOneById(Long id)throws Exception;
+
+    void auditSupplierApply(SupplierApply supplierApply)throws  Exception;
 }

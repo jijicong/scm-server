@@ -18,15 +18,19 @@
         <result property="contact" column="contact"/>
         <result property="supplierName" column="supplier_name"/>
         <result property="supplierKindCode" column="supplier_kind_code"/>
+        <result property="supplierTypeCode" column="supplier_type_code"/>
+        <result property="channelName" column="channelName"/>
+
     </resultMap>
 
     <sql id="supplierApplyColumns">
           a.id,a.apply_code,a.supplier_id,a.channel_id,a.supplier_code,a.channel_code,
-          a.description,a.status,a.is_deleted,a.audit_opinion,a.create_operator,a.create_time,a.update_time,b.contact,b.supplier_name,b.supplier_kind_code
+          a.description,a.status,a.is_deleted,a.audit_opinion,a.create_operator,a.create_time,a.update_time,b.contact,b.supplier_name,b.supplier_kind_code,b.supplier_type_code,c.name AS 'channelName'
     </sql>
 
     <sql id="supplierApplyJoins">
         LEFT JOIN supplier b ON a.supplier_id=b.id
+        LEFT JOIN channel c ON  a.channel_id=c.id
     </sql>
 
     <select id="selectList" resultMap="supplierApplyMap" parameterType="java.util.Map">

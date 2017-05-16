@@ -9,14 +9,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.supplier.ISupplierApplyBiz;
+import org.trc.domain.supplier.AuditLog;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierBrand;
+import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.SupplierException;
 import org.trc.form.supplier.SupplierApplyForm;
 import org.trc.service.impl.supplier.SupplierApplyService;
+import org.trc.service.supplier.IAuditLogService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.util.AssertUtil;
@@ -37,6 +40,8 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     private ISupplierApplyService supplierApplyService;
     @Autowired
     private ISupplierBrandService supplierBrandService;
+    @Autowired
+    private IAuditLogService auditLogService;
     @Override
     public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
@@ -60,14 +65,30 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     public SupplierApply selectOneById(Long id) throws Exception {
-        AssertUtil.notNull(id,"根据ID查询品牌明细,参数ID不能为空");
+        AssertUtil.notNull(id,"根据ID查询供应商审核信息,参数ID不能为空");
         SupplierApply supplierApply=supplierApplyService.selectOneById(id);
         if (null == supplierApply) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询供应商审核信息明细为空").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_QUERY_EXCEPTION,msg);
         }
-        return null;
+        return supplierApply;
+    }
+
+    @Override
+    public void auditSupplierApply(SupplierApply supplierApply) throws Exception {
+        AssertUtil.notNull(supplierApply.getId(),"根据ID更新供应商审核信息,参数ID不能为空");
+        SupplierApply updateSupplierApply=new SupplierApply();
+        updateSupplierApply.setId(supplierApply.getId());
+        updateSupplierApply.setStatus(supplierApply.getStatus());
+        updateSupplierApply.setDescription(supplierApply.getDescription());
+        updateSupplierApply.setUpdateTime(Calendar.getInstance().getTime());
+        supplierApplyService.updateByPrimaryKeySelective(updateSupplierApply);
+        AuditLog auditLog=new AuditLog();
+        auditLog.setApplyCode(supplierApply.getApplyCode());
+        auditLog.setOperation(AuditStatusEnum.queryNameByCode(supplierApply.getStatus()).getName());
+        auditLog.setOperateTime(updateSupplierApply.getUpdateTime());
+        auditLogService.insertSelective(auditLog);
     }
 
     private List<SupplierApply> handleBrandsStr(List<SupplierApply> list){

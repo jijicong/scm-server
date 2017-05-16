@@ -8,13 +8,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 /**
  * Created by hzqph on 2017/5/12.
  */
 public class SupplierApply extends BaseDO {
 
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +39,7 @@ public class SupplierApply extends BaseDO {
     private String description;//说明
     @NotEmpty
     @FormParam("status")
-    private String status;//审核状态
+    private Integer status;//审核状态
     @FormParam("auditOpinion")
     private String auditOpinion;//审核意见
     @Transient
@@ -47,7 +48,9 @@ public class SupplierApply extends BaseDO {
     private String supplierName;//供应商名称
     @Transient
     private String supplierKindCode;//供应商性质编号
-    private String brandNames;
+    private String supplierTypeCode;//供应商类型编号
+    private String brandNames;//供应商代理品牌
+    private String channelName;//渠道方名字
     public Long getId() {
         return id;
     }
@@ -104,11 +107,11 @@ public class SupplierApply extends BaseDO {
         this.description = description;
     }
 
-    public String getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
@@ -149,5 +152,21 @@ public class SupplierApply extends BaseDO {
 
     public void setBrandNames(String brandNames) {
         this.brandNames = brandNames;
+    }
+
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
+    }
+
+    public String getSupplierTypeCode() {
+        return supplierTypeCode;
+    }
+
+    public void setSupplierTypeCode(String supplierTypeCode) {
+        this.supplierTypeCode = supplierTypeCode;
     }
 }

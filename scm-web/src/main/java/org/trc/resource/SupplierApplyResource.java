@@ -33,9 +33,17 @@ public class SupplierApplyResource {
     }
 
     @GET
-    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult selectOneById(@PathParam("id") Long id) throws Exception {
         return ResultUtil.createSucssAppResult("供应商审核信息查询成功", supplierApplyBiz.selectOneById(id));
+    }
+
+    @PUT
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult selectOneById(@BeanParam SupplierApply SupplierApply) throws Exception {
+        supplierApplyBiz.auditSupplierApply(SupplierApply);
+        return ResultUtil.createSucssAppResult("供应商审核成功","");
     }
 }
