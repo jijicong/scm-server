@@ -51,7 +51,7 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
         //获得最大的数
         int temp = SerialUtil.jointNineByLen(length);
         if (number > temp) {
-            sb.append(temp);
+            sb.append(number);
             return sb.toString();
         }
         String code = SerialUtil.getMoveOrderNo(sb.toString(), length, number);
