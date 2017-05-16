@@ -10,19 +10,14 @@ import org.springframework.util.Assert;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
 import org.trc.service.category.IBrandService;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
+import org.trc.service.util.ISerialUtilService;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -34,11 +29,15 @@ import java.util.*;
 public class BrandBiz implements IBrandBiz {
 
     private final static Logger log = LoggerFactory.getLogger(BrandBiz.class);
+    private final static String BRAND_CODE_EX_NAME="PP";
+    private final static int BRAND_CODE_LENGTH=5;
 
     @Autowired
     private IBrandService brandService;
     @Autowired
     private IQinniuBiz qinniuBiz;
+    @Autowired
+    private ISerialUtilService serialUtilService;
 
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
@@ -74,6 +73,10 @@ public class BrandBiz implements IBrandBiz {
     @Override
     public void saveBrand(Brand brand) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
+        //插入固定信息
+        brand.setSource(BrandSourceEnum.SCM.getCode());
+        brand.setBrandCode(serialUtilService.getSerialCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(new Date())));
+        brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         ParamsUtil.setBaseDO(brand);
         int count = brandService.insert(brand);
         if (count < 1) {

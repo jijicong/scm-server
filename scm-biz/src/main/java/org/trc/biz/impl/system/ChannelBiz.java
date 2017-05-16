@@ -83,7 +83,7 @@ public class ChannelBiz implements IChannelBiz {
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-        String code = serialUtilService.getSerialCode(SERIALNAME,LENGTH);//查询当前的序列位置
+        String code = serialUtilService.getSerialCode(LENGTH,SERIALNAME);//查询当前的序列位置
         channel.setCode(code);
         ParamsUtil.setBaseDO(channel);
         int count=0;

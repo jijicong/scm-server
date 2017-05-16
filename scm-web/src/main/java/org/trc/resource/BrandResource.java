@@ -54,10 +54,6 @@ public class BrandResource {
     @Path(SupplyConstants.Category.Brand.BRAND)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveBrand(@BeanParam Brand brand) throws Exception{
-        brand.setSource(BrandSourceEnum.SCM.getCode());
-        brand.setBrandCode(UUID.randomUUID().toString().replaceAll("-", ""));
-        brand.setLastEditOperator("小明");
-        brand.setCreateOperator("小明");
         brandBiz.saveBrand(brand);
         return ResultUtil.createSucssAppResult("保存品牌成功", "");
     }
@@ -86,13 +82,13 @@ public class BrandResource {
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateBrand(@BeanParam Brand brand,@PathParam("id") Long id) throws Exception{
+    public AppResult updateBrand(@BeanParam Brand brand) throws Exception{
         brandBiz.updateBrand(brand);
         return ResultUtil.createSucssAppResult("更新品牌成功", "");
     }
 
     @POST
-    @Path(SupplyConstants.Category.Brand.BRAND_STATE)
+    @Path(SupplyConstants.Category.Brand.BRAND_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Brand brand)throws Exception{
         brandBiz.updateBrandStatus(brand);

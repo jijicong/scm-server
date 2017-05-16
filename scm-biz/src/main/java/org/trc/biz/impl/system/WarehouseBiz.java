@@ -70,7 +70,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
-        String code = serialUtilService.getSerialCode(SERIALNAME,LENGTH);
+        String code = serialUtilService.getSerialCode(LENGTH,SERIALNAME);
         warehouse.setCode(code);//仓库的流水号为CK00000
         ParamsUtil.setBaseDO(warehouse);
         int count = warehouseService.insert(warehouse);

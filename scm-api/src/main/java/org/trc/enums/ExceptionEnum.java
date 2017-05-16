@@ -62,7 +62,7 @@ public enum ExceptionEnum{
     DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION("3000103","数据库死锁访问数据异常"),
 
     DATABASE_DATA_VERSION_EXCEPTION("3000104","数据库的流水记录正在使用"),
-
+    DATABASE_CREATE_SERIAL_EXCEPTION("3000105","创建流水号异常"),
 
 
     SYSTEM_EXCEPTION("4000100","系统异常"),

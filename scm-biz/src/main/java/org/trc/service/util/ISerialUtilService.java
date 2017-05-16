@@ -9,12 +9,13 @@ import org.trc.service.IBaseService;
 public interface ISerialUtilService extends IBaseService<Serial,Long> {
 
     /**
-     * 对流水号进行加工
-     * @param name
+     * 生成各个模块的流水号
+     * names数组首个元素必须为流水号前缀如：PP（品牌）
+     * @param names
      * @param length
      * @return
      */
-    String getSerialCode(String name,int length) throws Exception;
+    String getSerialCode(int length,String ...names) throws Exception;
 
     Serial selectSerialByName(String name) throws Exception;
 

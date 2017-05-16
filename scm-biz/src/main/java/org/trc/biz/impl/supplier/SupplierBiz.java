@@ -108,7 +108,7 @@ public class SupplierBiz implements ISupplierBiz {
     public void saveSupplier(Supplier supplier, Certificate certificate) throws Exception {
         //参数校验
         supplierSaveCheck(supplier, certificate);
-        String supplierCode = serialUtilService.getSerialCode(SERIALNAME, LENGTH);
+        String supplierCode = serialUtilService.getSerialCode(LENGTH,SERIALNAME);
         //保存供应商
         saveSupplierBase(supplier, supplierCode);
         //保存证件
