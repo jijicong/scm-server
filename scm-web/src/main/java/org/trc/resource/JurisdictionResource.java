@@ -50,21 +50,21 @@ public class JurisdictionResource {
      * 1.提供带有角色id的，角色与权限的关联信息查询<全局角色>
      * 2.提供带有角色id的，角色与权限的关联信息查询<渠道角色>
      */
-    @GET
+   /* @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Jurisdiction> findWholeJurisdictionAndCheckedByRoleId(@QueryParam("roleId") Long roleId ) throws Exception{
+    public AppResult<Jurisdiction> findWholeJurisdictionAndCheckedByRoleId() throws Exception{
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(roleId));
+        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(1L));
 
     }
     @GET
-    @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE)
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Jurisdiction> findChannelJurisdictionAndCheckedByRoleId(@QueryParam("roleId") Long roleId ) throws Exception{
 
         return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedByRoleId(roleId));
 
-    }
+    }*/
 
 }

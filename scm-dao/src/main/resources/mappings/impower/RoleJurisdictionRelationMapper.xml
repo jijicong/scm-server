@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.impower.RoleJurisdictionRelationMapper">
     <!-- 查询某角色对应的权限id集合 -->
-    <select id="selectJurisdictionIdList" resultMap="java.lang.Long">
+    <select id="selectJurisdictionIdList" >
         SELECT jurisdiction_id from role_jurisdiction_relation j WHERE role_id=#{roleId}
     </select>
 

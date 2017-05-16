@@ -40,13 +40,13 @@ public class Jurisdiction extends BaseDO{
 
     public boolean isChecked() {
         return checked;
-    }
+    } //为是否选中的属性做准备
     public void setChecked(boolean checked) {
         this.checked = checked;
     }
     public Long getpId(){
         return  parentId;
-    }
+    }  //为zTree的父id做准备
     public Long getId() {
         return id;
     }

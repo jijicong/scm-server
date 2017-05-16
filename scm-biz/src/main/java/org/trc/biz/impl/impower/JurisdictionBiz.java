@@ -94,21 +94,21 @@ public class JurisdictionBiz implements IJurisdictionBiz {
 
         AssertUtil.notNull(roleId,"根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
-        List<Jurisdiction> wholeJurisdictionList=findWholeJurisdiction();
+        List<Jurisdiction> channelJurisdictionList=findChannelJurisdiction();
         //2.查询对应角色被选中权限
         List<Long> JurisdictionIdList = roleJurisdictionRelationService.selectJurisdictionIdList(roleId);
         if(JurisdictionIdList==null){
-            String msg = CommonUtil.joinStr("查询全局角色对应的权限关系","数据库操作失败").toString();
+            String msg = CommonUtil.joinStr("查询渠道角色对应的权限关系","数据库操作失败").toString();
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
         }
         //3.赋值checked属性
-        for (Jurisdiction jurisdiction : wholeJurisdictionList){
+        for (Jurisdiction jurisdiction : channelJurisdictionList){
             if(JurisdictionIdList.contains(jurisdiction.getId())){
                 jurisdiction.setChecked(true);
             }
         }
-        return wholeJurisdictionList;
+        return channelJurisdictionList;
 
     }
 }

@@ -34,14 +34,11 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
 
     @Override
     @Transactional
-    public String getSerialCode(String name, int length) throws Exception{
+    public String getSerialCode(String name,int length) throws Exception{
 
         Serial serial = this.selectSerialByName(name);//查询序列号
-
         int number=serial.getNumber();
-
         number+=1;
-
         this.updateSerialByName(name,number,serial.getNumber());
         //获得最大的数
         int temp = SerialUtil.jointNineByLen(length);
@@ -52,6 +49,7 @@ public class SerialUtilService extends BaseService<Serial,Long> implements ISeri
         return code;
 
     }
+
     /**
      * 1.如果调用的序号方法抛出异常，那么需要再次调用，确保拿到可以使用的流水号
      *
