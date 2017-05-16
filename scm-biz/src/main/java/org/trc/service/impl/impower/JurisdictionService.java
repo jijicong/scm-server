@@ -10,4 +10,5 @@ import org.trc.service.impower.IJurisdictionService;
  */
 @Service("jurisdictionService")
 public class JurisdictionService extends BaseService<Jurisdiction,Long> implements IJurisdictionService{
+
 }

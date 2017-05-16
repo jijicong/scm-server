@@ -7,18 +7,13 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
-import java.util.List;
 
 /**
- * 角色表
- * Created by sone on 2017/5/11.
+ * Created by sone on 2017/5/16.
  */
-public class Role extends BaseDO {
+public class RoleExpand extends BaseDO{
     @FormParam("id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("name")
     @NotEmpty
@@ -31,6 +26,16 @@ public class Role extends BaseDO {
     @FormParam("remark")
     @Length(max = 1024, message = "角色信息备注字母和数字不能超过1024个,汉字不能超过512个")
     private String remark;
+    @FormParam("roleJurisdiction")
+    private String  roleJurisdiction;
+
+    public String getRoleJurisdiction() {
+        return roleJurisdiction;
+    }
+
+    public void setRoleJurisdiction(String roleJurisdiction) {
+        this.roleJurisdiction = roleJurisdiction;
+    }
 
     public Long getId() {
         return id;
@@ -63,4 +68,5 @@ public class Role extends BaseDO {
     public void setRemark(String remark) {
         this.remark = remark;
     }
+
 }

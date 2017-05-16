@@ -1,6 +1,7 @@
 package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -8,51 +9,54 @@ import org.trc.biz.impower.IRoleJurisdictionRelationBiz;
 import org.trc.domain.impower.RoleJurisdictionRelation;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.service.impower.IRoleJurisdictionRelationService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;
-import tk.mybatis.mapper.util.StringUtil;
+import org.trc.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sone on 2017/5/12.
+ * Created by sone on 2017/5/16.
  */
 @Service("roleJurisdictionRelationBiz")
-public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz {
+public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz{
 
-    private final static Logger log = LoggerFactory.getLogger(RoleJurisdictionRelationBiz.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(RoleJurisdictionRelationBiz.class);
+
     @Resource
-    private IRoleJurisdictionRelationService roleJurisdictionRelationService;
+    private IRoleJurisdictionRelationService roleJuridictionRelationService;
 
     @Override
-    public int saveRoleJurisdictionRelationS(String ids, Long roleId) throws Exception {
-        if(StringUtil.isEmpty(ids)  || ids==null){
-            String msg= CommonUtil.joinStr("角色的资源为空").toString();
-            log.error(msg);
+    public int saveRoleJurisdictionRelationS(String roleJurisdiction, Long roleId) {
+
+        AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
+        if(StringUtils.isBlank(roleJurisdiction)){
+            String msg = CommonUtil.joinStr("根据权限id,角色和权限关联保存失败,参数name[]为空").toString();
+            LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        Long[] jurisdictionIds=org.trc.util.StringUtil.splitByComma(ids);
-
-        List<RoleJurisdictionRelation> roleJurisdictionRelationList=new ArrayList<>();
-
-        for (Long jurisdictionId: jurisdictionIds) {
+        Long[]  roleJurisdictions=StringUtil.splitByComma(roleJurisdiction);
+        List<RoleJurisdictionRelation>  roleJurisdictionRelationList=new ArrayList<>();
+        for (Long roleJurisdictionLong:roleJurisdictions ){
             RoleJurisdictionRelation roleJurisdictionRelation=new RoleJurisdictionRelation();
-            roleJurisdictionRelation.setJurisdictionId(jurisdictionId);
             roleJurisdictionRelation.setRoleId(roleId);
-            roleJurisdictionRelation.setIsValid("1");
+            roleJurisdictionRelation.setJurisdictionId(roleJurisdictionLong);
+            roleJurisdictionRelation.setIsValid(ValidEnum.VALID.getCode());
             ParamsUtil.setBaseDO(roleJurisdictionRelation);
             roleJurisdictionRelationList.add(roleJurisdictionRelation);
         }
         int count=0;
-        count=roleJurisdictionRelationService.insertList(roleJurisdictionRelationList);
+        count=roleJuridictionRelationService.insertList(roleJurisdictionRelationList);
         if(count==0){
-            String msg = CommonUtil.joinStr("保存角色资源关系", ids, "数据库操作失败").toString();
-            log.error(msg);
+            String msg = CommonUtil.joinStr("保存角色和权限关系",  "数据库操作失败").toString();
+            LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
         return count;

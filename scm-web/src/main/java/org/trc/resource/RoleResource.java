@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IRoleBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.Role;
-import org.trc.domain.impower.RoleAdd;
+import org.trc.domain.impower.RoleExpand;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -34,13 +34,13 @@ public class RoleResource {
     @POST
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveRole(@BeanParam RoleAdd roleAdd) throws Exception{
+    public AppResult saveRole(@BeanParam RoleExpand roleExpand) throws Exception{
         Role role=new Role();
-        role.setName(roleAdd.getName());
-        role.setRemark(roleAdd.getRemark());
-        role.setRoleType(roleAdd.getRoleType());
-        role.setIsValid(roleAdd.getIsValid());
-        return  ResultUtil.createSucssAppResult("保存成功",roleBiz.saveRole(role,roleAdd.getRoleJurisdiction()));
+        role.setName(roleExpand.getName());
+        role.setRemark(roleExpand.getRemark());
+        role.setRoleType(roleExpand.getRoleType());
+        role.setIsValid(roleExpand.getIsValid());
+        return  ResultUtil.createSucssAppResult("保存成功",roleBiz.saveRole(role, roleExpand.getRoleJurisdiction()));
     }
     //根据角色名查询角色
     @GET
@@ -54,9 +54,24 @@ public class RoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE_ACCREDITINFO)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId) throws Exception{
-        roleBiz.findRoleAndAccreditInfoByRoleId(roleId);
-        return  null;
+    public AppResult findNumFromRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId) throws Exception{
+        System.out.println(roleId);
+        return  ResultUtil.createSucssAppResult("查询角色数量成功",roleBiz.findNumFromRoleAndAccreditInfoByRoleId(roleId));
+    }
+    //修改角色的状态
+    @POST
+    @Path(SupplyConstants.Role.UPDATE_STATE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult  updateRoleState(@BeanParam Role role) throws Exception{
+        roleBiz.updateRoleState(role);
+        return ResultUtil.createSucssAppResult("修改角色状态成功","");
+    }
+
+    @GET
+    @Path(SupplyConstants.Role.ROLE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<RoleExpand> findRoleById(@PathParam("id") Long id) throws Exception{
+        return ResultUtil.createSucssAppResult("查询角色成功",roleBiz.findRoleExpandById(id));
     }
 
 }

@@ -1,6 +1,7 @@
 package org.trc.biz.impower;
 
 import org.trc.domain.impower.Role;
+import org.trc.domain.impower.RoleExpand;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.Pagenation;
 
@@ -9,12 +10,25 @@ import org.trc.util.Pagenation;
  */
 public interface IRoleBiz {
     /**
+     * 根据角色的id查询，角色信息和权限信息
+     * @param id  角色id
+     * @return
+     * @throws Exception
+     */
+    RoleExpand findRoleExpandById(Long id) throws Exception;
+    /**
+     * 更新角色的状态
+     * @param role  角色对象
+     * @throws Exception
+     */
+    void updateRoleState(Role role) throws Exception;
+    /**
      * 根据角色id，查询使用者(授权用户)的数量
      * @param roleId 角色id
      * @return 授权用户的数量
      * @throws Exception
      */
-    int findRoleAndAccreditInfoByRoleId(Long roleId) throws Exception;
+    int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception;
     /**
      * 角色分页查询
      * @param form 查询的条件

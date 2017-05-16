@@ -8,4 +8,5 @@ import org.trc.util.BaseMapper;
  * Created by sone on 2017/5/4.
  */
 public interface IWarehouseMapper extends BaseMapper<Warehouse>{
+
 }

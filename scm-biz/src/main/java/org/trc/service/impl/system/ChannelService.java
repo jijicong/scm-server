@@ -10,4 +10,5 @@ import org.trc.service.impl.BaseService;
  */
 @Service("channelService")
 public class ChannelService extends BaseService<Channel,Long> implements IChannelService{
+
 }

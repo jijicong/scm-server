@@ -6,4 +6,8 @@ import org.trc.util.BaseMapper;
 /**
  * Created by sone on 2017/5/11.
  */
-public interface RoleMapper extends BaseMapper<Role>{}
+public interface RoleMapper extends BaseMapper<Role>{
+
+    int findNumFromRoleAndAccreditInfoByRoleId(Long roleId);
+
+}

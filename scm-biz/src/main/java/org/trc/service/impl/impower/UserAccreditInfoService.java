@@ -10,4 +10,5 @@ import org.trc.service.impower.IUserAccreditInfoService;
  */
 @Service("userAccreditInfoService")
 public class UserAccreditInfoService extends BaseService<UserAccreditInfo,Long> implements IUserAccreditInfoService {
+
 }

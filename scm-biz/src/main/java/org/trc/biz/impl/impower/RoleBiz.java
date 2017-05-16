@@ -7,17 +7,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IRoleBiz;
 import org.trc.biz.impower.IRoleJurisdictionRelationBiz;
-import org.trc.biz.impower.IUserAccreditInfoRoleRelationBiz;
 import org.trc.domain.impower.Role;
-import org.trc.domain.impower.RoleJurisdictionRelation;
+import org.trc.domain.impower.RoleExpand;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.impower.RoleForm;
-import org.trc.service.impower.IRoleJurisdictionRelationService;
 import org.trc.service.impower.IRoleService;
-import org.trc.service.impower.IUserAccreditRoleRelationService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -25,8 +24,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Calendar;
 
 /**
  * Created by sone on 2017/5/11.
@@ -39,14 +37,38 @@ public class RoleBiz implements IRoleBiz{
     private IRoleService roleService;
     @Resource
     private IRoleJurisdictionRelationBiz roleJurisdictionRelationBiz;
-    @Resource
-    private IUserAccreditInfoRoleRelationBiz userAccreditInfoRoleRelationBiz;
+
+    @Override
+    public RoleExpand findRoleExpandById(Long id) throws Exception {
+
+        return null;
+    }
+
+    @Override
+    public void updateRoleState(Role role) throws Exception {
+        AssertUtil.notNull(role,"根据角色对象，修改角色的状态，角色对象为空");
+        Role updateRole = new Role();
+        updateRole.setId(role.getId());
+        if (role.getIsValid().equals(ValidEnum.VALID.getCode())) {
+            updateRole.setIsValid(ValidEnum.NOVALID.getCode());
+            } else {
+                updateRole.setIsValid(ValidEnum.VALID.getCode());
+            }
+        updateRole.setUpdateTime(Calendar.getInstance().getTime());
+        int count = roleService.updateByPrimaryKeySelective(updateRole);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("修改角色", JSON.toJSONString(role), "数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+        }
+        //roleService.
+    }
 
     @Override
     @Transactional
-    public int findRoleAndAccreditInfoByRoleId(Long roleId) throws Exception {
+    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception {
 
-        int num = userAccreditInfoRoleRelationBiz.findRoleAndAccreditInfoByRoleId(roleId);
+        int num = roleService.findNumFromRoleAndAccreditInfoByRoleId(roleId);
         return num;
 
     }

@@ -10,4 +10,5 @@ import org.trc.service.impl.BaseService;
  */
 @Service("warehouseService")
 public class WarehouseService extends BaseService<Warehouse,Long> implements IWarehouseService{
+
 }
