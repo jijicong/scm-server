@@ -28,7 +28,7 @@ public class Jurisdiction extends BaseDO{
     private Integer belong;
 
     @Transient
-    private boolean checked;
+    private String check;
 
     public Integer getBelong() {
         return belong;
@@ -38,15 +38,18 @@ public class Jurisdiction extends BaseDO{
         this.belong = belong;
     }
 
-    public boolean isChecked() {
-        return checked;
-    } //为是否选中的属性做准备
-    public void setChecked(boolean checked) {
-        this.checked = checked;
+    public String getChecked() {
+        return this.check;
+    }//为zTree的是否被选中做准备
+
+    public void setCheck(String check) {
+        this.check = check;
     }
+
     public Long getpId(){
         return  parentId;
     }  //为zTree的父id做准备
+
     public Long getId() {
         return id;
     }

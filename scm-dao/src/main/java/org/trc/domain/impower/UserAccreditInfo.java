@@ -13,6 +13,7 @@ import javax.ws.rs.FormParam;
 /**
  * 用户授权列表
  * Created by sone on 2017/5/11.
+ * 对应数据库表user_accredit_info
  */
 public class UserAccreditInfo extends BaseDO{
     @FormParam("id")

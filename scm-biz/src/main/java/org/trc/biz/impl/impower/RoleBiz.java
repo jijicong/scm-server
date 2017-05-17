@@ -34,7 +34,9 @@ public class RoleBiz implements IRoleBiz{
 
     private final static Logger LOGGER = LoggerFactory.getLogger(RoleBiz.class);
 
-    private final static Long SYS_ROLE_ID=1L; //系统角色的id
+    private final static Long SYS_ROLE_ID=1L; //系统角色的id wholeJurisdiction
+
+    private final static String WHOLE_TYPE ="wholeJurisdiction";//全局角色
     @Resource
     private IRoleService roleService;
     @Resource
@@ -108,16 +110,42 @@ public class RoleBiz implements IRoleBiz{
         example.orderBy("updateTime").desc();
         return roleService.pagination(example,page,form);
     }
-
+    @Override
+    @Transactional
+    public void updateRole(Role role, String roleJurisdiction) throws Exception{
+        /*
+         判断是否是系统用户
+         系统用户只能修改，系统角色类型，对应的权限
+         和备注信息--
+         */
+        AssertUtil.notNull(role,"角色更新时,角色对象为空");
+        if(role.getId()==SYS_ROLE_ID){//为渠道用户
+            if(role.getRoleType()==WHOLE_TYPE){//渠道用户,反而传的是全局的类型
+                String msg = CommonUtil.joinStr("修改渠道角色,角色类型不匹配").toString();
+                LOGGER.error(msg);
+                throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+            }//传的权限id不做校验
+            role.setName(null);
+            role.setRoleType(null);
+            role.setIsValid(null);//为防止对不需要改变的值，做修改
+        }
+        //Role tmp = findRoleByName(role.getName());
+       // AssertUtil.notNull(tmp,"角色名称[name="+role.getName()+"]的数据已存在,请使用其他名称");
+        role.setUpdateTime(Calendar.getInstance().getTime());
+        int count = roleService.updateByPrimaryKeySelective(role);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("修改角色", JSON.toJSONString(role), "数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+        }
+        roleJurisdictionRelationBiz.updateRoleJurisdictionRelations(roleJurisdiction,role.getId());
+    }
     @Override
     @Transactional
     public int saveRole(Role role,String roleJurisdiction) throws Exception {
+
         Role tmp = findRoleByName(role.getName());
-        if (null != tmp) {
-            String msg = CommonUtil.joinStr("角色名称[name=", role.getName(), "]的数据已存在,请使用其他名称").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(tmp,"角色名称[name="+role.getName()+"]的数据已存在,请使用其他名称");
         int count=0;
         ParamsUtil.setBaseDO(role);
         count=roleService.insert(role);
@@ -126,8 +154,9 @@ public class RoleBiz implements IRoleBiz{
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
-        count+=(roleJurisdictionRelationBiz.saveRoleJurisdictionRelationS(roleJurisdiction,role.getId()));
+        count+=(roleJurisdictionRelationBiz.saveRoleJurisdictionRelations(roleJurisdiction,role.getId()));
         return count;
+
     }
     @Override
     public Role findRoleByName(String name) throws Exception {

@@ -8,10 +8,7 @@ import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -50,21 +47,21 @@ public class JurisdictionResource {
      * 1.提供带有角色id的，角色与权限的关联信息查询<全局角色>
      * 2.提供带有角色id的，角色与权限的关联信息查询<渠道角色>
      */
-   /* @GET
-    @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE)
+    @GET
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE+"/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Jurisdiction> findWholeJurisdictionAndCheckedByRoleId() throws Exception{
+    public AppResult<Jurisdiction> findWholeJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId ) throws Exception{
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(1L));
+        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(roleId));
 
     }
     @GET
-    @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL)
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL+"/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Jurisdiction> findChannelJurisdictionAndCheckedByRoleId(@QueryParam("roleId") Long roleId ) throws Exception{
+    public AppResult<Jurisdiction> findChannelJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId ) throws Exception{
 
         return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedByRoleId(roleId));
 
-    }*/
+    }
 
 }

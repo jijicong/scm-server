@@ -80,8 +80,10 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         //3.赋值checked属性
         for (Jurisdiction jurisdiction : wholeJurisdictionList){
-            if(JurisdictionIdList.contains(jurisdiction.getId())){
-                jurisdiction.setChecked(true);
+            for ( Long JurisdictionId: JurisdictionIdList) {
+                if(jurisdiction.getId().equals(JurisdictionId)){
+                    jurisdiction.setCheck("true");
+                }
             }
         }
         return wholeJurisdictionList;
@@ -104,8 +106,10 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         //3.赋值checked属性
         for (Jurisdiction jurisdiction : channelJurisdictionList){
-            if(JurisdictionIdList.contains(jurisdiction.getId())){
-                jurisdiction.setChecked(true);
+            for ( Long JurisdictionId: JurisdictionIdList) {
+                if(jurisdiction.getId().equals(JurisdictionId)){
+                    jurisdiction.setCheck("true");
+                }
             }
         }
         return channelJurisdictionList;

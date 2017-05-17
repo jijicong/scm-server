@@ -10,6 +10,7 @@ import javax.ws.rs.FormParam;
 /**
  * 用户角色关系表
  * Created by sone on 2017/5/11.
+ * 对应数据库表user_accredit_role_relation
  */
 public class UserAccreditRoleRelation extends BaseDO{
     @Id

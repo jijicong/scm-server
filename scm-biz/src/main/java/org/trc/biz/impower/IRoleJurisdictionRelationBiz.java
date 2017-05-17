@@ -4,7 +4,21 @@ package org.trc.biz.impower;
  * Created by sone on 2017/5/16.
  */
 public interface IRoleJurisdictionRelationBiz {
+    /**
+     * 角色和权限关联表的更新
+     * @param roleJurisdiction
+     * @param roleId
+     * @throws Exception
+     */
+    void updateRoleJurisdictionRelations(String roleJurisdiction,Long roleId) throws Exception;
 
-    int  saveRoleJurisdictionRelationS(String roleJurisdiction,Long roleId);
+    /**
+     * 角色和权限关联表的保存
+     * @param roleJurisdiction
+     * @param roleId
+     * @return
+     * @throws Exception
+     */
+    int  saveRoleJurisdictionRelations(String roleJurisdiction,Long roleId) throws Exception;
 
 }
