@@ -31,16 +31,34 @@ public class RoleResource {
     public Pagenation<Role> rolePage(@BeanParam RoleForm form, @BeanParam Pagenation<Role> page) throws Exception{
         return roleBiz.rolePage(form,page);
     }
+    //修改角色信息以及与之对应的角色权限关联表信息的修改
+    @PUT
+    @Path(SupplyConstants.Role.ROLE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateRole(@BeanParam RoleExpand roleExpand) throws Exception{
+
+        Role role=new Role();
+        role.setName(roleExpand.getName());
+        role.setRemark(roleExpand.getRemark());
+        role.setRoleType(roleExpand.getRoleType());
+        role.setIsValid(roleExpand.getIsValid());
+        roleBiz.updateRole(role,roleExpand.getRoleJurisdiction());
+        return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
+
+    }
+    //保存角色信息以及与之对应的角色权限关联表信息的保存
     @POST
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveRole(@BeanParam RoleExpand roleExpand) throws Exception{
+
         Role role=new Role();
         role.setName(roleExpand.getName());
         role.setRemark(roleExpand.getRemark());
         role.setRoleType(roleExpand.getRoleType());
         role.setIsValid(roleExpand.getIsValid());
         return  ResultUtil.createSucssAppResult("保存成功",roleBiz.saveRole(role, roleExpand.getRoleJurisdiction()));
+
     }
     //根据角色名查询角色
     @GET

@@ -43,7 +43,13 @@ public interface IRoleBiz {
      */
     Role findRoleByName(String name) throws Exception;
     /**
-     * 角色保存
+     * 修改角色以及修改角色与权限的对饮关系
+     * @param role
+     * @param roleJurisdiction
+     */
+    void updateRole(Role role,String roleJurisdiction) throws Exception;
+    /**
+     * 角色保存和保存角色与权限的对应关系
      * @param role 角色信息
      * @return
      */

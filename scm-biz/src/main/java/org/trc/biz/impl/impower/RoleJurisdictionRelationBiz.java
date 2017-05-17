@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IRoleJurisdictionRelationBiz;
 import org.trc.domain.impower.RoleJurisdictionRelation;
 import org.trc.enums.CommonExceptionEnum;
@@ -34,7 +35,19 @@ public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz
     private IRoleJurisdictionRelationService roleJuridictionRelationService;
 
     @Override
-    public int saveRoleJurisdictionRelationS(String roleJurisdiction, Long roleId) {
+    @Transactional
+    public void updateRoleJurisdictionRelations(String roleJurisdiction, Long roleId) throws Exception {
+
+        AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
+        //1.先根据角色id，删除所有的该角色对应的权限
+        //roleJuridictionRelationService.deleteByRoleId(roleId);
+        //2.保存关联信息
+        saveRoleJurisdictionRelations(roleJurisdiction,roleId);
+
+    }
+
+    @Override
+    public int saveRoleJurisdictionRelations(String roleJurisdiction, Long roleId) throws Exception{
 
         AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
         if(StringUtils.isBlank(roleJurisdiction)){

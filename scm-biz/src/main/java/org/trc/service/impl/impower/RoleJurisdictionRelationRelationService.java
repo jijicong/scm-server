@@ -19,7 +19,7 @@ public class RoleJurisdictionRelationRelationService extends BaseService<RoleJur
     private RoleJurisdictionRelationMapper roleJurisdictionRelationMapper;
     @Override
     public List<Long> selectJurisdictionIdList(Long roleId) throws Exception {
-
-        return null;
+        return roleJurisdictionRelationMapper.selectJurisdictionIdList(roleId);
     }
+
 }

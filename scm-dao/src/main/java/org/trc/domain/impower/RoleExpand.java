@@ -8,12 +8,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 /**
  * Created by sone on 2017/5/16.
  */
 public class RoleExpand extends BaseDO{
-    @FormParam("id")
+    @PathParam("id")
     private Long id;
     @FormParam("name")
     @NotEmpty
