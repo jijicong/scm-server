@@ -163,14 +163,25 @@ public class SupplyConstants {
      * 授权信息
      */
     public static final class UserAccreditInfo{
+
         //根路径
         public static final String ROOT = "accredit";
+
         //授权信息分页查询
         public static final String ACCREDIT_PAGE = "accreditInfoPage";
+
         //授权的用户使用名查询
         public static final String ACCREDIT = "accreditInfo";
+
         //状态的修改
         public static final String UPDATE_STATE = "accreditInfo/updateState";
+
+        //查询已启用的渠道
+        public static  final  String CHANNEL = "channel";
+
+        //查询选择用户对应角色
+        public static  final  String ROLE  = "rolelist";
+
     }
     /**
      * 角色信息

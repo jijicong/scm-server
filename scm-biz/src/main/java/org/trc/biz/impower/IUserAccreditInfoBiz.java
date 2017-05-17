@@ -1,8 +1,12 @@
 package org.trc.biz.impower;
 
+import org.trc.domain.System.Channel;
+import org.trc.domain.impower.Role;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
+
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/11.
@@ -23,5 +27,19 @@ public interface IUserAccreditInfoBiz {
      * @throws Exception
      */
     UserAccreditInfo findUserAccreditInfoByName(String name) throws Exception;
+
+    /**
+     * 查询已启用的渠道
+     * @return
+     * @throws Exception
+     */
+    List<Channel> findChannel() throws Exception;
+
+    /**
+     * 查询渠道角色或者全局角色
+     * @return
+     * @throws Exception
+     */
+    List<Role> findChannelOrWholeJur(String roleType) throws Exception;
 
 }

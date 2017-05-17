@@ -27,15 +27,36 @@ public class UserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception{
-        return userAccreditInfoBiz.UserAccreditInfoPage(form,page);
+    public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception {
+        return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
+
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findUserAccreditInfoByName(@QueryParam("name") String name) throws Exception{
-        return  ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoByName(name)==null ? null :"1");
+    public AppResult findUserAccreditInfoByName(@QueryParam("name") String name) throws Exception {
+        return ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoByName(name) == null ? null : "1");
     }
 
+    /**
+     * 查询渠道
+     */
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.CHANNEL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findChannel() throws Exception {
+        return ResultUtil.createSucssAppResult("查询已启用的渠道成功", userAccreditInfoBiz.findChannel());
+    }
 
+    /**
+     * 查询全局&渠道&混用角色
+     */
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.ROLE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findChaAndWhole(@QueryParam("roleType") String roleType) throws Exception {
+
+
+        return ResultUtil.createSucssAppResult("查询对应角色成功",userAccreditInfoBiz.findChannelOrWholeJur(roleType));
+    }
 }
