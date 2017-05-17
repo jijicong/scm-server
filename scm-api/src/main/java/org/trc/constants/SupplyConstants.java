@@ -182,6 +182,9 @@ public class SupplyConstants {
         //查询选择用户对应角色
         public static  final  String ROLE  = "rolelist";
 
+        //新增角色
+        public static final String  SAVE_ACCREDIT = "saveaccredit";
+
     }
     /**
      * 角色信息

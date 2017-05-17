@@ -3,6 +3,7 @@ package org.trc.biz.impower;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.Role;
 import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.UserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
 
@@ -42,4 +43,8 @@ public interface IUserAccreditInfoBiz {
      */
     List<Role> findChannelOrWholeJur(String roleType) throws Exception;
 
+    /**
+     * 新增授权
+     */
+    void saveUserAccreditInfo(UserAddPageDate userAddPageDate) throws  Exception;
 }

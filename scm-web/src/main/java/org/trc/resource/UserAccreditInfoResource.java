@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.UserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -31,6 +32,12 @@ public class UserAccreditInfoResource {
         return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
 
+    /**
+     * 用户名是否存在
+     * @param name
+     * @return
+     * @throws Exception
+     */
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
@@ -39,13 +46,15 @@ public class UserAccreditInfoResource {
     }
 
     /**
-     * 查询渠道
+     * 查询已启用的渠道
      */
     @GET
     @Path(SupplyConstants.UserAccreditInfo.CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult findChannel() throws Exception {
+
         return ResultUtil.createSucssAppResult("查询已启用的渠道成功", userAccreditInfoBiz.findChannel());
+
     }
 
     /**
@@ -56,7 +65,20 @@ public class UserAccreditInfoResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult findChaAndWhole(@QueryParam("roleType") String roleType) throws Exception {
 
-
         return ResultUtil.createSucssAppResult("查询对应角色成功",userAccreditInfoBiz.findChannelOrWholeJur(roleType));
+
     }
+
+    /**
+     * 新增授权
+     */
+    @POST
+    @Path(SupplyConstants.UserAccreditInfo.SAVE_ACCREDIT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate) throws Exception{
+        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate);
+        return ResultUtil.createSucssAppResult("新增授权成功","");
+    }
+
+
 }
