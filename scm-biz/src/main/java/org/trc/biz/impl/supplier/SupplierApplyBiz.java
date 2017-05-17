@@ -72,7 +72,10 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_QUERY_EXCEPTION,msg);
         }
-        return supplierApply;
+        List<SupplierApply> list=new ArrayList<>();
+        list.add(supplierApply);
+        list=handleBrandsStr(list);
+        return list.get(0);
     }
 
     @Override
@@ -81,14 +84,24 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         SupplierApply updateSupplierApply=new SupplierApply();
         updateSupplierApply.setId(supplierApply.getId());
         updateSupplierApply.setStatus(supplierApply.getStatus());
-        updateSupplierApply.setDescription(supplierApply.getDescription());
+        updateSupplierApply.setAuditOpinion(supplierApply.getAuditOpinion());
         updateSupplierApply.setUpdateTime(Calendar.getInstance().getTime());
-        supplierApplyService.updateByPrimaryKeySelective(updateSupplierApply);
+        int updateFlag=supplierApplyService.updateByPrimaryKeySelective(updateSupplierApply);
+        if(updateFlag!=1){
+            String msg = CommonUtil.joinStr("根据主键ID[id=", supplierApply.getId().toString(), "]更新供应商审核信息失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_UPDATE_EXCEPTION,msg);
+        }
         AuditLog auditLog=new AuditLog();
         auditLog.setApplyCode(supplierApply.getApplyCode());
         auditLog.setOperation(AuditStatusEnum.queryNameByCode(supplierApply.getStatus()).getName());
         auditLog.setOperateTime(updateSupplierApply.getUpdateTime());
-        auditLogService.insertSelective(auditLog);
+        int insertFlag=auditLogService.insertSelective(auditLog);
+        if(insertFlag!=1){
+            String msg = CommonUtil.joinStr("根据申请编号[applyCode=", supplierApply.getApplyCode().toString(), "]保存审核信息日志失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_LOG_INSERT_EXCEPTION,msg);
+        }
     }
 
     private List<SupplierApply> handleBrandsStr(List<SupplierApply> list){

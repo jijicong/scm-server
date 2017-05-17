@@ -12,11 +12,11 @@
         <result property="proxyAptitudeId" column="proxy_aptitude_id"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
-        <result property="brandName" column="brand_name"/>
+        <result property="brandName" column="brandName"/>
     </resultMap>
 
     <select id="selectListBySupplierIds" resultMap="supplierBrandMap">
-        SELECT  a.id,a.supplier_id,b.name,a.create_time,a.update_time
+        SELECT  a.id,a.supplier_id,b.name AS 'brandName',a.create_time,a.update_time
         FROM supplier_brand a
         LEFT JOIN  brand b on a.brand_id =b.id
         <where>

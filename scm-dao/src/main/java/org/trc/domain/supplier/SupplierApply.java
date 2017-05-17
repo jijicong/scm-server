@@ -3,16 +3,14 @@ package org.trc.domain.supplier;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
 /**
  * Created by hzqph on 2017/5/12.
  */
+@Table(name = "apply_for_supplier")
 public class SupplierApply extends BaseDO {
 
     @PathParam("id")
@@ -48,9 +46,13 @@ public class SupplierApply extends BaseDO {
     private String supplierName;//供应商名称
     @Transient
     private String supplierKindCode;//供应商性质编号
+    @Transient
     private String supplierTypeCode;//供应商类型编号
+    @Transient
     private String brandNames;//供应商代理品牌
+    @Transient
     private String channelName;//渠道方名字
+
     public Long getId() {
         return id;
     }
@@ -130,6 +132,7 @@ public class SupplierApply extends BaseDO {
     public void setContact(String contact) {
         this.contact = contact;
     }
+
     public String getSupplierName() {
         return supplierName;
     }
