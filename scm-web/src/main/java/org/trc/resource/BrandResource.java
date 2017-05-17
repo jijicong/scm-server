@@ -79,6 +79,14 @@ public class BrandResource {
         return ResultUtil.createSucssAppResult("查询品牌成功", flag);
     }
 
+    @GET
+    @Path(SupplyConstants.Category.Brand.BRAND_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult queryBrands(@BeanParam BrandForm form) throws Exception{
+        return ResultUtil.createSucssAppResult("查询品牌列表成功", brandBiz.queryBrands(form));
+    }
+
+
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)

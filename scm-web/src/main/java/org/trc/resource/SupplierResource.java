@@ -74,8 +74,8 @@ public class SupplierResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<SupplierBrand> querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception {
-        return supplierBiz.querySupplierBrand(form);
+    public AppResult<SupplierBrand> querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception {
+        return ResultUtil.createSucssAppResult("查询字典成功", supplierBiz.querySupplierBrand(form));
     }
 
 
