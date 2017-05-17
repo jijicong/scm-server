@@ -36,9 +36,9 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CLASSIFY_TREE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> classifyTree() throws Exception {
+    public AppResult<JSONArray> classifyTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) throws Exception {
 
-        return ResultUtil.createSucssAppResult("成功", categoryBiz.getNodes(null, true));
+        return ResultUtil.createSucssAppResult("成功", categoryBiz.getNodes(parentId, isRecursive));
 
     }
 
@@ -72,7 +72,7 @@ public class CategoryResource {
             category.setFullPathId(category.getFullPathId() + "|" + category.getId());
         }
         categoryBiz.updateCategory(category);
-        if (category.getLevel()!=1&&categoryBiz.isLeaf(category.getParentId())!=0){
+        if (category.getLevel() != 1 && categoryBiz.isLeaf(category.getParentId()) != 0) {
             categoryBiz.updateIsLeaf(category);
         }
         return ResultUtil.createSucssAppResult("增加分类成功", "");
@@ -118,6 +118,7 @@ public class CategoryResource {
 
     /**
      * 排序，批量修改
+     *
      * @param sortDate
      * @return
      * @throws Exception
@@ -126,8 +127,8 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CLASSIFY_SORT)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult upDateSort(String sortDate) throws Exception {
-        AssertUtil.notBlank(sortDate,"排序信息为空");
-       JSONArray sortArray = JSON.parseArray(sortDate);
+        AssertUtil.notBlank(sortDate, "排序信息为空");
+        JSONArray sortArray = JSON.parseArray(sortDate);
         List<Category> categoryList = new ArrayList<>();
         for (int i = 0; i < sortArray.size(); i++) {
             JSONObject sortObject = sortArray.getJSONObject(i);
@@ -141,10 +142,10 @@ public class CategoryResource {
     }
 
     @PUT
-    @Path(SupplyConstants.Category.Classify.UPDATE_STATE +"/{id}")
+    @Path(SupplyConstants.Category.Classify.UPDATE_STATE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateCategoryState(@BeanParam Category category) throws Exception{
+    public AppResult updateCategoryState(@BeanParam Category category) throws Exception {
         categoryBiz.updateState(category);
-        return ResultUtil.createSucssAppResult("状态修改成功","");
+        return ResultUtil.createSucssAppResult("状态修改成功", "");
     }
 }
