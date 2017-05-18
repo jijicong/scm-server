@@ -32,7 +32,7 @@ import java.util.List;
  * Created by sone on 2017/5/11.
  */
 @Service("userAccreditInfoBiz")
-public class UserAccreditInfoBiz implements IUserAccreditInfoBiz {
+public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     private final static Logger log = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
 
@@ -58,8 +58,22 @@ public class UserAccreditInfoBiz implements IUserAccreditInfoBiz {
      */
     @Override
     public Pagenation<UserAccreditInfo> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAccreditInfo> page) throws Exception {
+        Example example=new Example(UserAccreditInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtil.isNotEmpty(form.getName())) {
+            criteria.andLike("name", "%" + form.getName() + "%");
+        }
+        if (StringUtil.isNotEmpty(form.getIsValid())) {
+            criteria.andEqualTo("isValid", form.getIsValid());
+        }
+        if(StringUtil.isNotEmpty(form.getPhone())){
+            criteria.andEqualTo("phone",form.getPhone());
+        }
+        example.orderBy("updateTime").desc();
+        ///Pagenation<UserAccreditInfo> paginationForUserAccreditInfo = userAccreditInfoService.pagination(example,page,form);//查询
+       // List<UserAccreditInfo>  userAccreditInfoList=  paginationForUserAccreditInfo.getResult();
 
-        return null;
+        return userAccreditInfoService.pagination(example,page,form);//查询
     }
 
     /**

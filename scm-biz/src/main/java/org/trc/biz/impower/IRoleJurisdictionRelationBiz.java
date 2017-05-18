@@ -19,6 +19,6 @@ public interface IRoleJurisdictionRelationBiz {
      * @return
      * @throws Exception
      */
-    int  saveRoleJurisdictionRelations(String roleJurisdiction,Long roleId) throws Exception;
+    void  saveRoleJurisdictionRelations(String roleJurisdiction,Long roleId) throws Exception;
 
 }

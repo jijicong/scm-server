@@ -5,5 +5,8 @@
     <select id="selectJurisdictionIdList" resultType="java.lang.Long">
         SELECT jurisdiction_id from role_jurisdiction_relation j WHERE role_id=#{roleId}
     </select>
+    <delete id="deleteByRoleId">
+        DELETE FROM role_jurisdiction_relation WHERE role_id=#{roleId}
+    </delete>
 
 </mapper>
