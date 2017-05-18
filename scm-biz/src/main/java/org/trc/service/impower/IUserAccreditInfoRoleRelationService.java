@@ -8,4 +8,8 @@ import org.trc.service.IBaseService;
  */
 public interface IUserAccreditInfoRoleRelationService extends IBaseService<UserAccreditRoleRelation,Long> {
 
+    /**
+     *根据userAccreditId删除关联的角色
+     */
+    void deleteByUserAccreditId(Long userAccreditId) throws Exception;
 }

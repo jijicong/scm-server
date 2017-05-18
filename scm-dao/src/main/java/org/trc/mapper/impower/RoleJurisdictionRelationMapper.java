@@ -16,4 +16,11 @@ public interface RoleJurisdictionRelationMapper extends BaseMapper<RoleJurisdict
      */
     List<Long> selectJurisdictionIdList(Long roleId);
 
+    /**
+     * 根据角色id删除该角色对应的权限
+     * @param roleId
+     * @return
+     */
+    int deleteByRoleId(Long roleId);
+
 }

@@ -28,7 +28,7 @@ public class UserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception {
+    public Pagenation<UserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAddPageDate> page) throws Exception {
         return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
 
@@ -80,5 +80,27 @@ public class UserAccreditInfoResource {
         return ResultUtil.createSucssAppResult("新增授权成功","");
     }
 
+    /**
+     *根据ID查询用户
+     */
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.ACCREDIT+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findUserAccreditInfoById(@QueryParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoById(id));
+    }
 
+    /**
+     * 修改用户
+     * @param userAddPageDate
+     * @return
+     * @throws Exception
+     */
+    @PUT
+    @Path(SupplyConstants.UserAccreditInfo.UPDATE_ACCREDIT+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateUserAccreditInfo(@BeanParam UserAddPageDate userAddPageDate) throws Exception {
+        userAccreditInfoBiz.updateUserAccredit(userAddPageDate);
+        return ResultUtil.createSucssAppResult("修改用户成功", "");
+    }
 }

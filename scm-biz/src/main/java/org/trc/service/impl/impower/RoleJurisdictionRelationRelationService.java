@@ -22,4 +22,8 @@ public class RoleJurisdictionRelationRelationService extends BaseService<RoleJur
         return roleJurisdictionRelationMapper.selectJurisdictionIdList(roleId);
     }
 
+    @Override
+    public int deleteByRoleId(Long roleId) throws Exception {
+        return roleJurisdictionRelationMapper.deleteByRoleId(roleId);
+    }
 }
