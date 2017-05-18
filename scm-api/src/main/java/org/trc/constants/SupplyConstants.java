@@ -324,5 +324,20 @@ public class SupplyConstants {
         public static final String USER_TYPE="userType";
     }
 
+    /**
+     * 序列号
+     */
+    public static final class Serial{
+        public static final String ROOT = "serial";
+        //供应商编码名称
+        public static final String SUPPLIER_NAME = "GYS";
+        //供应商编码长度
+        public static final Integer SUPPLIER_LENGTH = 6;
+
+
+        //序列号查询路径
+        public static final String SERIAL = "serial";
+    }
+
 
 }
