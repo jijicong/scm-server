@@ -8,4 +8,9 @@ import org.trc.util.BaseMapper;
  */
 public interface UserAccreditRoleRelationMapper extends BaseMapper<UserAccreditRoleRelation>{
 
+    /**
+     *根据userAccreditId删除关联的角色
+     */
+    void deleteByUserAccreditId(Long userAccreditId) throws Exception;
+
 }

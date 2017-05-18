@@ -46,5 +46,7 @@
             #{item}
         </foreach>
     </select>
-
+    <delete id="deleteByUserAccreditId">
+        DELETE FROM user_accredit_role_relation WHERE user_accredit_id=#{userAccreditId}
+    </delete>
 </mapper>

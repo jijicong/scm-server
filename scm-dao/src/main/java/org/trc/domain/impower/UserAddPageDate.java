@@ -19,4 +19,24 @@ public class UserAddPageDate extends UserAccreditInfo {
     public void setRoleNames(String roleNames) {
         this.roleNames = roleNames;
     }
+
+
+    public UserAddPageDate() {
+    }
+
+    public UserAddPageDate(UserAccreditInfo userAccreditInfo) {
+        this.setId(userAccreditInfo.getId());
+        this.setChannelCode(userAccreditInfo.getChannelCode());
+        this.setPhone(userAccreditInfo.getPhone());
+        this.setRemark(userAccreditInfo.getRemark());
+        this.setName(userAccreditInfo.getName());
+        this.setRoleNames(this.getRoleNames());
+        this.setUserType(userAccreditInfo.getUserType());
+        this.setIsDeleted(userAccreditInfo.getIsDeleted());
+        this.setCreateOperator(userAccreditInfo.getCreateOperator());
+        this.setIsValid(userAccreditInfo.getIsValid());
+        this.setCreateTime(userAccreditInfo.getCreateTime());
+        this.setUserId(userAccreditInfo.getUserId());
+        this.setUpdateTime(userAccreditInfo.getUpdateTime());
+    }
 }

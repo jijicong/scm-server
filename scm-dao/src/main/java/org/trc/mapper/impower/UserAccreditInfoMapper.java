@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAddPageDate;
 import org.trc.util.BaseMapper;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Map;
@@ -18,19 +19,21 @@ public  interface UserAccreditInfoMapper  extends BaseMapper<UserAccreditInfo>{
      * @param
      * @return
      */
-    List<UserAddPageDate> selectUserAddPageList(@Param("userIds") Long[] userIds);
+    List<UserAddPageDate> selectUserAddPageList(@Param("userIds") Long[] userIds) throws Exception;
 
     /**
      * 查询分页条件查询的总数量
      * @param map
      * @return
      */
-    int selectCountUser(Map map);
+    int selectCountUser(Map map) throws Exception;
     /**
      * 查询授权用户信息
      * @param map
      * @return
      */
-    List<UserAccreditInfo> selectAccreditInfoList(Map map);
+    List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception;
+
+
 
 }

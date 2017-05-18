@@ -47,4 +47,19 @@ public interface IUserAccreditInfoBiz {
      * 新增授权
      */
     void saveUserAccreditInfo(UserAddPageDate userAddPageDate) throws  Exception;
+
+    /**
+     * 根据ID查询用户
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    UserAccreditInfo findUserAccreditInfoById(Long id) throws  Exception;
+
+    /**
+     * 修改授权
+     * @param userAddPageDate
+     * @throws Exception
+     */
+    void updateUserAccredit(UserAddPageDate userAddPageDate) throws  Exception;
 }

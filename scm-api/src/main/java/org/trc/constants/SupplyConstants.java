@@ -185,6 +185,9 @@ public class SupplyConstants {
         //新增角色
         public static final String  SAVE_ACCREDIT = "saveaccredit";
 
+        //用户修改
+        public static final String  UPDATE_ACCREDIT = "updateaccredit";
+
     }
     /**
      * 角色信息
