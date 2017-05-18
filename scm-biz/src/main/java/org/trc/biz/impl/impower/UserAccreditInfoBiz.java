@@ -1,5 +1,6 @@
 package org.trc.biz.impl.impower;
 
+import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +25,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sone on 2017/5/11.
@@ -57,23 +56,60 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public Pagenation<UserAccreditInfo> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAccreditInfo> page) throws Exception {
-        Example example=new Example(UserAccreditInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        if (StringUtil.isNotEmpty(form.getName())) {
-            criteria.andLike("name", "%" + form.getName() + "%");
+    public Pagenation<UserAddPageDate> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception {
+        PageHelper.startPage(page.getPageNo(), page.getPageSize());
+        Map<String,Object> map=new HashMap<>();
+        map.put("name",form.getName());
+        map.put("phone",form.getPhone());
+        map.put("isValid",form.getIsValid());
+        List<UserAccreditInfo> pageDateList=userAccreditInfoService.selectAccreditInfoList(map);
+        List<UserAddPageDate>  pageDateRoleList = page.getResult();
+        if(pageDateList!=null&&!pageDateList.isEmpty()&&pageDateList.size()>0){//1.按要求查处需要的授权用户
+            pageDateRoleList=handleRolesStr(pageDateList);
         }
-        if (StringUtil.isNotEmpty(form.getIsValid())) {
-            criteria.andEqualTo("isValid", form.getIsValid());
-        }
-        if(StringUtil.isNotEmpty(form.getPhone())){
-            criteria.andEqualTo("phone",form.getPhone());
-        }
-        example.orderBy("updateTime").desc();
-        ///Pagenation<UserAccreditInfo> paginationForUserAccreditInfo = userAccreditInfoService.pagination(example,page,form);//查询
-       // List<UserAccreditInfo>  userAccreditInfoList=  paginationForUserAccreditInfo.getResult();
+        int count = userAccreditInfoService.selectCountUser(map);
+        page.setTotalCount(count);
+        page.setResult(pageDateRoleList);
+        return  page;
+    }
 
-        return userAccreditInfoService.pagination(example,page,form);//查询
+    private List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception{
+
+        List<UserAddPageDate>  pageDateRoleList =new ArrayList<>();
+        Long[] userIds = new Long[list.size()];
+        int temp = 0;
+        for (UserAccreditInfo userAccreditInfo : list){
+            System.out.println(userAccreditInfo.getUserType());
+            userIds[temp] = userAccreditInfo.getId();
+            temp+=1;
+        }
+        //2.查询出这些用户对应的对应的角色名称集合
+        List<UserAddPageDate> userAddPageDateList = userAccreditInfoService.selectUserAddPageList(userIds);
+        if(userAddPageDateList!=null&&!userAddPageDateList.isEmpty()&&userAddPageDateList.size()>0){
+            for (UserAccreditInfo userAccreditInfo : list){
+                UserAddPageDate userAddPageDate = new UserAddPageDate();
+                userAddPageDate.setId(userAccreditInfo.getId());
+                userAddPageDate.setName(userAccreditInfo.getName());
+                userAddPageDate.setPhone(userAccreditInfo.getPhone());
+                userAddPageDate.setUserType(userAccreditInfo.getUserType());
+                userAddPageDate.setIsValid(userAccreditInfo.getIsValid());
+                userAddPageDate.setCreateOperator(userAccreditInfo.getCreateOperator());
+                userAddPageDate.setUpdateTime(userAccreditInfo.getUpdateTime());
+                StringBuilder rolesStr=new StringBuilder();
+                for (UserAddPageDate seletUserAddPageDate : userAddPageDateList) {
+                    if(userAccreditInfo.getId().equals(seletUserAddPageDate.getId())){
+                        if(rolesStr==null||rolesStr.length()==0){
+                            rolesStr.append(seletUserAddPageDate.getRoleNames());
+                        }else{
+                            rolesStr.append(","+seletUserAddPageDate.getRoleNames());
+                        }
+                    }
+                }
+                userAddPageDate.setRoleNames(rolesStr.toString());
+                pageDateRoleList.add(userAddPageDate);
+            }
+        }
+        return pageDateRoleList;
     }
 
     /**

@@ -28,7 +28,7 @@ public class UserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception {
+    public Pagenation<UserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAddPageDate> page) throws Exception {
         return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
 
