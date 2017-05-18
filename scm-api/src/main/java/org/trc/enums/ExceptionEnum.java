@@ -25,6 +25,7 @@ public enum ExceptionEnum{
     CONFIG_DICT_QUERY_EXCEPTION("100101","数据字典查询异常"),
     CONFIG_DICT_SAVE_EXCEPTION("100102","数据字典保存异常"),
     CONFIG_DICT_UPDATE_EXCEPTION("100103","数据字典更新异常"),
+    SERIAL_MODULE_NOT_EXIST("100104","生成序列号的模块不存在"),
 
     SUPPLIER_QUERY_EXCEPTION("300100","供应商查询异常"),
     SUPPLIER_SAVE_EXCEPTION("300101","供应商保存异常"),

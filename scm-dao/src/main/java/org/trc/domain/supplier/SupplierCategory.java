@@ -1,15 +1,33 @@
 package org.trc.domain.supplier;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.ws.rs.FormParam;
+
 public class SupplierCategory extends ScmDO {
+    @FormParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String supplierId;
-
+    @FormParam("supplierId")
+    private Long supplierId;
+    @FormParam("supplierCode")
+    @NotEmpty
+    @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
-
+    @FormParam("categoryId")
+    @NotEmpty
     private Long categoryId;
+    @Transient
+    @FormParam("supplierCetegory")
+    @NotEmpty
+    private String supplierCetegory;
 
     public Long getId() {
         return id;
@@ -19,12 +37,12 @@ public class SupplierCategory extends ScmDO {
         this.id = id;
     }
 
-    public String getSupplierId() {
+    public Long getSupplierId() {
         return supplierId;
     }
 
-    public void setSupplierId(String supplierId) {
-        this.supplierId = supplierId == null ? null : supplierId.trim();
+    public void setSupplierId(Long supplierId) {
+        this.supplierId = supplierId;
     }
 
     public String getSupplierCode() {
@@ -43,4 +61,11 @@ public class SupplierCategory extends ScmDO {
         this.categoryId = categoryId;
     }
 
+    public String getSupplierCetegory() {
+        return supplierCetegory;
+    }
+
+    public void setSupplierCetegory(String supplierCetegory) {
+        this.supplierCetegory = supplierCetegory;
+    }
 }

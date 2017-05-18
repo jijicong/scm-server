@@ -19,6 +19,7 @@ public class Certificate extends ScmDO {
     @FormParam("supplierId")
     private Long supplierId;
     @FormParam("supplierCode")
+    @NotEmpty
     @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
     @FormParam("businessLicence")

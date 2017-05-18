@@ -40,6 +40,14 @@ public class ChannelResource {
         return  ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.findChannelByName(name)==null ? null :"1");
     }
 
+    //渠道列表查询
+    @GET
+    @Path(SupplyConstants.Channel.CHANNEL_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult queryChannels(@BeanParam ChannelForm channelForm) throws Exception{
+        return  ResultUtil.createSucssAppResult("查询渠道列表成功", channelBiz.queryChannels(channelForm));
+    }
+
     //保存渠道
     @POST
     @Path(SupplyConstants.Channel.CHANNEL)

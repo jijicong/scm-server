@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
+import org.trc.domain.dict.DictType;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -73,6 +74,17 @@ public class ChannelBiz implements IChannelBiz {
         channel.setName(name);
         return channelService.selectOne(channel);
     }
+
+    @Override
+    public List<Channel> queryChannels(ChannelForm channelForm) throws Exception {
+        Channel channel = new Channel();
+        if(StringUtils.isEmpty(channelForm.getIsValid())){
+            channel.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }
+        channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return channelService.select(channel);
+    }
+
     @Override
     public void saveChannel(Channel channel) throws Exception {
 

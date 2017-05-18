@@ -44,8 +44,10 @@ public class SupplierResource {
     @POST
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate) throws Exception {
-        supplierBiz.saveSupplier(supplier, certificate);
+    public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
+             @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
+             @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+        supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
         return ResultUtil.createSucssAppResult("保存字典成功", "");
     }
 
