@@ -1,18 +1,26 @@
 package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.trc.biz.category.ICategoryBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
+import org.trc.domain.category.CategoryBrand;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.CategoryException;
 import org.trc.exception.ConfigException;
+import org.trc.exception.ParamValidException;
+import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
+import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
@@ -32,6 +40,8 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Autowired
     private ICategoryService categoryService;
+    @Autowired
+    private ICategoryBrandService categoryBrandService;
 
     /**
      * 根据父类id，查找子分类，isRecursive为true，递归查找所有，否则只查一级子分类
@@ -236,6 +246,24 @@ public class CategoryBiz implements ICategoryBiz {
         categoryParent.setId(category.getParentId());
         categoryParent.setIsLeaf("0");
         categoryService.updateByPrimaryKeySelective(categoryParent);
+    }
+
+    @Override
+    public List<CategoryBrand> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
+        if(StringUtils.isBlank(categoryBrandForm.getBrandId()) && StringUtils.isBlank(categoryBrandForm.getCategoryId())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"查询分类相关品牌分类ID和品牌ID不能同时为空");
+        }
+        Example example = new Example(CategoryBrand.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(categoryBrandForm.getCategoryId())){
+            String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("categoryId", Arrays.asList(categoryIds));
+        }
+        if(StringUtils.isNotBlank(categoryBrandForm.getBrandId())){
+            String[] brandIds = categoryBrandForm.getBrandId().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("brandId", Arrays.asList(brandIds));
+        }
+        return categoryBrandService.selectByExample(example);
     }
 
     /**

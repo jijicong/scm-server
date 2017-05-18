@@ -88,6 +88,13 @@ public class SupplyConstants {
             public static final String BRAND_LIST_SEARCH = "brands/search";
         }
 
+        /**
+         * 分类品牌
+         */
+        public static final class CategoryBrands{
+            //分类品牌列表查询路径
+            public static final String CATEGORY_BAAND_LIST = "categoryBrands";
+        }
 
 
         /**

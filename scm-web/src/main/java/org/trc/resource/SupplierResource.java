@@ -48,7 +48,7 @@ public class SupplierResource {
              @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
              @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
         supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
-        return ResultUtil.createSucssAppResult("保存字典成功", "");
+        return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 
     @PUT
@@ -56,14 +56,14 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateSupplier(@BeanParam Supplier supplier) throws Exception {
         supplierBiz.updateSupplier(supplier);
-        return ResultUtil.createSucssAppResult("修改字典成功", "");
+        return ResultUtil.createSucssAppResult("修改供应商成功", "");
     }
 
     @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> findSupplierById(@PathParam("id") Long id) throws Exception {
-        return ResultUtil.createSucssAppResult("查询字典成功", supplierBiz.findSupplierById(id));
+        return ResultUtil.createSucssAppResult("查询供应商成功", supplierBiz.findSupplierById(id));
     }
 
     @GET
@@ -77,8 +77,7 @@ public class SupplierResource {
     @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<SupplierBrand> querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception {
-        return ResultUtil.createSucssAppResult("查询字典成功", supplierBiz.querySupplierBrand(form));
+        return ResultUtil.createSucssAppResult("查询供应商代理品牌成功", supplierBiz.querySupplierBrand(form));
     }
-
 
 }
