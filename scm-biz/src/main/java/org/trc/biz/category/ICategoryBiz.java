@@ -2,6 +2,7 @@ package org.trc.biz.category;
 
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
+import org.trc.domain.category.CategoryBrandExt;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
 
@@ -64,7 +65,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    List<CategoryBrand> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws  Exception;
+    List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws  Exception;
 
 
 }

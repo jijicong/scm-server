@@ -11,6 +11,7 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
+import org.trc.domain.category.CategoryBrandExt;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -249,8 +250,8 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
-    public List<CategoryBrand> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
-        if(StringUtils.isBlank(categoryBrandForm.getBrandId()) && StringUtils.isBlank(categoryBrandForm.getCategoryId())){
+    public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
+        /*if(StringUtils.isBlank(categoryBrandForm.getBrandId()) && StringUtils.isBlank(categoryBrandForm.getCategoryId())){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"查询分类相关品牌分类ID和品牌ID不能同时为空");
         }
         Example example = new Example(CategoryBrand.class);
@@ -263,7 +264,14 @@ public class CategoryBiz implements ICategoryBiz {
             String[] brandIds = categoryBrandForm.getBrandId().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("brandId", Arrays.asList(brandIds));
         }
-        return categoryBrandService.selectByExample(example);
+        return categoryBrandService.selectByExample(example);*/
+        AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
+        String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
+        List<Long> categoryList = new ArrayList<Long>();
+        for(String categoryId : categoryIds){
+            categoryList.add(Long.parseLong(categoryId));
+        }
+        return categoryBrandService.queryCategoryBrands(categoryList);
     }
 
     /**
