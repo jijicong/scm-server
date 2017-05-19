@@ -3,6 +3,7 @@ package org.trc.biz.supplier;
 import org.trc.domain.supplier.*;
 import org.trc.form.supplier.SupplierBrandForm;
 import org.trc.form.supplier.SupplierCategoryForm;
+import org.trc.form.supplier.SupplierExt;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.Pagenation;
 
@@ -42,6 +43,19 @@ public interface ISupplierBiz {
                       SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception;
 
     /**
+     * 更新供应商
+     * @param supplier
+     * @param certificate
+     * @param supplierCategory
+     * @param supplierBrand
+     * @param supplierFinancialInfo
+     * @param supplierAfterSaleInfo
+     * @throws Exception
+     */
+    void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
+                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception;
+
+    /**
      * 修改供应商
      * @param Supplier
      * @return
@@ -58,18 +72,26 @@ public interface ISupplierBiz {
 
     /**
      * 查询供应商代理分类列表
-     * @param form
+     * @param supplierCode
      * @return
      * @throws Exception
      */
-    List<SupplierCategory> querySupplierCategory(SupplierCategoryForm form) throws Exception;
+    List<SupplierCategoryExt> querySupplierCategory(String supplierCode) throws Exception;
 
     /**
      * 查询供应商代理品牌列表
-     * @param form
+     * @param supplierCode
      * @return
      * @throws Exception
      */
-    List<SupplierBrand> querySupplierBrand(SupplierBrandForm form) throws Exception;
+    List<SupplierBrandExt> querySupplierBrand(String supplierCode) throws Exception;
+
+    /**
+     * 查询供应商信息
+     * @param supplierCode
+     * @return
+     * @throws Exception
+     */
+    SupplierExt querySupplierInfo(String supplierCode) throws Exception;
     
 }

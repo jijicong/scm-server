@@ -3,6 +3,7 @@ package org.trc.service.impl.supplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.supplier.SupplierBrand;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.mapper.supplier.ISupplierBrandMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.supplier.ISupplierBrandService;
@@ -22,4 +23,11 @@ public class SupplierBrandService extends BaseService<SupplierBrand, Long> imple
     public List<SupplierBrand> selectListBySupplierIds(Long... supplierIds) {
         return supplierBrandMapper.selectListBySupplierIds(supplierIds);
     }
+
+    @Override
+    public List<SupplierBrandExt> selectSupplierBrands(String supplierCode) throws Exception{
+        return supplierBrandMapper.selectSupplierBrands(supplierCode);
+    }
+
+
 }
