@@ -1,7 +1,6 @@
 package org.trc.biz.impower;
 
 import org.trc.domain.impower.Role;
-import org.trc.domain.impower.RoleExpand;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.Pagenation;
 
@@ -53,6 +52,6 @@ public interface IRoleBiz {
      * @param role 角色信息
      * @return
      */
-    int saveRole(Role role,String roleJurisdiction) throws Exception;
+    void saveRole(Role role,String roleJurisdiction) throws Exception;
 
 }

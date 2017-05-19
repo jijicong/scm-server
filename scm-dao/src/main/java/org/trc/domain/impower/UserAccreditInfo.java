@@ -8,7 +8,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 /**
  * 用户授权列表
@@ -16,39 +18,37 @@ import javax.ws.rs.FormParam;
  * 对应数据库表user_accredit_info
  */
 public class UserAccreditInfo extends BaseDO{
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @FormParam("userId")
-    @NotEmpty
+    @NotNull
     private Long userId;
+
     @FormParam("phone")
     @NotEmpty
     @Length(max = 64, message = "用户授权电话字母和数字不能超过64个,汉字不能超过32个")
     private String phone;//必须已经存在用户中心的id
+
     @FormParam("name")
     @NotEmpty
     @Length(max = 64, message = "用户授权名称字母和数字不能超过64个,汉字不能超过32个")
     private String name;
+
     @FormParam("userType")
     @NotEmpty
     @Length(max = 16, message = "用户授权名称字母和数字不能超过16个,汉字不能超过8个")
     private String userType;
+
     @FormParam("remark")
     @Length(max = 1024, message = "用户授权名称字母和数字不能超过1024个,汉字不能超过512个")
     private String remark;
 
-    @Transient
-    private String roleNames;//角色名的名字加逗号的（name1,name2）
-
-    public String getRoleNames() {
-        return roleNames;
-    }
-
-    public void setRoleNames(String roleNames) {
-        this.roleNames = roleNames;
-    }
+    @FormParam("channelCode")
+    @Length(max = 32)
+    private String channelCode;
 
     public Long getId() {
         return id;
@@ -97,4 +97,13 @@ public class UserAccreditInfo extends BaseDO{
     public void setRemark(String remark) {
         this.remark = remark;
     }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
 }
+

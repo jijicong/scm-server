@@ -1,18 +1,33 @@
 package org.trc.domain.supplier;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
 import java.util.Date;
 
 public class SupplierFinancialInfo extends BaseDO{
+    @FormParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("supplierId")
     private Long supplierId;
-
+    @FormParam("supplierCode")
+    @NotEmpty
+    @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
-
+    @FormParam("depositBank")
+    @NotEmpty
+    @Length(max = 128, message = "开户行名称长度不能超过128个")
     private String depositBank;
-
+    @FormParam("bankAccount")
+    @NotEmpty
+    @Length(max = 32, message = "银行账户长度不能超过32个")
     private String bankAccount;
 
 

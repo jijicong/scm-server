@@ -17,4 +17,12 @@ public interface IRoleJurisdictionRelationService extends IBaseService<RoleJuris
      */
     List<Long> selectJurisdictionIdList(Long roleId) throws Exception;
 
+    /**
+     * 根据角色id删除该角色对应的权限
+     * @param roleId
+     * @return
+     * @throws Exception
+     */
+    int deleteByRoleId(Long roleId) throws Exception;
+
 }

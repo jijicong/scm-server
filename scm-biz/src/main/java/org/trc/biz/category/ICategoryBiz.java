@@ -1,6 +1,9 @@
 package org.trc.biz.category;
 
 import org.trc.domain.category.Category;
+import org.trc.domain.category.CategoryBrand;
+import org.trc.domain.category.CategoryBrandExt;
+import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
 
 import java.util.List;
@@ -55,4 +58,14 @@ public interface ICategoryBiz {
     void updateState(Category category) throws Exception;
 
     void updateIsLeaf(Category category) throws  Exception;
+
+    /**
+     * 查询分类品牌列表
+     * @param categoryBrandForm
+     * @return
+     * @throws Exception
+     */
+    List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws  Exception;
+
+
 }

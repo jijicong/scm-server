@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IRoleBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.Role;
-import org.trc.domain.impower.RoleExpand;
+import org.trc.domain.impower.RoleAddPageData;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -35,14 +35,10 @@ public class RoleResource {
     @PUT
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateRole(@BeanParam RoleExpand roleExpand) throws Exception{
+    public AppResult updateRole(@BeanParam RoleAddPageData roleAddPageData) throws Exception{
 
-        Role role=new Role();
-        role.setName(roleExpand.getName());
-        role.setRemark(roleExpand.getRemark());
-        role.setRoleType(roleExpand.getRoleType());
-        role.setIsValid(roleExpand.getIsValid());
-        roleBiz.updateRole(role,roleExpand.getRoleJurisdiction());
+        Role role= roleAddPageData;
+        roleBiz.updateRole(role, roleAddPageData.getRoleJurisdiction());
         return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
 
     }
@@ -50,14 +46,11 @@ public class RoleResource {
     @POST
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveRole(@BeanParam RoleExpand roleExpand) throws Exception{
+    public AppResult saveRole(@BeanParam RoleAddPageData roleAddPageData) throws Exception{
 
-        Role role=new Role();
-        role.setName(roleExpand.getName());
-        role.setRemark(roleExpand.getRemark());
-        role.setRoleType(roleExpand.getRoleType());
-        role.setIsValid(roleExpand.getIsValid());
-        return  ResultUtil.createSucssAppResult("保存成功",roleBiz.saveRole(role, roleExpand.getRoleJurisdiction()));
+        Role role= roleAddPageData;
+        roleBiz.saveRole(role, roleAddPageData.getRoleJurisdiction());
+        return  ResultUtil.createSucssAppResult("保存成功","");
 
     }
     //根据角色名查询角色

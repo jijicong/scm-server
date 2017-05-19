@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
+import org.trc.domain.dict.DictType;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
@@ -68,6 +69,16 @@ public class BrandBiz implements IBrandBiz {
         }
         pagenation.setResult(brandList);
         return pagenation;
+    }
+
+    @Override
+    public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
+        Brand brand = new Brand();
+        if(StringUtils.isEmpty(brandForm.getIsValid())){
+            brand.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }
+        brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return brandService.select(brand);
     }
 
     @Override

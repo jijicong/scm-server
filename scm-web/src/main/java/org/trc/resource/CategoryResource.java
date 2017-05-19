@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
+import org.trc.domain.category.CategoryBrand;
+import org.trc.domain.category.CategoryBrandExt;
+import org.trc.domain.dict.DictType;
+import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.config.DictTypeForm;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
@@ -148,4 +153,13 @@ public class CategoryResource {
         categoryBiz.updateState(category);
         return ResultUtil.createSucssAppResult("状态修改成功", "");
     }
+
+    @GET
+    @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BAAND_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<CategoryBrandExt>> queryCategoryBrands(@BeanParam CategoryBrandForm categoryBrandForm) throws Exception {
+        return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryCategoryBrands(categoryBrandForm));
+    }
+
+
 }

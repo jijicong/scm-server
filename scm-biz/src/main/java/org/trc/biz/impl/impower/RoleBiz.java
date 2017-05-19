@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IRoleBiz;
 import org.trc.biz.impower.IRoleJurisdictionRelationBiz;
 import org.trc.domain.impower.Role;
-import org.trc.domain.impower.RoleExpand;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -125,12 +124,11 @@ public class RoleBiz implements IRoleBiz{
                 LOGGER.error(msg);
                 throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
             }//传的权限id不做校验
-            role.setName(null);
-            role.setRoleType(null);
+            role.setName("采购组员");
+            role.setRoleType("channelJurisdiction");
             role.setIsValid(null);//为防止对不需要改变的值，做修改
         }
-        //Role tmp = findRoleByName(role.getName());
-       // AssertUtil.notNull(tmp,"角色名称[name="+role.getName()+"]的数据已存在,请使用其他名称");
+
         role.setUpdateTime(Calendar.getInstance().getTime());
         int count = roleService.updateByPrimaryKeySelective(role);
         if (count == 0) {
@@ -139,13 +137,18 @@ public class RoleBiz implements IRoleBiz{
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
         roleJurisdictionRelationBiz.updateRoleJurisdictionRelations(roleJurisdiction,role.getId());
+
     }
     @Override
     @Transactional
-    public int saveRole(Role role,String roleJurisdiction) throws Exception {
-
+    public void saveRole(Role role,String roleJurisdiction) throws Exception {
+        AssertUtil.notNull(role,"角色管理模块保存角色信息失败，角色信息为空");
         Role tmp = findRoleByName(role.getName());
-        AssertUtil.notNull(tmp,"角色名称[name="+role.getName()+"]的数据已存在,请使用其他名称");
+        if(tmp!=null){
+            String msg = CommonUtil.joinStr("角色名称[name=", role.getName(), "]的名称已存在,请使用其他名称").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
+        }
         int count=0;
         ParamsUtil.setBaseDO(role);
         count=roleService.insert(role);
@@ -154,19 +157,23 @@ public class RoleBiz implements IRoleBiz{
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
-        count+=(roleJurisdictionRelationBiz.saveRoleJurisdictionRelations(roleJurisdiction,role.getId()));
-        return count;
+
+        //用来保存角色和授权的关联信息
+        roleJurisdictionRelationBiz.saveRoleJurisdictionRelations(roleJurisdiction,role.getId());
 
     }
     @Override
     public Role findRoleByName(String name) throws Exception {
-        if(StringUtil.isEmpty(name)  || name==null){
+
+        AssertUtil.notNull(name,"根据角色名称查询角色的参数name为空");
+        /*if(StringUtil.isEmpty(name)  || name==null){
             String msg=CommonUtil.joinStr("根据角色名称查询角色的参数name为空").toString();
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        }*/
         Role role = new Role();
         role.setName(name);
         return roleService.selectOne(role);
+
     }
 }

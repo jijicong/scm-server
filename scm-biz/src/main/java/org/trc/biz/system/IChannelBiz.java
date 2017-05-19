@@ -1,6 +1,8 @@
 package org.trc.biz.system;
 
 import org.trc.domain.System.Channel;
+import org.trc.domain.dict.DictType;
+import org.trc.form.config.DictTypeForm;
 import org.trc.form.system.ChannelForm;
 import org.trc.util.Pagenation;
 
@@ -25,6 +27,15 @@ public interface IChannelBiz {
      * @return  渠道
      */
     Channel findChannelByName(String name) throws Exception;
+
+    /**
+     * 渠道列表查询
+     * @param channelForm
+     * @return
+     * @throws Exception
+     */
+    List<Channel> queryChannels(ChannelForm channelForm) throws Exception;
+    
     /**
      *保存渠道
      * @return 整数改变

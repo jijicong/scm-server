@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
 import org.trc.domain.supplier.*;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
@@ -25,10 +26,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hzwdx on 2017/5/5.
@@ -61,6 +59,10 @@ public class SupplierBiz implements ISupplierBiz {
     private ISupplierCategoryService supplierCategoryService;
     @Autowired
     private ISupplierBrandService supplierBrandService;
+    @Autowired
+    private ISupplierFinancialInfoService supplierFinancialInfoService;
+    @Autowired
+    private ISupplierAfterSaleInfoService supplierAfterSaleInfoService;
 
     @Override
     public Pagenation<Supplier> SupplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -105,7 +107,8 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    public void saveSupplier(Supplier supplier, Certificate certificate) throws Exception {
+    public void  saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
+                SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
         //参数校验
         supplierSaveCheck(supplier, certificate);
         String supplierCode = serialUtilService.getSerialCode(LENGTH,SERIALNAME);
@@ -115,6 +118,18 @@ public class SupplierBiz implements ISupplierBiz {
         certificate.setSupplierId(supplier.getId());
         certificate.setSupplierCode(supplier.getSupplierCode());
         saveCertificate(certificate);
+        //保存供应商代理类目
+        supplierCategory.setSupplierId(supplier.getId());
+        saveCategory(supplierCategory);
+        //保存供应商代理品牌
+        supplierBrand.setSupplierId(supplier.getId());
+        saveBrand(supplierBrand);
+        //保存供应商财务信息
+        supplierFinancialInfo.setSupplierId(supplier.getId());
+        saveFinancial(supplierFinancialInfo);
+        //保存供应商售后信息
+        supplierAfterSaleInfo.setSupplierId(supplier.getId());
+        saveAfterSale(supplierAfterSaleInfo);
         //保存供应商渠道关系
         List<SupplierChannelRelation> supplierChannelRelations = new ArrayList<SupplierChannelRelation>();
         /**渠道channels，格式："渠道ID-渠道编号,...",多个渠道用逗号分隔,
@@ -240,6 +255,94 @@ public class SupplierBiz implements ISupplierBiz {
      */
     private int saveSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations) {
         return supplierChannelRelationService.insertList(supplierChannelRelations);
+    }
+
+    /**
+     * 保存供应商代理类目
+     * @param supplierCategory
+     */
+    private void saveCategory(SupplierCategory supplierCategory) {
+        int count = 0;
+        if (null != supplierCategory.getId()) {
+            //修改
+            supplierCategory.setUpdateTime(Calendar.getInstance().getTime());
+            count = supplierCategoryService.updateByPrimaryKeySelective(supplierCategory);
+        } else {
+            //新增
+            ParamsUtil.setBaseDO(supplierCategory);
+            count = supplierCategoryService.insert(supplierCategory);
+        }
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商代理类目", JSON.toJSONString(supplierCategory), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 保存供应商代理品牌
+     * @param brand
+     */
+    private void saveBrand(SupplierBrand brand) {
+        int count = 0;
+        if (null != brand.getId()) {
+            //修改
+            brand.setUpdateTime(Calendar.getInstance().getTime());
+            count = supplierBrandService.updateByPrimaryKeySelective(brand);
+        } else {
+            //新增
+            ParamsUtil.setBaseDO(brand);
+            count = supplierBrandService.insert(brand);
+        }
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(brand), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 保存供应商财务信息
+     * @param supplierFinancialInfo
+     */
+    private void saveFinancial(SupplierFinancialInfo supplierFinancialInfo) {
+        int count = 0;
+        if (null != supplierFinancialInfo.getId()) {
+            //修改
+            supplierFinancialInfo.setUpdateTime(Calendar.getInstance().getTime());
+            count = supplierFinancialInfoService.updateByPrimaryKeySelective(supplierFinancialInfo);
+        } else {
+            //新增
+            ParamsUtil.setBaseDO(supplierFinancialInfo);
+            count = supplierFinancialInfoService.insert(supplierFinancialInfo);
+        }
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商财务信息", JSON.toJSONString(supplierFinancialInfo), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 保存供应商售后信息
+     * @param supplierAfterSaleInfo
+     */
+    private void saveAfterSale(SupplierAfterSaleInfo supplierAfterSaleInfo) {
+        int count = 0;
+        if (null != supplierAfterSaleInfo.getId()) {
+            //修改
+            supplierAfterSaleInfo.setUpdateTime(Calendar.getInstance().getTime());
+            count = supplierAfterSaleInfoService.updateByPrimaryKeySelective(supplierAfterSaleInfo);
+        } else {
+            //新增
+            ParamsUtil.setBaseDO(supplierAfterSaleInfo);
+            count = supplierAfterSaleInfoService.insert(supplierAfterSaleInfo);
+        }
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商售后信息", JSON.toJSONString(supplierAfterSaleInfo), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
     }
 
     @Override

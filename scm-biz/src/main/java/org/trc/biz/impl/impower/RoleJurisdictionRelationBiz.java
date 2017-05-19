@@ -40,14 +40,19 @@ public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz
 
         AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
         //1.先根据角色id，删除所有的该角色对应的权限
-        //roleJuridictionRelationService.deleteByRoleId(roleId);
+        int count = roleJuridictionRelationService.deleteByRoleId(roleId);
+        if (count==0){ //初始化系统角色或者新增角色时，必须有对应的权限<权限不能为空>
+            String msg = CommonUtil.joinStr("根据角色id,角色和权限关联删除失败").toString();
+            LOGGER.error(msg);
+            throw  new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+        }
         //2.保存关联信息
         saveRoleJurisdictionRelations(roleJurisdiction,roleId);
 
     }
 
     @Override
-    public int saveRoleJurisdictionRelations(String roleJurisdiction, Long roleId) throws Exception{
+    public void saveRoleJurisdictionRelations(String roleJurisdiction, Long roleId) throws Exception{
 
         AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
         if(StringUtils.isBlank(roleJurisdiction)){
@@ -72,6 +77,6 @@ public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
-        return count;
+
     }
 }

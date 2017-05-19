@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
  * Created by sone on 2017/5/11.
  */
 public class Role extends BaseDO {
-    @FormParam("id")
+    @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

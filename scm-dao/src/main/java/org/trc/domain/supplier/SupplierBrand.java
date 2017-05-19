@@ -19,14 +19,12 @@ public class SupplierBrand extends ScmDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("supplierId")
-    @Length(max = 20, message = "供应商ID长度不能超过20个")
     private Long supplierId;
     @FormParam("supplierCode")
     @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
     @FormParam("brandId")
     @NotEmpty
-    @Length(max = 32, message = "品牌ID长度不能超过20个")
     private Long brandId;
     @FormParam("brandCode")
     @NotEmpty
@@ -34,7 +32,6 @@ public class SupplierBrand extends ScmDO {
     private String brandCode;
     @FormParam("categoryId")
     @NotEmpty
-    @Length(max = 32, message = "分类ID长度不能超过20个")
     private Long categoryId;
     @FormParam("categoryCode")
     @NotEmpty
@@ -58,6 +55,10 @@ public class SupplierBrand extends ScmDO {
     private String aptitudePic;
     @Transient
     private String brandName;
+    @Transient
+    @FormParam("supplierBrand")
+    private String supplierBrand;
+
     public Long getId() {
         return id;
     }
@@ -144,6 +145,14 @@ public class SupplierBrand extends ScmDO {
 
     public void setAptitudePic(String aptitudePic) {
         this.aptitudePic = aptitudePic;
+    }
+
+    public String getSupplierBrand() {
+        return supplierBrand;
+    }
+
+    public void setSupplierBrand(String supplierBrand) {
+        this.supplierBrand = supplierBrand;
     }
 
     public String getBrandName() {

@@ -30,11 +30,16 @@ public interface ISupplierBiz {
 
     /**
      * 保存供应商
-     * @param Supplier
+     * @param supplier
      * @param certificate
-     * @return
+     * @param supplierCategory
+     * @param supplierBrand
+     * @param supplierFinancialInfo
+     * @param supplierAfterSaleInfo
+     * @throws Exception
      */
-    void saveSupplier(Supplier Supplier, Certificate certificate) throws Exception;
+    void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
+                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception;
 
     /**
      * 修改供应商

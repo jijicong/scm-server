@@ -88,6 +88,13 @@ public class SupplyConstants {
             public static final String BRAND_LIST_SEARCH = "brands/search";
         }
 
+        /**
+         * 分类品牌
+         */
+        public static final class CategoryBrands{
+            //分类品牌列表查询路径
+            public static final String CATEGORY_BAAND_LIST = "categoryBrands";
+        }
 
 
         /**
@@ -181,6 +188,12 @@ public class SupplyConstants {
 
         //查询选择用户对应角色
         public static  final  String ROLE  = "rolelist";
+
+        //新增角色
+        public static final String  SAVE_ACCREDIT = "saveaccredit";
+
+        //用户修改
+        public static final String  UPDATE_ACCREDIT = "updateaccredit";
 
     }
     /**
@@ -319,6 +332,21 @@ public class SupplyConstants {
         public static final String ROLE_TYPE="roleType";
         //用户类型字典类型编码
         public static final String USER_TYPE="userType";
+    }
+
+    /**
+     * 序列号
+     */
+    public static final class Serial{
+        public static final String ROOT = "serial";
+        //供应商编码名称
+        public static final String SUPPLIER_NAME = "GYS";
+        //供应商编码长度
+        public static final Integer SUPPLIER_LENGTH = 6;
+
+
+        //序列号查询路径
+        public static final String SERIAL = "serial";
     }
 
 
