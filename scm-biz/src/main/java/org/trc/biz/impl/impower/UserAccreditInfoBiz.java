@@ -273,6 +273,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Override
     public void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception {
         //写入user_accredit_info表
+        AssertUtil.notNull(userAddPageDate,"页面请求参数为空");
         UserAccreditInfo userAccreditInfo = userAddPageDate;
         userAccreditInfo.setIsDeleted("0");
         userAccreditInfo.setCreateOperator("test");

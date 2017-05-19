@@ -9,4 +9,8 @@
         DELETE FROM role_jurisdiction_relation WHERE role_id=#{roleId}
     </delete>
 
+    <!--<update id="deleteByRoleId">
+        UPDATE  role_jurisdiction_relation SET  is_deleted ="1" WHERE role_id=#{roleId}
+    </update>-->
+
 </mapper>
