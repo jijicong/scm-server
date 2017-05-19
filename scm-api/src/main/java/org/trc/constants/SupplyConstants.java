@@ -12,6 +12,7 @@ public class SupplyConstants {
         public static final String COMMA = ",";//逗号
         public static final String MINUS = "-";//减号
         public static final String FILE_NAME_SPLIT = ".";//文件名称分隔符
+        public static final String FULL_PATH_SPLIT = "|";//分类路径ID分隔符
     }
 
 
@@ -126,16 +127,24 @@ public class SupplyConstants {
         /**
          * 分类管理
          */
+        /**
+         * 分类管理
+         */
         public static final class  Classify{
             //查询树
-            public static  final String CLASSIFY_TREE = "classifytree";
-            //添加，修改分类
-            public  static  final  String  CLASSIFY ="classify";
-            //修改排序
-            public static final  String CLASSIFY_SORT ="classifysort";
-            //修改状态
-            public  static  final  String  UPDATE_STATE ="classify/updateState";
+            public static  final String CATEGORY_TREE = "tree";
 
+            //添加，修改分类
+            public  static  final  String CATEGORY ="category";
+
+            //修改排序
+            public static final  String CATEGORY_SORT ="sort";
+
+            //修改状态
+            public  static  final  String  UPDATE_STATE ="category/updateState";
+
+            //重名验证
+            public static  final  String CATEGORY_CHECK = "check";
         }
     }
     /**
