@@ -109,7 +109,7 @@ public class SupplyConstants {
          */
         public static final class PropertyValue{
             //属性值列表查询路径
-            public static final String PROPERTY_VALUE_LIST = "propertyValues";
+            public static final String PROPERTY_VALUE_LIST = "propertyValues/search";
             //属性值路径
             public static final String PROPERTY_VALUE = "propertyValue";
 

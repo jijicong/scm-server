@@ -3,10 +3,7 @@ package org.trc.domain.category;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.ws.rs.FormParam;
 
 public class PropertyValue extends BaseDO {
@@ -25,7 +22,15 @@ public class PropertyValue extends BaseDO {
     @NotEmpty
     @FormParam("sort")
     private Integer sort;
-
+    @FormParam("status")
+    @Transient
+    private Integer status;
+    @FormParam("source")
+    @Transient
+    private Integer source;
+    @FormParam("sortStatus")
+    @Transient
+    private Integer sortStatus;
     public Long getId() {
         return id;
     }
@@ -66,5 +71,27 @@ public class PropertyValue extends BaseDO {
         this.sort = sort;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
 
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Integer getSource() {
+        return source;
+    }
+
+    public void setSource(Integer source) {
+        this.source = source;
+    }
+
+    public Integer getSortStatus() {
+        return sortStatus;
+    }
+
+    public void setSortStatus(Integer sortStatus) {
+        this.sortStatus = sortStatus;
+    }
 }

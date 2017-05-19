@@ -73,13 +73,14 @@ public class BrandBiz implements IBrandBiz {
     @Override
     public void saveBrand(Brand brand) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
-        //插入固定信息
+        //初始化信息
         brand.setSource(BrandSourceEnum.SCM.getCode());
         brand.setBrandCode(serialUtilService.getSerialCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(new Date())));
         brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         ParamsUtil.setBaseDO(brand);
-        int count = brandService.insert(brand);
-        if (count < 1) {
+        try {
+            brandService.insert(brand);
+        }catch (Exception e){
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
