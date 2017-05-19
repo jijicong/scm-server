@@ -31,7 +31,12 @@ public class UserAccreditInfoResource {
     public Pagenation<UserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAddPageDate> page) throws Exception {
         return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
-
+    @POST
+    @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE+"/{id}")
+    public  AppResult updateUserAccreditInfoStatus(@BeanParam UserAccreditInfo userAccreditInfo) throws  Exception{
+        userAccreditInfoBiz.updateUserAccreditInfoStatus(userAccreditInfo);
+        return ResultUtil.createSucssAppResult("修改状态成功","");
+    }
     /**
      * 用户名是否存在
      * @param name

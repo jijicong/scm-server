@@ -1,5 +1,6 @@
 package org.trc.biz.impl.impower;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +16,7 @@ import org.trc.domain.impower.UserAccreditRoleRelation;
 import org.trc.domain.impower.UserAddPageDate;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.impower.UserAccreditInfoForm;
@@ -37,7 +39,7 @@ import java.util.*;
 @Service("userAccreditInfoBiz")
 public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
 
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;
@@ -77,13 +79,13 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         return page;
     }
 
-    private List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception {
+    @Override
+    public List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception{
 
         List<UserAddPageDate> pageDateRoleList = new ArrayList<>();
         Long[] userIds = new Long[list.size()];
         int temp = 0;
         for (UserAccreditInfo userAccreditInfo : list) {
-            System.out.println(userAccreditInfo.getUserType());
             userIds[temp] = userAccreditInfo.getId();
             temp += 1;
         }
@@ -116,6 +118,27 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         return pageDateRoleList;
     }
 
+    @Override
+    public void updateUserAccreditInfoStatus(UserAccreditInfo userAccreditInfo) throws Exception {
+
+        AssertUtil.notNull(userAccreditInfo,"授权管理模块修改授权信息失败，授权信息为空");
+        UserAccreditInfo updateUserAccreditInfo = new UserAccreditInfo();
+        updateUserAccreditInfo.setId(userAccreditInfo.getId());
+        if (userAccreditInfo.getIsValid().equals(ValidEnum.VALID.getCode())) {
+            updateUserAccreditInfo.setIsValid(ValidEnum.NOVALID.getCode());
+        } else {
+            updateUserAccreditInfo.setIsValid(ValidEnum.VALID.getCode());
+        }
+        updateUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
+        int count = userAccreditInfoService.updateByPrimaryKeySelective(updateUserAccreditInfo);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改授权", JSON.toJSONString(userAccreditInfo),"数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+        }
+
+    }
+
     /**
      * 用户名是否存在
      *
@@ -128,7 +151,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
         if (StringUtil.isEmpty(name) || name == "") {
             String msg = CommonUtil.joinStr("根据用户授权的用户名称查询角色的参数name为空").toString();
-            log.error(msg);
+            LOGGER.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
@@ -170,17 +193,21 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         return roleService.selectByExample(example);
     }
 
-    /**
-     * 新增授权
-     * @param userAddPageDate
-     * @throws Exception
-     */
     @Override
     public void saveUserAccreditInfo(UserAddPageDate userAddPageDate) throws Exception {
         //写入user_accredit_info表
-        UserAccreditInfo userAccreditInfo = userAddPageDate;
+        UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
+        userAccreditInfo.setName(userAddPageDate.getName());
+        userAccreditInfo.setChannelCode(userAddPageDate.getChannelCode());
+        userAccreditInfo.setPhone(userAddPageDate.getPhone());
+        userAccreditInfo.setRemark(userAddPageDate.getRemark());
+        userAccreditInfo.setUserType(userAddPageDate.getUserType());
+        userAccreditInfo.setUserId(userAddPageDate.getUserId());
         userAccreditInfo.setIsDeleted("0");
         userAccreditInfo.setCreateOperator("test");
+        userAccreditInfo.setIsValid(userAddPageDate.getIsValid());
+        userAccreditInfo.setCreateTime(Calendar.getInstance().getTime());
+        userAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         userAccreditInfoService.insert(userAccreditInfo);
 
         //写入user_accredit_role_relation表

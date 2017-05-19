@@ -22,12 +22,26 @@ public interface IUserAccreditInfoBiz {
     Pagenation<UserAddPageDate> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception;
 
     /**
+     * 修改授权用户的状态
+     * @param
+     * @throws Exception
+     */
+    void updateUserAccreditInfoStatus(UserAccreditInfo userAccreditInfo) throws Exception;
+    /**
      *根据名称查询用户授权信息
      * @param name 用户姓名
      * @return 用户授权信息
      * @throws Exception
      */
     UserAccreditInfo findUserAccreditInfoByName(String name) throws Exception;
+
+    /**
+     * 处理用户显示页面的角色拼接和用户显示页面的对象的转换
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception;
 
     /**
      * 查询已启用的渠道
