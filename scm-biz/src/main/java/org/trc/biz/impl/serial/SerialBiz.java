@@ -33,7 +33,7 @@ public class SerialBiz implements ISerialBiz {
         AssertUtil.notBlank(module, "生成编码的模块名称不能为空");
         String serialCode = "";
         if(StringUtils.equals(module, SUPPLIER)){//供应商
-            serialCode = serialUtilService.getSerialCode(SupplyConstants.Serial.SUPPLIER_LENGTH, SupplyConstants.Serial.SUPPLIER_NAME);
+            serialCode = "00";//serialUtilService.getSerialCode(SupplyConstants.Serial.SUPPLIER_LENGTH, SupplyConstants.Serial.SUPPLIER_NAME);
         }else {
             String msg = String.format("%s%s%s", "生成序列号的模块",module,"不存在");
             log.error(msg);

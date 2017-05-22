@@ -112,15 +112,15 @@ public class SupplierBiz implements ISupplierBiz {
                 SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
         //参数校验
         supplierSaveCheck(supplier, certificate);
-        String supplierCode = serialUtilService.getSerialCode(LENGTH,SERIALNAME);//FIXME 生成序列号的服务修改
-        supplier.setSupplierCode(supplierCode);
+        //String supplierCode = serialUtilService.getSerialCode(LENGTH,SERIALNAME);//FIXME 生成序列号的服务修改
+        supplier.setSupplierCode("00");
         //保存供应商
         saveSupplierBase(supplier);
         if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
-            //保存证件
-            certificate.setSupplierId(supplier.getId());
-            certificate.setSupplierCode(supplier.getSupplierCode());
-            saveCertificate(certificate);
+        //保存证件
+        certificate.setSupplierId(supplier.getId());
+        certificate.setSupplierCode(supplier.getSupplierCode());
+        saveCertificate(certificate);
         }
         //保存供应商代理类目
         supplierCategory.setSupplierId(supplier.getId());

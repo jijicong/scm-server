@@ -80,6 +80,11 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     }
 
     @Override
+    public List<UserAccreditInfo> findPurchase() throws Exception {
+        return userAccreditInfoService.findPurchase();
+    }
+
+    @Override
     public List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception{
 
         List<UserAddPageDate> pageDateRoleList = new ArrayList<>();
