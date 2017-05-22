@@ -151,6 +151,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         AssertUtil.notBlank(name,"根据用户授权的用户名称查询角色的参数name为空");
         Example example = new Example(UserAccreditInfo.class);
         Example.Criteria criteria = example.createCriteria();
+
         criteria.andNotEqualTo("id", id);
         criteria.andEqualTo("name", name);
         return userAccreditInfoService.selectByExample(example).size();
