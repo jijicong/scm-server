@@ -49,9 +49,7 @@ public class UserAccreditInfoResource {
     public AppResult findUserAccreditInfoByName(@QueryParam("id") Long id,@QueryParam("name") String name) throws Exception {
         if (userAccreditInfoBiz.checkUserByName(id, name) >0) {
             return ResultUtil.createSucssAppResult("查询授权用户已存在", "");
-
         } else {
-
             return ResultUtil.createSucssAppResult("查询授权用户可用", "");
         }
     }
