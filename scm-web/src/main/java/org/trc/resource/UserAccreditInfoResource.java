@@ -44,10 +44,14 @@ public class UserAccreditInfoResource {
      * @throws Exception
      */
     @GET
-    @Path(SupplyConstants.UserAccreditInfo.ACCREDIT)
+    @Path(SupplyConstants.UserAccreditInfo.CHECK+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findUserAccreditInfoByName(@QueryParam("name") String name) throws Exception {
-        return ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoByName(name) == null ? null : "1");
+    public AppResult findUserAccreditInfoByName(@QueryParam("id") Long id,@QueryParam("name") String name) throws Exception {
+        if (userAccreditInfoBiz.checkUserByName(id, name) >0) {
+            return ResultUtil.createSucssAppResult("查询授权用户已存在", "");
+        } else {
+            return ResultUtil.createSucssAppResult("查询授权用户可用", "");
+        }
     }
 
     /**

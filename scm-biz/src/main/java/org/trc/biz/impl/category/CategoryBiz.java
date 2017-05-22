@@ -147,8 +147,8 @@ public class CategoryBiz implements ICategoryBiz {
 //        AssertUtil.notBlank(categoryCode, "根据分类编码查询分类的参数categoryCode为空");
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("id", id);
-        criteria.andNotEqualTo("categoryCode", categoryCode);
+        criteria.andNotEqualTo("id", id);
+        criteria.andEqualTo("categoryCode", categoryCode);
         return categoryService.selectByExample(example).size();
 
     }

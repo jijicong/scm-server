@@ -117,7 +117,7 @@ public class CategoryResource {
 
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
         int i = categoryBiz.checkCategoryCode(id, categoryCode);
-        if (i == 0) {
+        if (i >0) {
             return ResultUtil.createSucssAppResult("查询分类编码已存在", "");
 
         } else {
