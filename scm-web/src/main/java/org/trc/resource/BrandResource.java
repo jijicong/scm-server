@@ -6,18 +6,15 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
-import org.trc.enums.BrandSourceEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.form.category.BrandForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by hzqph on 2017/5/2.
