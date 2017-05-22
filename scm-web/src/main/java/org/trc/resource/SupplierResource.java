@@ -8,6 +8,7 @@ import org.trc.domain.dict.Dict;
 import org.trc.domain.supplier.*;
 import org.trc.form.supplier.SupplierBrandForm;
 import org.trc.form.supplier.SupplierCategoryForm;
+import org.trc.form.supplier.SupplierChannelRelationForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -54,30 +55,34 @@ public class SupplierResource {
     @PUT
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSupplier(@BeanParam Supplier supplier) throws Exception {
-        supplierBiz.updateSupplier(supplier);
-        return ResultUtil.createSucssAppResult("修改供应商成功", "");
+    public AppResult updateSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
+                                  @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
+                                  @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+        supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
+        return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 
     @GET
-    @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
+    @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> findSupplierById(@PathParam("id") Long id) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商成功", supplierBiz.findSupplierById(id));
+    public AppResult<Dict> findSupplierByCode(@PathParam("supplierCode") String supplierCode) throws Exception {
+        return ResultUtil.createSucssAppResult("查询供应商成功", supplierBiz.querySupplierInfo(supplierCode));
     }
 
     @GET
     @Path(SupplyConstants.Supply.SupplierCategory.SUPPLIER_CATEGORY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<SupplierCategory> querySupplierCategory(@BeanParam SupplierCategoryForm form) throws Exception {
-        return supplierBiz.querySupplierCategory(form);
+    public List<SupplierCategoryExt> querySupplierCategory(@QueryParam("supplierCode") String supplierCode) throws Exception {
+        return supplierBiz.querySupplierCategory(supplierCode);
     }
 
     @GET
-    @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
+    @Path(SupplyConstants.Supply.SupplierChannel.CHANNELS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<SupplierBrand> querySupplierBrand(@BeanParam SupplierBrandForm form) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商代理品牌成功", supplierBiz.querySupplierBrand(form));
+    public AppResult<SupplierChannelRelationExt> queryChannelRelation(@BeanParam SupplierChannelRelationForm form) throws Exception {
+        return ResultUtil.createSucssAppResult("查询供应商渠道关系成功", supplierBiz.queryChannelRelation(form));
     }
+
+
 
 }

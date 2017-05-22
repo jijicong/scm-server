@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.trc.mapper.supplier.ISupplierBrandMapper">
-    <resultMap id="supplierBrandMap" type="org.trc.domain.supplier.SupplierBrand">
+<mapper namespace="org.trc.mapper.supplier.ISupplierCategoryMapper">
+    <resultMap id="supplierCategoryMap" type="org.trc.domain.supplier.SupplierCategory">
         <result property="id" column="id"/>
         <result property="supplierId" column="supplier_id"/>
         <result property="supplierCode" column="supplier_code"/>
@@ -15,7 +15,7 @@
         <result property="brandName" column="brandName"/>
     </resultMap>
 
-    <select id="selectListBySupplierIds" resultMap="supplierBrandMap">
+    <select id="selectListBySupplierIds" resultMap="supplierCategoryMap">
         SELECT  a.id,a.supplier_id,b.name AS 'brandName',a.create_time,a.update_time
         FROM supplier_brand a
         LEFT JOIN  brand b on a.brand_id =b.id
@@ -28,13 +28,10 @@
     </select>
 
 
-    <resultMap id="supplierBrandExtMap" type="org.trc.domain.supplier.SupplierBrandExt">
+    <resultMap id="supplierCategoryExtMap" type="org.trc.domain.supplier.SupplierCategoryExt">
         <result property="id" column="id"/>
         <result property="supplierId" column="supplier_id"/>
         <result property="supplierCode" column="supplier_code"/>
-        <result property="brandId" column="brand_id"/>
-        <result property="brandCode" column="brand_code"/>
-        <result property="brandName" column="brand_name"/>
         <result property="categoryId" column="category_id"/>
         <result property="categoryCode" column="category_code"/>
         <result property="categoryName" column="category_name"/>
@@ -43,40 +40,33 @@
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
-    <select id="selectSupplierBrands" resultMap="supplierBrandExtMap">
+    <select id="selectSupplierCategorys" resultMap="supplierCategoryExtMap">
         SELECT
-        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, sb.category_code, c.full_path_id as category_name, sb.brand_id, sb.brand_code, b.name as brand_name
+        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, c.category_code, c.full_path_id as category_name
         FROM
-        supplier_brand sb
+        supplier_category sb
         LEFT JOIN
         category c ON sb.category_id = c.id
-        LEFT JOIN
-        brand b ON sb.brand_id = b.id
         WHERE
         sb.supplier_code = #{supplierCode}
     </select>
 
-    <update id="updateSupplerBrand"  parameterType="java.util.List" >
-        <foreach collection="list" item="supplerBrand" index="index" open="" close=";" separator=";">
-            update supplier_brand
+    <update id="updateSupplerCategory"  parameterType="java.util.List" >
+        <foreach collection="list" item="supplerCategory" index="index" open="" close=";" separator=";">
+            update supplier_category
             <set>
-                proxy_aptitude_id = #{supplerBrand.proxyAptitudeId}
+                is_deleted = #{supplerCategory.isDelete}
             </set>
             <set>
-                proxy_aptitude_start_date = #{supplerBrand.proxyAptitudeStartDate}
-            </set>
-            <set>
-                proxy_aptitude_end_date = #{supplerBrand.proxyAptitudeEndDate}
-            </set>
-            <set>
-                aptitude_pic = #{supplerBrand.aptitudePic}
-            </set>
-            <set>
-                update_time = #{supplerBrand.updateTime}
+                update_time = #{supplerCategory.updateTime}
             </set>
             where
-            supplier_id = #{supplerBrand.supplierId} AND brand_id = #{supplerBrand.brandId}
+            supplier_id = #{supplerCategory.supplierId} AND category_id = #{supplerCategory.categoryId}
         </foreach>
     </update>
+
+
+
+
 
 </mapper>

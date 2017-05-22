@@ -141,22 +141,19 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     /**
      * 用户名是否存在
-     *
      * @param name 用户姓名
      * @return
      * @throws Exception
      */
     @Override
-    public UserAccreditInfo findUserAccreditInfoByName(String name) throws Exception {
-
-        if (StringUtil.isEmpty(name) || name == "") {
-            String msg = CommonUtil.joinStr("根据用户授权的用户名称查询角色的参数name为空").toString();
-            LOGGER.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
-        UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
-        userAccreditInfo.setName(name);
-        return userAccreditInfoService.selectOne(userAccreditInfo);
+    public int checkUserByName(Long id,String name) throws Exception {
+        AssertUtil.notNull(id,"根据用户授权的用户名称查询角色的参数id为空");
+        AssertUtil.notBlank(name,"根据用户授权的用户名称查询角色的参数name为空");
+        Example example = new Example(UserAccreditInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andNotEqualTo("id", id);
+        criteria.andEqualTo("name", name);
+        return userAccreditInfoService.selectByExample(example).size();
     }
 
     /**

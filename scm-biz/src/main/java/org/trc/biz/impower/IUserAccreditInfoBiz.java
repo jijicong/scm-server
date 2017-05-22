@@ -33,7 +33,7 @@ public interface IUserAccreditInfoBiz {
      * @return 用户授权信息
      * @throws Exception
      */
-    UserAccreditInfo findUserAccreditInfoByName(String name) throws Exception;
+    int checkUserByName(Long id,String name) throws Exception;
 
     /**
      * 处理用户显示页面的角色拼接和用户显示页面的对象的转换

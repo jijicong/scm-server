@@ -3,6 +3,7 @@ package org.trc.domain.supplier;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
+import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,7 +11,7 @@ import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 import java.util.Date;
 
-public class SupplierAfterSaleInfo extends BaseDO{
+public class SupplierAfterSaleInfo extends ScmDO{
     @FormParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +19,7 @@ public class SupplierAfterSaleInfo extends BaseDO{
     @FormParam("supplierId")
     private Long supplierId;
     @FormParam("supplierCode")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
     @FormParam("goodsReturnAddress")

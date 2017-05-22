@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
-import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
-import org.trc.domain.dict.DictType;
+import org.trc.enums.SourceEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.category.CategoryBrandForm;
-import org.trc.form.config.DictTypeForm;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
@@ -39,7 +38,7 @@ public class CategoryResource {
      * @throws Exception
      */
     @GET
-    @Path(SupplyConstants.Category.Classify.CLASSIFY_TREE)
+    @Path(SupplyConstants.Category.Classify.CATEGORY_TREE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> classifyTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) throws Exception {
 
@@ -55,7 +54,7 @@ public class CategoryResource {
      * @throws Exception
      */
     @POST
-    @Path(SupplyConstants.Category.Classify.CLASSIFY)
+    @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveClassify(@BeanParam Category category) throws Exception {
 
@@ -63,18 +62,18 @@ public class CategoryResource {
         AssertUtil.notNull(category.getSort(), "添加分类时sort参数不能为空");
         AssertUtil.notNull(category.getIsValid(), "添加分类时isValid参数不能为空");
         category.setCreateOperator("test");
-        category.setSource("scm");
-        category.setIsLeaf("1");
+        category.setSource(SourceEnum.TRC.getCode());
+        category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
         category.setCreateTime(Calendar.getInstance().getTime());
         category.setUpdateTime(Calendar.getInstance().getTime());
         categoryBiz.saveClassify(category);
 
         if (category.getLevel() == 1) {
-            category.setFullPathId(category.getId().toString());
+            category.setFullPathId(null);
         } else if (category.getLevel() == 2) {
-            category.setFullPathId(category.getParentId() + "|" + category.getId());
+            category.setFullPathId(category.getParentId().toString());
         } else {
-            category.setFullPathId(category.getFullPathId() + "|" + category.getId());
+            category.setFullPathId(categoryBiz.queryPathId(category.getParentId()) + SupplyConstants.Symbol.FULL_PATH_SPLIT + category.getParentId());
         }
         categoryBiz.updateCategory(category);
         if (category.getLevel() != 1 && categoryBiz.isLeaf(category.getParentId()) != 0) {
@@ -91,13 +90,14 @@ public class CategoryResource {
      * @throws Exception
      */
     @PUT
-    @Path(SupplyConstants.Category.Classify.CLASSIFY + "/{id}")
+    @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateClassify(@BeanParam Category category) throws Exception {
+    public AppResult updateCategory(@BeanParam Category category) throws Exception {
+        //判断是否叶子节点
         if (categoryBiz.isLeaf(category.getId()) == 0) {
-            category.setIsLeaf("1");
+            category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
         } else {
-            category.setIsLeaf("0");
+            category.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
         }
         categoryBiz.updateCategory(category);
         return ResultUtil.createSucssAppResult("修改分类成功", "");
@@ -111,13 +111,19 @@ public class CategoryResource {
      * @throws Exception
      */
     @GET
-    @Path(SupplyConstants.Category.Classify.CLASSIFY)
+    @Path(SupplyConstants.Category.Classify.CATEGORY_CHECK + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findCategoryByCategoryCode(@QueryParam("categoryCode") String categoryCode) throws Exception {
+    public AppResult checkCategoryCode(@QueryParam("id") Long id, @QueryParam("categoryCode") String categoryCode) throws Exception {
 
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
-        String string = categoryBiz.findCategoryByCategoryCode(categoryCode) == null ? null : "1";
-        return ResultUtil.createSucssAppResult("查询分类项为空", string);
+        int i = categoryBiz.checkCategoryCode(id, categoryCode);
+        if (i >0) {
+            return ResultUtil.createSucssAppResult("查询分类编码已存在", "");
+
+        } else {
+
+            return ResultUtil.createSucssAppResult("查询分类编码可用", "");
+        }
 
     }
 
@@ -129,19 +135,11 @@ public class CategoryResource {
      * @throws Exception
      */
     @PUT
-    @Path(SupplyConstants.Category.Classify.CLASSIFY_SORT)
+    @Path(SupplyConstants.Category.Classify.CATEGORY_SORT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult upDateSort(String sortDate) throws Exception {
+    public AppResult updateSort(String sortDate) throws Exception {
         AssertUtil.notBlank(sortDate, "排序信息为空");
-        JSONArray sortArray = JSON.parseArray(sortDate);
-        List<Category> categoryList = new ArrayList<>();
-        for (int i = 0; i < sortArray.size(); i++) {
-            JSONObject sortObject = sortArray.getJSONObject(i);
-            Category category = new Category();
-            category.setId(Long.parseLong(sortObject.getString("id")));
-            category.setSort(Integer.parseInt(sortObject.getString("sort")));
-            categoryList.add(category);
-        }
+        List<Category> categoryList = JSON.parseArray(sortDate, Category.class);
         categoryBiz.updateSort(categoryList);
         return ResultUtil.createSucssAppResult("更新排序成功", "");
     }

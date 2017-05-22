@@ -12,7 +12,12 @@ import java.util.List;
  * Created by hzszy on 2017/5/5.
  */
 public interface ICategoryBiz {
-
+    /**
+     * 获取分类树节点
+     *
+     * @return
+     * @throws Exception
+     */
     List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception;
 
     /**
@@ -29,13 +34,6 @@ public interface ICategoryBiz {
      */
     void saveClassify(Category category) throws Exception;
 
-    /**
-     * 获取分类树节点
-     *
-     * @return
-     * @throws Exception
-     */
-    List<TreeNode> getTreeNode() throws Exception;
 
     /**
      * 查询分类编码是否存在
@@ -44,7 +42,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    Category findCategoryByCategoryCode(String categoryCategory) throws Exception;
+    int checkCategoryCode(Long id,String categoryCategory) throws Exception;
     /**
      * 是否为叶子节点
      */
@@ -66,6 +64,11 @@ public interface ICategoryBiz {
      * @throws Exception
      */
     List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws  Exception;
+
+    /**
+     * 根据ID查询
+     */
+    Long queryPathId(Long id) throws  Exception;
 
 
 }

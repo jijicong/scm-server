@@ -18,11 +18,11 @@ public class SupplierCategory extends ScmDO {
     @FormParam("supplierId")
     private Long supplierId;
     @FormParam("supplierCode")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
     @FormParam("categoryId")
-    @NotEmpty
+    //@NotEmpty
     private Long categoryId;
     @Transient
     @FormParam("supplierCetegory")
