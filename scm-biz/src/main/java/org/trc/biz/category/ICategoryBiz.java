@@ -70,5 +70,5 @@ public interface ICategoryBiz {
      */
     Long queryPathId(Long id) throws  Exception;
 
-
+    List<String> queryCategoryNamePath(Long id) throws Exception;
 }

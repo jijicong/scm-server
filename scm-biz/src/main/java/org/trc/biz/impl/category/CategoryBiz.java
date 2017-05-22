@@ -250,5 +250,29 @@ public class CategoryBiz implements ICategoryBiz {
 
     }
 
+    /**
+     * 根据ID查询三级分类的全路径名称，用于品牌，属性的接入
+     */
+    @Override
+    public  List<String> queryCategoryNamePath(Long id) throws Exception{
+        List<String> categoryName = new ArrayList<>();
+        AssertUtil.notNull(id,"根据ID查询分类参数为空");
 
+        Category categoryLevel3 = new Category();
+        categoryLevel3.setId(id);
+        categoryLevel3 =   categoryService.selectOne(categoryLevel3);
+        categoryName.add(categoryLevel3.getName());
+
+        Category categoryLevel2 = new Category();
+        categoryLevel2.setId(categoryLevel3.getParentId());
+        categoryLevel2 =   categoryService.selectOne(categoryLevel2);
+        categoryName.add(categoryLevel2.getName());
+
+
+        Category categoryLevel1 = new Category();
+        categoryLevel1.setId(categoryLevel2.getParentId());
+        categoryLevel1 =   categoryService.selectOne(categoryLevel1);
+        categoryName.add(categoryLevel1.getName());
+        return categoryName;
+    }
 }

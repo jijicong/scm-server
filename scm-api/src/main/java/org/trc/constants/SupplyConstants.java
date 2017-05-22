@@ -145,6 +145,9 @@ public class SupplyConstants {
 
             //重名验证
             public static  final  String CATEGORY_CHECK = "check";
+
+            //查询分类
+            public static final String CATEGORY_QUERY ="query";
         }
     }
     /**
