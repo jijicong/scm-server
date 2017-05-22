@@ -17,12 +17,18 @@ import java.util.Map;
 @Service("userAccreditInfoService")
 public class UserAccreditInfoService extends BaseService<UserAccreditInfo,Long> implements IUserAccreditInfoService {
 
+
     @Resource
     private UserAccreditInfoMapper userAccreditInfoMapper;
 
     @Override
     public List<UserAddPageDate> selectUserAddPageList(Long[] userIds) throws Exception {
         return userAccreditInfoMapper.selectUserAddPageList(userIds);
+    }
+
+    @Override
+    public List<UserAccreditInfo> findPurchase() throws Exception {
+        return userAccreditInfoMapper.findPurchase();
     }
 
     @Override

@@ -8,6 +8,7 @@ import org.trc.domain.dict.Dict;
 import org.trc.domain.supplier.*;
 import org.trc.form.supplier.SupplierBrandForm;
 import org.trc.form.supplier.SupplierCategoryForm;
+import org.trc.form.supplier.SupplierChannelRelationForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -51,14 +52,6 @@ public class SupplierResource {
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 
-/*    @PUT
-    @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSupplier(@BeanParam Supplier supplier) throws Exception {
-        supplierBiz.updateSupplier(supplier);
-        return ResultUtil.createSucssAppResult("修改供应商成功", "");
-    }*/
-
     @PUT
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -84,10 +77,12 @@ public class SupplierResource {
     }
 
     @GET
-    @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
+    @Path(SupplyConstants.Supply.SupplierChannel.CHANNELS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<SupplierBrandExt> querySupplierBrand(@QueryParam("supplierCode") String supplierCode) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商代理品牌成功", supplierBiz.querySupplierBrand(supplierCode));
+    public AppResult<SupplierChannelRelationExt> queryChannelRelation(@BeanParam SupplierChannelRelationForm form) throws Exception {
+        return ResultUtil.createSucssAppResult("查询供应商渠道关系成功", supplierBiz.queryChannelRelation(form));
     }
+
+
 
 }

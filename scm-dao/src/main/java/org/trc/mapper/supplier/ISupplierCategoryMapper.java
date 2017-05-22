@@ -20,4 +20,13 @@ public interface ISupplierCategoryMapper extends BaseMapper<SupplierCategory>{
      */
     List<SupplierCategoryExt> selectSupplierCategorys(String supplierCode) throws Exception;
 
+    /**
+     * 根据列表批量更新供应商分类
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    Integer updateSupplerCategory(List<SupplierCategory> list) throws Exception;
+
+
 }

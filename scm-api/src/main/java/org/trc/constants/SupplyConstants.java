@@ -195,6 +195,9 @@ public class SupplyConstants {
         //查询已启用的渠道
         public static  final  String CHANNEL = "channel";
 
+        //查询拥有采购员角色的用户
+        public static  final String  PURCHASE="purchase";
+
         //查询选择用户对应角色
         public static  final  String ROLE  = "rolelist";
 
@@ -332,6 +335,16 @@ public class SupplyConstants {
 
             //供应商申请审核信息路径
             public static final String  SUPPLIER_APPLY= "supplierApply";
+
+        }
+
+        /**
+         * 供应商渠道
+         */
+        public static final class SupplierChannel{
+
+            //供应商渠道列表查询
+            public static final String  CHANNELS= "channels";
 
         }
 

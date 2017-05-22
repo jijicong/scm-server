@@ -22,6 +22,12 @@ public interface IUserAccreditInfoBiz {
     Pagenation<UserAddPageDate> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception;
 
     /**
+     * 查询拥有采购员角色的用户
+     * @return 采购员列表
+     * @throws Exception
+     */
+    List<UserAccreditInfo> findPurchase() throws Exception;
+    /**
      * 修改授权用户的状态
      * @param
      * @throws Exception

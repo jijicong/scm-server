@@ -74,6 +74,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
         ParamsUtil.setBaseDO(warehouse);
+
         int number = 0;
         try{
             number = saveWarehouseAssist(warehouse,SERIALNAME);
@@ -97,7 +98,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     private int saveWarehouseAssist(Warehouse warehouse,String name) throws Exception{
         int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
+        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码
         warehouse.setCode(code);//仓库的流水号为CK00000
         int count = warehouseService.insert(warehouse);
         return number;

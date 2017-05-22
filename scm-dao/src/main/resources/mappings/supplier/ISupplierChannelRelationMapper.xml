@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.supplier.ISupplierChannelRelationMapper">
+    <resultMap id="supplierChannelMap" type="org.trc.domain.supplier.SupplierChannelRelationExt">
+        <result property="id" column="id"/>
+        <result property="supplierId" column="supplier_id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="channelCode" column="channel_code"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="channelName" column="channelName"/>
+    </resultMap>
+
+
+    <select id="selectSupplierChannels" resultMap="supplierChannelMap">
+        SELECT
+        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, c.category_code, c.full_path_id as category_name
+        FROM
+        supplier_channel_relation scr
+        LEFT JOIN
+        channel c ON scr.channel_id = c.id
+        WHERE
+        scr.supplier_id = #{supplierId} or scr.supplier_code = #{supplierCode} or scr.channel_id = #{channelId} or scr.channel_name = #{channelName}
+    </select>
+
+
+
+
+
+</mapper>

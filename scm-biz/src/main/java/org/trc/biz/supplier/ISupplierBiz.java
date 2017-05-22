@@ -1,10 +1,7 @@
 package org.trc.biz.supplier;
 
 import org.trc.domain.supplier.*;
-import org.trc.form.supplier.SupplierBrandForm;
-import org.trc.form.supplier.SupplierCategoryForm;
-import org.trc.form.supplier.SupplierExt;
-import org.trc.form.supplier.SupplierForm;
+import org.trc.form.supplier.*;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -93,5 +90,13 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     SupplierExt querySupplierInfo(String supplierCode) throws Exception;
+
+    /**
+     * 查询供应商渠道关系
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception;
     
 }

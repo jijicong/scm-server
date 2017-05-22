@@ -25,4 +25,12 @@ public interface ISupplierBrandService extends IBaseService<SupplierBrand, Long>
      * @throws Exception
      */
     List<SupplierBrandExt> selectSupplierBrands(String supplierCode) throws Exception;
+
+    /**
+     * 批量更新供应商品牌
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    Integer updateSupplerBrand(List<SupplierBrand> list) throws Exception;
 }

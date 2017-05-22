@@ -11,4 +11,13 @@
         <property name="domainOfBucket" value="${domain.of.bucket}"/>
     </bean>
 
+    <bean id="jdBaseDO" class="org.trc.form.JDModel.JdBaseDO">
+        <property name="grant_type" value="${grant_type}"/>
+        <property name="client_id" value="${client_id}"/>
+        <property name="client_secret" value="${client_secret}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+        <property name="jdurl" value="${jdurl}"/>
+    </bean>
+
 </beans>
