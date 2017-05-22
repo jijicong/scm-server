@@ -12,6 +12,7 @@
         <property name="locations">
             <list>
                 <value>classpath:config/dev/scm-jdbc.properties</value>
+                <value>classpath:config/dev/scm-jdbc.properties</value>
             </list>
         </property>
     </bean>
@@ -20,6 +21,5 @@
     <context:component-scan base-package="org.trc" />
 
     <import resource="classpath:config/resource-tx.xml"/>
-
 
 </beans>
