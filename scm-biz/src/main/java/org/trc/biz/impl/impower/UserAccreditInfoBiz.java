@@ -148,7 +148,6 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      */
     @Override
     public int checkUserByName(Long id,String name) throws Exception {
-
         AssertUtil.notNull(id,"根据用户授权的用户名称查询角色的参数id为空");
         AssertUtil.notBlank(name,"根据用户授权的用户名称查询角色的参数name为空");
         Example example = new Example(UserAccreditInfo.class);
