@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.trc.mapper.util.ISerialMapper">
-    <!-- 查询可以使用的流水号 -->
-    <select id="selectNumber" resultType="java.lang.Integer">
-        SELECT number+1 AS number from serial WHERE name=#{name}
-    </select>
-
-</mapper>

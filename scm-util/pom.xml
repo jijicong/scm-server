@@ -45,16 +45,11 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.4</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>3.21.0-GA</version>
         </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
@@ -91,11 +86,6 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>2.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.txframework</groupId>
-            <artifactId>tx-core</artifactId>
-            <version>0.0.2.M1-SNAPSHOT</version>
         </dependency>
 
     </dependencies>
