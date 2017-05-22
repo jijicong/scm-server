@@ -4,9 +4,13 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.util.Serial;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -15,10 +19,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -48,6 +49,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
+
         if (!StringUtils.isBlank(form.getName())) {
             criteria.andLike("name", "%" + form.getName() + "%");
         }
@@ -61,6 +63,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveWarehouse(Warehouse warehouse) throws Exception {
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
@@ -70,16 +73,34 @@ public class WarehouseBiz implements IWarehouseBiz {
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
-        String code = serialUtilService.getSerialCode(LENGTH,SERIALNAME);
-        warehouse.setCode(code);//仓库的流水号为CK00000
         ParamsUtil.setBaseDO(warehouse);
-        int count = warehouseService.insert(warehouse);
-        if (count == 0) {
-            String msg = CommonUtil.joinStr("保存仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        int number = 0;
+        try{
+            number = saveWarehouseAssist(warehouse,SERIALNAME);
+        }catch (DuplicateKeyException e){//唯一性索引抛出的异常
+            LOGGER.error(e.getMessage());
+            try{
+                number = saveWarehouseAssist(warehouse,SERIALNAME);
+            }catch (DuplicateKeyException ex){
+                String msg = CommonUtil.joinStr("保存仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
+                LOGGER.error(msg);
+                throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);
+            }
         }
-
+        int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
+        if (assess < 1) {
+            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(warehouse), "数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+        }
+    }
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    private int saveWarehouseAssist(Warehouse warehouse,String name) throws Exception{
+        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
+        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
+        warehouse.setCode(code);//仓库的流水号为CK00000
+        int count = warehouseService.insert(warehouse);
+        return number;
     }
     @Override
     public Warehouse findWarehouseByName(String name) throws Exception {

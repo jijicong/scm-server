@@ -15,22 +15,28 @@ public  class SerialUtil {
      * @param dataLen  当前的流水长度
      * @return 返回产生的序列号
      */
-    public synchronized static String getMoveOrderNo(String prefix,int len,int dataLen) {
-        String num = "";
-        num += getNo(dataLen,len);
-        num = prefix + num;
-        return num;
+    public static String getMoveOrderNo( int len,int dataLen,String ... prefix) {
+        String preJoint = "";
+        for (String pre: prefix) {
+            preJoint+=pre;
+        }
+        int nine = jointNineByLen(len);
+        if(nine < dataLen){
+            return preJoint+dataLen;
+        }
+        preJoint += getNo(dataLen,len);
+        return preJoint;
     }
 
     public static String getNo(int account,int len) {
         int i = account;
-        //i += 1;
         String rs = "" + i;
         for (int j = rs.length(); j < len; j++) {
             rs = "0" + rs;
         }
         return rs;
     }
+
     //根据接受的长度，拼接9 ：列入 len=3   拼3个9
     public  static int jointNineByLen(int len){
         String temp="";
