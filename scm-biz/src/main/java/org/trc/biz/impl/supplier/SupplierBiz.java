@@ -20,10 +20,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.supplier.SupplierBrandForm;
-import org.trc.form.supplier.SupplierCategoryForm;
-import org.trc.form.supplier.SupplierExt;
-import org.trc.form.supplier.SupplierForm;
+import org.trc.form.supplier.*;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -142,11 +139,21 @@ public class SupplierBiz implements ISupplierBiz {
         supplierAfterSaleInfo.setSupplierCode(supplier.getSupplierCode());
         saveAfterSale(supplierAfterSaleInfo);
         //保存供应商渠道关系
+        String channels = supplier.getChannel();
+        saveSupplierChannelRelation(getSupplierChannelRelations(channels, supplier));
+    }
+
+    /**
+     * 获取供应商渠道关系列表
+     * @param channels
+     * @param supplier
+     * @return
+     */
+    private List<SupplierChannelRelation> getSupplierChannelRelations(String channels, Supplier supplier){
         List<SupplierChannelRelation> supplierChannelRelations = new ArrayList<SupplierChannelRelation>();
         /**渠道channels，格式："渠道ID-渠道编号,...",多个渠道用逗号分隔,
          * 每个渠道里面包含渠道ID和渠道编号(渠道ID和编号用"-"号分隔)
          */
-        String channels = supplier.getChannel();
         String[] sp1 = channels.split(SupplyConstants.Symbol.COMMA);
         for (String c : sp1) {
             Assert.doesNotContain(c, "\\" + SupplyConstants.Symbol.MINUS, "供应商新增提交的渠道参数中渠道信息必须是[渠道ID-渠道编号]格式");
@@ -158,7 +165,7 @@ public class SupplierBiz implements ISupplierBiz {
             supplierChannelRelation.setChannelCode(sp2[1]);
             supplierChannelRelations.add(supplierChannelRelation);
         }
-        saveSupplierChannelRelation(supplierChannelRelations);
+        return supplierChannelRelations;
     }
 
     @Override
@@ -167,36 +174,47 @@ public class SupplierBiz implements ISupplierBiz {
         AssertUtil.notNull(supplier.getSupplierCode(), "更新供应商供应商编号不能为空");
         //参数校验
         supplierSaveCheck(supplier, certificate);
-        //保存供应商
-        saveSupplierBase(supplier);
+        //更新供应商
+        updateSupplierBase(supplier);
         if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
             //保存证件
             certificate.setSupplierId(supplier.getId());
             certificate.setSupplierCode(supplier.getSupplierCode());
-            saveCertificate(certificate);
+            updateCertificate(certificate);
         }
-        //保存供应商代理类目
+        //更新供应商代理类目
         supplierCategory.setSupplierId(supplier.getId());
         supplierCategory.setSupplierCode(supplier.getSupplierCode());
-        saveCategory(supplierCategory);
-        //保存供应商代理品牌
+        updateCategory(supplierCategory);
+        //更新供应商代理品牌
         supplierBrand.setSupplierId(supplier.getId());
         supplierBrand.setSupplierCode(supplier.getSupplierCode());
-        saveBrand(supplierBrand);
-        //保存供应商财务信息
+        updateBrand(supplierBrand);
+        //更新供应商财务信息
         supplierFinancialInfo.setSupplierId(supplier.getId());
         supplierFinancialInfo.setSupplierCode(supplier.getSupplierCode());
-        saveFinancial(supplierFinancialInfo);
-        //保存供应商售后信息
+        updateFinancial(supplierFinancialInfo);
+        //更新供应商售后信息
         supplierAfterSaleInfo.setSupplierId(supplier.getId());
         supplierAfterSaleInfo.setSupplierCode(supplier.getSupplierCode());
-        saveAfterSale(supplierAfterSaleInfo);
-        //保存供应商渠道关系
+        updateAfterSale(supplierAfterSaleInfo);
+        //更新供应商渠道关系
+        String channels = supplier.getChannel();
+        List<SupplierChannelRelation> supplierChannelRelations = getSupplierChannelRelations(channels, supplier);
+        updateSupplierChannelRelation(supplierChannelRelations, supplier);
+    }
+
+    /**
+     * 获取更新的供应商渠道关系列表
+     * @param channels
+     * @param supplier
+     * @return
+     */
+    private List<SupplierChannelRelation> getUpdateSupplierChannelRelations(String channels, Supplier supplier){
         List<SupplierChannelRelation> supplierChannelRelations = new ArrayList<SupplierChannelRelation>();
         /**渠道channels，格式："渠道ID-渠道编号,...",多个渠道用逗号分隔,
          * 每个渠道里面包含渠道ID和渠道编号(渠道ID和编号用"-"号分隔)
          */
-        String channels = supplier.getChannel();
         String[] sp1 = channels.split(SupplyConstants.Symbol.COMMA);
         for (String c : sp1) {
             Assert.doesNotContain(c, "\\" + SupplyConstants.Symbol.MINUS, "供应商新增提交的渠道参数中渠道信息必须是[渠道ID-渠道编号]格式");
@@ -208,7 +226,45 @@ public class SupplierBiz implements ISupplierBiz {
             supplierChannelRelation.setChannelCode(sp2[1]);
             supplierChannelRelations.add(supplierChannelRelation);
         }
-        saveSupplierChannelRelation(supplierChannelRelations);
+        //查询当前供应商渠道关系
+        SupplierChannelRelation relation = new SupplierChannelRelation();
+        relation.setSupplierId(supplier.getId());
+        relation.setSupplierCode(supplier.getSupplierCode());
+        relation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<SupplierChannelRelation> currentRelation = supplierChannelRelationService.select(relation);
+        if(null == currentRelation){
+            String msg = String.format("根据供应商查询%s供应商渠道关系为空", JSON.toJSONString(relation));
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_QUERY_EXCEPTION, msg);
+        }
+        //新增关系列表
+        List<SupplierChannelRelation> addRelations = new ArrayList<SupplierChannelRelation>();
+        for(SupplierChannelRelation r : supplierChannelRelations){
+            Boolean flag = false;
+            for(SupplierChannelRelation r2 : currentRelation){
+                if(StringUtils.equals(r.getChannelCode(), r2.getChannelCode())){
+                    flag = true;
+                }
+            }
+            if(!flag){
+                addRelations.add(r);
+            }
+        }
+        //删除关系列表
+        List<SupplierChannelRelation> deleteRelations = new ArrayList<SupplierChannelRelation>();
+        for(SupplierChannelRelation r : currentRelation){
+            Boolean flag = false;
+            for(SupplierChannelRelation r2 : supplierChannelRelations){
+                if(StringUtils.equals(r.getChannelCode(), r2.getChannelCode())){
+                    flag = true;
+                }
+            }
+            if(!flag){
+                deleteRelations.add(r);
+            }
+        }
+
+        return supplierChannelRelations;
     }
 
     /**
@@ -340,8 +396,79 @@ public class SupplierBiz implements ISupplierBiz {
      * @param supplierChannelRelations
      * @return
      */
-    private int saveSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations) {
-        return supplierChannelRelationService.insertList(supplierChannelRelations);
+    private void saveSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations) {
+        int count = supplierChannelRelationService.insertList(supplierChannelRelations);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商渠道关系", JSON.toJSONString(supplierChannelRelations), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 更新供应商渠道关系
+     *
+     * @param supplierChannelRelations
+     * @return
+     */
+    private void updateSupplierChannelRelation(List<SupplierChannelRelation> supplierChannelRelations, Supplier supplier) {
+        //查询当前供应商渠道关系
+        SupplierChannelRelation relation = new SupplierChannelRelation();
+        relation.setSupplierId(supplier.getId());
+        relation.setSupplierCode(supplier.getSupplierCode());
+        relation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<SupplierChannelRelation> currentRelation = supplierChannelRelationService.select(relation);
+        if(null == currentRelation){
+            String msg = String.format("根据供应商查询%s供应商渠道关系为空", JSON.toJSONString(relation));
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_QUERY_EXCEPTION, msg);
+        }
+        //新增关系列表
+        List<SupplierChannelRelation> addRelations = new ArrayList<SupplierChannelRelation>();
+        for(SupplierChannelRelation r : supplierChannelRelations){
+            Date currentDate = Calendar.getInstance().getTime();
+            r.setCreateTime(currentDate);
+            r.setUpdateTime(currentDate);
+            Boolean flag = false;
+            for(SupplierChannelRelation r2 : currentRelation){
+                if(StringUtils.equals(r.getChannelCode(), r2.getChannelCode())){
+                    flag = true;
+                }
+            }
+            if(!flag){
+                r.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                addRelations.add(r);
+            }
+        }
+        //删除关系列表
+        List<SupplierChannelRelation> deleteRelations = new ArrayList<SupplierChannelRelation>();
+        for(SupplierChannelRelation r : currentRelation){
+            Boolean flag = false;
+            for(SupplierChannelRelation r2 : supplierChannelRelations){
+                if(StringUtils.equals(r.getChannelCode(), r2.getChannelCode())){
+                    flag = true;
+                }
+            }
+            if(!flag){
+                r.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                deleteRelations.add(r);
+            }
+        }
+        int count = 0;
+        count = supplierChannelRelationService.insertList(addRelations);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商渠道关系", JSON.toJSONString(addRelations), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+        for(SupplierChannelRelation r : deleteRelations){
+            count = supplierChannelRelationService.updateByPrimaryKeySelective(r);
+            if (count == 0) {
+                String msg = CommonUtil.joinStr("更新供应商渠道关系", JSON.toJSONString(r), "到数据库失败").toString();
+                log.error(msg);
+                throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+            }
+        }
     }
 
     /**
@@ -373,24 +500,40 @@ public class SupplierBiz implements ISupplierBiz {
      * 保存供应商代理类目
      * @param supplierCategory
      */
-    private void updateCategory(SupplierCategory supplierCategory) {
+    private void updateCategory(SupplierCategory supplierCategory) throws Exception{
         int count = 0;
         JSONArray categoryArray = JSONArray.parseArray(supplierCategory.getSupplierCetegory());
-        List<SupplierCategory> list = new ArrayList<SupplierCategory>();
+        List<SupplierCategory> addList = new ArrayList<SupplierCategory>();
+        List<SupplierCategory> deleteList = new ArrayList<SupplierCategory>();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
             SupplierCategory s = new SupplierCategory();
             s.setSupplierId(supplierCategory.getSupplierId());
             s.setSupplierCode(supplierCategory.getSupplierCode());
             s.setCategoryId(jbo.getLong("categoryId"));
-            s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            list.add(s);
+            s.setUpdateTime(Calendar.getInstance().getTime());
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){//查询的数据
+                if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
+                    deleteList.add(s);
+                }
+            }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
+                s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                addList.add(s);
+            }
         }
-        count = supplierCategoryService.insertList(list);
+        //新增
+        count = supplierCategoryService.insertList(addList);
         if (count == 0) {
             String msg = CommonUtil.joinStr("保存供应商代理类目", JSON.toJSONString(supplierCategory), "到数据库失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+        //删除
+        count = supplierCategoryService.updateSupplerCategory(deleteList);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("删除供应商代理类目", JSON.toJSONString(supplierCategory), "失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
         }
     }
 
@@ -398,7 +541,7 @@ public class SupplierBiz implements ISupplierBiz {
      * 保存供应商代理品牌
      * @param brand
      */
-    private void saveBrand(SupplierBrand brand) {
+    private void saveBrand(SupplierBrand brand){
         int count = 0;
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
         List<SupplierBrand> list = new ArrayList<SupplierBrand>();
@@ -425,6 +568,57 @@ public class SupplierBiz implements ISupplierBiz {
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
         }
     }
+
+    /**
+     * 更新供应商代理品牌
+     * @param brand
+     */
+    private void updateBrand(SupplierBrand brand) throws Exception {
+        int count = 0;
+        JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
+        List<SupplierBrand> addlist = new ArrayList<SupplierBrand>();
+        List<SupplierBrand> updatelist = new ArrayList<SupplierBrand>();
+        for(Object obj : categoryArray){
+            JSONObject jbo = (JSONObject) obj;
+            SupplierBrand s = new SupplierBrand();
+            s.setSupplierId(brand.getSupplierId());
+            s.setSupplierCode(brand.getSupplierCode());
+            s.setCategoryId(jbo.getLong("categoryId"));
+            s.setCategoryCode(jbo.getString("categoryCode"));
+            s.setBrandId(jbo.getLong("brandId"));
+            s.setBrandCode(jbo.getString("brandCode"));
+            s.setProxyAptitudeId(jbo.getString("proxyAptitudeId"));
+            s.setProxyAptitudeStartDate(jbo.getString("proxyAptitudeStartDate"));
+            s.setProxyAptitudeEndDate(jbo.getString("proxyAptitudeEndDate"));
+            s.setAptitudePic(jbo.getString("aptitudePic"));
+            s.setUpdateTime(Calendar.getInstance().getTime());
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("status"))){//未修改
+                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("sortStatus"))){//只更新了字段排序
+                    updatelist.add(s);
+                }
+            }else if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), jbo.getString("status"))){//已修改
+                updatelist.add(s);
+            }else if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
+                s.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                updatelist.add(s);
+            }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
+                addlist.add(s);
+            }
+        }
+        count = supplierBrandService.updateSupplerBrand(updatelist);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("更新供应商代理品牌", JSON.toJSONString(updatelist), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+        }
+        count = supplierBrandService.insertList(addlist);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(addlist), "到数据库失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
 
     /**
      * 保存供应商财务信息
@@ -573,6 +767,26 @@ public class SupplierBiz implements ISupplierBiz {
         supplierExt.setSupplierAfterSaleInfo(supplierAfterSaleInfo);
         supplierExt.setSupplierChannelRelations(supplierChannelRelations);
         return supplierExt;
+    }
+
+    @Override
+    public List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception {
+        AssertUtil.notNull(form, "查询供应商渠道关系参数SupplierChannelRelationForm不能为空");
+        if(null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) && null == form.getChannelId() && StringUtils.isBlank(form.getChannelCode())){
+            String msg = "查询供应商渠道关系参数供应商ID、供应商编码、渠道ID、渠道编码不能同时为空";
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        SupplierChannelRelation relation = new SupplierChannelRelation();
+        BeanUtils.copyProperties(form, relation);
+        relation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<SupplierChannelRelationExt> relations = supplierChannelRelationService.selectSupplierChannels(BeanToMapUtil.convertBeanToMap(relation));
+        if(null == relations){
+            String msg = String.format("根据供应商查询%s供应商渠道关系为空", JSON.toJSONString(form));
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_QUERY_EXCEPTION, msg);
+        }
+        return relations;
     }
 
 
