@@ -2,20 +2,17 @@ package org.trc.service.impl.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.trc.biz.impl.system.ChannelBiz;
 import org.trc.domain.util.Serial;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
 import org.trc.mapper.util.ISerialMapper;
-import org.trc.service.util.ISerialUtilService;
 import org.trc.service.impl.BaseService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
-import org.trc.util.SerialUtil;
-
-import javax.annotation.Resource;
 
 /**
  * Created by sone on 2017/5/8.
@@ -24,7 +21,7 @@ import javax.annotation.Resource;
 public class SerialUtilService extends BaseService<Serial, Long> implements ISerialUtilService {
 
     private final static Logger log = LoggerFactory.getLogger(SerialUtilService.class);
-    @Resource
+    @Autowired
     private ISerialMapper iserialMapper;
 
     //获得流水号
