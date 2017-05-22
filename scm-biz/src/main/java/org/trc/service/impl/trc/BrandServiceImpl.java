@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
  * 泰然城渠道品牌交互
  * Created by hzdzf on 2017/5/22.
  */
-public class BrandServiceImpl extends BaseService<Brand, Long> implements BrandService {
+public class BrandServiceImpl implements BrandService {
 
     private static final Logger logger = LoggerFactory.getLogger(BrandServiceImpl.class);
 
