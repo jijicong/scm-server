@@ -92,11 +92,6 @@
             <artifactId>jedis</artifactId>
             <version>2.4.2</version>
         </dependency>
-        <dependency>
-            <groupId>com.txframework</groupId>
-            <artifactId>tx-core</artifactId>
-            <version>0.0.2.M1-SNAPSHOT</version>
-        </dependency>
 
     </dependencies>
 

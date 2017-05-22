@@ -1,7 +1,6 @@
 package org.trc.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.sun.deploy.net.URLEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.form.JDModel.JdBaseDO;
@@ -10,6 +9,7 @@ import org.trc.util.DateUtils;
 import org.trc.util.HttpRequestUtil;
 import org.trc.util.MD5;
 
+import java.net.URLEncoder;
 import java.util.Date;
 
 /**
