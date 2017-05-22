@@ -26,4 +26,9 @@ public class SupplierCategoryService extends BaseService<SupplierCategory, Long>
         return supplierCategoryMapper.selectSupplierCategorys(supplierCode);
     }
 
+    @Override
+    public Integer updateSupplerCategory(List<SupplierCategory> list) throws Exception {
+        return supplierCategoryMapper.updateSupplerCategory(list);
+    }
+
 }

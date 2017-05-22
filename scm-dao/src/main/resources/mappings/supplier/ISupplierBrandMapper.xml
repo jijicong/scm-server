@@ -56,4 +56,27 @@
         sb.supplier_code = #{supplierCode}
     </select>
 
+    <update id="updateSupplerBrand"  parameterType="java.util.List" >
+        <foreach collection="list" item="supplerBrand" index="index" open="" close=";" separator=";">
+            update supplier_brand
+            <set>
+                proxy_aptitude_id = #{supplerBrand.proxyAptitudeId}
+            </set>
+            <set>
+                proxy_aptitude_start_date = #{supplerBrand.proxyAptitudeStartDate}
+            </set>
+            <set>
+                proxy_aptitude_end_date = #{supplerBrand.proxyAptitudeEndDate}
+            </set>
+            <set>
+                aptitude_pic = #{supplerBrand.aptitudePic}
+            </set>
+            <set>
+                update_time = #{supplerBrand.updateTime}
+            </set>
+            where
+            supplier_id = #{supplerBrand.supplierId} AND brand_id = #{supplerBrand.brandId}
+        </foreach>
+    </update>
+
 </mapper>
