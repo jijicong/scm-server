@@ -28,10 +28,15 @@ public class UserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<UserAccreditInfo> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAccreditInfo> page) throws Exception {
+    public Pagenation<UserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAddPageDate> page) throws Exception {
         return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
-
+    @POST
+    @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE+"/{id}")
+    public  AppResult updateUserAccreditInfoStatus(@BeanParam UserAccreditInfo userAccreditInfo) throws  Exception{
+        userAccreditInfoBiz.updateUserAccreditInfoStatus(userAccreditInfo);
+        return ResultUtil.createSucssAppResult("修改状态成功","");
+    }
     /**
      * 用户名是否存在
      * @param name
@@ -39,10 +44,14 @@ public class UserAccreditInfoResource {
      * @throws Exception
      */
     @GET
-    @Path(SupplyConstants.UserAccreditInfo.ACCREDIT)
+    @Path(SupplyConstants.UserAccreditInfo.CHECK+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findUserAccreditInfoByName(@QueryParam("name") String name) throws Exception {
-        return ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoByName(name) == null ? null : "1");
+    public AppResult findUserAccreditInfoByName(@QueryParam("id") Long id,@QueryParam("name") String name) throws Exception {
+        if (userAccreditInfoBiz.checkUserByName(id, name) >0) {
+            return ResultUtil.createSucssAppResult("查询授权用户已存在", "");
+        } else {
+            return ResultUtil.createSucssAppResult("查询授权用户可用", "");
+        }
     }
 
     /**
@@ -80,5 +89,27 @@ public class UserAccreditInfoResource {
         return ResultUtil.createSucssAppResult("新增授权成功","");
     }
 
+    /**
+     *根据ID查询用户
+     */
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.ACCREDIT+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findUserAccreditInfoById(@QueryParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoById(id));
+    }
 
+    /**
+     * 修改用户
+     * @param userAddPageDate
+     * @return
+     * @throws Exception
+     */
+    @PUT
+    @Path(SupplyConstants.UserAccreditInfo.UPDATE_ACCREDIT+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateUserAccreditInfo(@BeanParam UserAddPageDate userAddPageDate) throws Exception {
+        userAccreditInfoBiz.updateUserAccredit(userAddPageDate);
+        return ResultUtil.createSucssAppResult("修改用户成功", "");
+    }
 }

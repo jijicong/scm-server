@@ -63,7 +63,7 @@ public class PropertyResource {
     }
 
     @POST
-    @Path(SupplyConstants.Category.Property.PROPERTY_STATE)
+    @Path(SupplyConstants.Category.Property.PROPERTY_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Property Property)throws Exception{
         propertyBiz.updatePropertyStatus(Property);

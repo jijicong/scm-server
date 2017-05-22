@@ -6,11 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
-import org.trc.domain.dict.DictType;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
@@ -84,13 +82,14 @@ public class BrandBiz implements IBrandBiz {
     @Override
     public void saveBrand(Brand brand) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
-        //插入固定信息
-        brand.setSource(BrandSourceEnum.SCM.getCode());
+        //初始化信息
+        brand.setSource(SourceEnum.SCM.getCode());
         brand.setBrandCode(serialUtilService.getSerialCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(new Date())));
         brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         ParamsUtil.setBaseDO(brand);
-        int count = brandService.insert(brand);
-        if (count < 1) {
+        try {
+            brandService.insert(brand);
+        }catch (Exception e){
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);

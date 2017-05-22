@@ -1,13 +1,14 @@
 package org.trc.domain.supplier;
 
 import org.hibernate.validator.constraints.Length;
+import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 
-public class SupplierChannelRelation{
+public class SupplierChannelRelation extends ScmDO{
 
     @FormParam("id")
     @Id

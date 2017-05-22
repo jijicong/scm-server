@@ -1,6 +1,7 @@
 package org.trc.service.supplier;
 
 import org.trc.domain.supplier.SupplierBrand;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.service.IBaseService;
 
 import java.util.List;
@@ -16,4 +17,20 @@ public interface ISupplierBrandService extends IBaseService<SupplierBrand, Long>
      * @return
      */
     List<SupplierBrand> selectListBySupplierIds(Long ...supplierIds);
+
+    /**
+     * 根据供应商编码查询供应商品牌
+     * @param supplierCode
+     * @return
+     * @throws Exception
+     */
+    List<SupplierBrandExt> selectSupplierBrands(String supplierCode) throws Exception;
+
+    /**
+     * 批量更新供应商品牌
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    Integer updateSupplerBrand(List<SupplierBrand> list) throws Exception;
 }

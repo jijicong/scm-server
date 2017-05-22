@@ -19,45 +19,46 @@ public class SupplierBrand extends ScmDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("supplierId")
-    @Length(max = 20, message = "供应商ID长度不能超过20个")
     private Long supplierId;
     @FormParam("supplierCode")
     @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
     @FormParam("brandId")
-    @NotEmpty
-    @Length(max = 32, message = "品牌ID长度不能超过20个")
+    //@NotEmpty
     private Long brandId;
     @FormParam("brandCode")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "品牌编号长度不能超过32个")
     private String brandCode;
     @FormParam("categoryId")
-    @NotEmpty
-    @Length(max = 32, message = "分类ID长度不能超过20个")
+    //@NotEmpty
     private Long categoryId;
     @FormParam("categoryCode")
-    @NotEmpty
-    @Length(max = 32, message = "分类ID编号长度不能超过32个")
+    //@NotEmpty
+    //@Length(max = 32, message = "分类ID编号长度不能超过32个")
     private String categoryCode;
     @FormParam("proxyAptitudeId")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "代理资质编号度不能超过32个")
     private String proxyAptitudeId;
     @FormParam("proxyAptitudeStartDate")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "资质有效期开始日期长度不能超过32个")
     private String proxyAptitudeStartDate;
     @FormParam("proxyAptitudeEndDate")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "资质有效期截止日期长度不能超过32个")
     private String proxyAptitudeEndDate;
     @FormParam("aptitudePic")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 256, message = "资质证明图片路径长度不能超过256个")
     private String aptitudePic;
     @Transient
     private String brandName;
+    @Transient
+    @FormParam("supplierBrand")
+    private String supplierBrand;
+
     public Long getId() {
         return id;
     }
@@ -144,6 +145,14 @@ public class SupplierBrand extends ScmDO {
 
     public void setAptitudePic(String aptitudePic) {
         this.aptitudePic = aptitudePic;
+    }
+
+    public String getSupplierBrand() {
+        return supplierBrand;
+    }
+
+    public void setSupplierBrand(String supplierBrand) {
+        this.supplierBrand = supplierBrand;
     }
 
     public String getBrandName() {

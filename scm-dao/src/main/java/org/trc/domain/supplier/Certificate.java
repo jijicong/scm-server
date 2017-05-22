@@ -2,14 +2,12 @@ package org.trc.domain.supplier;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.domain.util.CommonDO;
 import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
-import java.util.Date;
 
 public class Certificate extends ScmDO {
     @FormParam("id")
@@ -19,6 +17,7 @@ public class Certificate extends ScmDO {
     @FormParam("supplierId")
     private Long supplierId;
     @FormParam("supplierCode")
+    //@NotEmpty
     @Length(max = 32, message = "供应链编号长度不能超过32个")
     private String supplierCode;
     @FormParam("businessLicence")
@@ -46,15 +45,15 @@ public class Certificate extends ScmDO {
     @Length(max = 256, message = "证合一证图片路径长度不能超过256个")
     private String multiCertificateCombinePic;
     @FormParam("legalPersonIdCard")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "法人身份证长度不能超过32个")
     private String legalPersonIdCard;
     @FormParam("legalPersonIdCardPic1")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 256, message = "法人身份证正面图片路径长度不能超过256个")
     private String legalPersonIdCardPic1;
     @FormParam("legalPersonIdCardPic2")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 256, message = "法人身份证背面图片路径长度不能超过256个")
     private String legalPersonIdCardPic2;
     @FormParam("businessLicenceStartDate")

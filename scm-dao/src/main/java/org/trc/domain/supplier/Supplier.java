@@ -18,6 +18,7 @@ public class Supplier extends BaseDO{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("supplierCode")
+    //@NotEmpty
     @Length(max = 32, message = "供应商编码长度不能超过32个")
     private String supplierCode;
     @FormParam("supplierName")
@@ -65,7 +66,7 @@ public class Supplier extends BaseDO{
     @Length(max = 256, message = "详细地址长度不能超过32个")
     private String address;
     @FormParam("certificateTypeId")
-    @NotEmpty
+    //@NotEmpty
     @Length(max = 32, message = "证件类型编码长度不能超过32个")
     private String certificateTypeId;
     @FormParam("remark")

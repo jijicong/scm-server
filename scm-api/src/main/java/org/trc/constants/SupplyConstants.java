@@ -12,6 +12,7 @@ public class SupplyConstants {
         public static final String COMMA = ",";//逗号
         public static final String MINUS = "-";//减号
         public static final String FILE_NAME_SPLIT = ".";//文件名称分隔符
+        public static final String FULL_PATH_SPLIT = "|";//分类路径ID分隔符
     }
 
 
@@ -88,6 +89,13 @@ public class SupplyConstants {
             public static final String BRAND_LIST_SEARCH = "brands/search";
         }
 
+        /**
+         * 分类品牌
+         */
+        public static final class CategoryBrands{
+            //分类品牌列表查询路径
+            public static final String CATEGORY_BAAND_LIST = "categoryBrands";
+        }
 
 
         /**
@@ -109,7 +117,7 @@ public class SupplyConstants {
          */
         public static final class PropertyValue{
             //属性值列表查询路径
-            public static final String PROPERTY_VALUE_LIST = "propertyValues";
+            public static final String PROPERTY_VALUE_LIST = "propertyValues/search";
             //属性值路径
             public static final String PROPERTY_VALUE = "propertyValue";
 
@@ -119,16 +127,24 @@ public class SupplyConstants {
         /**
          * 分类管理
          */
+        /**
+         * 分类管理
+         */
         public static final class  Classify{
             //查询树
-            public static  final String CLASSIFY_TREE = "classifytree";
-            //添加，修改分类
-            public  static  final  String  CLASSIFY ="classify";
-            //修改排序
-            public static final  String CLASSIFY_SORT ="classifysort";
-            //修改状态
-            public  static  final  String  UPDATE_STATE ="classify/updateState";
+            public static  final String CATEGORY_TREE = "tree";
 
+            //添加，修改分类
+            public  static  final  String CATEGORY ="category";
+
+            //修改排序
+            public static final  String CATEGORY_SORT ="sort";
+
+            //修改状态
+            public  static  final  String  UPDATE_STATE ="category/updateState";
+
+            //重名验证
+            public static  final  String CATEGORY_CHECK = "check";
         }
     }
     /**
@@ -184,6 +200,12 @@ public class SupplyConstants {
 
         //新增角色
         public static final String  SAVE_ACCREDIT = "saveaccredit";
+
+        //用户修改
+        public static final String  UPDATE_ACCREDIT = "updateaccredit";
+
+        //查询用户名是否存在
+        public  static  final  String CHECK = "check";
 
     }
     /**
@@ -299,6 +321,16 @@ public class SupplyConstants {
 
         }
 
+        /**
+         * 供应商渠道
+         */
+        public static final class SupplierChannel{
+
+            //供应商渠道列表查询
+            public static final String  CHANNELS= "channels";
+
+        }
+
     }
 
 
@@ -322,6 +354,21 @@ public class SupplyConstants {
         public static final String ROLE_TYPE="roleType";
         //用户类型字典类型编码
         public static final String USER_TYPE="userType";
+    }
+
+    /**
+     * 序列号
+     */
+    public static final class Serial{
+        public static final String ROOT = "serial";
+        //供应商编码名称
+        public static final String SUPPLIER_NAME = "GYS";
+        //供应商编码长度
+        public static final Integer SUPPLIER_LENGTH = 6;
+
+
+        //序列号查询路径
+        public static final String SERIAL = "serial";
     }
 
 
