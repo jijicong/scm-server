@@ -141,7 +141,6 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     /**
      * 用户名是否存在
-     *
      * @param name 用户姓名
      * @return
      * @throws Exception
