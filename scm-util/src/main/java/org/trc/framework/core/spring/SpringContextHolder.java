@@ -1,13 +1,13 @@
 package org.trc.framework.core.spring;
 
-import java.util.Collection;
-import java.util.Map;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.Map;
 
 public class SpringContextHolder implements ApplicationContextAware {
     private static ApplicationContext applicationContext;
