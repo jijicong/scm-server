@@ -204,7 +204,7 @@ public class SupplyConstants {
         //用户修改
         public static final String  UPDATE_ACCREDIT = "updateaccredit";
 
-        //查询用户名是否存在
+        //查询用户名是否已被使用
         public  static  final  String CHECK = "check";
 
     }
