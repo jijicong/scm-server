@@ -1,6 +1,6 @@
 package org.trc.enums;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 1~9数字枚举

@@ -2,7 +2,7 @@ package org.trc.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.util.StringUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.service.IBaseService;
 import org.trc.util.Pagenation;

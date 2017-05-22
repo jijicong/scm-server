@@ -3,7 +3,7 @@ package org.trc.biz.impl.supplier;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
