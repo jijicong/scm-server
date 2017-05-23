@@ -1,7 +1,6 @@
 package org.trc.biz.category;
 
 import org.trc.domain.category.Category;
-import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
@@ -71,4 +70,12 @@ public interface ICategoryBiz {
     Long queryPathId(Long id) throws  Exception;
 
     List<String> queryCategoryNamePath(Long id) throws Exception;
+
+    /**
+     * 关联分类与品牌
+     * @param categoryId
+     * @param brandIds
+     * @throws Exception
+     */
+    void linkCategoryBrands(Long categoryId,String brandIds) throws  Exception;
 }

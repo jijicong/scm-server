@@ -117,7 +117,7 @@ public class CategoryResource {
 
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
 
-        if (categoryBiz.checkCategoryCode(id, categoryCode) >0) {
+        if (categoryBiz.checkCategoryCode(id, categoryCode) > 0) {
             return ResultUtil.createSucssAppResult("查询分类编码已存在", "");
 
         } else {
@@ -151,7 +151,7 @@ public class CategoryResource {
         categoryBiz.updateState(category);
         return ResultUtil.createSucssAppResult("状态修改成功", "");
     }
-
+//分类品牌
     @GET
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BAAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
@@ -163,10 +163,21 @@ public class CategoryResource {
      * 查询分类路径
      */
     @GET
-    @Path(SupplyConstants.Category.Classify.CATEGORY_QUERY+"/{id}")
+    @Path(SupplyConstants.Category.Classify.CATEGORY_QUERY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<String>> queryCategory(@QueryParam("id") Long id) throws Exception {
 
-        return ResultUtil.createSucssAppResult("查询分类路径名称成功",  categoryBiz.queryCategoryNamePath(id));
+        return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.queryCategoryNamePath(id));
     }
+
+    @POST
+    @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds) throws Exception {
+        categoryBiz.linkCategoryBrands(id, brandIds);
+        return ResultUtil.createSucssAppResult("分类品牌关联成功", "");
+    }
+
+//分类属性
 }
