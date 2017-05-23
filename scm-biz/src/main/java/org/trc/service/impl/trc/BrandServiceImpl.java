@@ -1,13 +1,9 @@
 package org.trc.service.impl.trc;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trc.domain.category.Brand;
-import org.trc.service.impl.BaseService;
 import org.trc.service.trc.BrandService;
 import org.trc.service.trc.model.BrandToTrc;
 import org.trc.util.GuidUtil;
