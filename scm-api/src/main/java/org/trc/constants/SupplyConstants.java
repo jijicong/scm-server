@@ -265,6 +265,8 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
+        //根据采购组id查询用户
+        public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
     }
     /**
      *七牛
