@@ -42,10 +42,10 @@
                 AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = <![CDATA[LIKE '%${supplierCode}%']]>
+                AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = <![CDATA[LIKE '%${contact}%']]>
+                AND b.contact  <![CDATA[LIKE '%${contact}%']]>
             </if>
             <choose>
                 <when test="status != null and status != ''">
@@ -74,10 +74,10 @@
                 AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = <![CDATA[LIKE '%${supplierCode}%']]>
+                AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = <![CDATA[LIKE '%${contact}%']]>
+                AND b.contact  <![CDATA[LIKE '%${contact}%']]>
             </if>
             <choose>
                 <when test="status != null and status != ''">
