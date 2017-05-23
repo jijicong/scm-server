@@ -5,12 +5,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
+import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
@@ -84,16 +88,26 @@ public class BrandBiz implements IBrandBiz {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
-        //serialUtilService.getSerialCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(new Date()))
-        brand.setBrandCode("00"); //TODO
-        brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         ParamsUtil.setBaseDO(brand);
-        try {
-            brandService.insert(brand);
-        }catch (Exception e){
-            String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
+        brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
+        int number=0;
+        try{
+            number =  saveBrandAssist(brand,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(brand.getCreateTime()));
+        }catch (DuplicateKeyException e){//唯一性索引抛出的异常
+            log.error(e.getMessage());
+            try{
+                number =  saveBrandAssist(brand,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(brand.getCreateTime()));
+            }catch (DuplicateKeyException ex){
+                String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
+                log.error(msg);
+                throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
+            }
+        }
+        int assess= serialUtilService.updateSerialByName(BRAND_CODE_EX_NAME,number);//修改流水的长度
+        if (assess < 1) {
+            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(brand), "数据库操作失败").toString();
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
+            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
         }
     }
 
@@ -178,4 +192,12 @@ public class BrandBiz implements IBrandBiz {
         return null;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    private int saveBrandAssist(Brand brand,String ...names){
+        int number = serialUtilService.selectNumber(BRAND_CODE_EX_NAME);//获得将要使用的流水号
+        String code = SerialUtil.getMoveOrderNo(BRAND_CODE_LENGTH,number,names);//获得需要的code编码
+        brand.setBrandCode(code);
+        int count =brandService.insert(brand);
+        return count;
+    }
 }

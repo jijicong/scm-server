@@ -2,10 +2,10 @@ package org.trc.service.impl.supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.domain.supplier.SupplierApply;
-import org.trc.mapper.supplier.ISupplierApplyMapper;
+import org.trc.domain.supplier.SupplierApplyAudit;
+import org.trc.mapper.supplier.ISupplierApplyAuditMapper;
 import org.trc.service.impl.BaseService;
-import org.trc.service.supplier.ISupplierApplyService;
+import org.trc.service.supplier.ISupplierApplyAuditService;
 
 import java.util.List;
 import java.util.Map;
@@ -13,14 +13,14 @@ import java.util.Map;
 /**
  * Created by hzqph on 2017/5/12.
  */
-@Service("supplierApplyService")
-public class SupplierApplyService extends BaseService<SupplierApply,Long> implements ISupplierApplyService {
+@Service("supplierApplyAuditService")
+public class SupplierApplyAuditService extends BaseService<SupplierApplyAudit,Long> implements ISupplierApplyAuditService {
 
     @Autowired
-    private ISupplierApplyMapper mapper;
+    private ISupplierApplyAuditMapper mapper;
 
     @Override
-    public List<SupplierApply> selectList(Map<String, Object> map) {
+    public List<SupplierApplyAudit> selectList(Map<String, Object> map) {
         return mapper.selectList(map);
     }
 
@@ -30,7 +30,7 @@ public class SupplierApplyService extends BaseService<SupplierApply,Long> implem
     }
 
     @Override
-    public SupplierApply selectOneById(Long id) {
+    public SupplierApplyAudit selectOneById(Long id) {
         return mapper.selectOneById(id);
     }
 }
