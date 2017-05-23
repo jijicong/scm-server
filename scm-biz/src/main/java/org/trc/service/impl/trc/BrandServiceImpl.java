@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.trc.domain.category.Brand;
 import org.trc.service.impl.BaseService;
 import org.trc.service.trc.BrandService;
+import org.trc.service.trc.model.BrandToTrc;
 import org.trc.util.GuidUtil;
 import org.trc.util.HttpClientUtil;
 import org.trc.util.MD5;
@@ -28,10 +29,23 @@ public class BrandServiceImpl implements BrandService {
     private static final Logger logger = LoggerFactory.getLogger(BrandServiceImpl.class);
 
     @Override
-    public String sendBrandNotice(String action, String timeStamp, Brand brand) {
+    public String sendBrandNotice(String action, long changeTime, Brand brand) {
         String noticeNum = GuidUtil.getNextUid(action + "_");
-        Field[] field = brand.getClass().getDeclaredFields(); // 获取实体类的所有属性，返回Field数组
-        String sign = action + noticeNum + timeStamp;
+        BrandToTrc brandToTrc = new BrandToTrc();
+        brandToTrc.setAlise(brand.getAlise());
+        brandToTrc.setBrandCode(brand.getBrandCode());
+        brandToTrc.setCreateOperator(brand.getCreateOperator());
+        brandToTrc.setIsDeleted(brand.getIsDeleted());
+        brandToTrc.setIsValid(brand.getIsValid());
+        brandToTrc.setLastEditOperator(brand.getLastEditOperator());
+        brandToTrc.setLogo(brand.getLogo());
+        brandToTrc.setName(brand.getName());
+        brandToTrc.setSort(String.valueOf(brand.getSort()));
+        brandToTrc.setSource(brand.getSource());
+        brandToTrc.setWebUrl(brand.getWebUrl());
+        Field[] field = brandToTrc.getClass().getDeclaredFields(); // 获取实体类的所有属性，返回Field数组
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(action).append("|").append(changeTime).append("|").append(noticeNum).append("|");
         for (int i = 0; i < field.length; i++) {
             String name = field[i].getName();
             name = name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -49,16 +63,16 @@ public class BrandServiceImpl implements BrandService {
             } catch (InvocationTargetException e) {
                 e.printStackTrace();
             }
-            sign = sign + value;
+            stringBuilder.append(value).append("|");
         }
         //MD5加密
-        sign = MD5.encryption(sign).toLowerCase();
+        String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
         params.put("action", action);
+        params.put("changeTime", changeTime);
         params.put("noticeNum", noticeNum);
-        params.put("changeTime", timeStamp);
         params.put("sign", sign);
-        params.put("brand", brand);
+        params.put("brand",brandToTrc );
         try {
             //TODO URL
             return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);

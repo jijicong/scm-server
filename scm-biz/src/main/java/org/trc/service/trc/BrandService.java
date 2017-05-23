@@ -14,5 +14,5 @@ public interface BrandService {
      * @param brand     品牌信息
      * @return 渠道调回信息
      */
-    String sendBrandNotice(String action, String timeStamp, Brand brand);
+    String sendBrandNotice(String action, long timeStamp, Brand brand);
 }
