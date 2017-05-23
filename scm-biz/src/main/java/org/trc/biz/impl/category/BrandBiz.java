@@ -1,7 +1,7 @@
 package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +84,8 @@ public class BrandBiz implements IBrandBiz {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
-        brand.setBrandCode(serialUtilService.getSerialCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(new Date())));
+        //serialUtilService.getSerialCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(new Date()))
+        brand.setBrandCode("00"); //TODO
         brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         ParamsUtil.setBaseDO(brand);
         try {

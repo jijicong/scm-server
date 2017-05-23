@@ -1,6 +1,6 @@
 package org.trc.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;

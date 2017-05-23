@@ -1,15 +1,14 @@
 package org.trc.biz.impl.serial;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.serial.ISerialBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
-import org.trc.service.impl.util.SerialUtilService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.AssertUtil;
 
 /**
@@ -26,14 +25,14 @@ public class SerialBiz implements ISerialBiz {
     public static final String SUPPLIER = "supplier";
 
     @Autowired
-    private SerialUtilService serialUtilService;
+    private ISerialUtilService serialUtilService;
 
     @Override
     public String getSerialCode(String module) throws Exception {
         AssertUtil.notBlank(module, "生成编码的模块名称不能为空");
         String serialCode = "";
         if(StringUtils.equals(module, SUPPLIER)){//供应商
-            serialCode = serialUtilService.getSerialCode(SupplyConstants.Serial.SUPPLIER_LENGTH, SupplyConstants.Serial.SUPPLIER_NAME);
+            serialCode = "00";//serialUtilService.getSerialCode(SupplyConstants.Serial.SUPPLIER_LENGTH, SupplyConstants.Serial.SUPPLIER_NAME);
         }else {
             String msg = String.format("%s%s%s", "生成序列号的模块",module,"不存在");
             log.error(msg);

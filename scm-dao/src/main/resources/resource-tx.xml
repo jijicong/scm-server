@@ -8,7 +8,7 @@
 	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
-    <import resource="classpath:config/resource-ds.xml"/>
+    <import resource="classpath:resource-ds.xml"/>
     <!-- 开启注解注入等 -->
     <context:annotation-config />
 

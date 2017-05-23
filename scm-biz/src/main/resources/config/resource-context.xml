@@ -12,14 +12,24 @@
         <property name="locations">
             <list>
                 <value>classpath:config/dev/scm-jdbc.properties</value>
+                <value>classpath:config/dev/comsumer-config.properties</value>
+                <value>classpath:config/dev/redis.properties</value>
             </list>
         </property>
+        <property name="fileEncoding">
+            <value>UTF-8</value>
+        </property>
     </bean>
+
+    <!-- 使用SpringContextHolder.getBean('xxxx')的静态方法得到bean对象 -->
+    <bean class="org.trc.framework.core.spring.SpringContextHolder" lazy-init="false" />
+
     <!-- 注解扫描范围 -->
     <!--<context:component-scan base-package="org.trc.service.impl" />-->
     <context:component-scan base-package="org.trc" />
 
-    <import resource="classpath:config/resource-tx.xml"/>
-
+    <import resource="classpath:resource-tx.xml"/>
+    <import resource="classpath:comsumer-config.xml"/>
+    <import resource="classpath:redis-config.xml"/>
 
 </beans>

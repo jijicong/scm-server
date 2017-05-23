@@ -41,7 +41,7 @@ public class GuidUtil {
 	        }
 	        System.out.println(ip[i]+"  "+"646dff".equals(ipHex));
 	        System.out.println("OCNCSN646dff14630397345934190".length());
-	        
+
 	        //646df141
         }
     }

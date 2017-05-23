@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
@@ -13,6 +14,7 @@ import org.trc.util.ResultUtil;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/11.
@@ -31,6 +33,15 @@ public class UserAccreditInfoResource {
     public Pagenation<UserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAddPageDate> page) throws Exception {
         return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
     }
+
+    //授权里面的采购员列表
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.PURCHASE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<UserAccreditInfo>>  findPurchase() throws Exception{
+        return ResultUtil.createSucssAppResult("查询采购员成功",userAccreditInfoBiz.findPurchase());
+    }
+
     @POST
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE+"/{id}")
     public  AppResult updateUserAccreditInfoStatus(@BeanParam UserAccreditInfo userAccreditInfo) throws  Exception{

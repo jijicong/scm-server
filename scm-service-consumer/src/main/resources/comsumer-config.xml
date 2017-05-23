@@ -2,13 +2,22 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-       http://www.springframework.org/schema/beans/spring-beans-4.1.xsd ">
+    http://www.springframework.org/schema/beans/spring-beans-4.1.xsd ">
 
     <bean id="qinniuForm" class="org.trc.form.QinniuForm">
         <property name="accessKey" value="${access.key}"/>
         <property name="secretKey" value="${secret.key}"/>
         <property name="bucket" value="${bucket}"/>
         <property name="domainOfBucket" value="${domain.of.bucket}"/>
+    </bean>
+
+    <bean id="jdBaseDO" class="org.trc.form.JDModel.JdBaseDO">
+        <property name="grant_type" value="${grant_type}"/>
+        <property name="client_id" value="${client_id}"/>
+        <property name="client_secret" value="${client_secret}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+        <property name="jdurl" value="${jdurl}"/>
     </bean>
 
 </beans>

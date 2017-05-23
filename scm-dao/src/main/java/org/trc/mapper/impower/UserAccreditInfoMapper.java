@@ -19,20 +19,25 @@ public  interface UserAccreditInfoMapper  extends BaseMapper<UserAccreditInfo>{
      * @param
      * @return
      */
-    List<UserAddPageDate> selectUserAddPageList(@Param("userIds") Long[] userIds) throws Exception;
+    List<UserAddPageDate> selectUserAddPageList(@Param("userIds") Long[] userIds);
 
+    /**
+     * 查询据有采购组角色的用户
+     * @return
+     */
+    List<UserAccreditInfo> findPurchase();
     /**
      * 查询分页条件查询的总数量
      * @param map
      * @return
      */
-    int selectCountUser(Map map) throws Exception;
+    int selectCountUser(Map map);
     /**
      * 查询授权用户信息
      * @param map
      * @return
      */
-    List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception;
+    List<UserAccreditInfo> selectAccreditInfoList(Map map);
 
 
 

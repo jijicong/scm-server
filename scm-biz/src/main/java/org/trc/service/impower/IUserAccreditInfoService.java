@@ -20,6 +20,13 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
     List<UserAddPageDate>  selectUserAddPageList(Long[] userIds) throws Exception;
 
     /**
+     * 查询具有角色采购角色的用户
+     * @return
+     * @throws Exception
+     */
+    List<UserAccreditInfo> findPurchase() throws Exception;
+
+    /**
      * 查询需要查询的数量
      * @param map
      * @return

@@ -1,11 +1,14 @@
 package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
 import org.trc.domain.dict.DictType;
@@ -18,10 +21,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -86,8 +86,8 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveChannel(Channel channel) throws Exception {
-
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
         if (null != tmp) {
@@ -95,21 +95,41 @@ public class ChannelBiz implements IChannelBiz {
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-        String code = serialUtilService.getSerialCode(LENGTH,SERIALNAME);//查询当前的序列位置
-        channel.setCode(code);
         ParamsUtil.setBaseDO(channel);
-        int count=0;
-        count=channelService.insert(channel);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("保存渠道", JSON.toJSONString(channel),"数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
+        int number=0;
+        try{
+            number = saveChannelAssist(channel,SERIALNAME);
+        } catch (DuplicateKeyException e){//唯一性索引抛出的异常
+            //第二次查询，插入
+            LOGGER.error(e.getMessage());
+            try{
+                number = saveChannelAssist(channel,SERIALNAME);
+            }catch (DuplicateKeyException ex){
+                String msg = CommonUtil.joinStr("保存渠道", JSON.toJSONString(channel), "数据库操作失败").toString();
+                LOGGER.error(msg);
+                throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);
+            }
         }
+        int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
+        if (assess < 1) {
+            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(channel), "数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+        }
+    }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    private int saveChannelAssist(Channel channel,String name) throws Exception{
+        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
+        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
+        channel.setCode(code);
+        int count = channelService.insert(channel);
+        return number;
     }
 
     @Override
     public void updateChannel(Channel channel) throws Exception {
+
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
         int count = 0;
         channel.setUpdateTime(Calendar.getInstance().getTime());

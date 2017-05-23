@@ -3,7 +3,7 @@ package org.trc.biz.impl.impower;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +77,11 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         page.setTotalCount(count);
         page.setResult(pageDateRoleList);
         return page;
+    }
+
+    @Override
+    public List<UserAccreditInfo> findPurchase() throws Exception {
+        return userAccreditInfoService.findPurchase();
     }
 
     @Override
