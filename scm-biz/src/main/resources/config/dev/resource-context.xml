@@ -20,6 +20,7 @@
             <value>UTF-8</value>
         </property>
     </bean>
+    <bean class="com.txframework.core.spring.SpringContextHolder" lazy-init="false" />
     <!-- 注解扫描范围 -->
     <!--<context:component-scan base-package="org.trc.service.impl" />-->
     <context:component-scan base-package="org.trc" />

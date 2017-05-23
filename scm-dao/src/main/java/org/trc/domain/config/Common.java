@@ -23,7 +23,7 @@ public class Common {
 
     private Date updateTime;
 
-    private Date deadTime;
+    private String deadTime;
 
     public Long getId() {
         return id;
@@ -81,11 +81,11 @@ public class Common {
         this.updateTime = updateTime;
     }
 
-    public Date getDeadTime() {
+    public String getDeadTime() {
         return deadTime;
     }
 
-    public void setDeadTime(Date deadTime) {
+    public void setDeadTime(String deadTime) {
         this.deadTime = deadTime;
     }
 }

@@ -1,9 +1,15 @@
 package org.trc.form.JDModel;
 
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
+
 /**
  * Created by hzwyz on 2017/5/18 0018.
  */
+@Component ("configProperty")
+/*@PropertySource(value = "classpath:config/dev/comsumer-config.properties",encoding = "utf-8")*/
 public class JdBaseDO {
     private String grant_type;
 

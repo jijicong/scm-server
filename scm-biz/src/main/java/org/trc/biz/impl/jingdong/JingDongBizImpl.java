@@ -1,14 +1,16 @@
 package org.trc.biz.impl.jingdong;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impl.jingdong.util.JingDongUtil;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.mapper.config.ICommonMapper;
 import org.trc.service.IJDService;
+import org.trc.util.RedisUtil;
 
-import java.util.Date;
 import java.util.Map;
 
 
@@ -22,58 +24,105 @@ public class JingDongBizImpl implements IJingDongBiz {
     IJDService ijdService;
 
     @Autowired
-    ICommonMapper commonDao;
+    ICommonMapper commonMapper;
 
     @Override
     public String getAccessToken() throws Exception {
         try{
-           /*如果是第一次访问，创建新的Token*/
-            String token =null;
+            String token = null;
             Common acc = new Common();
-            acc.setCode("accessToken");
-            Common accessToken = commonDao.selectOne(acc);
-            if (null==accessToken){
-                token = ijdService.createToken();
-                Map<String,Common> map = JingDongUtil.buildCommon(token);
-                acc = map.get("accessToken");
-                token=acc.getCode();
-                /*putToken(acc, map);*/
+            try{
+                //查询redis中是否有accessToken
+                token = (String) RedisUtil.getObject("accessToken");
+            }catch (RedisConnectionFailureException e){
+                //当redis无法连接从数据库中去accessToken
+                acc.setCode("accessToken");
+                acc = commonMapper.selectOne(acc);
+                if (null != acc){
+                    //验证accessToken是否失效，失效则刷新，返回accessToken
+                    String time = acc.getDeadTime();
+                    if(JingDongUtil.validatToken(time)){
+                        return acc.getValue();
+                    }
+                    acc.setCode("refreshToken");
+                    acc = commonMapper.selectOne(acc);
+                    return refreshToken(acc.getValue());
+                }
+                token = createToken();
                 return token;
             }
-            Date oldDate = accessToken.getDeadTime();
-            if (JingDongUtil.validatToken(oldDate)){
-                return accessToken.getValue();
+            //redis中查询到accessToken则返回
+            if (StringUtils.isNotBlank(token)){
+                return token;
             }
-            Common ref = new Common();
-            ref.setCode("refreshToken");
-            Common refreshToken = commonDao.selectOne(ref);
-            token = ijdService.freshAccessTokenByRefreshToken(refreshToken.getValue());
-            Map<String,Common> map = JingDongUtil.buildCommon(token);
-            acc = map.get("accessToken");
-            token=acc.getCode();
-            /*putToken(acc, map);*/
+            //如果accessToken失效，查询refreshToken,如果有效则刷新
+            String refreshToken = (String) RedisUtil.getObject("refreshToken");
+            if (StringUtils.isNotBlank(refreshToken)){
+                return refreshToken(refreshToken);
+            }
+            //创建accessToken,并保存到数据库和缓存中
+            token = createToken();
             return token;
-        /*将获取到的accessToken和refreshToken更新到redis和数据库中*/
         }catch (Exception e){
             return "获取Token失败";
         }
     }
 
-    /*private Boolean putToken(Common acc, Map<String, Common> map) {
-    *//*将获取到的accessToken和refreshToken保存到redis和数据库中*//*
+    private String createToken() throws Exception {
+        String token;
+        Common acc;
+        token = ijdService.createToken();
+        Map<String,Common> map = JingDongUtil.buildCommon(token);
+        acc = map.get("accessToken");
+        token=acc.getValue();
+        putToken(acc, map);
+        acc = map.get("refreshToken");
+        putToken(acc, map);
+        return token;
+    }
+
+    /**
+     * 刷新Token
+     * @param refreshToken
+     * @return
+     * @throws Exception
+     */
+    private String refreshToken(String refreshToken) throws Exception {
+        String token;
+        Common acc;
+        token = ijdService.freshAccessTokenByRefreshToken(refreshToken);
+        Map<String,Common> map = JingDongUtil.buildCommon(token);
+        acc = map.get("accessToken");
+        Common ref= map.get("refreshToken");
+        token=acc.getValue();
+        putToken(acc, map);
+        putToken(ref, map);
+        return token;
+    }
+
+    /**
+     * 将Token保存到数据库和redis中
+     * @param acc
+     * @param map
+     * @return
+     */
+    private Boolean putToken(Common acc, Map<String, Common> map) {
         try{
-            commonDao.insert(acc);
-            cacheManager.set("accessToken",acc.getCode());
-            cacheManager.set("accessToken",acc.getDeadTime());
-            acc = map.get("refreshToken");
-            commonDao.insert(acc);
-            cacheManager.set("refreshToken",acc.getCode());
-            cacheManager.set("refTokenDeadTime",acc.getDeadTime());
+            Boolean result = RedisUtil.setObject(acc.getCode(),acc.getValue(), Integer.parseInt(acc.getDeadTime()));
+            Common tmp = commonMapper.selectByCode(acc.getCode());
+            Common token = map.get("time");
+            acc.setDeadTime(token.getDeadTime());
+            if (null == tmp){
+                commonMapper.insert(acc);
+                return true;
+            }
+            acc.setId(tmp.getId());
+            commonMapper.updateByPrimaryKey(acc);
             return true;
         }catch (Exception e){
             return false;
         }
-    }*/
+    }
 
 
 }

@@ -20,6 +20,7 @@
             <value>UTF-8</value>
         </property>
     </bean>
+    <bean class="com.txframework.core.spring.SpringContextHolder" lazy-init="false" />
 
     <!-- 本地提供服务 -->
     <!-- <import resource="classpath:zookeeper.xml"/>-->
