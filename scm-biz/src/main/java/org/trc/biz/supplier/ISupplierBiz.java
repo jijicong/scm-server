@@ -98,5 +98,12 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception;
+
+    /**
+     * 启用/停用
+     * @param isValid
+     * @throws Exception
+     */
+    void updateValid(Long id, String isValid) throws Exception;
     
 }
