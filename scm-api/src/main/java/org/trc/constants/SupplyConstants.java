@@ -261,6 +261,8 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_PAGE = "purchaseGroupPage";
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
+        //根据采购组的编码查询
+        public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
     }

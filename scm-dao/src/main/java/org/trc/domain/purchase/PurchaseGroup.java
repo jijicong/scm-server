@@ -36,13 +36,22 @@ public class PurchaseGroup extends BaseDO{
     @Length(max = 64, message = "采购组组长名称字母和数字不能超过64个,汉字不能超过32个")
     private String leaderName;
     @FormParam("memberUserId")
-    @NotEmpty
     @Length(max = 1024, message = "采购组组员的ids字母和数字不能超过1024个,汉字不能超过512个")
     private String memberUserId;
     @FormParam("memberName")
-    @NotEmpty
     @Length(max =1024, message = "采购组组员的ids字母和数字不能超过1024个,汉字不能超过512个")
     private String memberName;
+    @FormParam("remark")
+    @Length(max =1024, message = "采购组组的备注字母和数字不能超过1024个,汉字不能超过512个")
+    private  String remark;
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
     public Long getId() {
         return id;

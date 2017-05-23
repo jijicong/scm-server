@@ -25,7 +25,7 @@ public class UserAccreditInfo extends BaseDO{
 
     @FormParam("userId")
     @NotNull
-    private Long userId;
+    private String userId;
 
     @FormParam("phone")
     @NotEmpty
@@ -58,11 +58,11 @@ public class UserAccreditInfo extends BaseDO{
         this.id = id;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -98,10 +98,10 @@ public class UserAccreditInfo extends BaseDO{
         this.remark = remark;
     }
 
-    public String getChannelCode() {
+    public String getChannelCode()
+    {
         return channelCode;
     }
-
     public void setChannelCode(String channelCode) {
         this.channelCode = channelCode;
     }
