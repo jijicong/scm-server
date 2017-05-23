@@ -1,7 +1,6 @@
 package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
@@ -21,14 +21,17 @@ import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
+import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;
+import org.trc.util.StringUtil;
 import tk.mybatis.mapper.entity.Example;
 
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -41,8 +44,12 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Autowired
     private ICategoryService categoryService;
+
     @Autowired
     private ICategoryBrandService categoryBrandService;
+
+    @Autowired
+    private IBrandService brandService;
 
     /**
      * 根据父类id，查找子分类，isRecursive为true，递归查找所有，否则只查一级子分类
@@ -250,5 +257,60 @@ public class CategoryBiz implements ICategoryBiz {
 
     }
 
+    /**
+     * 根据ID查询三级分类的全路径名称，用于品牌，属性的接入
+     */
+    @Override
+    public List<String> queryCategoryNamePath(Long id) throws Exception {
+        List<String> categoryName = new ArrayList<>();
+        AssertUtil.notNull(id, "根据ID查询分类参数为空");
 
+        Category categoryLevel3 = new Category();
+        categoryLevel3.setId(id);
+        categoryLevel3 = categoryService.selectOne(categoryLevel3);
+        categoryName.add(categoryLevel3.getName());
+
+        Category categoryLevel2 = new Category();
+        categoryLevel2.setId(categoryLevel3.getParentId());
+        categoryLevel2 = categoryService.selectOne(categoryLevel2);
+        categoryName.add(categoryLevel2.getName());
+
+
+        Category categoryLevel1 = new Category();
+        categoryLevel1.setId(categoryLevel2.getParentId());
+        categoryLevel1 = categoryService.selectOne(categoryLevel1);
+        categoryName.add(categoryLevel1.getName());
+        return categoryName;
+    }
+
+    /**
+     * 数据关联
+     * @param categoryId
+     * @param brandIds
+     * @throws Exception
+     */
+    @Override
+    public void linkCategoryBrands(Long categoryId, String brandIds) throws Exception {
+        AssertUtil.notBlank(brandIds, "分类关联品牌brandIdID为空");
+        AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
+        List<Long> brandIdsList = Arrays.asList(StringUtil.splitByComma(brandIds));
+        List<Brand> brands = brandService.selectBrandList(brandIdsList);
+        Category category = new Category();
+        category.setId(categoryId);
+        category = categoryService.selectOne(category);
+        List<CategoryBrand> categoryBrands = new ArrayList<>();
+        for (Brand brand : brands) {
+            CategoryBrand categoryBrand = new CategoryBrand();
+            categoryBrand.setBrandCode(brand.getBrandCode());
+            categoryBrand.setBrandId(brand.getId());
+            categoryBrand.setCategoryId(category.getId());
+            categoryBrand.setCategoryCode(category.getCategoryCode());
+            categoryBrand.setCreateTime(Calendar.getInstance().getTime());
+            categoryBrands.add(categoryBrand);
+        }
+        categoryBrandService.insertList(categoryBrands);
+    }
+    /**
+     * 查询已经关联的品牌
+     */
 }

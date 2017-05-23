@@ -33,6 +33,7 @@ public interface IUserAccreditInfoBiz {
      * @throws Exception
      */
     void updateUserAccreditInfoStatus(UserAccreditInfo userAccreditInfo) throws Exception;
+
     /**
      *根据名称查询用户授权信息
      * @param name 用户姓名

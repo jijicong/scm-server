@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.category.IBrandMapper">
+    <select id="selectBrandList" resultType="org.trc.domain.category.Brand">
+        SELECT b.id,b.name,b.brand_code AS  brandCode FROM  brand b WHERE b.id  IN
+        <foreach collection="list" index="index" item="item" close=")" open="(" separator=",">
+
+            #{item}
+        </foreach>
+    </select>
+</mapper>
