@@ -99,10 +99,21 @@ public class SupplyConstants {
             //分类品牌关联
             public static final String CATEGORY_BRAND_LINK ="link";
 
-//            //已经关联的分类品牌
-//            public static final String CATEGORY_BRAND_PAGE = "categoryBrandPage";
+            //已经关联的分类属性
+            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
         }
+        /**
+         * 分类属性
+         */
 
+        public static final class CategoryProperty{
+
+            //已经关联的分类属性
+            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
+
+            //分类属性关联
+            public static final String CATEGORY_PROPERTY_LINK ="linkProperty";
+        }
 
         /**
          * 属性管理
@@ -116,6 +127,8 @@ public class SupplyConstants {
             public static final String PROPERTY = "property";
 
             public static final String PROPERTY_STATE ="property/state";
+
+            public static final String PROPERTY_ALL ="propertyall";
         }
 
         /**
@@ -261,8 +274,6 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_PAGE = "purchaseGroupPage";
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
-        //根据采购组的编码查询
-        public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
     }
@@ -340,26 +351,14 @@ public class SupplyConstants {
         }
 
         /**
-         * 供应商申请
-         */
-        public static final class SupplierApply {
-            //供应商申请分页
-            public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
-
-            //供应商申请信息路径
-            public static final String  SUPPLIER_APPLY= "supplierApply";
-
-        }
-
-        /**
          * 供应商申请审批
          */
-        public static final class SupplierApplyAudit {
+        public static final class SupplierApply {
             //供应商申请审批分页
-            public static final String SUPPLIER_APPLY_AUDIT_PAGE = "supplierApplyAuditPage";
+            public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
 
             //供应商申请审核信息路径
-            public static final String  SUPPLIER_APPLY_AUDIT= "supplierApplyAudit";
+            public static final String  SUPPLIER_APPLY= "supplierApply";
 
         }
 

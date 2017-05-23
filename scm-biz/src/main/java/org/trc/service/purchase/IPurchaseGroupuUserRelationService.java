@@ -8,4 +8,5 @@ import org.trc.service.IBaseService;
  */
 public interface IPurchaseGroupuUserRelationService extends IBaseService<PurchaseGroupUserRelation,Long>{
 
+    int deleteByPurchaseGroupCode(String code);
 }

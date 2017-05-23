@@ -63,4 +63,9 @@ public interface IPropertyBiz {
      * @throws Exception
      */
     void updatePropertyStatus(Property property) throws Exception;
+
+    /**
+     * 查询所有属性
+     */
+    List<Property> queryAllProperty() throws Exception;
 }

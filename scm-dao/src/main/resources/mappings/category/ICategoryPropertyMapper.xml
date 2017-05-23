@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.category.ICategoryPropertyMapper">
+    <!--<resultMap id="categoryBrandMap" type="org.trc.domain.category.CategoryBrandExt">
+        <result property="id" column="id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryCode" column="category_code"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="brandCode" column="brand_code"/>
+        <result property="brandName" column="brand_name"/>
+    </resultMap>
+
+    <select id="selectCategoryBrands" resultMap="categoryBrandMap">
+        SELECT
+          cb.id, cb.category_id, cb.category_code, c.full_path_id as category_name, cb.brand_id, cb.brand_code, b.name as brand_name
+        FROM
+          category_brand cb
+        LEFT JOIN
+          category c ON cb.category_id = c.id
+        LEFT JOIN
+          brand b ON cb.brand_id = b.id
+        WHERE
+         cb.category_id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>-->
+</mapper>

@@ -12,7 +12,7 @@
         <result property="phone" column="phone"/>
         <result property="contact" column="contact"/>
         <result property="supplierName" column="supplier_name"/>
-        <result property="supplierTypeCode" column="supplier_kind_code"/>
+        <result property="supplierKindCode" column="supplier_kind_code"/>
         <result property="supplierStatus" column="is_valid"/>
     </resultMap>
 
@@ -34,10 +34,10 @@
                 AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = <![CDATA[LIKE '%${supplierCode}%']]>
+                AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = <![CDATA[LIKE '%${contact}%']]>
+                AND b.contact  <![CDATA[LIKE '%${contact}%']]>
             </if>
             <if test="supplierKindCode != null and supplierKindCode != ''">
                 AND b.supplier_kind_code = #{supplierKindCode}
@@ -69,10 +69,10 @@
                 AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = <![CDATA[LIKE '%${supplierCode}%']]>
+                AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = <![CDATA[LIKE '%${contact}%']]>
+                AND b.contact  <![CDATA[LIKE '%${contact}%']]>
             </if>
             <if test="supplierKindCode != null and supplierKindCode != ''">
                 AND b.supplier_kind_code = #{supplierKindCode}

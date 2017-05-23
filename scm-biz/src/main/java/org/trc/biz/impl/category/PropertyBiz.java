@@ -193,4 +193,16 @@ public class PropertyBiz implements IPropertyBiz {
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
     }
+
+    @Override
+    public List<Property> queryAllProperty() throws Exception {
+        Example example = new Example(Property.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", 1);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        example.orderBy("isValid").desc();
+        example.orderBy("sort").asc();
+        return propertyService.selectByExample(example);
+
+    }
 }

@@ -8,4 +8,6 @@ import org.trc.util.BaseMapper;
  */
 public interface IPurchaseGroupuUserRelationMapper extends BaseMapper<PurchaseGroupUserRelation>{
 
+    int deleteByPurchaseGroupCode(String code);
+
 }

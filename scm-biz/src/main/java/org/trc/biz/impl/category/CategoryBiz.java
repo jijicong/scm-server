@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
-import org.trc.domain.category.Category;
-import org.trc.domain.category.CategoryBrand;
-import org.trc.domain.category.CategoryBrandExt;
+import org.trc.domain.category.*;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -21,9 +18,7 @@ import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
-import org.trc.service.category.IBrandService;
-import org.trc.service.category.ICategoryBrandService;
-import org.trc.service.category.ICategoryService;
+import org.trc.service.category.*;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.ParamsUtil;
@@ -50,6 +45,12 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Autowired
     private IBrandService brandService;
+
+    @Autowired
+    private IPropertyService propertyService;
+
+    @Autowired
+    private ICategoryPropertyService categoryPropertyService;
 
     /**
      * 根据父类id，查找子分类，isRecursive为true，递归查找所有，否则只查一级子分类
@@ -285,6 +286,7 @@ public class CategoryBiz implements ICategoryBiz {
 
     /**
      * 数据关联
+     *
      * @param categoryId
      * @param brandIds
      * @throws Exception
@@ -310,7 +312,42 @@ public class CategoryBiz implements ICategoryBiz {
         }
         categoryBrandService.insertList(categoryBrands);
     }
+
     /**
-     * 查询已经关联的品牌
+     * 查询已经关联的属性
      */
+    @Override
+    public List<Property> queryCategoryProperty(Long categoryId) throws Exception {
+        AssertUtil.notNull(categoryId, "查询分类关联属性categoryId为空");
+        Example example = new Example(CategoryProperty.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("categoryId", categoryId);
+        List<CategoryProperty> categoryProperties = categoryPropertyService.selectByExample(example);
+        List<Long> propertyIds = new ArrayList<>();
+        for (CategoryProperty categoryProperty : categoryProperties) {
+            propertyIds.add(categoryProperty.getPropertyId());
+        }
+        return propertyService.queryPropertyList(propertyIds);
+    }
+
+    /**
+     * 数据关联
+     *
+     * @param categoryId
+     * @param propertyId
+     * @throws Exception
+     */
+    @Override
+    public void linkCategoryProperty(Long categoryId, Long propertyId) throws Exception {
+        AssertUtil.notNull(propertyId, "分类关联属性propertyId为空");
+        AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
+        Category category = new Category();
+        category.setId(categoryId);
+        category = categoryService.selectOne(category);
+        CategoryProperty categoryProperty = new CategoryProperty();
+        categoryProperty.setCategoryId(category.getId());
+        categoryProperty.setPropertyId(propertyId);
+        categoryProperty.setPropertySort(propertyId);
+        categoryPropertyService.insert(categoryProperty);
+    }
 }
