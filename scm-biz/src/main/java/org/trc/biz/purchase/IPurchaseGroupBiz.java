@@ -13,4 +13,12 @@ public interface IPurchaseGroupBiz {
 
     void updatePurchaseStatus(PurchaseGroup purchaseGroup) throws Exception;
 
+    void  savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception;
+
+    PurchaseGroup findPurchaseByName(String name) throws Exception;
+
+    PurchaseGroup findPurchaseById(Long id) throws Exception;
+
+    PurchaseGroup findPurchaseGroupByCode(String code) throws Exception;
+
 }
