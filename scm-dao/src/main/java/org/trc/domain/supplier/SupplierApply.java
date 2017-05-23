@@ -3,15 +3,17 @@ package org.trc.domain.supplier;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
 /**
- * Created by hzqph on 2017/5/12.
+ * Created by hzqph on 2017/5/23.
  */
-@Table(name = "apply_for_supplier")
-public class SupplierApply extends BaseDO {
+public class SupplierApply extends BaseDO{
 
     @PathParam("id")
     @Id
@@ -23,14 +25,10 @@ public class SupplierApply extends BaseDO {
     @NotEmpty
     @FormParam("supplierId")
     private Long supplierId;//供应商Id
-    @NotEmpty
-    @FormParam("channelId")
     private Long channelId;//渠道Id
     @NotEmpty
     @FormParam("supplierCode")
     private String supplierCode;//供应商编号
-    @NotEmpty
-    @FormParam("channelCode")
     private String channelCode;//渠道编号
     @NotEmpty
     @FormParam("description")
@@ -45,13 +43,13 @@ public class SupplierApply extends BaseDO {
     @Transient
     private String supplierName;//供应商名称
     @Transient
-    private String supplierKindCode;//供应商性质编号
+    private String supplierKindCode;//供应商类型编号
     @Transient
-    private String supplierTypeCode;//供应商类型编号
+    private String phone;//联系人手机
     @Transient
     private String brandNames;//供应商代理品牌
     @Transient
-    private String channelName;//渠道方名字
+    private String supplierStatus;//供应商状态
 
     public Long getId() {
         return id;
@@ -149,6 +147,14 @@ public class SupplierApply extends BaseDO {
         this.supplierKindCode = supplierKindCode;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public String getBrandNames() {
         return brandNames;
     }
@@ -157,19 +163,11 @@ public class SupplierApply extends BaseDO {
         this.brandNames = brandNames;
     }
 
-    public String getChannelName() {
-        return channelName;
+    public String getSupplierStatus() {
+        return supplierStatus;
     }
 
-    public void setChannelName(String channelName) {
-        this.channelName = channelName;
-    }
-
-    public String getSupplierTypeCode() {
-        return supplierTypeCode;
-    }
-
-    public void setSupplierTypeCode(String supplierTypeCode) {
-        this.supplierTypeCode = supplierTypeCode;
+    public void setSupplierStatus(String supplierStatus) {
+        this.supplierStatus = supplierStatus;
     }
 }

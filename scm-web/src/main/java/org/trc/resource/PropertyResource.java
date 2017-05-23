@@ -69,4 +69,11 @@ public class PropertyResource {
         propertyBiz.updatePropertyStatus(Property);
         return ResultUtil.createSucssAppResult("更新属性状态成功", "");
     }
+
+    @GET
+    @Path(SupplyConstants.Category.Property.PROPERTY_ALL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<Property>> propertyAll() throws Exception {
+        return ResultUtil.createSucssAppResult("查询所有属性成功",propertyBiz.queryAllProperty());
+    }
 }

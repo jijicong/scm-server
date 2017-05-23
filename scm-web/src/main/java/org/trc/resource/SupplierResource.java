@@ -58,7 +58,15 @@ public class SupplierResource {
     public AppResult updateSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
                                   @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
                                   @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
-        supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
+        supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
+        return ResultUtil.createSucssAppResult("保存供应商成功", "");
+    }
+
+    @POST
+    @Path(SupplyConstants.Supply.Supplier.IS_VALID + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
+        supplierBiz.updateValid(id, isValid);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 
@@ -74,6 +82,13 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<SupplierCategoryExt> querySupplierCategory(@QueryParam("supplierCode") String supplierCode) throws Exception {
         return supplierBiz.querySupplierCategory(supplierCode);
+    }
+
+    @GET
+    @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<SupplierBrandExt>> querySupplierBrand(@QueryParam("supplierCode") String supplierCode) throws Exception {
+        return ResultUtil.createSucssAppResult("查询供应商品牌成功", supplierBiz.querySupplierBrand(supplierCode));
     }
 
     @GET

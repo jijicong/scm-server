@@ -81,6 +81,11 @@ public class Supplier extends BaseDO{
     @NotEmpty
     private String channel;
 
+    @Transient
+    private String channelName;//供应商渠道名称
+    @Transient
+    private String brandName;//供应商品牌名称
+
     public Long getId() {
         return id;
     }
@@ -231,5 +236,18 @@ public class Supplier extends BaseDO{
 
     public void setChannel(String channel) {
         this.channel = channel;
+    }
+
+    public String getChannelName() {
+        return channelName;
+    }
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
+    }
+    public String getBrandName() {
+        return brandName;
+    }
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 }

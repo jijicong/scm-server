@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.purchase.IPurchaseGroupuUserRelationMapper">
+    <!-- 使用PurchaseGroupCode来删除采购组与用户关联关系 -->
+    <delete id="deleteByPurchaseGroupCode">
+      DELETE from purchase_group_user_relation WHERE purchase_group_code=#{code}
+    </delete>
+
+</mapper>

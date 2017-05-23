@@ -95,8 +95,25 @@ public class SupplyConstants {
         public static final class CategoryBrands{
             //分类品牌列表查询路径
             public static final String CATEGORY_BAAND_LIST = "categoryBrands";
-        }
 
+            //分类品牌关联
+            public static final String CATEGORY_BRAND_LINK ="link";
+
+            //已经关联的分类属性
+            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
+        }
+        /**
+         * 分类属性
+         */
+
+        public static final class CategoryProperty{
+
+            //已经关联的分类属性
+            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
+
+            //分类属性关联
+            public static final String CATEGORY_PROPERTY_LINK ="linkProperty";
+        }
 
         /**
          * 属性管理
@@ -110,6 +127,8 @@ public class SupplyConstants {
             public static final String PROPERTY = "property";
 
             public static final String PROPERTY_STATE ="property/state";
+
+            public static final String PROPERTY_ALL ="propertyall";
         }
 
         /**
@@ -145,6 +164,9 @@ public class SupplyConstants {
 
             //重名验证
             public static  final  String CATEGORY_CHECK = "check";
+
+            //查询分类
+            public static final String CATEGORY_QUERY ="query";
         }
     }
     /**
@@ -207,8 +229,8 @@ public class SupplyConstants {
         //用户修改
         public static final String  UPDATE_ACCREDIT = "updateaccredit";
 
-        //查询用户名是否存在
-        public  static  final  String CHECK = "check";
+        //查询用户名是否已被使用
+        public  static  final  String CHECK = "check" ;
 
     }
     /**
@@ -304,6 +326,8 @@ public class SupplyConstants {
             public static final String SUPPLIER_LIST = "suppliers";
             //供应商路径
             public static final String SUPPLIER = "supplier";
+            //启用/停用
+            public static final String IS_VALID = "isValid";
         }
 
         /**

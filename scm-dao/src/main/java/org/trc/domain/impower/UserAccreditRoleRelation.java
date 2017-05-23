@@ -19,7 +19,7 @@ public class UserAccreditRoleRelation extends BaseDO{
 
     private Long userAccreditId;
 
-    private Long userId; //用户中心的用户id
+    private String userId; //用户中心的用户id
 
     private Long roleId;
 
@@ -39,11 +39,11 @@ public class UserAccreditRoleRelation extends BaseDO{
         this.userAccreditId = userAccreditId;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

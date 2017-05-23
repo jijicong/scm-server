@@ -3,7 +3,7 @@ package org.trc.filter;
 import com.tairanchina.beego.api.model.BeegoToken;
 import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
 import com.tairanchina.beego.api.service.BeegoService;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

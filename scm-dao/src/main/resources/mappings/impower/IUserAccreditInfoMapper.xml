@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.impower.UserAccreditInfoMapper">
-    <!--查询具有采购角色的用户-->
+    <!--查询具有采购角色的用户并且是有效的-->
     <select id="findPurchase" resultType="org.trc.domain.impower.UserAccreditInfo">
         SELECT id , user_id userId,phone,name,user_type userType FROM user_accredit_info u where user_id IN(
             SELECT ar.user_id FROM user_accredit_role_relation ar WHERE role_id=(
                 SELECT id as role_id FROM role r WHERE name='采购组员'
                 )
-        )
+        ) AND is_valid='1'
     </select>
 
     <!-- 根据用户的查询的条件，查询授权信息与角色名称列表.并且是有效的角色名称.isValid='1'.-->

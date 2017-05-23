@@ -5,19 +5,20 @@ import org.trc.util.QueryModel;
 import javax.ws.rs.QueryParam;
 
 /**
- * Created by hzqph on 2017/5/12.
+ * Created by hzqph on 2017/5/23.
  */
 public class SupplierApplyForm extends QueryModel {
-        @QueryParam("supplierName")
-        private String supplierName;//供应商名称
-        @QueryParam("contact")
-        private String contact;//联系人
-        @QueryParam("supplierCode")
-        private String supplierCode;//供应商编号
-        @QueryParam("status")
-        private String status;//审核状态
-        @QueryParam("applySquare")
-        private String applySquare;//申请方
+
+    @QueryParam("supplierName")
+    private String supplierName;//供应商名称
+    @QueryParam("contact")
+    private String contact;//联系人
+    @QueryParam("supplierCode")
+    private String supplierCode;//供应商编号
+    @QueryParam("status")
+    private String status;//申请状态
+    @QueryParam("supplierKindCode")
+    private String supplierKindCode;//供应商
 
     public String getSupplierName() {
         return supplierName;
@@ -51,11 +52,11 @@ public class SupplierApplyForm extends QueryModel {
         this.status = status;
     }
 
-    public String getApplySquare() {
-        return applySquare;
+    public String getSupplierKindCode() {
+        return supplierKindCode;
     }
 
-    public void setApplySquare(String applySquare) {
-        this.applySquare = applySquare;
+    public void setSupplierKindCode(String supplierKindCode) {
+        this.supplierKindCode = supplierKindCode;
     }
 }

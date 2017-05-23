@@ -1,7 +1,5 @@
 package org.trc.domain.category;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
@@ -124,8 +122,5 @@ public class Brand extends BaseDO {
         this.num = num;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-    }
+
 }

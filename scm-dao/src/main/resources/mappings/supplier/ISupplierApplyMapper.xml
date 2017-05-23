@@ -5,32 +5,23 @@
         <result property="id" column="id"/>
         <result property="applyCode" column="apply_code"/>
         <result property="supplierId" column="supplier_id"/>
-        <result property="channelId" column="channel_id"/>
         <result property="supplierCode" column="supplier_code"/>
-        <result property="channelCode" column="channel_code"/>
-        <result property="description" column="description"/>
         <result property="status" column="status"/>
-        <result property="isDeleted" column="is_deleted"/>
-        <result property="auditOpinion" column="audit_opinion"/>
-        <result property="createOperator" column="create_operator"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
+        <result property="phone" column="phone"/>
         <result property="contact" column="contact"/>
         <result property="supplierName" column="supplier_name"/>
         <result property="supplierKindCode" column="supplier_kind_code"/>
-        <result property="supplierTypeCode" column="supplier_type_code"/>
-        <result property="channelName" column="channelName"/>
-
+        <result property="supplierStatus" column="is_valid"/>
     </resultMap>
 
     <sql id="supplierApplyColumns">
-          a.id,a.apply_code,a.supplier_id,a.channel_id,a.supplier_code,a.channel_code,
-          a.description,a.status,a.is_deleted,a.audit_opinion,a.create_operator,a.create_time,a.update_time,b.contact,b.supplier_name,b.supplier_kind_code,b.supplier_type_code,c.name AS 'channelName'
+          a.id,a.apply_code,a.supplier_id,a.supplier_code,a.status,a.create_time,a.update_time,b.phone,b.contact,b.supplier_name,b.supplier_kind_code,b.is_valid
     </sql>
 
     <sql id="supplierApplyJoins">
         LEFT JOIN supplier b ON a.supplier_id=b.id
-        LEFT JOIN channel c ON  a.channel_id=c.id
     </sql>
 
     <select id="selectList" resultMap="supplierApplyMap" parameterType="java.util.Map">
@@ -40,13 +31,16 @@
         <include refid="supplierApplyJoins"/>
         <where>
             <if test="supplierName != null and supplierName != ''">
-                AND b.supplier_name = #{supplierName}
+                AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = #{supplierCode}
+                AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = #{contact}
+                AND b.contact  <![CDATA[LIKE '%${contact}%']]>
+            </if>
+            <if test="supplierKindCode != null and supplierKindCode != ''">
+                AND b.supplier_kind_code = #{supplierKindCode}
             </if>
             <choose>
                 <when test="status != null and status != ''">
@@ -57,13 +51,13 @@
                 </otherwise>
             </choose>
             <if test="startTime != null and startTime != ''">
-                AND a.create_time > #{startTime}
+                AND a.update_time > #{startTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                AND a.create_time &lt; #{endTime}
+                AND a.update_time &lt; #{endTime}
             </if>
         </where>
-        ORDER BY a.status ASC
+        ORDER BY a.status in (0,3),a.update_time DESC
     </select>
 
     <select id="selectSupplierApplyCount" resultType="java.lang.Integer" parameterType="java.util.Map">
@@ -72,13 +66,16 @@
         <include refid="supplierApplyJoins"/>
         <where>
             <if test="supplierName != null and supplierName != ''">
-                AND b.supplier_name = #{supplierName}
+                AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = #{supplierCode}
+                AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = #{contact}
+                AND b.contact  <![CDATA[LIKE '%${contact}%']]>
+            </if>
+            <if test="supplierKindCode != null and supplierKindCode != ''">
+                AND b.supplier_kind_code = #{supplierKindCode}
             </if>
             <choose>
                 <when test="status != null and status != ''">
@@ -89,10 +86,10 @@
                 </otherwise>
             </choose>
             <if test="startTime != null and startTime != ''">
-                AND a.create_time > #{startTime}
+                AND a.update_time > #{startTime}
             </if>
             <if test="endTime != null and endTime != ''">
-                AND a.create_time &lt; #{endTime}
+                AND a.update_time&lt; #{endTime}
             </if>
         </where>
     </select>

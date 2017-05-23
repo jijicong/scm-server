@@ -2,7 +2,7 @@ package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,5 +192,17 @@ public class PropertyBiz implements IPropertyBiz {
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
+    }
+
+    @Override
+    public List<Property> queryAllProperty() throws Exception {
+        Example example = new Example(Property.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", 1);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        example.orderBy("isValid").desc();
+        example.orderBy("sort").asc();
+        return propertyService.selectByExample(example);
+
     }
 }

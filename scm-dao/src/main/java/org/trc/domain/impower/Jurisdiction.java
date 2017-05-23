@@ -17,6 +17,8 @@ public class Jurisdiction extends BaseDO{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long code;
+
     private String name;
 
     private String url;
@@ -29,6 +31,14 @@ public class Jurisdiction extends BaseDO{
 
     @Transient
     private String check;
+
+    public Long getCode() {
+        return code;
+    }
+
+    public void setCode(Long code) {
+        this.code = code;
+    }
 
     public Integer getBelong() {
         return belong;
@@ -51,12 +61,14 @@ public class Jurisdiction extends BaseDO{
     }  //为zTree的父id做准备
 
     public Long getId() {
-        return id;
-    }
+        return code;
+    } //自己的id 为code
 
     public void setId(Long id) {
         this.id = id;
     }
+
+
 
     public String getName() {
         return name;
