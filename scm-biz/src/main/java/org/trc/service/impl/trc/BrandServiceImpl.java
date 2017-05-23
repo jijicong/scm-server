@@ -1,13 +1,9 @@
 package org.trc.service.impl.trc;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trc.domain.category.Brand;
-import org.trc.service.impl.BaseService;
 import org.trc.service.trc.BrandService;
 import org.trc.service.trc.model.BrandToTrc;
 import org.trc.util.GuidUtil;
@@ -32,17 +28,18 @@ public class BrandServiceImpl implements BrandService {
     public String sendBrandNotice(String action, long changeTime, Brand brand) {
         String noticeNum = GuidUtil.getNextUid(action + "_");
         BrandToTrc brandToTrc = new BrandToTrc();
-        brandToTrc.setAlise(brand.getAlise());
-        brandToTrc.setBrandCode(brand.getBrandCode());
-        brandToTrc.setCreateOperator(brand.getCreateOperator());
-        brandToTrc.setIsDeleted(brand.getIsDeleted());
-        brandToTrc.setIsValid(brand.getIsValid());
-        brandToTrc.setLastEditOperator(brand.getLastEditOperator());
-        brandToTrc.setLogo(brand.getLogo());
-        brandToTrc.setName(brand.getName());
-        brandToTrc.setSort(String.valueOf(brand.getSort()));
-        brandToTrc.setSource(brand.getSource());
-        brandToTrc.setWebUrl(brand.getWebUrl());
+        brandToTrc.setAlise(brand.getAlise() == null ? "" : brand.getAlise());
+        brandToTrc.setBrandCode(brand.getBrandCode() == null ? "" : brand.getBrandCode());
+        brandToTrc.setCreateOperator(brand.getCreateOperator() == null ? "" : brand.getCreateOperator());
+        brandToTrc.setIsDeleted(brand.getIsDeleted() == null ? "" : brand.getIsDeleted());
+        brandToTrc.setIsValid(brand.getIsValid() == null ? "" : brand.getIsValid());
+        brandToTrc.setLastEditOperator(brand.getLastEditOperator() == null ? "" : brand.getLastEditOperator());
+        brandToTrc.setLogo(brand.getLogo() == null ? "" : brand.getLogo());
+        brandToTrc.setName(brand.getName() == null ? "" : brand.getName());
+        brandToTrc.setSort(String.valueOf(brand.getSort() == null ? "" : brand.getSort()));
+        brandToTrc.setSource(brand.getSource() == null ? "" : brand.getSource());
+        brandToTrc.setWebUrl(brand.getWebUrl() == null ? "" : brand.getWebUrl());
+        //model中字段以字典序排序
         Field[] field = brandToTrc.getClass().getDeclaredFields(); // 获取实体类的所有属性，返回Field数组
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(action).append("|").append(changeTime).append("|").append(noticeNum).append("|");
@@ -72,7 +69,7 @@ public class BrandServiceImpl implements BrandService {
         params.put("changeTime", changeTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
-        params.put("brand",brandToTrc );
+        params.put("brand", brandToTrc);
         try {
             //TODO URL
             return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);
