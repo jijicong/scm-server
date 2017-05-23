@@ -95,6 +95,12 @@ public class SupplyConstants {
         public static final class CategoryBrands{
             //分类品牌列表查询路径
             public static final String CATEGORY_BAAND_LIST = "categoryBrands";
+
+            //分类品牌关联
+            public static final String CATEGORY_BRAND_LINK ="link";
+
+//            //已经关联的分类品牌
+//            public static final String CATEGORY_BRAND_PAGE = "categoryBrandPage";
         }
 
 
