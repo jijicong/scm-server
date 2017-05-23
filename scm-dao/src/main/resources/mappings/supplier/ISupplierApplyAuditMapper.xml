@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.trc.mapper.supplier.ISupplierApplyMapper">
-    <resultMap id="supplierApplyMap" type="org.trc.domain.supplier.SupplierApply">
+<mapper namespace="org.trc.mapper.supplier.ISupplierApplyAuditMapper">
+    <resultMap id="supplierApplyAuditMap" type="org.trc.domain.supplier.SupplierApplyAudit">
         <result property="id" column="id"/>
         <result property="applyCode" column="apply_code"/>
         <result property="supplierId" column="supplier_id"/>
@@ -20,33 +20,32 @@
         <result property="supplierKindCode" column="supplier_kind_code"/>
         <result property="supplierTypeCode" column="supplier_type_code"/>
         <result property="channelName" column="channelName"/>
-
     </resultMap>
 
-    <sql id="supplierApplyColumns">
+    <sql id="supplierApplyAuditColumns">
           a.id,a.apply_code,a.supplier_id,a.channel_id,a.supplier_code,a.channel_code,
           a.description,a.status,a.is_deleted,a.audit_opinion,a.create_operator,a.create_time,a.update_time,b.contact,b.supplier_name,b.supplier_kind_code,b.supplier_type_code,c.name AS 'channelName'
     </sql>
 
-    <sql id="supplierApplyJoins">
+    <sql id="supplierApplyAuditJoins">
         LEFT JOIN supplier b ON a.supplier_id=b.id
         LEFT JOIN channel c ON  a.channel_id=c.id
     </sql>
 
-    <select id="selectList" resultMap="supplierApplyMap" parameterType="java.util.Map">
+    <select id="selectList" resultMap="supplierApplyAuditMap" parameterType="java.util.Map">
         SELECT
-        <include refid="supplierApplyColumns"/>
+        <include refid="supplierApplyAuditColumns"/>
         FROM apply_for_supplier a
-        <include refid="supplierApplyJoins"/>
+        <include refid="supplierApplyAuditJoins"/>
         <where>
             <if test="supplierName != null and supplierName != ''">
-                AND b.supplier_name = #{supplierName}
+                AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
             <if test="supplierCode != null and supplierCode != ''">
-                AND a.supplier_code = #{supplierCode}
+                AND a.supplier_code = <![CDATA[LIKE '%${supplierCode}%']]>
             </if>
             <if test="contact != null and contact != ''">
-                AND b.contact = #{contact}
+                AND b.contact = <![CDATA[LIKE '%${contact}%']]>
             </if>
             <choose>
                 <when test="status != null and status != ''">
@@ -69,7 +68,7 @@
     <select id="selectSupplierApplyCount" resultType="java.lang.Integer" parameterType="java.util.Map">
         SELECT COUNT(0)
         FROM apply_for_supplier a
-        <include refid="supplierApplyJoins"/>
+        <include refid="supplierApplyAuditJoins"/>
         <where>
             <if test="supplierName != null and supplierName != ''">
                 AND b.supplier_name = #{supplierName}
@@ -97,11 +96,11 @@
         </where>
     </select>
 
-    <select id="selectOneById" resultMap="supplierApplyMap" parameterType="java.lang.Long">
+    <select id="selectOneById" resultMap="supplierApplyAuditMap" parameterType="java.lang.Long">
         SELECT
-        <include refid="supplierApplyColumns"/>
+        <include refid="supplierApplyAuditColumns"/>
         FROM apply_for_supplier a
-        <include refid="supplierApplyJoins"/>
+        <include refid="supplierApplyAuditJoins"/>
         <where>
             AND a.id=#{id}
         </where>

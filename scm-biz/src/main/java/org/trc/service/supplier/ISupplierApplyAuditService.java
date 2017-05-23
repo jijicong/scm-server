@@ -1,9 +1,7 @@
 package org.trc.service.supplier;
 
-import org.apache.ibatis.annotations.Param;
-import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.service.IBaseService;
-import org.trc.service.impl.BaseService;
 
 import java.util.List;
 import java.util.Map;
@@ -11,14 +9,14 @@ import java.util.Map;
 /**
  * Created by hzqph on 2017/5/12.
  */
-public interface ISupplierApplyService extends IBaseService<SupplierApply, Long> {
+public interface ISupplierApplyAuditService extends IBaseService<SupplierApplyAudit, Long> {
 
     /**
      * 供应商审核分页查询中的列表查询
      * @param map
      * @return
      */
-    List<SupplierApply> selectList(Map<String, Object> map);
+    List<SupplierApplyAudit> selectList(Map<String, Object> map);
 
     /**
      * 供应商审核分页查询中获取记录总数
@@ -32,5 +30,5 @@ public interface ISupplierApplyService extends IBaseService<SupplierApply, Long>
      * @param id
      * @return
      */
-    SupplierApply selectOneById(Long id);
+    SupplierApplyAudit selectOneById(Long id);
 }

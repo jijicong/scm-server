@@ -11,7 +11,7 @@ import javax.ws.rs.PathParam;
  * Created by hzqph on 2017/5/12.
  */
 @Table(name = "apply_for_supplier")
-public class SupplierApply extends BaseDO {
+public class SupplierApplyAudit extends BaseDO {
 
     @PathParam("id")
     @Id

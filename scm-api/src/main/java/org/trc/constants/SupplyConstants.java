@@ -336,14 +336,26 @@ public class SupplyConstants {
         }
 
         /**
-         * 供应商申请审批
+         * 供应商申请
          */
         public static final class SupplierApply {
-            //供应商申请审批分页
+            //供应商申请分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
 
-            //供应商申请审核信息路径
+            //供应商申请信息路径
             public static final String  SUPPLIER_APPLY= "supplierApply";
+
+        }
+
+        /**
+         * 供应商申请审批
+         */
+        public static final class SupplierApplyAudit {
+            //供应商申请审批分页
+            public static final String SUPPLIER_APPLY_AUDIT_PAGE = "supplierApplyAuditPage";
+
+            //供应商申请审核信息路径
+            public static final String  SUPPLIER_APPLY_AUDIT= "supplierApplyAudit";
 
         }
 
