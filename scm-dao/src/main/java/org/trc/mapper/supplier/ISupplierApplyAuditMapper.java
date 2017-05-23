@@ -14,7 +14,7 @@ public interface ISupplierApplyAuditMapper extends BaseMapper<SupplierApplyAudit
 
     List<SupplierApplyAudit> selectList(Map<String, Object> map);
 
-    int selectSupplierApplyCount(Map<String, Object> map);
+    int selectSupplierApplyAuditCount(Map<String, Object> map);
 
     SupplierApplyAudit selectOneById(@Param(value="id")Long id);
 

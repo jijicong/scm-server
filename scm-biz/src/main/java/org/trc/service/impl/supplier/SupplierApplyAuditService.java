@@ -26,7 +26,7 @@ public class SupplierApplyAuditService extends BaseService<SupplierApplyAudit,Lo
 
     @Override
     public int selectCount(Map<String, Object> map) {
-        return mapper.selectSupplierApplyCount(map);
+        return mapper.selectSupplierApplyAuditCount(map);
     }
 
     @Override
