@@ -43,6 +43,7 @@ public class BrandServiceImpl implements BrandService {
         brandToTrc.setSort(String.valueOf(brand.getSort()));
         brandToTrc.setSource(brand.getSource());
         brandToTrc.setWebUrl(brand.getWebUrl());
+        //model中字段以字典序排序
         Field[] field = brandToTrc.getClass().getDeclaredFields(); // 获取实体类的所有属性，返回Field数组
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(action).append("|").append(changeTime).append("|").append(noticeNum).append("|");
@@ -72,7 +73,7 @@ public class BrandServiceImpl implements BrandService {
         params.put("changeTime", changeTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
-        params.put("brand",brandToTrc );
+        params.put("brand", brandToTrc);
         try {
             //TODO URL
             return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);
