@@ -315,6 +315,8 @@ public class SupplyConstants {
             public static final String SUPPLIER_LIST = "suppliers";
             //供应商路径
             public static final String SUPPLIER = "supplier";
+            //启用/停用
+            public static final String IS_VALID = "isValid";
         }
 
         /**
