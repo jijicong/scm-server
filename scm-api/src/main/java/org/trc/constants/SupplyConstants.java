@@ -392,6 +392,24 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 商品
+     */
+    public static final class Goods {
+
+        public static final String ROOT = "goods";
+
+        //商品分页查询路径
+        public static final String GOODS_PAGE = "goodsPage";
+        //商品列表查询路径
+        public static final String GOODS_LIST = "goodsList";
+        //商品路径
+        public static final String GOODS = "goods";
+        //启用/停用
+        public static final String IS_VALID = "isValid";
+
+    }
+
 
     /**
      * 下拉列表
@@ -424,6 +442,11 @@ public class SupplyConstants {
         public static final String SUPPLIER_NAME = "GYS";
         //供应商编码长度
         public static final Integer SUPPLIER_LENGTH = 6;
+
+        //SPU名称
+        public static final String SPU_NAME = "SPU";
+        //SPU长度
+        public static final Integer SPU_LENGTH = 5;
 
 
         //序列号查询路径
