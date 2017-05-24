@@ -8,6 +8,7 @@ import org.trc.custom.CustomDateSerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
@@ -32,6 +33,15 @@ public class CategoryProperty {
     @FormParam("propertySort")
     @NotEmpty
     private Integer propertySort;
+
+    @Transient
+    private String name;
+    @Transient
+    private String typeCode;
+    @Transient
+    private String valueType;
+
+
 
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime; //创建时间
@@ -79,4 +89,27 @@ public class CategoryProperty {
         this.createTime = createTime;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTypeCode() {
+        return typeCode;
+    }
+
+    public void setTypeCode(String typeCode) {
+        this.typeCode = typeCode;
+    }
+
+    public String getValueType() {
+        return valueType;
+    }
+
+    public void setValueType(String valueType) {
+        this.valueType = valueType;
+    }
 }

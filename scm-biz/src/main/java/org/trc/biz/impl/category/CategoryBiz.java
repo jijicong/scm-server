@@ -1,6 +1,8 @@
 package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.trc.exception.CategoryException;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.category.TableDate;
 import org.trc.form.category.TreeNode;
 import org.trc.service.category.*;
 import org.trc.util.AssertUtil;
@@ -317,19 +320,36 @@ public class CategoryBiz implements ICategoryBiz {
      * 查询已经关联的属性
      */
     @Override
-    public List<Property> queryCategoryProperty(Long categoryId) throws Exception {
+    public List<CategoryProperty> queryCategoryProperty(Long categoryId) throws Exception {
         AssertUtil.notNull(categoryId, "查询分类关联属性categoryId为空");
         Example example = new Example(CategoryProperty.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("categoryId", categoryId);
-        example.orderBy("sort").asc();
+        example.orderBy("propertySort").asc();
         List<CategoryProperty> categoryProperties = categoryPropertyService.selectByExample(example);
         List<Long> propertyIds = new ArrayList<>();
         for (CategoryProperty categoryProperty : categoryProperties) {
             propertyIds.add(categoryProperty.getPropertyId());
         }
         List<Property> propertyList = propertyService.queryPropertyList(propertyIds);
-        return propertyList;
+
+        /*Collections.sort(propertyList, new Comparator<Property>() {
+            @Override
+            public int compare(Property o1, Property o2) {
+
+                return 0;
+            }
+        });*/
+        for (CategoryProperty c : categoryProperties) {
+            for (Property p : propertyList) {
+                if (StringUtils.equals(c.getPropertyId().toString(), p.getId().toString())) {
+                    c.setName(p.getName());
+                    c.setTypeCode(p.getTypeCode());
+                    c.setValueType(p.getValueType());
+                }
+            }
+        }
+        return categoryProperties;
     }
 
     /**
@@ -355,4 +375,47 @@ public class CategoryBiz implements ICategoryBiz {
         categoryProperty.setPropertySort(property.getSort());
         categoryPropertyService.insert(categoryProperty);
     }
+
+    @Override
+    public void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception {
+        AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
+        AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
+        List<TableDate> tableDates = JSONArray.parseArray(jsonDate, TableDate.class);
+        List<CategoryProperty> insertProperties = new ArrayList<>();
+        List<CategoryProperty> sortProperties = new ArrayList<>();
+        List<CategoryProperty> delProperties = new ArrayList<>();
+        for (TableDate tableDate : tableDates) {
+            if (ZeroToNineEnum.ONE.getCode().equals(tableDate.getStatus())) {
+                CategoryProperty categoryProperty = new CategoryProperty();
+                categoryProperty.setPropertySort(tableDate.getIndex());
+                categoryProperty.setCategoryId(categoryId);
+                categoryProperty.setCreateTime(Calendar.getInstance().getTime());
+                categoryProperty.setPropertyId(tableDate.getId());
+                insertProperties.add(categoryProperty);
+            } else if (ZeroToNineEnum.THREE.getCode().equals(tableDate.getStatus())) {
+                CategoryProperty categoryProperty = new CategoryProperty();
+                categoryProperty.setPropertyId(tableDate.getId());
+                categoryProperty.setPropertySort(tableDate.getIndex());
+                delProperties.add(categoryProperty);
+            } else {
+                CategoryProperty categoryProperty = new CategoryProperty();
+                categoryProperty.setCategoryId(categoryId);
+                categoryProperty.setId(tableDate.getId());
+                categoryProperty.setPropertyId(tableDate.getPropertyId());
+                categoryProperty.setPropertySort(tableDate.getIndex());
+                sortProperties.add(categoryProperty);
+            }
+        }
+        if (insertProperties.size() > 0 && insertProperties != null) {
+            categoryPropertyService.insertList(insertProperties);
+        } else if (delProperties.size() > 0 && delProperties != null) {
+            categoryPropertyService.deleteCategoryPropertyList(delProperties);
+        }
+        for (CategoryProperty categoryProperty:  sortProperties){
+            categoryPropertyService.updateByPrimaryKey(categoryProperty);
+        }
+
+    }
+
+
 }

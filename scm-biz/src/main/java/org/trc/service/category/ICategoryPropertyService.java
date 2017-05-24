@@ -12,5 +12,12 @@ import java.util.List;
  */
 public interface ICategoryPropertyService extends IBaseService<CategoryProperty, Long>{
 
-
+    /**
+     * 更新排序
+     */
+    void updateCategoryPropertySort(List<CategoryProperty> categoryPropertyList) throws Exception;
+    /**
+     * 删除关联的属性
+     */
+    void deleteCategoryPropertyList (List<CategoryProperty> categoryPropertyList) throws Exception;
 }

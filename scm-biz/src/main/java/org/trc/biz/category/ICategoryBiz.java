@@ -92,10 +92,15 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    List<Property> queryCategoryProperty(Long id) throws Exception;
+    List<CategoryProperty> queryCategoryProperty(Long id) throws Exception;
 
     /**
      * 关联分类品牌
      */
     void linkCategoryProperty(Long categoryId, Long propertyId) throws Exception;
+
+    /**
+     * 更新分类属性
+     */
+    void  updateCategoryProperty(Long categoryId,String jsonDate) throws Exception;
 }

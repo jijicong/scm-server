@@ -115,6 +115,8 @@ public class SupplyConstants {
 
             //分类属性关联
             public static final String CATEGORY_PROPERTY_LINK ="linkProperty";
+            //更新分类属性关联
+            public static final String CATEGORY_PROPERTY_UPDATE ="updateProperty";
         }
 
         /**

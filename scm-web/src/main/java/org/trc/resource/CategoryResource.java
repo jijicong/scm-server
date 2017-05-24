@@ -9,10 +9,12 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
+import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.category.Property;
 import org.trc.enums.SourceEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.category.TableDate;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
@@ -185,7 +187,7 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_PAGE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Property>> queryCategoryProperty(@PathParam("id") Long id) throws Exception {
+    public AppResult<List<CategoryProperty>> queryCategoryProperty(@PathParam("id") Long id) throws Exception {
         return ResultUtil.createSucssAppResult("查询分类关联属性", categoryBiz.queryCategoryProperty(id));
     }
 
@@ -196,6 +198,15 @@ public class CategoryResource {
     public AppResult linkCategoryProperty(@PathParam("id") Long id, @FormParam("propertyId") Long propertyId) throws Exception {
         categoryBiz.linkCategoryProperty(id, propertyId);
         return ResultUtil.createSucssAppResult("分类属性关联成功", "");
+    }
+
+    @PUT
+    @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_UPDATE + "/{id}")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateCategoryProperty(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate) throws Exception {
+        categoryBiz.updateCategoryProperty(id, jsonDate);
+        return ResultUtil.createSucssAppResult("分类属性保存成功", "");
     }
 
 }
