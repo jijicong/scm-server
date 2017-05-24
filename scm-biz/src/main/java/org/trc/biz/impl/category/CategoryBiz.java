@@ -322,12 +322,14 @@ public class CategoryBiz implements ICategoryBiz {
         Example example = new Example(CategoryProperty.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("categoryId", categoryId);
+        example.orderBy("sort").asc();
         List<CategoryProperty> categoryProperties = categoryPropertyService.selectByExample(example);
         List<Long> propertyIds = new ArrayList<>();
         for (CategoryProperty categoryProperty : categoryProperties) {
             propertyIds.add(categoryProperty.getPropertyId());
         }
-        return propertyService.queryPropertyList(propertyIds);
+        List<Property> propertyList = propertyService.queryPropertyList(propertyIds);
+        return propertyList;
     }
 
     /**
@@ -344,10 +346,13 @@ public class CategoryBiz implements ICategoryBiz {
         Category category = new Category();
         category.setId(categoryId);
         category = categoryService.selectOne(category);
+        Property property = new Property();
+        property.setId(category.getId());
+        property = propertyService.selectOne(property);
         CategoryProperty categoryProperty = new CategoryProperty();
         categoryProperty.setCategoryId(category.getId());
         categoryProperty.setPropertyId(propertyId);
-        categoryProperty.setPropertySort(propertyId);
+        categoryProperty.setPropertySort(property.getSort());
         categoryPropertyService.insert(categoryProperty);
     }
 }
