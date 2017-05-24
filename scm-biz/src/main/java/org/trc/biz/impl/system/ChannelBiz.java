@@ -88,6 +88,7 @@ public class ChannelBiz implements IChannelBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveChannel(Channel channel) throws Exception {
+
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
         if (null != tmp) {
@@ -96,36 +97,18 @@ public class ChannelBiz implements IChannelBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
         ParamsUtil.setBaseDO(channel);
-        int number=0;
-        try{
-            number = saveChannelAssist(channel,SERIALNAME);
-        } catch (DuplicateKeyException e){//唯一性索引抛出的异常
-            //第二次查询，插入
-            LOGGER.error(e.getMessage());
-            try{
-                number = saveChannelAssist(channel,SERIALNAME);
-            }catch (DuplicateKeyException ex){
-                String msg = CommonUtil.joinStr("保存渠道", JSON.toJSONString(channel), "数据库操作失败").toString();
-                LOGGER.error(msg);
-                throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);
-            }
-        }
-        int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
-        if (assess < 1) {
-            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(channel), "数据库操作失败").toString();
+        int count=0;
+        String code = serialUtilService.generateCode(LENGTH,SERIALNAME);
+        channel.setCode(code);
+        count = channelService.insert(channel);
+        if (count<1){
+            String msg = CommonUtil.joinStr("渠道保存,数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
+
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private int saveChannelAssist(Channel channel,String name) throws Exception{
-        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
-        channel.setCode(code);
-        int count = channelService.insert(channel);
-        return number;
-    }
 
     @Override
     public void updateChannel(Channel channel) throws Exception {

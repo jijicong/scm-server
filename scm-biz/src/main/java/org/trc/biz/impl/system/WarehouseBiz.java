@@ -75,8 +75,16 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
         ParamsUtil.setBaseDO(warehouse);
 
-        int number = 0;
-        try{
+        int count = 0;
+        String code = serialUtilService.generateCode(LENGTH,SERIALNAME);
+        warehouse.setCode(code);
+        count = warehouseService.insert(warehouse);
+        if (count<1){
+            String msg = CommonUtil.joinStr("仓库保存,数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+        /*try{
             number = saveWarehouseAssist(warehouse,SERIALNAME);
         }catch (DuplicateKeyException e){//唯一性索引抛出的异常
             LOGGER.error(e.getMessage());
@@ -87,22 +95,23 @@ public class WarehouseBiz implements IWarehouseBiz {
                 LOGGER.error(msg);
                 throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);
             }
-        }
-        int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
+        }*/
+
+        /*int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
         if (assess < 1) {
             String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(warehouse), "数据库操作失败").toString();
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
-        }
+        }*/
     }
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    /*@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     private int saveWarehouseAssist(Warehouse warehouse,String name) throws Exception{
         int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
         String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码
         warehouse.setCode(code);//仓库的流水号为CK00000
         int count = warehouseService.insert(warehouse);
         return number;
-    }
+    }*/
     @Override
     public Warehouse findWarehouseByName(String name) throws Exception {
 
