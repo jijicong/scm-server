@@ -31,7 +31,7 @@ public class CategoryProperty {
     private Long propertyId;
     @FormParam("propertySort")
     @NotEmpty
-    private Long propertySort;
+    private Integer propertySort;
 
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime; //创建时间
@@ -63,11 +63,11 @@ public class CategoryProperty {
         this.propertyId = propertyId;
     }
 
-    public Long getPropertySort() {
+    public Integer getPropertySort() {
         return propertySort;
     }
 
-    public void setPropertySort(Long propertySort) {
+    public void setPropertySort(Integer propertySort) {
         this.propertySort = propertySort;
     }
 
