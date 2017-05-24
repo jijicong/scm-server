@@ -99,9 +99,11 @@ public class SupplyConstants {
             //分类品牌关联
             public static final String CATEGORY_BRAND_LINK ="link";
 
-            //已经关联的分类属性
-            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
+//            //已经关联的分类品牌
+//            public static final String CATEGORY_BRAND_PAGE = "categoryBrandPage";
         }
+
+
         /**
          * 分类属性
          */
@@ -274,8 +276,12 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_PAGE = "purchaseGroupPage";
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
+        //根据采购组的编码查询
+        public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
+        //根据采购组id查询用户
+        public static final String PURCHASE_GROUP_USER = "purchaseGroup/updateState";
     }
     /**
      *七牛
@@ -351,14 +357,26 @@ public class SupplyConstants {
         }
 
         /**
-         * 供应商申请审批
+         * 供应商申请
          */
         public static final class SupplierApply {
-            //供应商申请审批分页
+            //供应商申请分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
 
-            //供应商申请审核信息路径
+            //供应商申请信息路径
             public static final String  SUPPLIER_APPLY= "supplierApply";
+
+        }
+
+        /**
+         * 供应商申请审批
+         */
+        public static final class SupplierApplyAudit {
+            //供应商申请审批分页
+            public static final String SUPPLIER_APPLY_AUDIT_PAGE = "supplierApplyAuditPage";
+
+            //供应商申请审核信息路径
+            public static final String  SUPPLIER_APPLY_AUDIT= "supplierApplyAudit";
 
         }
 
