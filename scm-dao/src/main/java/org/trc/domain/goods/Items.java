@@ -1,32 +1,62 @@
 package org.trc.domain.goods;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
+
 public class Items extends BaseDO{
+
+    @PathParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("spuCode")
+    @NotEmpty
+    @Length(max = 64, message = "商品SPU编号长度不能超过64个")
     private String spuCode;
-
+    @FormParam("name")
+    @NotEmpty
+    @Length(max = 128, message = "商品名称长度不能超过128个")
     private String name;
-
+    @FormParam("categoryId")
+    @NotEmpty
     private Long categoryId;
-
+    @Transient
+    private String categoryName;//分类名称
+    @FormParam("brandId")
+    @NotEmpty
     private Long brandId;
-
+    @Transient
+    private String brandName;//供应商名称
+    @FormParam("tradeType")
+    @NotEmpty
+    @Length(max = 32, message = "贸易类型长度不能超过32个")
     private String tradeType;
-
+    @FormParam("itemNo")
+    @Length(max = 32, message = "商品货号长度不能超过32个")
     private String itemNo;
-
+    @FormParam("weight")
     private Long weight;
-
+    @FormParam("producer")
+    @Length(max = 128, message = "生产商长度不能超过32个")
     private String producer;
-
+    @FormParam("marketPrice")
     private Long marketPrice;
-
+    @FormParam("pictrue")
+    @Length(max = 256, message = "商品图片路径长度不能超过256个")
     private String pictrue;
-
+    @FormParam("remark")
+    @Length(max = 512, message = "备注长度不能超过512个")
     private String remark;
-
+    @FormParam("properties")
+    @Length(max = 512, message = "属性量长度不能超过512个")
     private String properties;
 
 
@@ -134,4 +164,19 @@ public class Items extends BaseDO{
         this.properties = properties == null ? null : properties.trim();
     }
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
 }

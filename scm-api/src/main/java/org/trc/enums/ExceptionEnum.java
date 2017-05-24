@@ -31,6 +31,10 @@ public enum ExceptionEnum{
     SUPPLIER_SAVE_EXCEPTION("300101","供应商保存异常"),
     SUPPLIER_UPDATE_EXCEPTION("300102","供应商更新异常"),
 
+    GOODS_QUERY_EXCEPTION("400100","商品查询异常"),
+    GOODS_SAVE_EXCEPTION("400101","商品保存异常"),
+    GOODS_UPDATE_EXCEPTION("400102","商品更新异常"),
+
     FILE_UPLOAD_EXCEPTION("1000100","文件上传异常"),
     FILE_DOWNLOAD_EXCEPTION("1000101","文件下载异常"),
     FILE_SHOW_EXCEPTION("1000102","文件显示异常"),
