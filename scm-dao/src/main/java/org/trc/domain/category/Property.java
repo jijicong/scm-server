@@ -30,7 +30,7 @@ public class Property extends BaseDO {
     private String valueType;//属性值类型
     @NotEmpty
     @FormParam("sort")
-    private String sort;//排序
+    private Integer sort;//排序
     @Transient
     @FormParam("gridValue")
     private String gridValue;
@@ -75,11 +75,11 @@ public class Property extends BaseDO {
         this.valueType = valueType == null ? null : valueType.trim();
     }
 
-    public String getSort() {
+    public Integer getSort() {
         return sort;
     }
 
-    public void setSort(String sort) {
+    public void setSort(Integer sort) {
         this.sort = sort;
     }
 
