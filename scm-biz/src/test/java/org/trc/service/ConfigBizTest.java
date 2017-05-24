@@ -25,7 +25,7 @@ import java.util.List;
  * Created by hzwdx on 2017/4/21.
  */
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
-@ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
+@ContextConfiguration({"classpath:config/dev/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
 @TestExecutionListeners(TransactionalTestExecutionListener.class)
 @Transactional
 public class ConfigBizTest extends AbstractJUnit4SpringContextTests {

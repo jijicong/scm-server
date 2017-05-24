@@ -4,13 +4,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trc.framework.core.spring.SpringContextHolder;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Set;
 
@@ -80,7 +83,7 @@ public class RedisUtil {
 		return false;
 	}
 
-	public static Object getObject(String key) {
+	public static Object getObject(String key) throws RedisConnectionFailureException {
 		byte[] result = null;
 		Jedis jedis = null;
 		Object obj = null;
@@ -91,11 +94,12 @@ public class RedisUtil {
 				if (result != null) {
 					obj = unserizlize(result);
 				}
-				// if(obj instanceof T){
-				//
-				// }
 			}
-		} catch (Exception e) {
+		}catch (Exception e) {
+			if (e instanceof JedisConnectionException || e instanceof SocketTimeoutException)
+			{
+				throw new RedisConnectionFailureException("redis连接超时异常");
+			}
 			logger.error("获取缓存对象失败", e);
 		} finally {
 			returnResource(jedis);
@@ -161,7 +165,7 @@ public class RedisUtil {
 		return false;
 	}
 
-	public static String get(String key) {
+	public static String get(String key){
 		String result = null;
 		Jedis jedis = null;
 		try {
@@ -169,7 +173,7 @@ public class RedisUtil {
 			if (StringUtils.isNotEmpty(key)) {
 				result = jedis.get(key);
 			}
-		} catch (Exception e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			returnResource(jedis);
@@ -435,7 +439,11 @@ public class RedisUtil {
 	public static void main(String[] args) {
 
 		String goodsCode = "E07AA42A098F463DB9F0BDBF38C7D9AFsss";
-		System.out.println(get(goodsCode));
+		try {
+			System.out.println(get(goodsCode));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		long s = RedisUtil.incrBy(goodsCode, 10);
 		System.out.println(s);
 	}

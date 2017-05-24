@@ -105,6 +105,19 @@ public class SupplyConstants {
 
 
         /**
+         * 分类属性
+         */
+
+        public static final class CategoryProperty{
+
+            //已经关联的分类属性
+            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
+
+            //分类属性关联
+            public static final String CATEGORY_PROPERTY_LINK ="linkProperty";
+        }
+
+        /**
          * 属性管理
          */
         public static final class Property{
@@ -116,6 +129,8 @@ public class SupplyConstants {
             public static final String PROPERTY = "property";
 
             public static final String PROPERTY_STATE ="property/state";
+
+            public static final String PROPERTY_ALL ="propertyall";
         }
 
         /**
@@ -265,6 +280,8 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
+        //根据采购组id查询用户
+        public static final String PURCHASE_GROUP_USER = "purchaseGroup/updateState";
     }
     /**
      *七牛
@@ -315,6 +332,8 @@ public class SupplyConstants {
             public static final String SUPPLIER_LIST = "suppliers";
             //供应商路径
             public static final String SUPPLIER = "supplier";
+            //启用/停用
+            public static final String IS_VALID = "isValid";
         }
 
         /**

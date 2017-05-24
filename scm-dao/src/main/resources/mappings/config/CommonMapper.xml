@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.config.ICommonMapper">
+    <resultMap id="common" type="org.trc.domain.config.Common">
+        <result property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="value" column="value"/>
+        <result property="type" column="type"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="deadTime" column="dead_time"/>
+    </resultMap>
+    <select id="selectByCode"  resultMap="common" >
+      SELECT
+          cc.id, cc.code, cc.value, cc.type, cc.description, cc.create_time, cc.update_time, cc.dead_time
+        FROM
+          common_config cc
+        WHERE
+         code = #{code,jdbcType=VARCHAR}
+    </select>
+</mapper>

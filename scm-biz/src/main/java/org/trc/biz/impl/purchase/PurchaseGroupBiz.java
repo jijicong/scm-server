@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
 import org.trc.enums.CommonExceptionEnum;
@@ -62,6 +63,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    public List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception {//查询该组id下的无效状态的用户
+        AssertUtil.notNull(id,"采购组id为空，查询采购组对应的无效状态的用户失败");
+        return purchaseGroupService.findPurchaseGroupMemberStateById(id);
+    }
+
+    @Override
     public PurchaseGroup findPurchaseGroupByCode(String code) throws Exception {
         if (StringUtils.isBlank(code)) {
             String msg = CommonUtil.joinStr("根据采购组编码查询采购组的参数code为空").toString();
@@ -109,6 +116,26 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updatePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
+        AssertUtil.notNull(purchaseGroup,"根据采购组信息修改采购组失败,采购信息为null");
+        purchaseGroup.setUpdateTime(Calendar.getInstance().getTime());
+        int count = purchaseGroupService.updateByPrimaryKeySelective(purchaseGroup);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改采购组",JSON.toJSONString(purchaseGroup),"数据库操作失败").toString();
+            LOGGER.error(msg);
+            throw new ConfigException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
+        }
+        int temp = purchaseGroupuUserRelationService.deleteByPurchaseGroupCode(purchaseGroup.getCode());
+        if (temp==0){ //初始化系统角色或者新增角色时，必须有对应的权限<权限不能为空>
+            String msg = CommonUtil.joinStr("根据采购组编码,采购组和用户关联删除失败").toString();
+            LOGGER.error(msg);
+            throw  new ConfigException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
+        }
+        savePurchaseGroupUserRelation(purchaseGroup.getCode(),purchaseGroup.getLeaderUserId(),purchaseGroup.getMemberUserId());
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -143,6 +170,18 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         String purchaseGroupCode = purchaseGroup.getCode();
         String laederUserId = purchaseGroup.getLeaderUserId();
         String memberUserStrs = purchaseGroup.getMemberUserId();
+        savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs);
+    }
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    private int savePurchaseGroupAssist(PurchaseGroup purchaseGroup,String name) throws Exception{
+        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
+        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
+        purchaseGroup.setCode(code);
+        int count = purchaseGroupService.insert(purchaseGroup);
+        return number;
+    }
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class) //保存采购组与用户的对应关系
+    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs){
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = new ArrayList<>();
         PurchaseGroupUserRelation purchaseGroupUserRelation = new PurchaseGroupUserRelation();//设置组长与采购组的关联关系
         purchaseGroupUserRelation.setIsValid(ValidEnum.VALID.getCode());
@@ -159,18 +198,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserRelation.setPurchaseGroupCode(purchaseGroupCode);
                 purchaseGroupUserRelation.setUserId(memberUserId);
                 purchaseGroupUserRelationList.add(purchaseGroupUserRelation);
-                //System.out.println(memberUserId+"||"+purchaseGroupuMemberUserRelation.getId());
             }
         }
         purchaseGroupuUserRelationService.insertList(purchaseGroupUserRelationList);
-    }
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private int savePurchaseGroupAssist(PurchaseGroup purchaseGroup,String name) throws Exception{
-        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
-        purchaseGroup.setCode(code);
-        int count = purchaseGroupService.insert(purchaseGroup);
-        return number;
     }
 
     @Override
