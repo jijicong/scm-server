@@ -6,6 +6,7 @@ import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.mapper.category.ICategoryBrandMapper;
+import org.trc.mapper.category.ICategoryPropertyMapper;
 import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.impl.BaseService;
@@ -17,6 +18,15 @@ import java.util.List;
  */
 @Service("categoryPropertyService")
 public class CategoryPropertyService extends BaseService<CategoryProperty, Long> implements ICategoryPropertyService {
+    @Autowired
+    private ICategoryPropertyMapper categoryPropertyMapper;
+    @Override
+    public void updateCategoryPropertySort(List<CategoryProperty> categoryPropertyList) throws Exception {
+        categoryPropertyMapper.updateCategoryPropertySort(categoryPropertyList);
+    }
 
-
+    @Override
+    public void deleteCategoryPropertyList(List<CategoryProperty> categoryPropertyList) throws Exception {
+        categoryPropertyMapper.deleteCategoryPropertyList(categoryPropertyList);
+    }
 }
