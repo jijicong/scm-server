@@ -1,6 +1,8 @@
 package org.trc.resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.DictType;
 import org.trc.domain.goods.Items;
@@ -20,17 +22,20 @@ import java.util.List;
 @Path(SupplyConstants.Goods.ROOT)
 public class GoodsResource {
 
+    @Autowired
+    private IGoodsBiz goodsBiz;
+
     @GET
     @Path(SupplyConstants.Goods.GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<DictType> goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
-        return null;
+    public Pagenation<Items> goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
+        return goodsBiz.ItemsPage(form, page);
     }
 
     @GET
     @Path(SupplyConstants.Goods.GOODS_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<DictType>> queryGoodsList(@BeanParam ItemsForm itemsForm) throws Exception {
+    public AppResult<List<Items>> queryGoodsList(@BeanParam ItemsForm itemsForm) throws Exception {
         //return ResultUtil.createSucssAppResult("查询商品列表成功", configBiz.queryDictTypes(dictTypeForm));
         return null;
     }
@@ -56,7 +61,7 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
-        //supplierBiz.updateValid(id, isValid);
+        goodsBiz.updateValid(id, isValid);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 
