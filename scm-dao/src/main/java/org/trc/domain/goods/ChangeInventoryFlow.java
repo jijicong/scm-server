@@ -1,45 +1,78 @@
 package org.trc.domain.goods;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.util.Date;
 
 public class ChangeInventoryFlow {
-
+    @PathParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String channelCode;
-
-    private String requestCode;
-
-    private String orderType;
-
-    private String orderCode;
-
-    private Long skuStockId;
-
+    @FormParam("skuCode")
+    @NotEmpty
+    @Length(max = 32, message = "sku编码长度不能超过32个")
     private String skuCode;
-
+    @FormParam("channelCode")
+    @NotEmpty
+    @Length(max = 32, message = "渠道编号长度不能超过32个")
+    private String channelCode;
+    @FormParam("requestCode")
+    @NotEmpty
+    @Length(max = 32, message = "请求编码长度不能超过32个")
+    private String requestCode;
+    @FormParam("orderType")
+    @NotEmpty
+    @Length(max = 32, message = "单据类型长度不能超过32个")
+    private String orderType;
+    @FormParam("orderCode")
+    @NotEmpty
+    @Length(max = 32, message = "订单编码长度不能超过32个")
+    private String orderCode;
+    @FormParam("skuStockId")
+    @NotEmpty
+    private Long skuStockId;
+    @FormParam("availableInventoryChange")
+    //@NotEmpty
     private Long availableInventoryChange;
-
+    @FormParam("frozenInventoryChange")
+    //@NotEmpty
     private Long frozenInventoryChange;
-
+    @FormParam("realInventoryChange")
+    //@NotEmpty
     private Long realInventoryChange;
-
+    @FormParam("defectiveInventoryChange")
+    //@NotEmpty
     private Long defectiveInventoryChange;
-
+    @FormParam("originalAvailableInventory")
+    //@NotEmpty
     private Long originalAvailableInventory;
-
+    @FormParam("originalFrozenInventory")
+    //@NotEmpty
     private Long originalFrozenInventory;
-
+    @FormParam("originalRealInventory")
+    //@NotEmpty
     private Long originalRealInventory;
-
+    @FormParam("originalDefectiveInventory")
+    //@NotEmpty
     private Long originalDefectiveInventory;
-
+    @FormParam("newestAvailableInventory")
+    //@NotEmpty
     private Long newestAvailableInventory;
-
+    @FormParam("newestFrozenInventory")
+    //@NotEmpty
     private Long newestFrozenInventory;
-
+    @FormParam("newestRealInventory")
+    //@NotEmpty
     private Long newestRealInventory;
-
+    @FormParam("newestDefectiveInventory")
+    //@NotEmpty
     private Long newestDefectiveInventory;
 
     private Date createTime;

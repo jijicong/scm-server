@@ -1,40 +1,65 @@
 package org.trc.domain.goods;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.util.Date;
 
-public class Skus  extends ScmDO {
+public class Skus extends ScmDO {
+
+    @PathParam("skuCode")
+    @Id
     private String skuCode;
-
+    @FormParam("itemId")
+    @NotEmpty
     private Long itemId;
-
+    @FormParam("spuCode")
+    @NotEmpty
+    @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
-
+    @FormParam("propertyValueId")
+    @Length(max = 64, message = "属性值id长度不能超过64个")
     private String propertyValueId;
-
+    @FormParam("propertyValue")
+    @Length(max = 128, message = "属性值长度不能超过128个")
     private String propertyValue;
-
+    @FormParam("barCode")
+    @NotEmpty
+    @Length(max = 64, message = "条形码长度不能超过32个")
     private String barCode;
-
+    @FormParam("marketPrice")
     private Long marketPrice;
-
+    @FormParam("predictChannelPrice")
     private Long predictChannelPrice;
-
+    @FormParam("picture")
+    @Length(max = 1024, message = "商品SKU图片长度不能超过1024个")
     private String picture;
-
+    @FormParam("channel1PreSellPrices")
+    @NotEmpty
     private Long channel1PreSellPrices;
-
+    @FormParam("channel2PreSellPrices")
+    @NotEmpty
     private Long channel2PreSellPrices;
-
+    @FormParam("channel3PreSellPrices")
+    @NotEmpty
     private Long channel3PreSellPrices;
-
+    @FormParam("channel4PreSellPrices")
+    @NotEmpty
     private Long channel4PreSellPrices;
-
+    @FormParam("channel5PreSellPrices")
+    @NotEmpty
     private Long channel5PreSellPrices;
-
+    @FormParam("channel6PreSellPrices")
+    @NotEmpty
     private Long channel6PreSellPrices;
-
+    @FormParam("channel7PreSellPrices")
+    @NotEmpty
     private Long channel7PreSellPrices;
 
 

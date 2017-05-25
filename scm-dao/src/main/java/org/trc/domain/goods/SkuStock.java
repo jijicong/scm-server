@@ -1,31 +1,56 @@
 package org.trc.domain.goods;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 
 public class SkuStock extends ScmDO {
 
+    @PathParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("spuCode")
+    @NotEmpty
+    @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
-
+    @FormParam("skuCode")
+    @NotEmpty
+    @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
-
+    @FormParam("supplierId")
     private Long supplierId;
-
+    @FormParam("supplierCode")
+    @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
-
+    @FormParam("warehouseId")
+    @NotEmpty
     private Long warehouseId;
-
+    @FormParam("warehouseCode")
+    @NotEmpty
+    @Length(max = 32, message = "仓库编号长度不能超过32个")
     private String warehouseCode;
-
+    @FormParam("warehouseItemId")
+    @NotEmpty
+    @Length(max = 32, message = "仓库对应itemId长度不能超过32个")
     private String warehouseItemId;
-
+    @FormParam("availableInventory")
+    @NotEmpty
     private Long availableInventory;
-
+    @FormParam("frozenInventory")
+    @NotEmpty
     private Long frozenInventory;
-
+    @FormParam("realInventory")
+    @NotEmpty
     private Long realInventory;
-
+    @FormParam("defectiveInventory")
+    @NotEmpty
     private Long defectiveInventory;
 
 

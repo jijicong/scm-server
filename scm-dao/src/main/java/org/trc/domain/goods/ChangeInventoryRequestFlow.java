@@ -1,22 +1,44 @@
 package org.trc.domain.goods;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.PathParam;
 import java.util.Date;
 
 public class ChangeInventoryRequestFlow {
-
+    @PathParam("id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @FormParam("channelCode")
+    @NotEmpty
+    @Length(max = 32, message = "渠道编号长度不能超过32个")
     private String channelCode;
-
+    @FormParam("requestCode")
+    @NotEmpty
+    @Length(max = 32, message = "请求编码长度不能超过32个")
     private String requestCode;
-
+    @FormParam("orderType")
+    @NotEmpty
+    @Length(max = 32, message = "单据类型长度不能超过32个")
     private String orderType;
-
+    @FormParam("orderCode")
+    @NotEmpty
+    @Length(max = 32, message = "单据编码长度不能超过32个")
     private String orderCode;
-
+    @FormParam("requestType")
+    @NotEmpty
+    @Length(max = 16, message = "请求类型长度不能超过16个")
     private String requestType;
-
-    private Long state;
+    @FormParam("state")
+    @NotEmpty
+    @Length(max = 16, message = "处理结果状态长度不能超过16个")
+    private String state;
 
     private Date createTime;
 
@@ -70,11 +92,11 @@ public class ChangeInventoryRequestFlow {
         this.requestType = requestType == null ? null : requestType.trim();
     }
 
-    public Long getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(Long state) {
+    public void setState(String state) {
         this.state = state;
     }
 
