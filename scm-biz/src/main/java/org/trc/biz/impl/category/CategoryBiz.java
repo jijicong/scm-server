@@ -296,7 +296,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception {
-        AssertUtil.notBlank(brandIds, "分类关联品牌brandIdID为空");
+//        AssertUtil.notBlank(brandIds, "分类关联品牌brandIdID为空");
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         List<Long> brandIdsList = Arrays.asList(StringUtil.splitByComma(brandIds));
         if (brandIdsList.size() > 0 && brandIdsList != null) {
