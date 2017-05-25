@@ -295,25 +295,35 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void linkCategoryBrands(Long categoryId, String brandIds) throws Exception {
+    public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception {
         AssertUtil.notBlank(brandIds, "分类关联品牌brandIdID为空");
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         List<Long> brandIdsList = Arrays.asList(StringUtil.splitByComma(brandIds));
-        List<Brand> brands = brandService.selectBrandList(brandIdsList);
-        Category category = new Category();
-        category.setId(categoryId);
-        category = categoryService.selectOne(category);
-        List<CategoryBrand> categoryBrands = new ArrayList<>();
-        for (Brand brand : brands) {
-            CategoryBrand categoryBrand = new CategoryBrand();
-            categoryBrand.setBrandCode(brand.getBrandCode());
-            categoryBrand.setBrandId(brand.getId());
-            categoryBrand.setCategoryId(category.getId());
-            categoryBrand.setCategoryCode(category.getCategoryCode());
-            categoryBrand.setCreateTime(Calendar.getInstance().getTime());
-            categoryBrands.add(categoryBrand);
+        if (brandIdsList.size() > 0 && brandIdsList != null) {
+            String[] delIds = delRecord.split(SupplyConstants.Symbol.COMMA);
+            if (delIds.length > 0 && !StringUtils.equals(delRecord, "")) {
+                for (String id : delIds) {
+                    categoryBrandService.deleteByPrimaryKey(Long.parseLong(id));
+                }
+            }
+            List<Brand> brands = brandService.selectBrandList(brandIdsList);
+            Category category = new Category();
+            category.setId(categoryId);
+            category = categoryService.selectOne(category);
+            List<CategoryBrand> categoryBrands = new ArrayList<>();
+            for (Brand brand : brands) {
+                CategoryBrand categoryBrand = new CategoryBrand();
+                categoryBrand.setBrandCode(brand.getBrandCode());
+                categoryBrand.setBrandId(brand.getId());
+                categoryBrand.setCategoryId(category.getId());
+                categoryBrand.setCategoryCode(category.getCategoryCode());
+                categoryBrand.setCreateTime(Calendar.getInstance().getTime());
+                categoryBrands.add(categoryBrand);
+            }
+            if (categoryBrands.size() > 0 && categoryBrands != null) {
+                categoryBrandService.insertList(categoryBrands);
+            }
         }
-        categoryBrandService.insertList(categoryBrands);
     }
 
     /**
@@ -394,6 +404,7 @@ public class CategoryBiz implements ICategoryBiz {
                 insertProperties.add(categoryProperty);
             } else if (ZeroToNineEnum.THREE.getCode().equals(tableDate.getStatus())) {
                 CategoryProperty categoryProperty = new CategoryProperty();
+                categoryProperty.setId(tableDate.getId());
                 categoryProperty.setPropertyId(tableDate.getId());
                 categoryProperty.setPropertySort(tableDate.getIndex());
                 delProperties.add(categoryProperty);
@@ -409,9 +420,11 @@ public class CategoryBiz implements ICategoryBiz {
         if (insertProperties.size() > 0 && insertProperties != null) {
             categoryPropertyService.insertList(insertProperties);
         } else if (delProperties.size() > 0 && delProperties != null) {
-            categoryPropertyService.deleteCategoryPropertyList(delProperties);
+            for (CategoryProperty categoryProperty : delProperties) {
+                categoryPropertyService.deleteByPrimaryKey(categoryProperty.getId());
+            }
         }
-        for (CategoryProperty categoryProperty:  sortProperties){
+        for (CategoryProperty categoryProperty : sortProperties) {
             categoryPropertyService.updateByPrimaryKey(categoryProperty);
         }
 

@@ -178,8 +178,8 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds) throws Exception {
-        categoryBiz.linkCategoryBrands(id, brandIds);
+    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds,@FormParam("delRecord") String delRecord) throws Exception {
+        categoryBiz.linkCategoryBrands(id, brandIds,delRecord);
         return ResultUtil.createSucssAppResult("分类品牌关联成功", "");
     }
 
