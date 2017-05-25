@@ -31,6 +31,9 @@ public class PropertyValue extends BaseDO {
     @FormParam("sortStatus")
     @Transient
     private Integer sortStatus;
+    @Transient
+    private String picUrl;//图片url地址
+
     public Long getId() {
         return id;
     }
@@ -93,5 +96,13 @@ public class PropertyValue extends BaseDO {
 
     public void setSortStatus(Integer sortStatus) {
         this.sortStatus = sortStatus;
+    }
+
+    public String getPicUrl() {
+        return picUrl;
+    }
+
+    public void setPicUrl(String picUrl) {
+        this.picUrl = picUrl;
     }
 }
