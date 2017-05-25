@@ -7,6 +7,7 @@ import org.trc.domain.category.Property;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.TreeNode;
 
+import javax.ws.rs.FormParam;
 import java.util.List;
 
 /**
@@ -82,7 +83,7 @@ public interface ICategoryBiz {
      * @param brandIds
      * @throws Exception
      */
-    void linkCategoryBrands(Long categoryId, String brandIds) throws Exception;
+    void linkCategoryBrands(Long categoryId, String brandIds,String delRecord) throws Exception;
 
 
     /**

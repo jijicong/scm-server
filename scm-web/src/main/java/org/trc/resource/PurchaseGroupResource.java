@@ -55,6 +55,14 @@ public class PurchaseGroupResource {
         return ResultUtil.createSucssAppResult("根据name查询采购组信息成功", purchaseGroupBiz.findPurchaseByName(name)==null ? null :"1");
     }
 
+   /* @GET
+    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult findPurchaseGroups() throws Exception{
+        return null;
+    }*/
+
+
     @PUT
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
