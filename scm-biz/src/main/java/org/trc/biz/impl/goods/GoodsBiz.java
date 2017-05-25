@@ -211,7 +211,7 @@ public class GoodsBiz implements IGoodsBiz {
     @Override
     public void updateItems(Items items) throws Exception {
 
-    }
+    } 
 
     @Override
     public void updateValid(Long id, String isValid) throws Exception {
