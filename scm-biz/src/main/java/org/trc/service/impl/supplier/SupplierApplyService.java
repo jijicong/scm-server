@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.mapper.supplier.ISupplierApplyMapper;
+import org.trc.service.impl.BaseService;
 import org.trc.service.supplier.ISupplierApplyService;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Map;
  * Created by hzqph on 2017/5/23.
  */
 @Service("supplierApplyService")
-public class SupplierApplyService implements ISupplierApplyService {
+public class SupplierApplyService extends BaseService<SupplierApply,Long> implements ISupplierApplyService{
 
     @Autowired
     private ISupplierApplyMapper supplierApplyMapper;

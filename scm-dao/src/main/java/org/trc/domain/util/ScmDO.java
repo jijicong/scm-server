@@ -4,6 +4,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
 
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import java.util.Date;
 
@@ -19,7 +20,14 @@ public class ScmDO {
     private Date updateTime; //更新时间
 
     private String isDeleted; //是否删除:0-否,1-是
-
+    @Transient
+    private String deleteAuth;
+    @Transient
+    private String addAuth;
+    @Transient
+    private String updateAuth;
+    @Transient
+    private String selectAuth;
     public Date getCreateTime() {
         return createTime;
     }
@@ -42,5 +50,37 @@ public class ScmDO {
 
     public void setIsDeleted(String isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    public String getDeleteAuth() {
+        return deleteAuth;
+    }
+
+    public void setDeleteAuth(String deleteAuth) {
+        this.deleteAuth = deleteAuth;
+    }
+
+    public String getAddAuth() {
+        return addAuth;
+    }
+
+    public void setAddAuth(String addAuth) {
+        this.addAuth = addAuth;
+    }
+
+    public String getUpdateAuth() {
+        return updateAuth;
+    }
+
+    public void setUpdateAuth(String updateAuth) {
+        this.updateAuth = updateAuth;
+    }
+
+    public String getSelectAuth() {
+        return selectAuth;
+    }
+
+    public void setSelectAuth(String selectAuth) {
+        this.selectAuth = selectAuth;
     }
 }

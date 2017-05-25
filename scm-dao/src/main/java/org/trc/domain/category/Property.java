@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -28,7 +29,7 @@ public class Property extends BaseDO {
     @NotEmpty
     @FormParam("valueType")
     private String valueType;//属性值类型
-    @NotEmpty
+    @NotNull
     @FormParam("sort")
     private Integer sort;//排序
     @Transient

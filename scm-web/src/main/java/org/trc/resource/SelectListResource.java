@@ -39,14 +39,28 @@ public class SelectListResource {
     private static final String ROLE_TYPE="roleType";
     //用户类型字典类型编码
     private static final String USER_TYPE="userType";
-    //贸易类型字典类型编码
-    private static final String TRADE_TYPE="tradeType";
-
+    //采购类型
+    private static final String PURCHASE_TYPE="purchaseType";
+    //付款方式
+    private static final String PAY_TYPE="payType";
     @GET
     @Path(SupplyConstants.Config.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> queryValidList(){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
+    }
+
+    @GET
+    @Path(SupplyConstants.SelectList.PURCHASE_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> purchaseType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询采购类型成功", configBiz.findDictsByTypeNo(PURCHASE_TYPE));
+    }
+    @GET
+    @Path(SupplyConstants.SelectList.PAY_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> payType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询付款方式成功", configBiz.findDictsByTypeNo(PAY_TYPE));
     }
 
     @GET
@@ -100,13 +114,6 @@ public class SelectListResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> userType() throws Exception{
         return ResultUtil.createSucssAppResult("查询用户类型成功", configBiz.findDictsByTypeNo(USER_TYPE));
-    }
-
-    @GET
-    @Path(SupplyConstants.SelectList.TRADE_TYPE)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> tradeType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询贸易类型成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.TRADE_TYPE));
     }
 
 }
