@@ -38,4 +38,23 @@ public interface ISupplierApplyBiz {
      * @throws Exception
      */
     Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel)throws Exception;
+
+    /**
+     * 保存供应商申请页面
+     * @param supplierApply
+     * @throws Exception
+     */
+    void saveSupplierApply(SupplierApply supplierApply)throws Exception;
+
+    /**
+     * 删除供应商申请
+     * @param supplierApplyId
+     * @throws Exception
+     */
+    void deleteSupplierApply(Long supplierApplyId)throws Exception;
+
+
+    void updateSupplierApply(SupplierApply supplierApply)throws Exception;
+
+    SupplierApply selectSupplierApplyById(Long id)throws Exception;
 }

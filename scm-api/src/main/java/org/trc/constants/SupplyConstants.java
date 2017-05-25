@@ -368,6 +368,7 @@ public class SupplyConstants {
             //供应商申请信息路径
             public static final String  SUPPLIER_APPLY= "supplierApply";
 
+
         }
 
         /**

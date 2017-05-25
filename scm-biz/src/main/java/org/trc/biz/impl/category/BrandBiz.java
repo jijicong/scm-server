@@ -89,25 +89,15 @@ public class BrandBiz implements IBrandBiz {
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
+        brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(brand.getCreateTime())));
         brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
-        int number=0;
-        try{
-            number =  saveBrandAssist(brand,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(brand.getCreateTime()));
-        }catch (DuplicateKeyException e){//唯一性索引抛出的异常
-            log.error(e.getMessage());
-            try{
-                number =  saveBrandAssist(brand,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(brand.getCreateTime()));
-            }catch (DuplicateKeyException ex){
-                String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
-                log.error(msg);
-                throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
-            }
-        }
-        int assess= serialUtilService.updateSerialByName(BRAND_CODE_EX_NAME,number);//修改流水的长度
-        if (assess < 1) {
-            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(brand), "数据库操作失败").toString();
+        ParamsUtil.setBaseDO(brand);
+        try {
+            brandService.insert(brand);
+        }catch (Exception e){
+            String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
         }
     }
 
@@ -190,14 +180,5 @@ public class BrandBiz implements IBrandBiz {
             }
         }
         return null;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private int saveBrandAssist(Brand brand,String ...names){
-        int number = serialUtilService.selectNumber(BRAND_CODE_EX_NAME);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(BRAND_CODE_LENGTH,number,names);//获得需要的code编码
-        brand.setBrandCode(code);
-        int count =brandService.insert(brand);
-        return count;
     }
 }
