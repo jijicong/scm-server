@@ -144,6 +144,9 @@ public class SupplyConstants {
             //属性值路径
             public static final String PROPERTY_VALUE = "propertyValue";
 
+            //根据多个属性ID查询属性值路径
+            public static final String MULTI_PROPERTY_ID_SEARCH_PROPERTY_VALUE_LIST = "propertyValues/multiIdsSearch";
+
         }
 
 
@@ -457,6 +460,9 @@ public class SupplyConstants {
         public static final String PURCHASE_TYPE="purchaseType";
         //付款的方式
         public static final String PAY_TYPE="payType";
+        //贸易类型
+        public static final String TRADE_TYPE="tradeType";
+
     }
 
     /**
