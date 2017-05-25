@@ -283,7 +283,26 @@ public class SupplyConstants {
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
         //根据采购组id查询用户
-        public static final String PURCHASE_GROUP_USER = "purchaseGroup/updateState";
+        public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
+    }
+    /**
+     * 采购订单管理
+     */
+    public static final class PurchaseOrder{
+        //根路径
+        public static final String ROOT = "purchase";
+        //采购订单分页查询
+        public static final String PURCHASE_ORDER_PAGE = "purchaseOrderPage";
+        //采购组名查询
+        public static final String PURCHASE_GROUP = "purchaseOrder";
+        //根据采购组的编码查询
+        //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
+        //采购单状态的修改
+        public static final String UPDATE_STATE = "purchaseOrder/updateState";
+        //根据采购单id查询采购单相关的信息
+        //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
+        //查询该渠道对应的供应商S
+        public static final String SUPPLIERS="suppliers";
     }
     /**
      *七牛
@@ -434,6 +453,10 @@ public class SupplyConstants {
         public static final String ROLE_TYPE="roleType";
         //用户类型字典类型编码
         public static final String USER_TYPE="userType";
+        //采购类型
+        public static final String PURCHASE_TYPE="purchaseType";
+        //付款的方式
+        public static final String PAY_TYPE="payType";
     }
 
     /**
