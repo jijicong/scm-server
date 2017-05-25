@@ -22,7 +22,7 @@ import java.util.List;
  * 泰然城分类回调
  * Created by hzdzf on 2017/5/24.
  */
-@Service("propertyService")
+//@Service("propertyService")
 public class PropertyServiceImpl implements PropertyService {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyServiceImpl.class);
