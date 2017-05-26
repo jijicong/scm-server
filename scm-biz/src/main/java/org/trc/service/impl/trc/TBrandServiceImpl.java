@@ -77,8 +77,7 @@ public class TBrandServiceImpl implements TBrandService {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
 
-        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/tairan/brand", params.toJSONString(), 1000);
+        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/tairan/brand", params.toJSONString(), 10000);
         logger.info(result);
-
     }
 }
