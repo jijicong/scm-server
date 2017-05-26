@@ -3,6 +3,7 @@ package org.trc.resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.supplier.ISupplierApplyBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.form.supplier.SupplierApplyAuditForm;
@@ -51,5 +52,34 @@ public class SupplierApplyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page) throws Exception {
         return supplierApplyBiz.supplierApplyPage(page, form);
+    }
+
+    @POST
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply)throws Exception{
+        supplierApplyBiz.saveSupplierApply(supplierApply);
+        return ResultUtil.createSucssAppResult("供应商申请成功","");
+    }
+
+    @PUT
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
+    public AppResult updateSupplierApply(@BeanParam SupplierApply supplierApply)throws Exception{
+        supplierApplyBiz.updateSupplierApply(supplierApply);
+        return ResultUtil.createSucssAppResult("供应商申请修改成功","");
+    }
+
+    @POST
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
+    public AppResult deleteSupplierApply(@PathParam("id")Long supplierApplyId)throws Exception{
+        supplierApplyBiz.deleteSupplierApply(supplierApplyId);
+        return ResultUtil.createSucssAppResult("供应商申请删除成功","");
+    }
+
+    @GET
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult selectSupplierById(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("供应商审核信息查询成功", supplierApplyBiz.selectSupplierApplyById(id));
     }
 }

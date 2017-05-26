@@ -40,8 +40,6 @@ public class SupplierBiz implements ISupplierBiz {
 
     private final static Logger log = LoggerFactory.getLogger(SupplierBiz.class);
 
-    private final static String SERIALNAME = "GYS";
-    private final static Integer LENGTH = 6;
     //供应商类型：国内供应商
     private static final String INTERNAL_SUPPLIER = "internalSupplier";
     //供应商类型：海外供应商
@@ -170,7 +168,7 @@ public class SupplierBiz implements ISupplierBiz {
         //参数校验
         supplierSaveCheck(supplier, certificate);
         //生成序列号
-        String code = String.valueOf(System.nanoTime());
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.SUPPLIER_LENGTH, SupplyConstants.Serial.SUPPLIER_NAME);
         supplier.setSupplierCode(code);
         //保存供应商
         saveSupplierBase(supplier);

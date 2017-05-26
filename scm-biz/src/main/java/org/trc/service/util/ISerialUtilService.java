@@ -12,4 +12,6 @@ public interface ISerialUtilService extends IBaseService<Serial,Long> {
 
     int updateSerialByName(String name,int number);
 
+    String generateCode(int length,String ...names);
+
 }

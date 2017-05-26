@@ -2,6 +2,7 @@ package org.trc.service.supplier;
 
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
+import org.trc.service.IBaseService;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import java.util.Map;
 /**
  * Created by hzqph on 2017/5/23.
  */
-public interface ISupplierApplyService {
+public interface ISupplierApplyService extends IBaseService<SupplierApply,Long>{
 
     /**
      * 供应商审核分页查询中的列表查询

@@ -30,6 +30,7 @@
         FROM apply_for_supplier a
         <include refid="supplierApplyJoins"/>
         <where>
+            AND a.is_deleted=0
             <if test="supplierName != null and supplierName != ''">
                 AND b.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
             </if>
@@ -46,9 +47,6 @@
                 <when test="status != null and status != ''">
                     AND a.status = #{status}
                 </when>
-                <otherwise>
-                    AND a.status!=0
-                </otherwise>
             </choose>
             <if test="startTime != null and startTime != ''">
                 AND a.update_time > #{startTime}
@@ -81,9 +79,6 @@
                 <when test="status != null and status != ''">
                     AND a.status = #{status}
                 </when>
-                <otherwise>
-                    AND a.status!=0
-                </otherwise>
             </choose>
             <if test="startTime != null and startTime != ''">
                 AND a.update_time > #{startTime}

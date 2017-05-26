@@ -23,8 +23,6 @@ import java.util.List;
 @Path(SupplyConstants.Config.ROOT)
 public class ConfigResource {
 
-    public static final String ENCODING = "UTF-8";
-
     @Autowired
     private ConfigBiz configBiz;
 

@@ -99,9 +99,11 @@ public class SupplyConstants {
             //分类品牌关联
             public static final String CATEGORY_BRAND_LINK ="link";
 
-            //已经关联的分类属性
-            public static final String CATEGORY_PROPERTY_PAGE = "categoryProperty";
+//            //已经关联的分类品牌
+//            public static final String CATEGORY_BRAND_PAGE = "categoryBrandPage";
         }
+
+
         /**
          * 分类属性
          */
@@ -113,6 +115,8 @@ public class SupplyConstants {
 
             //分类属性关联
             public static final String CATEGORY_PROPERTY_LINK ="linkProperty";
+            //更新分类属性关联
+            public static final String CATEGORY_PROPERTY_UPDATE ="updateProperty";
         }
 
         /**
@@ -139,6 +143,9 @@ public class SupplyConstants {
             public static final String PROPERTY_VALUE_LIST = "propertyValues/search";
             //属性值路径
             public static final String PROPERTY_VALUE = "propertyValue";
+
+            //根据多个属性ID查询属性值路径
+            public static final String MULTI_PROPERTY_ID_SEARCH_PROPERTY_VALUE_LIST = "propertyValues/multiIdsSearch";
 
         }
 
@@ -274,8 +281,31 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_PAGE = "purchaseGroupPage";
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
+        //根据采购组的编码查询
+        public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
+        //根据采购组id查询用户
+        public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
+    }
+    /**
+     * 采购订单管理
+     */
+    public static final class PurchaseOrder{
+        //根路径
+        public static final String ROOT = "purchase";
+        //采购订单分页查询
+        public static final String PURCHASE_ORDER_PAGE = "purchaseOrderPage";
+        //采购组名查询
+        public static final String PURCHASE_GROUP = "purchaseOrder";
+        //根据采购组的编码查询
+        //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
+        //采购单状态的修改
+        public static final String UPDATE_STATE = "purchaseOrder/updateState";
+        //根据采购单id查询采购单相关的信息
+        //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
+        //查询该渠道对应的供应商S
+        public static final String SUPPLIERS="suppliers";
     }
     /**
      *七牛
@@ -351,14 +381,27 @@ public class SupplyConstants {
         }
 
         /**
-         * 供应商申请审批
+         * 供应商申请
          */
         public static final class SupplierApply {
-            //供应商申请审批分页
+            //供应商申请分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
 
-            //供应商申请审核信息路径
+            //供应商申请信息路径
             public static final String  SUPPLIER_APPLY= "supplierApply";
+
+
+        }
+
+        /**
+         * 供应商申请审批
+         */
+        public static final class SupplierApplyAudit {
+            //供应商申请审批分页
+            public static final String SUPPLIER_APPLY_AUDIT_PAGE = "supplierApplyAuditPage";
+
+            //供应商申请审核信息路径
+            public static final String  SUPPLIER_APPLY_AUDIT= "supplierApplyAudit";
 
         }
 
@@ -371,6 +414,24 @@ public class SupplyConstants {
             public static final String  CHANNELS= "channels";
 
         }
+
+    }
+
+    /**
+     * 商品
+     */
+    public static final class Goods {
+
+        public static final String ROOT = "goods";
+
+        //商品分页查询路径
+        public static final String GOODS_PAGE = "goodsPage";
+        //商品列表查询路径
+        public static final String GOODS_LIST = "goodsList";
+        //商品路径
+        public static final String GOODS = "goods";
+        //启用/停用
+        public static final String IS_VALID = "isValid";
 
     }
 
@@ -395,6 +456,13 @@ public class SupplyConstants {
         public static final String ROLE_TYPE="roleType";
         //用户类型字典类型编码
         public static final String USER_TYPE="userType";
+        //采购类型
+        public static final String PURCHASE_TYPE="purchaseType";
+        //付款的方式
+        public static final String PAY_TYPE="payType";
+        //贸易类型
+        public static final String TRADE_TYPE="tradeType";
+
     }
 
     /**
@@ -406,6 +474,11 @@ public class SupplyConstants {
         public static final String SUPPLIER_NAME = "GYS";
         //供应商编码长度
         public static final Integer SUPPLIER_LENGTH = 6;
+
+        //SPU名称
+        public static final String SPU_NAME = "SPU";
+        //SPU长度
+        public static final Integer SPU_LENGTH = 5;
 
 
         //序列号查询路径

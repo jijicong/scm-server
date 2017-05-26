@@ -76,4 +76,13 @@ public class PropertyResource {
     public AppResult<List<Property>> propertyAll() throws Exception {
         return ResultUtil.createSucssAppResult("查询所有属性成功",propertyBiz.queryAllProperty());
     }
+
+    @GET
+    @Path(SupplyConstants.Category.PropertyValue.MULTI_PROPERTY_ID_SEARCH_PROPERTY_VALUE_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<Property>> queryPropertyValueByPropertyIds(@QueryParam("propertyIds") String propertyIds) throws Exception {
+        return ResultUtil.createSucssAppResult("查询所有属性成功",propertyBiz.queryPropertyValueByPropertyIds(propertyIds));
+    }
+
+
 }

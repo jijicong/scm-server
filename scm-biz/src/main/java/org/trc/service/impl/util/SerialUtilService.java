@@ -12,6 +12,7 @@ import org.trc.mapper.util.ISerialMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.CommonUtil;
+import org.trc.util.SerialUtil;
 
 import javax.annotation.Resource;
 
@@ -31,11 +32,17 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
           return  iserialMapper.selectNumber(name);
     }
 
-    /**
-     * 1.如果调用的序号方法抛出异常，那么需要再次调用，确保拿到可以使用的流水号
-     * <p>
-     * 2.拿到可用的流水号之后，以防，外部调用的方法本身出异常（占用流水号）
-     */
+    public String generateCode(int length,String ...names){ //需要其它的前缀，直接在后面添加
+        int number = this.selectNumber(names[0]);//获得将要使用的流水号
+        String code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
+        int assess= this.updateSerialByName(names[0],number);//修改流水的长度
+        if (assess < 1) {
+            String msg = CommonUtil.joinStr("保存编号数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+        }
+        return code;
+    }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int updateSerialByName(String name,int number) {

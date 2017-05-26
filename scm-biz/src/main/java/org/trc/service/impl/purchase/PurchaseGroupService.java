@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by sone on 2017/5/19.
  */
-@Service("purchaseGroupervice")
+@Service("purchaseGroupService")
 public class PurchaseGroupService extends BaseService<PurchaseGroup,Long> implements IPurchaseGroupService{
 
     @Resource

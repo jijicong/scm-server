@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 
 public class PropertyValue extends BaseDO {
@@ -19,7 +20,7 @@ public class PropertyValue extends BaseDO {
     private String value;
     @FormParam("picture")
     private String picture;
-    @NotEmpty
+    @NotNull
     @FormParam("sort")
     private Integer sort;
     @FormParam("status")
@@ -31,6 +32,9 @@ public class PropertyValue extends BaseDO {
     @FormParam("sortStatus")
     @Transient
     private Integer sortStatus;
+    @Transient
+    private String picUrl;//图片url地址
+
     public Long getId() {
         return id;
     }
@@ -93,5 +97,13 @@ public class PropertyValue extends BaseDO {
 
     public void setSortStatus(Integer sortStatus) {
         this.sortStatus = sortStatus;
+    }
+
+    public String getPicUrl() {
+        return picUrl;
+    }
+
+    public void setPicUrl(String picUrl) {
+        this.picUrl = picUrl;
     }
 }
