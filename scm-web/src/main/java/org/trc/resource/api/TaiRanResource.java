@@ -161,7 +161,7 @@ public class TaiRanResource {
     }
 
     @POST
-    @Path("/categoryToTrc")
+    @Path("/category")
     @Produces(MediaType.APPLICATION_JSON)
     public String CategoryTest( JSONObject information ) throws Exception {
         //取值
