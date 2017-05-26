@@ -5,9 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impl.jingdong.util.JingDongUtil;
+import org.trc.biz.impl.jingdong.util.Model.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.mapper.config.ICommonMapper;
+import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.service.IJDService;
 import org.trc.util.RedisUtil;
 
@@ -26,6 +28,12 @@ public class JingDongBizImpl implements IJingDongBiz {
     @Autowired
     ICommonMapper commonMapper;
 
+    @Autowired
+    ITableMappingMapper iTableMappingMapper;
+
+    @Autowired
+    JingDongUtil jingDongUtil;
+
     @Override
     public String getAccessToken() throws Exception {
         try{
@@ -41,7 +49,7 @@ public class JingDongBizImpl implements IJingDongBiz {
                 if (null != acc){
                     //验证accessToken是否失效，失效则刷新，返回accessToken
                     String time = acc.getDeadTime();
-                    if(JingDongUtil.validatToken(time)){
+                    if(jingDongUtil.validatToken(time)){
                         return acc.getValue();
                     }
                     acc.setCode("refreshToken");
@@ -68,11 +76,38 @@ public class JingDongBizImpl implements IJingDongBiz {
         }
     }
 
+    @Override
+    public String billOrder() throws Exception {
+        return null;
+    }
+
+    @Override
+    public String getStockById(String sku, String area) throws Exception {
+        String token = getAccessToken();
+        String address = jingDongUtil.getAddress(area);
+        String stock = ijdService.getStockById(token,sku,address);
+        return stock;
+    }
+
+    @Override
+    public String getAddress(String pro, String ci, String cou) throws Exception {
+        try {
+            String province = iTableMappingMapper.selectByCode(pro);
+            String city = iTableMappingMapper.selectByCode(ci);
+            String county = iTableMappingMapper.selectByCode(cou);
+            return province+"_"+city+"_"+county;
+        }catch (Exception e){
+            throw new Exception("查询数据库无法找到该编码方式，请检查后重试！");
+        }
+
+
+    }
+
     private String createToken() throws Exception {
         String token;
         Common acc;
         token = ijdService.createToken();
-        Map<String,Common> map = JingDongUtil.buildCommon(token);
+        Map<String,Common> map = jingDongUtil.buildCommon(token);
         acc = map.get("accessToken");
         token=acc.getValue();
         putToken(acc, map);
@@ -91,7 +126,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         String token;
         Common acc;
         token = ijdService.freshAccessTokenByRefreshToken(refreshToken);
-        Map<String,Common> map = JingDongUtil.buildCommon(token);
+        Map<String,Common> map = jingDongUtil.buildCommon(token);
         acc = map.get("accessToken");
         Common ref= map.get("refreshToken");
         token=acc.getValue();

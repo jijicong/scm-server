@@ -1,4 +1,4 @@
-package org.trc.biz.impl.purchase;
+package org.trc.biz.impl.Purchase;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
