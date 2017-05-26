@@ -50,16 +50,9 @@ public class TPropertyServiceImpl implements TPropertyService {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("propertyToTrc", propertyToTrc);
+        params.put("valueList",valueList);
         //TODO URL和返回处理
-        HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);
-        //若有属性值改动
-        if (valueList!=null){
-            String result = JSON.toJSONString(valueList);
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("valueList",result);
-            //TODO URL和返回处理
-            HttpClientUtil.httpPostJsonRequest("url", jsonObject.toJSONString(), 1000);
-        }
-        return null;
+        return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 10000);
+
     }
 }

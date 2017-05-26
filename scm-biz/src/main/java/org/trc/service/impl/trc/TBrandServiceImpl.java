@@ -48,43 +48,37 @@ public class TBrandServiceImpl implements TBrandService {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         //TODO URL
-        return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);
+        return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 10000);
 
     }
 
     public static void main(String[] args) throws Exception {
-        String action ="delete";
+        String action = "delete";
         String noticeNum = GuidUtil.getNextUid(action + "_");
         BrandToTrc brandToTrc = new BrandToTrc();
         brandToTrc.setWebUrl("wqeqeqr");
-        long operateTime=System.currentTimeMillis();
+        brandToTrc.setAlise("qwqwedqdeqd");
+        brandToTrc.setName("wdad");
+        brandToTrc.setBrandCode("vdfgdghd");
+        long operateTime = System.currentTimeMillis();
         //model中字段以字典序排序
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("action").append("|").append(operateTime).append("|").append("noticeNum").append("|").
+        stringBuilder.append(action).append("|").append(operateTime).append("|").append(noticeNum).append("|").
                 append(brandToTrc.getAlise()).append("|").append(brandToTrc.getBrandCode()).append("|").append(brandToTrc.getIsValid()).append("|").
                 append(brandToTrc.getLogo()).append("|").append(brandToTrc.getName()).append("|").append(brandToTrc.getWebUrl());
         //MD5加密
+        System.out.println(stringBuilder.toString());
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
-        System.out.println(sign);
         JSONObject params = new JSONObject();
         params.put("action", action);
         params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
-        System.out.println(params.toJSONString());
-        try {
-//             String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/tairan/brand"+action, params.toJSONString(), 1000);
-            String result =HttpClientUtil.httpPostWithJSON("http://localhost:8080/scm/tairan/brand"+action,params.toJSONString());
-            logger.info(result);
-        } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage(), e);
-            JSONObject jsonObject = new JSONObject();
-            //TODO status
-            jsonObject.put("status", "");
-            jsonObject.put("msg", "请求渠道方出错");
 
-        }
+        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/tairan/brand", params.toJSONString(), 1000);
+        logger.info(result);
+
     }
 }
