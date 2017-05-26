@@ -32,8 +32,8 @@ import java.util.*;
 public class BrandBiz implements IBrandBiz {
 
     private final static Logger log = LoggerFactory.getLogger(BrandBiz.class);
-    private final static String BRAND_CODE_EX_NAME="PP";
-    private final static int BRAND_CODE_LENGTH=5;
+    private final static String BRAND_CODE_EX_NAME = "PP";
+    private final static int BRAND_CODE_LENGTH = 5;
 
     @Autowired
     private IBrandService brandService;
@@ -74,9 +74,37 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    public Pagenation<Brand> brandList(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        if (!StringUtils.isBlank(queryModel.getAlise())) {
+            criteria.andEqualTo("alise", queryModel.getAlise());
+        }
+        if (!StringUtils.isBlank(queryModel.getBrandCode())) {
+            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
+        }
+        if (!StringUtils.isBlank(queryModel.getStartUpdateTime())) {
+            criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
+        }
+        if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
+            criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
+        }
+        example.orderBy("isValid").desc();
+        example.orderBy("updateTime").desc();
+        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
+        return pagenation;
+    }
+
+    @Override
     public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
         Brand brand = new Brand();
-        if(StringUtils.isEmpty(brandForm.getIsValid())){
+        if (StringUtils.isEmpty(brandForm.getIsValid())) {
             brand.setIsValid(ZeroToNineEnum.ONE.getCode());
         }
         brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -89,12 +117,12 @@ public class BrandBiz implements IBrandBiz {
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
-        brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH,BRAND_CODE_EX_NAME,DateUtils.dateToCompactString(brand.getCreateTime())));
+        brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
         brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         ParamsUtil.setBaseDO(brand);
         try {
             brandService.insert(brand);
-        }catch (Exception e){
+        } catch (Exception e) {
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);

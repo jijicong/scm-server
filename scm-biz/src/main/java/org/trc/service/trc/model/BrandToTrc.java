@@ -1,6 +1,5 @@
 package org.trc.service.trc.model;
 
-import javax.ws.rs.MatrixParam;
 
 /**
  * 品牌
@@ -8,7 +7,6 @@ import javax.ws.rs.MatrixParam;
  */
 public class BrandToTrc {
 
-    @MatrixParam("alise")
     private String alise;//品牌别名
 
     private String brandCode;//品牌编码

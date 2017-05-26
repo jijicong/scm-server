@@ -9,17 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.PropertyForm;
-import org.trc.service.IQinniuService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.util.*;
@@ -55,6 +52,9 @@ public class PropertyBiz implements IPropertyBiz {
         if (!StringUtils.isBlank(queryModel.getTypeCode())) {
             criteria.andEqualTo("typeCode", queryModel.getTypeCode());
         }
+        if (!StringUtils.isBlank(queryModel.getSort())) {
+            criteria.andEqualTo("sort", queryModel.getSort());
+        }
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
@@ -62,6 +62,7 @@ public class PropertyBiz implements IPropertyBiz {
         example.orderBy("updateTime").desc();
         return propertyService.pagination(example, page, queryModel);
     }
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -229,21 +230,22 @@ public class PropertyBiz implements IPropertyBiz {
 
     /**
      * 设置图片属性的图片缩略图url访问路径
+     *
      * @param propertyValues
      * @throws Exception
      */
-    private void setPicPropertyUrl(List<PropertyValue> propertyValues) throws Exception{
+    private void setPicPropertyUrl(List<PropertyValue> propertyValues) throws Exception {
         List<String> fileNames = new ArrayList<String>();
-        for(PropertyValue val : propertyValues){
-            if(StringUtils.isNotBlank(val.getPicture())){
+        for (PropertyValue val : propertyValues) {
+            if (StringUtils.isNotBlank(val.getPicture())) {
                 fileNames.add(val.getPicture());
             }
         }
-        if(fileNames.size() > 0){
+        if (fileNames.size() > 0) {
             List<FileUrl> files = qinniuBiz.batchGetFileUrl(fileNames.toArray(new String[fileNames.size()]), "1");
-            for(PropertyValue val : propertyValues){
-                for(FileUrl f : files){
-                    if(StringUtils.equals(f.getFileKey(), val.getPicture())){
+            for (PropertyValue val : propertyValues) {
+                for (FileUrl f : files) {
+                    if (StringUtils.equals(f.getFileKey(), val.getPicture())) {
                         val.setPicUrl(f.getUrl());
                     }
                 }
