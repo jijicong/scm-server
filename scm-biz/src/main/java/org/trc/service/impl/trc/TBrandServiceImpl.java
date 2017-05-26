@@ -47,6 +47,7 @@ public class TBrandServiceImpl implements TBrandService {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
+        logger.info(params.toJSONString());
         //TODO URL
         return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 10000);
 

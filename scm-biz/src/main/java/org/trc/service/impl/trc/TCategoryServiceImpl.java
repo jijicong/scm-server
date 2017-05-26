@@ -48,6 +48,7 @@ public class TCategoryServiceImpl implements TCategoryService {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
+        logger.info(params.toJSONString());
         //TODO URL和返回处理
         return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 10000);
     }
