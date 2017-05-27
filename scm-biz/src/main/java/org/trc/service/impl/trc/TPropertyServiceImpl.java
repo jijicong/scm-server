@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
+import org.trc.service.impl.trc.util.CommomUtils;
 import org.trc.service.trc.TPropertyService;
 import org.trc.service.trc.model.PropertyToTrc;
 import org.trc.util.GuidUtil;
@@ -39,7 +40,7 @@ public class TPropertyServiceImpl implements TPropertyService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action + "_");
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(SupplyConstants.TaiRan.Commom.KEY).append("|").append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
+        stringBuilder.append(CommomUtils.getKey()).append("|").append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
                 append(propertyToTrc.getDescription()).append("|").append(propertyToTrc.getIsValid()).append("|").
                 append(propertyToTrc.getName()).append("|").append(propertyToTrc.getSort()).append("|").append(propertyToTrc.getTypeCode()).
                 append("|").append(propertyToTrc.getValueType());

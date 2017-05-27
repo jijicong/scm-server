@@ -52,9 +52,6 @@ public class SupplyConstants {
 
         public static final String PROPERTY_LIST = "propertyList";//属性查询
 
-        public static final class Commom{
-            public static final String KEY = "gyl-tairan";
-        }
     }
 
     /**
@@ -329,8 +326,8 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
         //根据采购组id查询用户
         public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
-       //根据采购组code查询改组的采购人员
-       public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
+        //根据采购组code查询改组的采购人员
+        public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
 
     }
 
@@ -510,11 +507,11 @@ public class SupplyConstants {
         //贸易类型
         public static final String TRADE_TYPE = "tradeType";
         //币种类型
-        public static final String CURRENCY_TYPE="currencyType";
+        public static final String CURRENCY_TYPE = "currencyType";
         //运费承担方
-        public static final String TRANSORT_COSTS_TAKE="transportCostsTake";
+        public static final String TRANSORT_COSTS_TAKE = "transportCostsTake";
         //处理优先级
-        public static final String  HANDLER_PRIORITY = "handlerPriority";
+        public static final String HANDLER_PRIORITY = "handlerPriority";
     }
 
     /**

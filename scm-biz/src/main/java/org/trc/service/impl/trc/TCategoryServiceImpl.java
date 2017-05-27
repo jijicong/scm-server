@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
+import org.trc.service.impl.trc.util.CommomUtils;
 import org.trc.service.trc.TCategoryService;
 import org.trc.service.trc.model.CategoryToTrc;
 import org.trc.util.GuidUtil;
@@ -38,7 +39,7 @@ public class TCategoryServiceImpl implements TCategoryService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action + "_");
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(SupplyConstants.TaiRan.Commom.KEY).append("|").append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
+        stringBuilder.append(CommomUtils.getKey()).append("|").append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
                 append(categoryToTrc.getClassifyDescribe()).append("|").append(categoryToTrc.getIsValid()).append("|").append(categoryToTrc.getName()).append("|").
                 append(categoryToTrc.getParentId()).append("|").append(categoryToTrc.getSort());
         //MD5加密

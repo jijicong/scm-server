@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.service.impl.trc.util.CommomUtils;
 import org.trc.service.trc.TBrandService;
 import org.trc.service.trc.model.BrandToTrc;
 import org.trc.util.GuidUtil;
@@ -37,7 +38,7 @@ public class TBrandServiceImpl implements TBrandService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action + "_");
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(SupplyConstants.TaiRan.Commom.KEY).append("|").append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
+        stringBuilder.append(CommomUtils.getKey()).append("|").append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
                 append(brandToTrc.getAlise()).append("|").append(brandToTrc.getBrandCode()).append("|").append(brandToTrc.getIsValid()).append("|").
                 append(brandToTrc.getLogo()).append("|").append(brandToTrc.getName()).append("|").append(brandToTrc.getWebUrl());
 
