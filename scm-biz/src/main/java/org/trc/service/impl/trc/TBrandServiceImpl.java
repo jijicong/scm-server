@@ -39,7 +39,7 @@ public class TBrandServiceImpl implements TBrandService {
         stringBuilder.append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
                 append(brandToTrc.getAlise()).append("|").append(brandToTrc.getBrandCode()).append("|").append(brandToTrc.getIsValid()).append("|").
                 append(brandToTrc.getLogo()).append("|").append(brandToTrc.getName()).append("|").append(brandToTrc.getWebUrl());
-        //MD5加密
+
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
         params.put("action", action);
