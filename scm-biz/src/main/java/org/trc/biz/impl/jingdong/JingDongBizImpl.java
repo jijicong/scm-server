@@ -1,5 +1,6 @@
 package org.trc.biz.impl.jingdong;
 
+import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -8,11 +9,14 @@ import org.trc.biz.impl.jingdong.util.JingDongUtil;
 import org.trc.biz.impl.jingdong.util.Model.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
+import org.trc.form.JDModel.SellPriceDO;
+import org.trc.form.JDModel.StockDO;
 import org.trc.mapper.config.ICommonMapper;
 import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.service.IJDService;
 import org.trc.util.RedisUtil;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -82,10 +86,25 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     @Override
-    public String getStockById(String sku, String area) throws Exception {
+    public List<SellPriceDO> getSellPrice(String sku) throws Exception {
         String token = getAccessToken();
-        String address = jingDongUtil.getAddress(area);
-        String stock = ijdService.getStockById(token,sku,address);
+        List<SellPriceDO> price = ijdService.getSellPrice(token,sku);
+        return price;
+    }
+
+    @Override
+    public List<StockDO> getStockById(String sku, AddressDO area) throws Exception {
+        String token = getAccessToken();
+        String address = getAddress(area.getProvince(), area.getCity(), area.getCounty());
+        List<StockDO> stock = ijdService.getStockById(token,sku,address);
+        return stock;
+    }
+
+    @Override
+    public List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception {
+        String token = getAccessToken();
+        String address = getAddress(area.getProvince(), area.getCity(), area.getCounty());
+        List<StockDO> stock = ijdService.getNewStockById(token,skuNums.toJSONString(),address);
         return stock;
     }
 
@@ -99,8 +118,6 @@ public class JingDongBizImpl implements IJingDongBiz {
         }catch (Exception e){
             throw new Exception("查询数据库无法找到该编码方式，请检查后重试！");
         }
-
-
     }
 
     private String createToken() throws Exception {

@@ -14,6 +14,7 @@ public class SupplyConstants {
         public static final String MSG = "msg";//返回描述
     }
 
+
     /**
      * 符号
      */
@@ -50,6 +51,7 @@ public class SupplyConstants {
         public static final String CATEGORY_LIST = "categoryList";//分类查询
 
         public static final String PROPERTY_LIST = "propertyList";//属性查询
+
     }
 
     /**
@@ -233,6 +235,8 @@ public class SupplyConstants {
         public static final String WAREHOUSE = "warehouse";
         //状态的修改
         public static final String UPDATE_STATE = "warehouse/updateState";
+        //查询可用仓库
+        public static final String WAREHOUSE_VALID = "wharehouseValid";
     }
 
     /**
@@ -314,12 +318,17 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_PAGE = "purchaseGroupPage";
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
+        //采购组列表
+        public static final String PURCHASE_GROUP_LIST = "purchaseGroupList";
         //根据采购组的编码查询
         public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
         //根据采购组id查询用户
         public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
+        //根据采购组code查询改组的采购人员
+        public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
+
     }
 
     /**
@@ -497,7 +506,12 @@ public class SupplyConstants {
         public static final String PAY_TYPE = "payType";
         //贸易类型
         public static final String TRADE_TYPE = "tradeType";
-
+        //币种类型
+        public static final String CURRENCY_TYPE = "currencyType";
+        //运费承担方
+        public static final String TRANSORT_COSTS_TAKE = "transportCostsTake";
+        //处理优先级
+        public static final String HANDLER_PRIORITY = "handlerPriority";
     }
 
     /**

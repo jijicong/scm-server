@@ -7,5 +7,5 @@ import org.trc.domain.goods.Items;
  */
 public interface TItemService {
 
-    String sendItemNotice(Items items,long operateTime,String action);
+    String sendItemNotice(Items items,long operateTime,String action) throws Exception;
 }

@@ -24,7 +24,9 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/5.
@@ -60,6 +62,17 @@ public class WarehouseBiz implements IWarehouseBiz {
         Pagenation<Warehouse> pagenation = warehouseService.pagination(example, page, form);
         return pagenation;
 
+    }
+
+    @Override
+    public List<Warehouse> findWarehouseValid() throws Exception {
+        Warehouse warehouse = new Warehouse();
+        warehouse.setIsValid(ValidEnum.VALID.getCode());
+        List<Warehouse> warehouseList = warehouseService.select(warehouse);
+        if(warehouseList==null){
+            warehouseList = new ArrayList<Warehouse>();
+        }
+        return warehouseList;
     }
 
     @Override

@@ -13,4 +13,6 @@ public interface IPurchaseGroupService extends IBaseService<PurchaseGroup,Long>{
 
     List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id);
 
+    List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode);
+
 }

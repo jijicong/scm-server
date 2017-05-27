@@ -40,6 +40,14 @@ public class PurchaseGroupResource {
         purchaseGroupBiz.updatePurchaseStatus(purchaseGroup);
         return ResultUtil.createSucssAppResult("修改采购组状态成功","");
     }
+    //TODO
+    @GET
+    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_CODE_USER)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<UserAccreditInfo>> findPurchaseGroupPersons(@QueryParam("purchaseGroupCode") String purchaseGroupCode) throws Exception {
+        return ResultUtil.createSucssAppResult("修改采购组状态成功",purchaseGroupBiz.findPurchaseGroupPersons(purchaseGroupCode));
+    }
+
 
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_CODE+"/{code}")
@@ -55,12 +63,12 @@ public class PurchaseGroupResource {
         return ResultUtil.createSucssAppResult("根据name查询采购组信息成功", purchaseGroupBiz.findPurchaseByName(name)==null ? null :"1");
     }
 
-   /* @GET
-    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP)
+    @GET
+    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findPurchaseGroups() throws Exception{
-        return null;
-    }*/
+    public AppResult<List<PurchaseGroup>> findPurchaseGroups() throws Exception{
+        return ResultUtil.createSucssAppResult("查询采购组列表",purchaseGroupBiz.findPurchaseGroupList());
+    }
 
 
     @PUT

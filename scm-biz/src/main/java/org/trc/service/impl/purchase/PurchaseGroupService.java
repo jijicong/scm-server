@@ -22,4 +22,9 @@ public class PurchaseGroupService extends BaseService<PurchaseGroup,Long> implem
     public List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) {
         return ipurchaseGroupMapper.findPurchaseGroupMemberStateById(id);
     }
+
+    @Override
+    public List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode) {
+        return ipurchaseGroupMapper.selectPurchaseGroupPersons(purchaseGroupCode);
+    }
 }

@@ -123,7 +123,7 @@ public class TaiRanResource {
                 category1.setSort(category.getSort());
                 category1.setIsValid(category.getIsValid());
                 category1.setUpdateTime(category.getUpdateTime());
-                if (!(category.getParentId() == null)) {
+                if (category.getParentId() != null) {
                     category1.setParentId(category.getParentId());
                 }
                 category1.setClassifyDescribe(category.getClassifyDescribe() == null ? "" : category.getClassifyDescribe());

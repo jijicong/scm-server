@@ -49,6 +49,12 @@ public class SelectListResource {
 
 
 
+    //币种
+    private static final String CURRENCY_TYPE="currency";
+    //运输费用承担方
+    private static final String TRANSORT_COSTS_TAKE="transportCostsTake";
+    //处理优先级
+    private static final String  HANDLER_PRIORITY = "handlerPriority";
     @GET
     @Path(SupplyConstants.Config.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
@@ -62,6 +68,28 @@ public class SelectListResource {
     public AppResult<Dict> purchaseType() throws Exception{
         return ResultUtil.createSucssAppResult("查询采购类型成功", configBiz.findDictsByTypeNo(PURCHASE_TYPE));
     }
+
+    @GET
+    @Path(SupplyConstants.SelectList.HANDLER_PRIORITY)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> handlerPriority() throws Exception{
+        return ResultUtil.createSucssAppResult("查询处理优先级成功", configBiz.findDictsByTypeNo(HANDLER_PRIORITY));
+    }
+
+    @GET
+    @Path(SupplyConstants.SelectList.TRANSORT_COSTS_TAKE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> transportCostsTake() throws Exception{
+        return ResultUtil.createSucssAppResult("查询运费承担方成功", configBiz.findDictsByTypeNo(TRANSORT_COSTS_TAKE));
+    }
+
+    @GET
+    @Path(SupplyConstants.SelectList.CURRENCY_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> currencyType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询币种类型成功", configBiz.findDictsByTypeNo(CURRENCY_TYPE));
+    }
+
     @GET
     @Path(SupplyConstants.SelectList.PAY_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
@@ -120,13 +148,6 @@ public class SelectListResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> userType() throws Exception{
         return ResultUtil.createSucssAppResult("查询用户类型成功", configBiz.findDictsByTypeNo(USER_TYPE));
-    }
-
-    @GET
-    @Path(SupplyConstants.SelectList.TRADE_TYPE)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> tradeType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询贸易类型成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.TRADE_TYPE));
     }
 
 }
