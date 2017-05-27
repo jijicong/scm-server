@@ -47,7 +47,7 @@ public class TaiRanResource {
 
         try {
             logger.info("查询条件：   " + JSON.toJSONString(form));
-            page = brandBiz.brandPage(form, page);
+            page = brandBiz.brandList(form, page);
             JSONObject jsonObject = new JSONObject();
             List<Brand> list = new ArrayList<Brand>();
             for (Brand brand : page.getResult()) {

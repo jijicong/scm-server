@@ -49,7 +49,7 @@ public class SupplyConstants {
 
         public static final String CATEGORY_LIST = "categoryList";//分类查询
 
-        public static final String PROPERTY_LIST = "brandList";//属性查询
+        public static final String PROPERTY_LIST = "propertyList";//属性查询
     }
 
     /**
