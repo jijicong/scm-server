@@ -14,6 +14,7 @@ public class SupplyConstants {
         public static final String MSG = "msg";//返回描述
     }
 
+
     /**
      * 符号
      */
@@ -50,6 +51,10 @@ public class SupplyConstants {
         public static final String CATEGORY_LIST = "categoryList";//分类查询
 
         public static final String PROPERTY_LIST = "propertyList";//属性查询
+
+        public static final class Commom{
+            public static final String KEY = "gyl-tairan";
+        }
     }
 
     /**
