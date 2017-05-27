@@ -221,6 +221,7 @@ public class PropertyBiz implements IPropertyBiz {
         criteria.andIn("propertyId", Arrays.asList(tmpIds));
         criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
         criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        example.orderBy("sort").asc();
         List<PropertyValue> propertyValues = propertyValueService.selectByExample(example);
         AssertUtil.notEmpty(propertyValues, String.format("根据多个属性ID[%s]批量查询属性值为空", propertyIds));
         setPicPropertyUrl(propertyValues);
