@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.service.impl.trc.util.CommomUtils;
 import org.trc.service.trc.TCategoryService;

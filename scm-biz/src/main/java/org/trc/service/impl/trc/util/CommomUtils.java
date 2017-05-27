@@ -1,6 +1,5 @@
 package org.trc.service.impl.trc.util;
 
-import java.io.FileReader;
 import java.util.Properties;
 
 /**

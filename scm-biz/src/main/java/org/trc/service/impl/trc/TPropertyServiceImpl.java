@@ -1,12 +1,10 @@
 package org.trc.service.impl.trc;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.service.impl.trc.util.CommomUtils;
