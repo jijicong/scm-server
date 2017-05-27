@@ -7,6 +7,7 @@ import org.trc.domain.util.ScmDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
@@ -29,6 +30,13 @@ public class ItemNaturePropery extends ScmDO{
     @FormParam("propertyValueId")
     @NotEmpty
     private Long propertyValueId;
+
+    /**
+     * 自然属性信息
+     */
+    @Transient
+    @NotEmpty
+    private String naturePropertys;
 
     public Long getId() {
         return id;
@@ -70,4 +78,11 @@ public class ItemNaturePropery extends ScmDO{
         this.propertyValueId = propertyValueId;
     }
 
+    public String getNaturePropertys() {
+        return naturePropertys;
+    }
+
+    public void setNaturePropertys(String naturePropertys) {
+        this.naturePropertys = naturePropertys;
+    }
 }

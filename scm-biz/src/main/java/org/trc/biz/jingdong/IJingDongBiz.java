@@ -34,5 +34,5 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public String getAddress(String province,String city,String county) throws Exception;
+    String getAddress(String province, String city, String county) throws Exception;
 }

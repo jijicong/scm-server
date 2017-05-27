@@ -1,6 +1,8 @@
 package org.trc.biz.impl.goods;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +13,21 @@ import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
+import org.trc.domain.goods.ItemNaturePropery;
+import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
+import org.trc.domain.supplier.SupplierBrand;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
+import org.trc.exception.SupplierException;
 import org.trc.form.goods.ItemsForm;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.goods.IItemsService;
+import org.trc.service.goods.ISkusService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -44,6 +53,10 @@ public class GoodsBiz implements IGoodsBiz {
     private IBrandService brandService;
     @Autowired
     private ICategoryService categoryService;
+    @Autowired
+    private ISerialUtilService serialUtilService;
+    @Autowired
+    private ISkusService skusService;
 
 
     @Override
@@ -198,15 +211,66 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public void saveItems(Items items) throws Exception {
+    public void saveItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
+        //生成序列号
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.SPU_LENGTH, SupplyConstants.Serial.SPU_NAME, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        items.setSpuCode(code);
+
+
+
+    }
+
+    /**
+     * 保存商品基础信息
+     * @param items
+     * @throws Exception
+     */
+    private void saveItemsBase(Items items) throws Exception{
         ParamsUtil.setBaseDO(items);
         int count = itemsService.insert(items);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("保存商品", JSON.toJSONString(items),"数据库操作失败").toString();
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保商品基础信息", JSON.toJSONString(items), "到数据库失败").toString();
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
     }
+
+    /**
+     * 保存SKU信息
+     * @param skus
+     * @throws Exception
+     */
+    private void saveSkus(Skus skus) throws Exception{
+        JSONArray categoryArray = JSONArray.parseArray(skus.getSkusInfo());
+        List<Skus> list = new ArrayList<Skus>();
+        for(Object obj : categoryArray){
+            JSONObject jbo = (JSONObject) obj;
+            String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
+                    SupplyConstants.Serial.SKU_INNER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+            Skus skus2 = new Skus();
+            skus2.setSkuCode(code);
+            skus2.setItemId(skus.getItemId());
+            skus2.setSpuCode(skus.getSpuCode());
+            skus2.setPropertyValueId(jbo.getString("propertyValueId"));
+            skus2.setPropertyValue(jbo.getString("propertyValue"));
+            skus2.setBarCode(jbo.getString("barCode"));
+            skus2.setMarketPrice(jbo.getLong("marketPrice")*100);
+            skus2.setPicture(jbo.getString("picture"));
+            skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            Date sysTime = Calendar.getInstance().getTime();
+            skus2.setCreateTime(sysTime);
+            skus2.setUpdateTime(sysTime);
+        }
+        int count = skusService.insertList(list);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("保存商品SKU信息", JSON.toJSONString(list), "到数据库失败").toString();
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+        }
+    }
+
+
+
 
     @Override
     public void updateItems(Items items) throws Exception {

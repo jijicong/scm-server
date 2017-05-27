@@ -514,6 +514,14 @@ public class SupplyConstants {
         public static final String SPU_NAME = "SPU";
         //SPU长度
         public static final Integer SPU_LENGTH = 5;
+        //SKU名称
+        public static final String SKU_NAME = "SKU";
+        //SKU长度
+        public static final Integer SKU_LENGTH = 7;
+        //在此模块维护的商品
+        public static final String SKU_INNER = "0";
+        //表示一件代发的商品
+        public static final String SKU_OUTERER = "1";
 
 
         //序列号查询路径

@@ -39,11 +39,7 @@ public class ResultUtil {
 	public static boolean isAppResultFormate(String result){
 		try {
 			JSONObject jsonObject = JSON.parseObject(result);
-			if(jsonObject.containsKey("appcode")){
-				return true;
-			}else{
-				return false;
-			}
+            return jsonObject.containsKey("appcode");
 		} catch (Exception e) {
 			return false;
 		}

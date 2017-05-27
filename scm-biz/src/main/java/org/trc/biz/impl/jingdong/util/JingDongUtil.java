@@ -89,10 +89,7 @@ public class JingDongUtil {
         long timeNow=nowTime.getTimeInMillis();
         long timeOld=oldTime.getTimeInMillis();
         long time=(timeNow-timeOld);
-        if (time>= 0){
-            return false;
-        }
-        return true;
+        return time < 0;
     }
 
 

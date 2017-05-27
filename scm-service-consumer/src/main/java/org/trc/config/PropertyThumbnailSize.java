@@ -30,7 +30,7 @@ public class PropertyThumbnailSize extends BaseThumbnailSize{
         BaseThumbnailSize baseThumbnailSize = new BaseThumbnailSize();
         System.out.println(baseThumbnailSize.getThumbnailSizes().size());
         PropertyThumbnailSize propertyThumbnailSize = new PropertyThumbnailSize();
-        BaseThumbnailSize baseThumbnailSize2 = (BaseThumbnailSize) propertyThumbnailSize;
+        BaseThumbnailSize baseThumbnailSize2 = propertyThumbnailSize;
         System.out.println(baseThumbnailSize2.getThumbnailSizes().size());
     }
 

@@ -37,7 +37,7 @@ public interface IJDService {
      * @param pageNum 池子编号
      * @return
      */
-    public String getSku(String token, String pageNum) throws Exception;
+    String getSku(String token, String pageNum) throws Exception;
 
 
     /**
@@ -47,7 +47,7 @@ public interface IJDService {
      * @param isShow 查询商品基本信息
      * @return
      */
-    public String getDetail(String token,String sku, Boolean isShow) throws Exception;
+    String getDetail(String token, String sku, Boolean isShow) throws Exception;
 
     /**
      * 获取商品上下架状态
@@ -55,7 +55,7 @@ public interface IJDService {
      * @param sku 商品编号 支持批量（最高100个）
      * @return
      */
-    public String skuState(String token,String sku) throws Exception;
+    String skuState(String token, String sku) throws Exception;
 
     /**
      * 获取商品图片信息
@@ -63,7 +63,7 @@ public interface IJDService {
      * @param sku 商品编号 支持批量（最高100个）
      * @return
      */
-    public String skuImage(String token,String sku) throws Exception;
+    String skuImage(String token, String sku) throws Exception;
 
     /**
      * 商品搜索
@@ -71,7 +71,7 @@ public interface IJDService {
      * @param searchDO
      * @return
      */
-    public String search(SearchDO searchDO)throws Exception;
+    String search(SearchDO searchDO)throws Exception;
 
     /**
      * 获取一级地址
@@ -79,7 +79,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getProvince(String token) throws Exception;
+    String getProvince(String token) throws Exception;
 
     /**
      * 获取二级地址
@@ -88,7 +88,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getCity(String token,String id) throws Exception;
+    String getCity(String token, String id) throws Exception;
 
     /**
      * 获取三级地址
@@ -97,7 +97,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getCounty(String token,String id) throws Exception;
+    String getCounty(String token, String id) throws Exception;
 
     /**
      * 获取四级地址
@@ -106,7 +106,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getTown(String token,String id) throws Exception;
+    String getTown(String token, String id) throws Exception;
 
     /**
      * 验证四级地址是否正确
@@ -118,8 +118,8 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String checkArea(String token,String provinceId,String cityId,
-                            String countyId,String townId) throws Exception;
+    String checkArea(String token, String provinceId, String cityId,
+                     String countyId, String townId) throws Exception;
 
     /**
      * 批量查询商品售卖价
@@ -128,7 +128,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getSellPrice(String token,String sku) throws Exception;
+    String getSellPrice(String token, String sku) throws Exception;
 
     /**
      * 批量获取库存接口（建议订单详情页、下单使用）
@@ -138,7 +138,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getNewStockById(String token,String skuNums,String area) throws Exception;
+    String getNewStockById(String token, String skuNums, String area) throws Exception;
 
     /**
      * 批量获取库存接口（建议商品列表页使用）
@@ -148,7 +148,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getStockById(String token,String sku,String area) throws Exception;
+    String getStockById(String token, String sku, String area) throws Exception;
 
     /**
      * 统一下单
@@ -156,7 +156,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String submitOrder(OrderDO orderDO) throws Exception;
+    String submitOrder(OrderDO orderDO) throws Exception;
 
     /**
      * 确认预占库存订单
@@ -165,7 +165,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String confirmOrder(String token,String jdOrderId) throws Exception;
+    String confirmOrder(String token, String jdOrderId) throws Exception;
 
     /**
      * 取消未确认订单接口
@@ -174,7 +174,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String cancel(String token,String jdOrderId) throws Exception;
+    String cancel(String token, String jdOrderId) throws Exception;
 
     /**
      * 发起支付
@@ -183,7 +183,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String doPay(String token,String jdOrderId) throws Exception;
+    String doPay(String token, String jdOrderId) throws Exception;
 
     /**
      * 查询京东订单信息接口
@@ -192,7 +192,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String selectJdOrder(String token,String jdOrderId) throws Exception;
+    String selectJdOrder(String token, String jdOrderId) throws Exception;
 
     /**
      * 查询配送信息接口
@@ -201,7 +201,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String orderTrack(String token,String jdOrderId) throws Exception;
+    String orderTrack(String token, String jdOrderId) throws Exception;
 
 
 }

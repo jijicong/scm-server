@@ -7,6 +7,7 @@ import org.trc.domain.util.ScmDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
@@ -40,6 +41,13 @@ public class ItemSalesPropery extends ScmDO {
     @FormParam("picture")
     @Length(max = 256, message = "图片路径长度不能超过256个")
     private String picture;
+
+    /**
+     * 采购属性信息
+     */
+    @Transient
+    @NotEmpty
+    private String salesPropertys;
 
     public Long getId() {
         return id;
@@ -105,4 +113,11 @@ public class ItemSalesPropery extends ScmDO {
         this.picture = picture == null ? null : picture.trim();
     }
 
+    public String getSalesPropertys() {
+        return salesPropertys;
+    }
+
+    public void setSalesPropertys(String salesPropertys) {
+        this.salesPropertys = salesPropertys;
+    }
 }

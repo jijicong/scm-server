@@ -344,16 +344,9 @@ public class SupplierBiz implements ISupplierBiz {
      * @throws Exception
      */
     private void saveSupplierBase(Supplier supplier) throws Exception {
-        int count = 0;
-        if (null != supplier.getId()) {
-            //修改
-            supplier.setUpdateTime(Calendar.getInstance().getTime());
-            count = supplierService.updateByPrimaryKeySelective(supplier);
-        } else {
-            //新增
-            ParamsUtil.setBaseDO(supplier);
-            count = supplierService.insert(supplier);
-        }
+        //新增
+        ParamsUtil.setBaseDO(supplier);
+        int count = supplierService.insert(supplier);
         if (count == 0) {
             String msg = CommonUtil.joinStr("保存供应商", JSON.toJSONString(supplier), "到数据库失败").toString();
             log.error(msg);
@@ -630,7 +623,7 @@ public class SupplierBiz implements ISupplierBiz {
         }
         count = supplierBrandService.insertList(list);
         if (count == 0) {
-            String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(brand), "到数据库失败").toString();
+            String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(list), "到数据库失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
         }

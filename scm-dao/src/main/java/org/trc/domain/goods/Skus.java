@@ -7,6 +7,7 @@ import org.trc.domain.util.ScmDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
@@ -61,7 +62,11 @@ public class Skus extends ScmDO {
     @FormParam("channel7PreSellPrices")
     @NotEmpty
     private Long channel7PreSellPrices;
-
+    /**
+     * sku信息
+     */
+    @Transient
+    private String skusInfo;
 
     public String getSkuCode() {
         return skuCode;
@@ -191,4 +196,11 @@ public class Skus extends ScmDO {
         this.channel7PreSellPrices = channel7PreSellPrices;
     }
 
+    public String getSkusInfo() {
+        return skusInfo;
+    }
+
+    public void setSkusInfo(String skusInfo) {
+        this.skusInfo = skusInfo;
+    }
 }
