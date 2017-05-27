@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
@@ -12,6 +13,7 @@ import org.trc.util.ResultUtil;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/4.
@@ -29,7 +31,7 @@ public class WarehouseResource {
     public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page) throws Exception{
         return warehouseBiz.warehousePage(form,page);
     }
-    //根据仓库名查询渠道
+    //根据仓库名查询仓库
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)  //<WarehouseBiz>
@@ -68,5 +70,12 @@ public class WarehouseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Warehouse> findWarehouseById(@PathParam("id") Long id) throws Exception{
         return ResultUtil.createSucssAppResult("查询仓库成功", warehouseBiz.findWarehouseById(id));
+    }
+    //
+    @GET
+    @Path(SupplyConstants.Warehouse.WAREHOUSE_VALID)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<Warehouse>> findWarehouseValid() throws Exception{
+        return ResultUtil.createSucssAppResult("查询有效的仓库成功",warehouseBiz.findWarehouseValid());
     }
 }

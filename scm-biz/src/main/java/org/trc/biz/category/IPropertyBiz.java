@@ -51,6 +51,7 @@ public interface IPropertyBiz {
 
     /**
      * 根据属性id查询属性信息
+     *
      * @param id
      * @return
      * @throws Exception
@@ -59,6 +60,7 @@ public interface IPropertyBiz {
 
     /**
      * 根据属性id修改属性信息
+     *
      * @param property
      * @throws Exception
      */
@@ -68,4 +70,13 @@ public interface IPropertyBiz {
      * 查询所有属性
      */
     List<Property> queryAllProperty() throws Exception;
+
+    /**
+     * 根据多个属性ID批量查询属性值
+     *
+     * @param propertyIds 属性ID,多个用逗号","分隔
+     * @return
+     * @throws Exception
+     */
+    List<PropertyValue> queryPropertyValueByPropertyIds(String propertyIds) throws Exception;
 }

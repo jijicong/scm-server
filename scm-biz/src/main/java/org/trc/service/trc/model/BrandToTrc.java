@@ -1,5 +1,6 @@
 package org.trc.service.trc.model;
 
+
 /**
  * 品牌
  * Created by hzdzf on 2017/5/23.

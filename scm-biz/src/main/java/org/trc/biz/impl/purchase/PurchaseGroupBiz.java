@@ -63,6 +63,28 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    public List<UserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception {
+        if (StringUtils.isBlank(purchaseGroupCode)) {
+            String msg = CommonUtil.joinStr("根据采购组编码查询采购组人员的参数code为空").toString();
+            LOGGER.error(msg);
+            throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        List<UserAccreditInfo> userAccreditInfoList = purchaseGroupService.selectPurchaseGroupPersons(purchaseGroupCode);
+        return userAccreditInfoList;
+    }
+
+    @Override
+    public List<PurchaseGroup> findPurchaseGroupList() throws Exception {
+        PurchaseGroup purchaseGroup = new PurchaseGroup();
+        purchaseGroup.setIsValid(ValidEnum.VALID.getCode());
+        List<PurchaseGroup> purchaseGroupList = purchaseGroupService.select(purchaseGroup);
+        if(purchaseGroupList==null){
+            purchaseGroupList=new ArrayList<PurchaseGroup>();
+        }
+        return purchaseGroupList;
+    }
+
+    @Override
     public List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception {//查询该组id下的无效状态的用户
         AssertUtil.notNull(id,"采购组id为空，查询采购组对应的无效状态的用户失败");
         return purchaseGroupService.findPurchaseGroupMemberStateById(id);

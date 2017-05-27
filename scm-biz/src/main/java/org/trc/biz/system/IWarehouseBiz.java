@@ -4,6 +4,8 @@ import org.trc.domain.System.Warehouse;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.Pagenation;
 
+import java.util.List;
+
 /**
  * 仓库管理
  * Created by sone on 2017/5/5.
@@ -51,4 +53,11 @@ public interface IWarehouseBiz {
      * @throws Exception
      */
     void updateWarehouseState(Warehouse warehouse) throws Exception;
+
+    /**
+     * 查询有效的仓库
+     * @return
+     * @throws Exception
+     */
+    List<Warehouse> findWarehouseValid() throws Exception;
 }

@@ -8,12 +8,22 @@ import javax.ws.rs.QueryParam;
 /**
  * Created by hzqph on 2017/5/4.
  */
-public class PropertyForm extends QueryModel{
-        @QueryParam("name")
-        @Length(max=10,message="属性名称不能超过10个字符")
-        private String name;
-        @QueryParam("typeCode")
-        private String typeCode;
+public class PropertyForm extends QueryModel {
+    @QueryParam("name")
+    @Length(max = 10, message = "属性名称不能超过10个字符")
+    private String name;
+    @QueryParam("sort")
+    private String sort;//排序
+    @QueryParam("typeCode")
+    private String typeCode;
+
+    public String getSort() {
+        return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
 
     public String getName() {
         return name;

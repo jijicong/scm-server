@@ -9,22 +9,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.trc.biz.category.IPropertyBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
-import org.trc.exception.ParamValidException;
+import org.trc.form.FileUrl;
 import org.trc.form.category.PropertyForm;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hzqph on 2017/5/5.
@@ -34,10 +32,15 @@ public class PropertyBiz implements IPropertyBiz {
 
     private final static Logger log = LoggerFactory.getLogger(PropertyBiz.class);
 
+    //多个属性ID分隔符
+    public final static String MULTI_PRRPERTY_ID_SPLIT = ",";
+
     @Autowired
     private IPropertyService propertyService;
     @Autowired
     private IPropertyValueService propertyValueService;
+    @Autowired
+    private IQinniuBiz qinniuBiz;
 
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
@@ -49,6 +52,9 @@ public class PropertyBiz implements IPropertyBiz {
         if (!StringUtils.isBlank(queryModel.getTypeCode())) {
             criteria.andEqualTo("typeCode", queryModel.getTypeCode());
         }
+        if (!StringUtils.isBlank(queryModel.getSort())) {
+            criteria.andEqualTo("sort", queryModel.getSort());
+        }
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
@@ -56,6 +62,7 @@ public class PropertyBiz implements IPropertyBiz {
         example.orderBy("updateTime").desc();
         return propertyService.pagination(example, page, queryModel);
     }
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -205,4 +212,47 @@ public class PropertyBiz implements IPropertyBiz {
         return propertyService.selectByExample(example);
 
     }
+
+    @Override
+    public List<PropertyValue> queryPropertyValueByPropertyIds(String propertyIds) throws Exception {
+        AssertUtil.notBlank(propertyIds, "属性ID不能为空");
+        String[] tmpIds = propertyIds.split(MULTI_PRRPERTY_ID_SPLIT);
+        Example example = new Example(PropertyValue.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("propertyId", Arrays.asList(tmpIds));
+        criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        example.orderBy("sort").asc();
+        List<PropertyValue> propertyValues = propertyValueService.selectByExample(example);
+        AssertUtil.notEmpty(propertyValues, String.format("根据多个属性ID[%s]批量查询属性值为空", propertyIds));
+        setPicPropertyUrl(propertyValues);
+        return propertyValues;
+    }
+
+    /**
+     * 设置图片属性的图片缩略图url访问路径
+     *
+     * @param propertyValues
+     * @throws Exception
+     */
+    private void setPicPropertyUrl(List<PropertyValue> propertyValues) throws Exception {
+        List<String> fileNames = new ArrayList<String>();
+        for (PropertyValue val : propertyValues) {
+            if (StringUtils.isNotBlank(val.getPicture())) {
+                fileNames.add(val.getPicture());
+            }
+        }
+        if (fileNames.size() > 0) {
+            List<FileUrl> files = qinniuBiz.batchGetFileUrl(fileNames.toArray(new String[fileNames.size()]), "1");
+            for (PropertyValue val : propertyValues) {
+                for (FileUrl f : files) {
+                    if (StringUtils.equals(f.getFileKey(), val.getPicture())) {
+                        val.setPicUrl(f.getUrl());
+                    }
+                }
+            }
+        }
+    }
+
+
 }
