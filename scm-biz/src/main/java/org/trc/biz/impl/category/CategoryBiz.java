@@ -11,25 +11,19 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.CategoryException;
 import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TableDate;
 import org.trc.form.category.TreeNode;
 import org.trc.service.category.*;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.ParamsUtil;
-import org.trc.util.StringUtil;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 
-import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -54,6 +48,28 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Autowired
     private ICategoryPropertyService categoryPropertyService;
+
+
+    @Override
+    public Pagenation<Category> CategoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
+        Example example = new Example(Property.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (!StringUtils.isBlank(queryModel.getSort())) {
+            criteria.andEqualTo("sort", queryModel.getSort());
+        }
+        if (!StringUtils.isBlank(queryModel.getLevel())) {
+            criteria.andEqualTo("level", queryModel.getLevel());
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        example.orderBy("isValid").desc();
+        example.orderBy("updateTime").desc();
+        return categoryService.pagination(example, page, queryModel);
+    }
 
     /**
      * 根据父类id，查找子分类，isRecursive为true，递归查找所有，否则只查一级子分类

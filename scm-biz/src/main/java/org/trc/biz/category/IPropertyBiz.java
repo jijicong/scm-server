@@ -4,7 +4,6 @@ import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 
@@ -52,6 +51,7 @@ public interface IPropertyBiz {
 
     /**
      * 根据属性id查询属性信息
+     *
      * @param id
      * @return
      * @throws Exception
@@ -60,6 +60,7 @@ public interface IPropertyBiz {
 
     /**
      * 根据属性id修改属性信息
+     *
      * @param property
      * @throws Exception
      */
@@ -72,6 +73,7 @@ public interface IPropertyBiz {
 
     /**
      * 根据多个属性ID批量查询属性值
+     *
      * @param propertyIds 属性ID,多个用逗号","分隔
      * @return
      * @throws Exception

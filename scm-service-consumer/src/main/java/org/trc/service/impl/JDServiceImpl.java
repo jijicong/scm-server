@@ -226,28 +226,88 @@ public class JDServiceImpl implements IJDService{
     }
 
     @Override
-    public String getProvince(String token) throws Exception {
-        return null;
+    public String getProvince(String token){
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/area/getProvince";
+            String data ="token="+token;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "获取一级地址失败";
+        }catch (Exception e){
+            return "获取一级地址异常";
+        }
     }
 
     @Override
     public String getCity(String token, String id) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/area/getCity";
+            String data ="token="+token+"&id="+id;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "获取二级地址失败";
+        }catch (Exception e){
+            return "获取二级地址异常";
+        }
     }
 
     @Override
     public String getCounty(String token, String id) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/area/getCounty";
+            String data ="token="+token+"&id="+id;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "获取三级地址失败";
+        }catch (Exception e){
+            return "获取三级地址异常";
+        }
     }
 
     @Override
     public String getTown(String token, String id) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/area/getTown";
+            String data ="token="+token+"&id="+id;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "获取四级地址失败";
+        }catch (Exception e){
+            return "获取四级地址异常";
+        }
     }
 
     @Override
     public String checkArea(String token, String provinceId, String cityId, String countyId, String townId) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/area/checkArea";
+            String data ="token="+token+"&provinceId="+provinceId+"&cityId="+cityId+"&countyId="+countyId+"&townId="+townId;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "获取四级地址失败";
+        }catch (Exception e){
+            return "获取四级地址异常";
+        }
     }
 
     @Override
@@ -262,7 +322,19 @@ public class JDServiceImpl implements IJDService{
 
     @Override
     public String getStockById(String token, String sku, String area) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/stock/getStockById";
+            String data ="token="+token+"&sku="+sku+"&area="+area;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "获取四级地址失败";
+        }catch (Exception e){
+            return "获取四级地址异常";
+        }
     }
 
     @Override

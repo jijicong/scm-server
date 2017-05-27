@@ -8,14 +8,35 @@ import java.util.Date;
 /**
  * Created by hzqph on 2017/4/27.
  */
-public class BrandForm extends QueryModel{
-     @QueryParam("name")
-     private String name;
-     @QueryParam("startUpdateTime")
-     private String startUpdateTime;
-     @QueryParam("endUpdateTime")
-     private String endUpdateTime;
+public class BrandForm extends QueryModel {
+    @QueryParam("name")
+    private String name;
+    @QueryParam("alise")
+    private String alise;
+    @QueryParam("brandCode")
+    private String brandCode;
+    @QueryParam("startUpdateTime")
+    private String startUpdateTime;
+    @QueryParam("endUpdateTime")
+    private String endUpdateTime;
 
+
+    public String getAlise() {
+        return alise;
+    }
+
+    public void setAlise(String alise) {
+        this.alise = alise;
+    }
+
+
+    public String getBrandCode() {
+        return brandCode;
+    }
+
+    public void setBrandCode(String brandCode) {
+        this.brandCode = brandCode;
+    }
 
     public String getName() {
         return name;

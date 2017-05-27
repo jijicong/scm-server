@@ -5,29 +5,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.domain.category.Brand;
-import org.trc.service.trc.BrandService;
+import org.trc.service.trc.TBrandService;
 import org.trc.service.trc.model.BrandToTrc;
 import org.trc.util.GuidUtil;
 import org.trc.util.HttpClientUtil;
 import org.trc.util.MD5;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 
 /**
  * 泰然城渠道品牌交互
  * Created by hzdzf on 2017/5/22.
  */
-//@Service("brandService")
-public class BrandServiceImpl implements BrandService {
+@Service("tBrandService")
+public class TBrandServiceImpl implements TBrandService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BrandServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(TBrandServiceImpl.class);
 
     @Override
-    public String sendBrandNotice(String action, long operateTime, Brand brand,String status) throws Exception {
+    public String sendBrandNotice(String action, long operateTime, Brand brand) throws Exception {
         BrandToTrc brandToTrc = new BrandToTrc();
         brandToTrc.setAlise(brand.getAlise() == null ? "" : brand.getAlise());
         brandToTrc.setBrandCode(brand.getBrandCode() == null ? "" : brand.getBrandCode());
@@ -46,43 +43,42 @@ public class BrandServiceImpl implements BrandService {
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
         params.put("action", action);
-        params.put("changeTime", operateTime);
+        params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
-        return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);
+        logger.info(params.toJSONString());
+        //TODO URL
+        return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 10000);
 
     }
 
-    public static void main(String[] args) {
-        String action ="delete";
+    public static void main(String[] args) throws Exception {
+        String action = "delete";
         String noticeNum = GuidUtil.getNextUid(action + "_");
         BrandToTrc brandToTrc = new BrandToTrc();
-        long operateTime=System.currentTimeMillis();
+        brandToTrc.setWebUrl("wqeqeqr");
+        brandToTrc.setAlise("qwqwedqdeqd");
+        brandToTrc.setName("wdad");
+        brandToTrc.setBrandCode("vdfgdghd");
+        long operateTime = System.currentTimeMillis();
         //model中字段以字典序排序
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("action").append("|").append(operateTime).append("|").append("noticeNum").append("|").
+        stringBuilder.append(action).append("|").append(operateTime).append("|").append(noticeNum).append("|").
                 append(brandToTrc.getAlise()).append("|").append(brandToTrc.getBrandCode()).append("|").append(brandToTrc.getIsValid()).append("|").
                 append(brandToTrc.getLogo()).append("|").append(brandToTrc.getName()).append("|").append(brandToTrc.getWebUrl());
         //MD5加密
+        System.out.println(stringBuilder.toString());
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
         params.put("action", action);
-        params.put("changeTime", operateTime);
+        params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
-        try {
-            //TODO URL
-             String result = HttpClientUtil.httpPostJsonRequest("localhost:8080/scm/tairan/"+action, params.toJSONString(), 1000);
-        } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage(), e);
-            JSONObject jsonObject = new JSONObject();
-            //TODO status
-            jsonObject.put("status", "");
-            jsonObject.put("msg", "请求渠道方出错");
 
-        }
+        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/example/brand", params.toJSONString(), 10000);
+        logger.info(result);
     }
 }

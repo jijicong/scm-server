@@ -3,17 +3,28 @@ package org.trc.biz.category;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
-import org.trc.domain.category.Property;
 import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
+import org.trc.util.Pagenation;
 
-import javax.ws.rs.FormParam;
 import java.util.List;
 
 /**
  * Created by hzszy on 2017/5/5.
  */
 public interface ICategoryBiz {
+
+    /**
+     * 分类分页查询
+     *
+     * @param queryModel
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Category> CategoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception;
+
     /**
      * 获取分类树节点
      *
@@ -83,7 +94,7 @@ public interface ICategoryBiz {
      * @param brandIds
      * @throws Exception
      */
-    void linkCategoryBrands(Long categoryId, String brandIds,String delRecord) throws Exception;
+    void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception;
 
 
     /**
@@ -103,5 +114,5 @@ public interface ICategoryBiz {
     /**
      * 更新分类属性
      */
-    void  updateCategoryProperty(Long categoryId,String jsonDate) throws Exception;
+    void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception;
 }

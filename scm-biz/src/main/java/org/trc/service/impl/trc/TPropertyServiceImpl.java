@@ -2,30 +2,28 @@ package org.trc.service.impl.trc;
 
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
-import org.trc.service.trc.PropertyService;
+import org.trc.service.trc.TPropertyService;
 import org.trc.service.trc.model.PropertyToTrc;
 import org.trc.util.GuidUtil;
 import org.trc.util.HttpClientUtil;
 import org.trc.util.MD5;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
  * 泰然城分类回调
  * Created by hzdzf on 2017/5/24.
  */
-//@Service("propertyService")
-public class PropertyServiceImpl implements PropertyService {
+@Service("tPropertyService")
+public class TPropertyServiceImpl implements TPropertyService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PropertyServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(TPropertyServiceImpl.class);
 
     @Override
     public String sendPropertyNotice(Property property, String action, long operateTime, List<PropertyValue> valueList) throws Exception {
@@ -52,13 +50,10 @@ public class PropertyServiceImpl implements PropertyService {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("propertyToTrc", propertyToTrc);
+        params.put("valueList",valueList);
+        logger.info(params.toJSONString());
         //TODO URL和返回处理
-        HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 1000);
-        //若有属性值改动
-        if (valueList!=null){
-            String result = JSON.toJSONString(valueList);
-            HttpClientUtil.httpPostJsonRequest("url", result, 1000);
-        }
-        return null;
+        return HttpClientUtil.httpPostJsonRequest("url", params.toJSONString(), 10000);
+
     }
 }
