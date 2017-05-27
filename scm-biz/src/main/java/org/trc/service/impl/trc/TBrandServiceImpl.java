@@ -39,7 +39,7 @@ public class TBrandServiceImpl implements TBrandService {
         stringBuilder.append(action).append("|").append(noticeNum).append("|").append(operateTime).append("|").
                 append(brandToTrc.getAlise()).append("|").append(brandToTrc.getBrandCode()).append("|").append(brandToTrc.getIsValid()).append("|").
                 append(brandToTrc.getLogo()).append("|").append(brandToTrc.getName()).append("|").append(brandToTrc.getWebUrl());
-        //MD5加密
+
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
         params.put("action", action);
@@ -78,7 +78,7 @@ public class TBrandServiceImpl implements TBrandService {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
 
-        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/tairan/brand", params.toJSONString(), 10000);
+        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/example/brand", params.toJSONString(), 10000);
         logger.info(result);
     }
 }

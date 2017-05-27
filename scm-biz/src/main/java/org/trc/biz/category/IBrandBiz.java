@@ -1,9 +1,7 @@
 package org.trc.biz.category;
 
 import org.trc.domain.category.Brand;
-import org.trc.domain.dict.DictType;
 import org.trc.form.category.BrandForm;
-import org.trc.form.config.DictTypeForm;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -24,7 +22,18 @@ public interface IBrandBiz {
     Pagenation<Brand> brandPage(BrandForm form, Pagenation<Brand> page) throws Exception;
 
     /**
+     * 对泰然城提供分页
+     *
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Brand> brandList(BrandForm form, Pagenation<Brand> page) throws Exception;
+
+    /**
      * 查询品牌列表
+     *
      * @return
      * @throws Exception
      */
