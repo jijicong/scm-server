@@ -1,19 +1,23 @@
 package org.trc.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.form.JDModel.JdBaseDO;
-import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.SearchDO;
+import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
 import org.trc.util.DateUtils;
 import org.trc.util.HttpRequestUtil;
 import org.trc.util.MD5;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by hzwyz on 2017/5/18 0018.
@@ -151,8 +155,10 @@ public class JDServiceImpl implements IJDService{
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
             Boolean result = (Boolean) json.get("success");
+
+            JSONArray array = json.getJSONArray("result");
             if (result){
-                return rev;
+                return array.toString();
             }
             return "获取商品上下架状态失败";
         }catch (Exception e){
@@ -304,36 +310,138 @@ public class JDServiceImpl implements IJDService{
             if (result){
                 return rev;
             }
-            return "获取四级地址失败";
+            return "检查四级地址失败";
         }catch (Exception e){
-            return "获取四级地址异常";
+            return "检查四级地址异常";
         }
     }
 
     @Override
-    public String getSellPrice(String token, String sku) throws Exception {
-        return null;
+    public List<SellPriceDO> getSellPrice(String token, String sku) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/price/getSellPrice";
+            String data ="token="+token+"&sku="+sku;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("success");
+            if (!state){
+                return null;
+            }
+            JSONArray result = json.getJSONArray("result");
+            Iterator<Object> it = result.iterator();
+            List<SellPriceDO> list=new ArrayList<SellPriceDO>();
+            while (it.hasNext()) {
+                JSONObject ob = (JSONObject) it.next();
+                SellPriceDO model = new SellPriceDO();
+                if (null!=ob.getString("skuId")){
+                    model.setSkuId(ob.getString("skuId"));
+                }
+                if (null!=ob.getString("price")){
+                    model.setPrice(ob.getString("price"));
+                }
+                if (null!=ob.getString("jdPrice")){
+                    model.setJdPrice(ob.getString("jdPrice"));
+                }
+                if(model!=null){
+                    list.add(model);
+                }
+            }
+            return list;
+        }catch (Exception e){
+            throw new Exception("查询商品价格异常");
+        }
     }
 
     @Override
-    public String getNewStockById(String token, String skuNums, String area) throws Exception {
-        return null;
+    public List<StockDO> getNewStockById(String token, String skuNums, String area) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/stock/getNewStockById";
+            String data ="token="+token+"&skuNums="+skuNums+"&area="+area;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("success");
+            if (!state){
+                return null;
+            }
+            List<StockDO> stockState = getNewStockState(json);
+
+            return stockState;
+        }catch (Exception e){
+            throw new Exception("查询库存异常");
+        }
+    }
+
+    private List<StockDO> getNewStockState(JSONObject json) {
+        JSONArray result = json.getJSONArray("result");
+        Iterator<Object> it = result.iterator();
+        List<StockDO> list=new ArrayList<StockDO>();
+        while (it.hasNext()) {
+            JSONObject ob = (JSONObject) it.next();
+            StockDO model = new StockDO();
+            if (null!=ob.getString("areaId")){
+                model.setArea(ob.getString("areaId"));
+            }
+            if (null!=ob.getString("stockStateDesc")){
+                model.setDesc(ob.getString("stockStateDesc"));
+            }
+            if (null!=ob.getString("skuId")){
+                model.setSku(ob.getString("skuId"));
+            }
+            if (null!=ob.getString("stockStateId")){
+                model.setState(ob.getString("stockStateId"));
+            }
+            if (null!=ob.getString("remainNum")){
+                model.setRemainNum(ob.getString("remainNum"));
+            }
+            if(model!=null){
+                list.add(model);
+            }
+        }
+        return list;
+    }
+
+    private List<StockDO> getStockState(JSONObject json) {
+        JSONArray result = json.getJSONArray("result");
+        Iterator<Object> it = result.iterator();
+        List<StockDO> list=new ArrayList<StockDO>();
+        while (it.hasNext()) {
+            JSONObject ob = (JSONObject) it.next();
+            StockDO model = new StockDO();
+            if (null!=ob.getString("area")){
+                model.setArea(ob.getString("area"));
+            }
+            if (null!=ob.getString("desc")){
+                model.setDesc(ob.getString("desc"));
+            }
+            if (null!=ob.getString("sku")){
+                model.setSku(ob.getString("sku"));
+            }
+            if (null!=ob.getString("state")){
+                model.setState(ob.getString("state"));
+            }
+            if(model!=null){
+                list.add(model);
+            }
+        }
+        return list;
     }
 
     @Override
-    public String getStockById(String token, String sku, String area) throws Exception {
+    public List<StockDO> getStockById(String token, String sku, String area) throws Exception {
         try{
             String url = jdBaseDO.getJdurl()+"/api/stock/getStockById";
             String data ="token="+token+"&sku="+sku+"&area="+area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result){
-                return rev;
+            Boolean state = (Boolean) json.get("success");
+            if (!state){
+                return null;
             }
-            return "获取四级地址失败";
+            List<StockDO> stockState = getStockState(json);
+
+            return stockState;
         }catch (Exception e){
-            return "获取四级地址异常";
+            throw new Exception("查询库存异常");
         }
     }
 

@@ -34,12 +34,18 @@ public class PurchaseDetail extends BaseDO{
     @NotEmpty
     @Length(max = 32, message = "商品的sku名称字母和数字不能超过32个,汉字不能超过16个")
     private String skuCode;
-    @FormParam("brand")
-    @Length(max = 32, message = "商品的品牌字母和数字不能超过32个,汉字不能超过16个")
-    private String brand;
-    @FormParam("category")
-    @Length(max = 32, message = "商品的所属分类字母和数字不能超过32个,汉字不能超过16个")
-    private String  category;
+    @FormParam("brandCode")
+    @Length(max = 32, message = "商品的品牌编码字母和数字不能超过32个,汉字不能超过16个")
+    private String brandCode;
+    @FormParam("brandName")
+    @Length(max = 256, message = "商品的品牌名称字母和数字不能超过256个,汉字不能超过128个")
+    private String brandName;
+    @FormParam("categoryCode")
+    @Length(max = 32, message = "商品的所属分类编码字母和数字不能超过32个,汉字不能超过16个")
+    private String  categoryCode;
+    @FormParam("categoryName")
+    @Length(max = 128, message = "商品的所属分类的名称字母和数字不能超过128个,汉字不能超过64个")
+    private String  categoryName;
     @FormParam("skuCode")
     @Length(max = 64, message = "商品的所有分类字母和数字不能超过64个,汉字不能超过32个")
     private String allCategory;//所有分类
@@ -90,20 +96,36 @@ public class PurchaseDetail extends BaseDO{
         this.skuCode = skuCode;
     }
 
-    public String getBrand() {
-        return brand;
+    public String getBrandCode() {
+        return brandCode;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
+    public void setBrandCode(String brandCode) {
+        this.brandCode = brandCode;
     }
 
-    public String getCategory() {
-        return category;
+    public String getBrandName() {
+        return brandName;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public String getAllCategory() {

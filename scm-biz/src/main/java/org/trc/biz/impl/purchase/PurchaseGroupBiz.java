@@ -1,4 +1,4 @@
-package org.trc.biz.impl.Purchase;
+package org.trc.biz.impl.purchase;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +60,28 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         }
         example.orderBy("updateTime").desc();
         return purchaseGroupService.pagination(example,page,form);
+    }
+
+    @Override
+    public List<UserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception {
+        if (StringUtils.isBlank(purchaseGroupCode)) {
+            String msg = CommonUtil.joinStr("根据采购组编码查询采购组人员的参数code为空").toString();
+            LOGGER.error(msg);
+            throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        List<UserAccreditInfo> userAccreditInfoList = purchaseGroupService.selectPurchaseGroupPersons(purchaseGroupCode);
+        return userAccreditInfoList;
+    }
+
+    @Override
+    public List<PurchaseGroup> findPurchaseGroupList() throws Exception {
+        PurchaseGroup purchaseGroup = new PurchaseGroup();
+        purchaseGroup.setIsValid(ValidEnum.VALID.getCode());
+        List<PurchaseGroup> purchaseGroupList = purchaseGroupService.select(purchaseGroup);
+        if(purchaseGroupList==null){
+            purchaseGroupList=new ArrayList<PurchaseGroup>();
+        }
+        return purchaseGroupList;
     }
 
     @Override

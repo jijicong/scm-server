@@ -3,6 +3,10 @@ package org.trc.service;
 
 import org.trc.form.JDModel.OrderDO;
 import org.trc.form.JDModel.SearchDO;
+import org.trc.form.JDModel.SellPriceDO;
+import org.trc.form.JDModel.StockDO;
+
+import java.util.List;
 
 /**
  * Created by hzwyz on 2017/5/18 0018.
@@ -128,7 +132,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getSellPrice(String token,String sku) throws Exception;
+    public List<SellPriceDO> getSellPrice(String token, String sku) throws Exception;
 
     /**
      * 批量获取库存接口（建议订单详情页、下单使用）
@@ -138,7 +142,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getNewStockById(String token,String skuNums,String area) throws Exception;
+    public List<StockDO> getNewStockById(String token,String skuNums,String area) throws Exception;
 
     /**
      * 批量获取库存接口（建议商品列表页使用）
@@ -148,7 +152,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    public String getStockById(String token,String sku,String area) throws Exception;
+    public List<StockDO> getStockById(String token, String sku, String area) throws Exception;
 
     /**
      * 统一下单

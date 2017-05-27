@@ -9,4 +9,10 @@
         ) AND is_valid='0'
     </select>
 
+    <select id="selectPurchaseGroupPersons" resultType="org.trc.domain.impower.UserAccreditInfo">
+        SELECT user_id as userId , `name` from user_accredit_info WHERE user_id in
+        (
+        SELECT user_id FROM purchase_group_user_relation WHERE purchase_group_code=#{purchaseGroupCode}
+        )
+    </select>
 </mapper>
