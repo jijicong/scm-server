@@ -32,4 +32,19 @@ public interface IPurchaseGroupBiz {
      * @throws Exception
      */
     List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception;
+
+    /**
+     * 查询采购组列表
+     * @return
+     * @throws Exception
+     */
+    List<PurchaseGroup> findPurchaseGroupList() throws Exception;
+
+    /**
+     * 根据采购组的code查询改组的采购人员
+     * @param purchaseGroupCode
+     * @return
+     * @throws Exception
+     */
+    List<UserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception;
 }
