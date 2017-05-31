@@ -28,20 +28,21 @@ public class ParamsUtil {
     }*/
 
     public static void setBaseDO(ScmDO scmDO){
-        scmDO.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         Date currentDate = Calendar.getInstance().getTime();
         if(null == scmDO.getCreateTime())
             scmDO.setCreateTime(currentDate);
         if(null == scmDO.getUpdateTime())
             scmDO.setUpdateTime(currentDate);
-        if(scmDO instanceof CommonDO){
-            CommonDO commonDO = (CommonDO)scmDO;
-            commonDO.setCreateOperator("test");//FIXME
-        }else if(scmDO instanceof BaseDO){
+        scmDO.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        if(scmDO instanceof BaseDO){
             BaseDO baseDO = (BaseDO)scmDO;
             if(StringUtils.isEmpty(baseDO.getIsValid())) {
                 baseDO.setIsValid(ZeroToNineEnum.ONE.getCode());
             }
+        }
+        if(scmDO instanceof CommonDO){
+            CommonDO commonDO = (CommonDO)scmDO;
+            commonDO.setCreateOperator("test");//FIXME
         }
     }
 

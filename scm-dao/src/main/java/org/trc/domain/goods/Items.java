@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -18,7 +19,6 @@ public class Items extends BaseDO{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("spuCode")
-    @NotEmpty
     @Length(max = 64, message = "商品SPU编号长度不能超过64个")
     private String spuCode;
     @FormParam("name")
@@ -26,12 +26,12 @@ public class Items extends BaseDO{
     @Length(max = 128, message = "商品名称长度不能超过128个")
     private String name;
     @FormParam("categoryId")
-    @NotEmpty
+    @NotNull
     private Long categoryId;
     @Transient
     private String categoryName;//分类名称
     @FormParam("brandId")
-    @NotEmpty
+    @NotNull
     private Long brandId;
     @Transient
     private String brandName;//供应商名称

@@ -227,4 +227,9 @@ public interface IJDService {
     String orderTrack(String token,String jdOrderId) throws Exception;
 
     String getSkuByPage(String token,String pageNum,String pageNo) throws  Exception;
+
+    /**
+     * 商品可售验证
+     */
+    String checkSku(String token,String skuIds) throws  Exception;
 }

@@ -64,6 +64,5 @@ public interface IJingDongBiz {
 
     void getSkuList() throws Exception;
 
-    String getSkuByPage(String pageNum,String pageNo) throws Exception;
 
 }

@@ -139,6 +139,15 @@ public class JDServiceImpl implements IJDService{
             return "获取商品详细信息异常";
         }
     }
+
+    /**
+     * 获取池内商品编号接口-品类商品池
+     * @param token
+     * @param pageNum
+     * @param pageNo
+     * @return
+     * @throws Exception
+     */
     @Override
     public String getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
         try{
@@ -155,6 +164,26 @@ public class JDServiceImpl implements IJDService{
             return "获取品类池信息异常";
         }
     }
+
+    @Override
+    public String checkSku(String token, String skuIds) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/product/check";
+            String data ="token="+token+"&skuIds="+skuIds;
+//            data = data.substring(0,data.length()-1);
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+//            System.out.println("data:"+data);
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return rev;
+        }catch (Exception e){
+            return "获取商品是否可用异常";
+        }
+    }
+
     /**
      * 获取商品上下架状态
      * @param token 授权时的access token
@@ -347,6 +376,13 @@ public class JDServiceImpl implements IJDService{
         }
     }
 
+    /**
+     * 批量查询商品价格
+     * @param token 授权时的access token
+     * @param sku 商品编号 支持批量（最高100个）请以，(英文逗号)分割。
+     * @return
+     * @throws Exception
+     */
     @Override
     public List<SellPriceDO> getSellPrice(String token, String sku) throws Exception {
         try{
@@ -383,6 +419,14 @@ public class JDServiceImpl implements IJDService{
         }
     }
 
+    /**
+     *批量获取库存接口
+     * @param token 授权时的access token
+     * @param skuNums 商品和数量
+     * @param area 地址
+     * @return
+     * @throws Exception
+     */
     @Override
     public List<StockDO> getNewStockById(String token, String skuNums, String area) throws Exception {
         try{
@@ -457,6 +501,14 @@ public class JDServiceImpl implements IJDService{
         return list;
     }
 
+    /**
+     * 批量获取库存接口
+     * @param token 授权时的access token
+     * @param sku 商品编号
+     * @param area 地址
+     * @return
+     * @throws Exception
+     */
     @Override
     public List<StockDO> getStockById(String token, String sku, String area) throws Exception {
         try{
