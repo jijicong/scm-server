@@ -357,21 +357,18 @@ public class CategoryBiz implements ICategoryBiz {
         for (CategoryProperty categoryProperty : categoryProperties) {
             propertyIds.add(categoryProperty.getPropertyId());
         }
-        List<Property> propertyList = propertyService.queryPropertyList(propertyIds);
-
-        /*Collections.sort(propertyList, new Comparator<Property>() {
-            @Override
-            public int compare(Property o1, Property o2) {
-
-                return 0;
-            }
-        });*/
-        for (CategoryProperty c : categoryProperties) {
-            for (Property p : propertyList) {
-                if (StringUtils.equals(c.getPropertyId().toString(), p.getId().toString())) {
-                    c.setName(p.getName());
-                    c.setTypeCode(p.getTypeCode());
-                    c.setValueType(p.getValueType());
+        List<Property> propertyList = new ArrayList<Property>();
+        if(propertyIds.size() > 0){
+            propertyList = propertyService.queryPropertyList(propertyIds);
+        }
+        if(propertyList.size() > 0){
+            for (CategoryProperty c : categoryProperties) {
+                for (Property p : propertyList) {
+                    if (StringUtils.equals(c.getPropertyId().toString(), p.getId().toString())) {
+                        c.setName(p.getName());
+                        c.setTypeCode(p.getTypeCode());
+                        c.setValueType(p.getValueType());
+                    }
                 }
             }
         }
