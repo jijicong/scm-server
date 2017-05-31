@@ -9,6 +9,7 @@ import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
+import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -68,6 +69,15 @@ public class GoodsResource {
         goodsBiz.updateValid(id, isValid);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
+
+    @GET
+    @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode) throws Exception {
+        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode));
+    }
+
+
 
 
 }

@@ -476,6 +476,8 @@ public class SupplyConstants {
         public static final String GOODS_LIST = "goodsList";
         //商品路径
         public static final String GOODS = "goods";
+        //根据SPU编码查询商品路径
+        public static final String GOODS_SPU_CODE = "goods/spuCode";
         //启用/停用
         public static final String IS_VALID = "isValid";
 

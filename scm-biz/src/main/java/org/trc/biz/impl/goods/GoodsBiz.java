@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.impl.category.CategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
@@ -26,6 +27,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.SupplierException;
+import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
@@ -71,6 +73,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ItemNatureProperyService itemNatureProperyService;
     @Autowired
     private ItemSalesProperyService itemSalesProperyService;
+    @Autowired
+    private CategoryBiz categoryBiz;
 
 
     @Override
@@ -425,6 +429,62 @@ public class GoodsBiz implements IGoodsBiz {
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
         }
+    }
+
+    @Override
+    public ItemsExt queryItemsInfo(String spuCode) throws Exception {
+        AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
+        //查询商品基础信息
+        Items items = new Items();
+        items.setSpuCode(spuCode);
+        items.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        items = itemsService.selectOne(items);
+        AssertUtil.notNull(items, String.format("根据商品SPU编码[%s]查询商品基础信息为空", spuCode));
+        items.setCategoryName(getCategoryName(items.getCategoryId()));
+        //查询商品SKU信息
+        Skus skus = new Skus();
+        skus.setSpuCode(spuCode);
+        skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<Skus> skuses = skusService.select(skus);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
+        //查询商品自然属性信息
+        ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
+        itemNaturePropery.setSpuCode(spuCode);
+        itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品自然属性信息为空", spuCode));
+        //查询商品采购属性信息
+        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
+        itemSalesPropery.setSpuCode(spuCode);
+        itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品采购属性信息为空", spuCode));
+        //返回数据组装
+        ItemsExt itemsExt = new ItemsExt();
+        itemsExt.setItems(items);
+        itemsExt.setSkus(skuses);
+        itemsExt.setItemNatureProperys(itemNatureProperies);
+        itemsExt.setItemSalesProperies(itemSalesProperies);
+        return itemsExt;
+    }
+
+    /**
+     * 获取分类名称
+     * @param categoryId
+     * @return
+     * @throws Exception
+     */
+    private String getCategoryName(Long categoryId) throws Exception {
+        List<String> categoryNames = categoryBiz.queryCategoryNamePath(categoryId);
+        AssertUtil.notEmpty(categoryNames, String.format("根据分类ID[%s]查询分类全路径名称为空", categoryId.toString()));
+        String categoryName = "";
+        for(String name : categoryNames){
+            categoryName = name + CATEGORY_NAME_SPLIT_SYMBOL + categoryName;
+        }
+        if(categoryName.length() > 0){
+            categoryName = categoryName.substring(0, categoryName.length()-1);
+        }
+        return categoryName;
     }
 
 

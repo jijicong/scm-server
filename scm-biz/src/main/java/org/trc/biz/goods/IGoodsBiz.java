@@ -4,6 +4,7 @@ import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
+import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.util.Pagenation;
 
@@ -54,5 +55,13 @@ public interface IGoodsBiz {
      * @throws Exception
      */
     void updateValid(Long id, String isValid) throws Exception;
+
+    /**
+     * 根据supCode查询商品信息
+     * @param spuCode
+     * @return
+     * @throws Exception
+     */
+    ItemsExt queryItemsInfo(String spuCode) throws Exception;
 
 }

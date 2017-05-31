@@ -169,7 +169,7 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_QUERY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<String>> queryCategory(@QueryParam("id") Long id) throws Exception {
+    public AppResult<List<String>> queryCategory(@PathParam("id") Long id) throws Exception {
 
         return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.queryCategoryNamePath(id));
     }

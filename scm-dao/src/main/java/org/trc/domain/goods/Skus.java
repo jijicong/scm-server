@@ -16,7 +16,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
 
-public class Skus extends BaseDO {
+public class Skus extends ScmDO {
 
     @PathParam("id")
     @Id
@@ -59,6 +59,10 @@ public class Skus extends BaseDO {
     private Long channel6PreSellPrices;
     @FormParam("channel7PreSellPrices")
     private Long channel7PreSellPrices;
+
+    @FormParam("isValid")
+    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    private String isValid; //是否有效:0-否,1-是
     /**
      * sku信息
      */
@@ -203,4 +207,19 @@ public class Skus extends BaseDO {
         this.skusInfo = skusInfo;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
 }
