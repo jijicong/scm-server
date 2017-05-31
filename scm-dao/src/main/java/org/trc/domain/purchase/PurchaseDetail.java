@@ -34,15 +34,13 @@ public class PurchaseDetail extends BaseDO{
     @NotEmpty
     @Length(max = 32, message = "商品的sku名称字母和数字不能超过32个,汉字不能超过16个")
     private String skuCode;
-    @FormParam("brandCode")
-    @Length(max = 32, message = "商品的品牌编码字母和数字不能超过32个,汉字不能超过16个")
-    private String brandCode;
+    @FormParam("brandId")
+    private Long brandId;
     @FormParam("brandName")
     @Length(max = 256, message = "商品的品牌名称字母和数字不能超过256个,汉字不能超过128个")
     private String brandName;
-    @FormParam("categoryCode")
-    @Length(max = 32, message = "商品的所属分类编码字母和数字不能超过32个,汉字不能超过16个")
-    private String  categoryCode;
+    @FormParam("categoryId")
+    private String  categoryId;
     @FormParam("categoryName")
     @Length(max = 128, message = "商品的所属分类的名称字母和数字不能超过128个,汉字不能超过64个")
     private String  categoryName;
@@ -96,12 +94,20 @@ public class PurchaseDetail extends BaseDO{
         this.skuCode = skuCode;
     }
 
-    public String getBrandCode() {
-        return brandCode;
+    public Long getBrandId() {
+        return brandId;
     }
 
-    public void setBrandCode(String brandCode) {
-        this.brandCode = brandCode;
+    public void setBrandId(Long brandId) {
+        this.brandId = brandId;
+    }
+
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getBrandName() {
@@ -110,14 +116,6 @@ public class PurchaseDetail extends BaseDO{
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
-    }
-
-    public String getCategoryCode() {
-        return categoryCode;
-    }
-
-    public void setCategoryCode(String categoryCode) {
-        this.categoryCode = categoryCode;
     }
 
     public String getCategoryName() {

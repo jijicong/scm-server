@@ -4,17 +4,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.ResultActions;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.form.purchase.ItemForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -37,8 +36,18 @@ public class PurchaseOrderResource {
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)
+    @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<Supplier>> findSuppliers(@QueryParam("userId") String userId) throws Exception {
         return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(userId));
+    }
+
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ITEMS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@QueryParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page) throws Exception{
+
+        return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page);
+
     }
 
 
