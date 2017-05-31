@@ -2,6 +2,8 @@ package org.trc.biz.jingdong;
 
 import com.alibaba.fastjson.JSONArray;
 import org.trc.biz.impl.jingdong.util.Model.AddressDO;
+import org.trc.form.JDModel.OrderDO;
+import org.trc.form.JDModel.OrderResultDO;
 import org.trc.form.JDModel.SellPriceDO;
 import org.trc.form.JDModel.StockDO;
 
@@ -20,7 +22,13 @@ public interface IJingDongBiz {
      String getAccessToken() throws Exception;
 
 
-     String billOrder() throws Exception;
+    /**
+     * 统一下单接口
+     * @param orderDO 订单
+     * @return
+     * @throws Exception
+     */
+    OrderResultDO billOrder(OrderDO orderDO) throws Exception;
 
 
      List<SellPriceDO> getSellPrice(String sku) throws Exception;

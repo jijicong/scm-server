@@ -245,6 +245,24 @@ public class JDServiceImpl implements IJDService{
     }
 
     @Override
+    public String getYanbaoSku(String token, String skuIds, int province, int city, int county, int town) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/product/getYanbaoSku";
+            String data ="token="+token+"&skuIds="+skuIds+"&province="+province+"&city="+city+"&county="+county+"&town="+town;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return "查询商品延保失败";
+        }catch (Exception e){
+            return "查询商品延保异常";
+        }
+    }
+
+
+    @Override
     public String getProvince(String token){
         try{
             String url = jdBaseDO.getJdurl()+"/api/area/getProvince";
@@ -459,14 +477,19 @@ public class JDServiceImpl implements IJDService{
     }
 
     @Override
-    public String submitOrder(String token,OrderDO orderDO) throws Exception {
+    public OrderResultDO submitOrder(String token,OrderDO orderDO) throws Exception {
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/submitOrder";
             String data ="token="+token+"&thirdOrder="+orderDO.getThirdOrder()+"&sku="+orderDO.getSku()+"&name="+orderDO.getName()+"&province="+orderDO.getProvince()+"&city="+orderDO.getCity()
                     +"&county="+orderDO.getCounty()+"&town="+orderDO.getTown()+"&address="+orderDO.getAddress()+"&mobile="+orderDO.getMobile()+"&email="+orderDO.getEmail()
                     +"&invoiceState="+orderDO.getInvoiceState()+"&invoiceType="+orderDO.getInvoiceType()+"&selectedInvoiceTitle="+orderDO.getSelectedInvoiceTitle()
-                    +"&companyName="+orderDO.getCompanyName()+"&invoiceContent="+orderDO.getInvoiceContent()+"&paymentType="+orderDO.getPaymentType()+"&isUseBalance="+orderDO.getIsUseBalance()
-                    +"&submitState="+orderDO.getSubmitState();
+                    +"&companyName="+orderDO.getCompanyName()+"&invoiceContent="+orderDO.getInvoiceContent()+"&paymentType="+orderDO.getPaymentType();
+            if ("4".equals(String.valueOf(orderDO.getPaymentType()))){
+                data = data +"&isUseBalance="+1;
+            }else {
+                data = data +"&isUseBalance="+0;
+            }
+            data = data+"&submitState="+orderDO.getSubmitState();
             if ("2".equals(String.valueOf(orderDO.getInvoiceType())) && "1".equals(String.valueOf(orderDO.getInvoiceState()))){
                 data = data + "&invoiceName="+orderDO.getInvoiceName()+"&invoicePhone="+orderDO.getInvoicePhone()+"&invoiceProvince="+orderDO.getInvoiceProvice()+"&invoiceCity="+orderDO.getInvoiceCity()
                         +"&invoiceCounty="+orderDO.getInvoiceCounty()+"&invoiceAddress="+orderDO.getInvoiceAddress();
@@ -480,44 +503,175 @@ public class JDServiceImpl implements IJDService{
                 return null;
             }
             JSONObject result = json.getJSONObject("result");
-            result.get("jdOrderId");
-            result.get("freight");
-            result.getJSONArray("sku");
-            result.get("orderPrice");
-            result.get("orderNakedPrice");
-            result.get("orderTaxPrice");
-
-            List<StockDO> stockState = getStockState(json);
-
-            return null;
+            OrderResultDO orderResultDO = new OrderResultDO();
+            if (null != result.get("jdOrderId")){
+                orderResultDO.setJdOrderId(String.valueOf(result.get("jdOrderId")));
+            }
+            if (null != result.get("freight")){
+                orderResultDO.setFreight(String.valueOf(result.get("freight")));
+            }
+            JSONArray array = result.getJSONArray("sku");
+            if (null != array){
+                Iterator<Object> it = array.iterator();
+                List<SellPriceDO> list=new ArrayList<SellPriceDO>();
+                while (it.hasNext()) {
+                    JSONObject ob = (JSONObject) it.next();
+                    SellPriceDO model = new SellPriceDO();
+                    if (null!=ob.getString("skuId")){
+                        model.setSkuId(ob.getString("skuId"));
+                    }
+                    if (null!=ob.getString("num")){
+                        model.setNum(ob.getString("num"));
+                    }
+                    if (null!=ob.getString("category")){
+                        model.setCategory(ob.getString("category"));
+                    }
+                    if (null!=ob.getString("price")){
+                        model.setPrice(ob.getString("price"));
+                    }
+                    if (null!=ob.getString("name")){
+                        model.setName(ob.getString("name"));
+                    }
+                    if (null!=ob.getString("tax")){
+                        model.setTax(ob.getString("tax"));
+                    }
+                    if (null!=ob.getString("taxPrice")){
+                        model.setTaxPrice(ob.getString("taxPrice"));
+                    }
+                    if (null!=ob.getString("nakedPrice")){
+                        model.setNakedPrice(ob.getString("nakedPrice"));
+                    }
+                    if (null!=ob.getString("type")){
+                        model.setType(ob.getString("type"));
+                    }
+                    if (null!=ob.getString("oid")){
+                        model.setOid(ob.getString("oid"));
+                    }
+                    if (null!=ob.getString("remoteRegionFreight")){
+                        model.setRemoteRegionFreight(ob.getString("remoteRegionFreight"));
+                    }
+                    if(model!=null){
+                        list.add(model);
+                    }
+                }
+                orderResultDO.setSku(list);
+            }
+            if (null != result.get("orderPrice")){
+                orderResultDO.setOrderPrice(String.valueOf(result.get("orderPrice")));
+            }
+            if (null != result.get("orderNakedPrice")){
+                orderResultDO.setOrderNakedPrice(String.valueOf(result.get("orderNakedPrice")));
+            }
+            if (null != result.get("orderTaxPrice")){
+                orderResultDO.setOrderTaxPrice(String.valueOf(result.get("orderTaxPrice")));
+            }
+            return orderResultDO;
         }catch (Exception e){
-            throw new Exception("查询库存异常");
+            throw new Exception("下单存在异常");
         }
     }
 
     @Override
     public String confirmOrder(String token, String jdOrderId) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/confirmOrder";
+            String data ="token="+token+"&jdOrderId="+jdOrderId;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("result");
+            if (!state){
+                return "确认预占库存订单失败";
+            }
+            return "确认预占库存订单成功";
+        }catch (Exception e){
+            throw new Exception("取消订单异常");
+        }
     }
 
     @Override
     public String cancel(String token, String jdOrderId) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/cancel";
+            String data ="token="+token+"&jdOrderId="+jdOrderId;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("result");
+            if (!state){
+                return "取消订单失败";
+            }
+            return "取消订单成功";
+        }catch (Exception e){
+            throw new Exception("取消订单异常");
+        }
     }
 
     @Override
     public String doPay(String token, String jdOrderId) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/doPay";
+            String data ="token="+token+"&jdOrderId="+jdOrderId;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("result");
+            if (!state){
+                return "发起支付失败";
+            }
+            return "发起支付成功";
+        }catch (Exception e){
+            throw new Exception("发起支付异常");
+        }
     }
 
     @Override
+    public String selectJdOrderIdByThirdOrder(String token, String thirdOrder) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/selectJdOrderIdByThirdOrder";
+            String data ="token="+token+"&thirdOrder="+thirdOrder;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("result");
+            if (!state){
+                return "订单反查失败";
+            }
+            return "订单反查成功";
+        }catch (Exception e){
+            throw new Exception("订单反查异常");
+        }
+    }
+
+
+    @Override
     public String selectJdOrder(String token, String jdOrderId) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/selectJdOrderIdByThirdOrder";
+            String data ="token="+token+"&jdOrderId="+jdOrderId;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("result");
+            if (!state){
+                return "查询京东订单信息失败";
+            }
+            return "查询京东订单信息成功";
+        }catch (Exception e){
+            throw new Exception("查询订单信息异常");
+        }
     }
 
     @Override
     public String orderTrack(String token, String jdOrderId) throws Exception {
-        return null;
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/orderTrack";
+            String data ="token="+token+"&jdOrderId="+jdOrderId;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("result");
+            if (!state){
+                return "查询京东订单信息失败";
+            }
+            return "查询京东订单信息成功";
+        }catch (Exception e){
+            throw new Exception("查询订单信息异常");
+        }
     }
 
 

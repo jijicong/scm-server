@@ -1,10 +1,7 @@
 package org.trc.service;
 
 
-import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.SearchDO;
-import org.trc.form.JDModel.SellPriceDO;
-import org.trc.form.JDModel.StockDO;
+import org.trc.form.JDModel.*;
 
 import java.util.List;
 
@@ -76,6 +73,19 @@ public interface IJDService {
      * @return
      */
     String search(SearchDO searchDO)throws Exception;
+
+    /**
+     * 查询商品延保接口
+     * @param token access token
+     * @param skuIds 商品信息
+     * @param province 省编号
+     * @param city 市编号
+     * @param county 县区编号
+     * @param town
+     * @return
+     * @throws Exception
+     */
+    String getYanbaoSku(String token, String skuIds, int province, int city, int county, int town) throws Exception;
 
     /**
      * 获取一级地址
@@ -160,7 +170,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    String submitOrder(String token,OrderDO orderDO) throws Exception;
+    OrderResultDO submitOrder(String token, OrderDO orderDO) throws Exception;
 
     /**
      * 确认预占库存订单
@@ -188,6 +198,15 @@ public interface IJDService {
      * @throws Exception
      */
     String doPay(String token,String jdOrderId) throws Exception;
+
+    /**
+     * 订单反查接口
+     * @param token access token
+     * @param thirdOrder 客户系统订单号
+     * @return
+     * @throws Exception
+     */
+    String selectJdOrderIdByThirdOrder(String token,String thirdOrder) throws Exception;
 
     /**
      * 查询京东订单信息接口

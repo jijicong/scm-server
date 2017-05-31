@@ -13,9 +13,11 @@ import org.trc.biz.impl.jingdong.util.Model.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.TableMappingDO;
 import org.trc.form.JDModel.OrderDO;
+import org.trc.form.JDModel.OrderResultDO;
 import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.util.RedisUtil;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 /**
@@ -190,47 +192,60 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             OrderDO orderDO = new OrderDO();
             JSONArray sku = new JSONArray();
             JSONObject obj = new JSONObject();
-            obj.put("skuId","2350848");
-            obj.put("num",200);
+            obj.put("thirdOrder",124565);
+            obj.put("skuId","3553567");
+            obj.put("num",1);
             obj.put("bNeedAnnex",true);
-            obj.put("bNeedGift",true);
-            obj.put("price",100);
-            JSONArray tem = new JSONArray();
+            obj.put("bNeedGift",false);
+            /*obj.put("price",100);*/
+            /*JSONArray tem = new JSONArray();
             JSONObject obj1 = new JSONObject();
-            obj1.put("skuId","2350848");
+            obj1.put("skuId","853342");
             tem.add(obj1);
-            obj.put("yanbao",tem);
+            obj.put("yanbao",tem);*/
             sku.add(obj);
             orderDO.setSku(sku.toJSONString());
             orderDO.setName("wyz");
             orderDO.setProvince(24);
             orderDO.setCity(2144);
             orderDO.setCounty(21037);
-            orderDO.setTown(0);
+            ijdService.getTown(token,"21037");
+            orderDO.setTown(51695);
             orderDO.setAddress("浙江省杭州市");
             orderDO.setMobile("13725684578");
             orderDO.setEmail("550670854@qq.com");
-            orderDO.setInvoiceState(1);
-            orderDO.setInvoiceType(1);
+            orderDO.setInvoiceState(2);
+            orderDO.setInvoiceType(2);
             orderDO.setSelectedInvoiceTitle(5);
             orderDO.setCompanyName("小泰科技");
             orderDO.setInvoiceContent(3);
             orderDO.setPaymentType(1);
             orderDO.setIsUseBalance(0);
-            orderDO.setSubmitState(1);
+            orderDO.setSubmitState(0);
             JSONArray jsonArray = new JSONArray();
             JSONObject json = new JSONObject();
-            json.put("price",21.30);
-            json.put("skuId",2350848);
+            iJingDongBiz.getSellPrice("3553567");
+            json.put("price", BigDecimal.valueOf(599.00));
+            json.put("skuId",Long.parseLong("3553567"));
             jsonArray.add(json);
             orderDO.setOrderPriceSnap(jsonArray.toJSONString());
-            ijdService.submitOrder(token,orderDO);
-            System.out.print("结束");
+            OrderResultDO tmp = iJingDongBiz.billOrder(orderDO);
+            System.out.print(tmp.toString());
         }catch (Exception e){
             System.out.print(e);
         }
     }
 
+    @Test
+    public void testCancelOrder() {
+        try {
+            String token = iJingDongBiz.getAccessToken();
+            ijdService.cancel(token, "57494109359");
+
+        } catch (Exception e) {
+            System.out.print(e);
+        }
+    }
 
 
 }

@@ -6,12 +6,15 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.connection.SortParameters;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impl.jingdong.util.JingDongUtil;
 import org.trc.biz.impl.jingdong.util.Model.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.Common;
+import org.trc.form.JDModel.OrderDO;
+import org.trc.form.JDModel.OrderResultDO;
 import org.trc.form.JDModel.SellPriceDO;
 import org.trc.form.JDModel.StockDO;
 import org.trc.enums.ZeroToNineEnum;
@@ -93,8 +96,10 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     @Override
-    public String billOrder() throws Exception {
-        return null;
+    public OrderResultDO billOrder(OrderDO orderDO) throws Exception {
+        String token = getAccessToken();
+        OrderResultDO orderResultDO = ijdService.submitOrder(token,orderDO);
+        return orderResultDO;
     }
 
     @Override
