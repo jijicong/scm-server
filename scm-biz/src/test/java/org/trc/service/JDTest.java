@@ -19,16 +19,22 @@ import org.trc.form.JDModel.OrderDO;
 import org.trc.form.JDModel.SellPriceDO;
 import org.trc.jingdong.JingDongSkuList;
 import org.trc.mapper.jingdong.IJingDongMapper;
+<<<<<<< Updated upstream
 import org.trc.form.JDModel.OrderResultDO;
 import org.trc.mapper.config.ITableMappingMapper;
+=======
+>>>>>>> Stashed changes
 import org.trc.util.RedisUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+<<<<<<< Updated upstream
 import java.math.BigDecimal;
 import java.util.Set;
+=======
+>>>>>>> Stashed changes
 
 /**
  * Created by hzwyz on 2017/5/22 0022.
@@ -207,6 +213,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             OrderDO orderDO = new OrderDO();
             JSONArray sku = new JSONArray();
             JSONObject obj = new JSONObject();
+<<<<<<< Updated upstream
             obj.put("skuId", "2350848");
             obj.put("num", 200);
             obj.put("bNeedAnnex", true);
@@ -217,25 +224,36 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             obj1.put("skuId", "2350848");
             tem.add(obj1);
             obj.put("yanbao", tem);
+=======
+            obj.put("skuId","2350848");
+            obj.put("num",200);
+            obj.put("bNeedAnnex",true);
+            obj.put("bNeedGift",true);
+            obj.put("price",100);
+            JSONArray tem = new JSONArray();
+            JSONObject obj1 = new JSONObject();
+            obj1.put("skuId","2350848");
+            tem.add(obj1);
+            obj.put("yanbao",tem);
+>>>>>>> Stashed changes
             sku.add(obj);
             orderDO.setSku(sku.toJSONString());
             orderDO.setName("wyz");
             orderDO.setProvince(24);
             orderDO.setCity(2144);
             orderDO.setCounty(21037);
-            ijdService.getTown(token,"21037");
-            orderDO.setTown(51695);
+            orderDO.setTown(0);
             orderDO.setAddress("浙江省杭州市");
             orderDO.setMobile("13725684578");
             orderDO.setEmail("550670854@qq.com");
-            orderDO.setInvoiceState(2);
-            orderDO.setInvoiceType(2);
+            orderDO.setInvoiceState(1);
+            orderDO.setInvoiceType(1);
             orderDO.setSelectedInvoiceTitle(5);
             orderDO.setCompanyName("小泰科技");
             orderDO.setInvoiceContent(3);
             orderDO.setPaymentType(1);
             orderDO.setIsUseBalance(0);
-            orderDO.setSubmitState(0);
+            orderDO.setSubmitState(1);
             JSONArray jsonArray = new JSONArray();
             JSONObject json = new JSONObject();
             iJingDongBiz.getSellPrice("3553567");
@@ -334,6 +352,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         try {
             List<SellPriceDO> sellPriceDO = iJingDongBiz.getSellPrice("2839521");
             System.out.println(sellPriceDO);
+<<<<<<< Updated upstream
 
         } catch (Exception e) {
             System.out.print(e);
@@ -515,6 +534,189 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             }
             skuStr.add(s);
 
+=======
+
+        } catch (Exception e) {
+            System.out.print(e);
+        }
+    }
+
+    @Test
+    public void getSkuList() throws Exception {
+        //获取Token
+        //获取商品池
+        String token = iJingDongBiz.getAccessToken();
+        //获取商品池,array为商品池集合
+        String pageNum = ijdService.getPageNum(token);
+        JSONObject object = JSON.parseObject(pageNum);
+        //array解析出来的商品池集合
+        JSONArray array = JSONArray.parseArray(object.getString("result"));
+        //查询手机品类池
+        JSONObject skuByPage = JSON.parseObject(ijdService.getSkuByPage(token, "655", "1"));
+        if (skuByPage.getString("success").equals("false")) {
+            System.out.println("pageNum不存在");
+        } else {
+            JSONObject skuResult = JSON.parseObject(skuByPage.getString("result"));
+            int pageCount = Integer.parseInt(skuResult.getString("pageCount"));//品类池的页数
+            String skuAll = "";
+            for (int i = 1; i <= pageCount; i++) {
+                JSONObject skuPageList = JSON.parseObject(ijdService.getSkuByPage(token, "655", i + ""));
+                if (skuPageList.getString("success").equals("true")) {
+                    JSONObject skuPageItem = JSON.parseObject(skuPageList.getString("result"));
+                    skuAll = skuAll.replace("[", "");
+                    skuAll = skuAll.replace("]", "");
+                    skuAll = skuAll + (skuPageItem.getString("skuIds")) + ",";
+                }
+            }
+            //上架可用的sku,返回的是所有的sku,并未分页
+            String skuIds = screenSkuState(token, checkSku(token, skuAll));
+            //筛选出来的Id分组100个一组
+            Object[] arry = splitAry(skuIds.split(SupplyConstants.Symbol.COMMA), 100);
+
+        }
+    }
+
+    //验证可用sku
+    private String checkSku(String token, String skuAll) throws Exception {
+
+        //将所有的sku 100一组分组
+        Object[] arry = splitAry(skuAll.split(SupplyConstants.Symbol.COMMA), 100);
+        String okSkuArray = "";
+        for (int i = 0; i < 1; i++) {
+            String a = Arrays.toString((String[]) arry[i]);
+            a = a.replace("[", "");
+            a = a.replace("]", "");
+            a = a.replace(" ", "");
+            //验证每一组内sku的可用状态
+            JSONObject okSku = JSON.parseObject(ijdService.checkSku(token, a));
+            if (StringUtils.equals(okSku.getString("success"), "true")) {
+                JSONArray okSkuResult = okSku.getJSONArray("result");
+                for (int j = 0; j < okSkuResult.size(); j++) {
+                    JSONObject skuItem = okSkuResult.getJSONObject(j);
+                    if (skuItem.getString("saleState").equals("1")) {
+                        String okSkuArray2 = "";
+                        okSkuArray2 = skuItem.getString("skuId");
+                        //返回出所有可用的sku
+                        okSkuArray += okSkuArray2 + ",";
+                    }
+                }
+
+            }
+        }
+        return okSkuArray;
+    }
+
+    //筛选出上架的sku
+    private String screenSkuState(String token, String okSkuArray) throws Exception {
+        String screenSkuIds = "";
+        Object[] arry = splitAry(okSkuArray.split(SupplyConstants.Symbol.COMMA), 100);
+        for (int i = 0; i < arry.length; i++) {
+            String a = Arrays.toString((String[]) arry[i]);
+            a = a.replace("[", "");
+            a = a.replace("]", "");
+            a = a.replace(" ", "");
+            JSONArray screenSku = JSON.parseArray(ijdService.skuState(token, a));
+            for (int j = 0; j < screenSku.size(); j++) {
+                JSONObject skuItem = screenSku.getJSONObject(j);
+                if (skuItem.getString("state").equals("1")) {
+                    String okSkuArray2 = "";
+                    okSkuArray2 = skuItem.getString("sku");
+                    //返回出所有可用的sku
+                    screenSkuIds += okSkuArray2 + ",";
+                }
+            }
+        }
+        return screenSkuIds.substring(0, screenSkuIds.length() - 1);
+    }
+
+    //根据筛选出的sku查询详情
+
+    private static Object[] splitAry(String[] ary, int subSize) {
+        int count = ary.length % subSize == 0 ? ary.length / subSize : ary.length / subSize + 1;
+
+        List<List<String>> subAryList = new ArrayList<List<String>>();
+
+        for (int i = 0; i < count; i++) {
+            int index = i * subSize;
+
+            List<String> list = new ArrayList<String>();
+            int j = 0;
+            while (j < subSize && index < ary.length) {
+                list.add(ary[index++]);
+                j++;
+            }
+            subAryList.add(list);
+        }
+        Object[] subAry = new Object[subAryList.size()];
+        for (int i = 0; i < subAryList.size(); i++) {
+            List<String> subList = subAryList.get(i);
+            String[] subAryItem = new String[subList.size()];
+            for (int j = 0; j < subList.size(); j++) {
+                subAryItem[j] = subList.get(j);
+            }
+            subAry[i] = subAryItem;
+        }
+
+        return subAry;
+
+    }
+
+    /**
+     * public int indexOf(int ch, int fromIndex)
+     * 返回在此字符串中第一次出现指定字符处的索引，从指定的索引开始搜索
+     *
+     * @param srcText
+     * @param findText
+     * @return
+     */
+    public static int appearNumber(String srcText, String findText) {
+        int count = 0;
+        int index = 0;
+        while ((index = srcText.indexOf(findText, index)) != -1) {
+            index = index + findText.length();
+            count++;
+        }
+        return count;
+    }
+
+    //商品池100条为一组,进行分解
+    public static List<String> resolveSkuArray(String sku, String[] skuArray) {
+        int num = appearNumber(sku, ",");
+        List<String> skuStr = new ArrayList<>();
+        String s = "";
+        if (num < 100) {
+            skuStr.add(sku);
+        } else if (num >= 100 && num < 200) {
+            s = "";
+            for (int i = 0; i < 100; i++) {
+                s += skuArray[i] + ",";
+            }
+            skuStr.add(s);
+            s = "";
+            for (int i = 100; i < skuArray.length; i++) {
+                s += skuArray[i] + ",";
+            }
+            skuStr.add(s);
+        } else if (num >= 200 && num < 300) {
+            s = "";
+            for (int i = 0; i < 100; i++) {
+                s += skuArray[i] + ",";
+            }
+            skuStr.add(s);
+
+            s = "";
+            for (int i = 100; i < 200; i++) {
+                s += skuArray[i] + ",";
+            }
+            skuStr.add(s);
+
+            s = "";
+            for (int i = 200; i < skuArray.length; i++) {
+                s += skuArray[i] + ",";
+            }
+            skuStr.add(s);
+
+>>>>>>> Stashed changes
         } else if (num >= 300 && num < 400) {
             s = "";
             for (int i = 0; i < 100; i++) {
