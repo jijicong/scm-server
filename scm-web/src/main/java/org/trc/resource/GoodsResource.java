@@ -49,7 +49,7 @@ public class GoodsResource {
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
                                @BeanParam ItemSalesPropery itemSalesPropery) throws Exception {
-        //configBiz.saveDictType(dictType);
+        goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
         return ResultUtil.createSucssAppResult("保存商品成功", "");
     }
 
