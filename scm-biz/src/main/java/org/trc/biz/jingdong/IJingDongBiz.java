@@ -17,13 +17,13 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public String getAccessToken() throws Exception;
+     String getAccessToken() throws Exception;
 
 
-    public String billOrder() throws Exception;
+     String billOrder() throws Exception;
 
 
-    public List<SellPriceDO> getSellPrice(String sku) throws Exception;
+     List<SellPriceDO> getSellPrice(String sku) throws Exception;
 
     /**
      * 获取库存接口(商品列表页使用)
@@ -32,7 +32,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public List<StockDO> getStockById(String sku, AddressDO area) throws Exception;
+     List<StockDO> getStockById(String sku, AddressDO area) throws Exception;
 
     /**
      * 获取库存接口(订单详情页、下单使用)
@@ -41,7 +41,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception;
+     List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception;
 
 
     /**
@@ -52,5 +52,10 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    String getAddress(String province, String city, String county) throws Exception;
+     String getAddress(String province,String city,String county) throws Exception;
+
+    void getSkuList() throws Exception;
+
+    String getSkuByPage(String pageNum,String pageNo) throws Exception;
+
 }

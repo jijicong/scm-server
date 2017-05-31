@@ -9,15 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
+import org.trc.util.BeanToMapUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.HttpRequestUtil;
 import org.trc.util.MD5;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hzwyz on 2017/5/18 0018.
@@ -141,7 +139,22 @@ public class JDServiceImpl implements IJDService{
             return "获取商品详细信息异常";
         }
     }
-
+    @Override
+    public String getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/product/getSkuByPage";
+            String data ="token="+token+"&pageNum="+pageNum+"&pageNo="+pageNo;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return rev;
+        }catch (Exception e){
+            return "获取品类池信息异常";
+        }
+    }
     /**
      * 获取商品上下架状态
      * @param token 授权时的access token
@@ -446,8 +459,40 @@ public class JDServiceImpl implements IJDService{
     }
 
     @Override
-    public String submitOrder(OrderDO orderDO) throws Exception {
-        return null;
+    public String submitOrder(String token,OrderDO orderDO) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/submitOrder";
+            String data ="token="+token+"&thirdOrder="+orderDO.getThirdOrder()+"&sku="+orderDO.getSku()+"&name="+orderDO.getName()+"&province="+orderDO.getProvince()+"&city="+orderDO.getCity()
+                    +"&county="+orderDO.getCounty()+"&town="+orderDO.getTown()+"&address="+orderDO.getAddress()+"&mobile="+orderDO.getMobile()+"&email="+orderDO.getEmail()
+                    +"&invoiceState="+orderDO.getInvoiceState()+"&invoiceType="+orderDO.getInvoiceType()+"&selectedInvoiceTitle="+orderDO.getSelectedInvoiceTitle()
+                    +"&companyName="+orderDO.getCompanyName()+"&invoiceContent="+orderDO.getInvoiceContent()+"&paymentType="+orderDO.getPaymentType()+"&isUseBalance="+orderDO.getIsUseBalance()
+                    +"&submitState="+orderDO.getSubmitState();
+            if ("2".equals(String.valueOf(orderDO.getInvoiceType())) && "1".equals(String.valueOf(orderDO.getInvoiceState()))){
+                data = data + "&invoiceName="+orderDO.getInvoiceName()+"&invoicePhone="+orderDO.getInvoicePhone()+"&invoiceProvince="+orderDO.getInvoiceProvice()+"&invoiceCity="+orderDO.getInvoiceCity()
+                        +"&invoiceCounty="+orderDO.getInvoiceCounty()+"&invoiceAddress="+orderDO.getInvoiceAddress();
+            }
+            data =data+"&doOrderPriceMode="+1+"&orderPriceSnap="+orderDO.getOrderPriceSnap();
+
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("success");
+            if (!state){
+                return null;
+            }
+            JSONObject result = json.getJSONObject("result");
+            result.get("jdOrderId");
+            result.get("freight");
+            result.getJSONArray("sku");
+            result.get("orderPrice");
+            result.get("orderNakedPrice");
+            result.get("orderTaxPrice");
+
+            List<StockDO> stockState = getStockState(json);
+
+            return null;
+        }catch (Exception e){
+            throw new Exception("查询库存异常");
+        }
     }
 
     @Override
@@ -474,6 +519,8 @@ public class JDServiceImpl implements IJDService{
     public String orderTrack(String token, String jdOrderId) throws Exception {
         return null;
     }
+
+
 
 
 }

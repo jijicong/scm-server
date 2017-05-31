@@ -4,9 +4,6 @@ package org.trc.form.JDModel;
  * Created by hzwyz on 2017/5/23 0023.
  */
 public class OrderDO {
-    //授权时获取的ACCESS TOKEN
-    private String token;
-
     //第三方的订单单号
     private String thirdOrder;
 
@@ -17,16 +14,16 @@ public class OrderDO {
     private String name;
 
     //一级地址
-    private String province;
+    private int province;
 
     //二级地址
-    private String city;
+    private int city;
 
     //三级地址
-    private String county;
+    private int county;
 
     //四级地址
-    private String town;
+    private int town;
 
     //详细地址
     private String address;
@@ -53,7 +50,7 @@ public class OrderDO {
     private int invoiceType;
 
     //4 个人，5单位
-    private int selectedInvoiceTile;
+    private int selectedInvoiceTitle;
 
     //发票抬头 (如果selectedInvoiceTitle=5则此字段必须)
     private String companyName;
@@ -112,14 +109,6 @@ public class OrderDO {
     //中小件预约时间段的标记
     private Integer promiseTimeRangeCode;
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     public String getThirdOrder() {
         return thirdOrder;
     }
@@ -144,35 +133,35 @@ public class OrderDO {
         this.name = name;
     }
 
-    public String getProvince() {
+    public int getProvince() {
         return province;
     }
 
-    public void setProvince(String province) {
+    public void setProvince(int province) {
         this.province = province;
     }
 
-    public String getCity() {
+    public int getCity() {
         return city;
     }
 
-    public void setCity(String city) {
+    public void setCity(int city) {
         this.city = city;
     }
 
-    public String getCounty() {
+    public int getCounty() {
         return county;
     }
 
-    public void setCounty(String county) {
+    public void setCounty(int county) {
         this.county = county;
     }
 
-    public String getTown() {
+    public int getTown() {
         return town;
     }
 
-    public void setTown(String town) {
+    public void setTown(int town) {
         this.town = town;
     }
 
@@ -240,12 +229,12 @@ public class OrderDO {
         this.invoiceType = invoiceType;
     }
 
-    public int getSelectedInvoiceTile() {
-        return selectedInvoiceTile;
+    public int getSelectedInvoiceTitle() {
+        return selectedInvoiceTitle;
     }
 
-    public void setSelectedInvoiceTile(int selectedInvoiceTile) {
-        this.selectedInvoiceTile = selectedInvoiceTile;
+    public void setSelectedInvoiceTitle(int selectedInvoiceTitle) {
+        this.selectedInvoiceTitle = selectedInvoiceTitle;
     }
 
     public String getCompanyName() {
