@@ -349,6 +349,8 @@ public class SupplyConstants {
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
         //查询该渠道对应的供应商S
         public static final String SUPPLIERS = "suppliers";
+        //根据供应商的编码查询供应商的可卖商品
+        public static final String SUPPLIERS_ITEMS="suppliersItems";
     }
 
     /**

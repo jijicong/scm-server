@@ -7,6 +7,7 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
@@ -33,6 +34,8 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("supplierCode")
     @NotEmpty
     private String supplierCode;
+    @Transient
+    private String supplierName;
     @FormParam("contractId") //TODO
     private Long contractId ;
     @FormParam("contractCode") //TODO "采购合同编号',
@@ -48,15 +51,21 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("purchaseGroupCode")
     @NotEmpty
     private String purchaseGroupCode;//'归属采购组编号'
+    @Transient
+    private String purchaseGroupName;
     @FormParam("warehouseId")
     @NotEmpty
     private String warehouseId;
+    @Transient
+    private String warehouseName;
     @FormParam("currencyType")
     @NotEmpty
     private String currencyType;
     @FormParam("purchasePersonId")
     @NotEmpty
     private String purchasePersonId;
+    @Transient
+    private String purchasePerson;
     @FormParam("receiveAddress")
     @NotEmpty
     private String receiveAddress;
@@ -93,6 +102,38 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("abnormalRemark")
     @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
     private String abnormalRemark;//入库异常说明
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
+
+    public String getPurchaseGroupName() {
+        return purchaseGroupName;
+    }
+
+    public void setPurchaseGroupName(String purchaseGroupName) {
+        this.purchaseGroupName = purchaseGroupName;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getPurchasePerson() {
+        return purchasePerson;
+    }
+
+    public void setPurchasePerson(String purchasePerson) {
+        this.purchasePerson = purchasePerson;
+    }
 
     public Long getId() {
         return id;
