@@ -9,15 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
+import org.trc.util.BeanToMapUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.HttpRequestUtil;
 import org.trc.util.MD5;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hzwyz on 2017/5/18 0018.
@@ -325,9 +323,9 @@ public class JDServiceImpl implements IJDService{
             if (result){
                 return rev;
             }
-            return "获取四级地址失败";
+            return "检查四级地址失败";
         }catch (Exception e){
-            return "获取四级地址异常";
+            return "检查四级地址异常";
         }
     }
 
@@ -461,8 +459,40 @@ public class JDServiceImpl implements IJDService{
     }
 
     @Override
-    public String submitOrder(OrderDO orderDO) throws Exception {
-        return null;
+    public String submitOrder(String token,OrderDO orderDO) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/order/submitOrder";
+            String data ="token="+token+"&thirdOrder="+orderDO.getThirdOrder()+"&sku="+orderDO.getSku()+"&name="+orderDO.getName()+"&province="+orderDO.getProvince()+"&city="+orderDO.getCity()
+                    +"&county="+orderDO.getCounty()+"&town="+orderDO.getTown()+"&address="+orderDO.getAddress()+"&mobile="+orderDO.getMobile()+"&email="+orderDO.getEmail()
+                    +"&invoiceState="+orderDO.getInvoiceState()+"&invoiceType="+orderDO.getInvoiceType()+"&selectedInvoiceTitle="+orderDO.getSelectedInvoiceTitle()
+                    +"&companyName="+orderDO.getCompanyName()+"&invoiceContent="+orderDO.getInvoiceContent()+"&paymentType="+orderDO.getPaymentType()+"&isUseBalance="+orderDO.getIsUseBalance()
+                    +"&submitState="+orderDO.getSubmitState();
+            if ("2".equals(String.valueOf(orderDO.getInvoiceType())) && "1".equals(String.valueOf(orderDO.getInvoiceState()))){
+                data = data + "&invoiceName="+orderDO.getInvoiceName()+"&invoicePhone="+orderDO.getInvoicePhone()+"&invoiceProvince="+orderDO.getInvoiceProvice()+"&invoiceCity="+orderDO.getInvoiceCity()
+                        +"&invoiceCounty="+orderDO.getInvoiceCounty()+"&invoiceAddress="+orderDO.getInvoiceAddress();
+            }
+            data =data+"&doOrderPriceMode="+1+"&orderPriceSnap="+orderDO.getOrderPriceSnap();
+
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean state = (Boolean) json.get("success");
+            if (!state){
+                return null;
+            }
+            JSONObject result = json.getJSONObject("result");
+            result.get("jdOrderId");
+            result.get("freight");
+            result.getJSONArray("sku");
+            result.get("orderPrice");
+            result.get("orderNakedPrice");
+            result.get("orderTaxPrice");
+
+            List<StockDO> stockState = getStockState(json);
+
+            return null;
+        }catch (Exception e){
+            throw new Exception("查询库存异常");
+        }
     }
 
     @Override

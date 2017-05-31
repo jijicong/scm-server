@@ -240,6 +240,7 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     /**
      * 刷新Token
+     *
      * @param refreshToken
      * @return
      * @throws Exception
@@ -259,6 +260,7 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     /**
      * 将Token保存到数据库和redis中
+     *
      * @param acc
      * @param map
      * @return
