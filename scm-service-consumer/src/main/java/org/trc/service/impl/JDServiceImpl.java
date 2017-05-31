@@ -141,7 +141,22 @@ public class JDServiceImpl implements IJDService{
             return "获取商品详细信息异常";
         }
     }
-
+    @Override
+    public String getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
+        try{
+            String url = jdBaseDO.getJdurl()+"/api/product/getSkuByPage";
+            String data ="token="+token+"&pageNum="+pageNum+"&pageNo="+pageNo;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json=JSONObject.parseObject(rev);
+            Boolean result = (Boolean) json.get("success");
+            if (result){
+                return rev;
+            }
+            return rev;
+        }catch (Exception e){
+            return "获取品类池信息异常";
+        }
+    }
     /**
      * 获取商品上下架状态
      * @param token 授权时的access token
@@ -310,9 +325,9 @@ public class JDServiceImpl implements IJDService{
             if (result){
                 return rev;
             }
-            return "检查四级地址失败";
+            return "获取四级地址失败";
         }catch (Exception e){
-            return "检查四级地址异常";
+            return "获取四级地址异常";
         }
     }
 
@@ -474,6 +489,8 @@ public class JDServiceImpl implements IJDService{
     public String orderTrack(String token, String jdOrderId) throws Exception {
         return null;
     }
+
+
 
 
 }

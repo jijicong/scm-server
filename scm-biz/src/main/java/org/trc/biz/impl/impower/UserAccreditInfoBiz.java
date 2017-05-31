@@ -17,6 +17,7 @@ import org.trc.domain.impower.UserAddPageDate;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.impower.UserAccreditInfoForm;
@@ -277,7 +278,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         //写入user_accredit_info表
         AssertUtil.notNull(userAddPageDate,"页面请求参数为空");
         UserAccreditInfo userAccreditInfo = userAddPageDate;
-        userAccreditInfo.setIsDeleted("0");
+        userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         userAccreditInfo.setCreateOperator("test");
         userAccreditInfoService.updateByPrimaryKey(userAccreditInfo);
 
