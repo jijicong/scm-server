@@ -135,12 +135,6 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     @Override
-    public String getSkuByPage(String pageNum, String pageNo) throws Exception {
-        String token = getAccessToken();
-        return null;
-    }
-
-    @Override
     public void getSkuList() throws Exception {
         //获取Token
         String token = getAccessToken();
