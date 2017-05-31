@@ -150,4 +150,12 @@ public class SelectListResource {
         return ResultUtil.createSucssAppResult("查询用户类型成功", configBiz.findDictsByTypeNo(USER_TYPE));
     }
 
+    @GET
+    @Path(SupplyConstants.SelectList.TRADE_TYPE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> tradeType() throws Exception{
+        return ResultUtil.createSucssAppResult("查询贸易类型成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.TRADE_TYPE));
+    }
+
+
 }
