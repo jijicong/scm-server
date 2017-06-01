@@ -1,8 +1,7 @@
 package org.trc.biz.impl.jingdong;
 
-import com.alibaba.fastjson.JSON;
+
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -141,86 +140,6 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     @Override
     public void getSkuList() throws Exception {
-        //获取Token
-        String token = getAccessToken();
-        //获取商品池,array为商品池集合
-        String pageNum = ijdService.getPageNum(token);
-        JSONObject object = JSON.parseObject(pageNum);
-        JSONArray array = JSONArray.parseArray(object.getString("result"));
-        Long id = 1L;//主键ID
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject object1 = array.getJSONObject(i);
-            String code = object1.getString("page_num").toString();//商品池编码
-            String page_name = object1.getString("name").toString();//商品池名称
-            String skus = ijdService.getSkuByPage(token, code, "1");
-            JSONObject skuobject = JSON.parseObject(skus);
-            if (skuobject.getString("success").equals("false")) {
-                System.out.println((i + 1) + ":" + object1.getString("name") + ":" + "pageNum不存在");
-            } else {
-                JSONObject skuResult = JSON.parseObject(skuobject.getString("result"));
-                int pageCount = Integer.parseInt(skuResult.getString("pageCount"));//品类池的页数
-                for (int j = 1; j <= pageCount; j++) {
-                    JSONObject skuobject2 = JSON.parseObject(ijdService.getSkuByPage(token, code, j + ""));
-                    if (skuobject2.getString("success").equals("false")) {
-                        JingDongSkuList jingDongSkuList = new JingDongSkuList();
-                        jingDongSkuList.setName("获取失败");
-                        jingDongSkuList.setSku("获取失败");
-                        jingDongSkuList.setUpc("获取失败");
-                        jingDongSkuList.setPageNum(code);
-                        jingDongSkuList.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                        jingDongSkuList.setIsValid(ZeroToNineEnum.ONE.getCode());
-                        jingDongSkuList.setCreateOperator("test");
-                        jingDongSkuList.setId(id);
-                        jingDongSkuList.setCreateTime(Calendar.getInstance().getTime());
-                        jingDongSkuList.setUpdateTime(Calendar.getInstance().getTime());
-                        jingDongMapper.insert(jingDongSkuList);
-                        id++;
-                    } else {
-                        JSONObject skuResult2 = JSON.parseObject(skuobject2.getString("result"));
-                        JSONArray skuArray = JSON.parseArray(skuResult2.getString("skuIds"));
-                        for (int k = 0; k < skuArray.size(); k++) {
-                            //获取商品详情
-                            String S = ijdService.getDetail(token, skuArray.get(k).toString(), false);
-                            System.out.println(page_name + ":" + S);
-                            String skuDetailArray = S;
-                            JSONObject skuDetailObject = JSON.parseObject(skuDetailArray);
-                            JingDongSkuList jingDongSkuList = new JingDongSkuList();
-                            if (StringUtils.equals(skuDetailObject.getString("success"), "true")) {
-                                skuDetailObject = skuDetailObject.getJSONObject("result");
-                                try {
-                                    jingDongSkuList.setName(skuDetailObject.getString("name"));
-                                    jingDongSkuList.setSku(skuDetailObject.getString("sku"));
-                                    jingDongSkuList.setUpc(skuDetailObject.getString("upc"));
-                                } catch (Exception e) {
-                                    jingDongSkuList.setName("获取失败");
-                                    jingDongSkuList.setSku("获取失败");
-                                    jingDongSkuList.setUpc("获取失败");
-                                } finally {
-                                    jingDongSkuList.setPageNum(code);
-                                    jingDongSkuList.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                                    jingDongSkuList.setIsValid(ZeroToNineEnum.ONE.getCode());
-                                    jingDongSkuList.setCreateOperator("test");
-                                    jingDongSkuList.setId(id);
-                                    jingDongSkuList.setCreateTime(Calendar.getInstance().getTime());
-                                    jingDongSkuList.setUpdateTime(Calendar.getInstance().getTime());
-                                }
-                            }
-                            try {
-                                SellPriceDO sellPriceDO = ijdService.getSellPrice(token, skuDetailObject.getString("sku")).get(0);
-                                jingDongSkuList.setPurchasePrice(sellPriceDO.getPrice());
-                                jingDongSkuList.setMarketPrice(sellPriceDO.getPrice());
-                            } catch (Exception e) {
-                                System.out.println(e);
-                            } finally {
-                                jingDongMapper.insert(jingDongSkuList);
-                                id++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-//                }
     }
 
 
