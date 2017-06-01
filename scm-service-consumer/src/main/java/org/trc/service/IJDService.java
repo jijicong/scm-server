@@ -170,7 +170,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    OrderResultDO submitOrder(String token, OrderDO orderDO) throws Exception;
+    String submitOrder(String token, OrderDO orderDO) throws Exception;
 
     /**
      * 确认预占库存订单

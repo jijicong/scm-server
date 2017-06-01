@@ -529,7 +529,8 @@ public class JDServiceImpl implements IJDService{
     }
 
     @Override
-    public OrderResultDO submitOrder(String token,OrderDO orderDO) throws Exception {
+    public String submitOrder(String token,OrderDO orderDO) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/submitOrder";
             String data ="token="+token+"&thirdOrder="+orderDO.getThirdOrder()+"&sku="+orderDO.getSku()+"&name="+orderDO.getName()+"&province="+orderDO.getProvince()+"&city="+orderDO.getCity()
@@ -551,11 +552,15 @@ public class JDServiceImpl implements IJDService{
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
             Boolean state = (Boolean) json.get("success");
-            if (!state){
-                return null;
-            }
             JSONObject result = json.getJSONObject("result");
-            OrderResultDO orderResultDO = new OrderResultDO();
+            if (!state){
+                jsonObject.put("data",result);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
+            }
+            jsonObject.put("data",result);
+            jsonObject.put("success",true);
+            /*OrderResultDO orderResultDO = new OrderResultDO();
             if (null != result.get("jdOrderId")){
                 orderResultDO.setJdOrderId(String.valueOf(result.get("jdOrderId")));
             }
@@ -616,113 +621,162 @@ public class JDServiceImpl implements IJDService{
             }
             if (null != result.get("orderTaxPrice")){
                 orderResultDO.setOrderTaxPrice(String.valueOf(result.get("orderTaxPrice")));
-            }
-            return orderResultDO;
+            }*/
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("下单存在异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 
     @Override
     public String confirmOrder(String token, String jdOrderId) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/confirmOrder";
             String data ="token="+token+"&jdOrderId="+jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean state = (Boolean) json.get("result");
+            Boolean state = (Boolean) json.get("success");
+            Boolean result = (Boolean) json.get("result");
             if (!state){
-                return "确认预占库存订单失败";
+                jsonObject.put("data",result);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
             }
-            return "确认预占库存订单成功";
+            jsonObject.put("data",result);
+            jsonObject.put("success",true);
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("取消订单异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 
     @Override
     public String cancel(String token, String jdOrderId) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/cancel";
             String data ="token="+token+"&jdOrderId="+jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean state = (Boolean) json.get("result");
+            Boolean state = (Boolean) json.get("success");
+            Boolean result = (Boolean) json.get("result");
             if (!state){
-                return "取消订单失败";
+                jsonObject.put("data",result);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
             }
-            return "取消订单成功";
+            jsonObject.put("data",result);
+            jsonObject.put("success",true);
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("取消订单异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 
     @Override
     public String doPay(String token, String jdOrderId) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/doPay";
             String data ="token="+token+"&jdOrderId="+jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean state = (Boolean) json.get("result");
+            Boolean state = (Boolean) json.get("success");
             if (!state){
-                return "发起支付失败";
+                jsonObject.put("data",null);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
             }
-            return "发起支付成功";
+            jsonObject.put("data",null);
+            jsonObject.put("success",true);
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("发起支付异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 
     @Override
     public String selectJdOrderIdByThirdOrder(String token, String thirdOrder) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/selectJdOrderIdByThirdOrder";
             String data ="token="+token+"&thirdOrder="+thirdOrder;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean state = (Boolean) json.get("result");
+            Boolean state = (Boolean) json.get("success");
+            String result= (String) json.get("result");
             if (!state){
-                return "订单反查失败";
+                jsonObject.put("data",null);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
             }
-            return "订单反查成功";
+            jsonObject.put("data",result);
+            jsonObject.put("success",true);
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("订单反查异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 
 
     @Override
     public String selectJdOrder(String token, String jdOrderId) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/selectJdOrderIdByThirdOrder";
             String data ="token="+token+"&jdOrderId="+jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean state = (Boolean) json.get("result");
+            Boolean state = (Boolean) json.get("success");
+            JSONObject result = json.getJSONObject("result");
             if (!state){
-                return "查询京东订单信息失败";
+                jsonObject.put("data",null);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
             }
-            return "查询京东订单信息成功";
+            jsonObject.put("data",result);
+            jsonObject.put("success",true);
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("查询订单信息异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 
     @Override
     public String orderTrack(String token, String jdOrderId) throws Exception {
+        JSONObject jsonObject = new JSONObject();
         try{
             String url = jdBaseDO.getJdurl()+"/api/order/orderTrack";
             String data ="token="+token+"&jdOrderId="+jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json=JSONObject.parseObject(rev);
-            Boolean state = (Boolean) json.get("result");
+            Boolean state = (Boolean) json.get("success");
+            JSONObject result = json.getJSONObject("result");
             if (!state){
-                return "查询京东订单信息失败";
+                jsonObject.put("data",null);
+                jsonObject.put("success",false);
+                return jsonObject.toJSONString();
             }
-            return "查询京东订单信息成功";
+            jsonObject.put("data",result);
+            jsonObject.put("success",true);
+            return jsonObject.toJSONString();
         }catch (Exception e){
-            throw new Exception("查询订单信息异常");
+            jsonObject.put("data",null);
+            jsonObject.put("success",false);
+            return jsonObject.toJSONString();
         }
     }
 

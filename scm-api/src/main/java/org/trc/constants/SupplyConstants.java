@@ -546,5 +546,28 @@ public class SupplyConstants {
         public static final String SERIAL = "serial";
     }
 
+    /**
+     * 京东订单
+     */
+    public static final class JingDongOrder {
+        //订单接口根路径
+        public static final String ROOT = "bill";
+        //下单路径
+        public static final String BILLORDER = "orders";
+        //确认预占库存路径
+        public static final String CONFIRM = "confirm";
+        //取消未确认订单路径
+        public static final String CANCEL = "cancel";
+        //发起支付路径
+        public static final String PAY = "pay";
+        //订单反查路径
+        public static final String ORDERSELECT = "orderId";
+        //订单信息查询路径
+        public static final String  DETAIL= "detail";
+        //查询配送信息路径
+        public static final String  TRACK= "track";
+
+    }
+
 
 }

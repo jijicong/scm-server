@@ -28,10 +28,57 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    OrderResultDO billOrder(OrderDO orderDO) throws Exception;
+    String billOrder(OrderDO orderDO) throws Exception;
 
+    /**
+     * 确认预占库存订单
+     * @param jdOrderId 京东的订单单号
+     * @return
+     * @throws Exception
+     */
+    String confirmOrder(String jdOrderId) throws Exception;
 
-     List<SellPriceDO> getSellPrice(String sku) throws Exception;
+    /**
+     * 取消未确认订单接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String cancel(String jdOrderId) throws Exception;
+
+    /**
+     * 发起支付接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String doPay(String jdOrderId) throws Exception;
+
+    /**
+     * 订单反查接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String selectJdOrderIdByThirdOrder(String jdOrderId) throws Exception;
+
+    /**
+     * 查询京东订单信息接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String selectJdOrder(String jdOrderId) throws Exception;
+
+    /**
+     * 查询配送信息接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String orderTrack(String jdOrderId) throws Exception;
+
+    List<SellPriceDO> getSellPrice(String sku) throws Exception;
 
     /**
      * 获取库存接口(商品列表页使用)
