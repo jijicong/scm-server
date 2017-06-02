@@ -34,6 +34,13 @@ public class PurchaseOrderResource {
         return  null;
     }
 
+    @POST
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult savePurchaseOrder(@BeanParam PurchaseOrder purchaseOrder ,@PathParam("userId") String userId) throws Exception{
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,userId);
+        return ResultUtil.createSucssAppResult("保存采购订单成功","");
+    }
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)
     @Produces(MediaType.APPLICATION_JSON)
@@ -42,9 +49,9 @@ public class PurchaseOrderResource {
     }
 
     @GET
-    @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ITEMS)
+    @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ITEMS+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@QueryParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page) throws Exception{
+    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page) throws Exception{
 
         return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page);
 

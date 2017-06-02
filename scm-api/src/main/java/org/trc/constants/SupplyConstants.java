@@ -339,8 +339,8 @@ public class SupplyConstants {
         public static final String ROOT = "purchase";
         //采购订单分页查询
         public static final String PURCHASE_ORDER_PAGE = "purchaseOrderPage";
-        //采购组名查询
-        public static final String PURCHASE_GROUP = "purchaseOrder";
+        //采购订单
+        public static final String PURCHASE_ORDER = "purchaseOrder";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //采购单状态的修改

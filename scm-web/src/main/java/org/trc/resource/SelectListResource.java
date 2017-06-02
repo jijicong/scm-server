@@ -46,9 +46,6 @@ public class SelectListResource {
     //贸易类型字典类型编码
     private static final String TRADE_TYPE="tradeType";
 
-
-
-
     //币种
     private static final String CURRENCY_TYPE="currency";
     //运输费用承担方
