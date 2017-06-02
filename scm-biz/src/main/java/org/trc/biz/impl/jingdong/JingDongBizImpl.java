@@ -318,25 +318,8 @@ public class JingDongBizImpl implements IJingDongBiz {
         if (!state) {
             return null;
         }
-        JSONArray result = json.getJSONArray("result");
-        Iterator<Object> it = result.iterator();
-        List<SellPriceDO> list = new ArrayList<SellPriceDO>();
-        while (it.hasNext()) {
-            JSONObject ob = (JSONObject) it.next();
-            SellPriceDO model = new SellPriceDO();
-            if (null != ob.getString("skuId")) {
-                model.setSkuId(ob.getString("skuId"));
-            }
-            if (null != ob.getString("price")) {
-                model.setPrice(ob.getString("price"));
-            }
-            if (null != ob.getString("jdPrice")) {
-                model.setJdPrice(ob.getString("jdPrice"));
-            }
-            if (model != null) {
-                list.add(model);
-            }
-        }
+        String result = json.getString("result");
+        List<SellPriceDO> list = JSONArray.parseArray(result,SellPriceDO.class);
         return list;
     }
 
