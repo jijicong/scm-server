@@ -86,7 +86,7 @@ public enum ExceptionEnum{
 
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
-
+    SYSTEM_BUSY("4000101","系统繁忙"),
     NOVALID("0","停用");
 
     private String code;

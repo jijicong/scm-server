@@ -1,5 +1,6 @@
 package org.trc.service.impl.impower;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAddPageDate;
@@ -15,7 +16,7 @@ import java.util.Map;
  * Created by sone on 2017/5/11.
  */
 @Service("userAccreditInfoService")
-public class UserAccreditInfoService extends BaseService<UserAccreditInfo,Long> implements IUserAccreditInfoService {
+public class UserAccreditInfoService extends BaseService<UserAccreditInfo, Long> implements IUserAccreditInfoService {
 
 
     @Resource
@@ -40,4 +41,10 @@ public class UserAccreditInfoService extends BaseService<UserAccreditInfo,Long> 
     public List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception {
         return userAccreditInfoMapper.selectAccreditInfoList(map);
     }
+
+    @Override
+    public UserAccreditInfo selectOneById(String userId) throws Exception {
+        return userAccreditInfoMapper.selectOneById(userId);
+    }
+
 }

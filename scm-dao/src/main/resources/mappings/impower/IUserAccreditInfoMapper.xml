@@ -58,4 +58,14 @@
     <delete id="deleteByUserAccreditId">
         DELETE FROM user_accredit_role_relation WHERE user_accredit_id=#{userAccreditId}
     </delete>
+
+
+    <select id="selectOneById" resultType="org.trc.domain.impower.UserAccreditInfo">
+            SELECT id , user_id AS 'userId',phone,name,user_type AS 'userType' FROM user_accredit_info
+            <where>
+                 AND  user_id=${userId}
+                 AND  is_valid=1
+                 AND  is_deleted=0
+            </where>
+    </select>
 </mapper>
