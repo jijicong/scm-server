@@ -458,9 +458,7 @@ public class SupplyConstants {
 
             //供应商渠道列表查询
             public static final String CHANNELS = "channels";
-
         }
-
     }
 
     /**
