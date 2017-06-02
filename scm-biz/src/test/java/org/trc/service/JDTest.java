@@ -22,13 +22,11 @@ import org.trc.jingdong.JingDongSku;
 import org.trc.jingdong.JingDongSkuList;
 import org.trc.mapper.jingdong.IJingDongMapper;
 import org.trc.mapper.jingdong.IJingDongTestMapper;
+import org.trc.util.BeanToMapUtil;
 import org.trc.util.RedisUtil;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -48,8 +46,8 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     @Autowired
     private IJingDongTestMapper jingDongTestMapper;//商品sku
 
-   /* @Autowired
-    ITableMappingMapper a;*/
+    /* @Autowired
+     ITableMappingMapper a;*/
     @Test
     public void testGetToken() {
         try {
@@ -62,7 +60,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
 
     @Test
     public void testJD() {
-        try{
+        try {
             String accessToken = iJingDongBiz.getAccessToken();
            /* JSONObject obj = new JSONObject();
             obj.put("province","浙江");
@@ -75,19 +73,20 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             /*"2350848,2374973*/
             /*iJingDongBiz.getStockById("2350848",obj.toJSONString());*/
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
 
     }
+
     //@Test
     public void testTime() {
-        try{
-            RedisUtil.setObject("泰然城","trc",50);
+        try {
+            RedisUtil.setObject("泰然城", "trc", 50);
             RedisUtil.getObject("泰然城");
             /*JingDongBizImpl.refreshToken();*/
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
     }
@@ -140,31 +139,33 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
 
     @Test
     public void test01() {
-        try{
+        try {
             String token = iJingDongBiz.getAccessToken();
             String province = ijdService.getProvince(token);
-            System.out.println("province:"+province);
+            System.out.println("province:" + province);
             String city = ijdService.getCity(token, "1");
-            System.out.println("city:"+city);
+            System.out.println("city:" + city);
             /*String city = ijdService.getCity(token, String.valueOf(list.get(str)));*/
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
 
     }
+
     @Test
-    public void testGetAddress(){
-        try{
-            String str = iJingDongBiz.getAddress("520112","520115","520102");
+    public void testGetAddress() {
+        try {
+            String str = iJingDongBiz.getAddress("520112", "520115", "520102");
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
     }
+
     @Test
-    public void testStock(){
-        try{
+    public void testStock() {
+        try {
             AddressDO addressDO = new AddressDO();
             addressDO.setProvince("520112");
             addressDO.setCity("520115");
@@ -172,46 +173,49 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             iJingDongBiz.getStockById("2350848", addressDO);
             JSONArray array = new JSONArray();
             JSONObject object = new JSONObject();
-            object.put("skuId","2350848");
-            object.put("num","100");
+            object.put("skuId", "2350848");
+            object.put("num", "100");
             array.add(object);
             iJingDongBiz.getNewStockById(array, addressDO);
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
     }
+
     @Test
-    public void testSellPrice(){
-        try{
+    public void testSellPrice() {
+        try {
             iJingDongBiz.getSellPrice("2350848");
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
     }
+
     @Test
-    public void testSkuState(){
-        try{
+    public void testSkuState() {
+        try {
             String token = iJingDongBiz.getAccessToken();
-            ijdService.skuState(token,"2350848");
+            ijdService.skuState(token, "2350848");
             System.out.print("结束");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
     }
+
     @Test
-    public void testOrder(){
-        try{
+    public void testOrder() {
+        try {
             String token = iJingDongBiz.getAccessToken();
             OrderDO orderDO = new OrderDO();
             JSONArray sku = new JSONArray();
             JSONObject obj = new JSONObject();
-            obj.put("thirdOrder",124565);
-            obj.put("skuId","3553567");
-            obj.put("num",1);
-            obj.put("bNeedAnnex",true);
-            obj.put("bNeedGift",false);
+            obj.put("thirdOrder", 124565);
+            obj.put("skuId", "3553567");
+            obj.put("num", 1);
+            obj.put("bNeedAnnex", true);
+            obj.put("bNeedGift", false);
             /*obj.put("price",100);*/
             /*JSONArray tem = new JSONArray();
             JSONObject obj1 = new JSONObject();
@@ -224,7 +228,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             orderDO.setProvince(24);
             orderDO.setCity(2144);
             orderDO.setCounty(21037);
-            ijdService.getTown(token,"21037");
+            ijdService.getTown(token, "21037");
             orderDO.setTown(51695);
             orderDO.setAddress("浙江省杭州市");
             orderDO.setMobile("13725684578");
@@ -241,12 +245,15 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             JSONObject json = new JSONObject();
             iJingDongBiz.getSellPrice("3553567");
             json.put("price", BigDecimal.valueOf(599.00));
-            json.put("skuId",Long.parseLong("3553567"));
+            json.put("skuId", Long.parseLong("3553567"));
             jsonArray.add(json);
             orderDO.setOrderPriceSnap(jsonArray.toJSONString());
+            Map map = BeanToMapUtil.convertBeanToMap(orderDO);
+            map.toString();
             String tmp = iJingDongBiz.billOrder(orderDO);
+
             System.out.print(tmp.toString());
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.print(e);
         }
     }
@@ -359,9 +366,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         JSONArray array = JSONArray.parseArray(object.getString("result"));
         //查询手机品类池
 
-        for (int  l = 0; l < array.size(); l++) {
+        for (int l = 0; l < array.size(); l++) {
             int finalL = l;
-            fixedThreadPool .execute(new Runnable() {
+            fixedThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -415,7 +422,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
                                 jingDongTestMapper.insertList(jingDongSkuLists);
                             }
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
 
                     }
                 }
