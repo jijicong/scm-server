@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.enums.JingDongEnum;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * Created by hzwyz on 2017/6/1 0001.
  */
+@Component
 @Path(SupplyConstants.JingDongOrder.ROOT)
 public class JingDongResource {
     private static final Logger logger = LoggerFactory.getLogger(JingDongResource.class);

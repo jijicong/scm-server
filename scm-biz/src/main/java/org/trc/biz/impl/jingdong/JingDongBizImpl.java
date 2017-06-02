@@ -97,6 +97,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             token = createToken();
             return token;
         } catch (Exception e) {
+            log.error(e.getMessage());
             return "获取Token失败";
         }
     }
@@ -149,6 +150,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), result, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
 
@@ -173,6 +175,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), result, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
 
@@ -197,6 +200,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), result, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
     }
@@ -219,6 +223,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), null, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
     }
@@ -243,6 +248,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), result, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
     }
@@ -267,6 +273,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), result, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
     }
@@ -291,6 +298,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             return returnValue(JingDongEnum.ORDER_SUCCESS.getCode(), result, message, true);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return returnValue(JingDongEnum.ORDER_ERROR.getCode(), null, e.getMessage(), false);
         }
     }
