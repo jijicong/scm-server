@@ -215,7 +215,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     public List<PropertyValue> queryPropertyValueByPropertyIds(String propertyIds) throws Exception {
-        AssertUtil.notBlank(propertyIds, "属性ID不能为空");
+        AssertUtil.notBlank(propertyIds, "根据属性ID批量查询属性值参数属性ID不能为空");
         String[] tmpIds = propertyIds.split(MULTI_PRRPERTY_ID_SPLIT);
         Example example = new Example(PropertyValue.class);
         Example.Criteria criteria = example.createCriteria();

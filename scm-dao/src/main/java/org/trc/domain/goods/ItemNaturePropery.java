@@ -7,6 +7,8 @@ import org.trc.domain.util.ScmDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
@@ -17,18 +19,22 @@ public class ItemNaturePropery extends ScmDO{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("itemId")
-    @NotEmpty
     private Long itemId;
     @FormParam("spuCode")
-    @NotEmpty
     @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
     @FormParam("propertyId")
-    @NotEmpty
     private Long propertyId;
     @FormParam("propertyValueId")
-    @NotEmpty
     private Long propertyValueId;
+
+    /**
+     * 自然属性信息
+     */
+    @FormParam("naturePropertys")
+    @Transient
+    @NotEmpty
+    private String naturePropertys;
 
     public Long getId() {
         return id;
@@ -70,4 +76,11 @@ public class ItemNaturePropery extends ScmDO{
         this.propertyValueId = propertyValueId;
     }
 
+    public String getNaturePropertys() {
+        return naturePropertys;
+    }
+
+    public void setNaturePropertys(String naturePropertys) {
+        this.naturePropertys = naturePropertys;
+    }
 }

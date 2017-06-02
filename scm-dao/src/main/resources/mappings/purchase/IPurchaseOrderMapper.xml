@@ -11,5 +11,73 @@
                 )
         )
     </select>
+    <!--查询某供应商下对应的可卖商品  /*#{supplierCode}*/-->
+    <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail">
+        SELECT bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
+        (
+        SELECT ssi.sku_code,ssi.name,ssi.brand_id,ssi.category_id,b.name AS brand_name FROM brand b
+        RIGHT JOIN
+        (
+            SELECT skus.sku_code,si.name,si.brand_id ,si.category_id FROM skus
+        RIGHT JOIN (
+                SELECT i.spu_code,i.name,i.brand_id,s.category_id
+                    from
+                items i inner join supplier_brand s
+                    ON
+                s.brand_id = i.brand_id
+                    WHERE
+                s.supplier_code=#{supplierCode}
+                AND s.is_valid='1'
+                AND i.is_valid='1'
+                <if test="name != null and name != ''">
+                    AND i.name=#{name}
+                </if>
+            ) si
+                ON
+            si.spu_code = skus.spu_code
+            WHERE
+            skus.is_valid='1'
+            <if test="skuCode != null and skuCode != ''">
+                AND skus.sku_code=#{skuCode}
+            </if>
+        ) ssi
+        ON
+        ssi.brand_id=b.id
+        <if test="BrandName != null and BrandName != ''">
+            AND b.name=#{BrandName}
+        </if>
+        ) bssi
+        ON
+        c.id=bssi.category_id
+    </select>
+    <!--查询某供应商下对应的可卖商品的总数量-->
+    <select id="selectCountItems" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM brand b
+        RIGHT JOIN
+        (
+            SELECT si.brand_id FROM skus
+            RIGHT JOIN (
+                SELECT i.spu_code ,i.brand_id
+                    from
+                items i inner join supplier_brand s
+                    ON
+                s.brand_id = i.brand_id
+                    WHERE
+                s.supplier_code=#{supplierCode}
+                AND s.is_valid='1'
+                AND i.is_valid='1'
+                AND i.name=#{name}
+            ) si
+                ON
+            si.spu_code = skus.spu_code
+            WHERE
+            skus.is_valid='1'
+            AND skus.sku_code=#{skuCode}
+        ) ssi
+        ON
+        ssi.brand_id=b.id
+        AND b.name=#{BrandName}
+    </select>
+
 
 </mapper>

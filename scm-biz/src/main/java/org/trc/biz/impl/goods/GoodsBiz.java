@@ -1,24 +1,41 @@
 package org.trc.biz.impl.goods;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.impl.category.CategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
+import org.trc.domain.goods.ItemNaturePropery;
+import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
+import org.trc.domain.supplier.SupplierBrand;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
+import org.trc.exception.ParamValidException;
+import org.trc.exception.SupplierException;
+import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.goods.IItemsService;
+import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.goods.ItemNatureProperyService;
+import org.trc.service.impl.goods.ItemSalesProperyService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -37,6 +54,10 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
     //分类名称全路径分割符号
     public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+    //SKU的属性值ID分割符号
+    public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
+    //金额数字
+    public static final Integer MONEY_MULTI = 100;
 
     @Autowired
     private IItemsService itemsService;
@@ -44,6 +65,16 @@ public class GoodsBiz implements IGoodsBiz {
     private IBrandService brandService;
     @Autowired
     private ICategoryService categoryService;
+    @Autowired
+    private ISerialUtilService serialUtilService;
+    @Autowired
+    private ISkusService skusService;
+    @Autowired
+    private ItemNatureProperyService itemNatureProperyService;
+    @Autowired
+    private ItemSalesProperyService itemSalesProperyService;
+    @Autowired
+    private CategoryBiz categoryBiz;
 
 
     @Override
@@ -198,18 +229,185 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public void saveItems(Items items) throws Exception {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void saveItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
+        AssertUtil.notBlank(itemNaturePropery.getNaturePropertys(), "提交商品信息自然属性不能为空");
+        AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
+        AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
+        checkSkuInfo(skus);//检查sku参数
+        //生成序列号
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.SPU_LENGTH, SupplyConstants.Serial.SPU_NAME, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        items.setSpuCode(code);
+        ParamsUtil.setBaseDO(items);
+        //保存商品基础信息
+        saveItemsBase(items);
+        //保存sku信息
+        skus.setItemId(items.getId());
+        skus.setSpuCode(items.getSpuCode());
+        List<Skus> skuss = saveSkus(skus);
+        //保存自然属性信息
+        itemNaturePropery.setItemId(items.getId());
+        itemNaturePropery.setSpuCode(items.getSpuCode());
+        saveItemNatureProperty(itemNaturePropery);
+        //保存采购属性信息
+        saveItemSalesPropery(itemSalesPropery, skuss);
+    }
+
+    /**
+     *
+     * @param skus
+     */
+    private void checkSkuInfo(Skus skus){
+        JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
+        if(skuArray.size() == 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
+        }
+        List<Skus> list = new ArrayList<Skus>();
+        for(Object obj : skuArray){
+            JSONObject jbo = (JSONObject) obj;
+            AssertUtil.notBlank(jbo.getString("barCode"),"SKU条形码不能为空");
+            AssertUtil.notNull(jbo.getLong("weight"),"SKU重量不能为空");
+        }
+    }
+
+    /**
+     * 保存商品基础信息
+     * @param items
+     * @throws Exception
+     */
+    private void saveItemsBase(Items items) throws Exception{
         ParamsUtil.setBaseDO(items);
         int count = itemsService.insert(items);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("保存商品", JSON.toJSONString(items),"数据库操作失败").toString();
+        if (count == 0) {
+            String msg = String.format("保商品基础信息%s到数据库失败", JSON.toJSONString(items));
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
     }
 
+    /**
+     * 保存SKU信息
+     * @param skus
+     * @throws Exception
+     */
+    private List<Skus> saveSkus(Skus skus) throws Exception{
+        JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
+        List<Skus> list = new ArrayList<Skus>();
+        for(Object obj : skuArray){
+            JSONObject jbo = (JSONObject) obj;
+            String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
+                    SupplyConstants.Serial.SKU_INNER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+            Skus skus2 = new Skus();
+            skus2.setSkuCode(code);
+            skus2.setItemId(skus.getItemId());
+            skus2.setSpuCode(skus.getSpuCode());
+            skus2.setPropertyValueId(jbo.getString("propertyValueId"));
+            skus2.setPropertyValue(jbo.getString("propertyValue"));
+            skus2.setBarCode(jbo.getString("barCode"));
+            skus2.setMarketPrice(jbo.getLong("marketPrice") * MONEY_MULTI);
+            skus2.setPicture(jbo.getString("picture"));
+            skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            Date sysTime = Calendar.getInstance().getTime();
+            skus2.setCreateTime(sysTime);
+            skus2.setUpdateTime(sysTime);
+            list.add(skus2);
+        }
+        int count = skusService.insertList(list);
+        if (count == 0) {
+            String msg = String.format("保存商品SKU信息%s到数据库失败", JSON.toJSONString(list));
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+        }
+        return list;
+    }
+
+    /**
+     * 保存商品自然属性
+     * @param itemNaturePropery
+     */
+    private void saveItemNatureProperty(ItemNaturePropery itemNaturePropery){
+        JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+        List<ItemNaturePropery> itemNatureProperies = new ArrayList<ItemNaturePropery>();
+        for(Object obj : categoryArray){
+            JSONObject jbo = (JSONObject) obj;
+            ItemNaturePropery _itemNaturePropery = new ItemNaturePropery();
+            _itemNaturePropery.setItemId(itemNaturePropery.getItemId());
+            _itemNaturePropery.setSpuCode(itemNaturePropery.getSpuCode());
+            _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
+            _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
+            _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            Date sysTime = Calendar.getInstance().getTime();
+            _itemNaturePropery.setCreateTime(sysTime);
+            _itemNaturePropery.setUpdateTime(sysTime);
+            itemNatureProperies.add(_itemNaturePropery);
+        }
+        int count = itemNatureProperyService.insertList(itemNatureProperies);
+        if (count == 0) {
+            String msg = String.format("保存商品自然属性信息%s到数据库失败", JSON.toJSONString(itemNatureProperies));
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 保存商品采购属性
+     * @param skuses
+     */
+    private void saveItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses){
+        List<ItemSalesPropery> itemSalesProperys = new ArrayList<ItemSalesPropery>();
+        Date sysTime = Calendar.getInstance().getTime();
+        for(Skus skus : skuses){
+            String[] propertyValueIdsArray = skus.getPropertyValueId().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+            String[] propertyValuesArray = skus.getPropertyValue().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+            for(int i=0; i<propertyValueIdsArray.length; i++){
+                Long propertyValueId = Long.parseLong(propertyValueIdsArray[i]);
+                ItemSalesPropery _itemSalesPropery = new ItemSalesPropery();
+                _itemSalesPropery.setItemId(skus.getItemId());
+                _itemSalesPropery.setSpuCode(skus.getSpuCode());
+                _itemSalesPropery.setSkuCode(skus.getSkuCode());
+                String[] _tmp = getPropertyIdAndPicture(itemSalesPropery, propertyValueId);
+                _itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
+                _itemSalesPropery.setPropertyValueId(propertyValueId);
+                _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
+                _itemSalesPropery.setPicture(_tmp[1]);
+                _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                _itemSalesPropery.setCreateTime(sysTime);
+                _itemSalesPropery.setUpdateTime(sysTime);
+                itemSalesProperys.add(_itemSalesPropery);
+            }
+        }
+        int count = itemSalesProperyService.insertList(itemSalesProperys);
+        if (count == 0) {
+            String msg = String.format("保存商品采购属性信息%s到数据库失败", JSON.toJSONString(itemSalesProperys));
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 获取属性值ID对应的属性ID和属性值对应的图片路径
+     * @param itemSalesPropery
+     * @param propertyValueId
+     * @return
+     */
+    private String[] getPropertyIdAndPicture(ItemSalesPropery itemSalesPropery, Long propertyValueId){
+        JSONArray categoryArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
+        String[] _result = new String[2];
+        for(Object obj : categoryArray){
+            JSONObject jbo = (JSONObject) obj;
+            if(propertyValueId == jbo.getLong("propertyValueId")){
+                _result[0] = jbo.getString("propertyId");
+                _result[1] = jbo.getString("picture");
+                break;
+            }
+        }
+        return _result;
+    }
+
     @Override
     public void updateItems(Items items) throws Exception {
+
+
 
     } 
 
@@ -231,6 +429,62 @@ public class GoodsBiz implements IGoodsBiz {
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
         }
+    }
+
+    @Override
+    public ItemsExt queryItemsInfo(String spuCode) throws Exception {
+        AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
+        //查询商品基础信息
+        Items items = new Items();
+        items.setSpuCode(spuCode);
+        items.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        items = itemsService.selectOne(items);
+        AssertUtil.notNull(items, String.format("根据商品SPU编码[%s]查询商品基础信息为空", spuCode));
+        items.setCategoryName(getCategoryName(items.getCategoryId()));
+        //查询商品SKU信息
+        Skus skus = new Skus();
+        skus.setSpuCode(spuCode);
+        skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<Skus> skuses = skusService.select(skus);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
+        //查询商品自然属性信息
+        ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
+        itemNaturePropery.setSpuCode(spuCode);
+        itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品自然属性信息为空", spuCode));
+        //查询商品采购属性信息
+        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
+        itemSalesPropery.setSpuCode(spuCode);
+        itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品采购属性信息为空", spuCode));
+        //返回数据组装
+        ItemsExt itemsExt = new ItemsExt();
+        itemsExt.setItems(items);
+        itemsExt.setSkus(skuses);
+        itemsExt.setItemNatureProperys(itemNatureProperies);
+        itemsExt.setItemSalesProperies(itemSalesProperies);
+        return itemsExt;
+    }
+
+    /**
+     * 获取分类名称
+     * @param categoryId
+     * @return
+     * @throws Exception
+     */
+    private String getCategoryName(Long categoryId) throws Exception {
+        List<String> categoryNames = categoryBiz.queryCategoryNamePath(categoryId);
+        AssertUtil.notEmpty(categoryNames, String.format("根据分类ID[%s]查询分类全路径名称为空", categoryId.toString()));
+        String categoryName = "";
+        for(String name : categoryNames){
+            categoryName = name + CATEGORY_NAME_SPLIT_SYMBOL + categoryName;
+        }
+        if(categoryName.length() > 0){
+            categoryName = categoryName.substring(0, categoryName.length()-1);
+        }
+        return categoryName;
     }
 
 

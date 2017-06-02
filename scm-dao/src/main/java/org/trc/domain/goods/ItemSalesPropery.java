@@ -7,6 +7,8 @@ import org.trc.domain.util.ScmDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.Date;
@@ -18,21 +20,16 @@ public class ItemSalesPropery extends ScmDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("itemId")
-    @NotEmpty
     private Long itemId;
     @FormParam("spuCode")
-    @NotEmpty
     @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
     @FormParam("skuCode")
-    @NotEmpty
     @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
     @FormParam("propertyId")
-    @NotEmpty
     private Long propertyId;
     @FormParam("propertyValueId")
-    @NotEmpty
     private Long propertyValueId;
     @FormParam("propertyActualValue")
     @Length(max = 256, message = "属性实际值长度不能超过256个")
@@ -40,6 +37,14 @@ public class ItemSalesPropery extends ScmDO {
     @FormParam("picture")
     @Length(max = 256, message = "图片路径长度不能超过256个")
     private String picture;
+
+    /**
+     * 采购属性信息
+     */
+    @FormParam("salesPropertys")
+    @Transient
+    @NotEmpty
+    private String salesPropertys;
 
     public Long getId() {
         return id;
@@ -105,4 +110,11 @@ public class ItemSalesPropery extends ScmDO {
         this.picture = picture == null ? null : picture.trim();
     }
 
+    public String getSalesPropertys() {
+        return salesPropertys;
+    }
+
+    public void setSalesPropertys(String salesPropertys) {
+        this.salesPropertys = salesPropertys;
+    }
 }

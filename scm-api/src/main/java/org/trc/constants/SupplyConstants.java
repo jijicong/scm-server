@@ -14,6 +14,7 @@ public class SupplyConstants {
         public static final String MSG = "msg";//返回描述
     }
 
+
     /**
      * 符号
      */
@@ -50,6 +51,7 @@ public class SupplyConstants {
         public static final String CATEGORY_LIST = "categoryList";//分类查询
 
         public static final String PROPERTY_LIST = "propertyList";//属性查询
+
     }
 
     /**
@@ -324,8 +326,8 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "purchaseGroup/updateState";
         //根据采购组id查询用户
         public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
-       //根据采购组code查询改组的采购人员
-       public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
+        //根据采购组code查询改组的采购人员
+        public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
 
     }
 
@@ -337,8 +339,8 @@ public class SupplyConstants {
         public static final String ROOT = "purchase";
         //采购订单分页查询
         public static final String PURCHASE_ORDER_PAGE = "purchaseOrderPage";
-        //采购组名查询
-        public static final String PURCHASE_GROUP = "purchaseOrder";
+        //采购订单
+        public static final String PURCHASE_ORDER = "purchaseOrder";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //采购单状态的修改
@@ -347,6 +349,8 @@ public class SupplyConstants {
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
         //查询该渠道对应的供应商S
         public static final String SUPPLIERS = "suppliers";
+        //根据供应商的编码查询供应商的可卖商品
+        public static final String SUPPLIERS_ITEMS="suppliersItems";
     }
 
     /**
@@ -472,6 +476,8 @@ public class SupplyConstants {
         public static final String GOODS_LIST = "goodsList";
         //商品路径
         public static final String GOODS = "goods";
+        //根据SPU编码查询商品路径
+        public static final String GOODS_SPU_CODE = "goods/spuCode";
         //启用/停用
         public static final String IS_VALID = "isValid";
 
@@ -505,11 +511,11 @@ public class SupplyConstants {
         //贸易类型
         public static final String TRADE_TYPE = "tradeType";
         //币种类型
-        public static final String CURRENCY_TYPE="currencyType";
+        public static final String CURRENCY_TYPE = "currencyType";
         //运费承担方
-        public static final String TRANSORT_COSTS_TAKE="transportCostsTake";
+        public static final String TRANSORT_COSTS_TAKE = "transportCostsTake";
         //处理优先级
-        public static final String  HANDLER_PRIORITY = "handlerPriority";
+        public static final String HANDLER_PRIORITY = "handlerPriority";
     }
 
     /**
@@ -526,10 +532,41 @@ public class SupplyConstants {
         public static final String SPU_NAME = "SPU";
         //SPU长度
         public static final Integer SPU_LENGTH = 5;
+        //SKU名称
+        public static final String SKU_NAME = "SKU";
+        //SKU长度
+        public static final Integer SKU_LENGTH = 7;
+        //在此模块维护的商品
+        public static final String SKU_INNER = "0";
+        //表示一件代发的商品
+        public static final String SKU_OUTERER = "1";
 
 
         //序列号查询路径
         public static final String SERIAL = "serial";
+    }
+
+    /**
+     * 京东订单
+     */
+    public static final class JingDongOrder {
+        //订单接口根路径
+        public static final String ROOT = "bill";
+        //下单路径
+        public static final String BILLORDER = "orders";
+        //确认预占库存路径
+        public static final String CONFIRM = "confirm";
+        //取消未确认订单路径
+        public static final String CANCEL = "cancel";
+        //发起支付路径
+        public static final String PAY = "pay";
+        //订单反查路径
+        public static final String ORDERSELECT = "orderId";
+        //订单信息查询路径
+        public static final String  DETAIL= "detail";
+        //查询配送信息路径
+        public static final String  TRACK= "track";
+
     }
 
 

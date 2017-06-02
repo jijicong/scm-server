@@ -2,6 +2,8 @@ package org.trc.biz.jingdong;
 
 import com.alibaba.fastjson.JSONArray;
 import org.trc.biz.impl.jingdong.util.Model.AddressDO;
+import org.trc.form.JDModel.OrderDO;
+import org.trc.form.JDModel.OrderResultDO;
 import org.trc.form.JDModel.SellPriceDO;
 import org.trc.form.JDModel.StockDO;
 
@@ -17,13 +19,66 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public String getAccessToken() throws Exception;
+     String getAccessToken() throws Exception;
 
 
-    public String billOrder() throws Exception;
+    /**
+     * 统一下单接口
+     * @param orderDO 订单
+     * @return
+     * @throws Exception
+     */
+    String billOrder(OrderDO orderDO) throws Exception;
 
+    /**
+     * 确认预占库存订单
+     * @param jdOrderId 京东的订单单号
+     * @return
+     * @throws Exception
+     */
+    String confirmOrder(String jdOrderId) throws Exception;
 
-    public List<SellPriceDO> getSellPrice(String sku) throws Exception;
+    /**
+     * 取消未确认订单接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String cancel(String jdOrderId) throws Exception;
+
+    /**
+     * 发起支付接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String doPay(String jdOrderId) throws Exception;
+
+    /**
+     * 订单反查接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String selectJdOrderIdByThirdOrder(String jdOrderId) throws Exception;
+
+    /**
+     * 查询京东订单信息接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String selectJdOrder(String jdOrderId) throws Exception;
+
+    /**
+     * 查询配送信息接口
+     * @param jdOrderId
+     * @return
+     * @throws Exception
+     */
+    String orderTrack(String jdOrderId) throws Exception;
+
+    List<SellPriceDO> getSellPrice(String sku) throws Exception;
 
     /**
      * 获取库存接口(商品列表页使用)
@@ -32,7 +87,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public List<StockDO> getStockById(String sku, AddressDO area) throws Exception;
+     List<StockDO> getStockById(String sku, AddressDO area) throws Exception;
 
     /**
      * 获取库存接口(订单详情页、下单使用)
@@ -41,7 +96,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception;
+     List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception;
 
 
     /**
@@ -52,5 +107,9 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    public String getAddress(String province,String city,String county) throws Exception;
+     String getAddress(String province,String city,String county) throws Exception;
+
+    void getSkuList() throws Exception;
+
+
 }
