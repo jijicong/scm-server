@@ -11,6 +11,7 @@ import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -57,9 +58,10 @@ public class GoodsResource {
     @PUT
     @Path(SupplyConstants.Goods.GOODS + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateGoods(@BeanParam Items items) throws Exception {
-        //configBiz.updateDictType(dictType);
-        return ResultUtil.createSucssAppResult("修改商品成功", "");
+    public AppResult updateGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
+                                 @BeanParam ItemSalesPropery itemSalesPropery) throws Exception {
+        goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery);
+        return ResultUtil.createSucssAppResult("编辑商品成功", "");
     }
 
     @POST
@@ -67,8 +69,19 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
         goodsBiz.updateValid(id, isValid);
-        return ResultUtil.createSucssAppResult("保存供应商成功", "");
+        return ResultUtil.createSucssAppResult("启停用商品成功", "");
     }
+
+    @POST
+    @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid) throws Exception {
+        goodsBiz.updateSkusValid(id, spuCode, isValid);
+        return ResultUtil.createSucssAppResult("启停用SKU成功", "");
+    }
+
+
+
 
     @GET
     @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")

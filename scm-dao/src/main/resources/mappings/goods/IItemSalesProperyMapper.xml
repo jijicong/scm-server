@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.goods.IItemSalesProperyMapper">
+    <update id="updateItemSalesPropery"  parameterType="java.util.List" >
+        <foreach collection="list" item="itemSalesPropery" index="index" open="" close=";" separator=";">
+            update item_sales_propery
+            <set>
+                property_value_id = #{itemSalesPropery.propertyValueId},
+                property_actual_value = #{itemSalesPropery.propertyActualValue},
+                picture = #{itemSalesPropery.picture},
+                update_time = #{itemSalesPropery.updateTime},
+                is_deleted = #{itemSalesPropery.isDeleted}
+            </set>
+            where
+              spu_code = #{itemSalesPropery.spuCode} AND property_id = #{itemSalesPropery.propertyId}
+        </foreach>
+    </update>
+
+</mapper>

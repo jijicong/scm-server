@@ -11,11 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.impl.category.CategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
+import org.trc.domain.category.Property;
 import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
@@ -24,13 +26,16 @@ import org.trc.domain.supplier.SupplierBrand;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.ConfigException;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.SupplierException;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
+import org.trc.service.category.IPropertyService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.ItemNatureProperyService;
@@ -40,6 +45,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -56,8 +62,12 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
     //SKU的属性值ID分割符号
     public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
+    //SKU的属性组合名称分割符号
+    public static final String SKU_PROPERTY_COMBINE_NAME_SPLIT_SYMBOL = ":";
+    //SKU的属性组合名称空格
+    public static final String SKU_PROPERTY_COMBINE_NAME_EMPTY = "&nbsp&nbsp&nbsp";
     //金额数字
-    public static final Integer MONEY_MULTI = 100;
+    public static final Double MONEY_MULTI = 100.0;
 
     @Autowired
     private IItemsService itemsService;
@@ -74,7 +84,9 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private ItemSalesProperyService itemSalesProperyService;
     @Autowired
-    private CategoryBiz categoryBiz;
+    private ICategoryBiz categoryBiz;
+    @Autowired
+    private IPropertyService propertyService;
 
 
     @Override
@@ -84,12 +96,13 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        if (StringUtil.isNotEmpty(queryModel.getSpuCode())) {//SPU编码
+        /*if (StringUtil.isNotEmpty(queryModel.getSpuCode())) {//SPU编码
             criteria.andLike("spuCode", "%" + queryModel.getSpuCode() + "%");
         }
         if (StringUtil.isNotEmpty(queryModel.getSkuCode())) {//SKU编码
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
-        }
+        }*/
+        handlerSkuCondition(criteria, queryModel.getSkuCode(), queryModel.getSpuCode());
         if (null != queryModel.getCategoryId()) {//商品所属分类ID
             criteria.andEqualTo("categoryId", queryModel.getCategoryId());
         }
@@ -113,6 +126,33 @@ public class GoodsBiz implements IGoodsBiz {
         return page;
     }
 
+    private void handlerSkuCondition(Example.Criteria criteria, String skuCode, String spuCode){
+        List<String> spuCodes = new ArrayList<String>();
+        if(StringUtils.isNotBlank(spuCode)){
+            Example example = new Example(Items.class);
+            Example.Criteria criteria2 = example.createCriteria();
+            criteria.andLike("spuCode", "%" + spuCode + "%");
+            List<Items> itemsList = itemsService.selectByExample(example);
+            for(Items items: itemsList){
+                spuCodes.add(items.getSpuCode());
+            }
+        }
+        if(StringUtils.isNotBlank(skuCode)){
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria2 = example.createCriteria();
+            criteria2.andLike("skuCode", "%" + skuCode + "%");
+            List<Skus> skusList = skusService.selectByExample(example);
+            if(skusList.size() > 0){
+                for(Skus s : skusList){
+                    spuCodes.add(s.getSpuCode());
+                }
+            }
+        }
+        if(spuCodes.size() > 0){
+            criteria.andIn("spuCode", spuCodes);
+        }
+    }
+
     private void handerPage(Pagenation<Items> page){
         List<Long> categoryIds = new ArrayList<Long>();
         List<Long> brandIds = new ArrayList<Long>();
@@ -126,6 +166,91 @@ public class GoodsBiz implements IGoodsBiz {
         if(brandIds.size() > 0){
             setBrandName(page.getResult(), brandIds);
         }
+        //设置商品对应的Sku信息
+        setSkus(page.getResult());
+    }
+
+    /**
+     * 设置商品对应的sku
+     * @param items
+     */
+    private void setSkus(List<Items> items){
+        List<String> spuCodes = new ArrayList<String>();
+        for(Items item : items){
+            spuCodes.add(item.getSpuCode());
+        }
+        if(spuCodes.size() > 0){
+            //查询商品对应的SKU
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("spuCode", spuCodes);
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            List<Skus> skusList = skusService.selectByExample(example);
+            AssertUtil.notEmpty(skusList, String.format("批量查询商品SPU编码为[%s]的商品对应的SKU信息为空", CommonUtil.converCollectionToString(spuCodes)));
+            List<String> skuCodes = new ArrayList<String>();
+            for(Skus skus : skusList){
+                skuCodes.add(skus.getSkuCode());
+            }
+            //查询所有sku对应的采购属性
+            Example example2 = new Example(ItemSalesPropery.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria.andIn("skuCode", skuCodes);
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.selectByExample(example2);
+            AssertUtil.notEmpty(skusList, String.format("批量查询商品SKU编码为[%s]的SKU对应的采购属性信息为空", CommonUtil.converCollectionToString(skuCodes)));
+            //查询所有采购属性详细信息
+            List<Long> propertyIds = new ArrayList<Long>();
+            for(ItemSalesPropery itemSalesPropery : itemSalesProperies){
+                propertyIds.add(itemSalesPropery.getPropertyId());
+            }
+            Example example3 = new Example(Property.class);
+            Example.Criteria criteria3 = example3.createCriteria();
+            criteria.andIn("id", propertyIds);
+            List<Property> propertyList = propertyService.selectByExample(example3);
+            AssertUtil.notEmpty(skusList, String.format("批量查询属性ID为[%s]的属性对应的信息为空", CommonUtil.converCollectionToString(propertyIds)));
+            //设置SKU的采购属性组合名称
+            for(Skus skus : skusList){
+                skus.setPropertyCombineName(getPropertyCombineName(skus, itemSalesProperies, propertyList));
+            }
+            //设置商品SKU
+            for(Items item : items){
+                List<Skus> _tmpSkus = new ArrayList<Skus>();
+                for(Skus skus : skusList){
+                    if(StringUtils.equals(item.getSpuCode(), skus.getSpuCode())){
+                        _tmpSkus.add(skus);
+                    }
+                }
+                item.setRecords(_tmpSkus);
+            }
+        }
+    }
+
+    /**
+     * 获取SKU属性组合名称
+     * @param skus
+     * @param itemSalesProperies
+     * @param properties
+     * @return
+     */
+    private String getPropertyCombineName(Skus skus, List<ItemSalesPropery> itemSalesProperies, List<Property> properties){
+        String[] propertyValueIdArray = skus.getPropertyValueId().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+        String[] propertyValueArray = skus.getPropertyValue().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<propertyValueIdArray.length; i++){
+            Long propertyValueId = Long.parseLong(propertyValueIdArray[i]);
+            for(ItemSalesPropery itemSalesPropery : itemSalesProperies){
+                if(propertyValueId == itemSalesPropery.getPropertyValueId()){
+                    for(Property property : properties){
+                        if(itemSalesPropery.getPropertyId() == property.getId()){
+                            sb.append(SKU_PROPERTY_COMBINE_NAME_EMPTY).append(property.getName()).append(SKU_PROPERTY_COMBINE_NAME_SPLIT_SYMBOL).append(propertyValueArray[i]);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -234,7 +359,7 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notBlank(itemNaturePropery.getNaturePropertys(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
-        checkSkuInfo(skus);//检查sku参数
+        checkSkuInfo(skus, ZeroToNineEnum.ZERO.getCode());//检查sku参数
         //生成序列号
         String code = serialUtilService.generateCode(SupplyConstants.Serial.SPU_LENGTH, SupplyConstants.Serial.SPU_NAME, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         items.setSpuCode(code);
@@ -253,20 +378,45 @@ public class GoodsBiz implements IGoodsBiz {
         saveItemSalesPropery(itemSalesPropery, skuss);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
+        AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
+        AssertUtil.notBlank(itemNaturePropery.getNaturePropertys(), "提交商品信息自然属性不能为空");
+        AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
+        AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
+        checkSkuInfo(skus, ZeroToNineEnum.ONE.getCode());//检查sku参数
+        //保存商品基础信息
+        updateItemsBase(items);
+        //保存sku信息
+        skus.setItemId(items.getId());
+        skus.setSpuCode(items.getSpuCode());
+        List<Skus> skuss = updateSkus(skus);
+        //保存自然属性信息
+        itemNaturePropery.setItemId(items.getId());
+        itemNaturePropery.setSpuCode(items.getSpuCode());
+        updateItemNatureProperty(itemNaturePropery);
+        //保存采购属性信息
+        updateItemSalesPropery(itemSalesPropery, skuss);
+    }
+
     /**
      *
      * @param skus
+     * @param  flag 0-新增,1-修改
      */
-    private void checkSkuInfo(Skus skus){
+    private void checkSkuInfo(Skus skus,String flag){
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         if(skuArray.size() == 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
         }
-        List<Skus> list = new ArrayList<Skus>();
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
+            AssertUtil.notNull(jbo.getBigDecimal("weight2"),"SKU重量不能为空");
             AssertUtil.notBlank(jbo.getString("barCode"),"SKU条形码不能为空");
-            AssertUtil.notNull(jbo.getLong("weight"),"SKU重量不能为空");
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){
+                AssertUtil.notBlank(jbo.getString("skuCode"),"SKU编码不能为空");
+            }
         }
     }
 
@@ -293,6 +443,7 @@ public class GoodsBiz implements IGoodsBiz {
     private List<Skus> saveSkus(Skus skus) throws Exception{
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         List<Skus> list = new ArrayList<Skus>();
+        Date sysTime = Calendar.getInstance().getTime();
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
             String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
@@ -304,10 +455,11 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
             skus2.setPropertyValue(jbo.getString("propertyValue"));
             skus2.setBarCode(jbo.getString("barCode"));
-            skus2.setMarketPrice(jbo.getLong("marketPrice") * MONEY_MULTI);
+            skus2.setWeight(getLongValue(jbo.getString("weight2")));
+            skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
+            skus2.setIsValid(jbo.getString("isValid"));
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            Date sysTime = Calendar.getInstance().getTime();
             skus2.setCreateTime(sysTime);
             skus2.setUpdateTime(sysTime);
             list.add(skus2);
@@ -328,6 +480,7 @@ public class GoodsBiz implements IGoodsBiz {
     private void saveItemNatureProperty(ItemNaturePropery itemNaturePropery){
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
         List<ItemNaturePropery> itemNatureProperies = new ArrayList<ItemNaturePropery>();
+        Date sysTime = Calendar.getInstance().getTime();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
             ItemNaturePropery _itemNaturePropery = new ItemNaturePropery();
@@ -336,7 +489,6 @@ public class GoodsBiz implements IGoodsBiz {
             _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
             _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
             _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            Date sysTime = Calendar.getInstance().getTime();
             _itemNaturePropery.setCreateTime(sysTime);
             _itemNaturePropery.setUpdateTime(sysTime);
             itemNatureProperies.add(_itemNaturePropery);
@@ -404,30 +556,368 @@ public class GoodsBiz implements IGoodsBiz {
         return _result;
     }
 
+    /**
+     * 修改商品基础信息
+     * @param items
+     * @throws Exception
+     */
+    private void updateItemsBase(Items items) throws Exception{
+        AssertUtil.notNull(items.getId(), "商品ID不能为空");
+        items.setUpdateTime(Calendar.getInstance().getTime());
+        int count = itemsService.updateByPrimaryKeySelective(items);
+        if(count == 0){
+            String msg = CommonUtil.joinStr("修改商品基础信息",JSON.toJSONString(items),"数据库操作失败").toString();
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    private Long getLongValue(String val){
+        if(StringUtils.isNotBlank(val)){
+            Double d = Double.parseDouble(val);
+            d = d*MONEY_MULTI;
+            return d.longValue();
+        }
+        return null;
+    }
+
+    private List<Skus> updateSkus(Skus skus) throws Exception{
+        AssertUtil.notBlank(skus.getSpuCode(), "更新SKU信息商品SPU编码不能为空");
+        JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
+        List<Skus> addlist = new ArrayList<Skus>();
+        List<Skus> updatelist = new ArrayList<Skus>();
+        Date sysTime = Calendar.getInstance().getTime();
+        for(Object obj : skuArray){
+            JSONObject jbo = (JSONObject) obj;
+            Skus skus2 = new Skus();
+            skus2.setItemId(skus.getItemId());
+            skus2.setSpuCode(skus.getSpuCode());
+            skus2.setSkuCode(jbo.getString("skuCode"));
+            skus2.setPropertyValueId(jbo.getString("propertyValueId"));
+            skus2.setPropertyValue(jbo.getString("propertyValue"));
+            skus2.setBarCode(jbo.getString("barCode"));
+            skus2.setWeight(getLongValue(jbo.getString("weight2")));
+            skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
+            skus2.setPicture(jbo.getString("picture"));
+            skus2.setIsValid(jbo.getString("isValid"));
+            skus2.setUpdateTime(sysTime);
+            skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
+                String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
+                        SupplyConstants.Serial.SKU_INNER, DateUtils.dateToCompactString(sysTime));
+                skus2.setSkuCode(code);
+                addlist.add(skus2);
+            }else{
+                if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), jbo.getString("status"))){//已修改
+                    updatelist.add(skus2);
+                }
+            }
+        }
+        int count = 0;
+        if(updatelist.size() > 0){
+            count = skusService.updateSkus(updatelist);
+            if (count == 0) {
+                String msg = CommonUtil.joinStr("更新商品SKU", JSON.toJSONString(updatelist), "到数据库失败").toString();
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
+        }
+        if(addlist.size() > 0){
+            count = skusService.insertList(addlist);
+            if (count == 0) {
+                String msg = CommonUtil.joinStr("保存商品SKU", JSON.toJSONString(addlist), "到数据库失败").toString();
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+            }
+        }
+        Skus _tmp = new Skus();
+        _tmp.setSpuCode(skus.getSpuCode());
+        _tmp.setIsValid(ZeroToNineEnum.ONE.getCode());
+        _tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<Skus> _skus = skusService.select(_tmp);
+        AssertUtil.notEmpty(_skus, String.format("根据商品SPU编码[%s]查询相关SKU为空", skus.getSpuCode()));
+        return _skus;
+    }
+
+    /**
+     * 更新商品自然属性
+     * @param itemNaturePropery
+     */
+    private void updateItemNatureProperty(ItemNaturePropery itemNaturePropery)throws Exception{
+        JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+        List<ItemNaturePropery> addList = new ArrayList<ItemNaturePropery>();
+        List<ItemNaturePropery> updateList = new ArrayList<ItemNaturePropery>();
+        ItemNaturePropery tmp = new ItemNaturePropery();
+        tmp.setSpuCode(itemNaturePropery.getSpuCode());
+        tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemNaturePropery> itemNatureProperyList = itemNatureProperyService.select(tmp);
+        AssertUtil.notEmpty(itemNatureProperyList, String.format("根据商品SPU编码[%s]查询相关自然属性为空", itemNaturePropery.getSpuCode()));
+        Date sysTime = Calendar.getInstance().getTime();
+        List<ItemNaturePropery> list = new ArrayList<ItemNaturePropery>();
+        for(Object obj : categoryArray){
+            JSONObject jbo = (JSONObject) obj;
+            ItemNaturePropery _itemNaturePropery = new ItemNaturePropery();
+            _itemNaturePropery.setItemId(itemNaturePropery.getItemId());
+            _itemNaturePropery.setSpuCode(itemNaturePropery.getSpuCode());
+            _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
+            _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
+            _itemNaturePropery.setUpdateTime(sysTime);
+            _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            list.add(_itemNaturePropery);
+            Boolean flag = false;
+            for(ItemNaturePropery it : itemNatureProperyList){
+                if(_itemNaturePropery.getPropertyId() == it.getPropertyId()){
+                    updateList.add(_itemNaturePropery);
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                _itemNaturePropery.setCreateTime(sysTime);
+                addList.add(_itemNaturePropery);
+            }
+        }
+        for(ItemNaturePropery it : itemNatureProperyList){
+            Boolean flag = false;
+            for(ItemNaturePropery it2 : list){
+                if(it.getPropertyId() == it2.getPropertyId()){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                it.setUpdateTime(sysTime);
+                it.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                updateList.add(it);
+            }
+        }
+        int count = 0;
+        if(addList.size() > 0){
+            count = itemNatureProperyService.insertList(addList);
+            if (count == 0) {
+                String msg = String.format("保存商品自然属性信息%s到数据库失败", JSON.toJSONString(addList));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+            }
+        }
+        if(updateList.size() > 0){
+            count = itemNatureProperyService.updateItemNaturePropery(updateList);
+            if (count == 0) {
+                String msg = String.format("更细商品自然属性信息%s到数据库失败", JSON.toJSONString(updateList));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
+        }
+    }
+
+    /**
+     * 更新商品采购属性
+     * @param itemSalesPropery
+     * @param skuses
+     * @throws Exception
+     */
+    private void updateItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses) throws Exception{
+        List<ItemSalesPropery> addList = new ArrayList<ItemSalesPropery>();
+        List<ItemSalesPropery> updateList = new ArrayList<ItemSalesPropery>();
+        Date sysTime = Calendar.getInstance().getTime();
+        List<ItemSalesPropery> list = new ArrayList<ItemSalesPropery>();
+        for(Skus skus : skuses){
+            String[] propertyValueIdsArray = skus.getPropertyValueId().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+            String[] propertyValuesArray = skus.getPropertyValue().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+            List<ItemSalesPropery> _currentList = querySkuItemSalesProperys(skus.getSpuCode(), skus.getSkuCode(), null);
+            AssertUtil.notEmpty(_currentList, String.format("根据商品SPU编码[%s]和SKU编码[%s]查询相关采购属性为空", skus.getSpuCode(), skus.getSkuCode()));
+            for(int i=0; i<propertyValueIdsArray.length; i++){
+                Long propertyValueId = Long.parseLong(propertyValueIdsArray[i]);
+                ItemSalesPropery _itemSalesPropery = new ItemSalesPropery();
+                _itemSalesPropery.setItemId(skus.getItemId());
+                _itemSalesPropery.setSpuCode(skus.getSpuCode());
+                _itemSalesPropery.setSkuCode(skus.getSkuCode());
+                String[] _tmp = getPropertyIdAndPicture(itemSalesPropery, propertyValueId);
+                _itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
+                _itemSalesPropery.setPropertyValueId(propertyValueId);
+                _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
+                _itemSalesPropery.setPicture(_tmp[1]);
+                _itemSalesPropery.setUpdateTime(sysTime);
+                _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                list.add(_itemSalesPropery);
+                Boolean flag = false;
+                for(ItemSalesPropery it : _currentList){
+                    if(_itemSalesPropery.getPropertyId() == it.getPropertyId() &&
+                            _itemSalesPropery.getPropertyValueId() == it.getPropertyValueId()){
+                        updateList.add(_itemSalesPropery);
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                    _itemSalesPropery.setCreateTime(sysTime);
+                    addList.add(_itemSalesPropery);
+                }
+            }
+            for(ItemSalesPropery it : _currentList){
+                Boolean flag = false;
+                for(ItemSalesPropery it2 : list){
+                    if(it.getPropertyId() == it2.getPropertyId() &&
+                            it.getPropertyValueId() == it2.getPropertyValueId()){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    it.setUpdateTime(sysTime);
+                    it.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                    updateList.add(it);
+                }
+            }
+        }
+        int count = 0;
+        if(updateList.size() > 0){
+            count = itemSalesProperyService.updateItemSalesPropery(updateList);
+            if (count == 0) {
+                String msg = String.format("更细商品采购属性信息%s到数据库失败", JSON.toJSONString(updateList));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
+        }
+        if(addList.size() > 0){
+            count = itemSalesProperyService.insertList(addList);
+            if (count == 0) {
+                String msg = String.format("保存商品采购属性信息%s到数据库失败", JSON.toJSONString(addList));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+            }
+        }
+    }
+
+    /**
+     * 查询sku对应的采购属性
+     * @param spuCode
+     * @param skuCode
+     * @param isDelete
+     * @return
+     * @throws Exception
+     */
+    private List<ItemSalesPropery> querySkuItemSalesProperys(String spuCode, String skuCode, String isDelete) throws Exception{
+        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
+        itemSalesPropery.setSpuCode(spuCode);
+        itemSalesPropery.setSkuCode(skuCode);
+        if(StringUtils.isNotBlank(isDelete)){
+            itemSalesPropery.setIsDeleted(isDelete);
+        }
+        return itemSalesProperyService.select(itemSalesPropery);
+    }
+
+
     @Override
-    public void updateItems(Items items) throws Exception {
-
-
-
-    } 
-
-    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateValid(Long id, String isValid) throws Exception {
-        AssertUtil.notNull(id, "商品启用/停用操作供应商ID不能为空");
+        AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
         Items items = new Items();
         items.setId(id);
         items.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        String _isValid = ZeroToNineEnum.ZERO.getCode();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
-            items.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }else{
-            items.setIsValid(ZeroToNineEnum.ZERO.getCode());
+            _isValid = ZeroToNineEnum.ONE.getCode();
         }
+        items.setIsValid(_isValid);
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){
             String msg = "商品启用/停用操作更新数据库失败";
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
+        Items items2 = new Items();
+        items2.setId(id);
+        items2 = itemsService.selectOne(items2);
+        AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
+        //更新商品相关SKU启用/停用状态
+        updateGoodsSkusValid(items2.getSpuCode(),_isValid);
+    }
+
+    private void updateGoodsSkusValid(String spuCode, String isValid) throws Exception{
+        Skus skus = new Skus();
+        skus.setSpuCode(spuCode);
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+            skus.setIsValid(ZeroToNineEnum.ONE.getCode());
+        }else {
+            skus.setIsValid(ZeroToNineEnum.ZERO.getCode());
+        }
+        List<Skus> skusList = skusService.select(skus);
+        AssertUtil.notEmpty(skusList, String.format("根据商品SPU编码[%s]查询相关SKU信息为空", spuCode));
+        Date sysTime = Calendar.getInstance().getTime();
+        for(Skus sku: skusList){
+            sku.setIsValid(isValid);
+            sku.setUpdateTime(sysTime);
+        }
+        int count = skusService.updateSkus(skusList);
+        if(count == 0){
+            String msg = "商品SKU启用/停用操作更新数据库失败";
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateSkusValid(Long id, String spuCode, String isValid) throws Exception {
+        AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
+        AssertUtil.notBlank(spuCode, "SKU启用/停用操作参数spuCode不能为空");
+        AssertUtil.notBlank(isValid, "SKU启用/停用操作参数isValid不能为空");
+        Skus skus = new Skus();
+        skus.setId(id);
+        String _isValid = ZeroToNineEnum.ZERO.getCode();
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+            _isValid = ZeroToNineEnum.ONE.getCode();
+        }
+        skus.setIsValid(_isValid);
+        int count = skusService.updateByPrimaryKeySelective(skus);
+        if(count == 0){
+            String msg = "商品SKU启用/停用操作更新数据库失败";
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
+        updateItemsValid(spuCode, _isValid);
+    }
+
+    /**
+     * 更新商品启用/停用状态
+     * @param spuCode
+     * @param isValid
+     * @throws Exception
+     */
+    private void updateItemsValid(String spuCode, String isValid) throws Exception{
+        Items items = new Items();
+        items.setSpuCode(spuCode);
+        items = itemsService.selectOne(items);
+        AssertUtil.notNull(items, String.format("根据商品SPU编码[%s]查询商品基础信息为空", spuCode));
+        Boolean flag = false;
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), isValid)){//启用SKU
+            if(!StringUtils.equals(isValid, items.getIsValid())){
+                items.setIsValid(isValid);
+                flag = true;
+            }
+        }else{//停用SKU
+            //查询商品spu对应的所有启用的sku
+            Skus skus = new Skus();
+            skus.setSpuCode(spuCode);
+            skus.setIsValid(ZeroToNineEnum.ONE.getCode());
+            List<Skus> list = skusService.select(skus);
+            if(list.size() == 0){
+                items.setIsValid(ZeroToNineEnum.ZERO.getCode());
+                flag = true;
+            }
+        }
+        if(flag){
+            items.setUpdateTime(Calendar.getInstance().getTime());
+            int count = itemsService.updateByPrimaryKeySelective(items);
+            if(count == 0){
+                String msg = String.format("更新商品基础信息%s到数据库失败", JSON.toJSONString(items));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
         }
     }
 
@@ -446,6 +936,15 @@ public class GoodsBiz implements IGoodsBiz {
         skus.setSpuCode(spuCode);
         skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Skus> skuses = skusService.select(skus);
+        //设置商品重量和市场价返回值
+        for(Skus s : skuses){
+            if(null != s.getWeight() && s.getWeight() > 0){
+                s.setWeight2(BigDecimal.valueOf(Math.round(s.getWeight())/MONEY_MULTI));
+            }
+            if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
+                s.setMarketPrice2(BigDecimal.valueOf(Math.round(s.getMarketPrice())/MONEY_MULTI));
+            }
+        }
         AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
         //查询商品自然属性信息
         ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
@@ -486,6 +985,5 @@ public class GoodsBiz implements IGoodsBiz {
         }
         return categoryName;
     }
-
 
 }
