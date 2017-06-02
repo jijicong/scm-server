@@ -1,5 +1,6 @@
 package org.trc.service.impower;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAddPageDate;
 import org.trc.service.IBaseService;
@@ -40,4 +41,11 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
      * @return
      */
     List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception;
+
+    /**
+     * 查询单个授权用户信息
+     * @param userId
+     * @return
+     */
+    UserAccreditInfo selectOneById(String userId)throws  Exception;
 }

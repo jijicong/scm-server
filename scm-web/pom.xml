@@ -195,7 +195,7 @@
                 <filtering>false</filtering>
             </resource>
             <resource>
-                <directory>src/main/resources/config/${package.environment}</directory>
+                <directory>src/main/resources/config/dev/${package.environment}</directory>
                 <targetPath>resources</targetPath>
                 <filtering>false</filtering>
             </resource>

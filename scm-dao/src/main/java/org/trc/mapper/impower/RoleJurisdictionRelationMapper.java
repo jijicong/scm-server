@@ -1,5 +1,6 @@
 package org.trc.mapper.impower;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.impower.RoleJurisdictionRelation;
 import org.trc.util.BaseMapper;
 
@@ -23,4 +24,11 @@ public interface RoleJurisdictionRelationMapper extends BaseMapper<RoleJurisdict
      */
     int deleteByRoleId(Long roleId);
 
+    /**
+     * 根据多个角色id查询角色信息
+     * @param roleIds
+     * @return
+     * @throws Exception
+     */
+    List<RoleJurisdictionRelation> selectListByRoleId(@Param("roleIds")Long ...roleIds)throws Exception;
 }

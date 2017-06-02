@@ -30,4 +30,5 @@ public interface IPurchaseOrderBiz {
      */
     Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page) throws Exception;
 
+    void savePurchaseOrder(PurchaseOrder purchaseOrder, String userId) throws Exception;
 }
