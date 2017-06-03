@@ -149,15 +149,13 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public void saveClassify(Category category) throws Exception {
 
-        try {
-            ParamsUtil.setBaseDO(category);
-            categoryService.insert(category);
-        } catch (Exception e) {
-            String msg = CommonUtil.joinStr("保存分类", JSON.toJSONString(category), "到数据库失败").toString();
+        ParamsUtil.setBaseDO(category);
+        int count = categoryService.insert(category);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("增加分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
-
     }
 
 
@@ -171,7 +169,6 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public int checkCategoryCode(Long id, String categoryCode) throws Exception {
 
-//        AssertUtil.notBlank(categoryCode, "根据分类编码查询分类的参数categoryCode为空");
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", id);
@@ -358,10 +355,10 @@ public class CategoryBiz implements ICategoryBiz {
             propertyIds.add(categoryProperty.getPropertyId());
         }
         List<Property> propertyList = new ArrayList<Property>();
-        if(propertyIds.size() > 0){
+        if (propertyIds.size() > 0) {
             propertyList = propertyService.queryPropertyList(propertyIds);
         }
-        if(propertyList.size() > 0){
+        if (propertyList.size() > 0) {
             for (CategoryProperty c : categoryProperties) {
                 for (Property p : propertyList) {
                     if (StringUtils.equals(c.getPropertyId().toString(), p.getId().toString())) {
