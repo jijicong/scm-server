@@ -4,6 +4,8 @@ package org.trc.util;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
+import java.util.Collection;
+
 /**
  * Created by hzwdx on 2017/5/10.
  */
@@ -18,4 +20,7 @@ public class AssertUtil extends Assert{
             throw new IllegalArgumentException(msg);
     }
 
+    public static boolean CollectionIsEmpty(Collection collection){
+        return (collection==null||collection.isEmpty());
+    }
 }

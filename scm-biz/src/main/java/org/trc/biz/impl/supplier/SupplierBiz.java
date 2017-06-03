@@ -508,8 +508,9 @@ public class SupplierBiz implements ISupplierBiz {
      * @param supplierCategory
      */
     private void saveCategory(SupplierCategory supplierCategory) {
-        int count = 0;
+        AssertUtil.notBlank(supplierCategory.getSupplierCetegory(), "新增供应商代理类目不能为空");
         JSONArray categoryArray = JSONArray.parseArray(supplierCategory.getSupplierCetegory());
+        AssertUtil.notEmpty(categoryArray, "新增供应商代理类目不能为空");
         List<SupplierCategory> list = new ArrayList<SupplierCategory>();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
@@ -521,7 +522,7 @@ public class SupplierBiz implements ISupplierBiz {
             checkSupplierCategory(s);
             list.add(s);
         }
-        count = supplierCategoryService.insertList(list);
+        int count = supplierCategoryService.insertList(list);
         if (count == 0) {
             String msg = CommonUtil.joinStr("保存供应商代理类目", JSON.toJSONString(supplierCategory), "到数据库失败").toString();
             log.error(msg);
@@ -601,8 +602,9 @@ public class SupplierBiz implements ISupplierBiz {
      * @param brand
      */
     private void saveBrand(SupplierBrand brand){
-        int count = 0;
+        AssertUtil.notBlank(brand.getSupplierBrand(), "新增供应商代理品牌不能为空");
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
+        AssertUtil.notEmpty(categoryArray, "新增供应商代理品牌不能为空");
         List<SupplierBrand> list = new ArrayList<SupplierBrand>();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
@@ -621,7 +623,7 @@ public class SupplierBiz implements ISupplierBiz {
             checkSupplierBrand(s);
             list.add(s);
         }
-        count = supplierBrandService.insertList(list);
+        int count = supplierBrandService.insertList(list);
         if (count == 0) {
             String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(list), "到数据库失败").toString();
             log.error(msg);

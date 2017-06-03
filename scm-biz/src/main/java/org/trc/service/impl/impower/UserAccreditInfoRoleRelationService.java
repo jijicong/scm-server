@@ -8,6 +8,8 @@ import org.trc.mapper.impower.UserAccreditRoleRelationMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
 
+import java.util.List;
+
 /**
  * Created by sone on 2017/5/16.
  */
@@ -21,5 +23,10 @@ public class UserAccreditInfoRoleRelationService extends BaseService<UserAccredi
     public void deleteByUserAccreditId(Long userAccreditId) throws Exception {
         userAccreditRoleRelationMapper.deleteByUserAccreditId(userAccreditId);
 
+    }
+
+    @Override
+    public List<UserAccreditRoleRelation> selectListByUserAcId(Long userAccreditId) throws Exception {
+        return userAccreditRoleRelationMapper.selectListByUserAcId(userAccreditId);
     }
 }

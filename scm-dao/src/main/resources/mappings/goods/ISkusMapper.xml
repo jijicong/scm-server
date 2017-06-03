@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.goods.ISkusMapper">
+    <update id="updateSkus"  parameterType="java.util.List" >
+        <foreach collection="list" item="skus" index="index" open="" close=";" separator=";">
+            update skus
+            <set>
+                property_value_id = #{skus.propertyValueId},
+                property_value = #{skus.propertyValue},
+                bar_code = #{skus.barCode},
+                market_price = #{skus.marketPrice},
+                picture = #{skus.picture},
+                weight = #{skus.weight},
+                update_time = #{skus.updateTime},
+                is_valid = #{skus.isValid},
+                is_deleted = #{skus.isDeleted}
+            </set>
+            where
+              spu_code = #{skus.spuCode} AND sku_code = #{skus.skuCode}
+        </foreach>
+    </update>
+
+
+</mapper>

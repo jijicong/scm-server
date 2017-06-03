@@ -462,9 +462,7 @@ public class SupplyConstants {
 
             //供应商渠道列表查询
             public static final String CHANNELS = "channels";
-
         }
-
     }
 
     /**
@@ -482,8 +480,10 @@ public class SupplyConstants {
         public static final String GOODS = "goods";
         //根据SPU编码查询商品路径
         public static final String GOODS_SPU_CODE = "goods/spuCode";
-        //启用/停用
+        //商品启用/停用
         public static final String IS_VALID = "isValid";
+        //SKU启用/停用
+        public static final String SKU_VALID = "skuValid";
 
     }
 

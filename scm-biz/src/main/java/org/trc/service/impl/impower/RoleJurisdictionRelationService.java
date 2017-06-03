@@ -12,8 +12,8 @@ import java.util.List;
 /**
  * Created by sone on 2017/5/16.
  */
-@Service("roleJurisdictionRelationRelationService")
-public class RoleJurisdictionRelationRelationService extends BaseService<RoleJurisdictionRelation,Long> implements IRoleJurisdictionRelationService {
+@Service("roleJurisdictionRelationService")
+public class RoleJurisdictionRelationService extends BaseService<RoleJurisdictionRelation,Long> implements IRoleJurisdictionRelationService {
 
     @Resource
     private RoleJurisdictionRelationMapper roleJurisdictionRelationMapper;
@@ -25,5 +25,10 @@ public class RoleJurisdictionRelationRelationService extends BaseService<RoleJur
     @Override
     public int deleteByRoleId(Long roleId) throws Exception {
         return roleJurisdictionRelationMapper.deleteByRoleId(roleId);
+    }
+
+    @Override
+    public List<RoleJurisdictionRelation> selectListByRoleIds(Long... roleIds) throws Exception {
+        return roleJurisdictionRelationMapper.selectListByRoleId(roleIds);
     }
 }

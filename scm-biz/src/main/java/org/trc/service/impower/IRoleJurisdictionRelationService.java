@@ -1,5 +1,6 @@
 package org.trc.service.impower;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.impower.RoleJurisdictionRelation;
 import org.trc.service.IBaseService;
 
@@ -25,4 +26,11 @@ public interface IRoleJurisdictionRelationService extends IBaseService<RoleJuris
      */
     int deleteByRoleId(Long roleId) throws Exception;
 
+    /**
+     * 根据多个角色id查询角色信息
+     * @param roleIds
+     * @return
+     * @throws Exception
+     */
+    List<RoleJurisdictionRelation> selectListByRoleIds(Long ...roleIds)throws Exception;
 }

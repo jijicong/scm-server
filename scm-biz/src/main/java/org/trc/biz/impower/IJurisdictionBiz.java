@@ -9,13 +9,16 @@ import java.util.List;
  */
 public interface IJurisdictionBiz {
     /**
-     *查询全局的资源权限
+     * 查询全局的资源权限
+     *
      * @return 资源权限集合
      * @throws Exception
      */
     List<Jurisdiction> findWholeJurisdiction() throws Exception;
+
     /**
      * 查询渠道的资源权限
+     *
      * @return 资源权限集合
      * @throws Exception
      */
@@ -23,6 +26,7 @@ public interface IJurisdictionBiz {
 
     /**
      * 根据角色的id，查询被选中的全局权限
+     *
      * @param roleId
      * @return
      * @throws Exception
@@ -30,10 +34,22 @@ public interface IJurisdictionBiz {
     List<Jurisdiction> findWholeJurisdictionAndCheckedByRoleId(Long roleId) throws Exception;
 
     /**
-     *根据角色的id，查询被选中的渠道权限
+     * 根据角色的id，查询被选中的渠道权限
+     *
      * @param roleId
      * @return
      * @throws Exception
      */
     List<Jurisdiction> findChannelJurisdictionAndCheckedByRoleId(Long roleId) throws Exception;
+
+    /**
+     * 对用户访问权限的检查
+     *
+     * @param userId
+     * @param url
+     * @param method
+     * @return
+     * @throws Exception
+     */
+    Boolean authCheck(String userId, String url, String method) throws Exception;
 }

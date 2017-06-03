@@ -11,6 +11,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.util.List;
 
 public class Items extends BaseDO{
 
@@ -58,6 +59,12 @@ public class Items extends BaseDO{
     @FormParam("properties")
     @Length(max = 512, message = "属性量长度不能超过512个")
     private String properties;
+
+    /**
+     * SKU列表
+     */
+    @Transient
+    private List<Skus> records;
 
 
     public Long getId() {
@@ -178,5 +185,13 @@ public class Items extends BaseDO{
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
+    }
+
+    public List<Skus> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<Skus> records) {
+        this.records = records;
     }
 }

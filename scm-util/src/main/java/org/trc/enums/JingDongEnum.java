@@ -14,7 +14,8 @@ public enum JingDongEnum {
 
     //统一下单
     ORDER_SUCCESS("1001","下单成功"),
-    ORDER_FALSE("1002","下单失败");
+    ORDER_FALSE("1002","下单失败"),
+    ORDER_ERROR("1003","下单异常");
 
     private String code;
     private String name;
