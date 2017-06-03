@@ -38,7 +38,7 @@ public class UserAccreditInfoService extends BaseService<UserAccreditInfo, Long>
     }
 
     @Override
-    public List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception {
+    public List<UserAccreditInfo> selectAccreditInfoList(Map map){
         return userAccreditInfoMapper.selectAccreditInfoList(map);
     }
 
@@ -48,7 +48,7 @@ public class UserAccreditInfoService extends BaseService<UserAccreditInfo, Long>
     }
 
     @Override
-    public UserAccreditInfo selectOneById(String userId) throws Exception {
+    public UserAccreditInfo selectOneById(String userId){
         return userAccreditInfoMapper.selectOneById(userId);
     }
 

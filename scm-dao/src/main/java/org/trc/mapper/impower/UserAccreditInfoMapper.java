@@ -47,5 +47,5 @@ public  interface UserAccreditInfoMapper  extends BaseMapper<UserAccreditInfo>{
     List<UserAccreditInfo> selectUserNames(String strs[]);
 
 
-    UserAccreditInfo selectOneById(@Param("userId")String userId)throws Exception;
+    UserAccreditInfo selectOneById(@Param("userId")String userId);
 }

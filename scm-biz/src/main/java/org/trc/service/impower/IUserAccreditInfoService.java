@@ -55,5 +55,5 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
      * @param userId
      * @return
      */
-    UserAccreditInfo selectOneById(String userId)throws  Exception;
+    UserAccreditInfo selectOneById(String userId);
 }

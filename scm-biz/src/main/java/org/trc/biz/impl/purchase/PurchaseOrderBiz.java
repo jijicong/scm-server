@@ -73,7 +73,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Pagenation<PurchaseOrder> pagenation = purchaseOrderService.pagination(example,page,form);
 
         List<PurchaseOrder> purchaseOrderList = pagenation.getResult();
-        if(purchaseOrderList.size()==0 || purchaseOrderList==null){
+        if( purchaseOrderList==null  ){
+            return pagenation;
+        }
+        if(purchaseOrderList.size()==0 ){
             return pagenation;
         }
         purchaseOrderList = selectAssignmentPurchaseGroupName(purchaseOrderList);
@@ -304,8 +307,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("BrandName", form.getBrandName());
 
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+
+        //String
         //获得所有分类的id 拼接，并且显示name的拼接
-        
+        for (PurchaseDetail purchaseDetail: purchaseDetailList){
+            purchaseDetail.getCategoryId();
+        }
 
         int count = purchaseOrderService.selectCountItems(map);
         page.setTotalCount(count);
