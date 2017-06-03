@@ -304,7 +304,7 @@ public class GoodsBiz implements IGoodsBiz {
             }
             //第三级分类名称
             for(Category c2 : categories){
-                if(Long.parseLong(tmps[2]) == c2.getId()){
+                if(c.getId() == c2.getId()){
                     sb.append(CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
                     break;
                 }
