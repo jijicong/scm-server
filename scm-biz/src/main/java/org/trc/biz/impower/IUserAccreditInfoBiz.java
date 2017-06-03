@@ -19,7 +19,7 @@ public interface IUserAccreditInfoBiz {
      * @param page  分页信息
      * @return  分页信息及当前页面的数据
      */
-    Pagenation<UserAddPageDate> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception;
+    Pagenation<UserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception;
 
     /**
      * 查询拥有采购员角色的用户

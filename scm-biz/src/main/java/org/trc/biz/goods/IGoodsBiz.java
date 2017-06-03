@@ -22,7 +22,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Items> ItemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
+    Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
 
     /**
      * 查询商品列表

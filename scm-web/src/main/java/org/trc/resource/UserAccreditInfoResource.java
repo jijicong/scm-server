@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
@@ -31,7 +30,7 @@ public class UserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<UserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<UserAddPageDate> page) throws Exception {
-        return userAccreditInfoBiz.UserAccreditInfoPage(form, page);
+        return userAccreditInfoBiz.userAccreditInfoPage(form, page);
     }
 
     //授权里面的采购员列表

@@ -90,18 +90,12 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    public Pagenation<Items> ItemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
+    public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        /*if (StringUtil.isNotEmpty(queryModel.getSpuCode())) {//SPU编码
-            criteria.andLike("spuCode", "%" + queryModel.getSpuCode() + "%");
-        }
-        if (StringUtil.isNotEmpty(queryModel.getSkuCode())) {//SKU编码
-            criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
-        }*/
         handlerSkuCondition(criteria, queryModel.getSkuCode(), queryModel.getSpuCode());
         if (null != queryModel.getCategoryId()) {//商品所属分类ID
             criteria.andEqualTo("categoryId", queryModel.getCategoryId());
@@ -194,8 +188,8 @@ public class GoodsBiz implements IGoodsBiz {
             //查询所有sku对应的采购属性
             Example example2 = new Example(ItemSalesPropery.class);
             Example.Criteria criteria2 = example2.createCriteria();
-            criteria.andIn("skuCode", skuCodes);
-            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            criteria2.andIn("skuCode", skuCodes);
+            criteria2.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.selectByExample(example2);
             AssertUtil.notEmpty(skusList, String.format("批量查询商品SKU编码为[%s]的SKU对应的采购属性信息为空", CommonUtil.converCollectionToString(skuCodes)));
             //查询所有采购属性详细信息
@@ -205,7 +199,7 @@ public class GoodsBiz implements IGoodsBiz {
             }
             Example example3 = new Example(Property.class);
             Example.Criteria criteria3 = example3.createCriteria();
-            criteria.andIn("id", propertyIds);
+            criteria3.andIn("id", propertyIds);
             List<Property> propertyList = propertyService.selectByExample(example3);
             AssertUtil.notEmpty(skusList, String.format("批量查询属性ID为[%s]的属性对应的信息为空", CommonUtil.converCollectionToString(propertyIds)));
             //设置SKU的采购属性组合名称
@@ -241,10 +235,10 @@ public class GoodsBiz implements IGoodsBiz {
             for(ItemSalesPropery itemSalesPropery : itemSalesProperies){
                 if(propertyValueId == itemSalesPropery.getPropertyValueId()){
                     for(Property property : properties){
-                        if(itemSalesPropery.getPropertyId() == property.getId()){
-                            sb.append(SKU_PROPERTY_COMBINE_NAME_EMPTY).append(property.getName()).append(SKU_PROPERTY_COMBINE_NAME_SPLIT_SYMBOL).append(propertyValueArray[i]);
-                            break;
-                        }
+                        if(itemSalesPropery.getPropertyId().equals(property.getId())){
+                        sb.append(SKU_PROPERTY_COMBINE_NAME_EMPTY).append(property.getName()).append(SKU_PROPERTY_COMBINE_NAME_SPLIT_SYMBOL).append(propertyValueArray[i]);
+                        break;
+                      }
                     }
                     break;
                 }
@@ -334,7 +328,7 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notEmpty(brands,String.format("查询商品品牌ID为[%s]的品牌信息为空", CommonUtil.converCollectionToString(brandIds)));
         for(Items items2 : items){
             for(Brand c : brands){
-                if(items2.getBrandId() == c.getId()){
+                if(items2.getBrandId().longValue() == c.getId().longValue()){
                     items2.setBrandName(c.getName());
                     break;
                 }
@@ -547,7 +541,7 @@ public class GoodsBiz implements IGoodsBiz {
         String[] _result = new String[2];
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
-            if(propertyValueId == jbo.getLong("propertyValueId")){
+            if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
                 _result[0] = jbo.getString("propertyId");
                 _result[1] = jbo.getString("picture");
                 break;
@@ -666,7 +660,7 @@ public class GoodsBiz implements IGoodsBiz {
             list.add(_itemNaturePropery);
             Boolean flag = false;
             for(ItemNaturePropery it : itemNatureProperyList){
-                if(_itemNaturePropery.getPropertyId() == it.getPropertyId()){
+                if(_itemNaturePropery.getPropertyId().longValue() == it.getPropertyId().longValue()){
                     updateList.add(_itemNaturePropery);
                     flag = true;
                     break;
@@ -681,7 +675,7 @@ public class GoodsBiz implements IGoodsBiz {
         for(ItemNaturePropery it : itemNatureProperyList){
             Boolean flag = false;
             for(ItemNaturePropery it2 : list){
-                if(it.getPropertyId() == it2.getPropertyId()){
+                if(it.getPropertyId().longValue() == it2.getPropertyId().longValue()){
                     flag = true;
                     break;
                 }
@@ -743,8 +737,8 @@ public class GoodsBiz implements IGoodsBiz {
                 list.add(_itemSalesPropery);
                 Boolean flag = false;
                 for(ItemSalesPropery it : _currentList){
-                    if(_itemSalesPropery.getPropertyId() == it.getPropertyId() &&
-                            _itemSalesPropery.getPropertyValueId() == it.getPropertyValueId()){
+                    if(_itemSalesPropery.getPropertyId().longValue() == it.getPropertyId().longValue() &&
+                            _itemSalesPropery.getPropertyValueId().longValue() == it.getPropertyValueId().longValue()){
                         updateList.add(_itemSalesPropery);
                         flag = true;
                         break;
@@ -759,8 +753,8 @@ public class GoodsBiz implements IGoodsBiz {
             for(ItemSalesPropery it : _currentList){
                 Boolean flag = false;
                 for(ItemSalesPropery it2 : list){
-                    if(it.getPropertyId() == it2.getPropertyId() &&
-                            it.getPropertyValueId() == it2.getPropertyValueId()){
+                    if(it.getPropertyId().longValue() == it2.getPropertyId().longValue() &&
+                            it.getPropertyValueId().longValue() == it2.getPropertyValueId().longValue()){
                         flag = true;
                         break;
                     }

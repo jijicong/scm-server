@@ -23,7 +23,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Category> CategoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception;
+    Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception;
 
     /**
      * 获取分类树节点

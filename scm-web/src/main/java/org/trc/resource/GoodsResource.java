@@ -34,15 +34,7 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Items> goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
-        return goodsBiz.ItemsPage(form, page);
-    }
-
-    @GET
-    @Path(SupplyConstants.Goods.GOODS_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Items>> queryGoodsList(@BeanParam ItemsForm itemsForm) throws Exception {
-        //return ResultUtil.createSucssAppResult("查询商品列表成功", configBiz.queryDictTypes(dictTypeForm));
-        return null;
+        return goodsBiz.itemsPage(form, page);
     }
 
     @POST
@@ -79,8 +71,6 @@ public class GoodsResource {
         goodsBiz.updateSkusValid(id, spuCode, isValid);
         return ResultUtil.createSucssAppResult("启停用SKU成功", "");
     }
-
-
 
 
     @GET

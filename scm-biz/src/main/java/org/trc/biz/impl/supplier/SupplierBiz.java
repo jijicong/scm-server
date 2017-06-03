@@ -67,7 +67,7 @@ public class SupplierBiz implements ISupplierBiz {
     private ISupplierAfterSaleInfoService supplierAfterSaleInfoService;
 
     @Override
-    public Pagenation<Supplier> SupplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
+    public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getSupplierName())) {//供应商名称
@@ -656,13 +656,7 @@ public class SupplierBiz implements ISupplierBiz {
             s.setUpdateTime(Calendar.getInstance().getTime());
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
-            /*if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("status"))){//未修改
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("sortStatus"))){//只更新了字段排序
-                    updatelist.add(s);
-                }
-            }else if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), jbo.getString("status"))){//已修改
-                updatelist.add(s);
-            }else */if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
+            if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
                 s.setIsDeleted(ZeroToNineEnum.ONE.getCode());
                 updatelist.add(s);
             }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据

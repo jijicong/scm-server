@@ -63,7 +63,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public Pagenation<UserAddPageDate> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception {
+    public Pagenation<UserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("name", form.getName());
