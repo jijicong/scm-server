@@ -6,8 +6,6 @@ import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.supplier.*;
-import org.trc.form.supplier.SupplierBrandForm;
-import org.trc.form.supplier.SupplierCategoryForm;
 import org.trc.form.supplier.SupplierChannelRelationForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
@@ -32,7 +30,7 @@ public class SupplierResource {
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Supplier> supplierPage(@BeanParam SupplierForm form, @BeanParam Pagenation<Supplier> page) throws Exception {
-        return supplierBiz.SupplierPage(form, page);
+        return supplierBiz.supplierPage(form, page);
     }
 
     @GET

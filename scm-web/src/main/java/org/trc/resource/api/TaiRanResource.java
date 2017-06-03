@@ -114,7 +114,7 @@ public class TaiRanResource {
     public String queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) {
         try {
             logger.info("查询条件：   " + JSON.toJSONString(categoryForm));
-            page = categoryBiz.CategoryPage(categoryForm, page);
+            page = categoryBiz.categoryPage(categoryForm, page);
             JSONObject jsonObject = new JSONObject();
             List<Category> list = new ArrayList<Category>();
             for (Category category : page.getResult()) {

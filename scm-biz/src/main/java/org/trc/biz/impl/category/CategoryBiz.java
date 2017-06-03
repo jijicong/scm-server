@@ -51,7 +51,7 @@ public class CategoryBiz implements ICategoryBiz {
 
 
     @Override
-    public Pagenation<Category> CategoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
+    public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(queryModel.getName())) {
