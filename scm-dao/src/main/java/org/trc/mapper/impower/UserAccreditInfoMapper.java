@@ -39,6 +39,11 @@ public  interface UserAccreditInfoMapper  extends BaseMapper<UserAccreditInfo>{
      */
     List<UserAccreditInfo> selectAccreditInfoList(Map map);
 
-
+    /**
+     * 查询分页对应的用户信息
+     * @param strs
+     * @return
+     */
+    List<UserAccreditInfo> selectUserNames(String strs[]);
 
 }

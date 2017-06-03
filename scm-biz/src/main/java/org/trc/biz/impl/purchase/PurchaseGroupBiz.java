@@ -176,40 +176,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
         }
-        /*try{
-            number = savePurchaseGroupAssist(purchaseGroup,SERIALNAME);
-        } catch (DuplicateKeyException e){//唯一性索引抛出的异常
-            //第二次查询，插入
-            LOGGER.error(e.getMessage());
-            try{
-                number = savePurchaseGroupAssist(purchaseGroup,SERIALNAME);
-            }catch (DuplicateKeyException ex){
-                String msg = CommonUtil.joinStr("保存采购组", JSON.toJSONString(purchaseGroup), "数据库操作失败").toString();
-                LOGGER.error(msg);
-                throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);
-            }
-        }
-        int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
-        if (assess < 1) {
-            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(purchaseGroup), "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
-        }*/
-
         //存储采购组与授权用户关系
         String purchaseGroupCode = purchaseGroup.getCode();
         String laederUserId = purchaseGroup.getLeaderUserId();
         String memberUserStrs = purchaseGroup.getMemberUserId();
         savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs);
     }
-    /*@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private int savePurchaseGroupAssist(PurchaseGroup purchaseGroup,String name) throws Exception{
-        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码++
-        purchaseGroup.setCode(code);
-        int count = purchaseGroupService.insert(purchaseGroup);
-        return number;
-    }*/
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class) //保存采购组与用户的对应关系
     private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs){
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = new ArrayList<>();

@@ -7,7 +7,9 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.form.purchase.ItemForm;
+import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -16,6 +18,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by sone on 2017/5/25.
@@ -30,16 +33,25 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseOrder> purchaseOrderPagenation(){
-        return  null;
+    public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page)throws Exception{
+        return  purchaseOrderBiz.purchaseOrderPage(form , page);
     }
 
     @POST
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult savePurchaseOrder(@BeanParam PurchaseOrder purchaseOrder ,@PathParam("userId") String userId) throws Exception{
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,userId);
+
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,userId, PurchaseOrderStatusEnum.HOLD.getCode());
         return ResultUtil.createSucssAppResult("保存采购订单成功","");
+
+    }
+    @POST
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT+"/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult commitAuditPurchaseOrder(@BeanParam PurchaseOrder purchaseOrder ,@PathParam("userId") String userId) throws Exception{
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,userId,PurchaseOrderStatusEnum.AUDIT.getCode());
+        return ResultUtil.createSucssAppResult("提交审核采购单成功","");
     }
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)

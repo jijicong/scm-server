@@ -22,22 +22,27 @@ public class UserAccreditInfoService extends BaseService<UserAccreditInfo,Long> 
     private UserAccreditInfoMapper userAccreditInfoMapper;
 
     @Override
-    public List<UserAddPageDate> selectUserAddPageList(Long[] userIds) throws Exception {
+    public List<UserAddPageDate> selectUserAddPageList(Long[] userIds){
         return userAccreditInfoMapper.selectUserAddPageList(userIds);
     }
 
     @Override
-    public List<UserAccreditInfo> findPurchase() throws Exception {
+    public List<UserAccreditInfo> findPurchase(){
         return userAccreditInfoMapper.findPurchase();
     }
 
     @Override
-    public int selectCountUser(Map map) throws Exception {
+    public int selectCountUser(Map map){
         return userAccreditInfoMapper.selectCountUser(map);
     }
 
     @Override
-    public List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception {
+    public List<UserAccreditInfo> selectAccreditInfoList(Map map){
         return userAccreditInfoMapper.selectAccreditInfoList(map);
+    }
+
+    @Override
+    public List<UserAccreditInfo> selectUserNames(String[] strs){
+        return userAccreditInfoMapper.selectUserNames(strs);
     }
 }

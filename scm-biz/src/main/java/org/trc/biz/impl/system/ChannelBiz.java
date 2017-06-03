@@ -16,6 +16,7 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.ChannelException;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
@@ -96,15 +97,15 @@ public class ChannelBiz implements IChannelBiz {
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
+        channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
-        int count=0;
-        String code = serialUtilService.generateCode(LENGTH,SERIALNAME);
-        channel.setCode(code);
-        count = channelService.insert(channel);
-        if (count<1){
+        channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
+        try{
+            channelService.insert(channel);
+        }catch (Exception e){
             String msg = CommonUtil.joinStr("渠道保存,数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
+            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
 
     }
@@ -120,7 +121,7 @@ public class ChannelBiz implements IChannelBiz {
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
+            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -134,7 +135,7 @@ public class ChannelBiz implements IChannelBiz {
         channel = channelService.selectOne(channel);
         if(null == channel) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询渠道为空").toString();
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_QUERY_EXCEPTION,msg);
+            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_QUERY_EXCEPTION,msg);
         }
         return channel;
 
@@ -156,7 +157,7 @@ public class ChannelBiz implements IChannelBiz {
         if(count == 0){
             String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
+            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
     }

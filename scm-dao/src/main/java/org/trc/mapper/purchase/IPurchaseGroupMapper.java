@@ -15,4 +15,6 @@ public interface IPurchaseGroupMapper extends BaseMapper<PurchaseGroup>{
 
     List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode);
 
+    List<PurchaseGroup> selectPurchaseGroupNames(String[] strs);
+
 }

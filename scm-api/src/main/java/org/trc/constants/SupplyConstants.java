@@ -69,6 +69,8 @@ public class SupplyConstants {
             public static final String VALID_LIST = "validList";
             //海外仓的是否支持清关
             public static final String IS_CUSTOM_CLEARANCE = "clearance";
+            //查询采购订单状态
+            public static final String PURCHASE_ORDER_STATUS="purchaseOrderStatus";
         }
 
         /**
@@ -341,6 +343,8 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_PAGE = "purchaseOrderPage";
         //采购订单
         public static final String PURCHASE_ORDER = "purchaseOrder";
+        //采购单提交审核purchaseOrderAudit
+        public static final String PURCHASE_ORDER_AUDIT="purchaseOrderAudit";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //采购单状态的修改

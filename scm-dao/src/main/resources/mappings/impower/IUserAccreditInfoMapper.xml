@@ -58,4 +58,11 @@
     <delete id="deleteByUserAccreditId">
         DELETE FROM user_accredit_role_relation WHERE user_accredit_id=#{userAccreditId}
     </delete>
+    <!--查询分页对应的用户信息-->
+    <select id="selectUserNames" resultType="org.trc.domain.impower.UserAccreditInfo">
+        SELECT user_id AS userId,`name` from user_accredit_info WHERE user_id IN
+        <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

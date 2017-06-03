@@ -6,28 +6,21 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * 
-* @ClassName: PurchaseOrderStatusEnum
-* @Description: 采购订单枚举
-* @author sone
-* @date 2017年6月1日
+* @ClassName: WarehouseNoticeEnum
+* @Description: 入库通知枚举
+* @author A18ccms a18ccms_gmail_com 
+* @date 2017年6月2日
 *
  */
-public enum PurchaseOrderStatusEnum {
-   //0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-全部收货,5-收货异常,6-冻结,7-作废
-	HOLD("0","暂存"),
-	AUDIT("3","提交审核"),
-	PASS("2","审核通过"),
-	REJECT("1","审核驳回"),
-	RECEIVE_ALL("4","全部收货"),
-	RECEIVE_EXCEPTION("5","收货异常"),
-	FREEZE("6","冻结"),
-	CANCEL("7","作废"),
-	WAREHOUSE_NOTICE("8","入库通知");
+public enum WarehouseNoticeEnum {
+
+	TO_BE_NOTIFIED("8","待通知"),
+	HAVE_NOTIFIED("9","已通知");
 
 	private String code;
 	private String name;
 
-	PurchaseOrderStatusEnum(String code, String name){
+	WarehouseNoticeEnum(String code, String name){
 		this.code = code;
 		this.name = name;
 	}
@@ -40,8 +33,8 @@ public enum PurchaseOrderStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static PurchaseOrderStatusEnum getValidEnumByName(String name){
-		for(PurchaseOrderStatusEnum validEnum : PurchaseOrderStatusEnum.values()){
+	public static WarehouseNoticeEnum getValidEnumByName(String name){
+		for(WarehouseNoticeEnum validEnum : WarehouseNoticeEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
 			}
@@ -58,8 +51,8 @@ public enum PurchaseOrderStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static PurchaseOrderStatusEnum getValidEnumByCode(String code){
-		for(PurchaseOrderStatusEnum validEnum : PurchaseOrderStatusEnum.values()){
+	public static WarehouseNoticeEnum getValidEnumByCode(String code){
+		for(WarehouseNoticeEnum validEnum : WarehouseNoticeEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;
 			}
@@ -77,7 +70,7 @@ public enum PurchaseOrderStatusEnum {
 	 */
 	public static JSONArray toJSONArray(){
 		JSONArray array = new JSONArray();
-		for(PurchaseOrderStatusEnum sexEnum : PurchaseOrderStatusEnum.values()){
+		for(WarehouseNoticeEnum sexEnum : WarehouseNoticeEnum.values()){
 			JSONObject obj = new JSONObject();
 			obj.put("code", sexEnum.getCode());
 			obj.put("name", sexEnum.getName());
