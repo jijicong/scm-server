@@ -86,6 +86,12 @@ public interface IJingDongBiz {
      */
     String orderTrack(String jdOrderId) throws Exception;
 
+    /**
+     * 查询商品价格
+     * @param sku 商品编号 批量以逗号分隔
+     * @return
+     * @throws Exception
+     */
     List<SellPriceDO> getSellPrice(String sku) throws Exception;
 
     /**

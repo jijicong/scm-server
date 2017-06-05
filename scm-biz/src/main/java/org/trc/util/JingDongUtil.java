@@ -92,37 +92,6 @@ public class JingDongUtil {
         return time < 0;
     }
 
-
-    /**
-     * 获取京东地址编码
-     * @param jsonStr 类似 {"province"："省份","city":"城市","county":"县/区","town":"街道"}
-     * @return
-     */
-    public String getAddress(String jsonStr) throws Exception {
-        //先将地址jsonStr字符串解析出来，并封装到addressDO;
-        AddressDO addressDO = new AddressDO();
-        String token = iJingDongBiz.getAccessToken();
-        JSONObject json = JSONObject.parseObject(jsonStr);
-        String province= (String) json.get("province");
-        String city= (String) json.get("city");
-        String county= (String) json.get("county");
-        String town= (String) json.get("town");
-        addressDO.setProvince(province);
-        addressDO.setCity(city);
-        addressDO.setCounty(county);
-        addressDO.setTown(town);
-        //然后调用解析后的字符去取code
-        province = ijdService.getProvince(token);
-        province = getMessage(addressDO.getProvince(),province);
-        city = ijdService.getCity(token,province);
-        city = getMessage(addressDO.getCity(),city);
-        county = ijdService.getCounty(token,city);
-        county = getMessage(addressDO.getCounty(),county);
-        //最后拼接字符串编码，返回
-        return province+"_"+city+"_"+county;
-
-    }
-
     /**
      *
      * @param address 查询条件
