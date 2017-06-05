@@ -14,9 +14,9 @@ public class Constant {
         public static final String MSG = "msg";//返回描述
     }
 
-    public static final class Commom{
+    public static final class Commom {
 
-        public static final long TIMELIMIT = 30*60*1000;
+        public static final long TIMELIMIT = 30 * 60 * 1000;
 
         public static final String KEY = "gyl-tairan";
     }

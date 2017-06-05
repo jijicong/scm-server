@@ -26,7 +26,7 @@ public class ExampleResource {
     @POST
     @Path("/brand")
     @Produces(MediaType.APPLICATION_JSON)
-    public String brandTest( JSONObject information ) throws Exception {
+    public String brandTest(JSONObject information) throws Exception {
         logger.info(information.toJSONString());
         //取值
         String action = information.getString("action");
@@ -43,13 +43,13 @@ public class ExampleResource {
         System.out.println(stringBuilder.toString());
         String validSign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         //时间和sign校验
-        String result = verifyInformation(validSign,sign,operateTime);
-        if (result!=null){
+        String result = verifyInformation(validSign, sign, operateTime);
+        if (result != null) {
             return result;
         }
         JSONObject jsonObject = new JSONObject();
         //模拟处理数据出错
-        if (Math.random()*100>90){
+        if (Math.random() * 100 > 90) {
             jsonObject.put(Constant.Return.STATUS, 0);
             jsonObject.put(Constant.Return.MSG, "处理数据错误");
             return jsonObject.toJSONString();
@@ -62,11 +62,10 @@ public class ExampleResource {
     }
 
 
-
     @POST
     @Path("/property")
     @Produces(MediaType.APPLICATION_JSON)
-    public String ProperTyTest( JSONObject information ) throws Exception {
+    public String ProperTyTest(JSONObject information) throws Exception {
         logger.info(information.toJSONString());
         //取值
         String action = information.getString("action");
@@ -76,7 +75,7 @@ public class ExampleResource {
         JSONObject propertyToTrc = information.getJSONObject("propertyToTrc");
         JSONObject valueList = information.getJSONObject("valueList");
         //若有属性值改动
-        if (valueList!=null){
+        if (valueList != null) {
 
 
         }
@@ -87,15 +86,15 @@ public class ExampleResource {
                 append(propertyToTrc.getString("name")).append(or).append(propertyToTrc.getString("sort")).append(or).append(propertyToTrc.getString("typeCode")).
                 append(or).append(propertyToTrc.getString("valueType"));
         System.out.println(stringBuilder.toString());
-        String validSign =MD5.encryption(stringBuilder.toString()).toLowerCase();
+        String validSign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         //时间和sign校验
-        String result = verifyInformation(validSign,sign,operateTime);
-        if (result!=null){
+        String result = verifyInformation(validSign, sign, operateTime);
+        if (result != null) {
             return result;
         }
         JSONObject jsonObject = new JSONObject();
         //模拟处理数据出错
-        if (Math.random()*100>90){
+        if (Math.random() * 100 > 90) {
             jsonObject.put(Constant.Return.STATUS, 0);
             jsonObject.put(Constant.Return.MSG, "处理数据错误");
             return jsonObject.toJSONString();
@@ -110,7 +109,7 @@ public class ExampleResource {
     @POST
     @Path("/category")
     @Produces(MediaType.APPLICATION_JSON)
-    public String CategoryTest( JSONObject information ) throws Exception {
+    public String CategoryTest(JSONObject information) throws Exception {
 
         //参数，parentId可能为空
 
@@ -129,15 +128,15 @@ public class ExampleResource {
         StringBuilder stringBuilder = new StringBuilder();
 
 
-        String validSign =MD5.encryption(stringBuilder.toString()).toLowerCase();
+        String validSign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         //时间和sign校验
-        String result = verifyInformation(validSign,sign,operateTime);
-        if (result!=null){
+        String result = verifyInformation(validSign, sign, operateTime);
+        if (result != null) {
             return result;
         }
         JSONObject jsonObject = new JSONObject();
         //模拟处理数据出错
-        if (Math.random()*100>90){
+        if (Math.random() * 100 > 90) {
             jsonObject.put(Constant.Return.STATUS, 0);
             jsonObject.put(Constant.Return.MSG, "处理数据错误");
             return jsonObject.toJSONString();
@@ -149,9 +148,9 @@ public class ExampleResource {
         return jsonObject.toJSONString();
     }
 
-    public String verifyInformation(String validSign,String sign,String operateTime){
+    public String verifyInformation(String validSign, String sign, String operateTime) {
         JSONObject jsonObject = new JSONObject();
-        if (! validSign.equals(sign)) {
+        if (!validSign.equals(sign)) {
             jsonObject.put(Constant.Return.STATUS, 0);
             jsonObject.put(Constant.Return.MSG, "验签不通过");
             return jsonObject.toJSONString();

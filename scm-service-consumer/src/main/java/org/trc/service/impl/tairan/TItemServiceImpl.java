@@ -24,8 +24,8 @@ public class TItemServiceImpl implements TItemService {
     private IItemSalesProperyBiz itemSalesProperyBiz;*/
 
     @Override
-    public String sendItemNotice(Items items,long operateTime,String action) throws Exception {
-        logger.info("商品信息----"+items);
+    public String sendItemNotice(Items items, long operateTime, String action) throws Exception {
+        logger.info("商品信息----" + items);
         //查询出三块信息表
        /* Skus skus = skuBiz.findByItemId(items.getId());
         ItemNaturePropery  itemNaturePropery = itemNatureProperyBiz.findByItemId(items.getId());

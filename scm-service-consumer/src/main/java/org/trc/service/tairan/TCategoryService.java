@@ -15,12 +15,12 @@ import java.util.List;
 public interface TCategoryService {
 
     /**
-     * @param action      行为
-     * @param oldCategory 旧分类信息
-     * @param category    分类信息
-     * @param  categoryBrandList 分类品牌列表信息
-     * @param  categoryPropertyList 分类属性列表信息
-     * @param operateTime 时间戳
+     * @param action               行为
+     * @param oldCategory          旧分类信息
+     * @param category             分类信息
+     * @param categoryBrandList    分类品牌列表信息
+     * @param categoryPropertyList 分类属性列表信息
+     * @param operateTime          时间戳
      * @return 渠道调回信息
      * @throws Exception
      */

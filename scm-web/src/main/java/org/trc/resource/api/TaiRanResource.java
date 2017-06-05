@@ -41,7 +41,8 @@ public class TaiRanResource {
     @Resource
     private ICategoryBiz categoryBiz;
 
-    /**分页查询品牌
+    /**
+     * 分页查询品牌
      *
      * @param form
      * @param page
@@ -68,7 +69,7 @@ public class TaiRanResource {
                 list.add(brand1);
             }
             page.setResult(list);
-            return ResultUtil.createSucssAppResult("查询品牌列表报错",page);
+            return ResultUtil.createSucssAppResult("查询品牌列表报错", page);
         } catch (Exception e) {
             return ResultUtil.createFailAppResult("查询品牌列表报错");
         }
@@ -76,6 +77,7 @@ public class TaiRanResource {
 
     /**
      * 分页查询属性
+     *
      * @param form
      * @param page
      * @return
@@ -99,7 +101,7 @@ public class TaiRanResource {
                 list.add(property1);
             }
             page.setResult(list);
-            return ResultUtil.createSucssAppResult("查询属性列表成功",page);
+            return ResultUtil.createSucssAppResult("查询属性列表成功", page);
         } catch (Exception e) {
             return ResultUtil.createFailAppResult("查询属性列表报错");
         }
@@ -107,6 +109,7 @@ public class TaiRanResource {
 
     /**
      * 分页查询分类
+     *
      * @param categoryForm
      * @param page
      * @return
@@ -133,7 +136,7 @@ public class TaiRanResource {
                 list.add(category1);
             }
             page.setResult(list);
-            return ResultUtil.createSucssAppResult("查询分类列表成功",page);
+            return ResultUtil.createSucssAppResult("查询分类列表成功", page);
         } catch (Exception e) {
             return ResultUtil.createFailAppResult("查询分类列表报错");
         }
@@ -141,32 +144,34 @@ public class TaiRanResource {
 
     /**
      * 查询分类品牌列表
+     *
      * @param categoryId
      * @return
      */
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId){
-        try{
+    public AppResult<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId) {
+        try {
             return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryBrands(categoryId));
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResultUtil.createFailAppResult("查询分类品牌列表报错");
         }
     }
 
     /**
      * 查询分类属性列表
+     *
      * @param categoryId
      * @return
      */
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_PROPERTY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId){
-        try{
+    public AppResult<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId) {
+        try {
             return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryProperties(categoryId));
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResultUtil.createFailAppResult("查询分类品牌列表报错");
         }
     }

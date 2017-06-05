@@ -63,8 +63,8 @@ public class TCategoryServiceImpl implements TCategoryService {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
-        params.put("categoryBrandList",categoryBrandList);
-        params.put("categoryPropertyList",categoryPropertyList);
+        params.put("categoryBrandList", categoryBrandList);
+        params.put("categoryPropertyList", categoryPropertyList);
         logger.info(params.toJSONString());
         String result = HttpClientUtil.httpPostJsonRequest(CommomUtils.getCategoryUrl(), params.toJSONString(), 10000);
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
