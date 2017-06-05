@@ -56,6 +56,7 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
+        example.orderBy("updateTime").desc();
         example.orderBy("isValid").desc();
         //分页查询
         return dictTypeService.pagination(example, page, queryModel);
