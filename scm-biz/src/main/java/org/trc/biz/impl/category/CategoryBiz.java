@@ -300,6 +300,20 @@ public class CategoryBiz implements ICategoryBiz {
         return categoryName;
     }
 
+    @Override
+    public List<CategoryBrand> queryBrands(Long categoryId) {
+        CategoryBrand categoryBrand = new CategoryBrand();
+        categoryBrand.setCategoryId(categoryId);
+        return categoryBrandService.select(categoryBrand);
+    }
+
+    @Override
+    public List<CategoryProperty> queryProperties(Long categoryId) {
+        CategoryProperty categoryProperty = new CategoryProperty();
+        categoryProperty.setCategoryId(categoryId);
+        return categoryPropertyService.select(categoryProperty);
+    }
+
     /**
      * 数据关联
      *

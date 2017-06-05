@@ -1,4 +1,4 @@
-package org.trc.service.trc.model;
+package org.trc.service.tairan.model;
 
 /**
  * 分类
