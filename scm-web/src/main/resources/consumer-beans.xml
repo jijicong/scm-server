@@ -6,6 +6,6 @@
 	<!-- 订阅服务 -->
 	<!-- 生成远程服务代理，可以和本地bean一样使用beegoService -->
 	<dubbo:reference id="beegoService" interface="com.tairanchina.beego.api.service.BeegoService" />
-	<!--<dubbo:reference id="authService" interface="com.trc.mall.service.AuthService" version="${dubbo.reference.version}"/>-->
+	<!--<dubbo:reference id="authService" interface="com.tairan.mall.service.AuthService" version="${dubbo.reference.version}"/>-->
 
 </beans>

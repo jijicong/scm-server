@@ -82,7 +82,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     //@Test
     public void testTime() {
         try {
-            RedisUtil.setObject("泰然城", "trc", 50);
+            RedisUtil.setObject("泰然城", "tairan", 50);
             RedisUtil.getObject("泰然城");
             /*JingDongBizImpl.refreshToken();*/
             System.out.print("结束");

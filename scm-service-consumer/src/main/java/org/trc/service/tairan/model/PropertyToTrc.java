@@ -1,4 +1,4 @@
-package org.trc.service.trc.model;
+package org.trc.service.tairan.model;
 
 /**
  * 属性
@@ -10,7 +10,7 @@ public class PropertyToTrc {
 
     private String description;//属性描述
 
-    private String sort;//排序
+    private Integer sort;//排序
 
     private String typeCode;//属性类型编码
 
@@ -34,11 +34,11 @@ public class PropertyToTrc {
         this.description = description;
     }
 
-    public String getSort() {
+    public Integer getSort() {
         return sort;
     }
 
-    public void setSort(String sort) {
+    public void setSort(Integer sort) {
         this.sort = sort;
     }
 

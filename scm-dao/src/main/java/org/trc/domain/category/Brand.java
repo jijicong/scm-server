@@ -26,7 +26,7 @@ public class Brand extends BaseDO {
     @FormParam("brandCode")
     private String brandCode;//品牌编码
     @FormParam("source")
-    private String source;//来源:scm-系统自行添加，trc-泰然城导入
+    private String source;//来源:scm-系统自行添加，tairan-泰然城导入
     @FormParam("alise")
     @Length(max = 50, message = "品牌别名不得超过50个字符")
     private String alise;//品牌别名

@@ -46,20 +46,8 @@ public class BrandBiz implements IBrandBiz {
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
-        if (!StringUtils.isBlank(queryModel.getName())) {
-            criteria.andLike("name", "%" + queryModel.getName() + "%");
-        }
-        if (!StringUtils.isBlank(queryModel.getIsValid())) {
-            criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
-        if (!StringUtils.isBlank(queryModel.getStartUpdateTime())) {
-            criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
-        }
-        if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
-            criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
-        }
-        example.orderBy("isValid").desc();
-        example.orderBy("updateTime").desc();
+        //设置查询条件
+        setQueryParam(example,criteria,queryModel);
         Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         //得到所有图片的缩略图,并以fileKey为key，url为value的形式封装成map
         List<Brand> brandList = pagenation.getResult();
@@ -77,17 +65,18 @@ public class BrandBiz implements IBrandBiz {
     public Pagenation<Brand> brandList(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
+        //查询条件
+        setQueryParam(example,criteria,queryModel);
+        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
+        return pagenation;
+    }
+
+    public void setQueryParam(Example example,Example.Criteria criteria,BrandForm queryModel){
         if (!StringUtils.isBlank(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
-        if (!StringUtils.isBlank(queryModel.getAlise())) {
-            criteria.andEqualTo("alise", queryModel.getAlise());
-        }
-        if (!StringUtils.isBlank(queryModel.getBrandCode())) {
-            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
         }
         if (!StringUtils.isBlank(queryModel.getStartUpdateTime())) {
             criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
@@ -95,10 +84,14 @@ public class BrandBiz implements IBrandBiz {
         if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
             criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
         }
+        if (!StringUtils.isBlank(queryModel.getAlise())) {
+            criteria.andEqualTo("alise", queryModel.getAlise());
+        }
+        if (!StringUtils.isBlank(queryModel.getBrandCode())) {
+            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
+        }
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
-        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
-        return pagenation;
     }
 
     @Override

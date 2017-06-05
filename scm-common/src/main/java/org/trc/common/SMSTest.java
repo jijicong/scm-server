@@ -14,7 +14,7 @@ public class SMSTest {
 
     public static final String templateCode = "pub_score_kcgj";//elife_test
 
-    public static final String url = "https://open.trc.com/trcsms/sms/message/rendered";
+    public static final String url = "https://open.tairan.com/trcsms/sms/message/rendered";
 
     public static void main(String[] args){
         try {
