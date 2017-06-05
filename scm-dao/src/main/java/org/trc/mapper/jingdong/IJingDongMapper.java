@@ -1,6 +1,6 @@
 package org.trc.mapper.jingdong;
 
-import org.trc.jingdong.JingDongSkuList;
+import org.trc.domain.config.JingDongSkuList;
 import org.trc.util.BaseMapper;
 
 /**

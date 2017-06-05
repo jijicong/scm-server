@@ -19,8 +19,6 @@ import javax.ws.rs.core.MediaType;
 @Component
 @Path(SupplyConstants.JingDongOrder.ROOT)
 public class JingDongResource {
-    private static final Logger logger = LoggerFactory.getLogger(JingDongResource.class);
-
     @Autowired
     private IJingDongBiz iJingDongBiz;
 

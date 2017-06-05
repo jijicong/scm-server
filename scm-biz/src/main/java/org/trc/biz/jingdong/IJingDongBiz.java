@@ -1,9 +1,9 @@
 package org.trc.biz.jingdong;
 
 import com.alibaba.fastjson.JSONArray;
-import org.trc.biz.impl.jingdong.util.Model.AddressDO;
+import org.trc.form.jingdong.AddressDO;
+import org.trc.form.jingdong.NewStockDO;
 import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.OrderResultDO;
 import org.trc.form.JDModel.SellPriceDO;
 import org.trc.form.JDModel.StockDO;
 
@@ -106,7 +106,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception;
+    List<NewStockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception;
 
 
     /**

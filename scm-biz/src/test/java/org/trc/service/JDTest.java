@@ -10,16 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.trc.biz.impl.jingdong.util.JingDongUtil;
-import org.trc.biz.impl.jingdong.util.Model.AddressDO;
+import org.trc.util.JingDongUtil;
+import org.trc.form.jingdong.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.OrderResultDO;
 import org.trc.form.JDModel.SellPriceDO;
-import org.trc.jingdong.JingDongSku;
-import org.trc.jingdong.JingDongSkuList;
+import org.trc.domain.config.JingDongSku;
+import org.trc.domain.config.JingDongSkuList;
 import org.trc.mapper.jingdong.IJingDongMapper;
 import org.trc.mapper.jingdong.IJingDongTestMapper;
 import org.trc.util.BeanToMapUtil;
@@ -167,9 +165,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     public void testStock() {
         try {
             AddressDO addressDO = new AddressDO();
-            addressDO.setProvince("520112");
-            addressDO.setCity("520115");
-            addressDO.setCounty("520102");
+            addressDO.setProvince("370000");
+            addressDO.setCity("371600");
+            addressDO.setCounty("371625");
             iJingDongBiz.getStockById("2350848", addressDO);
             JSONArray array = new JSONArray();
             JSONObject object = new JSONObject();

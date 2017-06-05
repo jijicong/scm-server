@@ -256,4 +256,6 @@ public interface IJDService {
      * 商品可售验证
      */
     String checkSku(String token, String skuIds) throws Exception;
+
+
 }

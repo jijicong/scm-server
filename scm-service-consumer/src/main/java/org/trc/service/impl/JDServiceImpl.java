@@ -33,7 +33,7 @@ public class JDServiceImpl implements IJDService {
             String sign = jdBaseDO.getClient_secret() + timestamp + jdBaseDO.getClient_id()
                     + jdBaseDO.getUsername() + jdBaseDO.getPassword() + jdBaseDO.getGrant_type() + jdBaseDO.getClient_secret();
             sign = MD5.encryption(sign).toUpperCase();
-            String url = jdBaseDO.getJdurl() + "/oauth2/accessToken";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.ACCESS_TOKEN;
             String data =
                     "grant_type=access_token" +
                             "&client_id=" + jdBaseDO.getClient_id() +
@@ -44,7 +44,7 @@ public class JDServiceImpl implements IJDService {
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            return "创建Token出错";
+            return JingDongConstant.ERROR_TOKEN;
         }
     }
 
@@ -58,19 +58,14 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String freshAccessTokenByRefreshToken(String refreshToken) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/oauth2/refreshToken";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.REFRESH_TOKEN;
             String data = "refresh_token=" + refreshToken +
                     "&client_id=" + jdBaseDO.getClient_id() +
                     "&client_secret=" + jdBaseDO.getClient_secret();
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "刷新失败";
+            return rev;
         } catch (Exception e) {
-            return "刷新Access Token出错";
+            return JingDongConstant.ERROR_REFRESH_TOKEN;
         }
     }
 
@@ -82,17 +77,12 @@ public class JDServiceImpl implements IJDService {
      */
     public String getPageNum(String token) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/getPageNum";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_PAGE_NUM;
             String data = "token=" + token;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取商品池失败";
+            return rev;
         } catch (Exception e) {
-            return "获取商品池异常";
+            return JingDongConstant.ERROR_GET_PAGE_NUM;
         }
     }
 
@@ -105,17 +95,12 @@ public class JDServiceImpl implements IJDService {
      */
     public String getSku(String token, String pageNum) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/getSku";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU;
             String data = "token=" + token + "&pageNum=" + pageNum;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取商品池内商品编号失败";
+            return rev;
         } catch (Exception e) {
-            return "获取商品池内商品编号异常";
+            return JingDongConstant.ERROR_GET_SKU;
         }
     }
 
@@ -130,17 +115,12 @@ public class JDServiceImpl implements IJDService {
      */
     public String getDetail(String token, String sku, Boolean isShow) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/getDetail";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_DETAIL;
             String data = "token=" + token + "&sku=" + sku + "&isShow=" + isShow;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取商品详细信息失败";
+            return rev;
         } catch (Exception e) {
-            return "获取商品详细信息异常";
+            return JingDongConstant.ERROR_GET_DETAIL;
         }
     }
 
@@ -156,36 +136,26 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/getSkuByPage";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU_BY_PAGE;
             String data = "token=" + token + "&pageNum=" + pageNum + "&pageNo=" + pageNo;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
             return rev;
         } catch (Exception e) {
-            return "获取品类池信息异常";
+            return JingDongConstant.ERROR_GET_SKU_BY_PAGE;
         }
     }
 
     @Override
     public String checkSku(String token, String skuIds) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/check";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK;
             String data = "token=" + token + "&skuIds=" + skuIds;
 //            data = data.substring(0,data.length()-1);
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
 //            System.out.println("data:"+data);
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
             return rev;
         } catch (Exception e) {
-            return "获取商品是否可用异常";
+            return JingDongConstant.ERROR_CHECK_SKU;
         }
     }
 
@@ -198,19 +168,12 @@ public class JDServiceImpl implements IJDService {
      */
     public String skuState(String token, String sku) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/skuState";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_STATE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-
-            JSONArray array = json.getJSONArray("result");
-            if (result) {
-                return array.toString();
-            }
-            return "获取商品上下架状态失败";
+            return rev;
         } catch (Exception e) {
-            return "获取商品上下架状态异常";
+            return JingDongConstant.ERROR_SKU_STATE;
         }
     }
 
@@ -223,17 +186,12 @@ public class JDServiceImpl implements IJDService {
      */
     public String skuImage(String token, String sku) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/skuImage";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_IMAGE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取商品图片信息失败";
+            return rev;
         } catch (Exception e) {
-            return "获取商品图片信息异常";
+            return JingDongConstant.ERROR_SKU_IMAGE;
         }
     }
 
@@ -246,7 +204,7 @@ public class JDServiceImpl implements IJDService {
      */
     public String search(SearchDO searchDO) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/search/search";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.SEARCH;
             String data = "token=" + searchDO.getToken();
             if (StringUtils.isNotBlank(searchDO.getKeyword())) {
                 data = data + "&keyword=" + searchDO.getKeyword();
@@ -270,31 +228,21 @@ public class JDServiceImpl implements IJDService {
                 data = data + "&brands=" + searchDO.getBrands();
             }
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "商品搜索失败";
+            return rev;
         } catch (Exception e) {
-            return "商品搜索异常";
+            return JingDongConstant.ERROR_SEARCH;
         }
     }
 
     @Override
     public String getYanbaoSku(String token, String skuIds, int province, int city, int county, int town) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/product/getYanbaoSku";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_YANBAO_SKU;
             String data = "token=" + token + "&skuIds=" + skuIds + "&province=" + province + "&city=" + city + "&county=" + county + "&town=" + town;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "查询商品延保失败";
+            return rev;
         } catch (Exception e) {
-            return "查询商品延保异常";
+            return JingDongConstant.ERROR_GET_YANBAO_SKU;
         }
     }
 
@@ -302,85 +250,60 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String getProvince(String token) {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/area/getProvince";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_PROVINCE;
             String data = "token=" + token;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取一级地址失败";
+            return rev;
         } catch (Exception e) {
-            return "获取一级地址异常";
+            return JingDongConstant.ERROR_GET_PROVINCE;
         }
     }
 
     @Override
     public String getCity(String token, String id) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/area/getCity";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_CITY;
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取二级地址失败";
+            return rev;
         } catch (Exception e) {
-            return "获取二级地址异常";
+            return JingDongConstant.ERROR_GET_CITY;
         }
     }
 
     @Override
     public String getCounty(String token, String id) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/area/getCounty";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_COUNTY;
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取三级地址失败";
+            return rev;
         } catch (Exception e) {
-            return "获取三级地址异常";
+            return JingDongConstant.ERROR_GET_COUNTY;
         }
     }
 
     @Override
     public String getTown(String token, String id) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/area/getTown";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_TOWN;
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "获取四级地址失败";
+            return rev;
         } catch (Exception e) {
-            return "获取四级地址异常";
+            return JingDongConstant.ERROR_GET_TOWN;
         }
     }
 
     @Override
     public String checkArea(String token, String provinceId, String cityId, String countyId, String townId) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/area/checkArea";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK_AREA;
             String data = "token=" + token + "&provinceId=" + provinceId + "&cityId=" + cityId + "&countyId=" + countyId + "&townId=" + townId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            JSONObject json = JSONObject.parseObject(rev);
-            Boolean result = (Boolean) json.get("success");
-            if (result) {
-                return rev;
-            }
-            return "检查四级地址失败";
+            return rev;
         } catch (Exception e) {
-            return "检查四级地址异常";
+            return JingDongConstant.ERROR_CHECK_AREA;
         }
     }
 
@@ -395,12 +318,12 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String getSellPrice(String token, String sku) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/price/getSellPrice";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SELL_PRICE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("查询商品价格异常");
+            return JingDongConstant.ERROR_GET_SELL_PRICE;
         }
     }
 
@@ -416,12 +339,12 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String getNewStockById(String token, String skuNums, String area) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/stock/getNewStockById";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_NEW_STOCK_BY_ID;
             String data = "token=" + token + "&skuNums=" + skuNums + "&area=" + area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("查询库存异常");
+            return JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID;
         }
     }
 
@@ -438,19 +361,19 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String getStockById(String token, String sku, String area) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/stock/getStockById";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.GET_STOCK_BY_ID;
             String data = "token=" + token + "&sku=" + sku + "&area=" + area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("查询库存异常");
+            return JingDongConstant.ERROR_GET_STOCK_BY_ID;
         }
     }
 
     @Override
     public String submitOrder(String token, OrderDO orderDO) throws Exception {
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/submitOrder";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.SUBMIT_ORDER;
             String data = "token=" + token + "&thirdOrder=" + orderDO.getThirdOrder() + "&sku=" + orderDO.getSku() + "&name=" + orderDO.getName() + "&province=" + orderDO.getProvince() + "&city=" + orderDO.getCity()
                     + "&county=" + orderDO.getCounty() + "&town=" + orderDO.getTown() + "&address=" + orderDO.getAddress() + "&mobile=" + orderDO.getMobile() + "&email=" + orderDO.getEmail()
                     + "&invoiceState=" + orderDO.getInvoiceState() + "&invoiceType=" + orderDO.getInvoiceType() + "&selectedInvoiceTitle=" + orderDO.getSelectedInvoiceTitle()
@@ -469,86 +392,80 @@ public class JDServiceImpl implements IJDService {
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("统一下单异常");
+            return JingDongConstant.ERROR_SUBMIT_ORDER;
         }
     }
 
     @Override
     public String confirmOrder(String token, String jdOrderId) throws Exception {
-        JSONObject jsonObject = new JSONObject();
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/confirmOrder";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.CONFIRM_ORDER;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("确认预占库存异常");
+            return JingDongConstant.ERROR_CONFIRM_ORDER;
         }
     }
 
     @Override
     public String cancel(String token, String jdOrderId) throws Exception {
-        JSONObject jsonObject = new JSONObject();
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/cancel";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.CANCEL;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("取消未确认订单异常");
+            return JingDongConstant.ERROR_CANCEL_ORDER;
         }
     }
 
     @Override
     public String doPay(String token, String jdOrderId) throws Exception {
-        JSONObject jsonObject = new JSONObject();
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/doPay";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.DO_PAY;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("发起支付异常");
+            return JingDongConstant.ERROR_DO_PAY;
         }
     }
 
     @Override
     public String selectJdOrderIdByThirdOrder(String token, String thirdOrder) throws Exception {
-        JSONObject jsonObject = new JSONObject();
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/selectJdOrderIdByThirdOrder";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.SELECT_JDORDER_ID_BY_THIRD_ORDER;
             String data = "token=" + token + "&thirdOrder=" + thirdOrder;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("订单反查异常");
+            return JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER;
         }
     }
 
 
     @Override
     public String selectJdOrder(String token, String jdOrderId) throws Exception {
-        JSONObject jsonObject = new JSONObject();
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/selectJdOrderIdByThirdOrder";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.SELECT_JDORDER;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("查询京东订单信息异常");
+            return JingDongConstant.ERROR_SELECT_JDORDERID;
         }
     }
 
     @Override
     public String orderTrack(String token, String jdOrderId) throws Exception {
-        JSONObject jsonObject = new JSONObject();
         try {
-            String url = jdBaseDO.getJdurl() + "/api/order/orderTrack";
+            String url = jdBaseDO.getJdurl() + JingDongConstant.ORDER_TRACK;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
-            throw new Exception("查询配送信息异常");
+            return JingDongConstant.ERROR_ORDER_TRACK;
         }
     }
 
