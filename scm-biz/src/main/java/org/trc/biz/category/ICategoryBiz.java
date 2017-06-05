@@ -46,7 +46,7 @@ public interface ICategoryBiz {
     /**
      * 保存
      */
-    void saveClassify(Category category) throws Exception;
+    void saveCategory(Category category) throws Exception;
 
 
     /**
