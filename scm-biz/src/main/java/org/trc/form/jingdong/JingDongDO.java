@@ -1,4 +1,4 @@
-package org.trc.biz.impl.jingdong.util.Model;
+package org.trc.form.jingdong;
 
 /**
  * Created by hzwyz on 2017/5/19 0019.

@@ -9,8 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
-import org.trc.biz.impl.jingdong.util.JingDongUtil;
-import org.trc.biz.impl.jingdong.util.Model.AddressDO;
+import org.trc.util.JingDongUtil;
+import org.trc.form.jingdong.AddressDO;
+import org.trc.form.jingdong.NewStockDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.domain.config.InputRecordDO;
@@ -19,12 +20,11 @@ import org.trc.enums.JingDongEnum;
 import org.trc.form.JDModel.OrderDO;
 import org.trc.form.JDModel.SellPriceDO;
 import org.trc.form.JDModel.StockDO;
-import org.trc.mapper.config.ICommonMapper;
-import org.trc.mapper.config.ITableMappingMapper;
-import org.trc.mapper.jingdong.IJingDongMapper;
-import org.trc.mapper.jingdong.InputRecordMapper;
-import org.trc.mapper.jingdong.OutputRecordMapper;
 import org.trc.service.IJDService;
+import org.trc.service.jingdong.ICommonService;
+import org.trc.service.jingdong.IJingDongInputRecordService;
+import org.trc.service.jingdong.IJingDongOutputRecordService;
+import org.trc.service.jingdong.ITableMappingService;
 import org.trc.util.AssertUtil;
 import org.trc.util.BeanToMapUtil;
 import org.trc.util.RedisUtil;
@@ -42,22 +42,19 @@ public class JingDongBizImpl implements IJingDongBiz {
     IJDService ijdService;
 
     @Autowired
-    ICommonMapper commonMapper;
+    ICommonService commonService;
 
     @Autowired
-    ITableMappingMapper iTableMappingMapper;
+    ITableMappingService tableMappingService;
 
     @Autowired
     JingDongUtil jingDongUtil;
 
     @Autowired
-    InputRecordMapper inputRecordMapper;
+    IJingDongInputRecordService inputRecordService;
 
     @Autowired
-    OutputRecordMapper outputRecordMapper;
-
-    @Autowired
-    private IJingDongMapper jingDongMapper;//商品sku
+    IJingDongOutputRecordService outputRecordService;
 
     @Override
     public String getAccessToken() throws Exception {
@@ -70,7 +67,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             } catch (RedisConnectionFailureException e) {
                 //当redis无法连接从数据库中去accessToken
                 acc.setCode("accessToken");
-                acc = commonMapper.selectOne(acc);
+                acc = commonService.selectOne(acc);
                 if (null != acc) {
                     //验证accessToken是否失效，失效则刷新，返回accessToken
                     String time = acc.getDeadTime();
@@ -78,7 +75,7 @@ public class JingDongBizImpl implements IJingDongBiz {
                         return acc.getValue();
                     }
                     acc.setCode("refreshToken");
-                    acc = commonMapper.selectOne(acc);
+                    acc = commonService.selectOne(acc);
                     return refreshToken(acc.getValue());
                 }
                 token = createToken();
@@ -165,7 +162,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             String inputParam = token + "&" + jdOrderId;
             log.info("输入参数："+inputParam);
             String orderResult = ijdService.confirmOrder(token, jdOrderId);
-            JSONObject json = JSONObject.parseObject(orderResult);
+            JSONObject json = JSONObject.parseObject(ijdService.confirmOrder(token, jdOrderId));
             Boolean state = (Boolean) json.get("success");
             String message = (String) json.get("resultMessage");
             saveRecord(inputParam, "confirmOrder(String jdOrderId)", orderResult, state);
@@ -342,12 +339,14 @@ public class JingDongBizImpl implements IJingDongBiz {
         if (!state) {
             return null;
         }
-        List<StockDO> stockState = getStockState(json);
+        String result = json.getString("result");
+        List<StockDO> stockState = JSONArray.parseArray(result,StockDO.class);
+        /*List<StockDO> stockState = getStockState(json);*/
         return stockState;
     }
 
     @Override
-    public List<StockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception {
+    public List<NewStockDO> getNewStockById(JSONArray skuNums, AddressDO area) throws Exception {
         AssertUtil.notNull(skuNums, "商品和数量不能为空");
         AssertUtil.notBlank(area.getProvince(), "province不能为空");
         AssertUtil.notBlank(area.getCity(), "city不能为空");
@@ -365,7 +364,8 @@ public class JingDongBizImpl implements IJingDongBiz {
         if (!state) {
             return null;
         }
-        List<StockDO> stockState = getNewStockState(json);
+        String result = json.getString("result");
+        List<NewStockDO> stockState = JSONArray.parseArray(result,NewStockDO.class);
         return stockState;
     }
 
@@ -375,9 +375,9 @@ public class JingDongBizImpl implements IJingDongBiz {
             AssertUtil.notBlank(pro, "province不能为空");
             AssertUtil.notBlank(ci, "city不能为空");
             AssertUtil.notBlank(cou, "county不能为空");
-            String province = iTableMappingMapper.selectByCode(pro);
-            String city = iTableMappingMapper.selectByCode(ci);
-            String county = iTableMappingMapper.selectByCode(cou);
+            String province = tableMappingService.selectByCode(pro);
+            String city = tableMappingService.selectByCode(ci);
+            String county = tableMappingService.selectByCode(cou);
             return province + "_" + city + "_" + county;
         } catch (Exception e) {
             throw new Exception("查询数据库无法找到该编码方式，请检查后重试！");
@@ -431,75 +431,21 @@ public class JingDongBizImpl implements IJingDongBiz {
     private Boolean putToken(Common acc, Map<String, Common> map) {
         try {
             Boolean result = RedisUtil.setObject(acc.getCode(), acc.getValue(), Integer.parseInt(acc.getDeadTime()));
-            Common tmp = commonMapper.selectByCode(acc.getCode());
+            Common tmp = commonService.selectByCode(acc.getCode());
             Common token = map.get("time");
             acc.setDeadTime(token.getDeadTime());
             if (null == tmp) {
-                commonMapper.insert(acc);
+                commonService.insert(acc);
                 return true;
             }
             acc.setId(tmp.getId());
-            commonMapper.updateByPrimaryKey(acc);
+            commonService.updateByPrimaryKey(acc);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    private List<StockDO> getNewStockState(JSONObject json) {
-        JSONArray result = json.getJSONArray("result");
-        Iterator<Object> it = result.iterator();
-        List<StockDO> list = new ArrayList<StockDO>();
-        while (it.hasNext()) {
-            JSONObject ob = (JSONObject) it.next();
-            StockDO model = new StockDO();
-            if (null != ob.getString("areaId")) {
-                model.setArea(ob.getString("areaId"));
-            }
-            if (null != ob.getString("stockStateDesc")) {
-                model.setDesc(ob.getString("stockStateDesc"));
-            }
-            if (null != ob.getString("skuId")) {
-                model.setSku(ob.getString("skuId"));
-            }
-            if (null != ob.getString("stockStateId")) {
-                model.setState(ob.getString("stockStateId"));
-            }
-            if (null != ob.getString("remainNum")) {
-                model.setRemainNum(ob.getString("remainNum"));
-            }
-            if (model != null) {
-                list.add(model);
-            }
-        }
-        return list;
-    }
-
-    private List<StockDO> getStockState(JSONObject json) {
-        JSONArray result = json.getJSONArray("result");
-        Iterator<Object> it = result.iterator();
-        List<StockDO> list = new ArrayList<StockDO>();
-        while (it.hasNext()) {
-            JSONObject ob = (JSONObject) it.next();
-            StockDO model = new StockDO();
-            if (null != ob.getString("area")) {
-                model.setArea(ob.getString("area"));
-            }
-            if (null != ob.getString("desc")) {
-                model.setDesc(ob.getString("desc"));
-            }
-            if (null != ob.getString("sku")) {
-                model.setSku(ob.getString("sku"));
-            }
-            if (null != ob.getString("state")) {
-                model.setState(ob.getString("state"));
-            }
-            if (model != null) {
-                list.add(model);
-            }
-        }
-        return list;
-    }
 
     private String returnValue(String code, Object data, String message, Boolean success) {
         JSONObject obj = new JSONObject();
@@ -519,8 +465,8 @@ public class JingDongBizImpl implements IJingDongBiz {
         outputRecordDO.setOutputParam("返回值：" + outputParam);
         outputRecordDO.setType("调用方法:" + type);
         outputRecordDO.setState(String.valueOf(state));
-        inputRecordMapper.insert(inputRecordDO);
-        outputRecordMapper.insert(outputRecordDO);
+        inputRecordService.insert(inputRecordDO);
+        outputRecordService.insert(outputRecordDO);
     }
 
 

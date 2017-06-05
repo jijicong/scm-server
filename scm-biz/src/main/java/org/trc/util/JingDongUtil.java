@@ -1,9 +1,9 @@
-package org.trc.biz.impl.jingdong.util;
+package org.trc.util;
 
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.impl.jingdong.util.Model.AddressDO;
+import org.trc.form.jingdong.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.service.IJDService;

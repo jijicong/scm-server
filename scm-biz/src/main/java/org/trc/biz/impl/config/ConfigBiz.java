@@ -53,9 +53,10 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
+        /*if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
+        }*/
+        example.orderBy("updateTime").desc();
         example.orderBy("isValid").desc();
         //分页查询
         return dictTypeService.pagination(example, page, queryModel);
@@ -64,15 +65,17 @@ public class ConfigBiz implements IConfigBiz {
     @Override
     public List<DictType> queryDictTypes(DictTypeForm dictTypeForm) throws Exception {
         DictType dictType = new DictType();
-        if(StringUtils.isEmpty(dictTypeForm.getIsValid())){
+        BeanUtils.copyProperties(dictTypeForm, dictType);
+        /*if(StringUtils.isEmpty(dictTypeForm.getIsValid())){
             dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }
+        }*/
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         return dictTypeService.select(dictType);
     }
 
     @Override
     public void saveDictType(DictType dictType) throws Exception{
+        dictTypeCheck(dictType);
         DictType tmp = findDictTypeByTypeNo(dictType.getCode());
         if(null != tmp){
             String msg = CommonUtil.joinStr("字典类型编码为[code=",dictType.getCode(),"]的数据已存在,请使用其他编码").toString();
@@ -91,6 +94,7 @@ public class ConfigBiz implements IConfigBiz {
     @Override
     public void updateDictType(DictType dictType) throws Exception {
         AssertUtil.notNull(dictType.getId(), "字典类型ID不能为空");
+        dictTypeCheck(dictType);
         dictType.setUpdateTime(Calendar.getInstance().getTime());
         int count = dictTypeService.updateByPrimaryKeySelective(dictType);
         if(count == 0){
@@ -99,6 +103,18 @@ public class ConfigBiz implements IConfigBiz {
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
     }
+
+    /**
+     * 字典参数校验
+     * @param dictType
+     */
+    private void dictTypeCheck(DictType dictType){
+        AssertUtil.notBlank(dictType.getCode(), "新增字典类型的字典类型编码不能为空");
+        AssertUtil.notBlank(dictType.getName(), "新增字典类型的字典名称不能为空");
+        //AssertUtil.notBlank(dictType.getIsValid(), "新增字典类型的是否启用不能为空");
+    }
+
+
 
     @Override
     public DictType findDictTypeById(Long id)throws Exception {
@@ -117,7 +133,7 @@ public class ConfigBiz implements IConfigBiz {
     public DictType findDictTypeByTypeNo(String typeCode) throws Exception{
         AssertUtil.notBlank(typeCode, "根据类型编码查询字典类型参数typeNo为空");
         DictType dictType = new DictType();
-        dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
+        //dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         dictType.setCode(typeCode);
         return dictTypeService.selectOne(dictType);
@@ -129,7 +145,7 @@ public class ConfigBiz implements IConfigBiz {
         DictType tmp = new DictType();
         tmp.setId(id);
         tmp = dictTypeService.selectOne(tmp);
-        tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
+        //tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
         tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = dictTypeService.updateByPrimaryKey(tmp);
         if(count == 0) {
@@ -148,9 +164,9 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
+        /*if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
+        }*/
         example.orderBy("typeCode").asc().orderBy("isValid").desc();
         //分页查询
         return dictService.pagination(example, page, queryModel);
@@ -160,25 +176,18 @@ public class ConfigBiz implements IConfigBiz {
     public List<Dict> queryDicts(DictForm dictForm) throws Exception{
         Dict dict = new Dict();
         BeanUtils.copyProperties(dictForm,dict);
-        if(StringUtils.isEmpty(dictForm.getIsValid())){
+        /*if(StringUtils.isEmpty(dictForm.getIsValid())){
             dict.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }
+        }*/
         dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         return dictService.select(dict);
     }
 
     @Override
     public void saveDict(Dict dict) throws Exception{
-        int count = 0;
-        if(null != dict.getId()){
-            //修改
-            dict.setUpdateTime(Calendar.getInstance().getTime());
-            count = dictService.updateByPrimaryKeySelective(dict);
-        }else{
-            //新增
-            ParamsUtil.setBaseDO(dict);
-            count = dictService.insert(dict);
-        }
+        dictCheck(dict);
+        ParamsUtil.setBaseDO(dict);
+        int count = dictService.insert(dict);
         if(count == 0){
             String msg = CommonUtil.joinStr("保存字典",JSON.toJSONString(dict),"到数据库失败").toString();
             log.error(msg);
@@ -189,6 +198,7 @@ public class ConfigBiz implements IConfigBiz {
     @Override
     public void updateDict(Dict dict) throws Exception {
         AssertUtil.notNull(dict.getId(), "字典ID不能为空");
+        dictCheck(dict);
         dict.setUpdateTime(Calendar.getInstance().getTime());
         int count = dictService.updateByPrimaryKeySelective(dict);
         if(count == 0){
@@ -196,6 +206,17 @@ public class ConfigBiz implements IConfigBiz {
             log.error(msg);
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
+    }
+
+    /**
+     * 字典参数校验
+     * @param dict
+     */
+    private void dictCheck(Dict dict){
+        AssertUtil.notBlank(dict.getTypeCode(), "新增字典的字典类型编码不能为空");
+        AssertUtil.notBlank(dict.getName(), "新增字典的字典名称不能为空");
+        AssertUtil.notBlank(dict.getValue(), "新增字典的字典值编码不能为空");
+        //AssertUtil.notBlank(dict.getIsValid(), "新增字典的是否启用不能为空");
     }
 
     @Override
@@ -216,7 +237,7 @@ public class ConfigBiz implements IConfigBiz {
     public List<Dict> findDictsByTypeNo(String typeCode) throws Exception {
         AssertUtil.notBlank(typeCode, "根据类型编码查询字典参数typeCode为空");
         Dict dict = new Dict();
-        dict.setIsValid(ZeroToNineEnum.ONE.getCode());
+        //dict.setIsValid(ZeroToNineEnum.ONE.getCode());
         dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         dict.setTypeCode(typeCode);
         return dictService.select(dict);
@@ -227,7 +248,7 @@ public class ConfigBiz implements IConfigBiz {
         AssertUtil.notNull(id, "字典ID不能为空");
         Dict tmp = new Dict();
         tmp.setId(id);
-        tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
+        //tmp.setIsValid(ZeroToNineEnum.ZERO.getCode());
         tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = dictService.updateByPrimaryKeySelective(tmp);
         if(count == 0) {
@@ -236,8 +257,10 @@ public class ConfigBiz implements IConfigBiz {
             throw new ConfigException(ExceptionEnum.CONFIG_DICT_UPDATE_EXCEPTION, msg);
         }
     }
+
     @Override
     public List<AreaTreeNode> findProvinceCity()  throws Exception {
         return locationUtilService.getTreeNodeFromLocation();
     }
+
 }

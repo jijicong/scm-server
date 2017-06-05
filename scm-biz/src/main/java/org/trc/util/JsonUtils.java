@@ -1,4 +1,4 @@
-package org.trc.biz.impl.jingdong.util;
+package org.trc.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;

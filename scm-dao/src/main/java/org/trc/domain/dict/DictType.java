@@ -3,6 +3,7 @@ package org.trc.domain.dict;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
+import org.trc.domain.util.CommonDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,7 +13,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
 @Table(name = "dict_type")
-public class DictType extends BaseDO {
+public class DictType extends CommonDO {
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

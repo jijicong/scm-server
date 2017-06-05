@@ -1,11 +1,12 @@
-package org.trc.jingdong;
+package org.trc.domain.config;
 
 import org.trc.domain.BaseDO;
 
 /**
  * Created by hzszy on 2017/5/25.
+ * 测试的model;
  */
-public class JingDongSkuList extends BaseDO{
+public class JingDongSku extends BaseDO{
     private Long id;
     private String name;
     private String sku;
