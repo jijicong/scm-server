@@ -158,7 +158,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.confirmOrder(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "confirmOrder(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "confirmOrder(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -177,7 +180,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.cancel(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "cancel(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "cancel(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -195,7 +201,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.doPay(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "doPay(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "doPay(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), orderResult.getResult(), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -213,7 +222,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.selectJdOrderIdByThirdOrder(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "selectJdOrderIdByThirdOrder(String jdOrderId)", (String)orderResult.getResult(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "selectJdOrderIdByThirdOrder(String jdOrderId)", (String)orderResult.getResult(), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), (String)orderResult.getResult(), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -231,7 +243,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.selectJdOrder(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "selectJdOrder(String jdOrderId)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "selectJdOrder(String jdOrderId)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult.getResult()), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -249,7 +264,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             String inputParam = token + "&" + jdOrderId;
             log.info("输入参数："+inputParam);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "orderTrack(String jdOrderId)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "orderTrack(String jdOrderId)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult.getResult()), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -267,7 +285,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO price = ijdService.getSellPrice(token, sku);
             log.info("调用结果："+JSONObject.toJSONString(price));
-            saveRecord(inputParam, "getSellPrice(String sku)", JSONArray.toJSONString(price.getResult()), price.getSuccess());
+            Boolean state = saveRecord(inputParam, "getSellPrice(String sku)", JSONArray.toJSONString(price.getResult()), price.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             if (!price.getSuccess()) {
                 return null;
             }
@@ -293,7 +314,10 @@ public class JingDongBizImpl implements IJingDongBiz {
         log.info("输入参数："+inputParam);
         ReturnTypeDO stock = ijdService.getStockById(token, sku, address);
         log.info("调用结果："+JSONObject.toJSONString(stock));
-        saveRecord(inputParam, "getStockById(String sku, AddressDO area)", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
+        Boolean state = saveRecord(inputParam, "getStockById(String sku, AddressDO area)", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
+        if (!state){
+            log.info("添加记录到数据库失败！");
+        }
         if (!stock.getSuccess()) {
             return null;
         }
@@ -314,7 +338,10 @@ public class JingDongBizImpl implements IJingDongBiz {
         log.info("输入参数："+inputParam);
         ReturnTypeDO stock = ijdService.getNewStockById(token, skuNums.toJSONString(), address);
         log.info("调用结果："+JSONObject.toJSONString(stock));
-        saveRecord(inputParam, "getNewStockById(JSONArray skuNums, AddressDO area)", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
+        Boolean state = saveRecord(inputParam, "getNewStockById(JSONArray skuNums, AddressDO area)", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
+        if (!state){
+            log.info("添加记录到数据库失败！");
+        }
         if (!stock.getSuccess()) {
             return null;
         }
