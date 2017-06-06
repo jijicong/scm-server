@@ -100,14 +100,12 @@ public class ChannelBiz implements IChannelBiz {
         channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
         channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
-        try{
-            channelService.insert(channel);
-        }catch (Exception e){
-            String msg = CommonUtil.joinStr("渠道保存,数据库操作失败").toString();
+        int count = channelService.insert(channel);
+        if(count == 0){
+            String msg = String.format("保存渠道%s到数据库失败", JSON.toJSONString(channel));
             LOGGER.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-
     }
 
 

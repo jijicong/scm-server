@@ -539,19 +539,6 @@ public class GoodsBiz implements IGoodsBiz {
      * @param propertyValueId
      * @return
      */
-    /*private String[] getPropertyIdAndPicture(ItemSalesPropery itemSalesPropery, Long propertyValueId){
-        JSONArray categoryArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
-        String[] _result = new String[2];
-        for(Object obj : categoryArray){
-            JSONObject jbo = (JSONObject) obj;
-            if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
-                _result[0] = jbo.getString("propertyId");
-                _result[1] = jbo.getString("picture");
-                break;
-            }
-        }
-        return _result;
-    }*/
     private String[] getPropertyIdAndPicture(JSONArray itemSalesArray, Long propertyValueId){
         String[] _result = new String[2];
         for(Object obj : itemSalesArray){
