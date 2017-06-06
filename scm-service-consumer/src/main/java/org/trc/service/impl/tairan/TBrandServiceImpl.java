@@ -3,6 +3,7 @@ package org.trc.service.impl.tairan;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -23,11 +24,19 @@ import org.trc.util.MD5;
 @Service("tBrandService")
 public class TBrandServiceImpl implements TBrandService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TBrandServiceImpl.class);
+    private Logger logger = LoggerFactory.getLogger(TBrandServiceImpl.class);
 
-    private static final String or = "|";
+    @Value("${tairan.key}")
+    private String tairanKey;
 
-    private static final String underLine = "_";
+    private final static String OR = "|";
+
+    private final static String UNDER_LINE = "_";
+
+    public void setTairanKey(String tairanKey) {
+        this.tairanKey = tairanKey;
+        System.out.println(tairanKey);
+    }
 
     @Transactional
     @Override
@@ -40,7 +49,6 @@ public class TBrandServiceImpl implements TBrandService {
         Assert.notNull(brand.getName(), "品牌名称不能为空");
         Assert.notNull(brand.getWebUrl(), "品牌网址不能为空");
 
-
         BrandToTrc brandToTrc = new BrandToTrc();
         brandToTrc.setAlise(brand.getAlise());
         brandToTrc.setBrandCode(brand.getBrandCode());
@@ -50,11 +58,11 @@ public class TBrandServiceImpl implements TBrandService {
         brandToTrc.setWebUrl(brand.getWebUrl());
 
         //传值处理
-        String noticeNum = GuidUtil.getNextUid(action + underLine);
+        String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(CommomUtils.getKey()).append(or).append(action).append(or).append(noticeNum).append(or).append(operateTime).append(or).
-                append(brandToTrc.getAlise()).append(or).append(brandToTrc.getBrandCode()).append(or).append(brandToTrc.getIsValid()).append(or).
-                append(brandToTrc.getLogo()).append(or).append(brandToTrc.getName()).append(or).append(brandToTrc.getWebUrl());
+        stringBuilder.append(tairanKey).append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+                append(brandToTrc.getAlise()).append(OR).append(brandToTrc.getBrandCode()).append(OR).append(brandToTrc.getIsValid()).append(OR).
+                append(brandToTrc.getLogo()).append(OR).append(brandToTrc.getName()).append(OR).append(brandToTrc.getWebUrl());
 
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
@@ -71,7 +79,7 @@ public class TBrandServiceImpl implements TBrandService {
 
     public static void main(String[] args) throws Exception {
         String action = "delete";
-        String noticeNum = GuidUtil.getNextUid(action + underLine);
+        String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
         BrandToTrc brandToTrc = new BrandToTrc();
         brandToTrc.setWebUrl("wqeqeqr");
         brandToTrc.setAlise("qwqwedqdeqd");
@@ -81,9 +89,9 @@ public class TBrandServiceImpl implements TBrandService {
         //model中字段以字典序排序
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(CommomUtils.getKey()).append(or).append(action).append(or).append(operateTime).append(or).append(noticeNum).append(or).
-                append(brandToTrc.getAlise()).append(or).append(brandToTrc.getBrandCode()).append(or).append(brandToTrc.getIsValid()).append(or).
-                append(brandToTrc.getLogo()).append(or).append(brandToTrc.getName()).append(or).append(brandToTrc.getWebUrl());
+        stringBuilder.append("gyl-tairan").append(OR).append(action).append(OR).append(operateTime).append(OR).append(noticeNum).append(OR).
+                append(brandToTrc.getAlise()).append(OR).append(brandToTrc.getBrandCode()).append(OR).append(brandToTrc.getIsValid()).append(OR).
+                append(brandToTrc.getLogo()).append(OR).append(brandToTrc.getName()).append(OR).append(brandToTrc.getWebUrl());
         //MD5加密
         System.out.println(stringBuilder.toString());
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
@@ -95,6 +103,6 @@ public class TBrandServiceImpl implements TBrandService {
         params.put("brandToTrc", brandToTrc);
         System.out.println(params.toJSONString());
         String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/example/brand", params.toJSONString(), 10000);
-        logger.info(result);
+        System.out.println(result);
     }
 }
