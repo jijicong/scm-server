@@ -17,7 +17,7 @@ public interface ISupplierBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Supplier> SupplierPage(SupplierForm form, Pagenation<Supplier> page) throws Exception;
+    Pagenation<Supplier> supplierPage(SupplierForm form, Pagenation<Supplier> page) throws Exception;
 
     /**
      * 查询供应商列表

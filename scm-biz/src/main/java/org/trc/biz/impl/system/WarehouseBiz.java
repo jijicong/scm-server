@@ -16,6 +16,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.util.ISerialUtilService;
@@ -34,7 +35,7 @@ import java.util.List;
 @Service("warehouseBiz")
 public class WarehouseBiz implements IWarehouseBiz {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
 
     private final static String  SERIALNAME="CK";
 
@@ -87,44 +88,16 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
         ParamsUtil.setBaseDO(warehouse);
-
-        int count = 0;
-        String code = serialUtilService.generateCode(LENGTH,SERIALNAME);
-        warehouse.setCode(code);
-        count = warehouseService.insert(warehouse);
-        if (count<1){
+        warehouse.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
+        try {
+            warehouseService.insert(warehouse);
+        }catch (Exception e){
             String msg = CommonUtil.joinStr("仓库保存,数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
-        /*try{
-            number = saveWarehouseAssist(warehouse,SERIALNAME);
-        }catch (DuplicateKeyException e){//唯一性索引抛出的异常
-            LOGGER.error(e.getMessage());
-            try{
-                number = saveWarehouseAssist(warehouse,SERIALNAME);
-            }catch (DuplicateKeyException ex){
-                String msg = CommonUtil.joinStr("保存仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
-                LOGGER.error(msg);
-                throw new ConfigException(ExceptionEnum.DATABASE_DATA_VERSION_EXCEPTION, msg);
-            }
-        }*/
-
-        /*int assess= serialUtilService.updateSerialByName(SERIALNAME,number);//修改流水的长度
-        if (assess < 1) {
-            String msg = CommonUtil.joinStr("保存流水", JSON.toJSONString(warehouse), "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
-        }*/
     }
-    /*@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private int saveWarehouseAssist(Warehouse warehouse,String name) throws Exception{
-        int number = serialUtilService.selectNumber(SERIALNAME);//获得将要使用的流水号
-        String code = SerialUtil.getMoveOrderNo(LENGTH,number,SERIALNAME);//获得需要的code编码
-        warehouse.setCode(code);//仓库的流水号为CK00000
-        int count = warehouseService.insert(warehouse);
-        return number;
-    }*/
+
     @Override
     public Warehouse findWarehouseByName(String name) throws Exception {
 
@@ -155,7 +128,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -169,7 +142,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouse = warehouseService.selectOne(warehouse);
         if (null == warehouse) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询仓库为空").toString();
-            throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION, msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION, msg);
         }
         return warehouse;
 
@@ -184,7 +157,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
     }

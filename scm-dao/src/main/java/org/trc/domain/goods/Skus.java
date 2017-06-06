@@ -14,6 +14,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class Skus extends ScmDO {
@@ -40,6 +41,14 @@ public class Skus extends ScmDO {
     private String barCode;
     @FormParam("marketPrice")
     private Long marketPrice;
+    @FormParam("weight")
+    private Long weight;
+    @FormParam("marketPrice2")
+    @Transient
+    private BigDecimal marketPrice2;
+    @FormParam("weight2")
+    @Transient
+    private BigDecimal weight2;
     @FormParam("predictChannelPrice")
     private Long predictChannelPrice;
     @FormParam("picture")
@@ -70,6 +79,12 @@ public class Skus extends ScmDO {
     @Transient
     @NotEmpty
     private String skusInfo;
+
+    /**
+     * 采购属性组合名称
+     */
+    @Transient
+    private String propertyCombineName;
 
     public String getSkuCode() {
         return skuCode;
@@ -221,5 +236,37 @@ public class Skus extends ScmDO {
 
     public void setIsValid(String isValid) {
         this.isValid = isValid;
+    }
+
+    public Long getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Long weight) {
+        this.weight = weight;
+    }
+
+    public BigDecimal getMarketPrice2() {
+        return marketPrice2;
+    }
+
+    public void setMarketPrice2(BigDecimal marketPrice2) {
+        this.marketPrice2 = marketPrice2;
+    }
+
+    public BigDecimal getWeight2() {
+        return weight2;
+    }
+
+    public void setWeight2(BigDecimal weight2) {
+        this.weight2 = weight2;
+    }
+
+    public String getPropertyCombineName() {
+        return propertyCombineName;
+    }
+
+    public void setPropertyCombineName(String propertyCombineName) {
+        this.propertyCombineName = propertyCombineName;
     }
 }

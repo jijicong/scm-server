@@ -20,29 +20,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * @author 吴东雄
  * @ClassName: BeanToMapUtil
  * @Description: TODO
- * @author 吴东雄
- * @date 2015年11月18日 下午3:00:41 
- *
+ * @date 2015年11月18日 下午3:00:41
  */
 public class BeanToMapUtil {
 
-    private final static Logger log = LoggerFactory.getLogger(BeanToMapUtil.class);
+    private static Logger  log = LoggerFactory.getLogger(BeanToMapUtil.class);
 
     /**
-     * 将一个 Map 对象转化为一个 JavaBean 
-     * @param type 要转化的类型 
-     * @param map 包含属性值的 map 
-     * @return 转化出来的 JavaBean 对象 
-     * @throws IntrospectionException
-     *             如果分析类属性失败 
-     * @throws IllegalAccessException
-     *             如果实例化 JavaBean 失败 
-     * @throws InstantiationException
-     *             如果实例化 JavaBean 失败 
-     * @throws InvocationTargetException
-     *             如果调用属性的 setter 方法失败 
+     * 将一个 Map 对象转化为一个 JavaBean
+     *
+     * @param type 要转化的类型
+     * @param map  包含属性值的 map
+     * @return 转化出来的 JavaBean 对象
+     * @throws IntrospectionException    如果分析类属性失败
+     * @throws IllegalAccessException    如果实例化 JavaBean 失败
+     * @throws InstantiationException    如果实例化 JavaBean 失败
+     * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
     public static Object convertMapToBean(Class<?> type, Map<String, Object> map) throws Exception {
         Object obj = new Object();
@@ -99,12 +95,13 @@ public class BeanToMapUtil {
     }
 
     /**
-     * 将一个 JavaBean 对象转化为一个  Map 
-     * @param bean 要转化的JavaBean 对象 
-     * @return 转化出来的  Map 对象 
-     * @throws IntrospectionException 如果分析类属性失败 
-     * @throws IllegalAccessException 如果实例化 JavaBean 失败 
-     * @throws InvocationTargetException 如果调用属性的 setter 方法失败 
+     * 将一个 JavaBean 对象转化为一个  Map
+     *
+     * @param bean 要转化的JavaBean 对象
+     * @return 转化出来的  Map 对象
+     * @throws IntrospectionException    如果分析类属性失败
+     * @throws IllegalAccessException    如果实例化 JavaBean 失败
+     * @throws InvocationTargetException 如果调用属性的 setter 方法失败
      */
     public static Map<String, Object> convertBeanToMap(Object bean) {
         Map<String, Object> returnMap = new HashMap<String, Object>();

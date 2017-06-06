@@ -15,9 +15,11 @@ public class OutputRecordDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     //输入参数
-    private String inputParam;
+    private String outputParam;
     //类型
     private String type;
+    //状态
+    private String state;
     //创建时间
     private String createDate;
     //更新时间
@@ -31,12 +33,12 @@ public class OutputRecordDO {
         this.id = id;
     }
 
-    public String getInputParam() {
-        return inputParam;
+    public String getOutputParam() {
+        return outputParam;
     }
 
-    public void setInputParam(String inputParam) {
-        this.inputParam = inputParam;
+    public void setOutputParam(String outputParam) {
+        this.outputParam = outputParam;
     }
 
     public String getType() {
@@ -61,5 +63,13 @@ public class OutputRecordDO {
 
     public void setUpdateDate(String updateDate) {
         this.updateDate = updateDate;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

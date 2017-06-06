@@ -1,6 +1,7 @@
 package org.trc.biz.category;
 
 import org.trc.domain.category.Category;
+import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.form.category.CategoryBrandForm;
@@ -23,7 +24,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Category> CategoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception;
+    Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception;
 
     /**
      * 获取分类树节点
@@ -45,7 +46,7 @@ public interface ICategoryBiz {
     /**
      * 保存
      */
-    void saveClassify(Category category) throws Exception;
+    void saveCategory(Category category) throws Exception;
 
 
     /**
@@ -88,6 +89,20 @@ public interface ICategoryBiz {
     List<String> queryCategoryNamePath(Long id) throws Exception;
 
     /**
+     * 根据categoryId查询CategoryBrand
+     * @param categoryId
+     * @return
+     */
+    List<CategoryBrand> queryBrands(Long categoryId);
+
+    /**
+     * 根据categoryId查询CategoryProperty
+     * @param categoryId
+     * @return
+     */
+    List<CategoryProperty> queryProperties(Long categoryId);
+
+    /**
      * 关联分类与品牌
      *
      * @param categoryId
@@ -115,4 +130,8 @@ public interface ICategoryBiz {
      * 更新分类属性
      */
     void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception;
+
+    /**
+     *
+     */
 }

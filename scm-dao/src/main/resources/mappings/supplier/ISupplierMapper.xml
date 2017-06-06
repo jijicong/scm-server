@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.supplier.ISupplierMapper">
+    <!--根据供应商的编码查询供应商-->
+    <select id="selectSupplierNames" resultType="org.trc.domain.supplier.Supplier">
+        SELECT supplier_code AS supplierCode,supplier_name AS supplierName from supplier WHERE supplier_code IN
+        <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+</mapper>

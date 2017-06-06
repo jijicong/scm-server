@@ -4,6 +4,7 @@ import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.form.purchase.ItemForm;
+import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
@@ -14,6 +15,8 @@ import java.util.List;
  * Created by sone on 2017/5/25.
  */
 public interface IPurchaseOrderBiz {
+
+    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page) throws Exception;
     /**
      * 根据渠道用户的id查询对应的供应商
      * @param userId
@@ -30,5 +33,8 @@ public interface IPurchaseOrderBiz {
      */
     Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page) throws Exception;
 
-    void savePurchaseOrder(PurchaseOrder purchaseOrder, String userId) throws Exception;
+    void savePurchaseOrder(PurchaseOrder purchaseOrder, String userId ,String status) throws Exception;
+
+
+
 }

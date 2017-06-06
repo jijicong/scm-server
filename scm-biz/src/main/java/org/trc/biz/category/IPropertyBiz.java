@@ -66,10 +66,6 @@ public interface IPropertyBiz {
      */
     void updatePropertyStatus(Property property) throws Exception;
 
-    /**
-     * 查询所有属性
-     */
-    List<Property> queryAllProperty() throws Exception;
 
     /**
      * 根据多个属性ID批量查询属性值
@@ -79,4 +75,9 @@ public interface IPropertyBiz {
      * @throws Exception
      */
     List<PropertyValue> queryPropertyValueByPropertyIds(String propertyIds) throws Exception;
+
+    /**
+     * 根据输入文本查找属性或者查询所有
+     */
+    List<Property> searchProperty(String queryString) throws Exception;
 }

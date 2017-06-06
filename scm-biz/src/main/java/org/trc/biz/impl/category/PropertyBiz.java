@@ -30,7 +30,7 @@ import java.util.*;
 @Service("propertyBiz")
 public class PropertyBiz implements IPropertyBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(PropertyBiz.class);
+    private Logger  log = LoggerFactory.getLogger(PropertyBiz.class);
 
     //多个属性ID分隔符
     public final static String MULTI_PRRPERTY_ID_SPLIT = ",";
@@ -203,18 +203,6 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
-    public List<Property> queryAllProperty() throws Exception {
-        Example example = new Example(Property.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("isValid", 1);
-        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-        example.orderBy("isValid").desc();
-        example.orderBy("sort").asc();
-        return propertyService.selectByExample(example);
-
-    }
-
-    @Override
     public List<PropertyValue> queryPropertyValueByPropertyIds(String propertyIds) throws Exception {
         AssertUtil.notBlank(propertyIds, "根据属性ID批量查询属性值参数属性ID不能为空");
         String[] tmpIds = propertyIds.split(MULTI_PRRPERTY_ID_SPLIT);
@@ -228,6 +216,26 @@ public class PropertyBiz implements IPropertyBiz {
         AssertUtil.notEmpty(propertyValues, String.format("根据多个属性ID[%s]批量查询属性值为空", propertyIds));
         setPicPropertyUrl(propertyValues);
         return propertyValues;
+    }
+
+    /**
+     * 根据输入文本查找属性或者查询所有
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<Property> searchProperty(String queryString) throws Exception {
+        Example example = new Example(Property.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", 1);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        if (!StringUtils.isBlank(queryString)){
+            criteria.andLike("name", "%" + queryString + "%");
+        }
+        example.orderBy("isValid").desc();
+        example.orderBy("sort").asc();
+        return propertyService.selectByExample(example);
     }
 
     /**

@@ -8,11 +8,19 @@
         (SELECT pg.`code` from purchase_group pg WHERE id=#{id})
         ) AND is_valid='0'
     </select>
-
+    <!--查询用户信息-->
     <select id="selectPurchaseGroupPersons" resultType="org.trc.domain.impower.UserAccreditInfo">
         SELECT user_id as userId , `name` from user_accredit_info WHERE user_id in
         (
         SELECT user_id FROM purchase_group_user_relation WHERE purchase_group_code=#{purchaseGroupCode}
         )
     </select>
+    <!--查询分页对应的采购组信息-->
+    <select id="selectPurchaseGroupNames" resultType="org.trc.domain.purchase.PurchaseGroup">
+        SELECT `code`,`name` from purchase_group WHERE code IN
+        <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
 </mapper>

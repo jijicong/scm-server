@@ -27,4 +27,9 @@ public class PurchaseGroupService extends BaseService<PurchaseGroup,Long> implem
     public List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode) {
         return ipurchaseGroupMapper.selectPurchaseGroupPersons(purchaseGroupCode);
     }
+
+    @Override
+    public List<PurchaseGroup> selectPurchaseGroupNames(String[] strs) {
+        return ipurchaseGroupMapper.selectPurchaseGroupNames(strs);
+    }
 }

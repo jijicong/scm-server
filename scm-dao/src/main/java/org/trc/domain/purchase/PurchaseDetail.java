@@ -7,6 +7,7 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -36,14 +37,16 @@ public class PurchaseDetail extends BaseDO{
     private String skuCode;
     @FormParam("brandId")
     private Long brandId;
+    @Transient
     @FormParam("brandName")
     @Length(max = 256, message = "商品的品牌名称字母和数字不能超过256个,汉字不能超过128个")
     private String brandName;
     @FormParam("categoryId")
     private String  categoryId;
-    @FormParam("categoryName")
+    @Transient
+    @FormParam("allCategoryName")
     @Length(max = 128, message = "商品的所属分类的名称字母和数字不能超过128个,汉字不能超过64个")
-    private String  categoryName;
+    private String  allCategoryName;
     @FormParam("skuCode")
     @Length(max = 64, message = "商品的所有分类字母和数字不能超过64个,汉字不能超过32个")
     private String allCategory;//所有分类
@@ -118,12 +121,12 @@ public class PurchaseDetail extends BaseDO{
         this.brandName = brandName;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getAllCategoryName() {
+        return allCategoryName;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setAllCategoryName(String allCategoryName) {
+        this.allCategoryName = allCategoryName;
     }
 
     public String getAllCategory() {

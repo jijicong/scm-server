@@ -3,16 +3,18 @@ package org.trc.domain.dict;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
+import org.trc.domain.util.CommonDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
 //@Table(name = "dict")
 //@NameStyle(Style.normal)
-public class Dict extends BaseDO {
+public class Dict extends CommonDO {
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +31,9 @@ public class Dict extends BaseDO {
     @NotEmpty
     @Length(max = 64, message = "字典值字母和数字不能超过64个,汉字不能超过32个")
     private String value;
+
+    @Transient
+    private String typeName;//字典类型名称
 
     public Long getId() {
         return id;
@@ -62,4 +67,11 @@ public class Dict extends BaseDO {
         this.value = value == null ? null : value.trim();
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
 }

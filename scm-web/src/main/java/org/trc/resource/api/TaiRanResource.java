@@ -4,17 +4,19 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.impl.category.BrandBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
-import org.trc.domain.category.Category;
-import org.trc.domain.category.Property;
+import org.trc.domain.category.*;
 import org.trc.form.category.BrandForm;
+import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -26,10 +28,9 @@ import java.util.List;
  * 对泰然城开放接口
  * Created by hzdzf on 2017/5/26.
  */
+@Component
 @Path(SupplyConstants.TaiRan.ROOT)
 public class TaiRanResource {
-
-    private static final Logger logger = LoggerFactory.getLogger(TaiRanResource.class);
 
     @Resource
     private BrandBiz brandBiz;
@@ -40,15 +41,21 @@ public class TaiRanResource {
     @Resource
     private ICategoryBiz categoryBiz;
 
+    /**
+     * 分页查询品牌
+     *
+     * @param form
+     * @param page
+     * @return
+     */
     @GET
     @Path(SupplyConstants.TaiRan.BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public String queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) {
+    public AppResult<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) {
 
+        AppResult<Pagenation<Brand>> appResult = new AppResult<>();
         try {
-            logger.info("查询条件：   " + JSON.toJSONString(form));
             page = brandBiz.brandList(form, page);
-            JSONObject jsonObject = new JSONObject();
             List<Brand> list = new ArrayList<Brand>();
             for (Brand brand : page.getResult()) {
                 Brand brand1 = new Brand();
@@ -61,28 +68,27 @@ public class TaiRanResource {
                 brand1.setSort(brand.getSort());
                 list.add(brand1);
             }
-            jsonObject.put("pageNo", page.getPageNo());
-            jsonObject.put("pageSize", page.getPageSize());
-            jsonObject.put("totalCount", page.getTotalCount());
-            jsonObject.put("list", list);
-            return jsonObject.toJSONString();
+            page.setResult(list);
+            return ResultUtil.createSucssAppResult("查询品牌列表报错", page);
         } catch (Exception e) {
-            logger.error("查询品牌列表报错---" + e.getMessage());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(SupplyConstants.Comment.STATUS, 0);
-            jsonObject.put(SupplyConstants.Comment.MSG, "查询品牌列表报错");
-            return jsonObject.toJSONString();
+            return ResultUtil.createFailAppResult("查询品牌列表报错");
         }
     }
 
+    /**
+     * 分页查询属性
+     *
+     * @param form
+     * @param page
+     * @return
+     */
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public String queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) {
+    public AppResult<Pagenation<Property>> queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) {
+        AppResult<Pagenation<Property>> appResult = new AppResult<>();
         try {
-            logger.info("查询条件：   " + JSON.toJSONString(form));
             page = propertyBiz.propertyPage(form, page);
-            JSONObject jsonObject = new JSONObject();
             List<Property> list = new ArrayList<Property>();
             for (Property property : page.getResult()) {
                 Property property1 = new Property();
@@ -94,28 +100,27 @@ public class TaiRanResource {
                 property1.setUpdateTime(property.getUpdateTime());
                 list.add(property1);
             }
-            jsonObject.put("pageNo", page.getPageNo());
-            jsonObject.put("pageSize", page.getPageSize());
-            jsonObject.put("totalCount", page.getTotalCount());
-            jsonObject.put("list", list);
-            return jsonObject.toJSONString();
+            page.setResult(list);
+            return ResultUtil.createSucssAppResult("查询属性列表成功", page);
         } catch (Exception e) {
-            logger.error("查询属性列表报错---" + e.getMessage());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(SupplyConstants.Comment.STATUS, 0);
-            jsonObject.put(SupplyConstants.Comment.MSG, "查询属性列表报错");
-            return jsonObject.toJSONString();
+            return ResultUtil.createFailAppResult("查询属性列表报错");
         }
     }
 
+    /**
+     * 分页查询分类
+     *
+     * @param categoryForm
+     * @param page
+     * @return
+     */
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public String queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) {
+    public AppResult<Pagenation<Category>> queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) {
+        AppResult<Pagenation<Category>> appResult = new AppResult<>();
         try {
-            logger.info("查询条件：   " + JSON.toJSONString(categoryForm));
-            page = categoryBiz.CategoryPage(categoryForm, page);
-            JSONObject jsonObject = new JSONObject();
+            page = categoryBiz.categoryPage(categoryForm, page);
             List<Category> list = new ArrayList<Category>();
             for (Category category : page.getResult()) {
                 Category category1 = new Category();
@@ -130,17 +135,44 @@ public class TaiRanResource {
                 category1.setLevel(category.getLevel());
                 list.add(category1);
             }
-            jsonObject.put("pageNo", page.getPageNo());
-            jsonObject.put("pageSize", page.getPageSize());
-            jsonObject.put("totalCount", page.getTotalCount());
-            jsonObject.put("list", list);
-            return jsonObject.toJSONString();
+            page.setResult(list);
+            return ResultUtil.createSucssAppResult("查询分类列表成功", page);
         } catch (Exception e) {
-            logger.error("查询分类列表报错---" + e.getMessage());
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(SupplyConstants.Comment.STATUS, 0);
-            jsonObject.put(SupplyConstants.Comment.MSG, "查询分类列表报错");
-            return jsonObject.toJSONString();
+            return ResultUtil.createFailAppResult("查询分类列表报错");
+        }
+    }
+
+    /**
+     * 查询分类品牌列表
+     *
+     * @param categoryId
+     * @return
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.CATEGORY_BRAND_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId) {
+        try {
+            return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryBrands(categoryId));
+        } catch (Exception e) {
+            return ResultUtil.createFailAppResult("查询分类品牌列表报错");
+        }
+    }
+
+    /**
+     * 查询分类属性列表
+     *
+     * @param categoryId
+     * @return
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.CATEGORY_PROPERTY_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId) {
+        try {
+            return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryProperties(categoryId));
+        } catch (Exception e) {
+            return ResultUtil.createFailAppResult("查询分类品牌列表报错");
         }
     }
 }

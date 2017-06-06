@@ -73,8 +73,8 @@ public class PropertyResource {
     @GET
     @Path(SupplyConstants.Category.Property.PROPERTY_ALL)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Property>> propertyAll() throws Exception {
-        return ResultUtil.createSucssAppResult("查询所有属性成功",propertyBiz.queryAllProperty());
+    public AppResult<List<Property>> propertySearch(@QueryParam("queryString") String queryString) throws Exception {
+        return ResultUtil.createSucssAppResult("查询所有属性成功",propertyBiz.searchProperty(queryString));
     }
 
     @GET

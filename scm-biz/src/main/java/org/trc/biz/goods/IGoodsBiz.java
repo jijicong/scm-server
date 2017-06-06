@@ -6,6 +6,7 @@ import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Items> ItemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
+    Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
 
     /**
      * 查询商品列表
@@ -43,18 +44,28 @@ public interface IGoodsBiz {
     /**
      * 修改商品
      * @param items
-     * @param
-     * @return
+     * @param skus
+     * @param itemNaturePropery
+     * @param itemSalesPropery
      * @throws Exception
      */
-    void updateItems(Items items) throws Exception;
+    void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception;
 
     /**
-     * 启用/停用
+     * 商品启用/停用
      * @param isValid
      * @throws Exception
      */
     void updateValid(Long id, String isValid) throws Exception;
+
+    /**
+     * SKU启用/停用
+     * @param id
+     * @param spuCode
+     * @param isValid
+     * @throws Exception
+     */
+    void updateSkusValid(Long id, String spuCode, String isValid) throws Exception;
 
     /**
      * 根据supCode查询商品信息

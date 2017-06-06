@@ -37,7 +37,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
         DictType dictType = new DictType();
         dictType.setCode("testWdx");
         dictType.setName("testWdx");
-        dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
+        //dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         dictType.setDescription("testWdx");
         dictType.setCreateTime(new Date());
@@ -51,7 +51,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
         dict.setTypeCode("testWdx");
         dict.setName("testWdx");
         dict.setValue("testWdx");
-        dict.setIsValid(ZeroToNineEnum.ONE.getCode());
+        //dict.setIsValid(ZeroToNineEnum.ONE.getCode());
         dict.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         dict.setCreateTime(new Date());
         dict.setUpdateTime(new Date());
@@ -77,7 +77,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
              */
             DictTypeForm dictTypeForm = new DictTypeForm();
             dictTypeForm.setName("testWdx");
-            dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
+            //dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
             Pagenation<DictType> page = new Pagenation<DictType>();
             page = configBiz.dictTypePage(dictTypeForm, page);
             Assert.assertEquals(1, page.getTotalCount());

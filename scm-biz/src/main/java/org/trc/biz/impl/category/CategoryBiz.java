@@ -14,7 +14,7 @@ import org.trc.domain.category.*;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.ConfigException;
+import org.trc.exception.CategoryException;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TableDate;
@@ -32,7 +32,7 @@ import java.util.*;
 @Service("categoryBiz")
 public class CategoryBiz implements ICategoryBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(CategoryBiz.class);
+    private Logger  log = LoggerFactory.getLogger(CategoryBiz.class);
 
     @Autowired
     private ICategoryService categoryService;
@@ -51,7 +51,7 @@ public class CategoryBiz implements ICategoryBiz {
 
 
     @Override
-    public Pagenation<Category> CategoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
+    public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(queryModel.getName())) {
@@ -135,7 +135,7 @@ public class CategoryBiz implements ICategoryBiz {
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -147,17 +147,15 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void saveClassify(Category category) throws Exception {
+    public void saveCategory(Category category) throws Exception {
 
-        try {
-            ParamsUtil.setBaseDO(category);
-            categoryService.insert(category);
-        } catch (Exception e) {
-            String msg = CommonUtil.joinStr("保存分类", JSON.toJSONString(category), "到数据库失败").toString();
+        ParamsUtil.setBaseDO(category);
+        int count = categoryService.insert(category);
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("增加分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
-
     }
 
 
@@ -171,7 +169,6 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public int checkCategoryCode(Long id, String categoryCode) throws Exception {
 
-//        AssertUtil.notBlank(categoryCode, "根据分类编码查询分类的参数categoryCode为空");
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", id);
@@ -210,20 +207,6 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Override
     public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
-        /*if(StringUtils.isBlank(categoryBrandForm.getBrandId()) && StringUtils.isBlank(categoryBrandForm.getCategoryId())){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"查询分类相关品牌分类ID和品牌ID不能同时为空");
-        }
-        Example example = new Example(CategoryBrand.class);
-        Example.Criteria criteria = example.createCriteria();
-        if(StringUtils.isNotBlank(categoryBrandForm.getCategoryId())){
-            String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
-            criteria.andIn("categoryId", Arrays.asList(categoryIds));
-        }
-        if(StringUtils.isNotBlank(categoryBrandForm.getBrandId())){
-            String[] brandIds = categoryBrandForm.getBrandId().split(SupplyConstants.Symbol.COMMA);
-            criteria.andIn("brandId", Arrays.asList(brandIds));
-        }
-        return categoryBrandService.selectByExample(example);*/
         AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
         String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
         List<Long> categoryList = new ArrayList<Long>();
@@ -272,7 +255,7 @@ public class CategoryBiz implements ICategoryBiz {
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -301,6 +284,20 @@ public class CategoryBiz implements ICategoryBiz {
         categoryLevel1 = categoryService.selectOne(categoryLevel1);
         categoryName.add(categoryLevel1.getName());
         return categoryName;
+    }
+
+    @Override
+    public List<CategoryBrand> queryBrands(Long categoryId) {
+        CategoryBrand categoryBrand = new CategoryBrand();
+        categoryBrand.setCategoryId(categoryId);
+        return categoryBrandService.select(categoryBrand);
+    }
+
+    @Override
+    public List<CategoryProperty> queryProperties(Long categoryId) {
+        CategoryProperty categoryProperty = new CategoryProperty();
+        categoryProperty.setCategoryId(categoryId);
+        return categoryPropertyService.select(categoryProperty);
     }
 
     /**
@@ -358,10 +355,10 @@ public class CategoryBiz implements ICategoryBiz {
             propertyIds.add(categoryProperty.getPropertyId());
         }
         List<Property> propertyList = new ArrayList<Property>();
-        if(propertyIds.size() > 0){
+        if (propertyIds.size() > 0) {
             propertyList = propertyService.queryPropertyList(propertyIds);
         }
-        if(propertyList.size() > 0){
+        if (propertyList.size() > 0) {
             for (CategoryProperty c : categoryProperties) {
                 for (Property p : propertyList) {
                     if (StringUtils.equals(c.getPropertyId().toString(), p.getId().toString())) {

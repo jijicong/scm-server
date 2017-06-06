@@ -40,7 +40,7 @@ import java.util.*;
 @Service("userAccreditInfoBiz")
 public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
 
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;
@@ -63,7 +63,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public Pagenation<UserAddPageDate> UserAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception {
+    public Pagenation<UserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<UserAddPageDate> page) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("name", form.getName());

@@ -18,14 +18,14 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
      * @return
      * @throws Exception
      */
-    List<UserAddPageDate>  selectUserAddPageList(Long[] userIds) throws Exception;
+    List<UserAddPageDate>  selectUserAddPageList(Long[] userIds);
 
     /**
      * 查询具有角色采购角色的用户
      * @return
      * @throws Exception
      */
-    List<UserAccreditInfo> findPurchase() throws Exception;
+    List<UserAccreditInfo> findPurchase();
 
     /**
      * 查询需要查询的数量
@@ -33,19 +33,27 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
      * @return
      * @throws Exception
      */
-    int selectCountUser(Map map) throws Exception;
+    int selectCountUser(Map map);
 
     /**
      * 查询授权用户信息
      * @param map
      * @return
      */
-    List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception;
+    List<UserAccreditInfo> selectAccreditInfoList(Map map);
+
+    /**
+     * 根据用户userids查询用户
+     * @param strs
+     * @return
+     */
+    List<UserAccreditInfo> selectUserNames(String strs[]);
+   // List<UserAccreditInfo> selectAccreditInfoList(Map map) throws Exception;
 
     /**
      * 查询单个授权用户信息
      * @param userId
      * @return
      */
-    UserAccreditInfo selectOneById(String userId)throws  Exception;
+    UserAccreditInfo selectOneById(String userId);
 }

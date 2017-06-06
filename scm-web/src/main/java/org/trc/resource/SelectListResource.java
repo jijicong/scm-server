@@ -8,6 +8,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
 import org.trc.enums.ClearanceEnum;
+import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
@@ -112,7 +113,14 @@ public class SelectListResource {
     @Path(SupplyConstants.Config.SelectList.IS_CUSTOM_CLEARANCE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> queryisClearanceList(){
-        return ResultUtil.createSucssAppResult("成功", ClearanceEnum.toJSONArray());
+        return ResultUtil.createSucssAppResult("查询是否支持清关成功", ClearanceEnum.toJSONArray());
+    }
+
+    @GET
+    @Path(SupplyConstants.Config.SelectList.PURCHASE_ORDER_STATUS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> querypurchaseOrderStatus(){
+        return ResultUtil.createSucssAppResult("查询采购订单状态成功", PurchaseOrderStatusEnum.toJSONArray());
     }
 
     @GET

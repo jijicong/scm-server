@@ -15,20 +15,14 @@ import org.apache.commons.lang3.StringUtils;
 public enum PurchaseOrderStatusEnum {
    //0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-全部收货,5-收货异常,6-冻结,7-作废
 	HOLD("0","暂存"),
-	AUDIT("1","提交审核"),
+	AUDIT("3","提交审核"),
 	PASS("2","审核通过"),
-	REJECT("3","审核驳回"),
+	REJECT("1","审核驳回"),
 	RECEIVE_ALL("4","全部收货"),
 	RECEIVE_EXCEPTION("5","收货异常"),
 	FREEZE("6","冻结"),
 	CANCEL("7","作废"),
-
-	//冗余入库通知的状态
-	TO_BE_NOTIFIED("0","待通知"),
-	HAVE_NOTIFIED("1","已通知");
-
-
-
+	WAREHOUSE_NOTICE("8","入库通知");
 
 	private String code;
 	private String name;

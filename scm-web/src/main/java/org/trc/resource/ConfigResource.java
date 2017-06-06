@@ -2,6 +2,7 @@ package org.trc.resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.impl.config.ConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
@@ -24,7 +25,7 @@ import java.util.List;
 public class ConfigResource {
 
     @Autowired
-    private ConfigBiz configBiz;
+    private IConfigBiz configBiz;
 
     @GET
     @Path(SupplyConstants.Config.DictType.DICT_TYPE_PAGE)

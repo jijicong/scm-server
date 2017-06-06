@@ -52,6 +52,11 @@ public class SupplyConstants {
 
         public static final String PROPERTY_LIST = "propertyList";//属性查询
 
+        public static final String CATEGORY_BRAND_LIST = "categoryBrandList";//分类品牌查询
+
+        public static final String CATEGORY_PROPERTY_LIST = "categoryPrepertyList";//分类属性查询
+
+
     }
 
     /**
@@ -69,6 +74,8 @@ public class SupplyConstants {
             public static final String VALID_LIST = "validList";
             //海外仓的是否支持清关
             public static final String IS_CUSTOM_CLEARANCE = "clearance";
+            //查询采购订单状态
+            public static final String PURCHASE_ORDER_STATUS="purchaseOrderStatus";
         }
 
         /**
@@ -341,6 +348,8 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_PAGE = "purchaseOrderPage";
         //采购订单
         public static final String PURCHASE_ORDER = "purchaseOrder";
+        //采购单提交审核purchaseOrderAudit
+        public static final String PURCHASE_ORDER_AUDIT="purchaseOrderAudit";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //采购单状态的修改
@@ -458,9 +467,7 @@ public class SupplyConstants {
 
             //供应商渠道列表查询
             public static final String CHANNELS = "channels";
-
         }
-
     }
 
     /**
@@ -478,8 +485,10 @@ public class SupplyConstants {
         public static final String GOODS = "goods";
         //根据SPU编码查询商品路径
         public static final String GOODS_SPU_CODE = "goods/spuCode";
-        //启用/停用
+        //商品启用/停用
         public static final String IS_VALID = "isValid";
+        //SKU启用/停用
+        public static final String SKU_VALID = "skuValid";
 
     }
 
