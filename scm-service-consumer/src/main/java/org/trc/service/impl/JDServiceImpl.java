@@ -32,7 +32,7 @@ public class JDServiceImpl implements IJDService {
     @Override
     public String createToken() {
         try {
-            String timestamp = DateUtils.formatDateTime(new Date());
+            String timestamp = DateUtils.formatDateTime(Calendar.getInstance().getTime());
             String sign = jdBaseDO.getClient_secret() + timestamp + jdBaseDO.getClient_id()
                     + jdBaseDO.getUsername() + jdBaseDO.getPassword() + jdBaseDO.getGrant_type() + jdBaseDO.getClient_secret();
             sign = MD5.encryption(sign).toUpperCase();

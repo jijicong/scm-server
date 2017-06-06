@@ -3,6 +3,7 @@ package org.trc.util;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.enums.JingDongEnum;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
@@ -48,34 +49,39 @@ public class JingDongUtil {
      * @param jsonStr
      * @return
      */
-    public Map buildCommon(String jsonStr){
-        Map array = new HashMap();
-        Common common = new Common();
-        JSONObject json = JSONObject.parseObject(jsonStr);
-        JSONObject list=json.getJSONObject("result");
-        String accessToken= (String) list.get("access_token");
-        String refreshToken= (String) list.get("refresh_token");
-        long time= (long) list.get("time");
-        int expires= 86300;
-        int refreshExpires = 205488147;
-        String tmp = expireToken(time, String.valueOf(expires));
-        common.setCode("accessToken");
-        common.setValue(accessToken);
-        common.setType("京东");
-        common.setDeadTime(String.valueOf(expires));
-        common.setDescription("京东AccessToken");
-        array.put("accessToken",common);
-        common =new Common();
-        common.setCode("refreshToken");
-        common.setValue(refreshToken);
-        common.setType("京东");
-        common.setDeadTime(String.valueOf(refreshExpires));
-        common.setDescription("京东RefreshToken");
-        array.put("refreshToken",common);
-        common =new Common();
-        common.setDeadTime(tmp);
-        array.put("time",common);
-        return array;
+    public Map buildCommon(String jsonStr) throws Exception{
+        try{
+            Map array = new HashMap();
+            Common common = new Common();
+            JSONObject json = JSONObject.parseObject(jsonStr);
+            JSONObject list=json.getJSONObject("result");
+            String accessToken= (String) list.get("access_token");
+            String refreshToken= (String) list.get("refresh_token");
+            long time= (long) list.get("time");
+            int expires= 86300;
+            int refreshExpires = 205488147;
+            String tmp = expireToken(time, String.valueOf(expires));
+            common.setCode("accessToken");
+            common.setValue(accessToken);
+            common.setType("京东");
+            common.setDeadTime(String.valueOf(expires));
+            common.setDescription("京东AccessToken");
+            array.put("accessToken",common);
+            common =new Common();
+            common.setCode("refreshToken");
+            common.setValue(refreshToken);
+            common.setType("京东");
+            common.setDeadTime(String.valueOf(refreshExpires));
+            common.setDescription("京东RefreshToken");
+            array.put("refreshToken",common);
+            common =new Common();
+            common.setDeadTime(tmp);
+            array.put("time",common);
+            return array;
+        }catch (Exception e){
+            throw new Exception(JingDongEnum.ERROR_GET_TOKEN.getName());
+        }
+
     }
 
     /**
