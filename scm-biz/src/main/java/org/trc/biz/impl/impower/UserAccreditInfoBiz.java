@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impower.IUserAccreditInfoBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.Role;
 import org.trc.domain.impower.UserAccreditInfo;
@@ -86,7 +87,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     }
 
     @Override
-    public List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception{
+    public List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception {
 
         List<UserAddPageDate> pageDateRoleList = new ArrayList<>();
         Long[] userIds = new Long[list.size()];
@@ -100,20 +101,13 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         if (userAddPageDateList != null && !userAddPageDateList.isEmpty() && userAddPageDateList.size() > 0) {
             for (UserAccreditInfo userAccreditInfo : list) {
                 UserAddPageDate userAddPageDate = new UserAddPageDate(userAccreditInfo);
-//                userAddPageDate.setId(userAccreditInfo.getId());
-//                userAddPageDate.setName(userAccreditInfo.getName());
-//                userAddPageDate.setPhone(userAccreditInfo.getPhone());
-//                userAddPageDate.setUserType(userAccreditInfo.getUserType());
-//                userAddPageDate.setIsValid(userAccreditInfo.getIsValid());
-//                userAddPageDate.setCreateOperator(userAccreditInfo.getCreateOperator());
-//                userAddPageDate.setUpdateTime(userAccreditInfo.getUpdateTime());
                 StringBuilder rolesStr = new StringBuilder();
-                for (UserAddPageDate seletUserAddPageDate : userAddPageDateList) {
-                    if (userAccreditInfo.getId().equals(seletUserAddPageDate.getId())) {
+                for (UserAddPageDate selectUserAddPageDate : userAddPageDateList) {
+                    if (userAccreditInfo.getId().equals(selectUserAddPageDate.getId())) {
                         if (rolesStr == null || rolesStr.length() == 0) {
-                            rolesStr.append(seletUserAddPageDate.getRoleNames());
+                            rolesStr.append(selectUserAddPageDate.getRoleNames());
                         } else {
-                            rolesStr.append("," + seletUserAddPageDate.getRoleNames());
+                            rolesStr.append(SupplyConstants.Symbol.COMMA + selectUserAddPageDate.getRoleNames());
                         }
                     }
                 }
@@ -127,7 +121,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Override
     public void updateUserAccreditInfoStatus(UserAccreditInfo userAccreditInfo) throws Exception {
 
-        AssertUtil.notNull(userAccreditInfo,"授权管理模块修改授权信息失败，授权信息为空");
+        AssertUtil.notNull(userAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         UserAccreditInfo updateUserAccreditInfo = new UserAccreditInfo();
         updateUserAccreditInfo.setId(userAccreditInfo.getId());
         if (userAccreditInfo.getIsValid().equals(ValidEnum.VALID.getCode())) {
@@ -137,8 +131,8 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         }
         updateUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         int count = userAccreditInfoService.updateByPrimaryKeySelective(updateUserAccreditInfo);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("修改授权", JSON.toJSONString(userAccreditInfo),"数据库操作失败").toString();
+        if (count == 0) {
+            String msg = String.format("修改授权%s数据库操作失败", JSON.toJSONString(userAccreditInfo));
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
@@ -147,14 +141,15 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     /**
      * 用户名是否存在
+     *
      * @param name 用户姓名
      * @return
      * @throws Exception
      */
     @Override
-    public int checkUserByName(Long id,String name) throws Exception {
-        AssertUtil.notNull(id,"根据用户授权的用户名称查询角色的参数id为空");
-        AssertUtil.notBlank(name,"根据用户授权的用户名称查询角色的参数name为空");
+    public int checkUserByName(Long id, String name) throws Exception {
+        AssertUtil.notNull(id, "根据用户授权的用户名称查询角色的参数id为空");
+        AssertUtil.notBlank(name, "根据用户授权的用户名称查询角色的参数name为空");
         Example example = new Example(UserAccreditInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", id);
@@ -172,7 +167,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     public List<Channel> findChannel() throws Exception {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("isValid", "1");
+        criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
         example.orderBy("updateTime").desc();
         return channelService.selectByExample(example);
     }
@@ -206,7 +201,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         userAccreditInfo.setRemark(userAddPageDate.getRemark());
         userAccreditInfo.setUserType(userAddPageDate.getUserType());
         userAccreditInfo.setUserId(userAddPageDate.getUserId());
-        userAccreditInfo.setIsDeleted("0");
+        userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         userAccreditInfo.setCreateOperator("test");
         userAccreditInfo.setIsValid(userAddPageDate.getIsValid());
         userAccreditInfo.setCreateTime(Calendar.getInstance().getTime());
@@ -222,7 +217,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setUserAccreditId(userAccreditInfo.getId());
                 userAccreditRoleRelation.setUserId(userAccreditInfo.getUserId());
                 userAccreditRoleRelation.setRoleId(roleIds[i]);
-                userAccreditRoleRelation.setIsDeleted("0");
+                userAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 userAccreditRoleRelation.setIsValid(userAccreditInfo.getIsValid());
                 userAccreditRoleRelation.setCreateOperator("test");
                 userAccreditRoleRelation.setCreateTime(userAccreditInfo.getCreateTime());
@@ -235,6 +230,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     /**
      * 根据ID查询
+     *
      * @param id
      * @return
      * @throws Exception
@@ -247,7 +243,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         userAccreditInfo.setId(id);
         userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
         if (null == userAccreditInfo) {
-            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询角色为空").toString();
+            String msg = String.format("根据主键ID[id=%s]查询角色为空",id.toString());
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
         }
         userAddPageDate = new UserAddPageDate(userAccreditInfo);
@@ -255,6 +251,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         Example example = new Example(UserAccreditRoleRelation.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("userAccreditId", userAddPageDate.getId());
+        example.orderBy("id").asc();
         List<UserAccreditRoleRelation> userAccreditRoleRelationList = userAccreditInfoRoleRelationService.selectByExample(example);
         AssertUtil.notNull(userAccreditRoleRelationList, "根据userAccreditId未查询到用户角色关系");
         List<Long> userAccreditroleIds = new ArrayList<>();
@@ -270,13 +267,14 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     /**
      * 修改授权
+     *
      * @param userAddPageDate
      * @throws Exception
      */
     @Override
     public void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception {
         //写入user_accredit_info表
-        AssertUtil.notNull(userAddPageDate,"页面请求参数为空");
+        AssertUtil.notNull(userAddPageDate, "页面请求参数为空");
         UserAccreditInfo userAccreditInfo = userAddPageDate;
         userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         userAccreditInfo.setCreateOperator("test");
