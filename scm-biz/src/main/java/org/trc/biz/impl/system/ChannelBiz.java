@@ -37,7 +37,7 @@ import java.util.List;
 @Service("channelBiz")
 public class ChannelBiz implements IChannelBiz {
 
-    private Logger  LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
+    private Logger logger = LoggerFactory.getLogger(ChannelBiz.class);
 
     private final static String  SERIALNAME = "QD";
 
@@ -66,11 +66,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     public Channel findChannelByName(String name) throws Exception{
-        if(StringUtils.isBlank(name)){
-            String msg = CommonUtil.joinStr("根据渠道名称查询渠道的参数name为空").toString();
-            LOGGER.error(msg);
-            throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
         Channel channel=new Channel();
         channel.setName(name);
         return channelService.selectOne(channel);
@@ -92,20 +88,17 @@ public class ChannelBiz implements IChannelBiz {
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
-        if (null != tmp) {
-            String msg = CommonUtil.joinStr("渠道名称[name=", channel.getName(), "]的数据已存在,请使用其他名称").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
         channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
         channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
         int count = channelService.insert(channel);
-        if(count == 0){
-            String msg = String.format("保存渠道%s到数据库失败", JSON.toJSONString(channel));
-            LOGGER.error(msg);
+        if(count==0){
+            String msg = "渠道保存,数据库操作失败";
+            logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
+
     }
 
 
@@ -117,8 +110,8 @@ public class ChannelBiz implements IChannelBiz {
         channel.setUpdateTime(Calendar.getInstance().getTime());
         count = channelService.updateByPrimaryKeySelective(channel);
         if(count == 0){
-            String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
-            LOGGER.error(msg);
+            String msg = String.format("修改渠道%s数据库操作失败",JSON.toJSONString(channel));
+            logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
@@ -131,10 +124,7 @@ public class ChannelBiz implements IChannelBiz {
         Channel channel = new Channel();
         channel.setId(id);
         channel = channelService.selectOne(channel);
-        if(null == channel) {
-            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询渠道为空").toString();
-            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_QUERY_EXCEPTION,msg);
-        }
+        AssertUtil.notNull(channel,String.format("根据主键ID[id=%s]查询渠道为空",id.toString()));
         return channel;
 
     }
@@ -153,8 +143,8 @@ public class ChannelBiz implements IChannelBiz {
         updateChannel.setUpdateTime(Calendar.getInstance().getTime());
         int count=channelService.updateByPrimaryKeySelective(updateChannel);
         if(count == 0){
-            String msg = CommonUtil.joinStr("修改渠道",JSON.toJSONString(channel),"数据库操作失败").toString();
-            LOGGER.error(msg);
+            String msg = String.format("修改渠道%s数据库操作失败",JSON.toJSONString(channel));
+            logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 

@@ -20,6 +20,7 @@ import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.service.System.IChannelService;
 import org.trc.service.impower.IRoleService;
@@ -40,7 +41,7 @@ import java.util.*;
 @Service("userAccreditInfoBiz")
 public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
-    private Logger  LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
+    private Logger logger = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
 
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;
@@ -48,10 +49,10 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Resource
     private IRoleService roleService;
 
-    @Autowired
+    @Resource
     private IChannelService channelService;
 
-    @Autowired
+    @Resource
     private IUserAccreditInfoRoleRelationService userAccreditInfoRoleRelationService;
 
     /**
@@ -100,13 +101,6 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         if (userAddPageDateList != null && !userAddPageDateList.isEmpty() && userAddPageDateList.size() > 0) {
             for (UserAccreditInfo userAccreditInfo : list) {
                 UserAddPageDate userAddPageDate = new UserAddPageDate(userAccreditInfo);
-//                userAddPageDate.setId(userAccreditInfo.getId());
-//                userAddPageDate.setName(userAccreditInfo.getName());
-//                userAddPageDate.setPhone(userAccreditInfo.getPhone());
-//                userAddPageDate.setUserType(userAccreditInfo.getUserType());
-//                userAddPageDate.setIsValid(userAccreditInfo.getIsValid());
-//                userAddPageDate.setCreateOperator(userAccreditInfo.getCreateOperator());
-//                userAddPageDate.setUpdateTime(userAccreditInfo.getUpdateTime());
                 StringBuilder rolesStr = new StringBuilder();
                 for (UserAddPageDate seletUserAddPageDate : userAddPageDateList) {
                     if (userAccreditInfo.getId().equals(seletUserAddPageDate.getId())) {
@@ -138,9 +132,9 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         updateUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         int count = userAccreditInfoService.updateByPrimaryKeySelective(updateUserAccreditInfo);
         if(count == 0){
-            String msg = CommonUtil.joinStr("修改授权", JSON.toJSONString(userAccreditInfo),"数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+            String msg = String.format("修改授权%s数据库操作失败",JSON.toJSONString(userAccreditInfo));
+            logger.error(msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -189,7 +183,6 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         if (StringUtils.isBlank(roleType)) {
             criteria.andIsNotNull("roleType");
         } else {
-
             criteria.andEqualTo("roleType", roleType);
         }
         example.orderBy("updateTime").desc();
@@ -246,10 +239,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
         userAccreditInfo.setId(id);
         userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
-        if (null == userAccreditInfo) {
-            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询角色为空").toString();
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(userAccreditInfo,String.format("根据主键ID[id=%s]查询角色为空",id.toString()));
         userAddPageDate = new UserAddPageDate(userAccreditInfo);
         AssertUtil.notNull(userAddPageDate.getId(), "根据授权Id的查询用户userAccreditRoleRelation，参数Id为空");
         Example example = new Example(UserAccreditRoleRelation.class);
