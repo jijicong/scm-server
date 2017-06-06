@@ -15,6 +15,7 @@
                 <value>classpath:config/dev/comsumer-config.properties</value>
                 <value>classpath:config/dev/redis.properties</value>
                 <value>classpath:config/dev/config.properties</value>
+                <value>classpath:config/dev/tairan.properties</value>
             </list>
         </property>
         <property name="fileEncoding">
