@@ -10,6 +10,11 @@ public class ResultModel {
 
     private String msg;
 
+    public ResultModel(String status, String msg) {
+        this.status = status;
+        this.msg = msg;
+    }
+
     public String getStatus() {
         return status;
     }

@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.trc.domain.category.*;
 import org.trc.enums.CategoryActionTypeEnum;
@@ -52,7 +51,6 @@ public class TaiRanService implements ITaiRanService {
 
     private static final String UNDER_LINE = "_";
 
-    @Transactional
     @Override
     public ResultModel sendBrandNotice(String action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
 
@@ -62,7 +60,10 @@ public class TaiRanService implements ITaiRanService {
         Assert.notNull(brand.getLogo(), "图片路径不能为空");
         Assert.notNull(brand.getName(), "品牌名称不能为空");
         Assert.notNull(brand.getWebUrl(), "品牌网址不能为空");
-        //TODO 判断是否通知
+        //判断是否通知
+        if (oldBrand.getName().equals(brand.getName())&&oldBrand.getIsValid().equals(brand.getIsValid())){
+            return new ResultModel("1","无需通知品牌变更");
+        }
         BrandToTrc brandToTrc = new BrandToTrc();
         brandToTrc.setAlise(brand.getAlise());
         brandToTrc.setBrandCode(brand.getBrandCode());
@@ -70,7 +71,6 @@ public class TaiRanService implements ITaiRanService {
         brandToTrc.setLogo(brand.getLogo());
         brandToTrc.setName(brand.getName());
         brandToTrc.setWebUrl(brand.getWebUrl());
-
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
@@ -95,13 +95,16 @@ public class TaiRanService implements ITaiRanService {
     @Override
     public ResultModel sendCategoryNotice(CategoryActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         if (action.getCode().equals(CategoryActionTypeEnum.ADD_CATEGORY.getCode()) || action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY.getCode())
-                || action.getCode().equals(CategoryActionTypeEnum.STOP_CATEGORY)) {
+                || action.getCode().equals(CategoryActionTypeEnum.STOP_CATEGORY.getCode())) {
             return sendCategoryToTrc(action, oldCategory, category, operateTime);
-        } else if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_BRAND)) {
+        }
+        if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_BRAND.getCode())) {
             return sendCategoryBrandList(action, categoryBrandList, operateTime);
-        }else {
+        }
+        if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode())){
             return sendCategoryPropertyList(action,categoryPropertyList,operateTime);
         }
+        return null;
     }
 
 
@@ -113,7 +116,12 @@ public class TaiRanService implements ITaiRanService {
         Assert.notNull(property.getDescription(), "属性描述不能为空");
         Assert.notNull(property.getTypeCode(), "属性类型编码不能为空");
         Assert.notNull(property.getValueType(), "属性值类型不能为空");
-        //TODO 判断是否通知
+        //判断是否通知
+        if (oldProperty.getIsValid().equals(property.getIsValid())&&oldProperty.getName().equals(property.getName())
+                &&oldProperty.getValueType().equals(property.getValueType())&&oldProperty.getTypeCode().equals(property.getTypeCode())
+                &&valueList==null){
+            return new ResultModel("1","无需通知属性变更");
+        }
         PropertyToTrc propertyToTrc = new PropertyToTrc();
         propertyToTrc.setSort(property.getSort());
         propertyToTrc.setName(property.getName());
@@ -193,6 +201,9 @@ public class TaiRanService implements ITaiRanService {
         Assert.notNull(category.getClassifyDescribe(), "分类描述不能为空");
         Assert.notNull(category.getSort(), "分类排序不能为空");
         //TODO 判断是否通知
+        if(oldCategory.getName().equals(category.getName())&&oldCategory.getIsValid().equals(category.getIsValid())){
+            return new ResultModel("1","无需通知分类变更");
+        }
         CategoryToTrc categoryToTrc = new CategoryToTrc();
         categoryToTrc.setIsValid(category.getIsValid());
         categoryToTrc.setName(category.getName());
