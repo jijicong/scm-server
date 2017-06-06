@@ -97,7 +97,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             return token;
         } catch (Exception e) {
             log.error(e.getMessage());
-            return "获取Token失败";
+            throw new Exception(JingDongEnum.ERROR_GET_TOKEN.getName());
         }
     }
 
@@ -139,7 +139,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.submitOrder(token, orderDO);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            saveRecord(inputParam, "billOrder(OrderDO orderDO)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "billOrder(OrderDO orderDO)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            if (!state){
+                log.info("添加记录到数据库失败！");
+            }
             return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult.getResult()), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -374,6 +377,9 @@ public class JingDongBizImpl implements IJingDongBiz {
         Common acc;
         token = ijdService.createToken();
         Map<String, Common> map = jingDongUtil.buildCommon(token);
+        if (null == map){
+            return JingDongEnum.ERROR_GET_ADDRESS.getName();
+        }
         acc = map.get("accessToken");
         token = acc.getValue();
         putToken(acc, map);
