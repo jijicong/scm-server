@@ -187,6 +187,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
             criteria.andEqualTo("roleType", roleType);
         }
+        criteria.andEqualTo("isValid",ValidEnum.VALID.getCode());
         example.orderBy("updateTime").desc();
         return roleService.selectByExample(example);
     }
@@ -282,7 +283,12 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {
-            userAccreditInfoRoleRelationService.deleteByUserAccreditId(userAccreditInfo.getId());
+           int count =  userAccreditInfoRoleRelationService.deleteByUserAccreditId(userAccreditInfo.getId());
+            if (count == 0) {
+                String msg = String.format("修改授权%s操作失败", JSON.toJSONString(userAddPageDate.getRoleNames()));
+                LOGGER.error(msg);
+                throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+            }
             Long roleIds[] = org.trc.util.StringUtil.splitByComma(userAddPageDate.getRoleNames());
             List<UserAccreditRoleRelation> uAcRoleRelationList = new ArrayList<>();
             for (int i = 0; i < roleIds.length; i++) {

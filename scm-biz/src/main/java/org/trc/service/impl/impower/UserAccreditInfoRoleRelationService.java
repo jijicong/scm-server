@@ -21,8 +21,8 @@ public class UserAccreditInfoRoleRelationService extends BaseService<UserAccredi
     private UserAccreditRoleRelationMapper userAccreditRoleRelationMapper;
 
     @Override
-    public void deleteByUserAccreditId(Long userAccreditId){
-        userAccreditRoleRelationMapper.deleteByUserAccreditId(userAccreditId);
+    public int deleteByUserAccreditId(Long userAccreditId){
+       return   userAccreditRoleRelationMapper.deleteByUserAccreditId(userAccreditId);
     }
 
     @Override

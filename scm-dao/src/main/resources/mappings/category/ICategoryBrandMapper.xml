@@ -27,4 +27,8 @@
         </foreach>
 
     </select>
+
+    <delete id="deleteByCategoryId" >
+        DELETE FROM category_brand WHERE category_id=#{categoryId}
+    </delete>
 </mapper>

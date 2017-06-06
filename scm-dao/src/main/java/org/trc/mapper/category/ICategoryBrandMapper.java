@@ -13,10 +13,12 @@ public interface ICategoryBrandMapper extends BaseMapper<CategoryBrand> {
 
     /**
      * 根据分类ID列表查询分类品牌
+     *
      * @param categoryList
      * @return
      * @throws Exception
      */
     List<CategoryBrandExt> selectCategoryBrands(List<Long> categoryList) throws Exception;
 
+    int deleteByCategoryId(Long categoryId) throws Exception;
 }
