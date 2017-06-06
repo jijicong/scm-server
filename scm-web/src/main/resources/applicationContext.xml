@@ -13,6 +13,7 @@
             <list>
                 <value>classpath:config/dev/scm-jdbc.properties</value>
                 <value>classpath:config/dev/comsumer-config.properties</value>
+                <value>classpath:config/dev/tairan.properties</value>
                 <value>classpath:config/dev/redis.properties</value>
                 <value>classpath:config/dev/config.properties</value>
             </list>
