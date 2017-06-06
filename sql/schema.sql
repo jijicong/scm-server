@@ -116,8 +116,8 @@ create table apply_for_purchase_order
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
    audit_opinion        varchar(3072) comment '审核意见',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -139,8 +139,8 @@ create table apply_for_supplier
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
    audit_opinion        varchar(3072) comment '审核意见',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -156,7 +156,7 @@ create table audit_log
    operation            varchar(32) not null comment '操作',
    operator             varchar(32) comment '操作者',
    remark               varchar(3072) comment '备注',
-   operate_time         timestamp not null default CURRENT_TIMESTAMP comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
+   operate_time         timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -179,8 +179,8 @@ create table brand
    create_operator      varchar(32) not null comment '创建人',
    last_edit_operator   varchar(64) not null comment '最新更新人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -204,8 +204,8 @@ create table category
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -221,8 +221,8 @@ create table category_brand
    category_code        varchar(32) comment '分类编码',
    brand_id             bigint not null comment '品牌编号',
    brand_code           varchar(32) comment '品牌编码',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    is_valid             varchar(2) comment '是否启用',
    primary key (id)
 );
@@ -238,7 +238,7 @@ create table category_propery
    category_id          varchar(32) not null comment '分类编号',
    property_id          bigint not null comment '属性ID',
    propery_sort         int not null comment '属性序号',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -274,8 +274,8 @@ create table certificate
    id_card_start_date   varchar(20) comment '法人身份证有效期开始日期',
    id_card_end_date     varchar(20) comment '法人身份证有效期结束日期',
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -305,7 +305,7 @@ create table change_inventory_flow
    newest_frozen_inventory bigint comment '最新冻结库存',
    newest_real_inventory bigint comment '最新真实库存',
    newest_defective_inventory bigint comment '最新残次品库存',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -323,8 +323,8 @@ create table change_inventory_request_flow
    order_code           varchar(32) not null comment '单据编码',
    request_type         varchar(16) not null comment '请求类型:1-下单冻库存；2-冻库存订单支付扣减库存；3-支付扣减库存；4-退货待定',
    status               varchar(16) not null comment '处理结果状态',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id),
    unique key AK_Key_2 (channel_code, request_code)
 );
@@ -343,8 +343,8 @@ create table channel
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    remark               varchar(1024) comment '备注信息',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -360,9 +360,9 @@ create table common_config
    value                varchar(255) not null comment '值',
    type                 varchar(64) comment '类型',
    description          varchar(255) not null comment '备注',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
-   dead_time            timestamp comment '失效时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
+   dead_time            timestamp NULL DEFAULT NULL COMMENT '失效时间',
    primary key (id)
 );
 
@@ -380,8 +380,8 @@ create table dict
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -399,8 +399,8 @@ create table dict_type
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -438,8 +438,8 @@ create table external_item_sku
    stock                varchar(128) comment '库存',
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -454,8 +454,8 @@ create table input_record
    input_param          varchar(1024) not null comment '输入参数',
    type                 varchar(64) not null comment '类型',
    state                varchar(32) not null comment '状态',
-   create_date          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_date          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
+   create_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -472,8 +472,8 @@ create table item_nature_propery
    property_id          bigint not null comment '属性量ID',
    property_value_id    bigint not null comment '属性值ID',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -493,8 +493,8 @@ create table item_sales_propery
    property_actual_value varchar(256) comment '属性实际值',
    picture              varchar(256) comment '图片',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -521,8 +521,8 @@ create table items
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -542,8 +542,8 @@ create table jurisdiction
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    belong               tinyint comment '所属 标记渠道的分支或者是全局的分支',
    primary key (id)
 );
@@ -649,12 +649,12 @@ create table order_item
    type                 varchar(1) not null comment '订单类型 0-普通 1-零元购 2-分期购 3-团购',
    tax_rate             decimal(20,5) comment '税率',
    params               varchar(255) comment '订单冗余参数',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '超时确认时间',
-   end_time             timestamp comment '关闭时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL DEFAULT NULL COMMENT '支付时间',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '修改时间',
+   timeout_action_time  timestamp NULL DEFAULT NULL COMMENT '超时确认时间',
+   end_time             timestamp NULL DEFAULT NULL COMMENT '关闭时间',
    primary key (id)
 );
 
@@ -681,7 +681,7 @@ create table outbound_order
    receiver_zip         varchar(16) comment '收货人邮编',
    receiver_name        varchar(128) comment '收货人姓名',
    receiver_phone       varchar(16) comment '收货人电话号码',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -696,8 +696,8 @@ create table output_record
    output_param         varchar(2048) not null comment '输出记录',
    type                 varchar(64) not null comment '类型',
    state                varchar(64) not null comment '状态',
-   create_date          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_date          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
+   create_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -762,13 +762,13 @@ create table platform_order
    coupon_code          varchar(32) comment '应用优惠卷码',
    group_buy_status     varchar(32) comment '拼团状态 NO_APPLY 不应用拼团 IN_PROCESS拼团中 SUCCESS 成功 FAILED 失败',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   receive_time         timestamp comment '确认收货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '订单未支付超时过期时间',
-   end_time             timestamp comment '订单结束时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL DEFAULT NULL COMMENT '支付时间',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   receive_time         timestamp NULL DEFAULT NULL COMMENT '确认收货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '修改时间',
+   timeout_action_time  timestamp NULL DEFAULT NULL COMMENT '订单未支付超时过期时间',
+   end_time             timestamp NULL DEFAULT NULL COMMENT '订单结束时间',
    pay_bill_id          varchar(32) comment '支付流水号',
    primary key (id)
 );
@@ -789,8 +789,8 @@ create table property
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -809,8 +809,8 @@ create table property_value
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -833,7 +833,7 @@ create table purchase_detail
    purchasing_quantity  bigint comment '采购数量',
    total_purchase_amount bigint comment '采购总金额,单位/分',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
-   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -854,8 +854,8 @@ create table purchase_group
    is_deleted           varchar(2) not null comment '是否删除:0-否,1-是',
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -872,8 +872,8 @@ create table purchase_group_user_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -915,8 +915,8 @@ create table purchase_order
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    abnormal_remark      varchar(1024) comment '入库异常说明',
    primary key (id)
 );
@@ -934,7 +934,7 @@ create table purchase_order_audit_log
    operation            varchar(32) not null comment '操作',
    operator             varchar(32) comment '操作者',
    remark               varchar(3072) comment '备注',
-   operate_time         timestamp not null default CURRENT_TIMESTAMP comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
+   operate_time         timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -951,8 +951,8 @@ create table role
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) not null comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -969,8 +969,8 @@ create table role_jurisdiction_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) not null comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1013,9 +1013,9 @@ create table shop_order
    is_part_consign      tinyint(1) comment '是否是多次发货的订单',
    group_buy_status     varchar(32) comment '拼团状态',
    total_tax            bigint comment '订单总税费,单位/分',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -1041,8 +1041,8 @@ create table sku_stock
    real_inventory       bigint not null comment '真实库存',
    defective_inventory  bigint not null comment '残次品库存',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1071,8 +1071,8 @@ create table skus
    channel6_pre_sell_prices bigint,
    channel7_pre_sell_prices bigint,
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1104,8 +1104,8 @@ create table supplier
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1124,8 +1124,8 @@ create table supplier_after_sale_info
    goods_return_phone   varchar(32) not null comment '退货联系电话',
    goods_return_strategy varchar(3072) not null comment '退货策略',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1148,8 +1148,8 @@ create table supplier_brand
    proxy_aptitude_end_date varchar(20) comment '资质有效期截止日期',
    aptitude_pic         varchar(256) comment '资质证明图片，多个路径用逗号分隔',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1165,8 +1165,8 @@ create table supplier_category
    supplier_code        varchar(32) not null comment '供应链编号',
    category_id          bigint not null,
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1183,8 +1183,8 @@ create table supplier_channel_relation
    supplier_code        varchar(32) not null comment '供应商编号',
    channel_code         varchar(32) not null comment '渠道编号',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1201,8 +1201,8 @@ create table supplier_financial_info
    deposit_bank         varchar(128) not null comment '开户银行',
    bank_account         varchar(32) not null comment '银行账号',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1223,8 +1223,8 @@ create table user_accredit_info
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1243,8 +1243,8 @@ create table user_accredit_role_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1268,8 +1268,8 @@ create table warehouse
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
    remark               varchar(1024) comment '备注',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1292,8 +1292,8 @@ create table warehouse_item
    js_inventory         bigint comment '机损库存(JS)',
    xs_inventory         bigint comment '箱损库存(XS)',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1321,7 +1321,7 @@ create table warehouse_notice
    end_receive_date     varchar(32) not null comment '截止到货日期,格式:yyyy-mm-dd',
    remark               varchar(1024) comment '备注',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1338,8 +1338,8 @@ create table warehouse_notice_callback
    warehouse_notice_code varchar(32) comment '入库单编号',
    request_params       longtext comment 'json格式',
    state                tinyint not null comment '状态:1-初始状态,2-处理成功,3-处理失败',
-   request_time         timestamp comment '请求时间,格式yyyy-mm-dd hh:mi:ss',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   request_time         timestamp NULL DEFAULT NULL COMMENT '请求时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1359,8 +1359,8 @@ create table warehouse_notice_details
    purchase_price       bigint comment '采购价,单位/分',
    purchasing_quantity  bigint comment '采购数量',
    actual_storage_quantity bigint comment '实际入库数量',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   storage_time         timestamp comment '入库时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   storage_time         timestamp NULL DEFAULT NULL COMMENT '入库时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1395,9 +1395,9 @@ create table warehouse_order
    total_fee            bigint comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
    payment              bigint comment '实付金额,订单最终总额,单位/分',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -1520,8 +1520,8 @@ create table apply_for_purchase_order
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
    audit_opinion        varchar(3072) comment '审核意见',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1543,8 +1543,8 @@ create table apply_for_supplier
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
    audit_opinion        varchar(3072) comment '审核意见',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1560,7 +1560,7 @@ create table audit_log
    operation            varchar(32) not null comment '操作',
    operator             varchar(32) comment '操作者',
    remark               varchar(3072) comment '备注',
-   operate_time         timestamp not null default CURRENT_TIMESTAMP comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
+   operate_time         timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1583,8 +1583,8 @@ create table brand
    create_operator      varchar(32) not null comment '创建人',
    last_edit_operator   varchar(64) not null comment '最新更新人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1608,8 +1608,8 @@ create table category
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1625,8 +1625,8 @@ create table category_brand
    category_code        varchar(32) comment '分类编码',
    brand_id             bigint not null comment '品牌编号',
    brand_code           varchar(32) comment '品牌编码',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    is_valid             varchar(2) comment '是否启用',
    primary key (id)
 );
@@ -1642,7 +1642,7 @@ create table category_propery
    category_id          varchar(32) not null comment '分类编号',
    property_id          bigint not null comment '属性ID',
    propery_sort         int not null comment '属性序号',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1678,8 +1678,8 @@ create table certificate
    id_card_start_date   varchar(20) comment '法人身份证有效期开始日期',
    id_card_end_date     varchar(20) comment '法人身份证有效期结束日期',
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1709,7 +1709,7 @@ create table change_inventory_flow
    newest_frozen_inventory bigint comment '最新冻结库存',
    newest_real_inventory bigint comment '最新真实库存',
    newest_defective_inventory bigint comment '最新残次品库存',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1727,8 +1727,8 @@ create table change_inventory_request_flow
    order_code           varchar(32) not null comment '单据编码',
    request_type         varchar(16) not null comment '请求类型:1-下单冻库存；2-冻库存订单支付扣减库存；3-支付扣减库存；4-退货待定',
    status               varchar(16) not null comment '处理结果状态',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id),
    unique key AK_Key_2 (channel_code, request_code)
 );
@@ -1747,8 +1747,8 @@ create table channel
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    remark               varchar(1024) comment '备注信息',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1764,9 +1764,9 @@ create table common_config
    value                varchar(255) not null comment '值',
    type                 varchar(64) comment '类型',
    description          varchar(255) not null comment '备注',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
-   dead_time            timestamp comment '失效时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
+   dead_time            timestamp NULL DEFAULT NULL COMMENT '失效时间',
    primary key (id)
 );
 
@@ -1784,8 +1784,8 @@ create table dict
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1803,8 +1803,8 @@ create table dict_type
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1842,8 +1842,8 @@ create table external_item_sku
    stock                varchar(128) comment '库存',
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1858,8 +1858,8 @@ create table input_record
    input_param          varchar(1024) not null comment '输入参数',
    type                 varchar(64) not null comment '类型',
    state                varchar(32) not null comment '状态',
-   create_date          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_date          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
+   create_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -1876,8 +1876,8 @@ create table item_nature_propery
    property_id          bigint not null comment '属性量ID',
    property_value_id    bigint not null comment '属性值ID',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1897,8 +1897,8 @@ create table item_sales_propery
    property_actual_value varchar(256) comment '属性实际值',
    picture              varchar(256) comment '图片',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1925,8 +1925,8 @@ create table items
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1946,8 +1946,8 @@ create table jurisdiction
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    belong               tinyint comment '所属 标记渠道的分支或者是全局的分支',
    primary key (id)
 );
@@ -2053,12 +2053,12 @@ create table order_item
    type                 varchar(1) not null comment '订单类型 0-普通 1-零元购 2-分期购 3-团购',
    tax_rate             decimal(20,5) comment '税率',
    params               varchar(255) comment '订单冗余参数',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '超时确认时间',
-   end_time             timestamp comment '关闭时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL DEFAULT NULL COMMENT '支付时间',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '修改时间',
+   timeout_action_time  timestamp NULL DEFAULT NULL COMMENT '超时确认时间',
+   end_time             timestamp NULL DEFAULT NULL COMMENT '关闭时间',
    primary key (id)
 );
 
@@ -2085,7 +2085,7 @@ create table outbound_order
    receiver_zip         varchar(16) comment '收货人邮编',
    receiver_name        varchar(128) comment '收货人姓名',
    receiver_phone       varchar(16) comment '收货人电话号码',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2100,8 +2100,8 @@ create table output_record
    output_param         varchar(2048) not null comment '输出记录',
    type                 varchar(64) not null comment '类型',
    state                varchar(64) not null comment '状态',
-   create_date          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_date          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
+   create_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -2166,13 +2166,13 @@ create table platform_order
    coupon_code          varchar(32) comment '应用优惠卷码',
    group_buy_status     varchar(32) comment '拼团状态 NO_APPLY 不应用拼团 IN_PROCESS拼团中 SUCCESS 成功 FAILED 失败',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   receive_time         timestamp comment '确认收货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '订单未支付超时过期时间',
-   end_time             timestamp comment '订单结束时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL DEFAULT NULL COMMENT '支付时间',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   receive_time         timestamp NULL DEFAULT NULL COMMENT '确认收货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '修改时间',
+   timeout_action_time  timestamp NULL DEFAULT NULL COMMENT '订单未支付超时过期时间',
+   end_time             timestamp NULL DEFAULT NULL COMMENT '订单结束时间',
    pay_bill_id          varchar(32) comment '支付流水号',
    primary key (id)
 );
@@ -2193,8 +2193,8 @@ create table property
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2213,8 +2213,8 @@ create table property_value
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2237,7 +2237,7 @@ create table purchase_detail
    purchasing_quantity  bigint comment '采购数量',
    total_purchase_amount bigint comment '采购总金额,单位/分',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
-   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2258,8 +2258,8 @@ create table purchase_group
    is_deleted           varchar(2) not null comment '是否删除:0-否,1-是',
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2276,8 +2276,8 @@ create table purchase_group_user_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2319,8 +2319,8 @@ create table purchase_order
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    abnormal_remark      varchar(1024) comment '入库异常说明',
    primary key (id)
 );
@@ -2338,7 +2338,7 @@ create table purchase_order_audit_log
    operation            varchar(32) not null comment '操作',
    operator             varchar(32) comment '操作者',
    remark               varchar(3072) comment '备注',
-   operate_time         timestamp not null default CURRENT_TIMESTAMP comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
+   operate_time         timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2355,8 +2355,8 @@ create table role
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) not null comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2373,8 +2373,8 @@ create table role_jurisdiction_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) not null comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2417,9 +2417,9 @@ create table shop_order
    is_part_consign      tinyint(1) comment '是否是多次发货的订单',
    group_buy_status     varchar(32) comment '拼团状态',
    total_tax            bigint comment '订单总税费,单位/分',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -2445,8 +2445,8 @@ create table sku_stock
    real_inventory       bigint not null comment '真实库存',
    defective_inventory  bigint not null comment '残次品库存',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2475,8 +2475,8 @@ create table skus
    channel6_pre_sell_prices bigint,
    channel7_pre_sell_prices bigint,
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2508,8 +2508,8 @@ create table supplier
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2528,8 +2528,8 @@ create table supplier_after_sale_info
    goods_return_phone   varchar(32) not null comment '退货联系电话',
    goods_return_strategy varchar(3072) not null comment '退货策略',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2552,8 +2552,8 @@ create table supplier_brand
    proxy_aptitude_end_date varchar(20) comment '资质有效期截止日期',
    aptitude_pic         varchar(256) comment '资质证明图片，多个路径用逗号分隔',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2569,8 +2569,8 @@ create table supplier_category
    supplier_code        varchar(32) not null comment '供应链编号',
    category_id          bigint not null,
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2587,8 +2587,8 @@ create table supplier_channel_relation
    supplier_code        varchar(32) not null comment '供应商编号',
    channel_code         varchar(32) not null comment '渠道编号',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2605,8 +2605,8 @@ create table supplier_financial_info
    deposit_bank         varchar(128) not null comment '开户银行',
    bank_account         varchar(32) not null comment '银行账号',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2627,8 +2627,8 @@ create table user_accredit_info
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2647,8 +2647,8 @@ create table user_accredit_role_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2672,8 +2672,8 @@ create table warehouse
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
    remark               varchar(1024) comment '备注',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2696,8 +2696,8 @@ create table warehouse_item
    js_inventory         bigint comment '机损库存(JS)',
    xs_inventory         bigint comment '箱损库存(XS)',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2725,7 +2725,7 @@ create table warehouse_notice
    end_receive_date     varchar(32) not null comment '截止到货日期,格式:yyyy-mm-dd',
    remark               varchar(1024) comment '备注',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2742,8 +2742,8 @@ create table warehouse_notice_callback
    warehouse_notice_code varchar(32) comment '入库单编号',
    request_params       longtext comment 'json格式',
    state                tinyint not null comment '状态:1-初始状态,2-处理成功,3-处理失败',
-   request_time         timestamp comment '请求时间,格式yyyy-mm-dd hh:mi:ss',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   request_time         timestamp NULL DEFAULT NULL COMMENT '请求时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2763,8 +2763,8 @@ create table warehouse_notice_details
    purchase_price       bigint comment '采购价,单位/分',
    purchasing_quantity  bigint comment '采购数量',
    actual_storage_quantity bigint comment '实际入库数量',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   storage_time         timestamp comment '入库时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   storage_time         timestamp NULL DEFAULT NULL COMMENT '入库时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2799,9 +2799,9 @@ create table warehouse_order
    total_fee            bigint comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
    payment              bigint comment '实付金额,订单最终总额,单位/分',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -2924,8 +2924,8 @@ create table apply_for_purchase_order
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
    audit_opinion        varchar(3072) comment '审核意见',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2947,8 +2947,8 @@ create table apply_for_supplier
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
    audit_opinion        varchar(3072) comment '审核意见',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2964,7 +2964,7 @@ create table audit_log
    operation            varchar(32) not null comment '操作',
    operator             varchar(32) comment '操作者',
    remark               varchar(3072) comment '备注',
-   operate_time         timestamp not null default CURRENT_TIMESTAMP comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
+   operate_time         timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -2987,8 +2987,8 @@ create table brand
    create_operator      varchar(32) not null comment '创建人',
    last_edit_operator   varchar(64) not null comment '最新更新人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3012,8 +3012,8 @@ create table category
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3029,8 +3029,8 @@ create table category_brand
    category_code        varchar(32) comment '分类编码',
    brand_id             bigint not null comment '品牌编号',
    brand_code           varchar(32) comment '品牌编码',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    is_valid             varchar(2) comment '是否启用',
    primary key (id)
 );
@@ -3046,7 +3046,7 @@ create table category_propery
    category_id          varchar(32) not null comment '分类编号',
    property_id          bigint not null comment '属性ID',
    propery_sort         int not null comment '属性序号',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3082,8 +3082,8 @@ create table certificate
    id_card_start_date   varchar(20) comment '法人身份证有效期开始日期',
    id_card_end_date     varchar(20) comment '法人身份证有效期结束日期',
    is_deleted           varchar(2) default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3113,7 +3113,7 @@ create table change_inventory_flow
    newest_frozen_inventory bigint comment '最新冻结库存',
    newest_real_inventory bigint comment '最新真实库存',
    newest_defective_inventory bigint comment '最新残次品库存',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3131,8 +3131,8 @@ create table change_inventory_request_flow
    order_code           varchar(32) not null comment '单据编码',
    request_type         varchar(16) not null comment '请求类型:1-下单冻库存；2-冻库存订单支付扣减库存；3-支付扣减库存；4-退货待定',
    status               varchar(16) not null comment '处理结果状态',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id),
    unique key AK_Key_2 (channel_code, request_code)
 );
@@ -3151,8 +3151,8 @@ create table channel
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    remark               varchar(1024) comment '备注信息',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3168,9 +3168,9 @@ create table common_config
    value                varchar(255) not null comment '值',
    type                 varchar(64) comment '类型',
    description          varchar(255) not null comment '备注',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
-   dead_time            timestamp comment '失效时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
+   dead_time            timestamp NULL DEFAULT NULL COMMENT '失效时间',
    primary key (id)
 );
 
@@ -3188,8 +3188,8 @@ create table dict
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3207,8 +3207,8 @@ create table dict_type
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3246,8 +3246,8 @@ create table external_item_sku
    stock                varchar(128) comment '库存',
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3262,8 +3262,8 @@ create table input_record
    input_param          varchar(1024) not null comment '输入参数',
    type                 varchar(64) not null comment '类型',
    state                varchar(32) not null comment '状态',
-   create_date          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_date          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
+   create_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -3280,8 +3280,8 @@ create table item_nature_propery
    property_id          bigint not null comment '属性量ID',
    property_value_id    bigint not null comment '属性值ID',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3301,8 +3301,8 @@ create table item_sales_propery
    property_actual_value varchar(256) comment '属性实际值',
    picture              varchar(256) comment '图片',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3329,8 +3329,8 @@ create table items
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3350,8 +3350,8 @@ create table jurisdiction
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    belong               tinyint comment '所属 标记渠道的分支或者是全局的分支',
    primary key (id)
 );
@@ -3457,12 +3457,12 @@ create table order_item
    type                 varchar(1) not null comment '订单类型 0-普通 1-零元购 2-分期购 3-团购',
    tax_rate             decimal(20,5) comment '税率',
    params               varchar(255) comment '订单冗余参数',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '超时确认时间',
-   end_time             timestamp comment '关闭时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL DEFAULT NULL COMMENT '支付时间',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '修改时间',
+   timeout_action_time  timestamp NULL DEFAULT NULL COMMENT '超时确认时间',
+   end_time             timestamp NULL DEFAULT NULL COMMENT '关闭时间',
    primary key (id)
 );
 
@@ -3489,7 +3489,7 @@ create table outbound_order
    receiver_zip         varchar(16) comment '收货人邮编',
    receiver_name        varchar(128) comment '收货人姓名',
    receiver_phone       varchar(16) comment '收货人电话号码',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3504,8 +3504,8 @@ create table output_record
    output_param         varchar(2048) not null comment '输出记录',
    type                 varchar(64) not null comment '类型',
    state                varchar(64) not null comment '状态',
-   create_date          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_date          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
+   create_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间',
+   update_date          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -3570,13 +3570,13 @@ create table platform_order
    coupon_code          varchar(32) comment '应用优惠卷码',
    group_buy_status     varchar(32) comment '拼团状态 NO_APPLY 不应用拼团 IN_PROCESS拼团中 SUCCESS 成功 FAILED 失败',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   receive_time         timestamp comment '确认收货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '订单未支付超时过期时间',
-   end_time             timestamp comment '订单结束时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL DEFAULT NULL COMMENT '支付时间',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   receive_time         timestamp NULL DEFAULT NULL COMMENT '确认收货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '修改时间',
+   timeout_action_time  timestamp NULL DEFAULT NULL COMMENT '订单未支付超时过期时间',
+   end_time             timestamp NULL DEFAULT NULL COMMENT '订单结束时间',
    pay_bill_id          varchar(32) comment '支付流水号',
    primary key (id)
 );
@@ -3597,8 +3597,8 @@ create table property
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3617,8 +3617,8 @@ create table property_value
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3641,7 +3641,7 @@ create table purchase_detail
    purchasing_quantity  bigint comment '采购数量',
    total_purchase_amount bigint comment '采购总金额,单位/分',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
-   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3662,8 +3662,8 @@ create table purchase_group
    is_deleted           varchar(2) not null comment '是否删除:0-否,1-是',
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3680,8 +3680,8 @@ create table purchase_group_user_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3723,8 +3723,8 @@ create table purchase_order
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    abnormal_remark      varchar(1024) comment '入库异常说明',
    primary key (id)
 );
@@ -3742,7 +3742,7 @@ create table purchase_order_audit_log
    operation            varchar(32) not null comment '操作',
    operator             varchar(32) comment '操作者',
    remark               varchar(3072) comment '备注',
-   operate_time         timestamp not null default CURRENT_TIMESTAMP comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
+   operate_time         timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3759,8 +3759,8 @@ create table role
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) not null comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3777,8 +3777,8 @@ create table role_jurisdiction_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) not null comment '创建人',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3821,9 +3821,9 @@ create table shop_order
    is_part_consign      tinyint(1) comment '是否是多次发货的订单',
    group_buy_status     varchar(32) comment '拼团状态',
    total_tax            bigint comment '订单总税费,单位/分',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
@@ -3849,8 +3849,8 @@ create table sku_stock
    real_inventory       bigint not null comment '真实库存',
    defective_inventory  bigint not null comment '残次品库存',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3879,8 +3879,8 @@ create table skus
    channel6_pre_sell_prices bigint,
    channel7_pre_sell_prices bigint,
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3912,8 +3912,8 @@ create table supplier
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(64) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3932,8 +3932,8 @@ create table supplier_after_sale_info
    goods_return_phone   varchar(32) not null comment '退货联系电话',
    goods_return_strategy varchar(3072) not null comment '退货策略',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3956,8 +3956,8 @@ create table supplier_brand
    proxy_aptitude_end_date varchar(20) comment '资质有效期截止日期',
    aptitude_pic         varchar(256) comment '资质证明图片，多个路径用逗号分隔',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3973,8 +3973,8 @@ create table supplier_category
    supplier_code        varchar(32) not null comment '供应链编号',
    category_id          bigint not null,
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -3991,8 +3991,8 @@ create table supplier_channel_relation
    supplier_code        varchar(32) not null comment '供应商编号',
    channel_code         varchar(32) not null comment '渠道编号',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4009,8 +4009,8 @@ create table supplier_financial_info
    deposit_bank         varchar(128) not null comment '开户银行',
    bank_account         varchar(32) not null comment '银行账号',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4031,8 +4031,8 @@ create table user_accredit_info
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4051,8 +4051,8 @@ create table user_accredit_role_relation
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) not null comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4076,8 +4076,8 @@ create table warehouse
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
    remark               varchar(1024) comment '备注',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4100,8 +4100,8 @@ create table warehouse_item
    js_inventory         bigint comment '机损库存(JS)',
    xs_inventory         bigint comment '箱损库存(XS)',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4129,7 +4129,7 @@ create table warehouse_notice
    end_receive_date     varchar(32) not null comment '截止到货日期,格式:yyyy-mm-dd',
    remark               varchar(1024) comment '备注',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4146,8 +4146,8 @@ create table warehouse_notice_callback
    warehouse_notice_code varchar(32) comment '入库单编号',
    request_params       longtext comment 'json格式',
    state                tinyint not null comment '状态:1-初始状态,2-处理成功,3-处理失败',
-   request_time         timestamp comment '请求时间,格式yyyy-mm-dd hh:mi:ss',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   request_time         timestamp NULL DEFAULT NULL COMMENT '请求时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4167,8 +4167,8 @@ create table warehouse_notice_details
    purchase_price       bigint comment '采购价,单位/分',
    purchasing_quantity  bigint comment '采购数量',
    actual_storage_quantity bigint comment '实际入库数量',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   storage_time         timestamp comment '入库时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   storage_time         timestamp NULL DEFAULT NULL COMMENT '入库时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -4203,9 +4203,9 @@ create table warehouse_order
    total_fee            bigint comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
    payment              bigint comment '实付金额,订单最终总额,单位/分',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   create_time          timestamp not null default CURRENT_timestamp NULL DEFAULT NULL COMMENT '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   consign_time         timestamp NULL DEFAULT NULL COMMENT '发货时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_timestamp NULL DEFAULT NULL COMMENT '更新时间',
    primary key (id)
 );
 
