@@ -34,7 +34,7 @@ import java.util.*;
 @Service("supplierApplyBiz")
 public class SupplierApplyBiz implements ISupplierApplyBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(SupplierApplyBiz.class);
+    private Logger  log = LoggerFactory.getLogger(SupplierApplyBiz.class);
     private final static String SUPPLIER_APPLY_CODE_EX_NAME="GYSSQ";//供应商申请
     private final static int SUPPLIER_APPLY_CODE_LENGTH=3;
     @Autowired

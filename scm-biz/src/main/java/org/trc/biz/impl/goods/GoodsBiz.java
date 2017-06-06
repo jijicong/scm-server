@@ -54,7 +54,7 @@ import java.util.*;
 @Service("goodsBiz")
 public class GoodsBiz implements IGoodsBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(GoodsBiz.class);
+    private Logger  log = LoggerFactory.getLogger(GoodsBiz.class);
 
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
@@ -473,6 +473,7 @@ public class GoodsBiz implements IGoodsBiz {
      */
     private void saveItemNatureProperty(ItemNaturePropery itemNaturePropery){
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+        AssertUtil.notEmpty(categoryArray, "保存商品信息自然属性不能为空");
         List<ItemNaturePropery> itemNatureProperies = new ArrayList<ItemNaturePropery>();
         Date sysTime = Calendar.getInstance().getTime();
         for(Object obj : categoryArray){
@@ -500,6 +501,8 @@ public class GoodsBiz implements IGoodsBiz {
      * @param skuses
      */
     private void saveItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses){
+        JSONArray itemSalesArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
+        AssertUtil.notEmpty(itemSalesArray, "保存商品采购属性不能为空");
         List<ItemSalesPropery> itemSalesProperys = new ArrayList<ItemSalesPropery>();
         Date sysTime = Calendar.getInstance().getTime();
         for(Skus skus : skuses){
@@ -511,7 +514,7 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemSalesPropery.setItemId(skus.getItemId());
                 _itemSalesPropery.setSpuCode(skus.getSpuCode());
                 _itemSalesPropery.setSkuCode(skus.getSkuCode());
-                String[] _tmp = getPropertyIdAndPicture(itemSalesPropery, propertyValueId);
+                String[] _tmp = getPropertyIdAndPicture(itemSalesArray, propertyValueId);
                 _itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
                 _itemSalesPropery.setPropertyValueId(propertyValueId);
                 _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
@@ -532,14 +535,26 @@ public class GoodsBiz implements IGoodsBiz {
 
     /**
      * 获取属性值ID对应的属性ID和属性值对应的图片路径
-     * @param itemSalesPropery
+     * @param itemSalesArray
      * @param propertyValueId
      * @return
      */
-    private String[] getPropertyIdAndPicture(ItemSalesPropery itemSalesPropery, Long propertyValueId){
+    /*private String[] getPropertyIdAndPicture(ItemSalesPropery itemSalesPropery, Long propertyValueId){
         JSONArray categoryArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
         String[] _result = new String[2];
         for(Object obj : categoryArray){
+            JSONObject jbo = (JSONObject) obj;
+            if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
+                _result[0] = jbo.getString("propertyId");
+                _result[1] = jbo.getString("picture");
+                break;
+            }
+        }
+        return _result;
+    }*/
+    private String[] getPropertyIdAndPicture(JSONArray itemSalesArray, Long propertyValueId){
+        String[] _result = new String[2];
+        for(Object obj : itemSalesArray){
             JSONObject jbo = (JSONObject) obj;
             if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
                 _result[0] = jbo.getString("propertyId");
@@ -639,13 +654,14 @@ public class GoodsBiz implements IGoodsBiz {
      */
     private void updateItemNatureProperty(ItemNaturePropery itemNaturePropery)throws Exception{
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
+        AssertUtil.notEmpty(categoryArray, "保存商品信息自然属性不能为空");
         List<ItemNaturePropery> addList = new ArrayList<ItemNaturePropery>();
         List<ItemNaturePropery> updateList = new ArrayList<ItemNaturePropery>();
         ItemNaturePropery tmp = new ItemNaturePropery();
         tmp.setSpuCode(itemNaturePropery.getSpuCode());
         tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<ItemNaturePropery> itemNatureProperyList = itemNatureProperyService.select(tmp);
-        AssertUtil.notEmpty(itemNatureProperyList, String.format("根据商品SPU编码[%s]查询相关自然属性为空", itemNaturePropery.getSpuCode()));
+        //AssertUtil.notEmpty(itemNatureProperyList, String.format("根据商品SPU编码[%s]查询相关自然属性为空", itemNaturePropery.getSpuCode()));
         Date sysTime = Calendar.getInstance().getTime();
         List<ItemNaturePropery> list = new ArrayList<ItemNaturePropery>();
         for(Object obj : categoryArray){
@@ -712,6 +728,8 @@ public class GoodsBiz implements IGoodsBiz {
      * @throws Exception
      */
     private void updateItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses) throws Exception{
+        JSONArray itemSalesArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
+        AssertUtil.notEmpty(itemSalesArray, "保存商品采购属性不能为空");
         List<ItemSalesPropery> addList = new ArrayList<ItemSalesPropery>();
         List<ItemSalesPropery> updateList = new ArrayList<ItemSalesPropery>();
         Date sysTime = Calendar.getInstance().getTime();
@@ -720,14 +738,14 @@ public class GoodsBiz implements IGoodsBiz {
             String[] propertyValueIdsArray = skus.getPropertyValueId().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
             String[] propertyValuesArray = skus.getPropertyValue().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
             List<ItemSalesPropery> _currentList = querySkuItemSalesProperys(skus.getSpuCode(), skus.getSkuCode(), null);
-            AssertUtil.notEmpty(_currentList, String.format("根据商品SPU编码[%s]和SKU编码[%s]查询相关采购属性为空", skus.getSpuCode(), skus.getSkuCode()));
+            //AssertUtil.notEmpty(_currentList, String.format("根据商品SPU编码[%s]和SKU编码[%s]查询相关采购属性为空", skus.getSpuCode(), skus.getSkuCode()));
             for(int i=0; i<propertyValueIdsArray.length; i++){
                 Long propertyValueId = Long.parseLong(propertyValueIdsArray[i]);
                 ItemSalesPropery _itemSalesPropery = new ItemSalesPropery();
                 _itemSalesPropery.setItemId(skus.getItemId());
                 _itemSalesPropery.setSpuCode(skus.getSpuCode());
                 _itemSalesPropery.setSkuCode(skus.getSkuCode());
-                String[] _tmp = getPropertyIdAndPicture(itemSalesPropery, propertyValueId);
+                String[] _tmp = getPropertyIdAndPicture(itemSalesArray, propertyValueId);
                 _itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
                 _itemSalesPropery.setPropertyValueId(propertyValueId);
                 _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);

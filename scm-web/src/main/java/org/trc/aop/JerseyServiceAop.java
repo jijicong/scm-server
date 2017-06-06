@@ -24,7 +24,7 @@ import java.util.Date;
 @Aspect
 public class JerseyServiceAop {
 
-    private final static Logger log = LoggerFactory.getLogger(JerseyServiceAop.class);
+    private Logger  log = LoggerFactory.getLogger(JerseyServiceAop.class);
 
     @Autowired
     private BeanValidator beanValidator;

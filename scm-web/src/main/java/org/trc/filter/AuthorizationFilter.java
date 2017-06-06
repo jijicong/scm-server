@@ -39,7 +39,7 @@ import java.util.List;
 @Component
 public class AuthorizationFilter implements ContainerRequestFilter {
 
-    private final static Logger log = LoggerFactory.getLogger(AuthorizationFilter.class);
+    private Logger  log = LoggerFactory.getLogger(AuthorizationFilter.class);
 //    @Value("${app.id}")
 //    private String appId;
 //    @Value("${app.key}")

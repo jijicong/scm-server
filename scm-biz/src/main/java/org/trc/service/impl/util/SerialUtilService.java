@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 @Service("serialUtilService")
 public class SerialUtilService extends BaseService<Serial, Long> implements ISerialUtilService {
 
-    private final static Logger log = LoggerFactory.getLogger(SerialUtilService.class);
+    private Logger  log = LoggerFactory.getLogger(SerialUtilService.class);
 
     @Resource
     private ISerialMapper iserialMapper;

@@ -39,7 +39,7 @@ import java.util.*;
  */
 @Service("iJingDongBiz")
 public class JingDongBizImpl implements IJingDongBiz {
-    private final static Logger log = LoggerFactory.getLogger(JingDongBizImpl.class);
+    private Logger  log = LoggerFactory.getLogger(JingDongBizImpl.class);
     @Autowired
     IJDService ijdService;
 

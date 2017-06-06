@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class CommonUtil {
 
-	private final static Logger log = LoggerFactory.getLogger(CommonUtil.class);
+	private Logger  log = LoggerFactory.getLogger(CommonUtil.class);
 
 	public static final String HTTP_SERVLET_REQUEST = "HttpServletRequest";
 	public static final String MODEL_MAP = "ModelMap";

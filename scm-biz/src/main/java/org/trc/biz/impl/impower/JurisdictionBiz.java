@@ -31,7 +31,7 @@ import java.util.List;
 @Service("jurisdictionBiz")
 public class JurisdictionBiz implements IJurisdictionBiz {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(JurisdictionBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(JurisdictionBiz.class);
     @Resource
     private IJurisdictionService jurisdictionService;
     @Resource

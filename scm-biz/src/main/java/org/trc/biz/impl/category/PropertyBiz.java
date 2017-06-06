@@ -30,7 +30,7 @@ import java.util.*;
 @Service("propertyBiz")
 public class PropertyBiz implements IPropertyBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(PropertyBiz.class);
+    private Logger  log = LoggerFactory.getLogger(PropertyBiz.class);
 
     //多个属性ID分隔符
     public final static String MULTI_PRRPERTY_ID_SPLIT = ",";

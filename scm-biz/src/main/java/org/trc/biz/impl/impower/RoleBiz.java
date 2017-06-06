@@ -31,7 +31,7 @@ import java.util.Calendar;
 @Service("roleBiz")
 public class RoleBiz implements IRoleBiz{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RoleBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(RoleBiz.class);
 
     private final static Long SYS_ROLE_ID=1L; //系统角色的id wholeJurisdiction
 
