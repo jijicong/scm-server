@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.ZeroToNineEnum;
@@ -23,7 +25,7 @@ import java.util.*;
  */
 @Service("jDService")
 public class JDServiceImpl implements IJDService {
-
+    private final static Logger log = LoggerFactory.getLogger(JDServiceImpl.class);
     @Autowired
     private JdBaseDO jdBaseDO;
 
@@ -45,6 +47,7 @@ public class JDServiceImpl implements IJDService {
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
+            log.error(e.getMessage());
             return JingDongConstant.ERROR_TOKEN;
         }
     }
@@ -66,6 +69,7 @@ public class JDServiceImpl implements IJDService {
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             return rev;
         } catch (Exception e) {
+            log.error(e.getMessage());
             return JingDongConstant.ERROR_REFRESH_TOKEN;
         }
     }
@@ -88,6 +92,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_PAGE_NUM);
         }
     }
@@ -111,6 +116,7 @@ public class JDServiceImpl implements IJDService {
             String result =(String) json.get("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_SKU);
         }
     }
@@ -145,6 +151,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_DETAIL);
         }
     }
@@ -171,6 +178,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_SKU_BY_PAGE);
         }
     }
@@ -190,6 +198,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_CHECK_SKU);
         }
     }
@@ -213,6 +222,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SKU_STATE);
         }
     }
@@ -236,6 +246,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SKU_IMAGE);
         }
     }
@@ -280,6 +291,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SEARCH);
         }
     }
@@ -297,6 +309,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_YANBAO_SKU);
         }
     }
@@ -315,6 +328,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_PROVINCE);
         }
     }
@@ -332,6 +346,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_CITY);
         }
     }
@@ -349,6 +364,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_COUNTY);
         }
     }
@@ -366,6 +382,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_TOWN);
         }
     }
@@ -383,6 +400,7 @@ public class JDServiceImpl implements IJDService {
             String result = (String) json.get("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_CHECK_AREA);
         }
     }
@@ -408,6 +426,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
         }
     }
@@ -434,6 +453,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
         }
     }
@@ -461,6 +481,7 @@ public class JDServiceImpl implements IJDService {
             JSONArray result = json.getJSONArray("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
         }
     }
@@ -492,6 +513,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
         }
     }
@@ -509,6 +531,7 @@ public class JDServiceImpl implements IJDService {
             Boolean result =(Boolean) json.get("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
         }
     }
@@ -526,6 +549,7 @@ public class JDServiceImpl implements IJDService {
             Boolean result =(Boolean) json.get("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
         }
     }
@@ -543,6 +567,7 @@ public class JDServiceImpl implements IJDService {
             Boolean result =(Boolean) json.get("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_DO_PAY);
         }
     }
@@ -560,6 +585,7 @@ public class JDServiceImpl implements IJDService {
             String result =(String) json.get("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
         }
     }
@@ -578,6 +604,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result = json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
         }
     }
@@ -595,6 +622,7 @@ public class JDServiceImpl implements IJDService {
             JSONObject result =json.getJSONObject("result");
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
         }
     }

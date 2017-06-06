@@ -30,7 +30,7 @@ import java.util.*;
 @Service("propertyBiz")
 public class PropertyBiz implements IPropertyBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(PropertyBiz.class);
+    private Logger  log = LoggerFactory.getLogger(PropertyBiz.class);
 
     //多个属性ID分隔符
     public final static String MULTI_PRRPERTY_ID_SPLIT = ",";
@@ -58,7 +58,7 @@ public class PropertyBiz implements IPropertyBiz {
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
-        example.orderBy("isValid").desc();
+        example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
         return propertyService.pagination(example, page, queryModel);
     }
@@ -69,6 +69,7 @@ public class PropertyBiz implements IPropertyBiz {
     public void saveProperty(Property property) throws Exception {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
+        property.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
         //保存属性数据
         try {
             propertyService.insert(property);

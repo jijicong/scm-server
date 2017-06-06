@@ -32,7 +32,7 @@ import java.util.*;
 @Service("categoryBiz")
 public class CategoryBiz implements ICategoryBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(CategoryBiz.class);
+    private Logger  log = LoggerFactory.getLogger(CategoryBiz.class);
 
     @Autowired
     private ICategoryService categoryService;

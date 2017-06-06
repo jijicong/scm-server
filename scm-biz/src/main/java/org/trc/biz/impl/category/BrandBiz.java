@@ -46,7 +46,6 @@ public class BrandBiz implements IBrandBiz {
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
-        //设置查询条件
         setQueryParam(example,criteria,queryModel);
         Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         //得到所有图片的缩略图,并以fileKey为key，url为value的形式封装成map
@@ -65,7 +64,6 @@ public class BrandBiz implements IBrandBiz {
     public Pagenation<Brand> brandList(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
-        //查询条件
         setQueryParam(example,criteria,queryModel);
         Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         return pagenation;
@@ -90,7 +88,6 @@ public class BrandBiz implements IBrandBiz {
         if (!StringUtils.isBlank(queryModel.getBrandCode())) {
             criteria.andEqualTo("brandCode", queryModel.getBrandCode());
         }
-        example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
     }
 

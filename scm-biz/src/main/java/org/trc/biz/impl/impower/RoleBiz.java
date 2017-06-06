@@ -4,17 +4,17 @@ import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IRoleBiz;
 import org.trc.biz.impower.IRoleJurisdictionRelationBiz;
 import org.trc.domain.impower.Role;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.impower.RoleForm;
 import org.trc.service.impower.IRoleService;
+import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
@@ -24,6 +24,8 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by sone on 2017/5/11.
@@ -31,7 +33,7 @@ import java.util.Calendar;
 @Service("roleBiz")
 public class RoleBiz implements IRoleBiz{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RoleBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(RoleBiz.class);
 
     private final static Long SYS_ROLE_ID=1L; //系统角色的id wholeJurisdiction
 
@@ -40,6 +42,8 @@ public class RoleBiz implements IRoleBiz{
     private IRoleService roleService;
     @Resource
     private IRoleJurisdictionRelationBiz roleJurisdictionRelationBiz;
+    @Resource
+    private IUserAccreditInfoRoleRelationService userAccreditInfoRoleRelationService;
 
 
     @Override
@@ -60,7 +64,9 @@ public class RoleBiz implements IRoleBiz{
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateRoleState(Role role) throws Exception {
+
         AssertUtil.notNull(role,"根据角色对象，修改角色的状态，角色对象为空");
         Role updateRole = new Role();
         if(role.getId()==SYS_ROLE_ID){ //防止恶意修改系统角色的状态
@@ -69,11 +75,12 @@ public class RoleBiz implements IRoleBiz{
             throw  new ConfigException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION,tip);
         }
         updateRole.setId(role.getId());
+
         if (role.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateRole.setIsValid(ValidEnum.NOVALID.getCode());
-            } else {
-                updateRole.setIsValid(ValidEnum.VALID.getCode());
-            }
+        } else {
+            updateRole.setIsValid(ValidEnum.VALID.getCode());
+        }
         updateRole.setUpdateTime(Calendar.getInstance().getTime());
         int count = roleService.updateByPrimaryKeySelective(updateRole);
         if (count == 0) {
@@ -81,16 +88,19 @@ public class RoleBiz implements IRoleBiz{
             LOGGER.error(msg);
             throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
+        //修改关联状态
+        Map<String, Object> map=new HashMap<>();
+        map.put("status",updateRole.getIsValid());
+        map.put("roleId",updateRole.getId());
+        userAccreditInfoRoleRelationService.updateStatusByRoleId(map);
 
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception {
-
         int num = roleService.findNumFromRoleAndAccreditInfoByRoleId(roleId);
         return num;
-
     }
 
     @Override
@@ -110,13 +120,9 @@ public class RoleBiz implements IRoleBiz{
         return roleService.pagination(example,page,form);
     }
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateRole(Role role, String roleJurisdiction) throws Exception{
-        /*
-         判断是否是系统用户
-         系统用户只能修改，系统角色类型，对应的权限
-         和备注信息--
-         */
+        //判断是否是系统用户,系统用户只能修改，系统角色类型，对应的权限,和备注信息
         AssertUtil.notNull(role,"角色更新时,角色对象为空");
         if(role.getId()==SYS_ROLE_ID){//为渠道用户
             if(role.getRoleType()==WHOLE_TYPE){//渠道用户,反而传的是全局的类型

@@ -13,4 +13,10 @@
               AND is_deleted=0
           </where>
     </select>
+    <!--根据角色的id 修改用户和角色关联表中的状态-->
+
+    <update id="updateStatusByRoleId">
+        UPDATE user_accredit_role_relation SET is_valid = #{status} WHERE role_id = #{roleId}
+    </update>
+
 </mapper>
