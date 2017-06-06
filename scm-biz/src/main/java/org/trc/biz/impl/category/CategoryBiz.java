@@ -14,7 +14,7 @@ import org.trc.domain.category.*;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.ConfigException;
+import org.trc.exception.CategoryException;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TableDate;
@@ -135,7 +135,7 @@ public class CategoryBiz implements ICategoryBiz {
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -147,14 +147,14 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void saveClassify(Category category) throws Exception {
+    public void saveCategory(Category category) throws Exception {
 
         ParamsUtil.setBaseDO(category);
         int count = categoryService.insert(category);
         if (count == 0) {
             String msg = CommonUtil.joinStr("增加分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
     }
 
@@ -207,20 +207,6 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Override
     public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
-        /*if(StringUtils.isBlank(categoryBrandForm.getBrandId()) && StringUtils.isBlank(categoryBrandForm.getCategoryId())){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"查询分类相关品牌分类ID和品牌ID不能同时为空");
-        }
-        Example example = new Example(CategoryBrand.class);
-        Example.Criteria criteria = example.createCriteria();
-        if(StringUtils.isNotBlank(categoryBrandForm.getCategoryId())){
-            String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
-            criteria.andIn("categoryId", Arrays.asList(categoryIds));
-        }
-        if(StringUtils.isNotBlank(categoryBrandForm.getBrandId())){
-            String[] brandIds = categoryBrandForm.getBrandId().split(SupplyConstants.Symbol.COMMA);
-            criteria.andIn("brandId", Arrays.asList(brandIds));
-        }
-        return categoryBrandService.selectByExample(example);*/
         AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
         String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
         List<Long> categoryList = new ArrayList<Long>();
@@ -269,7 +255,7 @@ public class CategoryBiz implements ICategoryBiz {
         if (count == 0) {
             String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
             log.error(msg);
-            throw new ConfigException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
 
     }

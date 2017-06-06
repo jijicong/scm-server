@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
 import org.trc.util.BeanToMapUtil;
@@ -75,14 +76,19 @@ public class JDServiceImpl implements IJDService {
      * @param token 授权时的access token
      * @return
      */
-    public String getPageNum(String token) {
+    public ReturnTypeDO getPageNum(String token) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_PAGE_NUM;
             String data = "token=" + token;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_PAGE_NUM;
+            throw new Exception(JingDongConstant.ERROR_GET_PAGE_NUM);
         }
     }
 
@@ -93,15 +99,29 @@ public class JDServiceImpl implements IJDService {
      * @param pageNum 池子编号
      * @return
      */
-    public String getSku(String token, String pageNum) {
+    public ReturnTypeDO getSku(String token, String pageNum) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU;
             String data = "token=" + token + "&pageNum=" + pageNum;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            String result =(String) json.get("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_SKU;
+            throw new Exception(JingDongConstant.ERROR_GET_SKU);
         }
+    }
+
+    private ReturnTypeDO returnValue(Boolean success, String resultCode,String resultMessage,Object result ) {
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(success);
+        returnTypeDO.setResultCode(resultCode);
+        returnTypeDO.setResult(result);
+        returnTypeDO.setResultMessage(resultMessage);
+        return returnTypeDO;
     }
 
 
@@ -113,14 +133,19 @@ public class JDServiceImpl implements IJDService {
      * @param isShow 查询商品基本信息
      * @return
      */
-    public String getDetail(String token, String sku, Boolean isShow) {
+    public ReturnTypeDO getDetail(String token, String sku, Boolean isShow) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_DETAIL;
             String data = "token=" + token + "&sku=" + sku + "&isShow=" + isShow;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_DETAIL;
+            throw new Exception(JingDongConstant.ERROR_GET_DETAIL);
         }
     }
 
@@ -134,28 +159,38 @@ public class JDServiceImpl implements IJDService {
      * @throws Exception
      */
     @Override
-    public String getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
+    public ReturnTypeDO getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU_BY_PAGE;
             String data = "token=" + token + "&pageNum=" + pageNum + "&pageNo=" + pageNo;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_SKU_BY_PAGE;
+            throw new Exception(JingDongConstant.ERROR_GET_SKU_BY_PAGE);
         }
     }
 
     @Override
-    public String checkSku(String token, String skuIds) throws Exception {
+    public ReturnTypeDO checkSku(String token, String skuIds) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK;
             String data = "token=" + token + "&skuIds=" + skuIds;
 //            data = data.substring(0,data.length()-1);
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
 //            System.out.println("data:"+data);
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_CHECK_SKU;
+            throw new Exception(JingDongConstant.ERROR_CHECK_SKU);
         }
     }
 
@@ -166,14 +201,19 @@ public class JDServiceImpl implements IJDService {
      * @param sku   商品编号 支持批量（最高100个）
      * @return
      */
-    public String skuState(String token, String sku) {
+    public ReturnTypeDO skuState(String token, String sku) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_STATE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_SKU_STATE;
+            throw new Exception(JingDongConstant.ERROR_SKU_STATE);
         }
     }
 
@@ -184,14 +224,19 @@ public class JDServiceImpl implements IJDService {
      * @param sku   商品编号 支持批量（最高100个）
      * @return
      */
-    public String skuImage(String token, String sku) {
+    public ReturnTypeDO skuImage(String token, String sku) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_IMAGE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_SKU_IMAGE;
+            throw new Exception(JingDongConstant.ERROR_SKU_IMAGE);
         }
     }
 
@@ -202,7 +247,7 @@ public class JDServiceImpl implements IJDService {
      * @param searchDO
      * @return
      */
-    public String search(SearchDO searchDO) {
+    public ReturnTypeDO search(SearchDO searchDO) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SEARCH;
             String data = "token=" + searchDO.getToken();
@@ -228,82 +273,117 @@ public class JDServiceImpl implements IJDService {
                 data = data + "&brands=" + searchDO.getBrands();
             }
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_SEARCH;
+            throw new Exception(JingDongConstant.ERROR_SEARCH);
         }
     }
 
     @Override
-    public String getYanbaoSku(String token, String skuIds, int province, int city, int county, int town) throws Exception {
+    public ReturnTypeDO getYanbaoSku(String token, String skuIds, int province, int city, int county, int town) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_YANBAO_SKU;
             String data = "token=" + token + "&skuIds=" + skuIds + "&province=" + province + "&city=" + city + "&county=" + county + "&town=" + town;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_YANBAO_SKU;
+            throw new Exception(JingDongConstant.ERROR_GET_YANBAO_SKU);
         }
     }
 
 
     @Override
-    public String getProvince(String token) {
+    public ReturnTypeDO getProvince(String token) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_PROVINCE;
             String data = "token=" + token;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_PROVINCE;
+            throw new Exception(JingDongConstant.ERROR_GET_PROVINCE);
         }
     }
 
     @Override
-    public String getCity(String token, String id) throws Exception {
+    public ReturnTypeDO getCity(String token, String id) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_CITY;
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_CITY;
+            throw new Exception(JingDongConstant.ERROR_GET_CITY);
         }
     }
 
     @Override
-    public String getCounty(String token, String id) throws Exception {
+    public ReturnTypeDO getCounty(String token, String id) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_COUNTY;
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_COUNTY;
+            throw new Exception(JingDongConstant.ERROR_GET_COUNTY);
         }
     }
 
     @Override
-    public String getTown(String token, String id) throws Exception {
+    public ReturnTypeDO getTown(String token, String id) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_TOWN;
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_TOWN;
+            throw new Exception(JingDongConstant.ERROR_GET_TOWN);
         }
     }
 
     @Override
-    public String checkArea(String token, String provinceId, String cityId, String countyId, String townId) throws Exception {
+    public ReturnTypeDO checkArea(String token, String provinceId, String cityId, String countyId, String townId) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK_AREA;
             String data = "token=" + token + "&provinceId=" + provinceId + "&cityId=" + cityId + "&countyId=" + countyId + "&townId=" + townId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            String result = (String) json.get("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_CHECK_AREA;
+            throw new Exception(JingDongConstant.ERROR_CHECK_AREA);
         }
     }
 
@@ -316,14 +396,19 @@ public class JDServiceImpl implements IJDService {
      * @throws Exception
      */
     @Override
-    public String getSellPrice(String token, String sku) throws Exception {
+    public ReturnTypeDO getSellPrice(String token, String sku) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SELL_PRICE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_SELL_PRICE;
+            throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
         }
     }
 
@@ -337,14 +422,19 @@ public class JDServiceImpl implements IJDService {
      * @throws Exception
      */
     @Override
-    public String getNewStockById(String token, String skuNums, String area) throws Exception {
+    public ReturnTypeDO getNewStockById(String token, String skuNums, String area) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_NEW_STOCK_BY_ID;
             String data = "token=" + token + "&skuNums=" + skuNums + "&area=" + area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID;
+            throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
         }
     }
 
@@ -359,19 +449,24 @@ public class JDServiceImpl implements IJDService {
      * @throws Exception
      */
     @Override
-    public String getStockById(String token, String sku, String area) throws Exception {
+    public ReturnTypeDO getStockById(String token, String sku, String area) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_STOCK_BY_ID;
             String data = "token=" + token + "&sku=" + sku + "&area=" + area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_GET_STOCK_BY_ID;
+            throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
         }
     }
 
     @Override
-    public String submitOrder(String token, OrderDO orderDO) throws Exception {
+    public ReturnTypeDO submitOrder(String token, OrderDO orderDO) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SUBMIT_ORDER;
             String data = "token=" + token + "&thirdOrder=" + orderDO.getThirdOrder() + "&sku=" + orderDO.getSku() + "&name=" + orderDO.getName() + "&province=" + orderDO.getProvince() + "&city=" + orderDO.getCity()
@@ -384,88 +479,123 @@ public class JDServiceImpl implements IJDService {
                 data = data + "&isUseBalance=" + 0;
             }
             data = data + "&submitState=" + orderDO.getSubmitState();
-            if ("2".equals(String.valueOf(orderDO.getInvoiceType())) && "1".equals(String.valueOf(orderDO.getInvoiceState()))) {
+            if (ZeroToNineEnum.TWO.getCode().equals(String.valueOf(orderDO.getInvoiceType())) && ZeroToNineEnum.ONE.getCode().equals(String.valueOf(orderDO.getInvoiceState()))) {
                 data = data + "&invoiceName=" + orderDO.getInvoiceName() + "&invoicePhone=" + orderDO.getInvoicePhone() + "&invoiceProvince=" + orderDO.getInvoiceProvice() + "&invoiceCity=" + orderDO.getInvoiceCity()
                         + "&invoiceCounty=" + orderDO.getInvoiceCounty() + "&invoiceAddress=" + orderDO.getInvoiceAddress();
             }
             data = data + "&doOrderPriceMode=" + 1 + "&orderPriceSnap=" + orderDO.getOrderPriceSnap();
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_SUBMIT_ORDER;
+            throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
         }
     }
 
     @Override
-    public String confirmOrder(String token, String jdOrderId) throws Exception {
+    public ReturnTypeDO confirmOrder(String token, String jdOrderId) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.CONFIRM_ORDER;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            Boolean result =(Boolean) json.get("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_CONFIRM_ORDER;
+            throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
         }
     }
 
     @Override
-    public String cancel(String token, String jdOrderId) throws Exception {
+    public ReturnTypeDO cancel(String token, String jdOrderId) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.CANCEL;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            Boolean result =(Boolean) json.get("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_CANCEL_ORDER;
+            throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
         }
     }
 
     @Override
-    public String doPay(String token, String jdOrderId) throws Exception {
+    public ReturnTypeDO doPay(String token, String jdOrderId) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.DO_PAY;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            Boolean result =(Boolean) json.get("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_DO_PAY;
+            throw new Exception(JingDongConstant.ERROR_DO_PAY);
         }
     }
 
     @Override
-    public String selectJdOrderIdByThirdOrder(String token, String thirdOrder) throws Exception {
+    public ReturnTypeDO selectJdOrderIdByThirdOrder(String token, String thirdOrder) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SELECT_JDORDER_ID_BY_THIRD_ORDER;
             String data = "token=" + token + "&thirdOrder=" + thirdOrder;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            String result =(String) json.get("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER;
+            throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
         }
     }
 
 
     @Override
-    public String selectJdOrder(String token, String jdOrderId) throws Exception {
+    public ReturnTypeDO selectJdOrder(String token, String jdOrderId) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SELECT_JDORDER;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_SELECT_JDORDERID;
+            throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
         }
     }
 
     @Override
-    public String orderTrack(String token, String jdOrderId) throws Exception {
+    public ReturnTypeDO orderTrack(String token, String jdOrderId) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.ORDER_TRACK;
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result =json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
-            return JingDongConstant.ERROR_ORDER_TRACK;
+            throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
         }
     }
 

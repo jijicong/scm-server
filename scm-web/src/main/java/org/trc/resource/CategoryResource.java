@@ -2,7 +2,6 @@ package org.trc.resource;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
@@ -10,18 +9,15 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
-import org.trc.domain.category.Property;
 import org.trc.enums.SourceEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.category.CategoryBrandForm;
-import org.trc.form.category.TableDate;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -69,7 +65,7 @@ public class CategoryResource {
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
         category.setCreateTime(Calendar.getInstance().getTime());
         category.setUpdateTime(Calendar.getInstance().getTime());
-        categoryBiz.saveClassify(category);
+        categoryBiz.saveCategory(category);
 
         if (category.getLevel() == 1) {
             category.setFullPathId(null);
