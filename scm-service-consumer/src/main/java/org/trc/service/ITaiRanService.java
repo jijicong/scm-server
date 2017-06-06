@@ -7,6 +7,7 @@ import org.trc.model.ResultModel;
 import java.util.List;
 
 /**
+ * 通知泰然城
  * Created by hzdzf on 2017/6/6.
  */
 public interface ITaiRanService {
