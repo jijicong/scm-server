@@ -80,6 +80,9 @@ public class Supplier extends BaseDO{
     @FormParam("channel")
     @NotEmpty
     private String channel;
+    @FormParam("supplierInterfaceId")
+    @Length(max = 32, message = "供应商接口ID长度不能超过32个")
+    private String supplierInterfaceId;
 
     @Transient
     private String channelName;//供应商渠道名称
@@ -249,5 +252,13 @@ public class Supplier extends BaseDO{
     }
     public void setBrandName(String brandName) {
         this.brandName = brandName;
+    }
+
+    public String getSupplierInterfaceId() {
+        return supplierInterfaceId;
+    }
+
+    public void setSupplierInterfaceId(String supplierInterfaceId) {
+        this.supplierInterfaceId = supplierInterfaceId;
     }
 }

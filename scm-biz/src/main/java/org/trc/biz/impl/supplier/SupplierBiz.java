@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
@@ -75,6 +76,8 @@ public class SupplierBiz implements ISupplierBiz {
     private ChannelService channelService;
     @Autowired
     private BrandService brandService;
+    @Autowired
+    private ICategoryBiz categoryBiz;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -822,18 +825,32 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     public List<SupplierCategoryExt> querySupplierCategory(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理分类供应商编码不能为空");
-        return supplierCategoryService.selectSupplierCategorys(supplierCode);
+        List<SupplierCategoryExt> supplierCategoryExtList = supplierCategoryService.selectSupplierCategorys(supplierCode);
+        AssertUtil.notEmpty(supplierCategoryExtList, String.format("根据供应商编码[%s]查询供应商代理类目为空", supplierCode));
+        for(SupplierCategoryExt supplierCategoryExt : supplierCategoryExtList){
+            String categoryName = categoryBiz.getCategoryName(supplierCategoryExt.getCategoryId());
+            supplierCategoryExt.setCategoryName(categoryName);
+        }
+        return supplierCategoryExtList;
     }
+
 
     @Override
     public List<SupplierBrandExt> querySupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理品牌供应商编码不能为空");
-        return supplierBrandService.selectSupplierBrands(supplierCode);
+        List<SupplierBrandExt> supplierBrandExtList = supplierBrandService.selectSupplierBrands(supplierCode);
+        AssertUtil.notEmpty(supplierBrandExtList, String.format("根据供应商编码[%s]查询供应商代理品牌为空", supplierCode));
+        for(SupplierBrandExt supplierBrandExt : supplierBrandExtList){
+            String categoryName = categoryBiz.getCategoryName(supplierBrandExt.getCategoryId());
+            supplierBrandExt.setCategoryName(categoryName);
+        }
+        return supplierBrandExtList;
     }
 
     @Override
     public SupplierExt querySupplierInfo(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商信息供应商编码不能为空");
+        SupplierExt supplierExt = new SupplierExt();
         Supplier supplier = new Supplier();
         supplier.setSupplierCode(supplierCode);
         supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -841,11 +858,13 @@ public class SupplierBiz implements ISupplierBiz {
         supplier = supplierService.selectOne(supplier);
         AssertUtil.notNull(supplier, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商基本信息为空"));
 
-        Certificate certificate = new Certificate();
-        certificate.setSupplierCode(supplierCode);
-        certificate = certificateService.selectOne(certificate);
-        AssertUtil.notNull(certificate, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商证件信息为空"));
-
+        if(StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())){
+            Certificate certificate = new Certificate();
+            certificate.setSupplierCode(supplierCode);
+            certificate = certificateService.selectOne(certificate);
+            AssertUtil.notNull(certificate, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商证件信息为空"));
+            supplierExt.setCertificate(certificate);
+        }
         SupplierFinancialInfo supplierFinancialInfo = new SupplierFinancialInfo();
         supplierFinancialInfo.setSupplierCode(supplierCode);
         supplierFinancialInfo = supplierFinancialInfoService.selectOne(supplierFinancialInfo);
@@ -861,9 +880,7 @@ public class SupplierBiz implements ISupplierBiz {
         List<SupplierChannelRelation> supplierChannelRelations = supplierChannelRelationService.select(supplierChannelRelation);
         AssertUtil.notEmpty(supplierChannelRelations, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商渠道为空"));
 
-        SupplierExt supplierExt = new SupplierExt();
         supplierExt.setSupplier(supplier);
-        supplierExt.setCertificate(certificate);
         supplierExt.setSupplierFinancialInfo(supplierFinancialInfo);
         supplierExt.setSupplierAfterSaleInfo(supplierAfterSaleInfo);
         supplierExt.setSupplierChannelRelations(supplierChannelRelations);
