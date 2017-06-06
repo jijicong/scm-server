@@ -58,7 +58,6 @@ public class BrandBiz implements IBrandBiz {
         if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
             criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
         }
-        example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
         Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         //得到所有图片的缩略图,并以fileKey为key，url为value的形式封装成map

@@ -35,6 +35,7 @@ public class Property extends BaseDO {
     @Transient
     @FormParam("gridValue")
     private String gridValue;
+    private String lastEditOperator;//最新更新人
 
     public Long getId() {
         return id;
@@ -90,5 +91,13 @@ public class Property extends BaseDO {
 
     public void setGridValue(String gridValue) {
         this.gridValue = gridValue;
+    }
+
+    public String getLastEditOperator() {
+        return lastEditOperator;
+    }
+
+    public void setLastEditOperator(String lastEditOperator) {
+        this.lastEditOperator = lastEditOperator;
     }
 }
