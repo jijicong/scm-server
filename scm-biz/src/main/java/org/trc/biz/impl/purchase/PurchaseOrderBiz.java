@@ -44,7 +44,7 @@ import java.util.Map;
 @Service("purchaseOrderBiz")
 public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(PurchaseOrderBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(PurchaseOrderBiz.class);
     @Resource
     private IPurchaseOrderService purchaseOrderService;
     @Resource

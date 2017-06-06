@@ -35,7 +35,7 @@ import java.util.List;
 @Service("purchaseGroupBiz")
 public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(PurchaseGroupBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(PurchaseGroupBiz.class);
     @Resource
     private IPurchaseGroupService purchaseGroupService;
     @Resource

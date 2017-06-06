@@ -29,7 +29,7 @@ import java.util.List;
 @Service("roleJurisdictionRelationBiz")
 public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RoleJurisdictionRelationBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(RoleJurisdictionRelationBiz.class);
 
     @Resource
     private IRoleJurisdictionRelationService roleJuridictionRelationService;

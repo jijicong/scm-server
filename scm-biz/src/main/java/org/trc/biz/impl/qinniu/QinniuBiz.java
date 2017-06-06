@@ -32,7 +32,7 @@ import java.util.Map;
 @Service("qinniuBiz")
 public class QinniuBiz implements IQinniuBiz{
 
-    private final static Logger log = LoggerFactory.getLogger(QinniuBiz.class);
+    private Logger  log = LoggerFactory.getLogger(QinniuBiz.class);
 
     @Autowired
     private IQinniuService qinniuService;

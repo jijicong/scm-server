@@ -38,7 +38,7 @@ import java.util.*;
 @Service("supplierBiz")
 public class SupplierBiz implements ISupplierBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(SupplierBiz.class);
+    private Logger  log = LoggerFactory.getLogger(SupplierBiz.class);
 
     //供应商类型：国内供应商
     private static final String INTERNAL_SUPPLIER = "internalSupplier";

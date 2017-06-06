@@ -37,7 +37,7 @@ import java.util.List;
 @Service("channelBiz")
 public class ChannelBiz implements IChannelBiz {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
 
     private final static String  SERIALNAME = "QD";
 

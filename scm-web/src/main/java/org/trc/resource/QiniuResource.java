@@ -24,7 +24,7 @@ import java.io.InputStream;
 @Path(SupplyConstants.QinNiu.ROOT)
 public class QiniuResource {
 
-    private final static Logger log = LoggerFactory.getLogger(QiniuResource.class);
+    private Logger  log = LoggerFactory.getLogger(QiniuResource.class);
 
     //逗号
     private static final String DOU_HAO = ",";

@@ -35,7 +35,7 @@ import java.util.List;
 @Service("warehouseBiz")
 public class WarehouseBiz implements IWarehouseBiz {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
 
     private final static String  SERIALNAME="CK";
 
