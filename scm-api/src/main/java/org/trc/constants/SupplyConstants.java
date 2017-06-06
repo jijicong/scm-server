@@ -525,6 +525,8 @@ public class SupplyConstants {
         public static final String TRANSORT_COSTS_TAKE = "transportCostsTake";
         //处理优先级
         public static final String HANDLER_PRIORITY = "handlerPriority";
+        //国家
+        public static final String COUNTRY = "country";
     }
 
     /**

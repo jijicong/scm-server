@@ -34,6 +34,9 @@ public class CategoryBiz implements ICategoryBiz {
 
     private Logger log = LoggerFactory.getLogger(CategoryBiz.class);
 
+    //分类名称全路径分割符号
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+
     @Autowired
     private ICategoryService categoryService;
 
@@ -466,6 +469,20 @@ public class CategoryBiz implements ICategoryBiz {
             categoryPropertyService.updateByPrimaryKey(categoryProperty);
         }
 
+    }
+
+    @Override
+    public String getCategoryName(Long categoryId) throws Exception {
+        List<String> categoryNames = queryCategoryNamePath(categoryId);
+        AssertUtil.notEmpty(categoryNames, String.format("根据分类ID[%s]查询分类全路径名称为空", categoryId.toString()));
+        String categoryName = "";
+        for(String name : categoryNames){
+            categoryName = name + CATEGORY_NAME_SPLIT_SYMBOL + categoryName;
+        }
+        if(categoryName.length() > 0){
+            categoryName = categoryName.substring(0, categoryName.length()-1);
+        }
+        return categoryName;
     }
 
 
