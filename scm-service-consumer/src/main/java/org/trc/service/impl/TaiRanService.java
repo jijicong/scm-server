@@ -141,7 +141,7 @@ public class TaiRanService implements ITaiRanService {
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
         params.put("action", action);
-        params.put("changeTime", operateTime);
+        params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("propertyToTrc", propertyToTrc);
