@@ -21,7 +21,7 @@ import java.util.Date;
  */
 public class DateUtils {
 
-	private final static Logger log = LoggerFactory.getLogger(DateUtils.class);
+	private static Logger  log = LoggerFactory.getLogger(DateUtils.class);
 	
 	public static final String COMPACT_DATE_FORMAT = "yyyyMMdd";
 	public static final String YM = "yyyyMM";

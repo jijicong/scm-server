@@ -41,7 +41,7 @@ import java.util.*;
 @Service("userAccreditInfoBiz")
 public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
+    private Logger  LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
 
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;

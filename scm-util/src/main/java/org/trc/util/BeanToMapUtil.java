@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class BeanToMapUtil {
 
-    private final static Logger log = LoggerFactory.getLogger(BeanToMapUtil.class);
+    private static Logger  log = LoggerFactory.getLogger(BeanToMapUtil.class);
 
     /**
      * 将一个 Map 对象转化为一个 JavaBean

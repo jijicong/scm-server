@@ -36,8 +36,7 @@ import java.util.List;
 @Service("configBiz")
 public class ConfigBiz implements IConfigBiz {
 
-
-    private final static Logger log = LoggerFactory.getLogger(ConfigBiz.class);
+    private Logger  log = LoggerFactory.getLogger(ConfigBiz.class);
 
     @Autowired
     private IDictTypeService dictTypeService;
@@ -169,7 +168,17 @@ public class ConfigBiz implements IConfigBiz {
         }*/
         example.orderBy("typeCode").asc().orderBy("isValid").desc();
         //分页查询
-        return dictService.pagination(example, page, queryModel);
+        page = dictService.pagination(example, page, queryModel);
+        setDictTypeName(page.getResult());
+        return page;
+    }
+
+    private void setDictTypeName(List<Dict> dictList) throws Exception {
+        for(Dict dict : dictList){
+            DictType dictType = findDictTypeByTypeNo(dict.getTypeCode());
+            AssertUtil.notNull(dictType, String.format("根据字典类型编码[%s]查询字典类型信息为空", dict.getTypeCode()));
+            dict.setTypeName(dictType.getName());
+        }
     }
 
     @Override

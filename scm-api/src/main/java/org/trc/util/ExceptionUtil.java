@@ -21,7 +21,7 @@ import org.trc.exception.ParamValidException;
  *  
  */
 public class ExceptionUtil {
-	private final static Logger log = LoggerFactory.getLogger(ExceptionUtil.class);
+	private static Logger log = LoggerFactory.getLogger(ExceptionUtil.class);
 	/**
 	 *
 	* @Title: handlerException 

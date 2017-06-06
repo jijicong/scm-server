@@ -17,7 +17,7 @@ import java.util.Properties;
  */
 public class PropertyResourceUtil {
 
-	private final static Logger log = LoggerFactory.getLogger(PropertyResourceUtil.class);
+	private static Logger  log = LoggerFactory.getLogger(PropertyResourceUtil.class);
 	
 	private final static String PROPERTY_FILE = "config.properties";
 	/**

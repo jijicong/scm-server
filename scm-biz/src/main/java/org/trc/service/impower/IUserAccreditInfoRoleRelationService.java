@@ -5,6 +5,7 @@ import org.trc.domain.impower.UserAccreditRoleRelation;
 import org.trc.service.IBaseService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sone on 2017/5/16.
@@ -14,7 +15,7 @@ public interface IUserAccreditInfoRoleRelationService extends IBaseService<UserA
     /**
      * 根据userAccreditId删除关联的角色
      */
-    void deleteByUserAccreditId(Long userAccreditId) throws Exception;
+    void deleteByUserAccreditId(Long userAccreditId);
 
     /**
      * 根据用户授权信息表id查询用户角色id
@@ -23,5 +24,11 @@ public interface IUserAccreditInfoRoleRelationService extends IBaseService<UserA
      * @return
      * @throws Exception
      */
-    List<UserAccreditRoleRelation> selectListByUserAcId(Long userAccreditId) throws Exception;
+    List<UserAccreditRoleRelation> selectListByUserAcId(Long userAccreditId);
+
+    /**
+     * 根据角色的id修改关联表中的状态
+     */
+    void updateStatusByRoleId(Map<String , Object> map);
+
 }
