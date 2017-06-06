@@ -18,7 +18,7 @@ public class ScoreApplication extends ResourceConfig {
 
         register(MultiPartFeature.class);
 
-        packages("org.tairan.resource");
+        packages("org.trc.resource");
     }
 
 }

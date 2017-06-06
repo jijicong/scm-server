@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.trc.domain.category.Brand;
 import org.trc.service.impl.tairan.util.CommomUtils;
@@ -28,6 +29,7 @@ public class TBrandServiceImpl implements TBrandService {
 
     private static final String underLine = "_";
 
+    @Transactional
     @Override
     public ResultModel sendBrandNotice(String action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
 
@@ -91,7 +93,7 @@ public class TBrandServiceImpl implements TBrandService {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
-
+        System.out.println(params.toJSONString());
         String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/example/brand", params.toJSONString(), 10000);
         logger.info(result);
     }

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
@@ -31,6 +32,7 @@ public class TPropertyServiceImpl implements TPropertyService {
 
     private static final String underLine = "_";
 
+    @Transactional
     @Override
     public ResultModel sendPropertyNotice(String action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
 

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.util.Assert;
 import org.trc.util.MD5;
 
 import javax.ws.rs.*;
@@ -59,6 +58,14 @@ public class ExampleResource {
         jsonObject.put(Constant.Return.STATUS, 1);
         jsonObject.put(Constant.Return.MSG, "信息处理成功");
         return jsonObject.toJSONString();
+    }
+
+
+    @POST
+    @Path("/brand2/{test}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String brandTest(@PathParam("test") String test) throws Exception {
+        return test;
     }
 
 
@@ -156,7 +163,7 @@ public class ExampleResource {
             return jsonObject.toJSONString();
         }
 
-        //时间
+        //时间 与operateTime比较，30分钟内通过  时间以毫秒传送给你
         if ((System.currentTimeMillis() - Long.decode(operateTime)) >= Constant.Commom.TIMELIMIT) {
             jsonObject.put(Constant.Return.STATUS, 0);
             jsonObject.put(Constant.Return.MSG, "已超时");

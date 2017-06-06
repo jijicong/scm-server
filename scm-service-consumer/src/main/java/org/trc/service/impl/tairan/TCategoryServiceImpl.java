@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
@@ -31,6 +32,7 @@ public class TCategoryServiceImpl implements TCategoryService {
 
     private static final String underLine = "_";
 
+    @Transactional
     @Override
     public ResultModel sendCategoryNotice(String action, Category oldCategory, Category category,
                                           List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {

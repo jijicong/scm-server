@@ -2,6 +2,7 @@ package org.trc.service.impl.tairan;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.domain.goods.Items;
 import org.trc.service.tairan.TItemService;
 import org.trc.util.GuidUtil;
@@ -23,6 +24,7 @@ public class TItemServiceImpl implements TItemService {
     @Resource
     private IItemSalesProperyBiz itemSalesProperyBiz;*/
 
+   @Transactional
     @Override
     public String sendItemNotice(Items items, long operateTime, String action) throws Exception {
         logger.info("商品信息----" + items);
