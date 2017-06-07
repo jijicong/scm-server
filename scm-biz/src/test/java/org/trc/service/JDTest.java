@@ -221,9 +221,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         try {
             String token = iJingDongBiz.getAccessToken();
             OrderDO orderDO = new OrderDO();
+            orderDO.setThirdOrder("124565");
             JSONArray sku = new JSONArray();
             JSONObject obj = new JSONObject();
-            obj.put("thirdOrder", 124565);
             obj.put("skuId", "3553567");
             obj.put("num", 1);
             obj.put("bNeedAnnex", true);

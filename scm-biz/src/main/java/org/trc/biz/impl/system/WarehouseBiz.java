@@ -35,7 +35,7 @@ import java.util.List;
 @Service("warehouseBiz")
 public class WarehouseBiz implements IWarehouseBiz {
 
-    private Logger  LOGGER = LoggerFactory.getLogger(ChannelBiz.class);
+    private Logger logger = LoggerFactory.getLogger(ChannelBiz.class);
 
     private final static String  SERIALNAME="CK";
 
@@ -82,30 +82,22 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
-        if (null != tmp) {
-            String msg = CommonUtil.joinStr("仓库名称[name=", warehouse.getName(), "]的数据已存在,请使用其他名称").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(tmp,String.format("仓库名称[name=%s]的数据已存在,请使用其他名称",warehouse.getName()));
         ParamsUtil.setBaseDO(warehouse);
         warehouse.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
-        try {
-            warehouseService.insert(warehouse);
-        }catch (Exception e){
-            String msg = CommonUtil.joinStr("仓库保存,数据库操作失败").toString();
-            LOGGER.error(msg);
+        int count = warehouseService.insert(warehouse);
+        if(count==0){
+            String msg = "仓库保存,数据库操作失败";
+            logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
+
     }
 
     @Override
     public Warehouse findWarehouseByName(String name) throws Exception {
 
-        if(StringUtils.isBlank(name)){
-            String msg = CommonUtil.joinStr("根据渠道名称查询渠道的参数name为空").toString();
-            LOGGER.error(msg);
-            throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+        AssertUtil.notBlank(name,"根据渠道名称查询渠道的参数name为空");
         Warehouse warehouse = new Warehouse();
         warehouse.setName(name);
         return warehouseService.selectOne(warehouse);
@@ -126,8 +118,8 @@ public class WarehouseBiz implements IWarehouseBiz {
         updateWarehouse.setUpdateTime(Calendar.getInstance().getTime());
         int count = warehouseService.updateByPrimaryKeySelective(updateWarehouse);
         if (count == 0) {
-            String msg = CommonUtil.joinStr("修改仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
-            LOGGER.error(msg);
+            String msg = String.format("修改仓库%s数据库操作失败",JSON.toJSONString(warehouse));
+            logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
 
@@ -140,10 +132,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         Warehouse warehouse = new Warehouse();
         warehouse.setId(id);
         warehouse = warehouseService.selectOne(warehouse);
-        if (null == warehouse) {
-            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询仓库为空").toString();
-            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(warehouse,String.format("根据主键ID[id=%s]查询仓库为空",id.toString()));
         return warehouse;
 
     }
@@ -155,12 +144,11 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
         int count = warehouseService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
-            String msg = CommonUtil.joinStr("修改仓库", JSON.toJSONString(warehouse), "数据库操作失败").toString();
-            LOGGER.error(msg);
+            String msg = String.format("修改仓库%s数据库操作失败",JSON.toJSONString(warehouse));
+            logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
     }
-
 
 }

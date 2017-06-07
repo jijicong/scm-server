@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Channel;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
 import org.trc.domain.supplier.*;
+import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -24,6 +27,8 @@ import org.trc.exception.ConfigException;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.supplier.*;
+import org.trc.service.impl.category.BrandService;
+import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -65,6 +70,14 @@ public class SupplierBiz implements ISupplierBiz {
     private ISupplierFinancialInfoService supplierFinancialInfoService;
     @Autowired
     private ISupplierAfterSaleInfoService supplierAfterSaleInfoService;
+    @Autowired
+    private ISupplierApplyService supplierApplyService;
+    @Autowired
+    private ChannelService channelService;
+    @Autowired
+    private BrandService brandService;
+    @Autowired
+    private ICategoryBiz categoryBiz;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -115,39 +128,72 @@ public class SupplierBiz implements ISupplierBiz {
             criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             criteria.andIn("supplierCode", supplierCodes);
             List<SupplierBrand> supplierBrands = supplierBrandService.selectByExample(example);
+            AssertUtil.notEmpty(supplierBrands, String.format("根据供应商编码[%s]查询供应商品牌为空",
+                    CommonUtil.converCollectionToString(supplierCodes)));
             //查询供应商渠道
-            Example example2 = new Example(SupplierChannelRelation.class);
-            Example.Criteria criteria2 = example.createCriteria();
+            Example example2 = new Example(SupplierApplyAudit.class);
+            Example.Criteria criteria2 = example2.createCriteria();
             criteria2.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             criteria2.andIn("supplierCode", supplierCodes);
-            List<SupplierChannelRelation> supplierChannelRelations = supplierChannelRelationService.selectByExample(example2);
-            //设置供应商品牌名称和渠道名称
+            criteria2.andEqualTo("status", AuditStatusEnum.PASS.getCode());//审核通过
+            List<SupplierApply> supplierChannels = supplierApplyService.selectByExample(example2);
+            /*AssertUtil.notEmpty(supplierChannels, String.format("根据供应商编码[%s]查询供应商供货渠道为空",
+                    CommonUtil.converCollectionToString(supplierCodes)));*/
             for(Supplier s : page.getResult()){
-                StringBuilder channelName = new StringBuilder();
-                for(SupplierChannelRelation r : supplierChannelRelations){
-                    if(StringUtils.equals(s.getSupplierCode(), r.getSupplierCode())){
-                        channelName.append(r.getChannelCode()).append(",");
-                    }
+                if(supplierChannels.size() > 0){
+                    //设置渠道名称
+                    setChannelName(s, supplierChannels);
                 }
-                String _channelName = channelName.toString();
-                if(_channelName.length() > 0 && _channelName.lastIndexOf(SupplyConstants.Symbol.COMMA) == (_channelName.length() - 1)){
-                    _channelName = _channelName.substring(0, _channelName.length()-1);
-                }
-                s.setChannelName(_channelName);
-                StringBuilder brandlName = new StringBuilder();
-                for(SupplierBrand b : supplierBrands){
-                    if(StringUtils.equals(s.getSupplierCode(), b.getSupplierCode())){
-                        brandlName.append(b.getBrandCode()).append(",");
-                    }
-                }
-                String _brandlName = brandlName.toString();
-                if(_brandlName.length() > 0 && _brandlName.lastIndexOf(SupplyConstants.Symbol.COMMA) == (_brandlName.length() - 1)){
-                    _brandlName = _brandlName.substring(0, _brandlName.length()-1);
-                }
-                s.setBrandName(_brandlName);
+                //设置品牌名称
+                setBrandName(s, supplierBrands);
             }
         }
+    }
 
+    /**
+     * 设置渠道名称
+     * @param supplier
+     * @param supplierChannels
+     */
+    private void setChannelName(Supplier supplier, List<SupplierApply> supplierChannels){
+        String _channels = "";
+        for(SupplierApply supplierApplyAudit : supplierChannels){
+            if(StringUtils.equals(supplier.getSupplierCode(), supplierApplyAudit.getSupplierCode())){
+                Channel channel = new Channel();
+                channel.setCode(supplierApplyAudit.getChannelCode());
+                channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                channel = channelService.selectOne(channel);
+                AssertUtil.notNull(channel, String.format("根据渠道编码[%s]查询渠道信息为空", supplierApplyAudit.getChannelCode()));
+                _channels = _channels + channel.getName()+",";
+            }
+        }
+        if(_channels.length() > 0){
+            _channels = _channels.substring(0, _channels.length()-1);
+            supplier.setChannelName(_channels);
+        }
+    }
+
+    /**
+     * 设置代理品牌名称
+     * @param supplier
+     * @param supplierBrands
+     */
+    private void setBrandName(Supplier supplier, List<SupplierBrand> supplierBrands){
+        String _brands = "";
+        for(SupplierBrand supplierBrand : supplierBrands){
+            if(StringUtils.equals(supplier.getSupplierCode(), supplierBrand.getSupplierCode())){
+                Brand brand = new Brand();
+                brand.setBrandCode(supplierBrand.getBrandCode());
+                brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                brand = brandService.selectOne(brand);
+                AssertUtil.notNull(brand, String.format("根据品牌编码[%s]查询品牌信息为空", supplierBrand.getSupplierCode()));
+                _brands = _brands + brand.getName() + ",";
+            }
+        }
+        if(_brands.length() > 0){
+            _brands = _brands.substring(0, _brands.length()-1);
+            supplier.setBrandName(_brands);
+        }
     }
 
     @Override
@@ -779,18 +825,32 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     public List<SupplierCategoryExt> querySupplierCategory(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理分类供应商编码不能为空");
-        return supplierCategoryService.selectSupplierCategorys(supplierCode);
+        List<SupplierCategoryExt> supplierCategoryExtList = supplierCategoryService.selectSupplierCategorys(supplierCode);
+        AssertUtil.notEmpty(supplierCategoryExtList, String.format("根据供应商编码[%s]查询供应商代理类目为空", supplierCode));
+        for(SupplierCategoryExt supplierCategoryExt : supplierCategoryExtList){
+            String categoryName = categoryBiz.getCategoryName(supplierCategoryExt.getCategoryId());
+            supplierCategoryExt.setCategoryName(categoryName);
+        }
+        return supplierCategoryExtList;
     }
+
 
     @Override
     public List<SupplierBrandExt> querySupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理品牌供应商编码不能为空");
-        return supplierBrandService.selectSupplierBrands(supplierCode);
+        List<SupplierBrandExt> supplierBrandExtList = supplierBrandService.selectSupplierBrands(supplierCode);
+        AssertUtil.notEmpty(supplierBrandExtList, String.format("根据供应商编码[%s]查询供应商代理品牌为空", supplierCode));
+        for(SupplierBrandExt supplierBrandExt : supplierBrandExtList){
+            String categoryName = categoryBiz.getCategoryName(supplierBrandExt.getCategoryId());
+            supplierBrandExt.setCategoryName(categoryName);
+        }
+        return supplierBrandExtList;
     }
 
     @Override
     public SupplierExt querySupplierInfo(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商信息供应商编码不能为空");
+        SupplierExt supplierExt = new SupplierExt();
         Supplier supplier = new Supplier();
         supplier.setSupplierCode(supplierCode);
         supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -798,11 +858,13 @@ public class SupplierBiz implements ISupplierBiz {
         supplier = supplierService.selectOne(supplier);
         AssertUtil.notNull(supplier, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商基本信息为空"));
 
-        Certificate certificate = new Certificate();
-        certificate.setSupplierCode(supplierCode);
-        certificate = certificateService.selectOne(certificate);
-        AssertUtil.notNull(certificate, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商证件信息为空"));
-
+        if(StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())){
+            Certificate certificate = new Certificate();
+            certificate.setSupplierCode(supplierCode);
+            certificate = certificateService.selectOne(certificate);
+            AssertUtil.notNull(certificate, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商证件信息为空"));
+            supplierExt.setCertificate(certificate);
+        }
         SupplierFinancialInfo supplierFinancialInfo = new SupplierFinancialInfo();
         supplierFinancialInfo.setSupplierCode(supplierCode);
         supplierFinancialInfo = supplierFinancialInfoService.selectOne(supplierFinancialInfo);
@@ -818,9 +880,7 @@ public class SupplierBiz implements ISupplierBiz {
         List<SupplierChannelRelation> supplierChannelRelations = supplierChannelRelationService.select(supplierChannelRelation);
         AssertUtil.notEmpty(supplierChannelRelations, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商渠道为空"));
 
-        SupplierExt supplierExt = new SupplierExt();
         supplierExt.setSupplier(supplier);
-        supplierExt.setCertificate(certificate);
         supplierExt.setSupplierFinancialInfo(supplierFinancialInfo);
         supplierExt.setSupplierAfterSaleInfo(supplierAfterSaleInfo);
         supplierExt.setSupplierChannelRelations(supplierChannelRelations);

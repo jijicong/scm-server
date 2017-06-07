@@ -26,7 +26,8 @@ public enum JingDongEnum {
     ERROR_GET_SELL_PRICE("0001007","查询商品价格异常"),
     ERROR_GET_NEW_STOCK_BY_ID("0001008","查询商品库存异常"),
     ERROR_GET_STOCK_BY_ID("0001009","查询商品库存异常"),
-    ERROR_GET_ADDRESS("0001010","查询地址异常");
+    ERROR_GET_ADDRESS("0001010","查询地址异常"),
+    ERROR_GET_TOKEN("0001011","获取TOKEN失败");
 
 
     private String code;

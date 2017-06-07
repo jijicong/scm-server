@@ -32,7 +32,10 @@ import java.util.*;
 @Service("categoryBiz")
 public class CategoryBiz implements ICategoryBiz {
 
-    private Logger  log = LoggerFactory.getLogger(CategoryBiz.class);
+    private Logger log = LoggerFactory.getLogger(CategoryBiz.class);
+
+    //分类名称全路径分割符号
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
 
     @Autowired
     private ICategoryService categoryService;
@@ -133,11 +136,10 @@ public class CategoryBiz implements ICategoryBiz {
         category.setUpdateTime(Calendar.getInstance().getTime());
         int count = categoryService.updateByPrimaryKeySelective(category);
         if (count == 0) {
-            String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
+            String msg = "修改分类" + JSON.toJSONString(category) + "数据库操作失败";
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
-
     }
 
     /**
@@ -152,12 +154,15 @@ public class CategoryBiz implements ICategoryBiz {
         ParamsUtil.setBaseDO(category);
         int count = categoryService.insert(category);
         if (count == 0) {
-            String msg = CommonUtil.joinStr("增加分类", JSON.toJSONString(category), "数据库操作失败").toString();
+            String msg = "增加分类" + JSON.toJSONString(category) + "数据库操作失败";
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_SAVE_EXCEPTION, msg);
+        } else {
+            if (StringUtils.equals(category.getIsValid(), ValidEnum.VALID.getCode())) {
+                updateLastCategory(category.getParentId());
+            }
         }
     }
-
 
     /**
      * 查询分类编码是否存在
@@ -245,19 +250,49 @@ public class CategoryBiz implements ICategoryBiz {
         AssertUtil.notNull(category.getId(), "类目管理模块修改分类信息失败，分类信息为空");
         Category updateCategory = new Category();
         updateCategory.setId(category.getId());
-        if (category.getIsValid().equals(ValidEnum.VALID.getCode())) {
+        Category category1 = categoryService.selectOne(updateCategory);
+        if (StringUtils.equals(category.getIsValid(), ValidEnum.VALID.getCode())) {
             updateCategory.setIsValid(ValidEnum.NOVALID.getCode());
         } else {
             updateCategory.setIsValid(ValidEnum.VALID.getCode());
         }
+        if (category1.getParentId() != null && StringUtils.equals(category1.getIsValid(), ValidEnum.NOVALID.getCode())) {
+            updateLastCategory(category1.getParentId());
+        }
         updateCategory.setUpdateTime(Calendar.getInstance().getTime());
         int count = categoryService.updateByPrimaryKeySelective(updateCategory);
         if (count == 0) {
-            String msg = CommonUtil.joinStr("修改分类", JSON.toJSONString(category), "数据库操作失败").toString();
+            String msg = "修改分类状态" + JSON.toJSONString(category) + "操作失败";
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
 
+    }
+
+    /**
+     * 要启动的分类如果上级分类处于停用状态时,启用分类
+     *
+     * @param parentId
+     * @throws Exception
+     */
+    private void updateLastCategory(Long parentId) throws Exception {
+
+        Category category = new Category();
+        category.setId(parentId);
+        category = categoryService.selectOne(category);
+        if (StringUtils.equals(category.getIsValid(), ValidEnum.NOVALID.getCode())) {
+            category.setIsValid(ValidEnum.VALID.getCode());
+            category.setUpdateTime(Calendar.getInstance().getTime());
+            int count = categoryService.updateByPrimaryKeySelective(category);
+            if (count == 0) {
+                String msg = "修改分类状态" + JSON.toJSONString(category) + "操作失败";
+                log.error(msg);
+                throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            }
+        }
+        if (category.getParentId() != null) {
+            updateLastCategory(category.getParentId());
+        }
     }
 
     /**
@@ -312,32 +347,26 @@ public class CategoryBiz implements ICategoryBiz {
 //        AssertUtil.notBlank(brandIds, "分类关联品牌brandIdID为空");
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         List<Long> brandIdsList = Arrays.asList(StringUtil.splitByComma(brandIds));
-        if (brandIdsList.size() > 0 && brandIdsList != null) {
-            String[] delIds = delRecord.split(SupplyConstants.Symbol.COMMA);
-            if (delIds.length > 0 && !StringUtils.equals(delRecord, "")) {
-                for (String id : delIds) {
-                    categoryBrandService.deleteByPrimaryKey(Long.parseLong(id));
-                }
-            }
-            List<Brand> brands = brandService.selectBrandList(brandIdsList);
-            Category category = new Category();
-            category.setId(categoryId);
-            category = categoryService.selectOne(category);
-            List<CategoryBrand> categoryBrands = new ArrayList<>();
-            for (Brand brand : brands) {
-                CategoryBrand categoryBrand = new CategoryBrand();
-                categoryBrand.setBrandCode(brand.getBrandCode());
-                categoryBrand.setBrandId(brand.getId());
-                categoryBrand.setCategoryId(category.getId());
-                categoryBrand.setCategoryCode(category.getCategoryCode());
-                categoryBrand.setCreateTime(Calendar.getInstance().getTime());
-                categoryBrands.add(categoryBrand);
-            }
-            if (categoryBrands.size() > 0 && categoryBrands != null) {
-                categoryBrandService.insertList(categoryBrands);
-            }
+        categoryBrandService.deleteByCategoryId(categoryId);
+        List<Brand> brands = brandService.selectBrandList(brandIdsList);
+        Category category = new Category();
+        category.setId(categoryId);
+        category = categoryService.selectOne(category);
+        List<CategoryBrand> categoryBrands = new ArrayList<>();
+        for (Brand brand : brands) {
+            CategoryBrand categoryBrand = new CategoryBrand();
+            categoryBrand.setBrandCode(brand.getBrandCode());
+            categoryBrand.setBrandId(brand.getId());
+            categoryBrand.setCategoryId(category.getId());
+            categoryBrand.setCategoryCode(category.getCategoryCode());
+            categoryBrand.setCreateTime(Calendar.getInstance().getTime());
+            categoryBrands.add(categoryBrand);
+        }
+        if (categoryBrands.size() > 0 && categoryBrands != null) {
+            categoryBrandService.insertList(categoryBrands);
         }
     }
+
 
     /**
      * 查询已经关联的属性
@@ -429,7 +458,9 @@ public class CategoryBiz implements ICategoryBiz {
         }
         if (insertProperties.size() > 0 && insertProperties != null) {
             categoryPropertyService.insertList(insertProperties);
-        } else if (delProperties.size() > 0 && delProperties != null) {
+        }
+
+        if (delProperties.size() > 0 && delProperties != null) {
             for (CategoryProperty categoryProperty : delProperties) {
                 categoryPropertyService.deleteByPrimaryKey(categoryProperty.getId());
             }
@@ -438,6 +469,20 @@ public class CategoryBiz implements ICategoryBiz {
             categoryPropertyService.updateByPrimaryKey(categoryProperty);
         }
 
+    }
+
+    @Override
+    public String getCategoryName(Long categoryId) throws Exception {
+        List<String> categoryNames = queryCategoryNamePath(categoryId);
+        AssertUtil.notEmpty(categoryNames, String.format("根据分类ID[%s]查询分类全路径名称为空", categoryId.toString()));
+        String categoryName = "";
+        for(String name : categoryNames){
+            categoryName = name + CATEGORY_NAME_SPLIT_SYMBOL + categoryName;
+        }
+        if(categoryName.length() > 0){
+            categoryName = categoryName.substring(0, categoryName.length()-1);
+        }
+        return categoryName;
     }
 
 
