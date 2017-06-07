@@ -1,4 +1,4 @@
-package org.trc.service.tairan.model;
+package org.trc.model;
 
 /**
  * 返回值封装
@@ -9,6 +9,11 @@ public class ResultModel {
     private String status;
 
     private String msg;
+
+    public ResultModel(String status, String msg) {
+        this.status = status;
+        this.msg = msg;
+    }
 
     public String getStatus() {
         return status;

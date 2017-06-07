@@ -539,19 +539,6 @@ public class GoodsBiz implements IGoodsBiz {
      * @param propertyValueId
      * @return
      */
-    /*private String[] getPropertyIdAndPicture(ItemSalesPropery itemSalesPropery, Long propertyValueId){
-        JSONArray categoryArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
-        String[] _result = new String[2];
-        for(Object obj : categoryArray){
-            JSONObject jbo = (JSONObject) obj;
-            if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
-                _result[0] = jbo.getString("propertyId");
-                _result[1] = jbo.getString("picture");
-                break;
-            }
-        }
-        return _result;
-    }*/
     private String[] getPropertyIdAndPicture(JSONArray itemSalesArray, Long propertyValueId){
         String[] _result = new String[2];
         for(Object obj : itemSalesArray){
@@ -942,7 +929,8 @@ public class GoodsBiz implements IGoodsBiz {
         items.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         items = itemsService.selectOne(items);
         AssertUtil.notNull(items, String.format("根据商品SPU编码[%s]查询商品基础信息为空", spuCode));
-        items.setCategoryName(getCategoryName(items.getCategoryId()));
+        String categoryName = categoryBiz.getCategoryName(items.getCategoryId());
+        items.setCategoryName(categoryName);
         //查询商品SKU信息
         Skus skus = new Skus();
         skus.setSpuCode(spuCode);
@@ -979,23 +967,5 @@ public class GoodsBiz implements IGoodsBiz {
         return itemsExt;
     }
 
-    /**
-     * 获取分类名称
-     * @param categoryId
-     * @return
-     * @throws Exception
-     */
-    private String getCategoryName(Long categoryId) throws Exception {
-        List<String> categoryNames = categoryBiz.queryCategoryNamePath(categoryId);
-        AssertUtil.notEmpty(categoryNames, String.format("根据分类ID[%s]查询分类全路径名称为空", categoryId.toString()));
-        String categoryName = "";
-        for(String name : categoryNames){
-            categoryName = name + CATEGORY_NAME_SPLIT_SYMBOL + categoryName;
-        }
-        if(categoryName.length() > 0){
-            categoryName = categoryName.substring(0, categoryName.length()-1);
-        }
-        return categoryName;
-    }
 
 }

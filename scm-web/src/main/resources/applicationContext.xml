@@ -2,10 +2,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:p="http://www.springframework.org/schema/p"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <!-- 将多个配置文件读取到容器中，交给Spring管理 -->
     <bean id="config" class="org.trc.spring.TrPropertyPlaceholderConfigurer">
@@ -13,6 +15,7 @@
             <list>
                 <value>classpath:config/dev/scm-jdbc.properties</value>
                 <value>classpath:config/dev/comsumer-config.properties</value>
+                <value>classpath:config/dev/tairan.properties</value>
                 <value>classpath:config/dev/redis.properties</value>
                 <value>classpath:config/dev/config.properties</value>
             </list>
@@ -29,6 +32,11 @@
     <import resource="classpath:resource-tx.xml"/>
     <import resource="classpath:comsumer-config.xml"/>
     <import resource="classpath:redis-config.xml"/>
+
+    <!--<mvc:annotation-driven conversion-service="conversionService" />
+    <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+
+    </bean>-->
 
     <!-- 开启注解注入等 -->
     <context:annotation-config />

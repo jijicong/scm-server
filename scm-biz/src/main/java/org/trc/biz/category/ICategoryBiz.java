@@ -132,6 +132,9 @@ public interface ICategoryBiz {
     void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception;
 
     /**
-     *
+     * @param categoryId
+     * @return
+     * @throws Exception
      */
+    String getCategoryName(Long categoryId) throws Exception;
 }

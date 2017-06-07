@@ -15,7 +15,7 @@ public interface UserAccreditRoleRelationMapper extends BaseMapper<UserAccreditR
     /**
      *根据userAccreditId删除关联的角色
      */
-    void deleteByUserAccreditId(Long userAccreditId);
+    int deleteByUserAccreditId(Long userAccreditId);
 
     /**
      * 根据用户授权信息表id查询用户角色id

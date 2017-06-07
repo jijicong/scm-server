@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.purchase.IPurchaseOrderMapper">
-    <!-- 根据用户的id，查询对应的供应商列表 todo-->
+    <!-- 根据用户的userId，查询对应的渠道，用户申请供应商；因此该查询为渠道渠道申请的审核通过的有效供应商-->
     <select id="findSuppliersByUserId" resultType="org.trc.domain.supplier.Supplier">
-        SELECT id AS supplierId,supplier_code AS supplierCode,supplier_name AS supplierName from supplier WHERE supplier_code IN
-        (
-            SELECT supplier_code from supplier_channel_relation where channel_code =
-                (
-                    SELECT channel_code from user_accredit_info WHERE user_id=#{userId}
-                )
-        )
+        SELECT
+            id ,
+            supplier_code AS supplierCode,
+            supplier_name AS supplierName
+        FROM
+            supplier
+        WHERE
+            is_valid = '1'
+            AND supplier_code IN (
+            SELECT
+            supplier_code
+            FROM
+            apply_for_supplier
+            WHERE
+            STATUS = '2'
+            AND channel_code = (
+            SELECT
+            channel_code
+            FROM
+            user_accredit_info
+            WHERE
+            user_id = #{userId}
+            )
+            )
+
     </select>
     <!--查询某供应商下对应的可卖商品  /*#{supplierCode}*/-->
     <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail">

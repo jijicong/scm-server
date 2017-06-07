@@ -35,7 +35,7 @@ import java.util.*;
 @Service("brandBiz")
 public class BrandBiz implements IBrandBiz {
 
-    private final static Logger log = LoggerFactory.getLogger(BrandBiz.class);
+    private Logger log = LoggerFactory.getLogger(BrandBiz.class);
     private final static String BRAND_CODE_EX_NAME = "PP";
     private final static int BRAND_CODE_LENGTH = 5;
 

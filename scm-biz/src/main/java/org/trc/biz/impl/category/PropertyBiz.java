@@ -75,7 +75,7 @@ public class PropertyBiz implements IPropertyBiz {
             propertyService.insert(property);
         } catch (Exception e) {
             String str = CommonUtil.joinStr("保存属性" + JSON.toJSONString(property) + "到数据库失败").toString();
-            log.error(str);
+            e.printStackTrace();
             throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_SAVE_EXCEPTION, str);
         }
         List<PropertyValue> propertyValueList = JSONArray.parseArray(property.getGridValue(), PropertyValue.class);

@@ -1,12 +1,10 @@
 package org.trc.biz.impl.impower;
 
-import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.trc.biz.impower.IJurisdictionBiz;
 import org.trc.domain.impower.Jurisdiction;
 import org.trc.domain.impower.RoleJurisdictionRelation;
@@ -14,7 +12,6 @@ import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAccreditRoleRelation;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
-import org.trc.service.impl.impower.JurisdictionService;
 import org.trc.service.impower.IJurisdictionService;
 import org.trc.service.impower.IRoleJurisdictionRelationService;
 import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
@@ -31,7 +28,7 @@ import java.util.List;
 @Service("jurisdictionBiz")
 public class JurisdictionBiz implements IJurisdictionBiz {
 
-    private Logger  LOGGER = LoggerFactory.getLogger(JurisdictionBiz.class);
+    private Logger logger = LoggerFactory.getLogger(JurisdictionBiz.class);
     @Resource
     private IJurisdictionService jurisdictionService;
     @Resource
@@ -40,7 +37,6 @@ public class JurisdictionBiz implements IJurisdictionBiz {
     private IUserAccreditInfoService userAccreditInfoService;
     @Autowired
     private IUserAccreditInfoRoleRelationService userAccreditInfoRoleRelationService;
-
 
     private final static Integer WHOLE_JURISDICTION_ID = 1;//全局角色的所属
 
@@ -52,11 +48,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         Jurisdiction jurisdiction = new Jurisdiction();
         jurisdiction.setBelong(WHOLE_JURISDICTION_ID);
         List<Jurisdiction> wholeJurisdictionList = jurisdictionService.select(jurisdiction);
-        if (wholeJurisdictionList == null) {
-            String msg = CommonUtil.joinStr("查询全局权限列表", "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(wholeJurisdictionList,"查询全局权限列表,数据库操作失败");
         return wholeJurisdictionList;
 
     }
@@ -67,11 +59,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         Jurisdiction jurisdiction = new Jurisdiction();
         jurisdiction.setBelong(CHANNEL_JURISDICTION_ID);
         List<Jurisdiction> channelJurisdictionList = jurisdictionService.select(jurisdiction);
-        if (channelJurisdictionList == null) {
-            String msg = CommonUtil.joinStr("查询渠道权限列表", "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(channelJurisdictionList,"查询渠道权限列表, 数据库操作失败");
         return channelJurisdictionList;
 
     }
@@ -85,11 +73,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         List<Jurisdiction> wholeJurisdictionList = findWholeJurisdiction();
         //2.查询对应角色被选中权限
         List<Long> JurisdictionIdList = roleJurisdictionRelationService.selectJurisdictionIdList(roleId);
-        if (JurisdictionIdList == null) {
-            String msg = CommonUtil.joinStr("查询全局角色对应的权限关系", "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(JurisdictionIdList,"查询全局角色对应的权限关系,数据库操作失败");
         //3.赋值checked属性
         for (Jurisdiction jurisdiction : wholeJurisdictionList) {
             for (Long JurisdictionId : JurisdictionIdList) {
@@ -111,11 +95,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         List<Jurisdiction> channelJurisdictionList = findChannelJurisdiction();
         //2.查询对应角色被选中权限
         List<Long> JurisdictionIdList = roleJurisdictionRelationService.selectJurisdictionIdList(roleId);
-        if (JurisdictionIdList == null) {
-            String msg = CommonUtil.joinStr("查询渠道角色对应的权限关系", "数据库操作失败").toString();
-            LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(JurisdictionIdList,"查询渠道角色对应的权限关系,数据库操作失败");
         //3.赋值checked属性
         for (Jurisdiction jurisdiction : channelJurisdictionList) {
             for (Long JurisdictionId : JurisdictionIdList) {
@@ -160,7 +140,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         Long[] codes = new Long[roleJdRelationList.size()];
         for (int i = 0; i < roleJdRelationList.size(); i++) {
-            codes[i] = roleJdRelationList.get(i).getJurisdictionCode();
+            codes[i] = roleJdRelationList.get(i).getJurisdictionId();
         }
         //4.查询具体的权限
         List<Jurisdiction> jurisdictionList = jurisdictionService.selectJurisdictionListByCodes(codes);
