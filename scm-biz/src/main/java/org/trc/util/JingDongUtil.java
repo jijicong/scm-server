@@ -46,15 +46,13 @@ public class JingDongUtil {
 
     /**
      * 将json字符串分装到Common对象中
-     * @param jsonStr
+     * @param list
      * @return
      */
-    public Map buildCommon(String jsonStr) throws Exception{
+    public Map buildCommon(JSONObject list) throws Exception{
         try{
             Map array = new HashMap();
             Common common = new Common();
-            JSONObject json = JSONObject.parseObject(jsonStr);
-            JSONObject list=json.getJSONObject("result");
             String accessToken= (String) list.get("access_token");
             String refreshToken= (String) list.get("refresh_token");
             long time= (long) list.get("time");

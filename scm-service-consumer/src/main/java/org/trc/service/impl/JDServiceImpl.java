@@ -1,9 +1,7 @@
 package org.trc.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +10,7 @@ import org.springframework.stereotype.Service;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
-import org.trc.util.BeanToMapUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.HttpRequestUtil;
-import org.trc.util.MD5;
+import org.trc.util.*;
 
 import java.net.URLEncoder;
 import java.util.*;
@@ -30,12 +25,12 @@ public class JDServiceImpl implements IJDService {
     private JdBaseDO jdBaseDO;
 
     @Override
-    public String createToken() {
+    public ReturnTypeDO createToken() throws Exception{
         try {
             String timestamp = DateUtils.formatDateTime(Calendar.getInstance().getTime());
             String sign = jdBaseDO.getClient_secret() + timestamp + jdBaseDO.getClient_id()
                     + jdBaseDO.getUsername() + jdBaseDO.getPassword() + jdBaseDO.getGrant_type() + jdBaseDO.getClient_secret();
-            sign = MD5.encryption(sign).toUpperCase();
+            sign = EncryptionUtil.encryption(sign,"MD5","UTF-8").toUpperCase();
             String url = jdBaseDO.getJdurl() + JingDongConstant.ACCESS_TOKEN;
             String data =
                     "grant_type=access_token" +
@@ -45,10 +40,15 @@ public class JDServiceImpl implements IJDService {
                             "&timestamp=" + timestamp +
                             "&sign=" + sign;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return JingDongConstant.ERROR_TOKEN;
+            throw new Exception(JingDongConstant.ERROR_TOKEN);
         }
     }
 
@@ -60,17 +60,22 @@ public class JDServiceImpl implements IJDService {
      * @throws Exception
      */
     @Override
-    public String freshAccessTokenByRefreshToken(String refreshToken) throws Exception {
+    public ReturnTypeDO freshAccessTokenByRefreshToken(String refreshToken) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.REFRESH_TOKEN;
             String data = "refresh_token=" + refreshToken +
                     "&client_id=" + jdBaseDO.getClient_id() +
                     "&client_secret=" + jdBaseDO.getClient_secret();
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
-            return rev;
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return JingDongConstant.ERROR_REFRESH_TOKEN;
+            throw new Exception(JingDongConstant.ERROR_TOKEN);
         }
     }
 

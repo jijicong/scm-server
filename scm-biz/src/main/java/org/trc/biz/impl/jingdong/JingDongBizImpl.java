@@ -139,7 +139,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.submitOrder(token, orderDO);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            Boolean state = saveRecord(inputParam, "billOrder(OrderDO orderDO)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "统一下单接口billOrder", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -161,7 +161,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.confirmOrder(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            Boolean state = saveRecord(inputParam, "confirmOrder(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "确认预占库存订单接口confirmOrder", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -183,7 +183,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.cancel(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            Boolean state = saveRecord(inputParam, "cancel(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "取消未确认订单接口cancel", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -204,7 +204,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.doPay(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            Boolean state = saveRecord(inputParam, "doPay(String jdOrderId)", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "发起支付接口doPay", Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -225,7 +225,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.selectJdOrderIdByThirdOrder(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            Boolean state = saveRecord(inputParam, "selectJdOrderIdByThirdOrder(String jdOrderId)", (String)orderResult.getResult(), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "订单反查接口selectJdOrderIdByThirdOrder", (String)orderResult.getResult(), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -246,7 +246,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO orderResult = ijdService.selectJdOrder(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
-            Boolean state = saveRecord(inputParam, "selectJdOrder(String jdOrderId)", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+            Boolean state = saveRecord(inputParam, "查询京东订单信息接口selectJdOrder", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -288,7 +288,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             log.info("输入参数："+inputParam);
             ReturnTypeDO price = ijdService.getSellPrice(token, sku);
             log.info("调用结果："+JSONObject.toJSONString(price));
-            Boolean state = saveRecord(inputParam, "getSellPrice(String sku)", JSONArray.toJSONString(price.getResult()), price.getSuccess());
+            Boolean state = saveRecord(inputParam, "查询商品价格getSellPrice", JSONArray.toJSONString(price.getResult()), price.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
@@ -317,7 +317,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         log.info("输入参数："+inputParam);
         ReturnTypeDO stock = ijdService.getStockById(token, sku, address);
         log.info("调用结果："+JSONObject.toJSONString(stock));
-        Boolean state = saveRecord(inputParam, "getStockById(String sku, AddressDO area)", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
+        Boolean state = saveRecord(inputParam, "获取库存接口getStockById", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
         if (!state){
             log.info("添加记录到数据库失败！");
         }
@@ -341,7 +341,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         log.info("输入参数："+inputParam);
         ReturnTypeDO stock = ijdService.getNewStockById(token, skuNums.toJSONString(), address);
         log.info("调用结果："+JSONObject.toJSONString(stock));
-        Boolean state = saveRecord(inputParam, "getNewStockById(JSONArray skuNums, AddressDO area)", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
+        Boolean state = saveRecord(inputParam, "获取库存接口getNewStockById", JSONArray.toJSONString(stock.getResult()), stock.getSuccess());
         if (!state){
             log.info("添加记录到数据库失败！");
         }
@@ -373,15 +373,18 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     private String createToken() throws Exception {
-        String token;
         Common acc;
-        token = ijdService.createToken();
-        Map<String, Common> map = jingDongUtil.buildCommon(token);
+        ReturnTypeDO rev = ijdService.createToken();
+        JSONObject json = (JSONObject)rev.getResult();
+        if (null == json){
+            return JingDongEnum.ERROR_GET_TOKEN.getName();
+        }
+        Map<String, Common> map = jingDongUtil.buildCommon(json);
         if (null == map){
             return JingDongEnum.ERROR_GET_ADDRESS.getName();
         }
         acc = map.get("accessToken");
-        token = acc.getValue();
+        String token = acc.getValue();
         putToken(acc, map);
         acc = map.get("refreshToken");
         putToken(acc, map);
@@ -396,13 +399,12 @@ public class JingDongBizImpl implements IJingDongBiz {
      * @throws Exception
      */
     private String refreshToken(String refreshToken) throws Exception {
-        String token;
         Common acc;
-        token = ijdService.freshAccessTokenByRefreshToken(refreshToken);
-        Map<String, Common> map = jingDongUtil.buildCommon(token);
+        ReturnTypeDO rev = ijdService.freshAccessTokenByRefreshToken(refreshToken);
+        Map<String, Common> map = jingDongUtil.buildCommon((JSONObject) rev.getResult());
         acc = map.get("accessToken");
         Common ref = map.get("refreshToken");
-        token = acc.getValue();
+        String token = acc.getValue();
         putToken(acc, map);
         putToken(ref, map);
         return token;
@@ -448,7 +450,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             InputRecordDO inputRecordDO = new InputRecordDO();
             OutputRecordDO outputRecordDO = new OutputRecordDO();
             inputRecordDO.setInputParam("输入参数：" + inputParam);
-            inputRecordDO.setType("调用方法:" + type);
+            inputRecordDO.setType("调用方法:JingDongBizImpl类中" + "["+type+"]");
             inputRecordDO.setState(String.valueOf(state));
             outputRecordDO.setOutputParam("返回值：" + outputParam);
             outputRecordDO.setType("调用方法:" + type);
@@ -460,7 +462,6 @@ public class JingDongBizImpl implements IJingDongBiz {
         }catch (Exception e){
             return false;
         }
-
     }
 
 

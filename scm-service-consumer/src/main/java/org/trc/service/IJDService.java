@@ -17,7 +17,7 @@ public interface IJDService {
      * @return 返回Access_Token, RefreshToken
      * @throws Exception
      */
-    String createToken() throws Exception;
+    ReturnTypeDO createToken() throws Exception;
 
     /**
      * 使用RefreshToken刷新AccessToken
@@ -25,7 +25,7 @@ public interface IJDService {
      * @param refreshToken
      * @return
      */
-    String freshAccessTokenByRefreshToken(String refreshToken) throws Exception;
+    ReturnTypeDO freshAccessTokenByRefreshToken(String refreshToken) throws Exception;
 
     /**
      * 获取商品池编号
