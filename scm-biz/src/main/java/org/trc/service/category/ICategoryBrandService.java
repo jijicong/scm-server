@@ -19,4 +19,5 @@ public interface ICategoryBrandService extends IBaseService<CategoryBrand, Long>
      */
     List<CategoryBrandExt> queryCategoryBrands(List<Long> categoryList) throws Exception;
 
+    int deleteByCategoryId(Long categoryId) throws Exception;
 }

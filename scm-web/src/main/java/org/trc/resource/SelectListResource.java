@@ -162,5 +162,14 @@ public class SelectListResource {
         return ResultUtil.createSucssAppResult("查询贸易类型成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.TRADE_TYPE));
     }
 
+    @GET
+    @Path(SupplyConstants.SelectList.COUNTRY)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> country() throws Exception{
+        return ResultUtil.createSucssAppResult("查询国家成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.COUNTRY));
+    }
+
+
+
 
 }
