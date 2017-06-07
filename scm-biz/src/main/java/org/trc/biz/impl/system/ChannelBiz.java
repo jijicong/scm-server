@@ -88,7 +88,7 @@ public class ChannelBiz implements IChannelBiz {
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
-        AssertUtil.notNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
+        AssertUtil.isNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
         channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
         channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));

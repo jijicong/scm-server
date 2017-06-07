@@ -140,7 +140,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         Long[] codes = new Long[roleJdRelationList.size()];
         for (int i = 0; i < roleJdRelationList.size(); i++) {
-            codes[i] = roleJdRelationList.get(i).getJurisdictionCode();
+            codes[i] = roleJdRelationList.get(i).getJurisdictionId();
         }
         //4.查询具体的权限
         List<Jurisdiction> jurisdictionList = jurisdictionService.selectJurisdictionListByCodes(codes);

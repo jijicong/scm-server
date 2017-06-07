@@ -61,7 +61,7 @@ public class RoleJurisdictionRelationBiz implements IRoleJurisdictionRelationBiz
         for (Long roleJurisdictionLong:roleJurisdictions ){
             RoleJurisdictionRelation roleJurisdictionRelation=new RoleJurisdictionRelation();
             roleJurisdictionRelation.setRoleId(roleId);
-            roleJurisdictionRelation.setJurisdictionCode(roleJurisdictionLong);
+            roleJurisdictionRelation.setJurisdictionId(roleJurisdictionLong);
             roleJurisdictionRelation.setIsValid(ValidEnum.VALID.getCode());
             ParamsUtil.setBaseDO(roleJurisdictionRelation);
             roleJurisdictionRelationList.add(roleJurisdictionRelation);

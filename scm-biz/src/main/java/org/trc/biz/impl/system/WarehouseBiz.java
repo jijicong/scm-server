@@ -82,7 +82,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
-        AssertUtil.notNull(tmp,String.format("仓库名称[name=%s]的数据已存在,请使用其他名称",warehouse.getName()));
+        AssertUtil.isNull(tmp,String.format("仓库名称[name=%s]的数据已存在,请使用其他名称",warehouse.getName()));
         ParamsUtil.setBaseDO(warehouse);
         warehouse.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
         int count = warehouseService.insert(warehouse);
