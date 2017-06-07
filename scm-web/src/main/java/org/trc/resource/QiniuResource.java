@@ -36,35 +36,6 @@ public class QiniuResource {
     @Autowired
     private IQinniuBiz qinniuBiz;
 
-/*    *//**
-     * 文件上传
-     * @param fileInputStream
-     * @param disposition
-     * @return
-     *//*
-    @POST
-    @Path(SupplyConstants.QinNiu.UPLOAD+"/{module}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult upload(@FormDataParam("Filedata") InputStream fileInputStream,
-                            @FormDataParam("Filedata") FormDataContentDisposition disposition,
-                            @PathParam("module") String module, @FormDataParam("fileName") String fileName) throws Exception {
-        AssertUtil.notBlank(disposition.getFileName(), "上传文件名称不能为空");
-        AssertUtil.notBlank(fileName, "上传文件名称不能为空");
-        String fileExt = fileName.split("\\"+SupplyConstants.Symbol.FILE_NAME_SPLIT)[1];
-        String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, fileExt);
-        String key = qinniuBiz.upload(fileInputStream, newFileName, module);
-        UploadResponse uploadResponse = new UploadResponse();
-        uploadResponse.setKey(key);
-        uploadResponse.setFileName(fileName);
-        //获取图片缩略图url
-        String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
-        uploadResponse.setUrl(url);
-        List<UploadResponse> list = new ArrayList<UploadResponse>();
-        list.add(uploadResponse);
-        return ResultUtil.createSucssAppResult("上传成功",list);
-    }*/
-
     /**
      * 文件上传
      * @param fileInputStream

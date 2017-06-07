@@ -137,8 +137,6 @@ public class SupplierBiz implements ISupplierBiz {
             criteria2.andIn("supplierCode", supplierCodes);
             criteria2.andEqualTo("status", AuditStatusEnum.PASS.getCode());//审核通过
             List<SupplierApply> supplierChannels = supplierApplyService.selectByExample(example2);
-            /*AssertUtil.notEmpty(supplierChannels, String.format("根据供应商编码[%s]查询供应商供货渠道为空",
-                    CommonUtil.converCollectionToString(supplierCodes)));*/
             for(Supplier s : page.getResult()){
                 if(supplierChannels.size() > 0){
                     //设置渠道名称
