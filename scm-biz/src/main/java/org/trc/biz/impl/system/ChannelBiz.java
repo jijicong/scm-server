@@ -106,6 +106,12 @@ public class ChannelBiz implements IChannelBiz {
     public void updateChannel(Channel channel) throws Exception {
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
+        Channel tmp = findChannelByName(channel.getName());
+        if(tmp!=null){
+            if(!tmp.getId().equals(channel.getId())){
+                throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, "其它的渠道已经使用该渠道名称");
+            }
+        }
         int count = 0;
         channel.setUpdateTime(Calendar.getInstance().getTime());
         count = channelService.updateByPrimaryKeySelective(channel);

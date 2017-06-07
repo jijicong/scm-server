@@ -308,7 +308,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
 
-        //String
         //获得所有分类的id 拼接，并且显示name的拼接
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
             purchaseDetail.getCategoryId();

@@ -66,6 +66,12 @@ public class RoleBiz implements IRoleBiz{
     public void updateRoleState(Role role) throws Exception {
 
         AssertUtil.notNull(role,"根据角色对象，修改角色的状态，角色对象为空");
+        Role tmp = findRoleByName(role.getName());
+        if(tmp!=null){
+            if(!tmp.getId().equals(role.getId())){
+                throw new RoleException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION, "其它的角色已经使用该角色名称");
+            }
+        }
         Role updateRole = new Role();
         if(role.getId()==SYS_ROLE_ID){ //防止恶意修改系统角色的状态
             String tip="系统角色的状态不能被修改";
