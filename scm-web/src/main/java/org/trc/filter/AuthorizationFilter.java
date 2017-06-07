@@ -40,30 +40,31 @@ import java.util.List;
 public class AuthorizationFilter implements ContainerRequestFilter {
 
     private Logger  log = LoggerFactory.getLogger(AuthorizationFilter.class);
-//    @Value("${app.id}")
-//    private String appId;
-//    @Value("${app.key}")
-//    private String appKey;
-//
-//    @Resource
-//    private BeegoService beegoService;
-//    @Autowired
-//    private JurisdictionBiz jurisdictionBiz;
+    @Value("${app.id}")
+    private String appId;
+    @Value("${app.key}")
+    private String appKey;
+
+    @Resource
+    private BeegoService beegoService;
+    @Autowired
+    private JurisdictionBiz jurisdictionBiz;
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-//        URI url = ((ContainerRequest) requestContext).getRequestUri();
-//        String method = ((ContainerRequest) requestContext).getMethod();
-//        String token =_getToken(requestContext);
-//        if (StringUtils.isNotBlank(token)) {
-//            BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(
-//                    appId,
-//                    appKey,
-//                    token);
-//
-//            BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
-//            if (null != beegoToken) {
-//                String userId = beegoToken.getUserId();
+        URI url = ((ContainerRequest) requestContext).getRequestUri();
+        String method = ((ContainerRequest) requestContext).getMethod();
+        String token =_getToken(requestContext);
+        if (StringUtils.isNotBlank(token)) {
+            BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(
+                    appId,
+                    appKey,
+                    token);
+
+            BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+            if (null != beegoToken) {
+                String userId = beegoToken.getUserId();
+                requestContext.setProperty("userId", userId);
 //                try {
 //                    if (!jurisdictionBiz.authCheck(userId, url.toString(), method)) {
 //                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
@@ -76,12 +77,12 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 //                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
 //                    requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
 //                }
-//            }
-//        } else {
-//            //未获取到token返回登录页面
-//            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(),"用户未登录", null);
-//            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-//        }
+            }
+        } else {
+            //未获取到token返回登录页面
+            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(),"用户未登录", null);
+            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+        }
     }
 
     private String _getToken(ContainerRequestContext requestContext) {

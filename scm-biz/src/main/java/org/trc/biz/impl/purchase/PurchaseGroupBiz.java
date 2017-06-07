@@ -138,6 +138,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updatePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
         AssertUtil.notNull(purchaseGroup,"根据采购组信息修改采购组失败,采购信息为null");
+        PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
+        if(tmp!=null){
+            if(!tmp.getId().equals(purchaseGroup.getId())){
+                throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, "其它的角色已经使用该角色名称");
+            }
+        }
         purchaseGroup.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseGroupService.updateByPrimaryKeySelective(purchaseGroup);
         if(count == 0){

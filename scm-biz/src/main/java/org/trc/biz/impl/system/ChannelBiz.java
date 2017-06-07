@@ -88,7 +88,7 @@ public class ChannelBiz implements IChannelBiz {
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
-        AssertUtil.notNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
+        AssertUtil.isNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
         channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
         channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
@@ -106,6 +106,12 @@ public class ChannelBiz implements IChannelBiz {
     public void updateChannel(Channel channel) throws Exception {
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
+        Channel tmp = findChannelByName(channel.getName());
+        if(tmp!=null){
+            if(!tmp.getId().equals(channel.getId())){
+                throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, "其它的渠道已经使用该渠道名称");
+            }
+        }
         int count = 0;
         channel.setUpdateTime(Calendar.getInstance().getTime());
         count = channelService.updateByPrimaryKeySelective(channel);

@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSONArray;
+import com.sun.xml.internal.ws.client.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.IBrandBiz;
@@ -13,6 +14,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -50,8 +53,8 @@ public class BrandResource {
     @POST
     @Path(SupplyConstants.Category.Brand.BRAND)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveBrand(@BeanParam Brand brand) throws Exception{
-        brandBiz.saveBrand(brand);
+    public AppResult saveBrand(@BeanParam Brand brand , @Context ContainerRequestContext requestContext) throws Exception{
+        brandBiz.saveBrand(brand,requestContext);
         return ResultUtil.createSucssAppResult("保存品牌成功", "");
     }
 

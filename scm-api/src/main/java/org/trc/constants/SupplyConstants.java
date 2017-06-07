@@ -274,6 +274,9 @@ public class SupplyConstants {
         //查询用户名是否已被使用
         public static final String CHECK = "check";
 
+        //查询手机号是否已经注册
+        public static final String CHECK_PHONE = "checkPhone";
+
     }
 
     /**

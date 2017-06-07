@@ -13,10 +13,11 @@ import java.util.List;
  */
 public interface ISupplierBrandMapper extends BaseMapper<SupplierBrand> {
 
-    List<SupplierBrand> selectListBySupplierIds(@Param(value="supplierIds") Long ...supplierIds);
+    List<SupplierBrand> selectListBySupplierIds(@Param(value = "supplierIds") Long... supplierIds);
 
     /**
      * 根据供应商编码查询供应商品牌
+     *
      * @param supplierCode
      * @return
      * @throws Exception
@@ -25,10 +26,19 @@ public interface ISupplierBrandMapper extends BaseMapper<SupplierBrand> {
 
     /**
      * 批量更新供应商品牌
+     *
      * @param list
      * @return
      * @throws Exception
      */
     Integer updateSupplerBrand(List<SupplierBrand> list) throws Exception;
 
+    /**
+     * 品牌停用时批量更新关联表isValid字段
+     *
+     * @param isValid
+     * @param brandId
+     * @return
+     */
+    Integer updateSupplerBrandIsValid(@Param("isValid")String isValid,@Param("brandId") Long brandId) throws Exception;
 }
