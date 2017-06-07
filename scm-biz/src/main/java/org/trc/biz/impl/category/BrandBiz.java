@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ConfigException;
@@ -19,10 +20,13 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
 import org.trc.service.category.IBrandService;
+import org.trc.service.impower.IUserAccreditInfoService;
+import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**
@@ -41,6 +45,10 @@ public class BrandBiz implements IBrandBiz {
     private IQinniuBiz qinniuBiz;
     @Autowired
     private ISerialUtilService serialUtilService;
+    @Autowired
+    private ISupplierBrandService supplierBrandService;
+    @Autowired
+    private IUserAccreditInfoService userAccreditInfoService;
 
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
@@ -102,14 +110,17 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    public void saveBrand(Brand brand) throws Exception {
+    public void saveBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
         brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
-        brand.setLastEditOperator("小明");//TODO 后期用户信息引入之后需要修改
-        ParamsUtil.setBaseDO(brand);
+        UserAccreditInfo userAccreditInfo=userAccreditInfoService.selectOneByToken(requestContext);
+        if(userAccreditInfo!=null){
+            brand.setCreateOperator(userAccreditInfo.getUserId());
+            brand.setLastEditOperator(userAccreditInfo.getUserId());
+        }
         try {
             brandService.insert(brand);
         } catch (Exception e) {
@@ -146,6 +157,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateBrandStatus(Brand brand) throws Exception {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
         Brand updateBrand = new Brand();
@@ -160,8 +172,10 @@ public class BrandBiz implements IBrandBiz {
         if (count < 1) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", brand.getId().toString(), "]更新品牌明细失败").toString();
             log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
         }
+        //品牌状态更新时需要更新品牌供应商关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
+        supplierBrandService.updateSupplerBrandIsValid(updateBrand.getIsValid(), updateBrand.getId());
     }
 
     @Override

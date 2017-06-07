@@ -33,4 +33,13 @@ public interface ISupplierBrandService extends IBaseService<SupplierBrand, Long>
      * @throws Exception
      */
     Integer updateSupplerBrand(List<SupplierBrand> list) throws Exception;
+
+    /**
+     * 品牌停用时批量更新关联表isValid字段
+     *
+     * @param isValid
+     * @param brandId
+     * @return
+     */
+    Integer updateSupplerBrandIsValid(String isValid, Long brandId) throws Exception;
 }

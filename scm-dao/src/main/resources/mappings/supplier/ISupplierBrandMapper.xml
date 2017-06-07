@@ -75,4 +75,9 @@
         </foreach>
     </update>
 
+    <update id="updateSupplerBrandIsValid" >
+        UPDATE supplier_brand
+        SET is_valid=#{isValid}
+        WHERE brand_id=#{brandId}
+    </update>
 </mapper>

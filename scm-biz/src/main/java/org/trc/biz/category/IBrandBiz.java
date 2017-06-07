@@ -4,6 +4,7 @@ import org.trc.domain.category.Brand;
 import org.trc.form.category.BrandForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public interface IBrandBiz {
      * @return
      * @throws Exception
      */
-    void saveBrand(Brand brand) throws Exception;
+    void saveBrand(Brand brand, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 根据品牌id查询单个品牌

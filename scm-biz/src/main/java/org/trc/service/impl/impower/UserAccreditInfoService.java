@@ -1,14 +1,19 @@
 package org.trc.service.impl.impower;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAddPageDate;
 import org.trc.mapper.impower.UserAccreditInfoMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IUserAccreditInfoService;
+import org.trc.util.StringUtil;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Cookie;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +54,15 @@ public class UserAccreditInfoService extends BaseService<UserAccreditInfo, Long>
 
     @Override
     public UserAccreditInfo selectOneById(String userId){
+        return userAccreditInfoMapper.selectOneById(userId);
+    }
+
+    @Override
+    public UserAccreditInfo selectOneByToken(ContainerRequestContext requestContext) {
+        String userId= (String) requestContext.getProperty("userId");
+        if(StringUtils.isBlank(userId)){
+            return null;
+        }
         return userAccreditInfoMapper.selectOneById(userId);
     }
 
