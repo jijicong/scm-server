@@ -373,22 +373,21 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     private String createToken() throws Exception {
-        Common acc;
-        ReturnTypeDO rev = ijdService.createToken();
-        JSONObject json = (JSONObject)rev.getResult();
-        if (null == json){
-            return JingDongEnum.ERROR_GET_TOKEN.getName();
-        }
-        Map<String, Common> map = jingDongUtil.buildCommon(json);
-        if (null == map){
-            return JingDongEnum.ERROR_GET_ADDRESS.getName();
-        }
-        acc = map.get("accessToken");
-        String token = acc.getValue();
-        putToken(acc, map);
-        acc = map.get("refreshToken");
-        putToken(acc, map);
-        return token;
+            ReturnTypeDO rev = ijdService.createToken();
+            JSONObject json = (JSONObject)rev.getResult();
+            if (null == json){
+                throw new Exception(JingDongEnum.ERROR_GET_TOKEN.getName());
+            }
+            Map<String, Common> map = jingDongUtil.buildCommon(json);
+            if (null == map){
+                return JingDongEnum.ERROR_GET_ADDRESS.getName();
+            }
+            Common acc = map.get("accessToken");
+            String token = acc.getValue();
+            putToken(acc);
+            acc = map.get("refreshToken");
+            putToken(acc);
+            return token;
     }
 
     /**
@@ -405,8 +404,8 @@ public class JingDongBizImpl implements IJingDongBiz {
         acc = map.get("accessToken");
         Common ref = map.get("refreshToken");
         String token = acc.getValue();
-        putToken(acc, map);
-        putToken(ref, map);
+        putToken(acc);
+        putToken(ref);
         return token;
     }
 
@@ -414,15 +413,16 @@ public class JingDongBizImpl implements IJingDongBiz {
      * 将Token保存到数据库和redis中
      *
      * @param acc
-     * @param map
      * @return
      */
-    private Boolean putToken(Common acc, Map<String, Common> map) {
+    private Boolean putToken(Common acc) {
         try {
-            Boolean result = RedisUtil.setObject(acc.getCode(), acc.getValue(), Integer.parseInt(acc.getDeadTime()));
+            if ("accessToken".equals(acc.getCode())){
+                RedisUtil.setObject(acc.getCode(), acc.getValue(), 86300);
+            }else {
+                RedisUtil.setObject(acc.getCode(), acc.getValue(), 21474835);
+            }
             Common tmp = commonService.selectByCode(acc.getCode());
-            Common token = map.get("time");
-            acc.setDeadTime(token.getDeadTime());
             if (null == tmp) {
                 commonService.insert(acc);
                 return true;
