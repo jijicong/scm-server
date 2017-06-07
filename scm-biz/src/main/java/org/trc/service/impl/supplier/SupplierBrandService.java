@@ -34,5 +34,10 @@ public class SupplierBrandService extends BaseService<SupplierBrand, Long> imple
         return supplierBrandMapper.updateSupplerBrand(list);
     }
 
+    @Override
+    public Integer updateSupplerBrandIsValid(String isValid, Long brandId) throws Exception {
+        return supplierBrandMapper.updateSupplerBrandIsValid(isValid,brandId);
+    }
+
 
 }

@@ -18,7 +18,6 @@ public class Channel extends BaseDO{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @FormParam("code")
-    @NotEmpty
     @Length(max = 32, message = "渠道编码字母和数字不能超过32个,汉字不能超过16个")
     private String code;
     @FormParam("name")

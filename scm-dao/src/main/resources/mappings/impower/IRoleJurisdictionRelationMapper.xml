@@ -3,7 +3,7 @@
 <mapper namespace="org.trc.mapper.impower.RoleJurisdictionRelationMapper">
     <!-- 查询某角色对应的权限id集合 -->
     <select id="selectJurisdictionIdList" resultType="java.lang.Long">
-        SELECT jurisdiction_code from role_jurisdiction_relation j WHERE role_id=#{roleId}
+        SELECT jurisdiction_id from role_jurisdiction_relation j WHERE role_id=#{roleId}
     </select>
     <delete id="deleteByRoleId">
         DELETE FROM role_jurisdiction_relation WHERE role_id=#{roleId}

@@ -17,7 +17,7 @@ public class RoleJurisdictionRelation extends BaseDO{
 
     private Long roleId;
 
-    private Long jurisdictionCode;
+    private Long jurisdictionId;
 
     public Long getId() {
         return id;
@@ -35,11 +35,11 @@ public class RoleJurisdictionRelation extends BaseDO{
         this.roleId = roleId;
     }
 
-    public Long getJurisdictionCode() {
-        return jurisdictionCode;
+    public Long getJurisdictionId() {
+        return jurisdictionId;
     }
 
-    public void setJurisdictionCode(Long jurisdictionCode) {
-        this.jurisdictionCode = jurisdictionCode;
+    public void setJurisdictionId(Long jurisdictionId) {
+        this.jurisdictionId = jurisdictionId;
     }
 }

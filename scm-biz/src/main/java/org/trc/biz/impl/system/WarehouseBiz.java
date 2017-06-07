@@ -82,7 +82,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
-        AssertUtil.notNull(tmp,String.format("仓库名称[name=%s]的数据已存在,请使用其他名称",warehouse.getName()));
+        AssertUtil.isNull(tmp,String.format("仓库名称[name=%s]的数据已存在,请使用其他名称",warehouse.getName()));
         ParamsUtil.setBaseDO(warehouse);
         warehouse.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
         int count = warehouseService.insert(warehouse);
@@ -141,12 +141,18 @@ public class WarehouseBiz implements IWarehouseBiz {
     public void updateWarehouse(Warehouse warehouse) throws Exception {
 
         AssertUtil.notNull(warehouse.getId(),"根据ID修改仓库参数ID为空");
+        Warehouse tmp = findWarehouseByName(warehouse.getName());
+        if(tmp!=null){
+            if(!tmp.getId().equals(warehouse.getId())){
+                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, "其它的仓库已经使用该仓库名称");
+            }
+        }
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
         int count = warehouseService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败",JSON.toJSONString(warehouse));
             logger.error(msg);
-            throw new WarehouseException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
 
     }

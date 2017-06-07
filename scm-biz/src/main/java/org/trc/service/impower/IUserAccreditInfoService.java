@@ -5,6 +5,7 @@ import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAddPageDate;
 import org.trc.service.IBaseService;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 import java.util.Map;
 
@@ -56,4 +57,11 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
      * @return
      */
     UserAccreditInfo selectOneById(String userId);
+
+    /**
+     * 根据cookies中的token获取用户信息
+     * @param requestContext
+     * @return
+     */
+    UserAccreditInfo selectOneByToken(ContainerRequestContext requestContext);
 }

@@ -48,7 +48,10 @@ public class UserAccreditInfo extends BaseDO{
     @FormParam("channelCode")
     @Length(max = 32)
     private String channelCode;
-
+    @Transient
+    private String channelId;
+    @Transient
+    private String channelName;
     public Long getId() {
         return id;
     }
@@ -103,6 +106,22 @@ public class UserAccreditInfo extends BaseDO{
 
     public void setChannelCode(String channelCode) {
         this.channelCode = channelCode;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
     }
 }
 

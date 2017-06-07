@@ -36,7 +36,6 @@ public class JingDongUtil {
             long oldtime= oldDate;
             long exp = Long.parseLong(expire)*1000;
             long dead = oldtime+exp;
-            time = sdf.format(new Date(oldtime));//设置为当前系统时间
             time = sdf.format(new Date(dead));//设置为当前系统时间
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,37 +45,33 @@ public class JingDongUtil {
 
     /**
      * 将json字符串分装到Common对象中
-     * @param jsonStr
+     * @param list
      * @return
      */
-    public Map buildCommon(String jsonStr) throws Exception{
+    public Map buildCommon(JSONObject list) throws Exception{
         try{
             Map array = new HashMap();
             Common common = new Common();
-            JSONObject json = JSONObject.parseObject(jsonStr);
-            JSONObject list=json.getJSONObject("result");
             String accessToken= (String) list.get("access_token");
             String refreshToken= (String) list.get("refresh_token");
             long time= (long) list.get("time");
             int expires= 86300;
-            int refreshExpires = 205488147;
+            int refreshExpires = 21474835;
             String tmp = expireToken(time, String.valueOf(expires));
             common.setCode("accessToken");
             common.setValue(accessToken);
             common.setType("京东");
-            common.setDeadTime(String.valueOf(expires));
+            common.setDeadTime(tmp);
             common.setDescription("京东AccessToken");
             array.put("accessToken",common);
+            tmp = expireToken(time, String.valueOf(refreshExpires));
             common =new Common();
             common.setCode("refreshToken");
             common.setValue(refreshToken);
             common.setType("京东");
-            common.setDeadTime(String.valueOf(refreshExpires));
+            common.setDeadTime(tmp);
             common.setDescription("京东RefreshToken");
             array.put("refreshToken",common);
-            common =new Common();
-            common.setDeadTime(tmp);
-            array.put("time",common);
             return array;
         }catch (Exception e){
             throw new Exception(JingDongEnum.ERROR_GET_TOKEN.getName());
