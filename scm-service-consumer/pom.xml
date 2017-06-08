@@ -23,12 +23,6 @@
             <artifactId>qiniu-java-sdk</artifactId>
             <version>${qiniu.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.trc</groupId>
-            <artifactId>scm-dao</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
 
