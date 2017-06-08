@@ -23,6 +23,8 @@ public interface IBaseService<T,PK> {
 
     int deleteByPrimaryKey(PK key);
 
+    int deleteByExample(Example example);
+
     int updateByPrimaryKey(T record);
 
     int updateByPrimaryKeySelective(T record);
