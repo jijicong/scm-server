@@ -66,7 +66,7 @@ public interface ICategoryBiz {
     /**
      * 更新排序
      */
-    void updateSort(List<Category> categoryList) throws Exception;
+    void updateSort(String sortDate) throws Exception;
 
     void updateState(Category category) throws Exception;
 
@@ -93,14 +93,14 @@ public interface ICategoryBiz {
      * @param categoryId
      * @return
      */
-    List<CategoryBrand> queryBrands(Long categoryId);
+    List<CategoryBrand> queryBrands(Long categoryId) throws Exception;
 
     /**
      * 根据categoryId查询CategoryProperty
      * @param categoryId
      * @return
      */
-    List<CategoryProperty> queryProperties(Long categoryId);
+    List<CategoryProperty> queryProperties(Long categoryId) throws Exception;
 
     /**
      * 关联分类与品牌

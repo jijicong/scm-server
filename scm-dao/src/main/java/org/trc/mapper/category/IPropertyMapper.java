@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface IPropertyMapper extends BaseMapper<Property> {
 
-    List<Property> queryPropertyList(List<Long> idd) throws Exception;
+    List<Property> queryPropertyList(List<Long> ids) throws Exception;
 }

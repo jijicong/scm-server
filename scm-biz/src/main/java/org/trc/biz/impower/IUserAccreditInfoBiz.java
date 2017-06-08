@@ -1,5 +1,6 @@
 package org.trc.biz.impower;
 
+import com.tairanchina.md.account.user.model.UserDO;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.Role;
 import org.trc.domain.impower.UserAccreditInfo;
