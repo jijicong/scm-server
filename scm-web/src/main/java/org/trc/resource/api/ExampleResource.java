@@ -61,12 +61,7 @@ public class ExampleResource {
     }
 
 
-    @POST
-    @Path("/brand2/{test}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public String brandTest(@PathParam("test") String test) throws Exception {
-        return test;
-    }
+
 
 
     @POST

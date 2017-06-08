@@ -5,14 +5,7 @@ package org.trc.constants;
  */
 public class SupplyConstants {
 
-    /**
-     * 返回值
-     */
-    public static final class Comment {
-        public static final String STATUS = "status";//0-失败，1-成功
 
-        public static final String MSG = "msg";//返回描述
-    }
 
 
     /**
@@ -280,6 +273,9 @@ public class SupplyConstants {
 
         //查询用户名是否已被使用
         public static final String CHECK = "check";
+
+        //查询手机号是否已经注册
+        public static final String CHECK_PHONE = "checkPhone";
 
     }
 
