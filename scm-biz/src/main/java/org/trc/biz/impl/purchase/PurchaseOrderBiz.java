@@ -308,7 +308,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
 
-        //获得所有分类的id 拼接，并且显示name的拼接
+        //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
             purchaseDetail.getCategoryId();
         }
@@ -316,6 +316,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         int count = purchaseOrderService.selectCountItems(map);
         page.setTotalCount(count);
         page.setResult(purchaseDetailList);
+
+
         return page;
+
     }
+
 }

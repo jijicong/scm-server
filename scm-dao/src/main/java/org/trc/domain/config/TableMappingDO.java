@@ -10,9 +10,10 @@ import javax.persistence.Table;
  */
 @Table(name = "mapping_table")
 public class TableMappingDO {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     private String areaCode;
 
@@ -24,11 +25,11 @@ public class TableMappingDO {
 
     private String jdCode;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

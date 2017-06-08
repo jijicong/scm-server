@@ -48,4 +48,6 @@ public  interface UserAccreditInfoMapper  extends BaseMapper<UserAccreditInfo>{
 
 
     UserAccreditInfo selectOneById(@Param("userId")String userId);
+
+    List<UserAccreditInfo> selectByUserIds(@Param("userIds")String ...ids);
 }

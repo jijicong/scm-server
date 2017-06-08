@@ -29,7 +29,12 @@
             )
 
     </select>
-    <!--查询某供应商下对应的可卖商品  /*#{supplierCode}*/-->
+
+    <!--查询某供应商下对应的可卖商品  /*#{supplierCode}*/
+       从商品表和供应商品牌表中，根据brand_id来建立两张表的关系，用supplier_id来筛选，
+       商品的名称，商品的sku，品牌id，分类id
+       再联合品牌表，分类表来查询查询对应的名称
+    -->
     <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail">
         SELECT bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
         (

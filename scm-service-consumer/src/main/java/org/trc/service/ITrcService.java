@@ -1,10 +1,5 @@
 package org.trc.service;
 
-import org.trc.domain.category.*;
-import org.trc.enums.CategoryActionTypeEnum;
-import org.trc.model.ResultModel;
-
-import java.util.List;
 
 /**
  * 通知泰然城
@@ -14,16 +9,14 @@ public interface ITrcService {
 
 
     /**
-     *
      * @param brandUrl
      * @param params
      * @return
      * @throws Exception
      */
-    String sendBrandNotice(String brandUrl,String params) throws Exception;
+    String sendBrandNotice(String brandUrl, String params) throws Exception;
 
     /**
-     *
      * @param categoryPropertyUrl
      * @param params
      * @return
@@ -32,7 +25,6 @@ public interface ITrcService {
     String sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception;
 
     /**
-     *
      * @param categoryBrandUrl
      * @param params
      * @return
@@ -41,7 +33,6 @@ public interface ITrcService {
     String sendCategoryBrandList(String categoryBrandUrl, String params) throws Exception;
 
     /**
-     *
      * @param categoryUrl
      * @param params
      * @return
@@ -50,7 +41,6 @@ public interface ITrcService {
     String sendCategoryToTrc(String categoryUrl, String params) throws Exception;
 
     /**
-     *
      * @param propertyUrl
      * @param params
      * @return
