@@ -37,6 +37,8 @@ public class RequestFlow implements Serializable {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date requestTime; //请求时间
 
+    private String remark;
+
 
     public RequestFlow() {
     }
@@ -122,5 +124,13 @@ public class RequestFlow implements Serializable {
 
     public void setRequestTime(Date requestTime) {
         this.requestTime = requestTime;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }

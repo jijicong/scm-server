@@ -160,7 +160,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult), orderResult.getResultMessage(), orderResult.getSuccess());
+            return returnValue(orderResult.getResultCode(), Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
             return returnValue(JingDongEnum.ERROR_ORDER_CONFIRM.getCode(), null, e.getMessage(), false);
@@ -184,7 +184,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult), orderResult.getResultMessage(), orderResult.getSuccess());
+            return returnValue(orderResult.getResultCode(), Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getResultMessage(), orderResult.getSuccess());
         } catch (Exception e) {
             log.error(e.getMessage());
             return returnValue(JingDongEnum.ERROR_ORDER_CANCEL.getCode(), null, e.getMessage(), false);
