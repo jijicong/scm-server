@@ -45,7 +45,7 @@ public class BrandResource {
     }
 
     /**
-     * TODO 后期用户模块加入之后，需要对最后更新人和创建人做处理
+     *
      * @param brand
      * @return
      * @throws Exception
@@ -90,8 +90,8 @@ public class BrandResource {
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateBrand(@BeanParam Brand brand) throws Exception{
-        brandBiz.updateBrand(brand);
+    public AppResult updateBrand(@BeanParam Brand brand, @Context ContainerRequestContext requestContext) throws Exception{
+        brandBiz.updateBrand(brand,requestContext);
         return ResultUtil.createSucssAppResult("更新品牌成功", "");
     }
 

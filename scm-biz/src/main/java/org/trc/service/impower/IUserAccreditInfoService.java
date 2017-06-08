@@ -63,5 +63,7 @@ public interface IUserAccreditInfoService extends IBaseService<UserAccreditInfo,
      * @param requestContext
      * @return
      */
-    UserAccreditInfo selectOneByToken(ContainerRequestContext requestContext);
+    UserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext);
+
+    Map<String,UserAccreditInfo> selectByIds(String ...ids);
 }
