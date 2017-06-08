@@ -469,9 +469,9 @@ public class JingDongBizImpl implements IJingDongBiz {
             requestFlow.setRequestNum(GuidUtil.getNextUid(RequestFlowConstant.JINGDONG));
             requestFlow.setRequestTime(Calendar.getInstance().getTime());
             if (state){
-                requestFlow.setStatus("1");
+                requestFlow.setStatus(ZeroToNineEnum.ONE.getCode());
             }else {
-                requestFlow.setStatus("0");
+                requestFlow.setStatus(ZeroToNineEnum.ZERO.getCode());
             }
             requestFlow.setRemark("调用方法:JingDongBizImpl类中" + "["+remark+"]");
             if (requestFlowService.insert(requestFlow)>0 ){
