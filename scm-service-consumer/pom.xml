@@ -23,6 +23,31 @@
             <artifactId>qiniu-java-sdk</artifactId>
             <version>${qiniu.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.sgroschupf</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+        </dependency>
+        <!--用户中心-->
+        <dependency>
+            <groupId>com.tairanchina</groupId>
+            <artifactId>core-beego-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.tairanchina</groupId>
+            <artifactId>md-account-api</artifactId>
+        </dependency>
+
     </dependencies>
 
 
