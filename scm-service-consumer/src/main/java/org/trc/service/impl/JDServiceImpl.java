@@ -75,7 +75,7 @@ public class JDServiceImpl implements IJDService {
             return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_TOKEN);
+            throw new Exception(JingDongConstant.ERROR_REFRESH_TOKEN);
         }
     }
 
@@ -239,6 +239,7 @@ public class JDServiceImpl implements IJDService {
      * @param sku   商品编号 支持批量（最高100个）
      * @return
      */
+    @Override
     public ReturnTypeDO skuImage(String token, String sku) throws Exception{
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_IMAGE;
@@ -253,6 +254,35 @@ public class JDServiceImpl implements IJDService {
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SKU_IMAGE);
+        }
+    }
+
+    /**
+     * 商品区域购买限制查询
+     * @param token access token
+     * @param skuIds 商品编号
+     * @param province 京东一级地址编号
+     * @param city 京东二级地址编号
+     * @param county 京东三级地址编号
+     * @param town 京东四级地址编号
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public ReturnTypeDO checkAreaLimit(String token, String skuIds, String province, String city, String county, String town) throws Exception {
+        try {
+            String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK_AREA_LIMIT;
+            String data = "token=" + token + "&skuIds=" + skuIds+ "&province=" + province+ "&city=" + city+ "&county=" + county+"&town=" + town;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONArray result = json.getJSONArray("result");
+            return returnValue(success,resultCode,resultMessage,result);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new Exception(JingDongConstant.ERROR_CHECK_LIMIT);
         }
     }
 
@@ -607,7 +637,7 @@ public class JDServiceImpl implements IJDService {
             String resultCode = (String)json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+           return returnValue(success,resultCode,resultMessage,result);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
@@ -629,6 +659,47 @@ public class JDServiceImpl implements IJDService {
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
+        }
+    }
+
+    @Override
+    public ReturnTypeDO get(String token, String type) throws Exception {
+        try {
+            String url = jdBaseDO.getJdurl() + JingDongConstant.MESSAGE_GET;
+            String data = null;
+            if (StringUtils.isBlank(type)){
+                data = "token=" + token;
+            }else {
+                data = "token=" + token + "&type=" + type;
+            }
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result =json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new Exception(JingDongConstant.ERROR_MESSAGE_GET);
+        }
+    }
+
+    @Override
+    public ReturnTypeDO del(String token, String id) throws Exception {
+        try {
+            String url = jdBaseDO.getJdurl() + JingDongConstant.MESSAGE_DEL;
+            String data = "token=" + token + "&id=" + id;
+            String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
+            JSONObject json = JSONObject.parseObject(rev);
+            Boolean success = (Boolean)json.get("success");
+            String resultCode = (String)json.get("resultCode");
+            String resultMessage = (String) json.get("resultMessage");
+            JSONObject result =json.getJSONObject("result");
+            return returnValue(success,resultCode,resultMessage,result);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new Exception(JingDongConstant.ERROR_MESSAGE_DEL);
         }
     }
 
