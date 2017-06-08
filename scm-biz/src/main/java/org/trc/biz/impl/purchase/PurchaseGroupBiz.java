@@ -25,9 +25,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sone on 2017/5/19.
@@ -105,6 +103,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updatePurchaseStatus(PurchaseGroup purchaseGroup) throws Exception {
         AssertUtil.notNull(purchaseGroup,"采购组信息为空，修改采购组状态失败");
         PurchaseGroup updatePurchaseGroup = new PurchaseGroup();
@@ -114,6 +113,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         } else {
             updatePurchaseGroup.setIsValid(ValidEnum.VALID.getCode());
         }
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("isValid",updatePurchaseGroup.getIsValid());
+        map.put("purchaseGroupCode",purchaseGroup.getCode());
+        purchaseGroupuUserRelationService.updateIsValidByCode(map);
+
         updatePurchaseGroup.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseGroupService.updateByPrimaryKeySelective(updatePurchaseGroup);
         if(count == 0){
@@ -157,13 +162,14 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             logger.error(msg);
             throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
         }
-        savePurchaseGroupUserRelation(purchaseGroup.getCode(),purchaseGroup.getLeaderUserId(),purchaseGroup.getMemberUserId());
+        savePurchaseGroupUserRelation(purchaseGroup.getCode(),purchaseGroup.getLeaderUserId(),purchaseGroup.getMemberUserId(),purchaseGroup.getIsValid());
 
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
+
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
         if (null != tmp) {
@@ -185,15 +191,17 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         String purchaseGroupCode = purchaseGroup.getCode();
         String laederUserId = purchaseGroup.getLeaderUserId();
         String memberUserStrs = purchaseGroup.getMemberUserId();
-        savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs);
+        System.out.println(purchaseGroup.getIsValid()+"111111111111111111");
+        savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs,purchaseGroup.getIsValid());
+
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class) //保存采购组与用户的对应关系
-    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs){
+    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs,String isValid){
 
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = new ArrayList<>();
         PurchaseGroupUserRelation purchaseGroupUserRelation = new PurchaseGroupUserRelation();//设置组长与采购组的关联关系
-        purchaseGroupUserRelation.setIsValid(ValidEnum.VALID.getCode());
+        purchaseGroupUserRelation.setIsValid(isValid);
         ParamsUtil.setBaseDO(purchaseGroupUserRelation);
         purchaseGroupUserRelation.setPurchaseGroupCode(purchaseGroupCode);
         purchaseGroupUserRelation.setUserId(laederUserId);
@@ -202,7 +210,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             String[]  memberUserIds = memberUserStrs.split(",");//3,4,6,7
             for (String memberUserId : memberUserIds) {//遍历存储采购组员与采购组的关联关系
                 purchaseGroupUserRelation = new PurchaseGroupUserRelation();
-                purchaseGroupUserRelation.setIsValid(ValidEnum.VALID.getCode());
+                purchaseGroupUserRelation.setIsValid(isValid);
                 ParamsUtil.setBaseDO(purchaseGroupUserRelation);
                 purchaseGroupUserRelation.setPurchaseGroupCode(purchaseGroupCode);
                 purchaseGroupUserRelation.setUserId(memberUserId);

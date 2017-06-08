@@ -38,7 +38,7 @@ public class BrandResource {
     }
 
     @GET
-    @Path(SupplyConstants.Config.SelectList.VALID_LIST)
+    @Path(SupplyConstants.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> queryValidList(){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());

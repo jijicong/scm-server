@@ -39,7 +39,7 @@ public class RoleResource {
 
         Role role= roleAddPageData;
         roleBiz.updateRole(role, roleAddPageData.getRoleJurisdiction());
-        return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
+        return  ResultUtil.createSucssAppResult("修改角色信息成功","");
 
     }
     //保存角色信息以及与之对应的角色权限关联表信息的保存

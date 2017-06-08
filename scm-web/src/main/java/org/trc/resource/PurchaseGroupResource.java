@@ -45,7 +45,7 @@ public class PurchaseGroupResource {
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_CODE_USER)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<UserAccreditInfo>> findPurchaseGroupPersons(@QueryParam("purchaseGroupCode") String purchaseGroupCode) throws Exception {
-        return ResultUtil.createSucssAppResult("修改采购组状态成功",purchaseGroupBiz.findPurchaseGroupPersons(purchaseGroupCode));
+        return ResultUtil.createSucssAppResult("查询采购组人员成功",purchaseGroupBiz.findPurchaseGroupPersons(purchaseGroupCode));
     }
 
 
@@ -91,8 +91,9 @@ public class PurchaseGroupResource {
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<UserAccreditInfo>> findPurchaseGroupMemberStateById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("查询当前采购组id对应的无效状态的成员成功",purchaseGroupBiz.findPurchaseGroupMemberStateById(id));
+        return ResultUtil.createSucssAppResult("查询当前采购组id查询无效状态的成员成功",purchaseGroupBiz.findPurchaseGroupMemberStateById(id));
     }
+
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)

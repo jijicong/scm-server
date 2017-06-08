@@ -64,7 +64,7 @@ public class BrandBiz implements IBrandBiz {
         Map<String, String> fileUrlMap = constructFileUrlMap(brandList);
         Map<String, UserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(brandList);
         for (Brand brand : brandList) {
-            if (!StringUtils.isBlank(brand.getLogo())) {
+            if (!StringUtils.isBlank(brand.getLogo())){
                 brand.setLogo(fileUrlMap.get(brand.getLogo()));
             }
             if(!StringUtils.isBlank(brand.getLastEditOperator())){
