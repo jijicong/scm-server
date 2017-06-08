@@ -9,11 +9,13 @@ import org.trc.domain.impower.UserAddPageDate;
 import org.trc.mapper.impower.UserAccreditInfoMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IUserAccreditInfoService;
+import org.trc.util.AssertUtil;
 import org.trc.util.StringUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Cookie;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,12 +60,25 @@ public class UserAccreditInfoService extends BaseService<UserAccreditInfo, Long>
     }
 
     @Override
-    public UserAccreditInfo selectOneByToken(ContainerRequestContext requestContext) {
+    public UserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext) {
         String userId= (String) requestContext.getProperty("userId");
         if(StringUtils.isBlank(userId)){
             return null;
         }
         return userAccreditInfoMapper.selectOneById(userId);
+    }
+
+    @Override
+    public Map<String,UserAccreditInfo> selectByIds(String... ids) {
+        List<UserAccreditInfo> list=userAccreditInfoMapper.selectByUserIds(ids);
+        if(AssertUtil.CollectionIsEmpty(list)){
+            return null;
+        }
+        Map<String,UserAccreditInfo> map=new HashMap<>();
+        for (UserAccreditInfo userAccreditInfo:list) {
+            map.put(userAccreditInfo.getUserId(),userAccreditInfo);
+        }
+        return map;
     }
 
 }

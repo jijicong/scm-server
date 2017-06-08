@@ -58,10 +58,20 @@ public class BrandBiz implements IBrandBiz {
         Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         //得到所有图片的缩略图,并以fileKey为key，url为value的形式封装成map
         List<Brand> brandList = pagenation.getResult();
+        if(AssertUtil.CollectionIsEmpty(brandList)){
+            return pagenation;
+        }
         Map<String, String> fileUrlMap = constructFileUrlMap(brandList);
+        Map<String, UserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(brandList);
         for (Brand brand : brandList) {
             if (!StringUtils.isBlank(brand.getLogo())) {
                 brand.setLogo(fileUrlMap.get(brand.getLogo()));
+            }
+            if(!StringUtils.isBlank(brand.getLastEditOperator())){
+                UserAccreditInfo userAccreditInfo=userAccreditInfoMap.get(brand.getLastEditOperator());
+                if(userAccreditInfo!=null){
+                    brand.setLastEditOperator(userAccreditInfo.getName());
+                }
             }
         }
         pagenation.setResult(brandList);
@@ -116,10 +126,10 @@ public class BrandBiz implements IBrandBiz {
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
         brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
-        UserAccreditInfo userAccreditInfo=userAccreditInfoService.selectOneByToken(requestContext);
-        if(userAccreditInfo!=null){
-            brand.setCreateOperator(userAccreditInfo.getUserId());
-            brand.setLastEditOperator(userAccreditInfo.getUserId());
+        String userId= (String) requestContext.getProperty("userId");
+        if(!StringUtils.isBlank(userId)){
+            brand.setCreateOperator(userId);
+            brand.setLastEditOperator(userId);
         }
         try {
             brandService.insert(brand);
@@ -145,9 +155,13 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    public void updateBrand(Brand brand) throws Exception {
+    public void updateBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
         brand.setUpdateTime(Calendar.getInstance().getTime());
+        String userId= (String) requestContext.getProperty("userId");
+        if(!StringUtils.isBlank(userId)){
+            brand.setLastEditOperator(userId);
+        }
         int count = brandService.updateByPrimaryKeySelective(brand);
         if (count < 1) {
             String msg = CommonUtil.joinStr("根据主键ID[id=", brand.getId().toString(), "]更新品牌明细失败").toString();
@@ -212,5 +226,18 @@ public class BrandBiz implements IBrandBiz {
             }
         }
         return null;
+    }
+
+    private Map<String,UserAccreditInfo> constructUserAccreditInfoMap(List<Brand> brandList){
+        if(AssertUtil.CollectionIsEmpty(brandList)){
+           return null;
+        }
+        Set<String> userIdsSet=new HashSet<>();
+        for (Brand brand:brandList) {
+             userIdsSet.add(brand.getLastEditOperator());
+        }
+        String[] userIdArr=new String[userIdsSet.size()];
+        userIdsSet.toArray(userIdArr);
+        return userAccreditInfoService.selectByIds(userIdArr);
     }
 }
