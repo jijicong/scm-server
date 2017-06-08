@@ -55,6 +55,24 @@ public interface IJDService {
      */
     ReturnTypeDO getDetail(String token, String sku, Boolean isShow) throws Exception;
 
+
+    /**
+     * 获取品类池商品编号
+     * @param token access token
+     * @param pageNum 池子编号
+     * @param pageNo 页码
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO getSkuByPage(String token, String pageNum, String pageNo) throws Exception;
+
+    /**
+     * 商品可售验证
+     * @param token
+     * @param skuIds 商品编号
+     */
+    ReturnTypeDO checkSku(String token, String skuIds) throws Exception;
+
     /**
      * 获取商品上下架状态
      *
@@ -73,6 +91,18 @@ public interface IJDService {
      */
     ReturnTypeDO skuImage(String token, String sku) throws Exception;
 
+    /**
+     * 商品区域购买限制查询
+     * @param token access token
+     * @param skuIds 商品编号
+     * @param province 京东一级地址编号
+     * @param city 京东二级地址编号
+     * @param county 京东三级地址编号
+     * @param town 京东四级地址编号
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO checkAreaLimit(String token, String skuIds,String province,String city, String county,String town) throws Exception;
     /**
      * 商品搜索
      * 关键字+分页+页码，使用价格区间、品牌首字母、分类作为筛选条件
@@ -250,12 +280,23 @@ public interface IJDService {
      */
     ReturnTypeDO orderTrack(String token, String jdOrderId) throws Exception;
 
-    ReturnTypeDO getSkuByPage(String token, String pageNum, String pageNo) throws Exception;
+    /**
+     * 信息推送接口
+     * @param token
+     * @param type 推送类型（非必须）
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO get(String token, String type) throws Exception;
 
     /**
-     * 商品可售验证
+     * 信息推送接口
+     * @param token
+     * @param id 推送id
+     * @return
+     * @throws Exception
      */
-    ReturnTypeDO checkSku(String token, String skuIds) throws Exception;
+    ReturnTypeDO del(String token, String id) throws Exception;
 
 
 }

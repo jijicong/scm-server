@@ -1,10 +1,13 @@
 package org.trc.resource.api;
 
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.form.JDModel.OrderDO;
+import org.trc.util.AppResult;
+import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -28,8 +31,8 @@ public class JingDongResource {
     @POST
     @Path(SupplyConstants.JingDongOrder.BILLORDER)
     @Produces(MediaType.APPLICATION_JSON)
-    public String billOrder(@BeanParam OrderDO orderDO) throws Exception {
-        return iJingDongBiz.billOrder(orderDO);
+    public AppResult<JSONObject> billOrder(@BeanParam OrderDO orderDO) throws Exception {
+        return ResultUtil.createSucssAppResult("京东统一下单成功", iJingDongBiz.billOrder(orderDO));
     }
 
     /**
@@ -42,8 +45,8 @@ public class JingDongResource {
     @PUT
     @Path(SupplyConstants.JingDongOrder.CONFIRM + "/{jdOrderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String confirmOrder(@PathParam("jdOrderId") String jdOrderId) throws Exception {
-        return iJingDongBiz.confirmOrder(jdOrderId);
+    public AppResult<Boolean> confirmOrder(@PathParam("jdOrderId") String jdOrderId) throws Exception {
+        return ResultUtil.createSucssAppResult("确认预占库存成功", iJingDongBiz.confirmOrder(jdOrderId));
     }
 
     /**
@@ -56,8 +59,8 @@ public class JingDongResource {
     @PUT
     @Path(SupplyConstants.JingDongOrder.CANCEL + "/{jdOrderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String cancel(@PathParam("jdOrderId") String jdOrderId) throws Exception {
-        return iJingDongBiz.cancel(jdOrderId);
+    public AppResult<JSONObject> cancel(@PathParam("jdOrderId") String jdOrderId) throws Exception {
+        return ResultUtil.createSucssAppResult("取消未确认订单成功", iJingDongBiz.cancel(jdOrderId));
     }
 
     /**
@@ -70,8 +73,8 @@ public class JingDongResource {
     @PUT
     @Path(SupplyConstants.JingDongOrder.PAY + "/{jdOrderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String doPay(@PathParam("jdOrderId") String jdOrderId) throws Exception {
-        return iJingDongBiz.doPay(jdOrderId);
+    public AppResult<JSONObject> doPay(@PathParam("jdOrderId") String jdOrderId) throws Exception {
+        return ResultUtil.createSucssAppResult("发起支付成功", iJingDongBiz.doPay(jdOrderId));
     }
 
     /**
@@ -84,8 +87,8 @@ public class JingDongResource {
     @GET
     @Path(SupplyConstants.JingDongOrder.ORDERSELECT + "/{jdOrderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String selectJdOrderIdByThirdOrder(@PathParam("jdOrderId") String jdOrderId) throws Exception {
-        return iJingDongBiz.selectJdOrderIdByThirdOrder(jdOrderId);
+    public AppResult<JSONObject> selectJdOrderIdByThirdOrder(@PathParam("jdOrderId") String jdOrderId) throws Exception {
+        return ResultUtil.createSucssAppResult("订单反查成功", iJingDongBiz.selectJdOrderIdByThirdOrder(jdOrderId));
     }
 
     /**
@@ -98,8 +101,8 @@ public class JingDongResource {
     @GET
     @Path(SupplyConstants.JingDongOrder.DETAIL + "/{jdOrderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String selectJdOrder(@PathParam("jdOrderId") String jdOrderId) throws Exception {
-        return iJingDongBiz.selectJdOrder(jdOrderId);
+    public AppResult<JSONObject> selectJdOrder(@PathParam("jdOrderId") String jdOrderId) throws Exception {
+        return ResultUtil.createSucssAppResult("订单信息查询成功", iJingDongBiz.selectJdOrder(jdOrderId));
     }
 
     /**
@@ -112,7 +115,7 @@ public class JingDongResource {
     @GET
     @Path(SupplyConstants.JingDongOrder.TRACK + "/{jdOrderId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String orderTrack(@PathParam("jdOrderId") String jdOrderId) throws Exception {
-        return iJingDongBiz.orderTrack(jdOrderId);
+    public AppResult<JSONObject> orderTrack(@PathParam("jdOrderId") String jdOrderId) throws Exception {
+        return ResultUtil.createSucssAppResult("订单信息查询成功", iJingDongBiz.orderTrack(jdOrderId));
     }
 }

@@ -22,6 +22,8 @@ public class JingDongConstant {
     public static final String SKU_STATE = "/api/product/skuState";
     //获取商品图片信息
     public static final String SKU_IMAGE = "/api/product/skuImage";
+    //商品区域购买限制查询
+    public static final String CHECK_AREA_LIMIT = "/api/product/checkAreaLimit";
     //商品搜索
     public static final String SEARCH = "/api/search/search";
     //查询商品延保接口
@@ -56,6 +58,10 @@ public class JingDongConstant {
     public static final String SELECT_JDORDER = "/api/order/selectJdOrder";
     //查询配送信息接口
     public static final String ORDER_TRACK = "/api/order/orderTrack";
+    //信息推送接口
+    public static final String MESSAGE_GET = "/api/message/get";
+    //根据推送ID,删除推送信息接口
+    public static final String MESSAGE_DEL = "/api/message/del";
 
     public static final String ERROR_TOKEN = "创建Token出错";
 
@@ -74,6 +80,8 @@ public class JingDongConstant {
     public static final String ERROR_SKU_STATE  = "获取商品上下架状态异常";
 
     public static final String ERROR_SKU_IMAGE  = "获取商品图片信息异常";
+
+    public static final String ERROR_CHECK_LIMIT  = "获取商品区域购买限制信息异常";
 
     public static final String ERROR_SEARCH = "商品搜索异常";
 
@@ -108,4 +116,8 @@ public class JingDongConstant {
     public static final String ERROR_SELECT_JDORDERID = "查询京东订单信息异常";
 
     public static final String ERROR_ORDER_TRACK = "查询配送信息异常";
+
+    public static final String ERROR_MESSAGE_GET = "获取推送信息异常";
+
+    public static final String ERROR_MESSAGE_DEL = "删除推送信息异常";
 }
