@@ -1,49 +1,62 @@
-package org.trc.service.impl;
+package org.trc.biz.impl.trc;
 
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.trc.biz.trc.ITrcBiz;
+import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.category.*;
+import org.trc.domain.config.RequestFlow;
 import org.trc.enums.CategoryActionTypeEnum;
+import org.trc.mapper.config.IRequestFlowMapper;
 import org.trc.model.BrandToTrc;
 import org.trc.model.CategoryToTrc;
 import org.trc.model.PropertyToTrc;
 import org.trc.model.ResultModel;
-import org.trc.service.ITaiRanService;
+import org.trc.service.ITrcService;
+import org.trc.service.config.IRequestFlowService;
 import org.trc.util.GuidUtil;
 import org.trc.util.HttpClientUtil;
 import org.trc.util.MD5;
 
+import java.util.Calendar;
 import java.util.List;
 
 /**
- * 通知泰然城
- * Created by hzdzf on 2017/6/6.
+ * 泰然城交互
+ * Created by hzdzf on 2017/6/7.
  */
-@Service("taiRanService")
-public class TaiRanService implements ITaiRanService {
+@Service("trcBiz")
+public class TrcBiz implements ITrcBiz {
 
-    private Logger logger = LoggerFactory.getLogger(TaiRanService.class);
+    private Logger logger = LoggerFactory.getLogger(TrcBiz.class);
 
-    @Value("$(tairan.key)")
-    private String TRITAN_KEY;
+    @Autowired
+    private ITrcService trcService;
 
-    @Value("$(tairan.brand.url)")
+    @Autowired
+    private IRequestFlowService requestFlowService;
+
+    @Value("$(trc.key)")
+    private String TRC_KEY;
+
+    @Value("$(trc.brand.url)")
     private String BRAND_URL;
 
-    @Value("$(tairan.property.url)")
+    @Value("$(trc.property.url)")
     private String PROPERTY_URL;
 
-    @Value("$(tairan.category.url)")
+    @Value("$(trc.category.url)")
     private String CATEGORY_URL;
 
-    @Value("$(tairan.category.brand.url)")
+    @Value("$(trc.category.brand.url)")
     private String CATEGORY_BRAND_URL;
 
-    @Value("$(tairan.category.property.url)")
+    @Value("$(trc.category.property.url)")
     private String CATEGORY_PROPERTY_URL;
 
 
@@ -52,8 +65,7 @@ public class TaiRanService implements ITaiRanService {
     private static final String UNDER_LINE = "_";
 
     @Override
-    public ResultModel sendBrandNotice(String action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
-
+    public ResultModel sendBrand(String action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
         Assert.notNull(brand.getAlise(), "品牌别名不能为空");
         Assert.notNull(brand.getBrandCode(), "品牌编码不能为空");
         Assert.notNull(brand.getIsValid(), "是否停用不能为空");
@@ -74,7 +86,7 @@ public class TaiRanService implements ITaiRanService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRITAN_KEY).append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+        stringBuilder.append(TRC_KEY).append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
                 append(brandToTrc.getAlise()).append(OR).append(brandToTrc.getBrandCode()).append(OR).append(brandToTrc.getIsValid()).append(OR).
                 append(brandToTrc.getLogo()).append(OR).append(brandToTrc.getName()).append(OR).append(brandToTrc.getWebUrl());
 
@@ -86,30 +98,18 @@ public class TaiRanService implements ITaiRanService {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         logger.info(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest(BRAND_URL, params.toJSONString(), 10000);
+        String result = trcService.sendBrandNotice(BRAND_URL,params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
+                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        requestFlowService.insert(requestFlow);
         return resultModel;
     }
 
-    //分类通知
     @Override
-    public ResultModel sendCategoryNotice(CategoryActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
-        if (action.getCode().equals(CategoryActionTypeEnum.ADD_CATEGORY.getCode()) || action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY.getCode())
-                || action.getCode().equals(CategoryActionTypeEnum.STOP_CATEGORY.getCode())) {
-            return sendCategoryToTrc(action, oldCategory, category, operateTime);
-        }
-        if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_BRAND.getCode())) {
-            return sendCategoryBrandList(action, categoryBrandList, operateTime);
-        }
-        if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode())) {
-            return sendCategoryPropertyList(action, categoryPropertyList, operateTime);
-        }
-        return null;
-    }
-
-
-    @Override
-    public ResultModel sendPropertyNotice(String action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
+    public ResultModel sendProperty(String action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
         Assert.notNull(property.getSort(), "属性排序不能为空");
         Assert.notNull(property.getName(), "属性名称不能为空");
         Assert.notNull(property.getIsValid(), "属性是否停用不能为空");
@@ -133,7 +133,7 @@ public class TaiRanService implements ITaiRanService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRITAN_KEY).append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+        stringBuilder.append(TRC_KEY).append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
                 append(propertyToTrc.getDescription()).append(OR).append(propertyToTrc.getIsValid()).append(OR).
                 append(propertyToTrc.getName()).append(OR).append(propertyToTrc.getSort()).append(OR).append(propertyToTrc.getTypeCode()).
                 append(OR).append(propertyToTrc.getValueType());
@@ -147,9 +147,29 @@ public class TaiRanService implements ITaiRanService {
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest(PROPERTY_URL, params.toJSONString(), 10000);
+        String result = trcService.sendPropertyNotice(PROPERTY_URL,params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
+                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        requestFlowService.insert(requestFlow);
         return resultModel;
+    }
+
+    @Override
+    public ResultModel sendCategory(CategoryActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
+        if (action.getCode().equals(CategoryActionTypeEnum.ADD_CATEGORY.getCode()) || action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY.getCode())
+                || action.getCode().equals(CategoryActionTypeEnum.STOP_CATEGORY.getCode())) {
+            return sendCategoryToTrc(action, oldCategory, category, operateTime);
+        }
+        if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_BRAND.getCode())) {
+            return sendCategoryBrandList(action, categoryBrandList, operateTime);
+        }
+        if (action.getCode().equals(CategoryActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode())) {
+            return sendCategoryPropertyList(action, categoryPropertyList, operateTime);
+        }
+        return null;
     }
 
     //发送分类属性改动
@@ -158,7 +178,7 @@ public class TaiRanService implements ITaiRanService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRITAN_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
@@ -168,8 +188,13 @@ public class TaiRanService implements ITaiRanService {
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest(CATEGORY_PROPERTY_URL, params.toJSONString(), 10000);
+        String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL,params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
+                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        requestFlowService.insert(requestFlow);
         return resultModel;
     }
 
@@ -179,7 +204,7 @@ public class TaiRanService implements ITaiRanService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRITAN_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
@@ -189,8 +214,13 @@ public class TaiRanService implements ITaiRanService {
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
         logger.info(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest(CATEGORY_BRAND_URL, params.toJSONString(), 10000);
+        String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL,params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
+                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        requestFlowService.insert(requestFlow);
         return resultModel;
     }
 
@@ -200,7 +230,7 @@ public class TaiRanService implements ITaiRanService {
         Assert.notNull(category.getName(), "分类名称不能为空");
         Assert.notNull(category.getClassifyDescribe(), "分类描述不能为空");
         Assert.notNull(category.getSort(), "分类排序不能为空");
-        //TODO 判断是否通知
+        //判断是否通知
         if (oldCategory.getName().equals(category.getName()) && oldCategory.getIsValid().equals(category.getIsValid())) {
             return new ResultModel("1", "无需通知分类变更");
         }
@@ -215,7 +245,7 @@ public class TaiRanService implements ITaiRanService {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRITAN_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
                 append(categoryToTrc.getClassifyDescribe()).append(OR).append(categoryToTrc.getIsValid()).append(OR).append(categoryToTrc.getName()).append(OR).
                 append(categoryToTrc.getParentId()).append(OR).append(categoryToTrc.getSort());
         //MD5加密
@@ -229,6 +259,11 @@ public class TaiRanService implements ITaiRanService {
         logger.info(params.toJSONString());
         String result = HttpClientUtil.httpPostJsonRequest(CATEGORY_URL, params.toJSONString(), 10000);
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TAIRAN, RequestFlowConstant.POST,
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
+        requestFlowService.insert(requestFlow);
         return resultModel;
     }
 

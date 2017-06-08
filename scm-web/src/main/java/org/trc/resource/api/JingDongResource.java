@@ -1,13 +1,9 @@
 package org.trc.resource.api;
 
-import com.alibaba.fastjson.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.enums.JingDongEnum;
 import org.trc.form.JDModel.OrderDO;
 
 import javax.ws.rs.*;

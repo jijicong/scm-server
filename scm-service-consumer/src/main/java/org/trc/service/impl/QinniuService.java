@@ -12,6 +12,8 @@ import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 import com.qiniu.util.UrlSafeBase64;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.config.BaseThumbnailSize;
@@ -20,6 +22,8 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.FileUrl;
 import org.trc.form.QinniuForm;
 import org.trc.service.IQinniuService;
+import org.trc.util.CommonUtil;
+import org.trc.util.DateUtils;
 
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -30,6 +34,7 @@ import java.util.*;
  */
 @Service("qinniuService")
 public class QinniuService implements IQinniuService {
+    private Logger log = LoggerFactory.getLogger(QinniuService.class);
 
     //url地址和参数分隔符号
     public static final String URL_PARAM_SPLIT = "?";
@@ -57,27 +62,49 @@ public class QinniuService implements IQinniuService {
         if (null != baseThumbnailSize) {
             stringMap = getPersistentOpfs(qinniuForm.getBucket(), fileName, baseThumbnailSize);
         }
+        long startTime = System.nanoTime();
         Response response = getUploadManager().put(inputStream, fileName, getToken(stringMap), stringMap, null);
+        long endTime = System.nanoTime();
+        if(log.isInfoEnabled()){
+            log.info(String.format("调用七牛上传接口put上传文件%s耗时%s毫秒", fileName, DateUtils.getMilliSecondBetween(startTime, endTime)));
+        }
         return new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
     }
 
     @Override
     public String download(String fileName) throws Exception {
         String url = getUrl(fileName, null, null);
-        return getAuth().privateDownloadUrl(url);
+        long startTime = System.nanoTime();
+        String _url = getAuth().privateDownloadUrl(url);
+        long endTime = System.nanoTime();
+        if(log.isInfoEnabled()){
+            log.info(String.format("调用七牛privateDownloadUrl接口获取文件%s url地址耗时%s毫秒", fileName, DateUtils.getMilliSecondBetween(startTime, endTime)));
+        }
+        return _url;
     }
 
     @Override
     public String getThumbnail(String fileName, Integer width, Integer height) throws Exception {
         String url = getUrl(fileName, width, height);
-        return getAuth().privateDownloadUrl(url);
+        long startTime = System.nanoTime();
+        String _url = getAuth().privateDownloadUrl(url);
+        long endTime = System.nanoTime();
+        if(log.isInfoEnabled()){
+            log.info(String.format("调用七牛privateDownloadUrl接口获取文件%s url地址耗时%s毫秒", fileName, DateUtils.getMilliSecondBetween(startTime, endTime)));
+        }
+        return _url;
     }
 
     @Override
     public List<BatchStatus> batchGetFileInfo(String[] fileNames) throws Exception {
         BucketManager.BatchOperations batchOperations = new BucketManager.BatchOperations();
         batchOperations.addStatOps(qinniuForm.getBucket(), fileNames);
+        long startTime = System.nanoTime();
         Response response = getBucketManager().batch(batchOperations);
+        long endTime = System.nanoTime();
+        if(log.isInfoEnabled()){
+            log.info(String.format("调用七牛批量获取接口获取文件%s信息耗时%s毫秒", CommonUtil.converCollectionToString(Arrays.asList(fileNames)), DateUtils.getMilliSecondBetween(startTime, endTime)));
+        }
         BatchStatus[] batchStatusList = response.jsonToObject(BatchStatus[].class);
         return Arrays.asList(batchStatusList);
     }

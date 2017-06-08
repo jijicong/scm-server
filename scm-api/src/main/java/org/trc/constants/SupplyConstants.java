@@ -5,14 +5,7 @@ package org.trc.constants;
  */
 public class SupplyConstants {
 
-    /**
-     * 返回值
-     */
-    public static final class Comment {
-        public static final String STATUS = "status";//0-失败，1-成功
 
-        public static final String MSG = "msg";//返回描述
-    }
 
 
     /**
