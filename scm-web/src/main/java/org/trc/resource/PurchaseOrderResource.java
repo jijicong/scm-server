@@ -16,6 +16,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -56,8 +58,8 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Supplier>> findSuppliers(@QueryParam("userId") String userId) throws Exception {
-        return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(userId));
+    public AppResult<List<Supplier>> findSuppliers(@Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(requestContext));
     }
 
     @GET

@@ -11,6 +11,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -53,9 +55,11 @@ public class ChannelResource {
     @Path(SupplyConstants.Channel.CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveChannel(@BeanParam Channel channel) throws Exception{
-        channelBiz.saveChannel(channel);
+    public AppResult saveChannel(@BeanParam Channel channel,@Context ContainerRequestContext requestContext) throws Exception{
+
+        channelBiz.saveChannel(channel,requestContext);
         return  ResultUtil.createSucssAppResult("保存成功","");
+
     }
 
     //根据id查询

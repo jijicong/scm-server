@@ -24,6 +24,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,12 +67,6 @@ public class RoleBiz implements IRoleBiz{
     public void updateRoleState(Role role) throws Exception {
 
         AssertUtil.notNull(role,"根据角色对象，修改角色的状态，角色对象为空");
-        Role tmp = findRoleByName(role.getName());
-        if(tmp!=null){
-            if(!tmp.getId().equals(role.getId())){
-                throw new RoleException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION, "其它的角色已经使用该角色名称");
-            }
-        }
         Role updateRole = new Role();
         if(role.getId()==SYS_ROLE_ID){ //防止恶意修改系统角色的状态
             String tip="系统角色的状态不能被修改";
@@ -134,6 +129,12 @@ public class RoleBiz implements IRoleBiz{
 
         //判断是否是系统用户,系统用户只能修改，系统角色类型，对应的权限,和备注信息
         AssertUtil.notNull(role,"角色更新时,角色对象为空");
+        Role tmp = findRoleByName(role.getName());
+        if(tmp!=null){
+            if(!tmp.getId().equals(role.getId())){
+                throw new RoleException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION, "其它的角色已经使用该角色名称");
+            }
+        }
         if(role.getId()==SYS_ROLE_ID){//为渠道用户
             if(role.getRoleType()==WHOLE_TYPE){//渠道用户,反而传的是全局的类型
                 String msg = CommonUtil.joinStr("修改渠道角色,角色类型不匹配").toString();
@@ -152,6 +153,7 @@ public class RoleBiz implements IRoleBiz{
             LOGGER.error(msg);
             throw new RoleException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
+
         roleJurisdictionRelationBiz.updateRoleJurisdictionRelations(roleJurisdiction,role.getId());
         Map<String, Object> map=new HashMap<>();
         map.put("status",role.getIsValid());
@@ -161,12 +163,13 @@ public class RoleBiz implements IRoleBiz{
     }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveRole(Role role,String roleJurisdiction) throws Exception {
+    public void saveRole(Role role,String roleJurisdiction,ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(role,"角色管理模块保存角色信息失败，角色信息为空");
         Role tmp = findRoleByName(role.getName());
         AssertUtil.isNull(tmp,String.format("角色名称[name=%s]的名称已存在,请使用其他名称",role.getName()));
         int count=0;
         ParamsUtil.setBaseDO(role);
+        role.setCreateOperator((String) requestContext.getProperty("userId"));
         count=roleService.insert(role);
         if(count==0){
             String msg = String.format("保存角色%s数据库操作失败", JSON.toJSONString(role));
