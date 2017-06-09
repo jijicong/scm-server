@@ -17,4 +17,10 @@
         #{item.propertyId}
         </foreach>
     </delete>
+
+    <update id="updateCategoryPropertyIsValid">
+        UPDATE category_propery
+        SET   is_valid=#{isValid}
+        WHERE property_id=#{propertyId}
+    </update>
 </mapper>

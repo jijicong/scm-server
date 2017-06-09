@@ -40,7 +40,8 @@ public class CategoryProperty {
     private String typeCode;
     @Transient
     private String valueType;
-
+    private String isValid; //是否有效:0-否,1-是
+    private String isDeleted; //是否删除:0-否,1-是
 
 
     @JsonSerialize(using = CustomDateSerializer.class)
@@ -111,5 +112,21 @@ public class CategoryProperty {
 
     public void setValueType(String valueType) {
         this.valueType = valueType;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(String isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

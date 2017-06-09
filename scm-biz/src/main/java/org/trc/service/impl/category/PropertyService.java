@@ -22,4 +22,9 @@ public class PropertyService extends BaseService<Property, Long> implements IPro
 
         return propertyMapper.queryPropertyList(id);
     }
+
+    @Override
+    public Property selectOneById(Long id) throws Exception {
+        return propertyMapper.selectOneById(id);
+    }
 }

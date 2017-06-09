@@ -29,4 +29,9 @@ public class CategoryPropertyService extends BaseService<CategoryProperty, Long>
     public void deleteCategoryPropertyList(List<CategoryProperty> categoryPropertyList) throws Exception {
         categoryPropertyMapper.deleteCategoryPropertyList(categoryPropertyList);
     }
+
+    @Override
+    public Integer updateCategoryPropertyIsValid(String isValid, Long propertyId) throws Exception {
+        return categoryPropertyMapper.updateCategoryPropertyIsValid(isValid,propertyId);
+    }
 }

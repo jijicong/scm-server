@@ -20,7 +20,7 @@ public class Property extends BaseDO {
     @FormParam("name")
     @Length(max = 10, message = "属性名称不得超过10个字符")
     private String name;//属性名称
-    @Length(max = 10, message = "属性描述不得超过20个字符")
+    @Length(max = 20, message = "属性描述不得超过20个字符")
     @FormParam("description")
     private String description;//属性描述
     @NotEmpty

@@ -17,6 +17,7 @@ import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.PropertyForm;
+import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.util.*;
@@ -41,6 +42,8 @@ public class PropertyBiz implements IPropertyBiz {
     private IPropertyValueService propertyValueService;
     @Autowired
     private IQinniuBiz qinniuBiz;
+    @Autowired
+    private ICategoryPropertyService categoryPropertyService;
 
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
@@ -58,7 +61,6 @@ public class PropertyBiz implements IPropertyBiz {
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
-        example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
         return propertyService.pagination(example, page, queryModel);
     }
@@ -103,6 +105,11 @@ public class PropertyBiz implements IPropertyBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateProperty(Property property) throws Exception {
         AssertUtil.notNull(property.getId(), "根据ID更新属性信息参数ID为空");
+        //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
+        Property selectProperty=propertyService.selectOneById(property.getId());
+        if(!property.getValueType().equals(selectProperty.getValueType())){
+            //用户修改属性值类型，先删除原先的属性值
+        }
         property.setUpdateTime(Calendar.getInstance().getTime());
         int count = propertyService.updateByPrimaryKeySelective(property);
         if (count < 1) {
@@ -200,6 +207,8 @@ public class PropertyBiz implements IPropertyBiz {
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
+        //属性状态更新时需要更新属性分类关系表的is_valid字段，但可能此时该属性还未使用，故不对返回值进行判断
+        categoryPropertyService.updateCategoryPropertyIsValid(updateProperty.getIsValid(),updateProperty.getId());
     }
 
     @Override
