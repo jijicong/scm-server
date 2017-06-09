@@ -161,11 +161,9 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     public void saveCategory(Category category) throws Exception {
-        AssertUtil.notNull(category.getCategoryCode(), "新增分类参数categoryCode不能为空");
-        AssertUtil.notNull(category.getSort(), "新增分类参数sort不能为空");
-        AssertUtil.notBlank(category.getIsValid(), "新增分类参数isValid不能为空");
-
+        checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
+        AssertUtil.notNull(category.getCategoryCode(),"分类编码生成失败");
         category.setCreateOperator("test");
         category.setSource(SourceEnum.TRC.getCode());
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
@@ -196,6 +194,12 @@ public class CategoryBiz implements ICategoryBiz {
         if (category.getLevel() != 1 && isLeaf(category.getParentId()) != 0) {
             updateIsLeaf(category);
         }
+
+    }
+
+    private void checkSaveCategory(Category category) {
+        AssertUtil.notNull(category.getSort(), "新增分类参数sort不能为空");
+        AssertUtil.notBlank(category.getIsValid(), "新增分类参数isValid不能为空");
 
     }
 
@@ -607,6 +611,7 @@ public class CategoryBiz implements ICategoryBiz {
         }
         return categoryName;
     }
+
     /**
      * 过滤重复Id
      */
