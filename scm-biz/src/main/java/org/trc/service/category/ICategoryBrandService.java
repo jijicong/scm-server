@@ -1,5 +1,6 @@
 package org.trc.service.category;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.service.IBaseService;
@@ -20,4 +21,13 @@ public interface ICategoryBrandService extends IBaseService<CategoryBrand, Long>
     List<CategoryBrandExt> queryCategoryBrands(List<Long> categoryList) throws Exception;
 
     int deleteByCategoryId(Long categoryId) throws Exception;
+
+    /**
+     * 更新品牌分类表中品牌停用的级联状态
+     * @param isValid
+     * @param brandId
+     * @return
+     * @throws Exception
+     */
+    Integer updateCategoryBrandIsValid(String isValid,Long brandId) throws Exception;
 }

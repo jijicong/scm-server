@@ -20,6 +20,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
 import org.trc.service.category.IBrandService;
+import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.util.ISerialUtilService;
@@ -49,6 +50,8 @@ public class BrandBiz implements IBrandBiz {
     private ISupplierBrandService supplierBrandService;
     @Autowired
     private IUserAccreditInfoService userAccreditInfoService;
+    @Autowired
+    private ICategoryBrandService categoryBrandService;
 
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
@@ -68,9 +71,11 @@ public class BrandBiz implements IBrandBiz {
                 brand.setLogo(fileUrlMap.get(brand.getLogo()));
             }
             if(!StringUtils.isBlank(brand.getLastEditOperator())){
-                UserAccreditInfo userAccreditInfo=userAccreditInfoMap.get(brand.getLastEditOperator());
-                if(userAccreditInfo!=null){
-                    brand.setLastEditOperator(userAccreditInfo.getName());
+                if(userAccreditInfoMap!=null){
+                    UserAccreditInfo userAccreditInfo=userAccreditInfoMap.get(brand.getLastEditOperator());
+                    if(userAccreditInfo!=null){
+                        brand.setLastEditOperator(userAccreditInfo.getName());
+                    }
                 }
             }
         }
@@ -190,6 +195,8 @@ public class BrandBiz implements IBrandBiz {
         }
         //品牌状态更新时需要更新品牌供应商关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
         supplierBrandService.updateSupplerBrandIsValid(updateBrand.getIsValid(), updateBrand.getId());
+        //品牌状态更新时需要更新品牌分类关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
+        categoryBrandService.updateCategoryBrandIsValid(updateBrand.getIsValid(),updateBrand.getId());
     }
 
     @Override

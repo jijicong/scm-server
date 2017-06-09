@@ -31,4 +31,11 @@
     <delete id="deleteByCategoryId" >
         DELETE FROM category_brand WHERE category_id=#{categoryId}
     </delete>
+
+    <update id="updateCategoryBrandIsValid">
+        UPDATE category_brand
+        SET   is_valid=#{isValid}
+        WHERE brand_id=#{brandId}
+    </update>
+
 </mapper>

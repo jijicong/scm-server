@@ -43,6 +43,8 @@ public class CategoryBrand{
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime; //更新时间
 
+    private String isValid; //是否有效:0-否,1-是
+    private String isDeleted; //是否删除:0-否,1-是
     public Long getId() {
         return id;
     }
@@ -97,5 +99,21 @@ public class CategoryBrand{
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(String isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

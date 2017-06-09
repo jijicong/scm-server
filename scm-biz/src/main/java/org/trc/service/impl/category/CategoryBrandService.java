@@ -29,4 +29,9 @@ public class CategoryBrandService extends BaseService<CategoryBrand, Long> imple
         return categoryBrandMapper.deleteByCategoryId(categoryId);
     }
 
+    @Override
+    public Integer updateCategoryBrandIsValid(String isValid, Long brandId) throws Exception {
+        return categoryBrandMapper.updateCategoryBrandIsValid(isValid,brandId);
+    }
+
 }

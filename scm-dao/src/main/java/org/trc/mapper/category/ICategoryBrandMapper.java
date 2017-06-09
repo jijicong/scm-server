@@ -1,5 +1,6 @@
 package org.trc.mapper.category;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.util.BaseMapper;
@@ -21,4 +22,13 @@ public interface ICategoryBrandMapper extends BaseMapper<CategoryBrand> {
     List<CategoryBrandExt> selectCategoryBrands(List<Long> categoryList) throws Exception;
 
     int deleteByCategoryId(Long categoryId) throws Exception;
+
+    /**
+     * 更新品牌分类表中品牌停用的级联状态
+     * @param isValid
+     * @param brandId
+     * @return
+     * @throws Exception
+     */
+    Integer updateCategoryBrandIsValid(@Param("isValid")String isValid, @Param("brandId") Long brandId) throws Exception;
 }
