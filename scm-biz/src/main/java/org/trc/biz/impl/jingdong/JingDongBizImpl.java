@@ -126,12 +126,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.submitOrder(token, orderDO);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
+                throw new Exception(orderResult.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam, "统一下单接口billOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
         Boolean state = saveRecord(inputParam, "统一下单接口billOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
@@ -154,12 +154,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.confirmOrder(token, jdOrderId);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
+                throw new Exception(orderResult.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam.toJSONString(), "确认预占库存订单接口confirmOrder", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
         Boolean state = saveRecord(inputParam.toJSONString(), "确认预占库存订单接口confirmOrder", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
@@ -182,13 +182,13 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.cancel(token, jdOrderId);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
+                throw new Exception(orderResult.getResultMessage());
             }
 
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam.toJSONString(), "取消未确认订单接口cancel", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
         Boolean state = saveRecord(inputParam.toJSONString(), "取消未确认订单接口cancel", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
@@ -199,7 +199,7 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     @Override
-    public String doPay(String jdOrderId) throws Exception {
+    public ReturnTypeDO doPay(String jdOrderId) throws Exception {
         ReturnTypeDO orderResult = null;
         String token = getAccessToken();
         AssertUtil.notBlank(token, "token不能为空");
@@ -211,12 +211,13 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.doPay(token, jdOrderId);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_DO_PAY);
+                throw new Exception(orderResult.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam.toJSONString(), "发起支付接口doPay", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_DO_PAY);
+            //throw new Exception(JingDongConstant.ERROR_DO_PAY);
+            throw new JingDongException(JingDongEnum.ERROR_DO_PAY,e.getMessage());
         }
         orderResult = ijdService.doPay(token, jdOrderId);
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
@@ -224,7 +225,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         if (!state) {
             log.info("添加记录到数据库失败！");
         }
-        return JSONObject.toJSONString(orderResult.getResult());
+        return orderResult;
     }
 
     @Override
@@ -240,12 +241,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.selectJdOrderIdByThirdOrder(token, jdOrderId);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
+                throw new Exception(orderResult.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam.toJSONString(), "订单反查接口selectJdOrderIdByThirdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
         Boolean state = saveRecord(inputParam.toJSONString(), "订单反查接口selectJdOrderIdByThirdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
@@ -268,12 +269,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.selectJdOrder(token, jdOrderId);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
+                throw new Exception(orderResult.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam.toJSONString(), "查询京东订单信息接口selectJdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
         Boolean state = saveRecord(inputParam.toJSONString(), "查询京东订单信息接口selectJdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
@@ -296,12 +297,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             orderResult = ijdService.orderTrack(token, jdOrderId);
             if (!orderResult.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
+                throw new Exception(orderResult.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(orderResult));
             saveRecord(inputParam.toJSONString(), "orderTrack(String jdOrderId)", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(orderResult));
         Boolean state = saveRecord(inputParam.toJSONString(), "orderTrack(String jdOrderId)", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
@@ -324,12 +325,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             price = ijdService.getSellPrice(token, sku);
             if (!price.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
+                throw new Exception(price.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(price));
             saveRecord(inputParam.toJSONString(), "查询商品价格getSellPrice", JSONArray.toJSONString(price), price.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(price));
         Boolean state = saveRecord(inputParam.toJSONString(), "查询商品价格getSellPrice", JSONArray.toJSONString(price), price.getSuccess());
@@ -361,12 +362,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             stock = ijdService.getStockById(token, sku, address);
             if (!stock.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
+                throw new Exception(stock.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(stock));
             saveRecord(inputParam.toJSONString(), "获取库存接口getStockById", JSONArray.toJSONString(stock), stock.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
+            throw new Exception(e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(stock));
         Boolean state = saveRecord(inputParam.toJSONString(), "获取库存接口getStockById", JSONArray.toJSONString(stock), stock.getSuccess());
@@ -398,12 +399,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         try {
             stock = ijdService.getNewStockById(token, skuNums.toJSONString(), address);
             if (!stock.getSuccess()) {
-                throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
+                throw new Exception(stock.getResultMessage());
             }
         } catch (Exception e) {
             log.info("调用结果：" + JSONObject.toJSONString(stock));
             saveRecord(inputParam.toJSONString(), "获取库存接口getNewStockById", JSONArray.toJSONString(stock), stock.getSuccess());
-            throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
+            throw new JingDongException(JingDongEnum.ERROR_GET_NEW_STOCK_BY_ID,e.getMessage());
         }
         log.info("调用结果：" + JSONObject.toJSONString(stock));
         Boolean state = saveRecord(inputParam.toJSONString(), "获取库存接口getNewStockById", JSONArray.toJSONString(stock), stock.getSuccess());
