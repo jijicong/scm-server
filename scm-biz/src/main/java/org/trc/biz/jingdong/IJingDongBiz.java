@@ -88,6 +88,7 @@ public interface IJingDongBiz {
 
     /**
      * 查询商品价格
+     *
      * @param sku 商品编号 批量以逗号分隔
      * @return
      * @throws Exception
