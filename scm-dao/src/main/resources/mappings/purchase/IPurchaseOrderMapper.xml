@@ -101,6 +101,25 @@
         ssi.brand_id=b.id
         AND b.name=#{BrandName}
     </select>
+    <!--根据分类的ids拼接全路径名和ids-->
+    <select id="selectAllCategory" resultType="org.trc.domain.purchase.PurchaseDetail">
+        SELECT
+            A.id AS categoryId,
+            concat(C. name,'/ ',B. name,'/ ',A. name) AS allCategoryName,
+            concat(C.id,' / ',B.id,' / ',A.id) AS allCategory
+        FROM
+            category A
+            LEFT JOIN category B ON A.parent_id = B.id
+            LEFT JOIN category C ON B.parent_id = C.id
+        WHERE A.id IN
+        <foreach collection="list" item="categoryId" index="index"
+                 open="(" close=")" separator=",">
+            #{categoryId}
+        </foreach>
+    </select>
+
+
+
 
 
 </mapper>

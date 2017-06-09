@@ -20,4 +20,11 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
 
     int selectCountItems(Map<String, Object> map);
 
+    /**
+     * 拼接分类的全路径名和ids的拼接
+     * @param categoryIds
+     * @return
+     */
+    List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
+
 }

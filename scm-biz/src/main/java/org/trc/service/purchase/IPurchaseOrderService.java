@@ -19,4 +19,11 @@ public interface IPurchaseOrderService extends IBaseService<PurchaseOrder,Long>{
 
      int selectCountItems(Map<String, Object> map);
 
+     /**
+      * 拼接分类的全路径名 和 全ids
+      * @param categoryIds
+      * @return
+      */
+     List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
+
 }

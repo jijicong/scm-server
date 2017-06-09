@@ -42,12 +42,12 @@ public class PurchaseDetail extends BaseDO{
     @Length(max = 256, message = "商品的品牌名称字母和数字不能超过256个,汉字不能超过128个")
     private String brandName;
     @FormParam("categoryId")
-    private String  categoryId;
+    private Long  categoryId;
     @Transient
     @FormParam("allCategoryName")
     @Length(max = 128, message = "商品的所属分类的名称字母和数字不能超过128个,汉字不能超过64个")
     private String  allCategoryName;
-    @FormParam("skuCode")
+    @FormParam("allCategory")
     @Length(max = 64, message = "商品的所有分类字母和数字不能超过64个,汉字不能超过32个")
     private String allCategory;//所有分类
     @FormParam("purchasePrice")
@@ -105,11 +105,11 @@ public class PurchaseDetail extends BaseDO{
         this.brandId = brandId;
     }
 
-    public String getCategoryId() {
+    public Long getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(String categoryId) {
+    public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
 

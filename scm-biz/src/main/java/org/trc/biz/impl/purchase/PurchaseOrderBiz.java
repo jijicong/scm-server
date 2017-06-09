@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.category.Category;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseGroup;
@@ -298,6 +300,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -305,18 +308,27 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("name", form.getName());
         map.put("skuCode", form.getSkuCode());
         map.put("BrandName", form.getBrandName());
-
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
 
+        List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
-            purchaseDetail.getCategoryId();
+            categoryIds.add(purchaseDetail.getCategoryId());
         }
-
+        List<PurchaseDetail> temp = purchaseOrderService.selectAllCategory(categoryIds);
+        //categoryId    allCategoryName    allCategory >>>>>>分类全路径赋值
+        for (PurchaseDetail purchaseDetailTmp: temp) {
+            for (PurchaseDetail purchaseDetail:purchaseDetailList) {
+                if(purchaseDetailTmp.getCategoryId().equals(purchaseDetail.getCategoryId())){
+                    purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
+                    purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
+                    System.out.println(purchaseDetail.getAllCategory()+"\\"+purchaseDetail.getAllCategoryName());
+                }
+            }
+        }
         int count = purchaseOrderService.selectCountItems(map);
         page.setTotalCount(count);
         page.setResult(purchaseDetailList);
-
 
         return page;
 
