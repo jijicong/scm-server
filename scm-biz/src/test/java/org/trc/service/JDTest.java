@@ -32,7 +32,7 @@ import java.util.concurrent.*;
  * Created by hzwyz on 2017/5/22 0022.
  */
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
-@ContextConfiguration(locations = {"classpath:config/dev/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
+@ContextConfiguration(locations = {"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
 public class JDTest extends AbstractJUnit4SpringContextTests {
     @Autowired
     IJingDongBiz iJingDongBiz;
@@ -96,6 +96,16 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             ReturnTypeDO a = ijdService.getPageNum(token);
             Boolean A =a.getSuccess();
             a.getResult();
+            /*JingDongBizImpl.refreshToken();*/
+            System.out.print("结束");
+        } catch (Exception e) {
+            System.out.print(e);
+        }
+    }
+    @Test
+    public void testOrderTrack() {
+        try {
+            iJingDongBiz.orderTrack("123456");
             /*JingDongBizImpl.refreshToken();*/
             System.out.print("结束");
         } catch (Exception e) {
