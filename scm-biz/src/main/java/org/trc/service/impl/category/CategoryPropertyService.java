@@ -21,8 +21,8 @@ public class CategoryPropertyService extends BaseService<CategoryProperty, Long>
     @Autowired
     private ICategoryPropertyMapper categoryPropertyMapper;
     @Override
-    public void updateCategoryPropertySort(List<CategoryProperty> categoryPropertyList) throws Exception {
-        categoryPropertyMapper.updateCategoryPropertySort(categoryPropertyList);
+    public int updateCategoryPropertySort(List<CategoryProperty> categoryPropertyList) throws Exception {
+      return   categoryPropertyMapper.updateCategoryPropertySort(categoryPropertyList);
     }
 
     @Override

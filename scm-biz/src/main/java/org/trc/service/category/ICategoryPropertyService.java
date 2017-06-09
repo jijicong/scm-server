@@ -16,7 +16,7 @@ public interface ICategoryPropertyService extends IBaseService<CategoryProperty,
     /**
      * 更新排序
      */
-    void updateCategoryPropertySort(List<CategoryProperty> categoryPropertyList) throws Exception;
+    int updateCategoryPropertySort(List<CategoryProperty> categoryPropertyList) throws Exception;
     /**
      * 删除关联的属性
      */
