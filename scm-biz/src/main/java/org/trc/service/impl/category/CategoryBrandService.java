@@ -25,8 +25,8 @@ public class CategoryBrandService extends BaseService<CategoryBrand, Long> imple
     }
 
     @Override
-    public int deleteByCategoryId(Long categoryId) throws Exception {
-        return categoryBrandMapper.deleteByCategoryId(categoryId);
+    public int deleteCategoryBrand(List<CategoryBrand> categoryBrandList) throws Exception {
+        return categoryBrandMapper.deleteCategoryBrand(categoryBrandList);
     }
 
     @Override
