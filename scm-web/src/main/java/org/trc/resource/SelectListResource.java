@@ -54,7 +54,7 @@ public class SelectListResource {
     //处理优先级
     private static final String  HANDLER_PRIORITY = "handlerPriority";
     @GET
-    @Path(SupplyConstants.Config.SelectList.VALID_LIST)
+    @Path(SupplyConstants.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> queryValidList(){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
@@ -110,14 +110,14 @@ public class SelectListResource {
     }
     //清关
     @GET
-    @Path(SupplyConstants.Config.SelectList.IS_CUSTOM_CLEARANCE)
+    @Path(SupplyConstants.SelectList.IS_CUSTOM_CLEARANCE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> queryisClearanceList(){
         return ResultUtil.createSucssAppResult("查询是否支持清关成功", ClearanceEnum.toJSONArray());
     }
 
     @GET
-    @Path(SupplyConstants.Config.SelectList.PURCHASE_ORDER_STATUS)
+    @Path(SupplyConstants.SelectList.PURCHASE_ORDER_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> querypurchaseOrderStatus(){
         return ResultUtil.createSucssAppResult("查询采购订单状态成功", PurchaseOrderStatusEnum.toJSONArray());

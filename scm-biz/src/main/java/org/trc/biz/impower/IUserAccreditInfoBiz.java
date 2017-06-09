@@ -76,7 +76,7 @@ public interface IUserAccreditInfoBiz {
     /**
      * 新增授权
      */
-    void saveUserAccreditInfo(UserAddPageDate userAddPageDate) throws Exception;
+    void saveUserAccreditInfo(UserAddPageDate userAddPageDate,UserDO userDO) throws Exception;
 
     /**
      * 根据ID查询用户
@@ -93,7 +93,7 @@ public interface IUserAccreditInfoBiz {
      * @param userAddPageDate
      * @throws Exception
      */
-    void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception;
+    void updateUserAccredit(UserAddPageDate userAddPageDate,UserDO userDO) throws Exception;
 
     /**
      * 手机号校验
@@ -102,10 +102,17 @@ public interface IUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    String checkPhone(String phone) throws Exception;
+    String checkPhone(String phone,UserDO userDO) throws Exception;
 
     /**
      * 新增时用户姓名是否已经被使用
      */
 //    int checkName(String name) throws Exception;
+
+    /**
+     *  采购组员校验
+     * @param id
+     * @throws Exception
+     */
+    String[] purchaseRole(Long id) throws Exception;
 }

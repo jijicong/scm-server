@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.config.RequestFlow;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.JDModel.*;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.util.*;
 import org.trc.form.jingdong.AddressDO;
@@ -20,9 +20,6 @@ import org.trc.form.jingdong.NewStockDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.enums.JingDongEnum;
-import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.SellPriceDO;
-import org.trc.form.JDModel.StockDO;
 import org.trc.service.IJDService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.jingdong.ITableMappingService;
@@ -53,7 +50,6 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     @Override
     public String getAccessToken() throws Exception {
-        try {
             String token = null;
             Common acc = new Common();
             try {
@@ -88,15 +84,10 @@ public class JingDongBizImpl implements IJingDongBiz {
             //创建accessToken,并保存到数据库和缓存中
             token = createToken();
             return token;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new Exception(JingDongEnum.ERROR_GET_TOKEN.getName());
-        }
     }
 
     @Override
-    public String billOrder(OrderDO orderDO) {
-        try {
+    public String billOrder(OrderDO orderDO) throws Exception{
             AssertUtil.notBlank(orderDO.getThirdOrder(), "第三方的订单单号不能为空");
             AssertUtil.notBlank(orderDO.getSku(), "商品信息不能为空");
             AssertUtil.notBlank(orderDO.getName(), "收货人姓名不能为空");
@@ -125,28 +116,33 @@ public class JingDongBizImpl implements IJingDongBiz {
                 AssertUtil.notBlank(orderDO.getInvoiceAddress(), "增值票收票人所在地址不能为空");
                 AssertUtil.notBlank(orderDO.getOrderPriceSnap(), "客户端订单价格快照不能为空");
             }
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             Map map = BeanToMapUtil.convertBeanToMap(orderDO);
             String inputParam = map.toString();
             log.info("输入参数："+inputParam);
-            ReturnTypeDO orderResult = ijdService.submitOrder(token, orderDO);
+            try{
+                orderResult = ijdService.submitOrder(token, orderDO);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam, "统一下单接口billOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
+            }
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam, "统一下单接口billOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult.getResult()), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_ORDER_BILL.getCode(), null, e.getMessage(), false);
-        }
-
+        return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
-    public String confirmOrder(String jdOrderId) {
-        try {
+    public String confirmOrder(String jdOrderId) throws Exception{
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             AssertUtil.notBlank(jdOrderId, "jdOrderId不能为空");
@@ -154,23 +150,27 @@ public class JingDongBizImpl implements IJingDongBiz {
             inputParam.put("token",token);
             inputParam.put("jdOrderId",jdOrderId);
             log.info("输入参数："+inputParam.toJSONString());
-            ReturnTypeDO orderResult = ijdService.confirmOrder(token, jdOrderId);
+            try{
+                orderResult = ijdService.confirmOrder(token, jdOrderId);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam.toJSONString(), "确认预占库存订单接口confirmOrder", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
+            }
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam.toJSONString(), "确认预占库存订单接口confirmOrder", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_ORDER_CONFIRM.getCode(), null, e.getMessage(), false);
-        }
-
+            return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
-    public String cancel(String jdOrderId) {
-        try {
+    public String cancel(String jdOrderId) throws Exception{
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             AssertUtil.notBlank(jdOrderId, "jdOrderId不能为空");
@@ -178,22 +178,27 @@ public class JingDongBizImpl implements IJingDongBiz {
             inputParam.put("token",token);
             inputParam.put("jdOrderId",jdOrderId);
             log.info("输入参数："+inputParam.toJSONString());
-            ReturnTypeDO orderResult = ijdService.cancel(token, jdOrderId);
+            try{
+                orderResult = ijdService.cancel(token, jdOrderId);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam.toJSONString(), "取消未确认订单接口cancel", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
+            }
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam.toJSONString(), "取消未确认订单接口cancel", JSONObject.toJSONString(orderResult.getResult()), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), Boolean.valueOf((boolean)orderResult.getResult()).toString(), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_ORDER_CANCEL.getCode(), null, e.getMessage(), false);
-        }
+        return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
-    public String doPay(String jdOrderId) {
-        try {
+    public String doPay(String jdOrderId)throws Exception{
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             AssertUtil.notBlank(jdOrderId, "jdOrderId不能为空");
@@ -201,22 +206,28 @@ public class JingDongBizImpl implements IJingDongBiz {
             inputParam.put("token",token);
             inputParam.put("jdOrderId",jdOrderId);
             log.info("输入参数："+inputParam.toJSONString());
-            ReturnTypeDO orderResult = ijdService.doPay(token, jdOrderId);
+            try{
+                orderResult = ijdService.doPay(token, jdOrderId);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_DO_PAY);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam.toJSONString(), "发起支付接口doPay", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_DO_PAY);
+            }
+            orderResult = ijdService.doPay(token, jdOrderId);
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam.toJSONString(), "发起支付接口doPay", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), orderResult.getResult(), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_DO_PAY.getCode(), null, e.getMessage(), false);
-        }
+        return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
-    public String selectJdOrderIdByThirdOrder(String jdOrderId) {
-        try {
+    public String selectJdOrderIdByThirdOrder(String jdOrderId) throws Exception{
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             AssertUtil.notBlank(jdOrderId, "jdOrderId不能为空");
@@ -224,22 +235,27 @@ public class JingDongBizImpl implements IJingDongBiz {
             inputParam.put("token",token);
             inputParam.put("jdOrderId",jdOrderId);
             log.info("输入参数："+inputParam.toJSONString());
-            ReturnTypeDO orderResult = ijdService.selectJdOrderIdByThirdOrder(token, jdOrderId);
+            try{
+                orderResult = ijdService.selectJdOrderIdByThirdOrder(token, jdOrderId);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam.toJSONString(), "订单反查接口selectJdOrderIdByThirdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
+            }
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam.toJSONString(), "订单反查接口selectJdOrderIdByThirdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), (String)orderResult.getResult(), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_SELECT_JDORDERID_BY_THIRDORDER.getCode(), null, e.getMessage(), false);
-        }
+        return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
-    public String selectJdOrder(String jdOrderId) {
-        try {
+    public String selectJdOrder(String jdOrderId) throws Exception{
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             AssertUtil.notBlank(jdOrderId, "jdOrderId不能为空");
@@ -247,53 +263,72 @@ public class JingDongBizImpl implements IJingDongBiz {
             inputParam.put("token",token);
             inputParam.put("jdOrderId",jdOrderId);
             log.info("输入参数："+inputParam.toJSONString());
-            ReturnTypeDO orderResult = ijdService.selectJdOrder(token, jdOrderId);
+            try{
+                orderResult = ijdService.selectJdOrder(token, jdOrderId);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
+                }
+            }catch(Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam.toJSONString(), "查询京东订单信息接口selectJdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
+            }
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam.toJSONString(), "查询京东订单信息接口selectJdOrder", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult.getResult()), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_SELECT_JDORDER.getCode(), null, e.getMessage(), false);
-        }
+        return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
-    public String orderTrack(String jdOrderId) {
-        try {
+    public String orderTrack(String jdOrderId) throws Exception {
+            ReturnTypeDO orderResult = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             AssertUtil.notBlank(jdOrderId, "jdOrderId不能为空");
-            ReturnTypeDO orderResult = ijdService.orderTrack(token, jdOrderId);
             JSONObject inputParam = new JSONObject();
             inputParam.put("token",token);
             inputParam.put("jdOrderId",jdOrderId);
             log.info("输入参数："+inputParam.toJSONString());
+            try{
+                orderResult = ijdService.orderTrack(token, jdOrderId);
+                if (!orderResult.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(orderResult));
+                saveRecord(inputParam.toJSONString(), "orderTrack(String jdOrderId)", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
+            }
             log.info("调用结果："+JSONObject.toJSONString(orderResult));
             Boolean state = saveRecord(inputParam.toJSONString(), "orderTrack(String jdOrderId)", JSONObject.toJSONString(orderResult), orderResult.getSuccess());
             if (!state){
                 log.info("添加记录到数据库失败！");
             }
-            return returnValue(orderResult.getResultCode(), JSONObject.toJSONString(orderResult.getResult()), orderResult.getResultMessage(), orderResult.getSuccess());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return returnValue(JingDongEnum.ERROR_ORDER_TRACK.getCode(), null, e.getMessage(), false);
-        }
+            return JSONObject.toJSONString(orderResult.getResult());
     }
 
     @Override
     public List<SellPriceDO> getSellPrice(String sku) throws Exception {
-        try{
             AssertUtil.notBlank(sku, "sku不能为空");
+            ReturnTypeDO price = null;
             String token = getAccessToken();
             AssertUtil.notBlank(token, "token不能为空");
             JSONObject inputParam = new JSONObject();
             inputParam.put("token",token);
             inputParam.put("sku",sku);
             log.info("输入参数："+inputParam.toJSONString());
-            ReturnTypeDO price = ijdService.getSellPrice(token, sku);
+            try{
+                price = ijdService.getSellPrice(token, sku);
+                if (!price.getSuccess()){
+                    throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
+                }
+            }catch (Exception e){
+                log.info("调用结果："+JSONObject.toJSONString(price));
+                saveRecord(inputParam.toJSONString(), "查询商品价格getSellPrice", JSONArray.toJSONString(price), price.getSuccess());
+                throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
+            }
             log.info("调用结果："+JSONObject.toJSONString(price));
             Boolean state = saveRecord(inputParam.toJSONString(), "查询商品价格getSellPrice", JSONArray.toJSONString(price), price.getSuccess());
             if (!state){
@@ -304,11 +339,6 @@ public class JingDongBizImpl implements IJingDongBiz {
             }
             List<SellPriceDO> list = JSONArray.parseArray(JSONArray.toJSONString(price.getResult()),SellPriceDO.class);
             return list;
-        }catch (Exception e){
-            log.error(e.getMessage());
-            throw new Exception(JingDongEnum.ERROR_GET_SELL_PRICE.getName());
-        }
-
     }
 
     @Override
@@ -317,6 +347,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         AssertUtil.notBlank(area.getProvince(), "province不能为空");
         AssertUtil.notBlank(area.getCity(), "city不能为空");
         AssertUtil.notBlank(area.getCounty(), "county不能为空");
+        ReturnTypeDO stock = null;
         String token = getAccessToken();
         AssertUtil.notBlank(token, "token不能为空");
         String address = getAddress(area.getProvince(), area.getCity(), area.getCounty());
@@ -325,7 +356,16 @@ public class JingDongBizImpl implements IJingDongBiz {
         inputParam.put("sku",sku);
         inputParam.put("address",address);
         log.info("输入参数："+inputParam.toJSONString());
-        ReturnTypeDO stock = ijdService.getStockById(token, sku, address);
+        try{
+            stock = ijdService.getStockById(token, sku, address);
+            if (!stock.getSuccess()){
+                throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
+            }
+        }catch (Exception e){
+            log.info("调用结果："+JSONObject.toJSONString(stock));
+            saveRecord(inputParam.toJSONString(), "获取库存接口getStockById", JSONArray.toJSONString(stock), stock.getSuccess());
+            throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
+        }
         log.info("调用结果："+JSONObject.toJSONString(stock));
         Boolean state = saveRecord(inputParam.toJSONString(), "获取库存接口getStockById", JSONArray.toJSONString(stock), stock.getSuccess());
         if (!state){
@@ -344,6 +384,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         AssertUtil.notBlank(area.getProvince(), "province不能为空");
         AssertUtil.notBlank(area.getCity(), "city不能为空");
         AssertUtil.notBlank(area.getCounty(), "county不能为空");
+        ReturnTypeDO stock = null;
         String token = getAccessToken();
         AssertUtil.notBlank(token, "token不能为空");
         String address = getAddress(area.getProvince(), area.getCity(), area.getCounty());
@@ -352,7 +393,16 @@ public class JingDongBizImpl implements IJingDongBiz {
         inputParam.put("skuNums",skuNums);
         inputParam.put("address",address);
         log.info("输入参数："+inputParam.toJSONString());
-        ReturnTypeDO stock = ijdService.getNewStockById(token, skuNums.toJSONString(), address);
+        try{
+            stock = ijdService.getNewStockById(token, skuNums.toJSONString(), address);
+            if (!stock.getSuccess()){
+                throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
+            }
+        }catch (Exception e){
+            log.info("调用结果："+JSONObject.toJSONString(stock));
+            saveRecord(inputParam.toJSONString(), "获取库存接口getNewStockById", JSONArray.toJSONString(stock), stock.getSuccess());
+            throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
+        }
         log.info("调用结果："+JSONObject.toJSONString(stock));
         Boolean state = saveRecord(inputParam.toJSONString(), "获取库存接口getNewStockById", JSONArray.toJSONString(stock), stock.getSuccess());
         if (!state){
@@ -367,7 +417,6 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     @Override
     public String getAddress(String pro, String ci, String cou) throws Exception {
-        try {
             AssertUtil.notBlank(pro, "province不能为空");
             AssertUtil.notBlank(ci, "city不能为空");
             AssertUtil.notBlank(cou, "county不能为空");
@@ -375,9 +424,6 @@ public class JingDongBizImpl implements IJingDongBiz {
             String city = tableMappingService.selectByCode(ci);
             String county = tableMappingService.selectByCode(cou);
             return province + "_" + city + "_" + county;
-        } catch (Exception e) {
-            throw new Exception(JingDongEnum.ERROR_GET_ADDRESS.getName());
-        }
     }
 
     @Override
@@ -448,16 +494,6 @@ public class JingDongBizImpl implements IJingDongBiz {
         }
     }
 
-
-    private String returnValue(String code, Object data, String message, Boolean success) {
-        JSONObject obj = new JSONObject();
-        obj.put("code", code);
-        obj.put("data", data);
-        obj.put("message", message);
-        obj.put("success", success);
-        return obj.toJSONString();
-    }
-
     private Boolean saveRecord(String inputParam, String remark, String outputParam, Boolean state) {
         try {
             RequestFlow requestFlow = new RequestFlow();
@@ -482,6 +518,4 @@ public class JingDongBizImpl implements IJingDongBiz {
             return false;
         }
     }
-
-
 }

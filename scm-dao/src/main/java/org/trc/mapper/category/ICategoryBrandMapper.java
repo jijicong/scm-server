@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.util.BaseMapper;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 
@@ -21,7 +22,8 @@ public interface ICategoryBrandMapper extends BaseMapper<CategoryBrand> {
      */
     List<CategoryBrandExt> selectCategoryBrands(List<Long> categoryList) throws Exception;
 
-    int deleteByCategoryId(Long categoryId) throws Exception;
+    //删除
+    int deleteCategoryBrand(List<CategoryBrand> categoryBrandList) throws Exception;
 
     /**
      * 更新品牌分类表中品牌停用的级联状态

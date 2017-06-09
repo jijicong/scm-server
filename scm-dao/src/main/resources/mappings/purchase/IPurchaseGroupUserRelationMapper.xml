@@ -6,4 +6,11 @@
       DELETE from purchase_group_user_relation WHERE purchase_group_code=#{code}
     </delete>
 
+    <update id="updateIsValidByCode">
+        UPDATE purchase_group_user_relation
+            SET is_valid =#{isValid}
+            WHERE
+        purchase_group_code =#{purchaseGroupCode}
+    </update>
+
 </mapper>

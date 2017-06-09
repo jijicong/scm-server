@@ -18,7 +18,7 @@ public class CategoryService extends BaseService<Category, Long> implements ICat
     @Autowired
     private ICategoryMapper categoryMapper;
     @Override
-    public void updateCategorySort(List<Category> categoryList) throws Exception {
-          categoryMapper.updateSort(categoryList);
+    public int updateCategorySort(List<Category> categoryList) throws Exception {
+        return   categoryMapper.updateSort(categoryList);
     }
 }

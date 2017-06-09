@@ -106,6 +106,7 @@ public class SupplierBiz implements ISupplierBiz {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
         example.orderBy("isValid").desc();
+        example.orderBy("updateTime").desc();
         page = supplierService.pagination(example, page, queryModel);
         handlerSupplierPage(page);
         //分页查询
@@ -507,7 +508,7 @@ public class SupplierBiz implements ISupplierBiz {
             }
         }
         //删除关系列表
-        List<SupplierChannelRelation> deleteRelations = new ArrayList<SupplierChannelRelation>();
+        List<Long> delIds = new ArrayList<Long>();
         for(SupplierChannelRelation r : currentRelation){
             Boolean flag = false;
             for(SupplierChannelRelation r2 : supplierChannelRelations){
@@ -517,7 +518,7 @@ public class SupplierBiz implements ISupplierBiz {
             }
             if(!flag){
                 r.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                deleteRelations.add(r);
+                delIds.add(r.getId());
             }
         }
         int count = 0;
@@ -529,17 +530,11 @@ public class SupplierBiz implements ISupplierBiz {
                 throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
             }
         }
-        if(deleteRelations.size() > 0){
-            for(SupplierChannelRelation r : deleteRelations){
-                Example example = new Example(SupplierChannelRelation.class);
-                Example.Criteria criteria = example.createCriteria();
-                criteria.andEqualTo("supplierCode", r.getSupplierCode());
-                criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-                r.setUpdateTime(Calendar.getInstance().getTime());
-                r.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                count = supplierChannelRelationService.updateByExample(r, example);
+        if(delIds.size() > 0){
+            for(Long id : delIds){
+                count = supplierChannelRelationService.deleteByPrimaryKey(id);
                 if (count == 0) {
-                    String msg = CommonUtil.joinStr("更新供应商渠道关系", JSON.toJSONString(r), "到数据库失败").toString();
+                    String msg = CommonUtil.joinStr("根据供应商渠道关系ID[%s]删除供应商渠道关系", id.toString(), "失败").toString();
                     log.error(msg);
                     throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
                 }
@@ -582,7 +577,7 @@ public class SupplierBiz implements ISupplierBiz {
         int count = 0;
         JSONArray categoryArray = JSONArray.parseArray(supplierCategory.getSupplierCetegory());
         List<SupplierCategory> addList = new ArrayList<SupplierCategory>();
-        List<SupplierCategory> deleteList = new ArrayList<SupplierCategory>();
+        List<Long> deleteList = new ArrayList<Long>();
         List<SupplierCategory> tmpList = new ArrayList<SupplierCategory>();
         SupplierCategory tmp = new SupplierCategory();
         tmp.setSupplierCode(supplierCategory.getSupplierCode());
@@ -616,9 +611,7 @@ public class SupplierBiz implements ISupplierBiz {
                 }
             }
             if(!flag){
-                s.setUpdateTime(Calendar.getInstance().getTime());
-                s.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                deleteList.add(s);
+                deleteList.add(s.getId());
             }
         }
         //新增
@@ -632,11 +625,13 @@ public class SupplierBiz implements ISupplierBiz {
         }
         //删除
         if(deleteList.size() > 0){
-            count = supplierCategoryService.updateSupplerCategory(deleteList);
-            if (count == 0) {
-                String msg = CommonUtil.joinStr("删除供应商代理类目", JSON.toJSONString(supplierCategory), "失败").toString();
-                log.error(msg);
-                throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+            for(Long id : deleteList){
+                count = supplierCategoryService.deleteByPrimaryKey(id);
+                if (count == 0) {
+                    String msg = String.format("根据供应商代理类目主键[%s]删除供应商代理类目失败", id);
+                    log.error(msg);
+                    throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+                }
             }
         }
     }
@@ -683,7 +678,7 @@ public class SupplierBiz implements ISupplierBiz {
         int count = 0;
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
         List<SupplierBrand> addlist = new ArrayList<SupplierBrand>();
-        List<SupplierBrand> updatelist = new ArrayList<SupplierBrand>();
+        List<SupplierBrand> delList = new ArrayList<SupplierBrand>();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
             SupplierBrand s = new SupplierBrand();
@@ -702,17 +697,24 @@ public class SupplierBiz implements ISupplierBiz {
             checkSupplierBrand(s);
             if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
                 s.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                updatelist.add(s);
+                delList.add(s);
             }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
                 addlist.add(s);
             }
         }
-        if(updatelist.size() > 0){
-            count = supplierBrandService.updateSupplerBrand(updatelist);
-            if (count == 0) {
-                String msg = CommonUtil.joinStr("更新供应商代理品牌", JSON.toJSONString(updatelist), "到数据库失败").toString();
-                log.error(msg);
-                throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+        if(delList.size() > 0){
+            for(SupplierBrand supplierBrand : delList){
+                Example example = new Example(SupplierBrand.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("supplierCode", supplierBrand.getSupplierCode());
+                criteria.andEqualTo("categoryId", supplierBrand.getCategoryId());
+                criteria.andEqualTo("brandId", supplierBrand.getBrandId());
+                count = supplierBrandService.deleteByExample(example);
+                if (count == 0) {
+                    String msg = String.format("删除供应商代理品牌%s失败", JSON.toJSONString(supplierBrand));
+                    log.error(msg);
+                    throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+                }
             }
         }
         if(addlist.size() > 0){
@@ -851,7 +853,6 @@ public class SupplierBiz implements ISupplierBiz {
         SupplierExt supplierExt = new SupplierExt();
         Supplier supplier = new Supplier();
         supplier.setSupplierCode(supplierCode);
-        supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
         supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         supplier = supplierService.selectOne(supplier);
         AssertUtil.notNull(supplier, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商基本信息为空"));

@@ -25,13 +25,25 @@ public class CategoryBrand{
     @FormParam("brandId")
     @NotEmpty
     private Long brandId;
-    @FormParam("brandCode")
+
+    @FormParam("isValid")
+    @NotEmpty
+    @Length(max = 2)
+    private String isValid;
+
+    @FormParam("isDeleted")
+    @NotEmpty
+    @Length(max = 2)
+    private String isDeleted;
+
     @NotEmpty
     @Length(max = 32, message = "品牌编号长度不能超过32个")
     private String brandCode;
+
     @FormParam("categoryId")
     @NotEmpty
     private Long categoryId;
+
     @FormParam("categoryCode")
     @NotEmpty
     @Length(max = 32, message = "分类ID编号长度不能超过32个")
@@ -43,8 +55,22 @@ public class CategoryBrand{
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime; //更新时间
 
-    private String isValid; //是否有效:0-否,1-是
-    private String isDeleted; //是否删除:0-否,1-是
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(String isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     public Long getId() {
         return id;
     }
@@ -99,21 +125,5 @@ public class CategoryBrand{
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
-    }
-
-    public String getIsValid() {
-        return isValid;
-    }
-
-    public void setIsValid(String isValid) {
-        this.isValid = isValid;
-    }
-
-    public String getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted;
     }
 }

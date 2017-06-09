@@ -18,9 +18,9 @@ public class PropertyService extends BaseService<Property, Long> implements IPro
     private IPropertyMapper propertyMapper;
 
     @Override
-    public List<Property> queryPropertyList(List<Long> id) throws Exception {
+    public List<Property> queryPropertyList(List<Long> ids) throws Exception {
 
-        return propertyMapper.queryPropertyList(id);
+        return propertyMapper.queryPropertyList(ids);
     }
 
     @Override

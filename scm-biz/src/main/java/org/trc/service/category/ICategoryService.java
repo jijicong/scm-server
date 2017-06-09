@@ -9,5 +9,5 @@ import java.util.List;
  * Created by hzszy on 2017/5/5.
  */
 public interface ICategoryService extends IBaseService<Category, Long> {
-    void updateCategorySort(List<Category> categoryList) throws  Exception;
+    int updateCategorySort(List<Category> categoryList) throws  Exception;
 }

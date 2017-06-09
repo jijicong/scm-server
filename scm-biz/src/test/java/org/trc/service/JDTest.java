@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.trc.domain.config.TableMappingDO;
 import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.util.JingDongUtil;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
@@ -32,7 +34,7 @@ import java.util.concurrent.*;
  * Created by hzwyz on 2017/5/22 0022.
  */
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
-@ContextConfiguration(locations = {"classpath:config/dev/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
+@ContextConfiguration(locations = {"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
 public class JDTest extends AbstractJUnit4SpringContextTests {
     @Autowired
     IJingDongBiz iJingDongBiz;
@@ -45,9 +47,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     @Autowired
     private IJingDongTestMapper jingDongTestMapper;//商品sku
 
-    /* @Autowired
-     ITableMappingMapper a;*/
-    @Test
+     @Autowired
+     ITableMappingMapper a;
+   // @Test
     public void testGetToken() {
         try {
             String accessToken = iJingDongBiz.getAccessToken();
@@ -57,7 +59,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    @Test
+    //@Test
     public void testJD() {
         try {
             String accessToken = iJingDongBiz.getAccessToken();
@@ -89,7 +91,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             System.out.print(e);
         }
     }
-    @Test
+    //@Test
     public void testSku() {
         try {
             String token = iJingDongBiz.getAccessToken();
@@ -102,25 +104,33 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             System.out.print(e);
         }
     }
+    @Test
+    public void testOrderTrack() {
+        try {
+            iJingDongBiz.orderTrack("123456");
+            /*JingDongBizImpl.refreshToken();*/
+            System.out.print("结束");
+        } catch (Exception e) {
+            System.out.print(e);
+        }
+    }
 
-    /*@Test
+    @Test
     //将京东地址编号导入到本地
     public void testMapping() {
         try{
             String token = iJingDongBiz.getAccessToken();
-            String province = ijdService.getProvince(token);
-            JSONObject json = JSONObject.parseObject(province);
-            JSONObject list=json.getJSONObject("result");
+            ReturnTypeDO province = ijdService.getProvince(token);
+            JSONObject list = (JSONObject) province.getResult();
             Set<String> it = list.keySet();
 
             for (String str:it){
-                TableMappingDO address =new TableMappingDO();
+                TableMappingDO address = new TableMappingDO();
                 address.setProvince(str);
                 address.setJdCode(String.valueOf(list.get(str)));
                 a.insert(address);
-                String city = ijdService.getCity(token, String.valueOf(list.get(str)));
-                JSONObject json01 = JSONObject.parseObject(city);
-                JSONObject list01=json01.getJSONObject("result");
+                ReturnTypeDO city = ijdService.getCity(token, String.valueOf(list.get(str)));
+                JSONObject list01 = (JSONObject) city.getResult();
                 Set<String> it01 = list01.keySet();
                 for (String str01:it01) {
                     TableMappingDO address01 =new TableMappingDO();
@@ -128,9 +138,8 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
                     address01.setCity(str01);
                     address01.setJdCode(String.valueOf(list01.get(str01)));
                     a.insert(address01);
-                    String county = ijdService.getCounty(token, String.valueOf(list01.get(str01)));
-                    JSONObject json02 = JSONObject.parseObject(county);
-                    JSONObject list02=json02.getJSONObject("result");
+                    ReturnTypeDO county = ijdService.getCounty(token, String.valueOf(list01.get(str01)));
+                    JSONObject list02 = (JSONObject) county.getResult();
                     Set<String> it02 = list02.keySet();
                     for (String str02:it02) {
                         TableMappingDO address02 =new TableMappingDO();
@@ -147,9 +156,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             System.out.print(e);
         }
 
-    }*/
+    }
 
-    @Test
+    //@Test
     public void test01() {
         try {
             String token = iJingDongBiz.getAccessToken();
@@ -165,7 +174,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
 
     }
 
-    @Test
+    //@Test
     public void testGetAddress() {
         try {
             String str = iJingDongBiz.getAddress("520112", "520115", "520102");
@@ -175,7 +184,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    @Test
+    //@Test
     public void testStock() {
         try {
             AddressDO addressDO = new AddressDO();
@@ -195,7 +204,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    @Test
+    //@Test
     public void testSellPrice() {
         try {
             iJingDongBiz.getSellPrice("2350848");
@@ -205,7 +214,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    @Test
+    //@Test
     public void testSkuState() {
         try {
             String token = iJingDongBiz.getAccessToken();
@@ -216,7 +225,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    @Test
+    //@Test
     public void testOrder() {
         try {
             String token = iJingDongBiz.getAccessToken();
@@ -270,7 +279,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    @Test
+    //@Test
     public void testCancelOrder() {
         try {
             String token = iJingDongBiz.getAccessToken();
@@ -282,7 +291,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
 
     }
 
-    @Test
+    //@Test
     public void getDetail() {
         //获取商品详情
         try {

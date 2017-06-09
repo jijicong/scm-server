@@ -12,7 +12,6 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.enums.CategoryActionTypeEnum;
-import org.trc.mapper.config.IRequestFlowMapper;
 import org.trc.model.BrandToTrc;
 import org.trc.model.CategoryToTrc;
 import org.trc.model.PropertyToTrc;
@@ -98,12 +97,12 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         logger.info(params.toJSONString());
-        String result = trcService.sendBrandNotice(BRAND_URL,params.toJSONString());
+        String result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
-                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -147,12 +146,12 @@ public class TrcBiz implements ITrcBiz {
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info(params.toJSONString());
-        String result = trcService.sendPropertyNotice(PROPERTY_URL,params.toJSONString());
+        String result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
-                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -188,12 +187,12 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info(params.toJSONString());
-        String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL,params.toJSONString());
+        String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
-                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -214,12 +213,12 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
         logger.info(params.toJSONString());
-        String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL,params.toJSONString());
+        String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL,RequestFlowConstant.TAIRAN,RequestFlowConstant.POST,
-                requestNum,resultModel.getStatus(),params.toJSONString(),result, Calendar.getInstance().getTime());
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -261,7 +260,7 @@ public class TrcBiz implements ITrcBiz {
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TAIRAN, RequestFlowConstant.POST,
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
                 requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
         requestFlowService.insert(requestFlow);
         return resultModel;
@@ -292,7 +291,8 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         System.out.println(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest("http://localhost:8080/scm/example/brand", params.toJSONString(), 10000);
+        String result = HttpClientUtil.httpPostJsonRequest("http://10.200.5.3/brands", params.toJSONString(), 10000);
+        System.out.println("********返回值********");
         System.out.println(result);
     }
 }

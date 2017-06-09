@@ -60,18 +60,6 @@ public class SupplyConstants {
         public static final String ROOT = "config";
 
         /**
-         * 下拉列表
-         */
-        public static final class SelectList {
-            //是否启用
-            public static final String VALID_LIST = "validList";
-            //海外仓的是否支持清关
-            public static final String IS_CUSTOM_CLEARANCE = "clearance";
-            //查询采购订单状态
-            public static final String PURCHASE_ORDER_STATUS="purchaseOrderStatus";
-        }
-
-        /**
          * 字典类型
          */
         public static final class DictType {
@@ -276,6 +264,9 @@ public class SupplyConstants {
 
         //查询手机号是否已经注册
         public static final String CHECK_PHONE = "checkPhone";
+
+        //用户采购组状态查询
+        public static final String CHECK_PURCHASE = "checkPurchase";
 
     }
 
@@ -523,6 +514,10 @@ public class SupplyConstants {
         public static final String HANDLER_PRIORITY = "handlerPriority";
         //国家
         public static final String COUNTRY = "country";
+        //海外仓的是否支持清关
+        public static final String IS_CUSTOM_CLEARANCE = "clearance";
+        //查询采购订单状态
+        public static final String PURCHASE_ORDER_STATUS="purchaseOrderStatus";
     }
 
     /**
