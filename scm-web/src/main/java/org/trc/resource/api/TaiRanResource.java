@@ -32,6 +32,8 @@ import java.util.List;
 @Path(SupplyConstants.TaiRan.ROOT)
 public class TaiRanResource {
 
+    private Logger logger = LoggerFactory.getLogger(TaiRanResource.class);
+
     @Resource
     private BrandBiz brandBiz;
 
@@ -70,6 +72,7 @@ public class TaiRanResource {
             page.setResult(list);
             return ResultUtil.createSucssAppResult("查询品牌列表成功", page);
         } catch (Exception e) {
+            logger.error("查询品牌列表报错："+e.getMessage());
             return ResultUtil.createFailAppResult("查询品牌列表报错："+e.getMessage());
         }
     }
@@ -101,6 +104,7 @@ public class TaiRanResource {
             page.setResult(list);
             return ResultUtil.createSucssAppResult("查询属性列表成功", page);
         } catch (Exception e) {
+            logger.error("查询属性列表报错："+e.getMessage());
             return ResultUtil.createFailAppResult("查询属性列表报错："+e.getMessage());
         }
     }
@@ -135,6 +139,7 @@ public class TaiRanResource {
             page.setResult(list);
             return ResultUtil.createSucssAppResult("查询分类列表成功", page);
         } catch (Exception e) {
+            logger.error("查询分类列表报错："+e.getMessage());
             return ResultUtil.createFailAppResult("查询分类列表报错："+e.getMessage());
         }
     }
@@ -152,6 +157,7 @@ public class TaiRanResource {
         try {
             return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryBrands(categoryId));
         } catch (Exception e) {
+            logger.error("查询分类品牌列表报错："+e.getMessage());
             return ResultUtil.createFailAppResult("查询分类品牌列表报错："+e.getMessage());
         }
     }
@@ -169,6 +175,7 @@ public class TaiRanResource {
         try {
             return ResultUtil.createSucssAppResult("查询分类属性列表成功", categoryBiz.queryProperties(categoryId));
         } catch (Exception e) {
+            logger.error("查询分类属性列表报错："+e.getMessage());
             return ResultUtil.createFailAppResult("查询分类属性列表报错："+e.getMessage());
         }
     }
