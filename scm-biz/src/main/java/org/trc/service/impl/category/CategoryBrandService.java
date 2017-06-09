@@ -20,13 +20,15 @@ public class CategoryBrandService extends BaseService<CategoryBrand, Long> imple
     private ICategoryBrandMapper categoryBrandMapper;
 
     @Override
-    public List<CategoryBrandExt> queryCategoryBrands(List<Long> categoryList) throws Exception{
+    public List<CategoryBrandExt> queryCategoryBrands(List<Long> categoryList) throws Exception {
         return categoryBrandMapper.selectCategoryBrands(categoryList);
     }
 
+
     @Override
-    public int deleteByCategoryId(Long categoryId) throws Exception {
-        return categoryBrandMapper.deleteByCategoryId(categoryId);
+    public int deleteCategoryBrand(List<CategoryBrand> categoryBrandList) throws Exception {
+        return categoryBrandMapper.deleteCategoryBrand(categoryBrandList);
     }
+
 
 }

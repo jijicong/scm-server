@@ -56,28 +56,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveClassify(@BeanParam Category category) throws Exception {
-
-        AssertUtil.notBlank(category.getCategoryCode(), "添加分类时categoryCode参数不能为空");
-        AssertUtil.notNull(category.getSort(), "添加分类时sort参数不能为空");
-        AssertUtil.notNull(category.getIsValid(), "添加分类时isValid参数不能为空");
-        category.setCreateOperator("test");
-        category.setSource(SourceEnum.TRC.getCode());
-        category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
-        category.setCreateTime(Calendar.getInstance().getTime());
-        category.setUpdateTime(Calendar.getInstance().getTime());
         categoryBiz.saveCategory(category);
-
-        if (category.getLevel() == 1) {
-            category.setFullPathId(null);
-        } else if (category.getLevel() == 2) {
-            category.setFullPathId(category.getParentId().toString());
-        } else {
-            category.setFullPathId(categoryBiz.queryPathId(category.getParentId()) + SupplyConstants.Symbol.FULL_PATH_SPLIT + category.getParentId());
-        }
-        categoryBiz.updateCategory(category);
-        if (category.getLevel() != 1 && categoryBiz.isLeaf(category.getParentId()) != 0) {
-            categoryBiz.updateIsLeaf(category);
-        }
         return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 
@@ -92,12 +71,6 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategory(@BeanParam Category category) throws Exception {
-        //判断是否叶子节点
-        if (categoryBiz.isLeaf(category.getId()) == 0) {
-            category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
-        } else {
-            category.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
-        }
         categoryBiz.updateCategory(category);
         return ResultUtil.createSucssAppResult("修改分类成功", "");
     }
@@ -115,12 +88,9 @@ public class CategoryResource {
     public AppResult checkCategoryCode(@QueryParam("id") Long id, @QueryParam("categoryCode") String categoryCode) throws Exception {
 
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
-
         if (categoryBiz.checkCategoryCode(id, categoryCode) > 0) {
             return ResultUtil.createSucssAppResult("查询分类编码已存在", "");
-
         } else {
-
             return ResultUtil.createSucssAppResult("查询分类编码可用", "");
         }
 
@@ -137,9 +107,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY_SORT)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateSort(String sortDate) throws Exception {
-        AssertUtil.notBlank(sortDate, "排序信息为空");
-        List<Category> categoryList = JSON.parseArray(sortDate, Category.class);
-        categoryBiz.updateSort(categoryList);
+        categoryBiz.updateSort(sortDate);
         return ResultUtil.createSucssAppResult("更新排序成功", "");
     }
 
@@ -167,15 +135,15 @@ public class CategoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<String>> queryCategory(@PathParam("id") Long id) throws Exception {
 
-        return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.queryCategoryNamePath(id));
+        return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.getCategoryName(id));
     }
 
     @POST
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds,@FormParam("delRecord") String delRecord) throws Exception {
-        categoryBiz.linkCategoryBrands(id, brandIds,delRecord);
+    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord) throws Exception {
+        categoryBiz.linkCategoryBrands(id, brandIds, delRecord);
         return ResultUtil.createSucssAppResult("分类品牌关联成功", "");
     }
 

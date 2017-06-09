@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface ICategoryMapper extends BaseMapper<Category> {
 
-    void updateSort(List<Category> categoryList) throws Exception;
+    int updateSort(List<Category> categoryList) throws Exception;
 }

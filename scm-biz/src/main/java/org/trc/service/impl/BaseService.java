@@ -66,6 +66,11 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     }
 
     @Override
+    public int deleteByExample(Example example) {
+        return mapper.deleteByExample(example);
+    }
+
+    @Override
     public int updateByPrimaryKey(T record) {
         return mapper.updateByPrimaryKey(record);
     }
