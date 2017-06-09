@@ -15,6 +15,11 @@ public class QinniuForm {
      */
     private String domainOfBucket;
 
+    /**
+     * 数据处理队列
+     */
+    private String persistentPipeline;
+
     public String getAccessKey() {
         return accessKey;
     }
@@ -45,5 +50,13 @@ public class QinniuForm {
 
     public void setDomainOfBucket(String domainOfBucket) {
         this.domainOfBucket = domainOfBucket;
+    }
+
+    public String getPersistentPipeline() {
+        return persistentPipeline;
+    }
+
+    public void setPersistentPipeline(String persistentPipeline) {
+        this.persistentPipeline = persistentPipeline;
     }
 }

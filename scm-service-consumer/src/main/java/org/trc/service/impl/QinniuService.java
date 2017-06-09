@@ -42,6 +42,7 @@ public class QinniuService implements IQinniuService {
     public static final String FILE_FLAG = ".";
     //七牛token失效期限,单位/s
     public static final long EXPIRE_DURATION = 3600;
+    //
 
     @Autowired
     private QinniuForm qinniuForm;
@@ -216,7 +217,7 @@ public class QinniuService implements IQinniuService {
         String persistentOpfs = StringUtils.join(thumbnailCmds.toArray(), ";");
         putPolicy.put("persistentOps", persistentOpfs);
         //数据处理队列名称，必填
-        //putPolicy.put("persistentPipeline", "mps-pipe1");
+        putPolicy.put("persistentPipeline", qinniuForm.getPersistentPipeline());
         //数据处理完成结果通知地址
         //putPolicy.put("persistentNotifyUrl", "http://api.example.com/qiniu/pfop/notify");
         return putPolicy;

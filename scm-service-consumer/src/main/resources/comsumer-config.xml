@@ -9,6 +9,7 @@
         <property name="secretKey" value="${secret.key}"/>
         <property name="bucket" value="${bucket}"/>
         <property name="domainOfBucket" value="${domain.of.bucket}"/>
+        <property name="persistentPipeline" value="${persistentPipeline}"/>
     </bean>
 
     <bean id="jdBaseDO" class="org.trc.form.JDModel.JdBaseDO">
