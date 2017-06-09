@@ -73,15 +73,15 @@ public class JingDongConstant {
 
     public static final String ERROR_GET_DETAIL = "获取商品池内商品编号异常";
 
-    public static final String ERROR_GET_SKU_BY_PAGE  = "获取品类商品池编号异常";
+    public static final String ERROR_GET_SKU_BY_PAGE = "获取品类商品池编号异常";
 
-    public static final String ERROR_CHECK_SKU  = "获取商品是否可用异常";
+    public static final String ERROR_CHECK_SKU = "获取商品是否可用异常";
 
-    public static final String ERROR_SKU_STATE  = "获取商品上下架状态异常";
+    public static final String ERROR_SKU_STATE = "获取商品上下架状态异常";
 
-    public static final String ERROR_SKU_IMAGE  = "获取商品图片信息异常";
+    public static final String ERROR_SKU_IMAGE = "获取商品图片信息异常";
 
-    public static final String ERROR_CHECK_LIMIT  = "获取商品区域购买限制信息异常";
+    public static final String ERROR_CHECK_LIMIT = "获取商品区域购买限制信息异常";
 
     public static final String ERROR_SEARCH = "商品搜索异常";
 

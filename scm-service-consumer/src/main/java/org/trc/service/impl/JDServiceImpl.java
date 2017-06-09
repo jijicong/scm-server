@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.JingDongException;
 import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
 import org.trc.util.*;
@@ -25,12 +27,12 @@ public class JDServiceImpl implements IJDService {
     private JdBaseDO jdBaseDO;
 
     @Override
-    public ReturnTypeDO createToken() throws Exception{
+    public ReturnTypeDO createToken() throws Exception {
         try {
             String timestamp = DateUtils.formatDateTime(Calendar.getInstance().getTime());
             String sign = jdBaseDO.getClient_secret() + timestamp + jdBaseDO.getClient_id()
                     + jdBaseDO.getUsername() + jdBaseDO.getPassword() + jdBaseDO.getGrant_type() + jdBaseDO.getClient_secret();
-            sign = EncryptionUtil.encryption(sign,"MD5","UTF-8").toUpperCase();
+            sign = EncryptionUtil.encryption(sign, "MD5", "UTF-8").toUpperCase();
             String url = jdBaseDO.getJdurl() + JingDongConstant.ACCESS_TOKEN;
             String data =
                     "grant_type=access_token" +
@@ -41,14 +43,14 @@ public class JDServiceImpl implements IJDService {
                             "&sign=" + sign;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_TOKEN);
+            return returnValue(false, JingDongEnum.ERROR_TOKEN.getCode(), JingDongEnum.ERROR_TOKEN.getMessage(), null);
         }
     }
 
@@ -68,14 +70,14 @@ public class JDServiceImpl implements IJDService {
                     "&client_secret=" + jdBaseDO.getClient_secret();
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_REFRESH_TOKEN);
+            return returnValue(false, JingDongEnum.ERROR_REFRESH_TOKEN.getCode(), JingDongEnum.ERROR_REFRESH_TOKEN.getMessage(), null);
         }
     }
 
@@ -91,14 +93,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_PAGE_NUM);
+            return returnValue(false, JingDongEnum.ERROR_GET_PAGE_NUM.getCode(), JingDongEnum.ERROR_GET_PAGE_NUM.getMessage(), null);
         }
     }
 
@@ -109,24 +111,24 @@ public class JDServiceImpl implements IJDService {
      * @param pageNum 池子编号
      * @return
      */
-    public ReturnTypeDO getSku(String token, String pageNum) throws Exception{
+    public ReturnTypeDO getSku(String token, String pageNum) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU;
             String data = "token=" + token + "&pageNum=" + pageNum;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            String result =(String) json.get("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            String result = (String) json.get("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_SKU);
+            return returnValue(false, JingDongEnum.ERROR_GET_SKU.getCode(), JingDongEnum.ERROR_GET_SKU.getMessage(), null);
         }
     }
 
-    private ReturnTypeDO returnValue(Boolean success, String resultCode,String resultMessage,Object result ) {
+    private ReturnTypeDO returnValue(Boolean success, String resultCode, String resultMessage, Object result) {
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(success);
         returnTypeDO.setResultCode(resultCode);
@@ -144,20 +146,20 @@ public class JDServiceImpl implements IJDService {
      * @param isShow 查询商品基本信息
      * @return
      */
-    public ReturnTypeDO getDetail(String token, String sku, Boolean isShow) throws Exception{
+    public ReturnTypeDO getDetail(String token, String sku, Boolean isShow) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_DETAIL;
             String data = "token=" + token + "&sku=" + sku + "&isShow=" + isShow;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_DETAIL);
+            return returnValue(false, JingDongEnum.ERROR_GET_DETAIL.getCode(), JingDongEnum.ERROR_GET_DETAIL.getMessage(), null);
         }
     }
 
@@ -177,14 +179,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&pageNum=" + pageNum + "&pageNo=" + pageNo;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_SKU_BY_PAGE);
+            return returnValue(false, JingDongEnum.ERROR_GET_SKU_BY_PAGE.getCode(), JingDongEnum.ERROR_GET_SKU_BY_PAGE.getMessage(), null);
         }
     }
 
@@ -197,14 +199,14 @@ public class JDServiceImpl implements IJDService {
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
 //            System.out.println("data:"+data);
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_CHECK_SKU);
+            return returnValue(false, JingDongEnum.ERROR_CHECK_SKU.getCode(), JingDongEnum.ERROR_CHECK_SKU.getMessage(), null);
         }
     }
 
@@ -215,20 +217,20 @@ public class JDServiceImpl implements IJDService {
      * @param sku   商品编号 支持批量（最高100个）
      * @return
      */
-    public ReturnTypeDO skuState(String token, String sku) throws Exception{
+    public ReturnTypeDO skuState(String token, String sku) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_STATE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_SKU_STATE);
+            return returnValue(false, JingDongEnum.ERROR_SKU_STATE.getCode(), JingDongEnum.ERROR_SKU_STATE.getMessage(), null);
         }
     }
 
@@ -240,31 +242,32 @@ public class JDServiceImpl implements IJDService {
      * @return
      */
     @Override
-    public ReturnTypeDO skuImage(String token, String sku) throws Exception{
+    public ReturnTypeDO skuImage(String token, String sku) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_IMAGE;
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_SKU_IMAGE);
+            return returnValue(false, JingDongEnum.ERROR_SKU_IMAGE.getCode(), JingDongEnum.ERROR_SKU_IMAGE.getMessage(), null);
         }
     }
 
     /**
      * 商品区域购买限制查询
-     * @param token access token
-     * @param skuIds 商品编号
+     *
+     * @param token    access token
+     * @param skuIds   商品编号
      * @param province 京东一级地址编号
-     * @param city 京东二级地址编号
-     * @param county 京东三级地址编号
-     * @param town 京东四级地址编号
+     * @param city     京东二级地址编号
+     * @param county   京东三级地址编号
+     * @param town     京东四级地址编号
      * @return
      * @throws Exception
      */
@@ -272,17 +275,17 @@ public class JDServiceImpl implements IJDService {
     public ReturnTypeDO checkAreaLimit(String token, String skuIds, String province, String city, String county, String town) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK_AREA_LIMIT;
-            String data = "token=" + token + "&skuIds=" + skuIds+ "&province=" + province+ "&city=" + city+ "&county=" + county+"&town=" + town;
+            String data = "token=" + token + "&skuIds=" + skuIds + "&province=" + province + "&city=" + city + "&county=" + county + "&town=" + town;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_CHECK_LIMIT);
+            return returnValue(false, JingDongEnum.ERROR_CHECK_LIMIT.getCode(), JingDongEnum.ERROR_CHECK_LIMIT.getMessage(), null);
         }
     }
 
@@ -293,7 +296,7 @@ public class JDServiceImpl implements IJDService {
      * @param searchDO
      * @return
      */
-    public ReturnTypeDO search(SearchDO searchDO) throws Exception{
+    public ReturnTypeDO search(SearchDO searchDO) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SEARCH;
             String data = "token=" + searchDO.getToken();
@@ -320,14 +323,14 @@ public class JDServiceImpl implements IJDService {
             }
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_SEARCH);
+            return returnValue(false, JingDongEnum.ERROR_SEARCH.getCode(), JingDongEnum.ERROR_SEARCH.getMessage(), null);
         }
     }
 
@@ -338,33 +341,33 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&skuIds=" + skuIds + "&province=" + province + "&city=" + city + "&county=" + county + "&town=" + town;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_YANBAO_SKU);
+            return returnValue(false, JingDongEnum.ERROR_GET_YANBAO_SKU.getCode(), JingDongEnum.ERROR_GET_YANBAO_SKU.getMessage(), null);
         }
     }
 
 
     @Override
-    public ReturnTypeDO getProvince(String token) throws Exception{
+    public ReturnTypeDO getProvince(String token) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_PROVINCE;
             String data = "token=" + token;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_PROVINCE);
+            return returnValue(false, JingDongEnum.ERROR_GET_PROVINCE.getCode(), JingDongEnum.ERROR_GET_PROVINCE.getMessage(), null);
         }
     }
 
@@ -375,14 +378,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_CITY);
+            return returnValue(false, JingDongEnum.ERROR_GET_CITY.getCode(), JingDongEnum.ERROR_GET_CITY.getMessage(), null);
         }
     }
 
@@ -393,14 +396,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_COUNTY);
+            return returnValue(false, JingDongEnum.ERROR_GET_COUNTY.getCode(), JingDongEnum.ERROR_GET_COUNTY.getMessage(), null);
         }
     }
 
@@ -411,14 +414,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_TOWN);
+            return returnValue(false, JingDongEnum.ERROR_GET_TOWN.getCode(), JingDongEnum.ERROR_GET_TOWN.getMessage(), null);
         }
     }
 
@@ -429,14 +432,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&provinceId=" + provinceId + "&cityId=" + cityId + "&countyId=" + countyId + "&townId=" + townId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             String result = (String) json.get("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_CHECK_AREA);
+            return returnValue(false, JingDongEnum.ERROR_CHECK_AREA.getCode(), JingDongEnum.ERROR_CHECK_AREA.getMessage(), null);
         }
     }
 
@@ -455,14 +458,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&sku=" + sku;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_SELL_PRICE);
+            return returnValue(false, JingDongEnum.ERROR_GET_SELL_PRICE.getCode(), JingDongEnum.ERROR_GET_SELL_PRICE.getMessage(), null);
         }
     }
 
@@ -482,14 +485,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&skuNums=" + skuNums + "&area=" + area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_NEW_STOCK_BY_ID);
+            return returnValue(false, JingDongEnum.ERROR_GET_NEW_STOCK_BY_ID.getCode(), JingDongEnum.ERROR_GET_NEW_STOCK_BY_ID.getMessage(), null);
         }
     }
 
@@ -510,14 +513,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&sku=" + sku + "&area=" + area;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONArray result = json.getJSONArray("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_GET_STOCK_BY_ID);
+            return returnValue(false, JingDongEnum.ERROR_GET_STOCK_BY_ID.getCode(), JingDongEnum.ERROR_GET_STOCK_BY_ID.getMessage(), null);
         }
     }
 
@@ -542,14 +545,14 @@ public class JDServiceImpl implements IJDService {
             data = data + "&doOrderPriceMode=" + 1 + "&orderPriceSnap=" + orderDO.getOrderPriceSnap();
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_SUBMIT_ORDER);
+            return returnValue(false, JingDongEnum.ERROR_ORDER_BILL.getCode(), JingDongEnum.ERROR_ORDER_BILL.getMessage(), null);
         }
     }
 
@@ -560,14 +563,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            Boolean result =(Boolean) json.get("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            Boolean result = (Boolean) json.get("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_CONFIRM_ORDER);
+            return returnValue(false, JingDongEnum.ERROR_ORDER_CONFIRM.getCode(), JingDongEnum.ERROR_ORDER_CONFIRM.getMessage(), null);
         }
     }
 
@@ -578,14 +581,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            Boolean result =(Boolean) json.get("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            Boolean result = (Boolean) json.get("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_CANCEL_ORDER);
+            return returnValue(false, JingDongEnum.ERROR_ORDER_CANCEL.getCode(), JingDongEnum.ERROR_ORDER_CANCEL.getMessage(), null);
         }
     }
 
@@ -596,14 +599,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            Boolean result =(Boolean) json.get("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            Boolean result = (Boolean) json.get("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_DO_PAY);
+            return returnValue(false, JingDongEnum.ERROR_DO_PAY.getCode(), JingDongEnum.ERROR_DO_PAY.getMessage(), null);
         }
     }
 
@@ -614,14 +617,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&thirdOrder=" + thirdOrder;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            String result =(String) json.get("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            String result = (String) json.get("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID_BY_THIRDORDER);
+            return returnValue(false, JingDongEnum.ERROR_SELECT_JDORDERID_BY_THIRDORDER.getCode(), JingDongEnum.ERROR_SELECT_JDORDERID_BY_THIRDORDER.getMessage(), null);
         }
     }
 
@@ -633,14 +636,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
             JSONObject result = json.getJSONObject("result");
-           return returnValue(success,resultCode,resultMessage,result);
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_SELECT_JDORDERID);
+            return returnValue(false, JingDongEnum.ERROR_SELECT_JDORDER.getCode(), JingDongEnum.ERROR_SELECT_JDORDER.getMessage(), null);
         }
     }
 
@@ -651,14 +654,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&jdOrderId=" + jdOrderId;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            JSONObject result =json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_ORDER_TRACK);
+            return returnValue(false, JingDongEnum.ERROR_ORDER_TRACK.getCode(), JingDongEnum.ERROR_ORDER_TRACK.getMessage(), null);
         }
     }
 
@@ -667,21 +670,21 @@ public class JDServiceImpl implements IJDService {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.MESSAGE_GET;
             String data = null;
-            if (StringUtils.isBlank(type)){
+            if (StringUtils.isBlank(type)) {
                 data = "token=" + token;
-            }else {
+            } else {
                 data = "token=" + token + "&type=" + type;
             }
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            JSONObject result =json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_MESSAGE_GET);
+            return returnValue(false, JingDongEnum.ERROR_MESSAGE_GET.getCode(), JingDongEnum.ERROR_MESSAGE_GET.getMessage(), null);
         }
     }
 
@@ -692,14 +695,14 @@ public class JDServiceImpl implements IJDService {
             String data = "token=" + token + "&id=" + id;
             String rev = HttpRequestUtil.sendHttpsPost(url, data, "utf-8");
             JSONObject json = JSONObject.parseObject(rev);
-            Boolean success = (Boolean)json.get("success");
-            String resultCode = (String)json.get("resultCode");
+            Boolean success = (Boolean) json.get("success");
+            String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            JSONObject result =json.getJSONObject("result");
-            return returnValue(success,resultCode,resultMessage,result);
+            JSONObject result = json.getJSONObject("result");
+            return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new Exception(JingDongConstant.ERROR_MESSAGE_DEL);
+            return returnValue(false, JingDongEnum.ERROR_MESSAGE_DEL.getCode(), JingDongEnum.ERROR_MESSAGE_DEL.getMessage(), null);
         }
     }
 
