@@ -4,6 +4,7 @@ import org.trc.domain.System.Warehouse;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ public interface IWarehouseBiz {
      * @return  int 插入的数量
      * @throws Exception
      */
-    void saveWarehouse(Warehouse warehouse) throws Exception;
+    void saveWarehouse(Warehouse warehouse, ContainerRequestContext requestContext) throws Exception;
     /**
      * 根据仓库名称查找仓库（仓库名是否被使用）
      * @param name 仓库名

@@ -6,6 +6,7 @@ import org.trc.form.config.DictTypeForm;
 import org.trc.form.system.ChannelForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public interface IChannelBiz {
      *保存渠道
      * @return 整数改变
      */
-    void saveChannel(Channel channel) throws Exception;
+    void saveChannel(Channel channel,ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 更新渠道

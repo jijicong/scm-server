@@ -5,6 +5,7 @@ import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ public interface IPurchaseGroupBiz {
 
     void updatePurchaseStatus(PurchaseGroup purchaseGroup) throws Exception;
 
-    void  savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception;
+    void  savePurchaseGroup(PurchaseGroup purchaseGroup,ContainerRequestContext requestContext) throws Exception;
 
     PurchaseGroup findPurchaseByName(String name) throws Exception;
 

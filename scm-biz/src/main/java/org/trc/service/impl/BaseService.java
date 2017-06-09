@@ -5,6 +5,7 @@ import com.github.pagehelper.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.service.IBaseService;
+import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import tk.mybatis.mapper.common.Mapper;
@@ -25,6 +26,9 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
 
     @Override
     public Pagenation<T> pagination(Example example, Pagenation<T> pagenation, QueryModel queryModel) {
+        AssertUtil.notNull(pagenation.getPageNo(), "分页查询参数pageNo不能为空");
+        AssertUtil.notNull(pagenation.getPageSize(), "分页查询参数pageSize不能为空");
+        AssertUtil.notNull(pagenation.getStart(), "分页查询参数start不能为空");
         if(StringUtil.isNotEmpty(queryModel.getOrderBy())) {
             for(int i=0; i<queryModel.getOrderBys().length; i++){
                 setPageOrder(example, queryModel.getOrderBys()[i], queryModel.getOrders()[i]);

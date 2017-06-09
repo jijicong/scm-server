@@ -12,6 +12,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -44,8 +46,8 @@ public class WarehouseResource {
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveChannel(@BeanParam Warehouse warehouse) throws Exception{
-        warehouseBiz.saveWarehouse(warehouse);
+    public AppResult saveChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext) throws Exception{
+        warehouseBiz.saveWarehouse(warehouse,requestContext);
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
     //仓库修改

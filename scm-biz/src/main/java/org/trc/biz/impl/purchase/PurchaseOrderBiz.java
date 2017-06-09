@@ -33,6 +33,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -213,8 +214,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public List<Supplier> findSuppliersByUserId(String userId) throws Exception {
+    public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception {
         //有没有对应的渠道。渠道有没有对应的供应商
+        String userId = (String)requestContext.getProperty("userId");
         if (StringUtils.isBlank(userId)) {
             String msg = CommonUtil.joinStr("根据userId查询供应商的参数userId为空").toString();
             LOGGER.error(msg);

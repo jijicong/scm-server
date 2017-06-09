@@ -13,6 +13,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -82,8 +84,8 @@ public class PurchaseGroupResource {
     @POST
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult savePurchaseGroup(@BeanParam  PurchaseGroup purchaseGroup) throws Exception{
-        purchaseGroupBiz.savePurchaseGroup(purchaseGroup);
+    public AppResult savePurchaseGroup(@BeanParam  PurchaseGroup purchaseGroup,@Context ContainerRequestContext requestContext) throws Exception{
+        purchaseGroupBiz.savePurchaseGroup(purchaseGroup,requestContext);
         return  ResultUtil.createSucssAppResult("保存采购组成功","");
     }
 

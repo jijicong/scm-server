@@ -12,6 +12,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -46,10 +48,10 @@ public class RoleResource {
     @POST
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveRole(@BeanParam RoleAddPageData roleAddPageData) throws Exception{
+    public AppResult saveRole(@BeanParam RoleAddPageData roleAddPageData,@Context ContainerRequestContext requestContext) throws Exception{
 
         Role role= roleAddPageData;
-        roleBiz.saveRole(role, roleAddPageData.getRoleJurisdiction());
+        roleBiz.saveRole(role, roleAddPageData.getRoleJurisdiction(),requestContext);
         return  ResultUtil.createSucssAppResult("保存成功","");
 
     }

@@ -52,9 +52,6 @@ public class ConfigBiz implements IConfigBiz {
         if(StringUtil.isNotEmpty(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        /*if(StringUtil.isNotEmpty(queryModel.getIsValid())) {
-            criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }*/
         example.orderBy("updateTime").desc();
         example.orderBy("isValid").desc();
         //分页查询
