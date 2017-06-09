@@ -58,9 +58,10 @@ public interface IJDService {
 
     /**
      * 获取品类池商品编号
-     * @param token access token
+     *
+     * @param token   access token
      * @param pageNum 池子编号
-     * @param pageNo 页码
+     * @param pageNo  页码
      * @return
      * @throws Exception
      */
@@ -68,6 +69,7 @@ public interface IJDService {
 
     /**
      * 商品可售验证
+     *
      * @param token
      * @param skuIds 商品编号
      */
@@ -93,16 +95,18 @@ public interface IJDService {
 
     /**
      * 商品区域购买限制查询
-     * @param token access token
-     * @param skuIds 商品编号
+     *
+     * @param token    access token
+     * @param skuIds   商品编号
      * @param province 京东一级地址编号
-     * @param city 京东二级地址编号
-     * @param county 京东三级地址编号
-     * @param town 京东四级地址编号
+     * @param city     京东二级地址编号
+     * @param county   京东三级地址编号
+     * @param town     京东四级地址编号
      * @return
      * @throws Exception
      */
-    ReturnTypeDO checkAreaLimit(String token, String skuIds,String province,String city, String county,String town) throws Exception;
+    ReturnTypeDO checkAreaLimit(String token, String skuIds, String province, String city, String county, String town) throws Exception;
+
     /**
      * 商品搜索
      * 关键字+分页+页码，使用价格区间、品牌首字母、分类作为筛选条件
@@ -177,7 +181,7 @@ public interface IJDService {
      * @throws Exception
      */
     ReturnTypeDO checkArea(String token, String provinceId, String cityId,
-                     String countyId, String townId) throws Exception;
+                           String countyId, String townId) throws Exception;
 
     /**
      * 批量查询商品售卖价
@@ -282,8 +286,9 @@ public interface IJDService {
 
     /**
      * 信息推送接口
+     *
      * @param token
-     * @param type 推送类型（非必须）
+     * @param type  推送类型（非必须）
      * @return
      * @throws Exception
      */
@@ -291,8 +296,9 @@ public interface IJDService {
 
     /**
      * 信息推送接口
+     *
      * @param token
-     * @param id 推送id
+     * @param id    推送id
      * @return
      * @throws Exception
      */

@@ -15,6 +15,7 @@ public class TableDate {
     private String source;
     private String status;
     private String typeCode;
+    private String isValid;
     private Long propertyId;
     private String valueType;
 
@@ -88,5 +89,13 @@ public class TableDate {
 
     public void setValueType(String valueType) {
         this.valueType = valueType;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
     }
 }

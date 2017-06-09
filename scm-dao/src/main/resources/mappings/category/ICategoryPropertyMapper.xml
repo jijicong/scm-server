@@ -7,7 +7,7 @@
             <set>
                 property_sort = #{item.propertySort}
             </set>
-            where id = #{item.id}
+            where property_id = #{item.propertyId}
         </foreach>
     </update>
 

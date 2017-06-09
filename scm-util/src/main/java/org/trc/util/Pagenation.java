@@ -7,6 +7,7 @@ import java.util.List;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.QueryParam;
 
@@ -24,17 +25,20 @@ public class Pagenation<T> implements Serializable {
     当前页数
      */
     @QueryParam("pageNo")
-    protected int pageNo = 1;
+    @NotNull
+    protected Integer pageNo = 1;
     /*
     开始记录行数
      */
     @QueryParam("start")
-    protected int start = 0;
+    @NotNull
+    protected Integer start = 0;
     /*
     每页记录条数
      */
     @QueryParam("pageSize")
-    protected int pageSize = 10;
+    @NotNull
+    protected Integer pageSize = 10;
 
     // -- 返回结果 --//
     protected List<T> result = new ArrayList<T>();
@@ -54,13 +58,13 @@ public class Pagenation<T> implements Serializable {
     /**
      *获取记录开始行数
      */
-    public int getStart() {
+    public Integer getStart() {
         return start;
     }
     /**
      *设置记录开始行数
      */
-    public void setStart(int start) {
+    public void setStart(Integer start) {
         this.start = start;
     }
 
@@ -74,7 +78,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 设置当前页的页号,序号从1开始,低于1时自动调整为1.
      */
-    public void setPageNo(final int pageNo) {
+    public void setPageNo(final Integer pageNo) {
         this.pageNo = pageNo;
         if (pageNo < 1) {
             this.pageNo = 1;
@@ -84,7 +88,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 返回Page对象自身的setPageNo函数,可用于连续设置。
      */
-    public Pagenation<T> pageNo(final int thePageNo) {
+    public Pagenation<T> pageNo(final Integer thePageNo) {
         setPageNo(thePageNo);
         return this;
     }
@@ -92,14 +96,14 @@ public class Pagenation<T> implements Serializable {
     /**
      * 获得每页的记录数量, 默认为-1.
      */
-    public int getPageSize() {
+    public Integer getPageSize() {
         return pageSize;
     }
 
     /**
      * 设置每页的记录数量.
      */
-    public void setPageSize(final int pageSize) {
+    public void setPageSize(final Integer pageSize) {
         if(pageSize < 0)
             this.pageSize = -1;
         else if(pageSize >= MAX_PAGE_SIZE)
@@ -111,7 +115,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 返回Page对象自身的setPageSize函数,可用于连续设置。
      */
-    public Pagenation<T> pageSize(final int thePageSize) {
+    public Pagenation<T> pageSize(final Integer thePageSize) {
         setPageSize(thePageSize);
         return this;
     }
@@ -119,7 +123,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 根据pageNo和pageSize计算当前页第一条记录在总结果集中的位置,序号从1开始.
      */
-    public int getFirst() {
+    public Integer getFirst() {
         return ((pageNo - 1) * pageSize) + 1;
     }
 
@@ -158,6 +162,9 @@ public class Pagenation<T> implements Serializable {
         if (totalCount < 0) {
             return -1;
         }
+        if(pageSize == 0){
+            pageSize = 10;
+        }
         long count = totalCount / pageSize;
         if (totalCount % pageSize > 0) {
             count++;
@@ -175,7 +182,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 取得下页的页号, 序号从1开始. 当前页为尾页时仍返回尾页序号.
      */
-    public int getNextPage() {
+    public Integer getNextPage() {
         if (isHasNext()) {
             return pageNo + 1;
         } else {
@@ -193,7 +200,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 取得上页的页号, 序号从1开始. 当前页为首页时返回首页序号.
      */
-    public int getPrePage() {
+    public Integer getPrePage() {
         if (isHasPre()) {
             return pageNo - 1;
         } else {

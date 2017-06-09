@@ -9,6 +9,7 @@ import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -19,11 +20,11 @@ public interface IPurchaseOrderBiz {
     Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page) throws Exception;
     /**
      * 根据渠道用户的id查询对应的供应商
-     * @param userId
+     * @param requestContext
      * @return
      * @throws Exception
      */
-    List<Supplier> findSuppliersByUserId(String userId) throws Exception;
+    List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 根据供应商的code查询可采购的商品列表

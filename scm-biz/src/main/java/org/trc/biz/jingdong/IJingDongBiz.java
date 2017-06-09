@@ -1,6 +1,7 @@
 package org.trc.biz.jingdong;
 
 import com.alibaba.fastjson.JSONArray;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.form.jingdong.NewStockDO;
 import org.trc.form.JDModel.OrderDO;
@@ -57,7 +58,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    String doPay(String jdOrderId) throws Exception;
+    ReturnTypeDO doPay(String jdOrderId) throws Exception;
 
     /**
      * 订单反查接口
@@ -88,6 +89,7 @@ public interface IJingDongBiz {
 
     /**
      * 查询商品价格
+     *
      * @param sku 商品编号 批量以逗号分隔
      * @return
      * @throws Exception

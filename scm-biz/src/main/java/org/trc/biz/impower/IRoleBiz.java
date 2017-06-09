@@ -4,6 +4,8 @@ import org.trc.domain.impower.Role;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
+
 /**
  * Created by sone on 2017/5/11.
  */
@@ -52,6 +54,6 @@ public interface IRoleBiz {
      * @param role 角色信息
      * @return
      */
-    void saveRole(Role role,String roleJurisdiction) throws Exception;
+    void saveRole(Role role,String roleJurisdiction,ContainerRequestContext requestContext) throws Exception;
 
 }

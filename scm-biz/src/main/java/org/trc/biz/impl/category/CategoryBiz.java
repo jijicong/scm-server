@@ -163,7 +163,7 @@ public class CategoryBiz implements ICategoryBiz {
     public void saveCategory(Category category) throws Exception {
         checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
-        AssertUtil.notNull(category.getCategoryCode(),"分类编码生成失败");
+        AssertUtil.notNull(category.getCategoryCode(), "分类编码生成失败");
         category.setCreateOperator("test");
         category.setSource(SourceEnum.TRC.getCode());
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
@@ -212,7 +212,6 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     public int checkCategoryCode(Long id, String categoryCode) throws Exception {
-
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", id);
@@ -407,29 +406,30 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception {
-//        AssertUtil.notBlank(brandIds, "分类关联品牌brandIdID为空");
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         //删除的BrandId
-
         List<Long> delBrandIdsList = new ArrayList<>();
         List<CategoryBrand> delCategoryBrands = new ArrayList<>();
         if (StringUtils.isNotBlank(delRecord)) {
             delBrandIdsList.addAll(filterId(delRecord));
             delCategoryBrands = assembleList(delBrandIdsList, categoryId);
         }
-        //保存的BrandId
+
+        //页面上的BrandId
         List<Long> brandIdsList = new ArrayList<>();
         if (StringUtils.isNotBlank(brandIds)) {
             brandIdsList.addAll(filterId(brandIds));
         }
+        //组装出页面上CategoryBrand
         List<CategoryBrand> saveCategoryBrands = assembleList(brandIdsList, categoryId);
-        //新增的数据
+        //整理页面上新增的数据
         List<CategoryBrand> newCategoryBrands = new ArrayList<>();
         Example example = new Example(CategoryBrand.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("categoryId", categoryId);
-        //查询该categoryId已经关联的数据
+        //查询该categoryId已经关联的旧数据
         List<CategoryBrand> oldCategoryBrands = categoryBrandService.selectByExample(example);
+        //整理出新增的数据
         if (oldCategoryBrands.size() > 0) {
             for (CategoryBrand categoryBrand : saveCategoryBrands) {
                 boolean flag = false;
@@ -445,16 +445,17 @@ public class CategoryBiz implements ICategoryBiz {
         } else {
             newCategoryBrands = saveCategoryBrands;
         }
+        //插入新增的数据
         if (newCategoryBrands.size() > 0 && newCategoryBrands != null) {
             categoryBrandService.insertList(newCategoryBrands);
         }
         //删除的数据
         if (delBrandIdsList.size() > 0 && delBrandIdsList != null) {
-
             categoryBrandService.deleteCategoryBrand(delCategoryBrands);
         }
     }
 
+    //根据id组装出List<CategoryBrand
     private List<CategoryBrand> assembleList(List<Long> brandIdsList, Long categoryId) throws Exception {
         List<Brand> brands = brandService.selectBrandList(brandIdsList);
         Category category = new Category();
@@ -545,31 +546,32 @@ public class CategoryBiz implements ICategoryBiz {
         //需要删除的的数据
         List<CategoryProperty> delProperties = new ArrayList<>();
         //未改动的的数据
-        List<CategoryProperty> defaultProperties = new ArrayList<>();
+//        List<CategoryProperty> defaultProperties = new ArrayList<>();
         //将数据分组
         for (TableDate tableDate : tableDates) {
-            if (RecordStatusEnum.ADD.getCode().equals(tableDate.getStatus())) {
+            //新增的数据
+            if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), (tableDate.getStatus()))) {
                 CategoryProperty categoryProperty = new CategoryProperty();
                 categoryProperty.setPropertySort(tableDate.getIndex());
                 categoryProperty.setCategoryId(categoryId);
+                categoryProperty.setIsValid(tableDate.getIsValid());
                 categoryProperty.setCreateTime(Calendar.getInstance().getTime());
                 categoryProperty.setPropertyId(tableDate.getId());
+                categoryProperty.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                checkCategoryProperty(categoryProperty);
                 insertProperties.add(categoryProperty);
             }
-            if (RecordStatusEnum.DELETE.getCode().equals(tableDate.getStatus())) {
+            //删除的数据
+            if (StringUtils.equals(ZeroToNineEnum.THREE.getCode(), (tableDate.getStatus()))) {
                 CategoryProperty categoryProperty = new CategoryProperty();
                 categoryProperty.setId(tableDate.getId());
                 categoryProperty.setPropertyId(tableDate.getPropertyId());
                 categoryProperty.setPropertySort(tableDate.getIndex());
                 delProperties.add(categoryProperty);
             }
-            if (RecordStatusEnum.DEFAULT.getCode().equals(tableDate.getStatus())) {
-                CategoryProperty categoryProperty = new CategoryProperty();
-                categoryProperty.setId(tableDate.getId());
-                categoryProperty.setPropertyId(tableDate.getPropertyId());
-                categoryProperty.setPropertySort(tableDate.getIndex());
-                defaultProperties.add(categoryProperty);
-            } else {
+
+            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), (tableDate.getStatus()))) {
+                //更新的数据
                 CategoryProperty categoryProperty = new CategoryProperty();
                 categoryProperty.setCategoryId(categoryId);
                 categoryProperty.setId(tableDate.getId());
@@ -579,23 +581,83 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
         if (insertProperties.size() > 0 && insertProperties != null) {
-            categoryPropertyService.insertList(insertProperties);
+            //整理页面上新增的数据
+            List<CategoryProperty> newCategoryProperties = new ArrayList<>();
+            Example example = new Example(CategoryBrand.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("categoryId", categoryId);
+            //查询该categoryId已经关联的旧数据
+            List<CategoryProperty> oldCategoryProperties = categoryPropertyService.selectByExample(example);
+            //整理出新增的数据
+            if (oldCategoryProperties.size() > 0) {
+                for (CategoryProperty categoryProperty : insertProperties) {
+                    boolean flag = false;
+                    for (CategoryProperty categoryP : oldCategoryProperties) {
+                        if (categoryProperty.getPropertyId() == categoryP.getPropertyId()) {
+                            flag = true;
+                        }
+                    }
+                    if (!flag) {
+                        newCategoryProperties.add(categoryProperty);
+                    }
+                }
+            } else {
+                newCategoryProperties = insertProperties;
+            }
+            List<Property> noValidProperty = new ArrayList<>();
+            if (newCategoryProperties.size() > 0 && newCategoryProperties != null) {
+                for (CategoryProperty c : newCategoryProperties) {
+                    Property property = new Property();
+                    property.setId(c.getPropertyId());
+                    property = propertyService.selectOne(property);
+                    if (StringUtils.equals(property.getIsValid(), ValidEnum.NOVALID.getCode())) {
+                        noValidProperty.add(property);
+                    }
+                }
+                if (noValidProperty.size()>0) {
+                        String msg = "操作失败,存在已被停用的属性" + JSON.toJSONString(noValidProperty);
+                        log.error(msg);
+                        throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+                }else {
+                    newCategoryProperties = filterIdCategoryProperty(newCategoryProperties);
+                    categoryPropertyService.insertList(newCategoryProperties);
+                }
+
+            }
         }
 
         if (delProperties.size() > 0 && delProperties != null) {
+            //删除
+            int delCount = 0;
             for (CategoryProperty categoryProperty : delProperties) {
+                AssertUtil.notNull(categoryProperty.getId(), "根据关联属性id删除关联时,参数Id为空");
                 categoryPropertyService.deleteByPrimaryKey(categoryProperty.getId());
+                delCount++;
+            }
+            if (delCount == 0) {
+                String msg = "删除分类属性" + JSON.toJSONString(sortProperties) + "操作失败";
+                log.error(msg);
+                throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_DELETE_EXCEPTION, msg);
             }
         }
-        for (CategoryProperty categoryProperty : sortProperties) {
-            int count = categoryPropertyService.updateByPrimaryKey(categoryProperty);
+        if (sortProperties.size() > 0 && sortProperties != null) {
+            int count = categoryPropertyService.updateCategoryPropertySort(sortProperties);
+            count++;
             if (count == 0) {
-                String msg = "修改分类属性" + JSON.toJSONString(categoryProperty) + "操作失败";
+                String msg = "修改分类属性" + JSON.toJSONString(sortProperties) + "操作失败";
                 log.error(msg);
                 throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
             }
         }
+    }
 
+    //关联参数属性校验
+    private void checkCategoryProperty(CategoryProperty categoryProperty) {
+        AssertUtil.notNull(categoryProperty.getCategoryId(), "关联分类属性时,参数categoryId为空");
+        AssertUtil.notNull(categoryProperty.getPropertyId(), "关联分类属性时,参数propertyId为空");
+        AssertUtil.notNull(categoryProperty.getPropertySort(), "关联分类属性时,参数propertySort为空");
+        AssertUtil.notNull(categoryProperty.getIsValid(), "关联分类属性时,参数isValid为空");
+        AssertUtil.notNull(categoryProperty.getCreateTime(), "关联分类属性时,参数createTime为空");
     }
 
     @Override
@@ -622,5 +684,24 @@ public class CategoryBiz implements ICategoryBiz {
             set.add(longId);
         }
         return set;
+    }
+
+    /**
+     * 过滤重复数据
+     *
+     * @param categoryProperties
+     * @return
+     */
+    private List<CategoryProperty> filterIdCategoryProperty(List<CategoryProperty> categoryProperties) {
+        //过滤
+        for (int i = 0; i < categoryProperties.size(); i++) {
+            for (int j = 0; j < categoryProperties.size(); j++) {
+                if (i == j) continue;
+                if (categoryProperties.get(i).getPropertyId() == (categoryProperties.get(j).getPropertyId())) {
+                    categoryProperties.remove(j);
+                }
+            }
+        }
+        return categoryProperties;
     }
 }

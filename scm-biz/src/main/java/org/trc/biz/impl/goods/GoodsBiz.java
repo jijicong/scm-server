@@ -113,7 +113,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
-        example.orderBy("isValid").desc();
+        example.orderBy("updateTime").desc();
         page = itemsService.pagination(example, page, queryModel);
         handerPage(page);
         //分页查询
@@ -179,6 +179,8 @@ public class GoodsBiz implements IGoodsBiz {
             Example.Criteria criteria = example.createCriteria();
             criteria.andIn("spuCode", spuCodes);
             criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            example.orderBy("isValid").desc();
+            example.orderBy("skuCode").asc();
             List<Skus> skusList = skusService.selectByExample(example);
             AssertUtil.notEmpty(skusList, String.format("批量查询商品SPU编码为[%s]的商品对应的SKU信息为空", CommonUtil.converCollectionToString(spuCodes)));
             List<String> skuCodes = new ArrayList<String>();

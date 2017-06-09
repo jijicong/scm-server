@@ -40,7 +40,11 @@ public class CategoryProperty {
     private String typeCode;
     @Transient
     private String valueType;
+
+    @FormParam("isValid")
     private String isValid; //是否有效:0-否,1-是
+
+    @FormParam("isDeleted")
     private String isDeleted; //是否删除:0-否,1-是
 
 

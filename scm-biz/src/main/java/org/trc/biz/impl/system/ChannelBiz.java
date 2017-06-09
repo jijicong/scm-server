@@ -27,6 +27,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -84,13 +85,14 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveChannel(Channel channel) throws Exception {
+    public void saveChannel(Channel channel,ContainerRequestContext requestContext) throws Exception {
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
         AssertUtil.isNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
         channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
+        channel.setCreateOperator((String)requestContext.getProperty("userId"));
         channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
         int count = channelService.insert(channel);
         if(count==0){
