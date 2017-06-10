@@ -39,7 +39,7 @@ public interface ISupplierApplyBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel)throws Exception;
+    Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel,ContainerRequestContext requestContext)throws Exception;
 
     /**
      * 保存供应商申请页面

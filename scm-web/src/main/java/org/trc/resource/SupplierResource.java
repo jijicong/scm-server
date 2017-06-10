@@ -38,8 +38,8 @@ public class SupplierResource {
     @GET
     @Path(SupplyConstants.Supply.Supplier.APPLY_SUPPLIER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext) throws Exception {
-        return supplierBiz.supplierPage(page,requestContext);
+    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext,@BeanParam SupplierForm form) throws Exception {
+        return supplierBiz.supplierPage(page,requestContext,form);
     }
 
     @GET

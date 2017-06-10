@@ -5,6 +5,7 @@ import org.trc.domain.BaseDO;
 import org.trc.domain.util.CommonDO;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -18,10 +19,10 @@ public class SupplierApply extends CommonDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotEmpty
+    //@NotEmpty
     @FormParam("applyCode")
     private String applyCode;//申请编号
-    @NotEmpty
+    @NotNull
     @FormParam("supplierId")
     private Long supplierId;//供应商Id
     private Long channelId;//渠道Id
@@ -32,7 +33,7 @@ public class SupplierApply extends CommonDO {
     @NotEmpty
     @FormParam("description")
     private String description;//说明
-    @NotEmpty
+    @NotNull
     @FormParam("status")
     private Integer status;//审核状态
     @FormParam("auditOpinion")

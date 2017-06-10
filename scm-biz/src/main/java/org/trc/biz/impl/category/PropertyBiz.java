@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
+import org.trc.domain.category.Brand;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.FileUrl;
@@ -22,6 +24,7 @@ import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.service.goods.IItemNatureProperyService;
 import org.trc.service.goods.IItemSalesProperyService;
+import org.trc.service.impl.impower.UserAccreditInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
@@ -51,6 +54,9 @@ public class PropertyBiz implements IPropertyBiz {
     private IItemNatureProperyService itemNatureProperyService;
     @Autowired
     private IItemSalesProperyService itemSalesProperyService;
+    @Autowired
+    private UserAccreditInfoService userAccreditInfoService;
+
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
         Example example = new Example(Property.class);
@@ -68,7 +74,21 @@ public class PropertyBiz implements IPropertyBiz {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
         example.orderBy("updateTime").desc();
-        return propertyService.pagination(example, page, queryModel);
+        page=propertyService.pagination(example, page, queryModel);
+        List<Property> list=page.getResult();
+        Map<String, UserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(list);
+        for (Property property : list) {
+            if(!StringUtils.isBlank(property.getLastEditOperator())){
+                if(userAccreditInfoMap!=null){
+                    UserAccreditInfo userAccreditInfo=userAccreditInfoMap.get(property.getLastEditOperator());
+                    if(userAccreditInfo!=null){
+                        property.setLastEditOperator(userAccreditInfo.getName());
+                    }
+                }
+            }
+        }
+        page.setResult(list);
+        return page;
     }
 
 
@@ -140,11 +160,11 @@ public class PropertyBiz implements IPropertyBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_UPDATE_EXCEPTION,str);
             }
             //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.NATURE_PROPERTY.getName().equals(property.getTypeCode())){
+            if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
                 itemNatureProperyService.updateIsValidByPropertyId(ZeroToNineEnum.ZERO.getCode(),property.getId());
             }
             //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.PURCHASE_PROPERTY.getName().equals(property.getTypeCode())){
+            if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
                 itemSalesProperyService.updateIsValidByPropertyId(ZeroToNineEnum.ZERO.getCode(),property.getId());
             }
         }
@@ -159,11 +179,11 @@ public class PropertyBiz implements IPropertyBiz {
             //属性状态更新时需要更新属性分类关系表的is_valid字段，但可能此时该属性还未使用，故不对返回值进行判断
             categoryPropertyService.updateCategoryPropertyIsValid(property.getIsValid(),property.getId());
             //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.NATURE_PROPERTY.getName().equals(property.getTypeCode())){
+            if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
                 itemNatureProperyService.updateIsValidByPropertyId(property.getIsValid(),property.getId());
             }
             //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.PURCHASE_PROPERTY.getName().equals(property.getTypeCode())){
+            if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
                 itemSalesProperyService.updateIsValidByPropertyId(property.getIsValid(),property.getId());
             }
         }
@@ -272,11 +292,11 @@ public class PropertyBiz implements IPropertyBiz {
         //属性状态更新时需要更新属性分类关系表的is_valid字段，但可能此时该属性还未使用，故不对返回值进行判断
         categoryPropertyService.updateCategoryPropertyIsValid(updateProperty.getIsValid(),updateProperty.getId());
         //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-        if(PropertyTypeEnum.NATURE_PROPERTY.getName().equals(property.getTypeCode())){
+        if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
             itemNatureProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(),updateProperty.getId());
         }
         //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-        if(PropertyTypeEnum.PURCHASE_PROPERTY.getName().equals(property.getTypeCode())){
+        if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
             itemSalesProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(),updateProperty.getId());
         }
     }
@@ -342,5 +362,16 @@ public class PropertyBiz implements IPropertyBiz {
         }
     }
 
-
+    private Map<String,UserAccreditInfo> constructUserAccreditInfoMap(List<Property> propertyList){
+        if(AssertUtil.CollectionIsEmpty(propertyList)){
+            return null;
+        }
+        Set<String> userIdsSet=new HashSet<>();
+        for (Property property:propertyList) {
+            userIdsSet.add(property.getLastEditOperator());
+        }
+        String[] userIdArr=new String[userIdsSet.size()];
+        userIdsSet.toArray(userIdArr);
+        return userAccreditInfoService.selectByIds(userIdArr);
+    }
 }

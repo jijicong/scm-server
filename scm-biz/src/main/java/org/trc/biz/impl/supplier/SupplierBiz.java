@@ -120,7 +120,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext) throws Exception {
+    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext,SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         UserAccreditInfo userAccreditInfo= (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
         Example example = new Example(SupplierChannelRelation.class);
@@ -135,8 +135,13 @@ public class SupplierBiz implements ISupplierBiz {
             }
             Long[] supplierIdArr=new Long[supplierIdSet.size()];
             supplierIdSet.toArray(supplierIdArr);
-            List<Supplier> supplierList=supplierService.selectSupplierListByApply(supplierIdArr);
-            int count=supplierService.selectSupplierListCount(supplierIdArr);
+            Map<String,Object> map=new HashMap<>();
+            map.put("supplierCode",form.getSupplierCode());
+            map.put("supplierName",form.getSupplierName());
+            map.put("supplierKindCode",form.getSupplierKindCode());
+            map.put("ids",supplierIdArr);
+            List<Supplier> supplierList=supplierService.selectSupplierListByApply(map);
+            int count=supplierService.selectSupplierListCount(map);
             page.setResult(supplierList);
             page.setTotalCount(count);
             handlerSupplierPage(page);
