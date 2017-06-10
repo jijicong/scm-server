@@ -54,6 +54,6 @@ public interface IRoleBiz {
      * @param role 角色信息
      * @return
      */
-    void saveRole(Role role,String roleJurisdiction,ContainerRequestContext requestContext) throws Exception;
+    void saveRole(Role role,String roleJurisdiction) throws Exception;
 
 }

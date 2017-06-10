@@ -169,7 +169,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext) throws Exception {
+    public void savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -179,7 +179,6 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
         }
         ParamsUtil.setBaseDO(purchaseGroup);
-        purchaseGroup.setCreateOperator((String) requestContext.getProperty("userId"));
         int count = 0;
         String code = serialUtilService.generateCode(LENGTH,SERIALNAME);
         purchaseGroup.setCode(code);

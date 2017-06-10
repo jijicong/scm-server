@@ -16,6 +16,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -115,7 +117,7 @@ public class UserAccreditInfoResource {
     @POST
     @Path(SupplyConstants.UserAccreditInfo.SAVE_ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate) throws Exception {
+    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate,@Context ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notBlank(userAddPageDate.getPhone(), "用户手机号未输入");
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");

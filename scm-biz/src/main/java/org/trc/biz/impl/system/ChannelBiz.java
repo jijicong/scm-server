@@ -2,6 +2,7 @@ package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -11,7 +12,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
+import org.trc.domain.category.Brand;
 import org.trc.domain.dict.DictType;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -21,16 +24,16 @@ import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
+import javax.persistence.Transient;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sone on 2017/5/2.
@@ -48,6 +51,9 @@ public class ChannelBiz implements IChannelBiz {
     private IChannelService channelService;
 
     @Resource
+    private IUserAccreditInfoService userAccreditInfoService;
+
+    @Resource
     private ISerialUtilService serialUtilService;
 
     @Override
@@ -63,7 +69,56 @@ public class ChannelBiz implements IChannelBiz {
         example.orderBy("updateTime").desc();
         Pagenation<Channel> pagenation = channelService.pagination(example,page,form);
 
+        List<Channel> channelList = pagenation.getResult();
+        /*
+        先拿出  userId列表
+        拿到 user对象
+        赋值用户姓名
+         */
+        handleUserName(channelList);
+
         return pagenation;
+    }
+
+   /* private void handleUserName2(List<T> list) throws Exception{
+        if(AssertUtil.CollectionIsEmpty(list)){
+            return;
+        }
+        Set<String> userIdsSet=new HashSet<>();
+
+        for (T obj:list) {
+            (Channel)obj;
+           // userIdsSet.add();
+        }
+
+
+
+    }*/
+
+    //处理创建人的姓名
+    private void handleUserName(List<Channel> channelList) throws Exception{
+        if(AssertUtil.CollectionIsEmpty(channelList)){
+            return;
+        }
+        Set<String> userIdsSet=new HashSet<>();
+        for (Channel channel:channelList) {
+            userIdsSet.add(channel.getCreateOperator());
+        }
+        String[] userIdArr=new String[userIdsSet.size()];
+        userIdsSet.toArray(userIdArr);
+        Map<String,UserAccreditInfo>  mapTemp = userAccreditInfoService.selectByIds(userIdArr);
+        for (Channel channel:channelList) {
+            if(!StringUtils.isBlank(channel.getCreateOperator())){
+                if(mapTemp!=null){
+                    UserAccreditInfo userAccreditInfo=mapTemp.get(channel.getCreateOperator());
+                    if(userAccreditInfo!=null){
+                        channel.setCreateOperator(userAccreditInfo.getName());
+                    }
+                }
+            }
+        }
+
+
     }
 
     public Channel findChannelByName(String name) throws Exception{
@@ -85,14 +140,13 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveChannel(Channel channel,ContainerRequestContext requestContext) throws Exception {
+    public void saveChannel(Channel channel) throws Exception {
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
         AssertUtil.isNull(tmp,String.format("渠道名称[name=%s]的数据已存在,请使用其他名称",channel.getName()));
         channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
         ParamsUtil.setBaseDO(channel);
-        channel.setCreateOperator((String)requestContext.getProperty("userId"));
         channel.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
         int count = channelService.insert(channel);
         if(count==0){

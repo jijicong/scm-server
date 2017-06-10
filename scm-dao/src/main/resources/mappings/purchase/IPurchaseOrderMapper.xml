@@ -36,12 +36,12 @@
        再联合品牌表，分类表来查询查询对应的名称
     -->
     <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail">
-        SELECT bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
+        SELECT bssi.spu_code AS spuCode, bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
         (
-        SELECT ssi.sku_code,ssi.name,ssi.brand_id,ssi.category_id,b.name AS brand_name FROM brand b
+        SELECT ssi.spu_code , ssi.sku_code,ssi.name,ssi.brand_id,ssi.category_id,b.name AS brand_name FROM brand b
         RIGHT JOIN
         (
-            SELECT skus.sku_code,si.name,si.brand_id ,si.category_id FROM skus
+            SELECT skus.sku_code,si.name,si.brand_id ,si.category_id,si.spu_code FROM skus
         RIGHT JOIN (
                 SELECT i.spu_code,i.name,i.brand_id,s.category_id
                     from

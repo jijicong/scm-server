@@ -163,13 +163,12 @@ public class RoleBiz implements IRoleBiz{
     }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveRole(Role role,String roleJurisdiction,ContainerRequestContext requestContext) throws Exception {
+    public void saveRole(Role role,String roleJurisdiction) throws Exception {
         AssertUtil.notNull(role,"角色管理模块保存角色信息失败，角色信息为空");
         Role tmp = findRoleByName(role.getName());
         AssertUtil.isNull(tmp,String.format("角色名称[name=%s]的名称已存在,请使用其他名称",role.getName()));
         int count=0;
         ParamsUtil.setBaseDO(role);
-        role.setCreateOperator((String) requestContext.getProperty("userId"));
         count=roleService.insert(role);
         if(count==0){
             String msg = String.format("保存角色%s数据库操作失败", JSON.toJSONString(role));
