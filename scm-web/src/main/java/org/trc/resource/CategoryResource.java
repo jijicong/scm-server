@@ -175,4 +175,13 @@ public class CategoryResource {
         return ResultUtil.createSucssAppResult("分类属性保存成功", "");
     }
 
+    /**
+     * 启停校验
+     */
+    @GET
+    @Path(SupplyConstants.Category.Classify.CATEGORY_VALID + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult checkCategoryIsValid(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("状态查询成功",  categoryBiz.checkCategoryIsValid(id));
+    }
 }

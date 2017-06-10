@@ -92,6 +92,7 @@ public interface ICategoryBiz {
 
     /**
      * 根据categoryId查询CategoryBrand
+     *
      * @param categoryId
      * @return
      */
@@ -99,6 +100,7 @@ public interface ICategoryBiz {
 
     /**
      * 根据categoryId查询CategoryProperty
+     *
      * @param categoryId
      * @return
      */
@@ -139,4 +141,9 @@ public interface ICategoryBiz {
      * @throws Exception
      */
     String getCategoryName(Long categoryId) throws Exception;
+
+    /**
+     * 检验启停yong
+     */
+    Integer checkCategoryIsValid(Long categoryId) throws Exception;
 }

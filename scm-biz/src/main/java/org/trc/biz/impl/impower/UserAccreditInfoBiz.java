@@ -220,8 +220,8 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     public void saveUserAccreditInfo(UserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
         checkUserAddPageDate(userAddPageDate);
         //获取页面的UserId
-        String userId = (String) requestContext.getProperty("userId");
-        AssertUtil.notBlank(userId, "获取当前登录用户失败,请重新登录!");
+//        String userId = (String) requestContext.getProperty("userId");
+//        AssertUtil.notBlank(userId, "获取当前登录用户失败,请重新登录!");
         UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
         AssertUtil.notNull(userDO, "该手机号未在泰然城注册");
         //写入user_accredit_info表
@@ -233,7 +233,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         userAccreditInfo.setUserType(userAddPageDate.getUserType());
         userAccreditInfo.setUserId(userDO.getUserId());
         userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        userAccreditInfo.setCreateOperator(userId);
+        userAccreditInfo.setCreateOperator(userAddPageDate.getCreateOperator());
         userAccreditInfo.setIsValid(userAddPageDate.getIsValid());
         userAccreditInfo.setCreateTime(Calendar.getInstance().getTime());
         userAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
@@ -250,7 +250,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setRoleId(roleIds[i]);
                 userAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 userAccreditRoleRelation.setIsValid(userAccreditInfo.getIsValid());
-                userAccreditInfo.setCreateOperator(userId);
+                userAccreditInfo.setCreateOperator(userAccreditInfo.getCreateOperator());
                 userAccreditRoleRelation.setCreateTime(userAccreditInfo.getCreateTime());
                 userAccreditRoleRelation.setUpdateTime(userAccreditInfo.getUpdateTime());
                 uAcRoleRelationList.add(userAccreditRoleRelation);
