@@ -9,7 +9,7 @@
         </foreach>
     </select>
 
-    <select id="selectSupplierListByApply" resultType="org.trc.domain.supplier.Supplier">
+    <select id="selectSupplierListByApply" resultType="org.trc.domain.supplier.Supplier" parameterType="java.util.Map">
           SELECT a.id AS id,a.supplier_code AS supplierCode,a.supplier_name AS supplierName,
           a.supplier_kind_code AS supplierKindCode,a.supplier_type_code AS supplierTypeCode
           FROM  supplier a
@@ -20,10 +20,19 @@
               <foreach collection="ids" index="index" item="item" close=")" open="(" separator=",">
                   #{item}
               </foreach>
+              <if test="supplierName != null and supplierName != ''">
+                  AND a.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
+              </if>
+              <if test="supplierCode != null and supplierCode != ''">
+                  AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
+              </if>
+              <if test="supplierKindCode != null and supplierKindCode != ''">
+                  AND a.supplier_kind_code = #{supplierKindCode}
+              </if>
           </where>
     </select>
 
-    <select id="selectSupplierListCount" resultType="java.lang.Integer">
+    <select id="selectSupplierListCount" resultType="java.lang.Integer" parameterType="java.util.Map">
            SELECT COUNT(0)
            FROM supplier a
             <where>
@@ -33,6 +42,15 @@
                 <foreach collection="ids" index="index" item="item" close=")" open="(" separator=",">
                     #{item}
                 </foreach>
+                <if test="supplierName != null and supplierName != ''">
+                    AND a.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
+                </if>
+                <if test="supplierCode != null and supplierCode != ''">
+                    AND a.supplier_code  <![CDATA[LIKE '%${supplierCode}%']]>
+                </if>
+                <if test="supplierKindCode != null and supplierKindCode != ''">
+                    AND a.supplier_kind_code = #{supplierKindCode}
+                </if>
             </where>
     </select>
 </mapper>

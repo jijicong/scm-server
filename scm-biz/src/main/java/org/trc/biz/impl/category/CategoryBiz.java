@@ -181,9 +181,9 @@ public class CategoryBiz implements ICategoryBiz {
         category.setUpdateTime(Calendar.getInstance().getTime());
         //先保存
         ParamsUtil.setBaseDO(category);
-        String userId = (String) requestContext.getProperty("userId");
-        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
-        category.setCreateOperator(userId);
+//        String userId = (String) requestContext.getProperty("userId");
+//        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
+//        category.setCreateOperator(userId);
         int count = categoryService.insert(category);
         if (count == 0) {
             String msg = "增加分类" + JSON.toJSONString(category) + "数据库操作失败";
@@ -335,6 +335,14 @@ public class CategoryBiz implements ICategoryBiz {
         if (category1.getParentId() != null && StringUtils.equals(category1.getIsValid(), ValidEnum.NOVALID.getCode())) {
             updateLastCategory(category1.getParentId());
         }
+        //校验起停用
+        if (StringUtils.equals(updateCategory.getIsValid(),ValidEnum.NOVALID.getCode())){
+            if (checkCategoryIsValid(updateCategory.getId())==0){
+                String msg = "修改分类状态" + JSON.toJSONString(updateCategory) + "操作失败";
+                log.error(msg);
+                throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            }
+        }
         updateCategory.setUpdateTime(Calendar.getInstance().getTime());
         int count = categoryService.updateByPrimaryKeySelective(updateCategory);
         if (count == 0) {
@@ -347,27 +355,31 @@ public class CategoryBiz implements ICategoryBiz {
         supplierCategoryService.updateSupplierCategoryIsValid(updateCategory.getIsValid(), updateCategory.getId());
 
     }
+
     /***
-     *
+     *校验起停用
      */
-    private Integer checkCategoryIsValid(Long categoryId){
+    @Override
+    public Integer checkCategoryIsValid(Long categoryId) throws Exception {
         //查询到需要改变分类状态的分类
         Category category = new Category();
         category.setId(categoryId);
-        category= categoryService.selectOne(category);
-
-        if (category.getLevel()==1){
-            Example example = new Example(CategoryProperty.class);
+        category = categoryService.selectOne(category);
+        if (category.getLevel() != 3) {
+            Example example = new Example(Category.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andEqualTo("parentId", category.getParentId());
-            List<Category> childCategory = categoryService.selectByExample(example);
-            if (childCategory!=null&&childCategory.size()>0){
-
+            List<Category> childCategories = categoryService.selectByExample(example);
+            if (childCategories != null && childCategories.size() > 0) {
+                for (Category c : childCategories) {
+                    if (StringUtils.equals(c.getIsValid(), ValidEnum.VALID.getCode())) {
+                        return 0;
+                    }
+                }
             }
 
         }
-
-        return null;
+        return 1;
     }
 
 
@@ -436,9 +448,9 @@ public class CategoryBiz implements ICategoryBiz {
         CategoryProperty categoryProperty = new CategoryProperty();
         categoryProperty.setCategoryId(categoryId);
         List<CategoryProperty> queryProperties = new ArrayList<>();
-        if (queryProperties.size()>0){
-            for (CategoryProperty c: queryProperties) {
-             c.setIsValid(ValidEnum.getValidEnumByName(c.getIsValid()).getName());
+        if (queryProperties.size() > 0) {
+            for (CategoryProperty c : queryProperties) {
+                c.setIsValid(ValidEnum.getValidEnumByName(c.getIsValid()).getName());
 //                c.setValueType();
             }
         }

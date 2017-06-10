@@ -5,6 +5,7 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.service.IBaseService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hzwdx on 2017/5/5.
@@ -23,7 +24,7 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
      * @return
      * @throws Exception
      */
-    List<Supplier> selectSupplierListByApply(Long ...ids)throws Exception;
+    List<Supplier> selectSupplierListByApply(Map<String,Object> map)throws Exception;
 
-    Integer selectSupplierListCount(Long ...ids)throws Exception;
+    Integer selectSupplierListCount(Map<String,Object> map)throws Exception;
 }
