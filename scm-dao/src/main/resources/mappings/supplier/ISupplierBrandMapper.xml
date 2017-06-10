@@ -42,13 +42,14 @@
         <result property="proxyAptitudeStartDate" column="proxy_aptitude_start_date"/>
         <result property="proxyAptitudeEndDate" column="proxy_aptitude_end_date"/>
         <result property="aptitudePic" column="aptitude_pic"/>
+        <result property="isValid" column="is_valid"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <select id="selectSupplierBrands" resultMap="supplierBrandExtMap">
         SELECT
-        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, sb.category_code, sb.proxy_aptitude_id, sb.proxy_aptitude_start_date, sb.proxy_aptitude_end_date, sb.aptitude_pic, c.full_path_id as category_name, sb.brand_id, sb.brand_code, b.name as brand_name
+        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, sb.category_code, sb.proxy_aptitude_id, sb.proxy_aptitude_start_date, sb.proxy_aptitude_end_date, sb.aptitude_pic, sb.is_valid, c.full_path_id as category_name, sb.brand_id, sb.brand_code, b.name as brand_name
         FROM
         supplier_brand sb
         LEFT JOIN

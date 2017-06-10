@@ -37,13 +37,14 @@
         <result property="categoryCode" column="category_code"/>
         <result property="categoryName" column="category_name"/>
         <result property="proxyAptitudeId" column="proxy_aptitude_id"/>
+        <result property="isValid" column="is_valid"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <select id="selectSupplierCategorys" resultMap="supplierCategoryExtMap">
         SELECT
-        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, c.category_code, c.full_path_id as category_name
+        sb.id, sb.supplier_id, sb.supplier_code, sb.category_id, sb.is_valid, c.category_code, c.full_path_id, c.full_path_id as category_name
         FROM
         supplier_category sb
         LEFT JOIN
