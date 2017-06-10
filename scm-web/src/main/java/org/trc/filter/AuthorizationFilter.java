@@ -15,10 +15,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.impower.JurisdictionBiz;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
 import org.trc.exception.CategoryException;
 import org.trc.service.category.IBrandService;
+import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.util.AppResult;
 
 import javax.annotation.Resource;
@@ -49,7 +51,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private BeegoService beegoService;
     @Autowired
     private JurisdictionBiz jurisdictionBiz;
-
+    @Autowired
+    private IUserAccreditInfoService userAccreditInfoService;
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         URI url = ((ContainerRequest) requestContext).getRequestUri();
@@ -65,6 +68,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
             if (null != beegoToken) {
                 String userId = beegoToken.getUserId();
                 requestContext.setProperty("userId", userId);
+                UserAccreditInfo userAccreditInfo=userAccreditInfoService.selectOneById(userId);
+                requestContext.setProperty("userAccreditInfo",userAccreditInfo);
 //                try {
 //                    if (!jurisdictionBiz.authCheck(userId, url.toString(), method)) {
 //                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);

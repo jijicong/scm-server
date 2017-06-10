@@ -4,6 +4,8 @@ import org.trc.domain.supplier.*;
 import org.trc.form.supplier.*;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -18,6 +20,15 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     Pagenation<Supplier> supplierPage(SupplierForm form, Pagenation<Supplier> page) throws Exception;
+
+    /**
+     * 申请供应商时的分页查询
+     * @param page
+     * @param requestContext
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Supplier> supplierPage(Pagenation<Supplier> page,ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 查询供应商列表

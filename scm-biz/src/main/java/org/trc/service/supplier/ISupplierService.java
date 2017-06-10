@@ -1,5 +1,6 @@
 package org.trc.service.supplier;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.supplier.Supplier;
 import org.trc.service.IBaseService;
 
@@ -16,4 +17,13 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
      */
     List<Supplier> selectSupplierNames(String strs[]);
 
+    /**
+     * 申请供应商时的供应商分页查询
+     * @param ids
+     * @return
+     * @throws Exception
+     */
+    List<Supplier> selectSupplierListByApply(Long ...ids)throws Exception;
+
+    Integer selectSupplierListCount(Long ...ids)throws Exception;
 }

@@ -13,6 +13,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -31,6 +33,13 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Supplier> supplierPage(@BeanParam SupplierForm form, @BeanParam Pagenation<Supplier> page) throws Exception {
         return supplierBiz.supplierPage(form, page);
+    }
+
+    @GET
+    @Path(SupplyConstants.Supply.Supplier.APPLY_SUPPLIER_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext) throws Exception {
+        return supplierBiz.supplierPage(page,requestContext);
     }
 
     @GET

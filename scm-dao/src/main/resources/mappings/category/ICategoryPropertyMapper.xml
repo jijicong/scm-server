@@ -19,7 +19,7 @@
     </delete>
 
     <update id="updateCategoryPropertyIsValid">
-        UPDATE category_propery
+        UPDATE category_property
         SET   is_valid=#{isValid}
         WHERE property_id=#{propertyId}
     </update>

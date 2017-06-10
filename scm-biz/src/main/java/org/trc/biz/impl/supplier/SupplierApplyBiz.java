@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.trc.biz.supplier.ISupplierApplyBiz;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.supplier.AuditLog;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
@@ -26,6 +27,8 @@ import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.*;
 
 /**
@@ -140,7 +143,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     }
 
     @Override
-    public void saveSupplierApply(SupplierApply supplierApply) throws Exception {
+    public void saveSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierApply,"保存供应商申请信息，申请信息不能为空");
         SupplierApply insert=new SupplierApply();
         //页面中所传id实际为供应商id
@@ -149,9 +152,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         insert.setAuditOpinion(supplierApply.getAuditOpinion());
         insert.setDescription(supplierApply.getDescription());
         insert.setStatus(supplierApply.getStatus());
-        //TODO 渠道先写死后期改动
-        insert.setChannelId(1l);
-        insert.setChannelCode("QD001");
+        UserAccreditInfo userAccreditInfo= (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        insert.setChannelId(userAccreditInfo.getChannelId());
+        insert.setChannelCode(userAccreditInfo.getChannelCode());
         ParamsUtil.setBaseDO(insert);
         insert.setApplyCode(serialUtilService.generateCode(SUPPLIER_APPLY_CODE_LENGTH,SUPPLIER_APPLY_CODE_EX_NAME, DateUtils.dateToCompactString(insert.getCreateTime())));
         try{

@@ -22,4 +22,14 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     public List<Supplier> selectSupplierNames(String[] strs) {
         return supplierMapper.selectSupplierNames(strs);
     }
+
+    @Override
+    public List<Supplier> selectSupplierListByApply(Long... ids) throws Exception {
+        return supplierMapper.selectSupplierListByApply(ids);
+    }
+
+    @Override
+    public Integer selectSupplierListCount(Long... ids) throws Exception {
+        return supplierMapper.selectSupplierListCount(ids);
+    }
 }

@@ -5,6 +5,7 @@ import org.trc.domain.category.PropertyValue;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ public interface IPropertyBiz {
      * @return
      * @throws Exception
      */
-    void saveProperty(Property property) throws Exception;
+    void saveProperty(Property property, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 更新属性信息
@@ -39,7 +40,7 @@ public interface IPropertyBiz {
      * @return
      * @throws Exception
      */
-    void updateProperty(Property property) throws Exception;
+    void updateProperty(Property property, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 根据propertyId查询属性值列表
@@ -64,7 +65,7 @@ public interface IPropertyBiz {
      * @param property
      * @throws Exception
      */
-    void updatePropertyStatus(Property property) throws Exception;
+    void updatePropertyStatus(Property property, ContainerRequestContext requestContext) throws Exception;
 
 
     /**
