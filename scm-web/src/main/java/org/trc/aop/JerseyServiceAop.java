@@ -10,10 +10,13 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.domain.util.CommonDO;
 import org.trc.enums.ResultEnum;
 import org.trc.util.*;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -25,6 +28,11 @@ import java.util.Date;
 public class JerseyServiceAop {
 
     private Logger  log = LoggerFactory.getLogger(JerseyServiceAop.class);
+
+    public static final String CONTAINER_REQUEST_CONTEXT = "ContainerRequestContext";
+    //jersey保存操作方法前缀
+    public static final String SAVE_METHOD_PREFIX = "save";
+
 
     @Autowired
     private BeanValidator beanValidator;
@@ -54,6 +62,15 @@ public class JerseyServiceAop {
         try {
             //执行方法校验
             validate(point.getArgs());
+            //新增操作方法拦截
+            if(method.getName().startsWith(SAVE_METHOD_PREFIX)){
+                //获取ContainerRequestContext
+                ContainerRequestContext requestContext = hasContainerRequestContext(point.getArgs());
+                if(null != requestContext){
+                    //设置创建人
+                    setOperater(requestContext,point.getArgs());
+                }
+            }
             //执行方法
             resultObj = point.proceed();
         } catch (Exception e) {
@@ -88,8 +105,40 @@ public class JerseyServiceAop {
         for (Object arg : arguments) {
             beanValidator.validate(arg);
         }
-
     }
+
+    /**
+     * 判断参数里面是否包含ContainerRequestContext
+     * @param parameterValues
+     * @return
+     */
+    private ContainerRequestContext hasContainerRequestContext(Object[] parameterValues){
+        ContainerRequestContext requestContext = null;
+        for(Object obj : parameterValues){
+            if(obj instanceof  ContainerRequestContext){
+                requestContext = (ContainerRequestContext)obj;
+            }
+        }
+        return requestContext;
+    }
+
+    /**
+     * 设置当前操作人
+     * @param requestContext
+     * @param parameterValues
+     */
+    private void setOperater(ContainerRequestContext requestContext, Object[] parameterValues){
+        String userId = requestContext.getProperty("userId").toString();
+        for(Object obj : parameterValues){
+            if(obj instanceof CommonDO){
+                ((CommonDO)obj).setCreateOperator(userId);
+            }
+        }
+    }
+
+
+
+
 
 
 }
