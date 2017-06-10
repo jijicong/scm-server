@@ -20,6 +20,7 @@ import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -46,6 +47,9 @@ public class WarehouseBiz implements IWarehouseBiz {
     private IWarehouseService warehouseService;
 
     @Resource
+    private IUserNameUtilService userNameUtilService;
+
+    @Resource
     private ISerialUtilService serialUtilService;
 
     @Override
@@ -62,6 +66,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
         example.orderBy("updateTime").desc();
         Pagenation<Warehouse> pagenation = warehouseService.pagination(example, page, form);
+        userNameUtilService.handleUserName(pagenation.getResult());
         return pagenation;
 
     }

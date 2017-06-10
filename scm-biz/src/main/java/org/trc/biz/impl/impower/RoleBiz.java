@@ -16,6 +16,7 @@ import org.trc.exception.RoleException;
 import org.trc.form.impower.RoleForm;
 import org.trc.service.impower.IRoleService;
 import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
@@ -42,6 +43,8 @@ public class RoleBiz implements IRoleBiz{
     private final static String WHOLE_TYPE ="wholeJurisdiction";//全局角色
     @Resource
     private IRoleService roleService;
+    @Resource
+    private IUserNameUtilService userNameUtilService;
     @Resource
     private IRoleJurisdictionRelationBiz roleJurisdictionRelationBiz;
     @Resource
@@ -120,7 +123,9 @@ public class RoleBiz implements IRoleBiz{
             criteria.andEqualTo("roleType",form.getRoleType());
         }
         example.orderBy("updateTime").desc();
-        return roleService.pagination(example,page,form);
+        Pagenation<Role> pagination = roleService.pagination(example,page,form);
+        userNameUtilService.handleUserName(pagination.getResult());
+        return pagination;
 
     }
     @Override

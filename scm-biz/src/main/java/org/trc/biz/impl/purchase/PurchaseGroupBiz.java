@@ -21,6 +21,7 @@ import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
@@ -40,6 +41,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     @Resource
     private IPurchaseGroupuUserRelationService purchaseGroupuUserRelationService;
 
+    @Resource
+    private IUserNameUtilService userNameUtilService;
+
     private final static String  SERIALNAME = "CGZ";
 
     private final static Integer LENGTH = 5;
@@ -58,7 +62,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             criteria.andEqualTo("isValid", form.getIsValid());
         }
         example.orderBy("updateTime").desc();
-        return purchaseGroupService.pagination(example,page,form);
+        Pagenation<PurchaseGroup> pagenation =  purchaseGroupService.pagination(example,page,form);
+        userNameUtilService.handleUserName(pagenation.getResult());
+        return pagenation;
 
     }
 
