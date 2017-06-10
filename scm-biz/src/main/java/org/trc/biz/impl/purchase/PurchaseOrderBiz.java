@@ -217,6 +217,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception {
         //有没有对应的渠道。渠道有没有对应的供应商
         String userId = (String)requestContext.getProperty("userId");
+        System.out.println(userId);
         if (StringUtils.isBlank(userId)) {
             String msg = CommonUtil.joinStr("根据userId查询供应商的参数userId为空").toString();
             LOGGER.error(msg);
@@ -232,13 +233,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     //保存采购单--状态为暂存
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseOrder(PurchaseOrder purchaseOrder, String userId,String status) throws Exception {
+    public void savePurchaseOrder(PurchaseOrder purchaseOrder,String status) throws Exception {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
         //根据用户的id查询渠道
         UserAccreditInfo user = new UserAccreditInfo();
-        user.setUserId(userId);
+        user.setUserId(purchaseOrder.getCreateOperator());
         user = userAccreditInfoService.selectOne(user);//查询用户对应的渠道
         purchaseOrder.setChannelCode(user.getChannelCode());
         purchaseOrder.setPurchaseOrderCode(serialUtilService.generateCode(LENGTH,SERIALNAME, DateUtils.dateToCompactString(purchaseOrder.getCreateTime())));
@@ -267,8 +268,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Long orderId = purchaseOrder.getId();
 
         String code = purchaseOrder.getPurchaseOrderCode();
-
-        System.out.println(orderId);
 
         savePurchaseDetail(purchaseOrderStrs,orderId,code);//保存采购商品
 

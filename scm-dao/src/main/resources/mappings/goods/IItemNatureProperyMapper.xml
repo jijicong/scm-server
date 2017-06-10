@@ -14,4 +14,15 @@
         </foreach>
     </update>
 
+    <update id="updateIsValidByPropertyValueId">
+         UPDATE  item_nature_propery
+         SET is_valid=#{isValid}
+         WHERE property_value_id=#{propertyValueId}
+    </update>
+
+    <update id="updateIsValidByPropertyId">
+        UPDATE  item_nature_propery
+        SET is_valid=#{isValid}
+        WHERE property_id=#{propertyId}
+    </update>
 </mapper>

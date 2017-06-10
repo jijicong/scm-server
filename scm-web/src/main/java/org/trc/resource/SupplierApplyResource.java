@@ -13,6 +13,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -57,8 +59,8 @@ public class SupplierApplyResource {
     @POST
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply)throws Exception{
-        supplierApplyBiz.saveSupplierApply(supplierApply);
+    public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
+        supplierApplyBiz.saveSupplierApply(supplierApply,requestContext);
         return ResultUtil.createSucssAppResult("供应商申请成功","");
     }
 

@@ -40,19 +40,19 @@ public class PurchaseOrderResource {
     }
 
     @POST
-    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{userId}")
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult savePurchaseOrder(@BeanParam PurchaseOrder purchaseOrder ,@PathParam("userId") String userId) throws Exception{
+    public AppResult savePurchaseOrder(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
 
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,userId, PurchaseOrderStatusEnum.HOLD.getCode());
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode());
         return ResultUtil.createSucssAppResult("保存采购订单成功","");
 
     }
     @POST
-    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT+"/{userId}")
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult commitAuditPurchaseOrder(@BeanParam PurchaseOrder purchaseOrder ,@PathParam("userId") String userId) throws Exception{
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,userId,PurchaseOrderStatusEnum.AUDIT.getCode());
+    public AppResult commitAuditPurchaseOrder(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode());
         return ResultUtil.createSucssAppResult("提交审核采购单成功","");
     }
     @GET

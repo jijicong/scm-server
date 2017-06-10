@@ -3,6 +3,7 @@ package org.trc.biz.impl.supplier;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
@@ -36,6 +38,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**
@@ -115,6 +118,35 @@ public class SupplierBiz implements ISupplierBiz {
         //分页查询
         return page;
     }
+
+    @Override
+    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext) throws Exception {
+        PageHelper.startPage(page.getPageNo(), page.getPageSize());
+        UserAccreditInfo userAccreditInfo= (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        Example example = new Example(SupplierChannelRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("channelId",userAccreditInfo.getChannelId());
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
+        List<SupplierChannelRelation> supplierChannelRelationList=supplierChannelRelationService.selectByExample(example);
+        if(!AssertUtil.CollectionIsEmpty(supplierChannelRelationList)){
+            Set<Long> supplierIdSet=new HashSet<>();
+            for (SupplierChannelRelation supplierChannelRelation:supplierChannelRelationList) {
+                    supplierIdSet.add(supplierChannelRelation.getSupplierId());
+            }
+            Long[] supplierIdArr=new Long[supplierIdSet.size()];
+            supplierIdSet.toArray(supplierIdArr);
+            List<Supplier> supplierList=supplierService.selectSupplierListByApply(supplierIdArr);
+            int count=supplierService.selectSupplierListCount(supplierIdArr);
+            page.setResult(supplierList);
+            page.setTotalCount(count);
+            handlerSupplierPage(page);
+            return page;
+        }
+        page.setResult(new ArrayList<>());
+        page.setTotalCount(0);
+        return page;
+    }
+
 
     /**
      * 处理供应商分页结果

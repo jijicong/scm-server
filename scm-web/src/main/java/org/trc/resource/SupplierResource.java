@@ -36,6 +36,13 @@ public class SupplierResource {
     }
 
     @GET
+    @Path(SupplyConstants.Supply.Supplier.APPLY_SUPPLIER_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext) throws Exception {
+        return supplierBiz.supplierPage(page,requestContext);
+    }
+
+    @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<Supplier>> querySuppliers(@BeanParam SupplierForm form) throws Exception {

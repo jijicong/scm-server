@@ -85,7 +85,7 @@ public class PurchaseGroupResource {
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult savePurchaseGroup(@BeanParam  PurchaseGroup purchaseGroup,@Context ContainerRequestContext requestContext) throws Exception{
-        purchaseGroupBiz.savePurchaseGroup(purchaseGroup,requestContext);
+        purchaseGroupBiz.savePurchaseGroup(purchaseGroup);
         return  ResultUtil.createSucssAppResult("保存采购组成功","");
     }
 

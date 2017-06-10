@@ -6,6 +6,8 @@ import org.trc.form.supplier.SupplierApplyAuditForm;
 import org.trc.form.supplier.SupplierApplyForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
+
 /**
  * Created by hzqph on 2017/5/12.
  */
@@ -44,7 +46,7 @@ public interface ISupplierApplyBiz {
      * @param supplierApply
      * @throws Exception
      */
-    void saveSupplierApply(SupplierApply supplierApply)throws Exception;
+    void saveSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext)throws Exception;
 
     /**
      * 删除供应商申请

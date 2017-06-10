@@ -9,4 +9,30 @@
         </foreach>
     </select>
 
+    <select id="selectSupplierListByApply" resultType="org.trc.domain.supplier.Supplier">
+          SELECT a.id AS id,a.supplier_code AS supplierCode,a.supplier_name AS supplierName,
+          a.supplier_kind_code AS supplierKindCode,a.supplier_type_code AS supplierTypeCode
+          FROM  supplier a
+          <where>
+              a.id NOT IN(select DISTINCT(b.supplier_id ) FROM apply_for_supplier b
+              WHERE b.`status` IN(1,2))
+              AND a.id IN
+              <foreach collection="ids" index="index" item="item" close=")" open="(" separator=",">
+                  #{item}
+              </foreach>
+          </where>
+    </select>
+
+    <select id="selectSupplierListCount" resultType="java.lang.Integer">
+           SELECT COUNT(0)
+           FROM supplier a
+            <where>
+                a.id NOT IN(select DISTINCT(b.supplier_id ) FROM apply_for_supplier b
+                WHERE b.`status` IN(1,2))
+                AND a.id IN
+                <foreach collection="ids" index="index" item="item" close=")" open="(" separator=",">
+                    #{item}
+                </foreach>
+            </where>
+    </select>
 </mapper>
