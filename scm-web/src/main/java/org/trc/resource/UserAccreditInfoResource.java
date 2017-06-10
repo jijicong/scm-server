@@ -16,6 +16,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -115,15 +117,8 @@ public class UserAccreditInfoResource {
     @POST
     @Path(SupplyConstants.UserAccreditInfo.SAVE_ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate) throws Exception {
-        AssertUtil.notBlank(userAddPageDate.getPhone(), "用户手机号未输入");
-        AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
-        AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
-        AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
-        AssertUtil.notBlank(userAddPageDate.getIsValid(), "参数isValid不能为空");
-        UserDO userDO = userService.getUserDO(QueryType.Phone, userAddPageDate.getPhone());
-        AssertUtil.notNull(userDO, "该手机号未在泰然城注册");
-        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate, userDO);
+    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate,@Context ContainerRequestContext requestContext) throws Exception {
+        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate,requestContext);
         return ResultUtil.createSucssAppResult("新增授权成功", "");
     }
 
@@ -148,11 +143,8 @@ public class UserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_ACCREDIT + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateUserAccreditInfo(@BeanParam UserAddPageDate userAddPageDate) throws Exception {
-        AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
-        AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
-        AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
-        UserDO userDO = userService.getUserDO(QueryType.Phone, userAddPageDate.getPhone());
-        userAccreditInfoBiz.updateUserAccredit(userAddPageDate, userDO);
+
+        userAccreditInfoBiz.updateUserAccredit(userAddPageDate);
         return ResultUtil.createSucssAppResult("修改用户成功", "");
     }
 
@@ -160,9 +152,7 @@ public class UserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.CHECK_PHONE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult checkPhone(@QueryParam("phone") String phone) throws Exception {
-        AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
-        UserDO userDO = userService.getUserDO(QueryType.Phone, phone);
-        return ResultUtil.createSucssAppResult("查询成功", userAccreditInfoBiz.checkPhone(phone, userDO));
+        return ResultUtil.createSucssAppResult("查询成功", userAccreditInfoBiz.checkPhone(phone));
     }
 
     @GET
