@@ -42,15 +42,15 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     JingDongUtil jingDongUtil;
     @Autowired
     IJDService ijdService;
-    @Autowired
+    /*@Autowired
     private IJingDongMapper jingDongMapper;//商品sku
     @Autowired
     private IJingDongTestMapper jingDongTestMapper;//商品sku
 
      @Autowired
-     ITableMappingMapper a;
+     ITableMappingMapper a;*/
    // @Test
-    public void testGetToken() {
+   /* public void testGetToken() {
         try {
             String accessToken = iJingDongBiz.getAccessToken();
             System.out.print(accessToken);
@@ -63,16 +63,16 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     public void testJD() {
         try {
             String accessToken = iJingDongBiz.getAccessToken();
-           /* JSONObject obj = new JSONObject();
+           *//* JSONObject obj = new JSONObject();
             obj.put("province","浙江");
             obj.put("city","杭州市");
             obj.put("county","滨江区");
-            obj.put("town","西兴街道");*/
+            obj.put("town","西兴街道");*//*
 
-            /*String str = {{"province":"浙江省","city":"杭州市","county":"县/区","town":"街道"}};*/
-            /*String tmp = jingDongUtil.getAddress(obj.toJSONString());*/
-            /*"2350848,2374973*/
-            /*iJingDongBiz.getStockById("2350848",obj.toJSONString());*/
+            *//*String str = {{"province":"浙江省","city":"杭州市","county":"县/区","town":"街道"}};*//*
+            *//*String tmp = jingDongUtil.getAddress(obj.toJSONString());*//*
+            *//*"2350848,2374973*//*
+            *//*iJingDongBiz.getStockById("2350848",obj.toJSONString());*//*
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);
@@ -85,7 +85,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         try {
             RedisUtil.setObject("泰然城", "tairan", 50);
             RedisUtil.getObject("泰然城");
-            /*JingDongBizImpl.refreshToken();*/
+            *//*JingDongBizImpl.refreshToken();*//*
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);
@@ -98,7 +98,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             ReturnTypeDO a = ijdService.getPageNum(token);
             Boolean A =a.getSuccess();
             a.getResult();
-            /*JingDongBizImpl.refreshToken();*/
+            *//*JingDongBizImpl.refreshToken();*//*
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);
@@ -108,7 +108,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     public void testOrderTrack() {
         try {
             iJingDongBiz.orderTrack("123456");
-            /*JingDongBizImpl.refreshToken();*/
+            *//*JingDongBizImpl.refreshToken();*//*
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);
@@ -166,7 +166,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             System.out.println("province:" + province);
             ReturnTypeDO city = ijdService.getCity(token, "1");
             System.out.println("city:" + city);
-            /*String city = ijdService.getCity(token, String.valueOf(list.get(str)));*/
+            *//*String city = ijdService.getCity(token, String.valueOf(list.get(str)));*//*
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);
@@ -237,12 +237,12 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             obj.put("num", 1);
             obj.put("bNeedAnnex", true);
             obj.put("bNeedGift", false);
-            /*obj.put("price",100);*/
-            /*JSONArray tem = new JSONArray();
+            *//*obj.put("price",100);*//*
+            *//*JSONArray tem = new JSONArray();
             JSONObject obj1 = new JSONObject();
             obj1.put("skuId","853342");
             tem.add(obj1);
-            obj.put("yanbao",tem);*/
+            obj.put("yanbao",tem);*//*
             sku.add(obj);
             orderDO.setSku(sku.toJSONString());
             orderDO.setName("wyz");
@@ -301,7 +301,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         } catch (Exception e) {
             System.out.print(e);
         }
-    }
+    }*/
 
     /*@Test
     public void getSkuList() throws Exception {

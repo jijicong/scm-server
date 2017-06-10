@@ -41,7 +41,7 @@ public interface IChannelBiz {
      *保存渠道
      * @return 整数改变
      */
-    void saveChannel(Channel channel,ContainerRequestContext requestContext) throws Exception;
+    void saveChannel(Channel channel) throws Exception;
 
     /**
      * 更新渠道

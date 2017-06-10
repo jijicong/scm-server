@@ -13,16 +13,17 @@
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="brandName" column="brandName"/>
+        <result property="idValid" column="is_valid"/>
     </resultMap>
 
     <select id="selectListBySupplierIds" resultMap="supplierCategoryMap">
-        SELECT  a.id,a.supplier_id,b.name AS 'brandName',a.create_time,a.update_time
+        SELECT a.id,a.supplier_id,b.name AS 'brandName',a.create_time,a.update_time
         FROM supplier_brand a
-        LEFT JOIN  brand b on a.brand_id =b.id
+        LEFT JOIN brand b on a.brand_id =b.id
         <where>
             a.supplier_id IN
             <foreach collection="supplierIds" index="index" item="item" close=")" open="(" separator=",">
-                  #{item}
+                #{item}
             </foreach>
         </where>
     </select>
@@ -51,7 +52,7 @@
         sb.supplier_code = #{supplierCode} and sb.is_deleted = '0'
     </select>
 
-    <update id="updateSupplerCategory"  parameterType="java.util.List" >
+    <update id="updateSupplerCategory" parameterType="java.util.List">
         <foreach collection="list" item="supplerCategory" index="index" open="" close=";" separator=";">
             update supplier_category
             <set>
@@ -63,8 +64,11 @@
         </foreach>
     </update>
 
-
-
+    <update id="updateSupplierCategoryIsValid">
+        UPDATE supplier_category
+        SET is_valid = #{isValid}
+        WHERE category_id = #{categoryId}
+    </update>
 
 
 </mapper>

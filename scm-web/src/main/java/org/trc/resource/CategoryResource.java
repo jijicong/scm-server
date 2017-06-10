@@ -17,6 +17,8 @@ import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.Calendar;
 import java.util.List;
@@ -55,8 +57,8 @@ public class CategoryResource {
     @POST
     @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveClassify(@BeanParam Category category) throws Exception {
-        categoryBiz.saveCategory(category);
+    public AppResult saveClassify(@BeanParam Category category,@Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.saveCategory(category,requestContext);
         return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 

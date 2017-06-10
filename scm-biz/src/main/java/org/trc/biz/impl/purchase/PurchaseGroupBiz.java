@@ -21,6 +21,7 @@ import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
@@ -40,6 +41,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     @Resource
     private IPurchaseGroupuUserRelationService purchaseGroupuUserRelationService;
 
+    @Resource
+    private IUserNameUtilService userNameUtilService;
+
     private final static String  SERIALNAME = "CGZ";
 
     private final static Integer LENGTH = 5;
@@ -58,7 +62,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             criteria.andEqualTo("isValid", form.getIsValid());
         }
         example.orderBy("updateTime").desc();
-        return purchaseGroupService.pagination(example,page,form);
+        Pagenation<PurchaseGroup> pagenation =  purchaseGroupService.pagination(example,page,form);
+        userNameUtilService.handleUserName(pagenation.getResult());
+        return pagenation;
 
     }
 
@@ -169,7 +175,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext) throws Exception {
+    public void savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -179,7 +185,6 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
         }
         ParamsUtil.setBaseDO(purchaseGroup);
-        purchaseGroup.setCreateOperator((String) requestContext.getProperty("userId"));
         int count = 0;
         String code = serialUtilService.generateCode(LENGTH,SERIALNAME);
         purchaseGroup.setCode(code);
