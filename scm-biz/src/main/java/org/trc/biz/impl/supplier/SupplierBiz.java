@@ -618,13 +618,20 @@ public class SupplierBiz implements ISupplierBiz {
         tmp.setSupplierCode(supplierCategory.getSupplierCode());
         tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<SupplierCategory> currentCategorys = supplierCategoryService.select(tmp);
+        Date sysTime = Calendar.getInstance().getTime();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
             SupplierCategory s = new SupplierCategory();
+            s.setId(jbo.getLong("id"));
             s.setSupplierId(supplierCategory.getSupplierId());
             s.setSupplierCode(supplierCategory.getSupplierCode());
             s.setCategoryId(jbo.getLong("categoryId"));
-            s.setUpdateTime(Calendar.getInstance().getTime());
+            s.setUpdateTime(sysTime);
+            String isValid = jbo.getString("isValid");
+            s.setIsValid(isValid);
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+                deleteList.add(s.getId());
+            }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
             tmpList.add(s);
@@ -714,6 +721,7 @@ public class SupplierBiz implements ISupplierBiz {
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
         List<SupplierBrand> addlist = new ArrayList<SupplierBrand>();
         List<SupplierBrand> delList = new ArrayList<SupplierBrand>();
+        Date sysTime = Calendar.getInstance().getTime();
         for(Object obj : categoryArray){
             JSONObject jbo = (JSONObject) obj;
             SupplierBrand s = new SupplierBrand();
@@ -727,7 +735,12 @@ public class SupplierBiz implements ISupplierBiz {
             s.setProxyAptitudeStartDate(jbo.getString("proxyAptitudeStartDate"));
             s.setProxyAptitudeEndDate(jbo.getString("proxyAptitudeEndDate"));
             s.setAptitudePic(jbo.getString("aptitudePic"));
-            s.setUpdateTime(Calendar.getInstance().getTime());
+            s.setUpdateTime(sysTime);
+            String isValid = jbo.getString("isValid");
+            s.setIsValid(isValid);
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+                delList.add(s);
+            }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
             if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
@@ -919,6 +932,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateValid(Long id, String isValid) throws Exception {
         AssertUtil.notNull(id, "供应商启用/停用操作供应商ID不能为空");
         AssertUtil.notBlank(isValid, "供应商启用/停用操作参数isValid不能为空");
