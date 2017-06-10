@@ -31,4 +31,12 @@ public interface ISupplierApplyAuditService extends IBaseService<SupplierApplyAu
      * @return
      */
     SupplierApplyAudit selectOneById(Long id);
+
+    /**
+     * 更新供应商申请审批状态
+     * @param map
+     * @return
+     */
+    int updateSupplierApplyAuditStatus(Map<String, Object> map);
+
 }

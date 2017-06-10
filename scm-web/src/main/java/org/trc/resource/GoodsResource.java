@@ -17,6 +17,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -42,7 +44,7 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
-                               @BeanParam ItemSalesPropery itemSalesPropery) throws Exception {
+                               @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
         return ResultUtil.createSucssAppResult("保存商品成功", "");
     }

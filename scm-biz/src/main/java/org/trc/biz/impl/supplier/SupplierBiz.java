@@ -30,6 +30,7 @@ import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.supplier.*;
 import org.trc.service.impl.category.BrandService;
+import org.trc.service.impl.supplier.SupplierApplyAuditService;
 import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
@@ -81,6 +82,8 @@ public class SupplierBiz implements ISupplierBiz {
     private BrandService brandService;
     @Autowired
     private ICategoryBiz categoryBiz;
+    @Autowired
+    private ISupplierApplyAuditService supplierApplyAuditService;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -828,31 +831,6 @@ public class SupplierBiz implements ISupplierBiz {
         }
     }
 
-    @Override
-    public void updateSupplier(Supplier supplier) throws Exception {
-        AssertUtil.notNull(supplier.getId(), "修改供应商参数ID为空");
-        supplier.setUpdateTime(Calendar.getInstance().getTime());
-        int count = supplierService.updateByPrimaryKeySelective(supplier);
-        if (count == 0) {
-            String msg = CommonUtil.joinStr("修改供应商", JSON.toJSONString(supplier), "数据库操作失败").toString();
-            log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
-        }
-    }
-
-    @Override
-    public Supplier findSupplierById(Long id) throws Exception {
-        AssertUtil.notNull(id, "根据ID查询供应商参数ID为空");
-        Supplier supplier = new Supplier();
-        supplier.setId(id);
-        supplier = supplierService.selectOne(supplier);
-        if (null == supplier) {
-            String msg = CommonUtil.joinStr("根据主键ID[id=", id.toString(), "]查询供应商为空").toString();
-            log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_QUERY_EXCEPTION, msg);
-        }
-        return supplier;
-    }
 
     @Override
     public List<SupplierCategoryExt> querySupplierCategory(String supplierCode) throws Exception {
@@ -921,7 +899,8 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     public List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception {
         AssertUtil.notNull(form, "查询供应商渠道关系参数SupplierChannelRelationForm不能为空");
-        if(null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) && null == form.getChannelId() && StringUtils.isBlank(form.getChannelCode())){
+        if(null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) &&
+                null == form.getChannelId() && StringUtils.isBlank(form.getChannelCode())){
             String msg = "查询供应商渠道关系参数供应商ID、供应商编码、渠道ID、渠道编码不能同时为空";
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
@@ -929,7 +908,8 @@ public class SupplierBiz implements ISupplierBiz {
         SupplierChannelRelation relation = new SupplierChannelRelation();
         BeanUtils.copyProperties(form, relation);
         relation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        List<SupplierChannelRelationExt> relations = supplierChannelRelationService.selectSupplierChannels(BeanToMapUtil.convertBeanToMap(relation));
+        List<SupplierChannelRelationExt> relations = supplierChannelRelationService.
+                selectSupplierChannels(BeanToMapUtil.convertBeanToMap(relation));
         if(null == relations){
             String msg = String.format("根据供应商查询%s供应商渠道关系为空", JSON.toJSONString(form));
             log.error(msg);
@@ -956,7 +936,24 @@ public class SupplierBiz implements ISupplierBiz {
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
         }
+        //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
+        if(StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+            rejectSupplierApply(id);
+        }
+    }
 
+    /**
+     * 驳回供应商申请
+     * @param supplierId 供应商ID
+     * @throws Exception
+     */
+    private void rejectSupplierApply(Long supplierId) throws Exception{
+        AssertUtil.notNull(supplierId, "供应商启/停用更新供应商申请审批状态参数供应商编码supplierCode不能为空");
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("supplierId", supplierId);
+        map.put("status", AuditStatusEnum.REJECT.getCode());//审核驳回
+        map.put("status2", AuditStatusEnum.COMMIT.getCode());//提交审核
+        supplierApplyAuditService.updateSupplierApplyAuditStatus(map);
     }
 
 

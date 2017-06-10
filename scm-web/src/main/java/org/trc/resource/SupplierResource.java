@@ -54,7 +54,7 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
              @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
-             @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+             @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
         supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }

@@ -33,7 +33,6 @@ public class ItemNaturePropery extends ScmDO{
      */
     @FormParam("naturePropertys")
     @Transient
-    @NotEmpty
     private String naturePropertys;
 
     public Long getId() {

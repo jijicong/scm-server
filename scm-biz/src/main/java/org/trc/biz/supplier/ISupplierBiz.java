@@ -64,21 +64,6 @@ public interface ISupplierBiz {
                       SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception;
 
     /**
-     * 修改供应商
-     * @param Supplier
-     * @return
-     * @throws Exception
-     */
-    void updateSupplier(Supplier Supplier) throws Exception;
-
-    /**
-     *根据主键查询供应商
-     * @param id
-     * @return
-     */
-    Supplier findSupplierById(Long id) throws Exception;
-
-    /**
      * 查询供应商代理分类列表
      * @param supplierCode
      * @return

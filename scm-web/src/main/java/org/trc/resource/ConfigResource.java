@@ -14,6 +14,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public class ConfigResource {
     @Path(SupplyConstants.Config.DictType.DICT_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveDictType(@BeanParam DictType dictType) throws Exception {
+    public AppResult saveDictType(@BeanParam DictType dictType, @Context ContainerRequestContext requestContext) throws Exception {
         configBiz.saveDictType(dictType);
         return ResultUtil.createSucssAppResult("保存字典类型成功", "");
     }
@@ -97,7 +99,7 @@ public class ConfigResource {
     @POST
     @Path(SupplyConstants.Config.Dict.DICT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveDict(@BeanParam Dict dict) throws Exception {
+    public AppResult saveDict(@BeanParam Dict dict, @Context ContainerRequestContext requestContext) throws Exception {
         configBiz.saveDict(dict);
         return ResultUtil.createSucssAppResult("保存字典成功", "");
     }
