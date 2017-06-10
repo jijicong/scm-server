@@ -27,10 +27,10 @@ public class PurchaseDetail extends BaseDO{
     @NotEmpty
     @Length(max = 32, message = "采购单编码字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseOrderCode;
-    @FormParam("itemName")
+    @FormParam("spuCode")
     @NotEmpty
-    @Length(max = 32, message = "采购的商品名称字母和数字不能超过32个,汉字不能超过16个")
-    private String itemName;
+    @Length(max = 32, message = "采购的商品SPU编码长度不能超过32个")
+    private String spuCode;
     @FormParam("skuCode")
     @NotEmpty
     @Length(max = 32, message = "商品的sku名称字母和数字不能超过32个,汉字不能超过16个")
@@ -81,12 +81,12 @@ public class PurchaseDetail extends BaseDO{
         this.purchaseOrderCode = purchaseOrderCode;
     }
 
-    public String getItemName() {
-        return itemName;
+    public String getSpuCode() {
+        return spuCode;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
+    public void setSpuCode(String spuCode) {
+        this.spuCode = spuCode;
     }
 
     public String getSkuCode() {

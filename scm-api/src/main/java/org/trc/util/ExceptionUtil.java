@@ -9,9 +9,8 @@ import org.springframework.dao.PermissionDeniedDataAccessException;
 import org.springframework.dao.QueryTimeoutException;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
-import org.trc.exception.ConfigException;
-import org.trc.exception.FileException;
-import org.trc.exception.ParamValidException;
+import org.trc.exception.*;
+import sun.management.jdp.JdpException;
 
 /** 
  * @ClassName: ExceptionUtil 
@@ -40,9 +39,9 @@ public class ExceptionUtil {
 		String errorDtl = "";
 		String excepCode = "";
 		try {
-			String exceptionName = e.getClass().getName();
-			exceptionName = exceptionName.substring(
-					exceptionName.lastIndexOf(".") + 1, exceptionName.length());
+			String exceptionName = e.getClass().getSimpleName();
+			/*exceptionName = exceptionName.substring(
+					exceptionName.lastIndexOf(".") + 1, exceptionName.length());*/
 			if (StringUtils.equals(exceptionName, ParamValidException.class.getSimpleName())) {
 				ParamValidException paramValidException = (ParamValidException)e;
 				commonExceptionEnum = paramValidException.getExceptionEnum();
@@ -52,6 +51,30 @@ public class ExceptionUtil {
 			}else if (StringUtils.equals(exceptionName, FileException.class.getSimpleName())) {
 				FileException fileException = (FileException)e;
 				exceptionEnum = fileException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, CategoryException.class.getSimpleName())) {
+				CategoryException categoryException = (CategoryException)e;
+				exceptionEnum = categoryException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, ChannelException.class.getSimpleName())) {
+				ChannelException channelException = (ChannelException)e;
+				exceptionEnum = channelException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, GoodsException.class.getSimpleName())) {
+				GoodsException goodsException = (GoodsException)e;
+				exceptionEnum = goodsException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, PurchaseGroupException.class.getSimpleName())) {
+				PurchaseGroupException purchaseGroupException = (PurchaseGroupException)e;
+				exceptionEnum = purchaseGroupException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, RoleException.class.getSimpleName())) {
+				RoleException roleException = (RoleException)e;
+				exceptionEnum = roleException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, SupplierException.class.getSimpleName())) {
+				SupplierException supplierException = (SupplierException)e;
+				exceptionEnum = supplierException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, UserAccreditInfoException.class.getSimpleName())) {
+				UserAccreditInfoException userAccreditInfoException = (UserAccreditInfoException)e;
+				exceptionEnum = userAccreditInfoException.getExceptionEnum();
+			}else if (StringUtils.equals(exceptionName, WarehouseException.class.getSimpleName())) {
+				WarehouseException warehouseException = (WarehouseException)e;
+				exceptionEnum = warehouseException.getExceptionEnum();
 			}else if (StringUtils.equals(exceptionName, DuplicateKeyException.class.getSimpleName())) {
 				exceptionEnum = ExceptionEnum.DATABASE_DUPLICATE_KEY_EXCEPTION;
 			}else if (StringUtils.equals(exceptionName, PermissionDeniedDataAccessException.class.getSimpleName())) {

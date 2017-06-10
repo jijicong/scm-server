@@ -3,6 +3,7 @@ package org.trc.service;
 import org.springframework.stereotype.Service;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
+import tk.mybatis.mapper.common.example.UpdateByExampleSelectiveMapper;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
@@ -31,7 +32,11 @@ public interface IBaseService<T,PK> {
 
     int updateByExample(T t, Example example);
 
+    int updateByExampleSelective(T t, Example example);
+
     T selectOne(T record);
+
+    T selectByPrimaryKey(PK key);
 
     List<T> select(T record);
 
