@@ -400,6 +400,8 @@ public class SupplyConstants {
             public static final String SUPPLIER = "supplier";
             //启用/停用
             public static final String IS_VALID = "isValid";
+            //供应商分页查询路径
+            public static final String APPLY_SUPPLIER_PAGE = "applySupplierPage";
         }
 
         /**
