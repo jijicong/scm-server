@@ -15,6 +15,7 @@ import org.trc.domain.System.Channel;
 import org.trc.domain.category.Brand;
 import org.trc.domain.dict.DictType;
 import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.util.CommonDO;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -26,6 +27,7 @@ import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
 import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -51,7 +53,7 @@ public class ChannelBiz implements IChannelBiz {
     private IChannelService channelService;
 
     @Resource
-    private IUserAccreditInfoService userAccreditInfoService;
+    private IUserNameUtilService userNameUtilService;
 
     @Resource
     private ISerialUtilService serialUtilService;
@@ -70,56 +72,11 @@ public class ChannelBiz implements IChannelBiz {
         Pagenation<Channel> pagenation = channelService.pagination(example,page,form);
 
         List<Channel> channelList = pagenation.getResult();
-        /*
-        先拿出  userId列表
-        拿到 user对象
-        赋值用户姓名
-         */
-        handleUserName(channelList);
-
+        userNameUtilService.handleUserName(channelList);
         return pagenation;
-    }
-
-   /* private void handleUserName2(List<T> list) throws Exception{
-        if(AssertUtil.CollectionIsEmpty(list)){
-            return;
-        }
-        Set<String> userIdsSet=new HashSet<>();
-
-        for (T obj:list) {
-            (Channel)obj;
-           // userIdsSet.add();
-        }
-
-
-
-    }*/
-
-    //处理创建人的姓名
-    private void handleUserName(List<Channel> channelList) throws Exception{
-        if(AssertUtil.CollectionIsEmpty(channelList)){
-            return;
-        }
-        Set<String> userIdsSet=new HashSet<>();
-        for (Channel channel:channelList) {
-            userIdsSet.add(channel.getCreateOperator());
-        }
-        String[] userIdArr=new String[userIdsSet.size()];
-        userIdsSet.toArray(userIdArr);
-        Map<String,UserAccreditInfo>  mapTemp = userAccreditInfoService.selectByIds(userIdArr);
-        for (Channel channel:channelList) {
-            if(!StringUtils.isBlank(channel.getCreateOperator())){
-                if(mapTemp!=null){
-                    UserAccreditInfo userAccreditInfo=mapTemp.get(channel.getCreateOperator());
-                    if(userAccreditInfo!=null){
-                        channel.setCreateOperator(userAccreditInfo.getName());
-                    }
-                }
-            }
-        }
-
 
     }
+
 
     public Channel findChannelByName(String name) throws Exception{
         AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
