@@ -31,4 +31,17 @@ public class SupplierCategoryService extends BaseService<SupplierCategory, Long>
         return supplierCategoryMapper.updateSupplerCategory(list);
     }
 
+
+    /**
+     * 停用时批量更新关联表isValid字段
+     *
+     * @param isValid
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public Integer updateSupplierCategoryIsValid(String isValid, Long categoryId) throws Exception {
+        return supplierCategoryMapper.updateSupplierCategoryIsValid(isValid ,categoryId);
+    }
+
 }

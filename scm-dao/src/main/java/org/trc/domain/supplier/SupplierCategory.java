@@ -29,6 +29,17 @@ public class SupplierCategory extends ScmDO {
     @NotEmpty
     private String supplierCetegory;
 
+    @FormParam("isValid")
+    private String isValid;
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
     public Long getId() {
         return id;
     }

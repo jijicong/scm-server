@@ -9,6 +9,8 @@ import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -46,7 +48,7 @@ public interface ICategoryBiz {
     /**
      * 保存
      */
-    void saveCategory(Category category) throws Exception;
+    void saveCategory(Category category, ContainerRequestContext requestContext) throws Exception;
 
 
     /**

@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
@@ -18,12 +20,15 @@ import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TableDate;
 import org.trc.form.category.TreeNode;
 import org.trc.service.category.*;
+import org.trc.service.supplier.ISupplierCategoryService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.*;
 
 /**
@@ -55,9 +60,13 @@ public class CategoryBiz implements ICategoryBiz {
     @Autowired
     private ISerialUtilService serialUtilService;
 
+    @Autowired
+    private ISupplierCategoryService supplierCategoryService;
+
     private final static String SERIALNAME = "FL";
 
     private final static Integer LENGTH = 3;
+
 
     @Override
     public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
@@ -160,17 +169,20 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void saveCategory(Category category) throws Exception {
+    public void saveCategory(Category category, ContainerRequestContext requestContext) throws Exception {
         checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         AssertUtil.notNull(category.getCategoryCode(), "分类编码生成失败");
-        category.setCreateOperator("test");
+
         category.setSource(SourceEnum.TRC.getCode());
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
         category.setCreateTime(Calendar.getInstance().getTime());
         category.setUpdateTime(Calendar.getInstance().getTime());
         //先保存
         ParamsUtil.setBaseDO(category);
+        String userId = (String) requestContext.getProperty("userId");
+        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
+        category.setCreateOperator(userId);
         int count = categoryService.insert(category);
         if (count == 0) {
             String msg = "增加分类" + JSON.toJSONString(category) + "数据库操作失败";
@@ -307,11 +319,13 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateState(Category category) throws Exception {
         AssertUtil.notNull(category.getId(), "类目管理模块修改分类信息失败，分类信息为空");
         Category updateCategory = new Category();
         updateCategory.setId(category.getId());
         Category category1 = categoryService.selectOne(updateCategory);
+
         if (StringUtils.equals(category.getIsValid(), ValidEnum.VALID.getCode())) {
             updateCategory.setIsValid(ValidEnum.NOVALID.getCode());
         } else {
@@ -328,7 +342,23 @@ public class CategoryBiz implements ICategoryBiz {
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         }
 
+        //分类状态更新时需要更新分类供应商关系表的is_valid字段
+        supplierCategoryService.updateSupplierCategoryIsValid(updateCategory.getIsValid(), updateCategory.getId());
+
     }
+    /***
+     *
+     */
+    private Integer checkCategoryIsValid(Long categoryId){
+        //查询到需要改变分类状态的分类
+        Category category = new Category();
+        category.setId(categoryId);
+        category= categoryService.selectOne(category);
+
+
+        return null;
+    }
+
 
     /**
      * 要启动的分类如果上级分类处于停用状态时,启用分类
@@ -394,6 +424,13 @@ public class CategoryBiz implements ICategoryBiz {
         AssertUtil.notNull(categoryId, "根据分类Id查询关联属性,参数categoryId为空");
         CategoryProperty categoryProperty = new CategoryProperty();
         categoryProperty.setCategoryId(categoryId);
+        List<CategoryProperty> queryProperties = new ArrayList<>();
+        if (queryProperties.size()>0){
+            for (CategoryProperty c: queryProperties) {
+             c.setIsValid(ValidEnum.getValidEnumByName(c.getIsValid()).getName());
+//                c.setValueType();
+            }
+        }
         return categoryPropertyService.select(categoryProperty);
     }
 
@@ -405,6 +442,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         //删除的BrandId
@@ -422,6 +460,24 @@ public class CategoryBiz implements ICategoryBiz {
         }
         //组装出页面上CategoryBrand
         List<CategoryBrand> saveCategoryBrands = assembleList(brandIdsList, categoryId);
+
+        List<Brand> noValidBrands = new ArrayList<>();
+        //页面上的数据
+        if ((saveCategoryBrands).size() > 0 && saveCategoryBrands != null) {
+            for (CategoryBrand c : saveCategoryBrands) {
+                Brand brand = new Brand();
+                brand.setId(c.getBrandId());
+                brand = brandService.selectOne(brand);
+                if (StringUtils.equals(brand.getIsValid(), ValidEnum.NOVALID.getCode())) {
+                    noValidBrands.add(brand);
+                }
+            }
+            if (noValidBrands.size() > 0) {
+                String msg = "操作失败,存在已被停用的品牌" + JSON.toJSONString(noValidBrands);
+                log.error(msg);
+                throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            }
+        }
         //整理页面上新增的数据
         List<CategoryBrand> newCategoryBrands = new ArrayList<>();
         Example example = new Example(CategoryBrand.class);
@@ -518,6 +574,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @Deprecated
     public void linkCategoryProperty(Long categoryId, Long propertyId) throws Exception {
         AssertUtil.notNull(propertyId, "分类关联属性propertyId为空");
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
@@ -535,6 +592,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
@@ -546,7 +604,7 @@ public class CategoryBiz implements ICategoryBiz {
         //需要删除的的数据
         List<CategoryProperty> delProperties = new ArrayList<>();
         //未改动的的数据
-//        List<CategoryProperty> defaultProperties = new ArrayList<>();
+        List<CategoryProperty> defaultProperties = new ArrayList<>();
         //将数据分组
         for (TableDate tableDate : tableDates) {
             //新增的数据
@@ -571,7 +629,7 @@ public class CategoryBiz implements ICategoryBiz {
             }
 
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), (tableDate.getStatus()))) {
-                //更新的数据
+                //排序的数据
                 CategoryProperty categoryProperty = new CategoryProperty();
                 categoryProperty.setCategoryId(categoryId);
                 categoryProperty.setId(tableDate.getId());
@@ -605,8 +663,11 @@ public class CategoryBiz implements ICategoryBiz {
                 newCategoryProperties = insertProperties;
             }
             List<Property> noValidProperty = new ArrayList<>();
-            if (newCategoryProperties.size() > 0 && newCategoryProperties != null) {
-                for (CategoryProperty c : newCategoryProperties) {
+            List<CategoryProperty> pageList = new ArrayList<>();
+            pageList.addAll(newCategoryProperties);
+            pageList.addAll(sortProperties);
+            if ((pageList).size() > 0 && pageList != null) {
+                for (CategoryProperty c : pageList) {
                     Property property = new Property();
                     property.setId(c.getPropertyId());
                     property = propertyService.selectOne(property);
@@ -614,11 +675,11 @@ public class CategoryBiz implements ICategoryBiz {
                         noValidProperty.add(property);
                     }
                 }
-                if (noValidProperty.size()>0) {
-                        String msg = "操作失败,存在已被停用的属性" + JSON.toJSONString(noValidProperty);
-                        log.error(msg);
-                        throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
-                }else {
+                if (noValidProperty.size() > 0) {
+                    String msg = "操作失败,存在已被停用的属性" + JSON.toJSONString(noValidProperty);
+                    log.error(msg);
+                    throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+                } else {
                     newCategoryProperties = filterIdCategoryProperty(newCategoryProperties);
                     categoryPropertyService.insertList(newCategoryProperties);
                 }
