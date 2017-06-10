@@ -10,7 +10,6 @@ import org.springframework.dao.QueryTimeoutException;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.*;
-import sun.management.jdp.JdpException;
 
 /** 
  * @ClassName: ExceptionUtil 
