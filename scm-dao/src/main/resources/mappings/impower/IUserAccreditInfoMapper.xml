@@ -15,7 +15,7 @@
         SELECT id,user_id userId,phone,name,user_type userType,channel_code channelCode,remark,is_valid isValid,create_operator createOperator,update_time updateTime  from user_accredit_info
         <where>
             <if test="phone != null and phone != ''">
-                AND phone = #{phone}
+                AND phone  LIKE CONCAT(CONCAT('%', #{phone}), '%')
             </if>
             <if test="isValid != null and isValid != ''">
                 AND is_valid = #{isValid}
