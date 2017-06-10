@@ -51,7 +51,7 @@ public class RoleResource {
     public AppResult saveRole(@BeanParam RoleAddPageData roleAddPageData,@Context ContainerRequestContext requestContext) throws Exception{
 
         Role role= roleAddPageData;
-        roleBiz.saveRole(role, roleAddPageData.getRoleJurisdiction());
+        roleBiz.saveRole(role, roleAddPageData.getRoleJurisdiction(),requestContext);
         return  ResultUtil.createSucssAppResult("保存成功","");
 
     }

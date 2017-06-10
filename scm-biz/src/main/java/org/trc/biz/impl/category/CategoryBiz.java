@@ -169,6 +169,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveCategory(Category category, ContainerRequestContext requestContext) throws Exception {
         checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
@@ -355,6 +356,16 @@ public class CategoryBiz implements ICategoryBiz {
         category.setId(categoryId);
         category= categoryService.selectOne(category);
 
+        if (category.getLevel()==1){
+            Example example = new Example(CategoryProperty.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("parentId", category.getParentId());
+            List<Category> childCategory = categoryService.selectByExample(example);
+            if (childCategory!=null&&childCategory.size()>0){
+
+            }
+
+        }
 
         return null;
     }
