@@ -181,6 +181,9 @@ public class SupplyConstants {
             //添加，修改分类
             public static final String CATEGORY = "category";
 
+            //分类列表
+            public static final String CATEGORY_LIST = "categorys";
+
             //修改排序
             public static final String CATEGORY_SORT = "sort";
 
@@ -482,6 +485,9 @@ public class SupplyConstants {
         public static final String IS_VALID = "isValid";
         //SKU启用/停用
         public static final String SKU_VALID = "skuValid";
+        //商品分类属性
+        public static final String ITEMS_CATEGORY_PROPERTY = "itemsCategoryProperty";
+
 
     }
 

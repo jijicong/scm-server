@@ -12,6 +12,7 @@ import org.trc.domain.category.CategoryProperty;
 import org.trc.enums.SourceEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
@@ -135,10 +136,21 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_QUERY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<String>> queryCategory(@PathParam("id") Long id) throws Exception {
+    public AppResult<List<String>> queryCategoryPathName(@PathParam("id") Long id) throws Exception {
 
         return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.getCategoryName(id));
     }
+
+    /**
+     * 查询分类列表
+     */
+    @GET
+    @Path(SupplyConstants.Category.Classify.CATEGORY_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<Category>> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception {
+        return ResultUtil.createSucssAppResult("查询分类列表成功", categoryBiz.queryCategorys(categoryForm));
+    }
+
 
     @POST
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")

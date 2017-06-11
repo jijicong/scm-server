@@ -29,6 +29,8 @@ public class ItemSalesPropery extends ScmDO {
     private String skuCode;
     @FormParam("propertyId")
     private Long propertyId;
+    @Transient
+    private String propertyName;
     @FormParam("propertyValueId")
     private Long propertyValueId;
     @FormParam("propertyActualValue")
@@ -37,6 +39,9 @@ public class ItemSalesPropery extends ScmDO {
     @FormParam("picture")
     @Length(max = 256, message = "图片路径长度不能超过256个")
     private String picture;
+    @FormParam("isValid")
+    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    private String isValid; //是否有效:0-否,1-是
 
     /**
      * 采购属性信息
@@ -116,5 +121,21 @@ public class ItemSalesPropery extends ScmDO {
 
     public void setSalesPropertys(String salesPropertys) {
         this.salesPropertys = salesPropertys;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
     }
 }

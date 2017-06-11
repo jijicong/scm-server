@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -380,6 +381,13 @@ public class CategoryBiz implements ICategoryBiz {
 
         }
         return 1;
+    }
+
+    @Override
+    public List<Category> queryCategorys(CategoryForm categoryForm) throws Exception {
+        Category category = new Category();
+        BeanUtils.copyProperties(categoryForm, category);
+        return categoryService.select(category);
     }
 
 
