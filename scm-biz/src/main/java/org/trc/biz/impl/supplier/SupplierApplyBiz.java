@@ -187,7 +187,6 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         }catch (Exception e){
             log.error(e.getMessage());
             String msg=CommonUtil.joinStr("保存供应商申请信息", JSON.toJSONString(insert), "到数据库失败").toString();
-            log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
         }
     }
