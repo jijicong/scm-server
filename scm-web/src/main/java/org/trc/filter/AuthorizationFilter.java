@@ -1,6 +1,7 @@
 package org.trc.filter;
 
 import com.alibaba.fastjson.JSONObject;
+import com.tairanchina.beego.api.exception.AuthenticateException;
 import com.tairanchina.beego.api.model.BeegoToken;
 import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
 import com.tairanchina.beego.api.service.BeegoService;
@@ -64,7 +65,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                     appKey,
                     token);
 
-            BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+            try {
+                BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+
             if (null != beegoToken) {
                 String userId = beegoToken.getUserId();
                 requestContext.setProperty("userId", userId);
@@ -82,6 +85,10 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 //                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
 //                    requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
 //                }
+            }
+            }catch (AuthenticateException e){
+                //另外失效需要用户重新登录
+                requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
         } else {
             //未获取到token返回登录页面

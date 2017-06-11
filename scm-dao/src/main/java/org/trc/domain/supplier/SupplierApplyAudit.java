@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -20,22 +21,17 @@ public class SupplierApplyAudit extends BaseDO {
     @NotEmpty
     @FormParam("applyCode")
     private String applyCode;//申请编号
-    @NotEmpty
     @FormParam("supplierId")
     private Long supplierId;//供应商Id
-    @NotEmpty
     @FormParam("channelId")
     private Long channelId;//渠道Id
-    @NotEmpty
     @FormParam("supplierCode")
     private String supplierCode;//供应商编号
-    @NotEmpty
     @FormParam("channelCode")
     private String channelCode;//渠道编号
-    @NotEmpty
     @FormParam("description")
     private String description;//说明
-    @NotEmpty
+    @NotNull
     @FormParam("status")
     private Integer status;//审核状态
     @FormParam("auditOpinion")
