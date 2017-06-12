@@ -187,6 +187,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         insert.setStatus(supplierApply.getStatus());
         insert.setChannelId(userAccreditInfo.getChannelId());
         insert.setChannelCode(userAccreditInfo.getChannelCode());
+        insert.setCreateOperator(userAccreditInfo.getUserId());
         ParamsUtil.setBaseDO(insert);
         insert.setApplyCode(serialUtilService.generateCode(SUPPLIER_APPLY_CODE_LENGTH, SUPPLIER_APPLY_CODE_EX_NAME, DateUtils.dateToCompactString(insert.getCreateTime())));
         try {

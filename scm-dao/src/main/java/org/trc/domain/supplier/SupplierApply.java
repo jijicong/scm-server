@@ -19,7 +19,6 @@ public class SupplierApply extends CommonDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    //@NotEmpty
     @FormParam("applyCode")
     private String applyCode;//申请编号
     @NotNull
@@ -30,10 +29,8 @@ public class SupplierApply extends CommonDO {
     @FormParam("supplierCode")
     private String supplierCode;//供应商编号
     private String channelCode;//渠道编号
-    @NotEmpty
     @FormParam("description")
     private String description;//说明
-    @NotNull
     @FormParam("status")
     private Integer status;//审核状态
     @FormParam("auditOpinion")
