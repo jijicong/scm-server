@@ -491,6 +491,7 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemNaturePropery.setSpuCode(itemNaturePropery.getSpuCode());
                 _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
                 _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
+                _itemNaturePropery.setIsValid(ZeroToNineEnum.ONE.getCode());
                 _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 _itemNaturePropery.setCreateTime(sysTime);
                 _itemNaturePropery.setUpdateTime(sysTime);
@@ -540,6 +541,7 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemSalesPropery.setPropertyValueId(propertyValueId);
                 _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
                 _itemSalesPropery.setPicture(_tmp[1]);
+                _itemSalesPropery.setIsValid(ZeroToNineEnum.ONE.getCode());
                 _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 _itemSalesPropery.setCreateTime(sysTime);
                 _itemSalesPropery.setUpdateTime(sysTime);
@@ -561,12 +563,13 @@ public class GoodsBiz implements IGoodsBiz {
      * @return
      */
     private String[] getPropertyIdAndPicture(JSONArray itemSalesArray, Long propertyValueId){
-        String[] _result = new String[2];
+        String[] _result = new String[3];
         for(Object obj : itemSalesArray){
             JSONObject jbo = (JSONObject) obj;
             if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
                 _result[0] = jbo.getString("propertyId");
                 _result[1] = jbo.getString("picture");
+                _result[2] = jbo.getString("isValid");
                 break;
             }
         }
@@ -756,27 +759,21 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notEmpty(itemSalesArray, "保存商品采购属性不能为空");
         List<ItemSalesPropery> addList = new ArrayList<ItemSalesPropery>();
         List<ItemSalesPropery> updateList = new ArrayList<ItemSalesPropery>();
+        List<Long> delList = new ArrayList<Long>();
+        Set<String> stopSkusList = new HashSet<String>();
         Date sysTime = Calendar.getInstance().getTime();
         List<ItemSalesPropery> list = new ArrayList<ItemSalesPropery>();
         for(Skus skus : skuses){
             String[] propertyValueIdsArray = skus.getPropertyValueId().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
             String[] propertyValuesArray = skus.getPropertyValue().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
             List<ItemSalesPropery> _currentList = querySkuItemSalesProperys(skus.getSpuCode(), skus.getSkuCode(), null);
-            //AssertUtil.notEmpty(_currentList, String.format("根据商品SPU编码[%s]和SKU编码[%s]查询相关采购属性为空", skus.getSpuCode(), skus.getSkuCode()));
             for(int i=0; i<propertyValueIdsArray.length; i++){
                 Long propertyValueId = Long.parseLong(propertyValueIdsArray[i]);
-                ItemSalesPropery _itemSalesPropery = new ItemSalesPropery();
-                _itemSalesPropery.setItemId(skus.getItemId());
-                _itemSalesPropery.setSpuCode(skus.getSpuCode());
-                _itemSalesPropery.setSkuCode(skus.getSkuCode());
-                String[] _tmp = getPropertyIdAndPicture(itemSalesArray, propertyValueId);
-                _itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
-                _itemSalesPropery.setPropertyValueId(propertyValueId);
-                _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
-                _itemSalesPropery.setPicture(_tmp[1]);
-                _itemSalesPropery.setUpdateTime(sysTime);
-                _itemSalesPropery.setIsValid(ZeroToNineEnum.ONE.getCode());
-                _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                ItemSalesPropery _itemSalesPropery = getItemSalesPropery(skus, itemSalesArray, propertyValueId, propertyValuesArray[i], sysTime);
+                if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _itemSalesPropery.getIsValid())){
+                    delList.add(_itemSalesPropery.getPropertyValueId());
+                    stopSkusList.add(_itemSalesPropery.getSkuCode());
+                }
                 list.add(_itemSalesPropery);
                 Boolean flag = false;
                 for(ItemSalesPropery it : _currentList){
@@ -826,6 +823,69 @@ public class GoodsBiz implements IGoodsBiz {
                 throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
             }
         }
+        if(delList.size() > 0){
+            Example example = new Example(ItemSalesPropery.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("spuCode", itemSalesPropery.getSpuCode());
+            criteria.andIn("propertyValueId", delList);
+            count = itemSalesProperyService.deleteByExample(example);
+            if (count == 0) {
+                String msg = String.format("根据商品SPU编码[%s]和属性值ID[%s]删除采购属性信息", itemSalesPropery.getSpuCode(), JSON.toJSONString(delList));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
+        }
+        if(stopSkusList.size() > 0){
+            //停用SKU
+            stopSku(stopSkusList);
+            //停用SKU库存
+            stopSkuStock(stopSkusList);
+        }
+    }
+
+    private ItemSalesPropery getItemSalesPropery(Skus skus, JSONArray itemSalesArray, Long propertyValueId, String propertyValue, Date sysTime){
+        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
+        itemSalesPropery.setItemId(skus.getItemId());
+        itemSalesPropery.setSpuCode(skus.getSpuCode());
+        itemSalesPropery.setSkuCode(skus.getSkuCode());
+        String[] _tmp = getPropertyIdAndPicture(itemSalesArray, propertyValueId);
+        itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
+        itemSalesPropery.setPropertyValueId(propertyValueId);
+        itemSalesPropery.setPropertyActualValue(propertyValue);
+        itemSalesPropery.setPicture(_tmp[1]);
+        itemSalesPropery.setUpdateTime(sysTime);
+        String isValid = _tmp[2];
+        itemSalesPropery.setIsValid(isValid);
+        itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        return itemSalesPropery;
+    }
+
+    /**
+     * 停用SKU
+     * @param stopSkusList
+     * @throws Exception
+     */
+    private void stopSku(Set<String> stopSkusList) throws Exception{
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", stopSkusList);
+        Skus skus = new Skus();
+        skus.setIsValid(ZeroToNineEnum.ZERO.getCode());
+        skusService.updateByExampleSelective(skus, example);
+    }
+
+    /**
+     * 停用SKU库存
+     * @param stopSkusList
+     * @throws Exception
+     */
+    private void stopSkuStock(Set<String> stopSkusList) throws Exception{
+        Example example = new Example(SkuStock.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", stopSkusList);
+        SkuStock skuStock = new SkuStock();
+        skuStock.setIsValid(ZeroToNineEnum.ZERO.getCode());
+        skuStockService.updateByExampleSelective(skuStock, example);
     }
 
     /**
@@ -1252,6 +1312,5 @@ public class GoodsBiz implements IGoodsBiz {
             }
         }
     }
-
 
 }
