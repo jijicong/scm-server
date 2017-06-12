@@ -11,11 +11,8 @@ import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
-import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
 import org.trc.exception.PurchaseGroupException;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.service.purchase.IPurchaseGroupService;
@@ -26,7 +23,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**
@@ -163,12 +159,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             logger.error(msg);
             throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
         }
-        int temp = purchaseGroupuUserRelationService.deleteByPurchaseGroupCode(purchaseGroup.getCode());
-        if (temp==0){ //初始化系统角色或者新增角色时，必须有对应的权限<权限不能为空>
+        purchaseGroupuUserRelationService.deleteByPurchaseGroupCode(purchaseGroup.getCode());
+        /*if (temp==0){ //初始化系统角色或者新增角色时，必须有对应的权限<权限不能为空>
             String msg = "根据采购组编码,采购组和用户关联删除失败";
             logger.error(msg);
             throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
-        }
+        }*/
         savePurchaseGroupUserRelation(purchaseGroup.getCode(),purchaseGroup.getLeaderUserId(),purchaseGroup.getMemberUserId(),purchaseGroup.getIsValid());
 
     }
@@ -198,13 +194,12 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         String purchaseGroupCode = purchaseGroup.getCode();
         String laederUserId = purchaseGroup.getLeaderUserId();
         String memberUserStrs = purchaseGroup.getMemberUserId();
-        System.out.println(purchaseGroup.getIsValid()+"111111111111111111");
         savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs,purchaseGroup.getIsValid());
 
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class) //保存采购组与用户的对应关系
-    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs,String isValid){
+    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs,String isValid) throws Exception{
 
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = new ArrayList<>();
         PurchaseGroupUserRelation purchaseGroupUserRelation = new PurchaseGroupUserRelation();//设置组长与采购组的关联关系
@@ -225,6 +220,32 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             }
         }
         purchaseGroupuUserRelationService.insertList(purchaseGroupUserRelationList);
+        /*
+        先插入，再查询是否有效，增加了抛出异常的可能性，但是不会造成程序的bug
+         */
+        selectInvalidUser(purchaseGroupUserRelationList,purchaseGroupUserRelationList.size());
+
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    private List<UserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list,int size) throws Exception{
+        /*
+        首先要确认所插入的用户，不能被停用
+        再次考虑，使用的用户据用采购角色
+         */
+        String [] userIds = new String[list.size()];
+        for (int i = 0 ;i<list.size() ; i++) {
+            userIds[i] = list.get(i).getUserId();
+        }
+        List<UserAccreditInfo> purchaseGroupList = purchaseGroupService.selectInvalidUser(userIds);
+        if(purchaseGroupList.size() != 0){
+            throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION,"部分采购员被停用,请重新添加");
+        }
+        int num = purchaseGroupService.selectUserWithPurchaseNum(userIds);
+        if(num < size){
+            throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION,"部分采购员被取消采购角色,请重新添加");
+        }
+        return  purchaseGroupList;//TODO 返回的集合是页面显示信息的时候使用
 
     }
 
