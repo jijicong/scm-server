@@ -42,7 +42,7 @@ import java.util.List;
 @Component
 public class AuthorizationFilter implements ContainerRequestFilter {
 
-    private Logger  log = LoggerFactory.getLogger(AuthorizationFilter.class);
+    private Logger log = LoggerFactory.getLogger(AuthorizationFilter.class);
     @Value("${app.id}")
     private String appId;
     @Value("${app.key}")
@@ -54,46 +54,56 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private JurisdictionBiz jurisdictionBiz;
     @Autowired
     private IUserAccreditInfoService userAccreditInfoService;
+
+    //1.判断该url是否需要进行拦截，不需要拦截直接放行
+    //2.需要拦截的url判断用户是否登录，登录token是否过期，用户是否被停用
+    //3.对url进行权限验证
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        URI url = ((ContainerRequest) requestContext).getRequestUri();
+        String url = ((ContainerRequest) requestContext).getPath(true);
+        if (jurisdictionBiz.urlCheck(url)) {
+            //说明此url需要被拦截
         String method = ((ContainerRequest) requestContext).getMethod();
-        String token =_getToken(requestContext);
+        String token = _getToken(requestContext);
         if (StringUtils.isNotBlank(token)) {
-            BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(
-                    appId,
-                    appKey,
-                    token);
-
+            BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
             try {
                 BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+                if (null != beegoToken) {
 
-            if (null != beegoToken) {
-                String userId = beegoToken.getUserId();
-                requestContext.setProperty("userId", userId);
-                UserAccreditInfo userAccreditInfo=userAccreditInfoService.selectOneById(userId);
-                requestContext.setProperty("userAccreditInfo",userAccreditInfo);
-//                try {
-//                    if (!jurisdictionBiz.authCheck(userId, url.toString(), method)) {
-//                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
-//                        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-//                    }
-//                } catch (CategoryException e) {
-//                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), null);
-//                    requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-//                } catch (Exception e) {
-//                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
-//                    requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-//                }
-            }
-            }catch (AuthenticateException e){
-                //另外失效需要用户重新登录
+                    String userId = beegoToken.getUserId();
+                    UserAccreditInfo userAccreditInfo = userAccreditInfoService.selectOneById(userId);
+                    if (userAccreditInfo == null) {
+                        //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
+                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
+                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                    }
+                    requestContext.setProperty("userId", userId);
+                    requestContext.setProperty("userAccreditInfo", userAccreditInfo);
+                    try {
+                        if (!jurisdictionBiz.authCheck(userId, url, method)) {
+                            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
+                            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                        }
+                    } catch (CategoryException e) {
+                        log.error(e.getMessage());
+                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), null);
+                        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
+                        requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                    }
+                }
+            } catch (AuthenticateException e) {
+                //token失效需要用户重新登录
                 requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
         } else {
             //未获取到token返回登录页面
-            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(),"用户未登录", null);
+            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", null);
             requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+        }
         }
     }
 

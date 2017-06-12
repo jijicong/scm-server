@@ -46,8 +46,8 @@ public class SupplierApplyResource {
     @PUT
     @Path(SupplyConstants.Supply.SupplierApplyAudit.SUPPLIER_APPLY_AUDIT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult auditSupplierApply(@BeanParam SupplierApplyAudit SupplierApplyAudit) throws Exception {
-        supplierApplyBiz.auditSupplierApply(SupplierApplyAudit);
+    public AppResult auditSupplierApply(@BeanParam SupplierApplyAudit SupplierApplyAudit,@Context ContainerRequestContext requestContext) throws Exception {
+        supplierApplyBiz.auditSupplierApply(SupplierApplyAudit,requestContext);
         return ResultUtil.createSucssAppResult("供应商审核成功","");
     }
 

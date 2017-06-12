@@ -91,6 +91,7 @@ public enum ExceptionEnum{
 
     USER_CENTER_QUERY_EXCEPTION("600101","用户中心查询异常"),
 
+    USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),

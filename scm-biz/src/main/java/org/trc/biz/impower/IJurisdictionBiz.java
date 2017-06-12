@@ -52,4 +52,12 @@ public interface IJurisdictionBiz {
      * @throws Exception
      */
     Boolean authCheck(String userId, String url, String method) throws Exception;
+
+    /**
+     * 验证该url是否需要拦截
+     * @param url
+     * @return
+     * @throws Exception
+     */
+    Boolean urlCheck(String url);
 }

@@ -14,7 +14,7 @@ import org.trc.util.Pagenation;
  * Created by hzwyz on 2017/5/27 0027.
  */
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
-@ContextConfiguration(locations = {"classpath:config/dev/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
+@ContextConfiguration(locations = {"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
 public class BrandBizTest {
     @Autowired
     IBrandBiz iBrandBiz;

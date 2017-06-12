@@ -30,7 +30,7 @@ public interface ISupplierApplyBiz {
      */
     SupplierApplyAudit selectOneById(Long id)throws Exception;
 
-    void auditSupplierApply(SupplierApplyAudit supplierApplyAudit)throws  Exception;
+    void auditSupplierApply(SupplierApplyAudit supplierApplyAudit,ContainerRequestContext requestContext)throws  Exception;
 
     /**
      * 供应商申请分页方法

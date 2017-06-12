@@ -106,8 +106,8 @@ public class PropertyBiz implements IPropertyBiz {
         try {
             propertyService.insert(property);
         } catch (Exception e) {
+            log.error(e.getMessage());
             String str = CommonUtil.joinStr("保存属性" + JSON.toJSONString(property) + "到数据库失败").toString();
-            e.printStackTrace();
             throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_SAVE_EXCEPTION, str);
         }
         List<PropertyValue> propertyValueList = JSONArray.parseArray(property.getGridValue(), PropertyValue.class);
@@ -117,15 +117,17 @@ public class PropertyBiz implements IPropertyBiz {
             PropertyValue propertyValue = propertyValueList.get(i);
             propertyValue.setSort(i);
             propertyValue.setPropertyId(property.getId());
-            ParamsUtil.setBaseDO(propertyValue);
             propertyValue.setCreateTime(property.getCreateTime());
             propertyValue.setUpdateTime(property.getUpdateTime());
+            if(!StringUtils.isBlank(userId)){
+                propertyValue.setCreateOperator(userId);
+            }
             //保存属性值信息
             try {
                 propertyValueService.insertSelective(propertyValue);
             } catch (Exception e) {
+                log.error(e.getMessage());
                 String str = CommonUtil.joinStr("属性值类型" + JSON.toJSONString(propertyValue) + "保存失败").toString();
-                log.error(str);
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_SAVE_EXCEPTION, str);
             }
         }
@@ -270,6 +272,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updatePropertyStatus(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
         Property updateProperty = new Property();

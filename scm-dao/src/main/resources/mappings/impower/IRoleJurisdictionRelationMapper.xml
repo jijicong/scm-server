@@ -13,7 +13,7 @@
         UPDATE  role_jurisdiction_relation SET  is_deleted ="1" WHERE role_id=#{roleId}
     </update>-->
     <select id="selectListByRoleId" resultType="org.trc.domain.impower.RoleJurisdictionRelation">
-        SELECT id,role_id AS 'roleId',jurisdiction_code AS 'jurisdictionCode' FROM role_jurisdiction_relation
+        SELECT id,role_id AS 'roleId',jurisdiction_id AS 'jurisdictionId' FROM role_jurisdiction_relation
         <where>
                 role_id IN
             <foreach collection="roleIds" index="index" item="item" close=")" open="(" separator=",">

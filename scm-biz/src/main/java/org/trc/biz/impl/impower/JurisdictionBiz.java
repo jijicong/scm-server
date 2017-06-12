@@ -18,6 +18,7 @@ import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
 import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -159,4 +160,18 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         return false;
     }
+
+    @Override
+    public Boolean urlCheck(String url) {
+        Example example=new Example(Jurisdiction.class);
+        List<Jurisdiction> list=jurisdictionService.selectByExample(example);
+        for (Jurisdiction jurisdiction:list) {
+            if(url.matches(jurisdiction.getUrl())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

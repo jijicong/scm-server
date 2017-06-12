@@ -125,6 +125,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
@@ -139,9 +140,9 @@ public class BrandBiz implements IBrandBiz {
         try {
             brandService.insert(brand);
         } catch (Exception e) {
+            log.error(e.getMessage());
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
-            log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_UPDATE_EXCEPTION, msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_SAVE_EXCEPTION, msg);
         }
     }
 

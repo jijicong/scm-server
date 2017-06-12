@@ -6,7 +6,7 @@
     <select id="selectJurisdictionListByCodes" resultType="org.trc.domain.impower.Jurisdiction">
           SELECT  id,code,`name`,url,method FROM jurisdiction
           <where>
-              code IN
+              id IN
               <foreach collection="codes" index="index" item="item" close=")" open="(" separator=",">
                   #{item}
               </foreach>
