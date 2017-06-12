@@ -3,7 +3,7 @@
 <mapper namespace="org.trc.mapper.impower.RoleJurisdictionRelationMapper">
     <!-- 查询某角色对应的权限id集合 -->
     <select id="selectJurisdictionIdList" resultType="java.lang.Long">
-        SELECT jurisdiction_id from role_jurisdiction_relation j WHERE role_id=#{roleId}
+        SELECT jurisdiction_code from role_jurisdiction_relation j WHERE role_id=#{roleId}
     </select>
     <delete id="deleteByRoleId">
         DELETE FROM role_jurisdiction_relation WHERE role_id=#{roleId}
@@ -13,7 +13,7 @@
         UPDATE  role_jurisdiction_relation SET  is_deleted ="1" WHERE role_id=#{roleId}
     </update>-->
     <select id="selectListByRoleId" resultType="org.trc.domain.impower.RoleJurisdictionRelation">
-        SELECT id,role_id AS 'roleId',jurisdiction_id AS 'jurisdictionId' FROM role_jurisdiction_relation
+        SELECT id,role_id AS 'roleId',jurisdiction_code AS 'jurisdictionCode' FROM role_jurisdiction_relation
         <where>
                 role_id IN
             <foreach collection="roleIds" index="index" item="item" close=")" open="(" separator=",">
