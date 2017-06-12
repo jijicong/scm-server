@@ -119,12 +119,12 @@ public class ConfigResource {
         return ResultUtil.createSucssAppResult("查询字典成功", configBiz.findDictById(id));
     }
 
-    @GET
+    /*@GET
     @Path(SupplyConstants.Config.Dict.DICT)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> findDictByTypeNo(@QueryParam("typeNo") String typeNo) throws Exception {
         return ResultUtil.createSucssAppResult("查询字典成功", configBiz.findDictsByTypeNo(typeNo));
-    }
+    }*/
 
     @DELETE
     @Path(SupplyConstants.Config.Dict.DICT + "/{id}")
