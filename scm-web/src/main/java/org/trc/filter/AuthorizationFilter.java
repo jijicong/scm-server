@@ -61,6 +61,15 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String url = ((ContainerRequest) requestContext).getPath(true);
+        //串联完成后删除-----------------start-----------------------
+        String _token = _getToken(requestContext);
+        BeegoTokenAuthenticationRequest _beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, _token);
+        BeegoToken _beegoToken = beegoService.authenticationBeegoToken(_beegoAuthRequest);
+        String _userId = _beegoToken.getUserId();
+        UserAccreditInfo _userAccreditInfo = userAccreditInfoService.selectOneById(_userId);
+        requestContext.setProperty("userId", _userId);
+        requestContext.setProperty("userAccreditInfo", _userAccreditInfo);
+        //串联完成后删除-----------------end-----------------------
         if (jurisdictionBiz.urlCheck(url)) {
             //说明此url需要被拦截
         String method = ((ContainerRequest) requestContext).getMethod();
