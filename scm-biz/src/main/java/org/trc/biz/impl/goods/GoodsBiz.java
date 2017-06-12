@@ -128,7 +128,7 @@ public class GoodsBiz implements IGoodsBiz {
         if(StringUtils.isNotBlank(spuCode)){
             Example example = new Example(Items.class);
             Example.Criteria criteria2 = example.createCriteria();
-            criteria.andLike("spuCode", "%" + spuCode + "%");
+            criteria2.andLike("spuCode", "%" + spuCode + "%");
             List<Items> itemsList = itemsService.selectByExample(example);
             for(Items items: itemsList){
                 spuCodes.add(items.getSpuCode());
@@ -357,7 +357,7 @@ public class GoodsBiz implements IGoodsBiz {
     public void saveItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
-        checkSkuInfo(skus, ZeroToNineEnum.ZERO.getCode());//检查sku参数
+        checkSkuInfo(skus);//检查sku参数
         //生成序列号
         String code = serialUtilService.generateCode(SupplyConstants.Serial.SPU_LENGTH, SupplyConstants.Serial.SPU_NAME, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         items.setSpuCode(code);
@@ -372,10 +372,10 @@ public class GoodsBiz implements IGoodsBiz {
         if(StringUtils.isNotBlank(itemNaturePropery.getNaturePropertys())){
             itemNaturePropery.setItemId(items.getId());
             itemNaturePropery.setSpuCode(items.getSpuCode());
-            saveItemNatureProperty(itemNaturePropery);
+            saveItemNatureProperty(itemNaturePropery, items.getCategoryId());
         }
         //保存采购属性信息
-        saveItemSalesPropery(itemSalesPropery, skuss);
+        saveItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
     }
 
     @Override
@@ -384,7 +384,7 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
-        checkSkuInfo(skus, ZeroToNineEnum.ONE.getCode());//检查sku参数
+        checkSkuInfo(skus);//检查sku参数
         //保存商品基础信息
         updateItemsBase(items);
         //保存sku信息
@@ -395,18 +395,17 @@ public class GoodsBiz implements IGoodsBiz {
         if(StringUtils.isNotBlank(itemNaturePropery.getNaturePropertys())){
             itemNaturePropery.setItemId(items.getId());
             itemNaturePropery.setSpuCode(items.getSpuCode());
-            updateItemNatureProperty(itemNaturePropery);
+            updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
         }
         //保存采购属性信息
-        updateItemSalesPropery(itemSalesPropery, skuss);
+        updateItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
     }
 
     /**
      *
      * @param skus
-     * @param  flag 0-新增,1-修改
      */
-    private void checkSkuInfo(Skus skus,String flag){
+    private void checkSkuInfo(Skus skus){
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         if(skuArray.size() == 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
@@ -428,6 +427,7 @@ public class GoodsBiz implements IGoodsBiz {
      */
     private void saveItemsBase(Items items) throws Exception{
         ParamsUtil.setBaseDO(items);
+        checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
         int count = itemsService.insert(items);
         if (count == 0) {
             String msg = String.format("保商品基础信息%s到数据库失败", JSON.toJSONString(items));
@@ -477,8 +477,9 @@ public class GoodsBiz implements IGoodsBiz {
     /**
      * 保存商品自然属性
      * @param itemNaturePropery
+     * @param  categoryId 分类ID
      */
-    private void saveItemNatureProperty(ItemNaturePropery itemNaturePropery){
+    private void saveItemNatureProperty(ItemNaturePropery itemNaturePropery, Long categoryId)throws  Exception{
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
         checkItemNatureProperty(categoryArray);
         if(categoryArray.size() > 0){
@@ -489,12 +490,16 @@ public class GoodsBiz implements IGoodsBiz {
                 ItemNaturePropery _itemNaturePropery = new ItemNaturePropery();
                 _itemNaturePropery.setItemId(itemNaturePropery.getItemId());
                 _itemNaturePropery.setSpuCode(itemNaturePropery.getSpuCode());
-                _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
-                _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
+                Long propertyId = jbo.getLong("propertyId");
+                _itemNaturePropery.setPropertyId(propertyId);
+                Long propertyValueId = jbo.getLong("propertyValueId");
+                _itemNaturePropery.setPropertyValueId(propertyValueId);
                 _itemNaturePropery.setIsValid(ZeroToNineEnum.ONE.getCode());
                 _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 _itemNaturePropery.setCreateTime(sysTime);
                 _itemNaturePropery.setUpdateTime(sysTime);
+                //判断属性是否停用
+                checkCategoryPropertyValidStatus(categoryId, propertyId, propertyValueId);
                 itemNatureProperies.add(_itemNaturePropery);
             }
             int count = itemNatureProperyService.insertList(itemNatureProperies);
@@ -504,6 +509,55 @@ public class GoodsBiz implements IGoodsBiz {
                 throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
             }
         }
+    }
+
+    /**
+     * 检查分类品牌启停用状态
+     * @param categoryId
+     * @param brandId
+     * @throws Exception
+     */
+    private void checkCategoryBrandValidStatus(Long categoryId, Long brandId)throws Exception{
+        Category category = categoryService.selectByPrimaryKey(categoryId);
+        AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已被禁用", category.getName()));
+        }
+        Brand brand = brandService.selectByPrimaryKey(brandId);
+        AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())){
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已被禁用", category.getName()));
+        }
+    }
+
+    /**
+     *
+     * @param categoryId
+     * @param propertyId
+     * @param propertyValueId
+     * @throws Exception
+     */
+    private void checkCategoryPropertyValidStatus(Long categoryId, Long propertyId, Long propertyValueId)throws Exception{
+        CategoryProperty categoryProperty = getCategoryProperty(categoryId, propertyId);
+        if(null == categoryProperty || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryProperty.getIsValid())){
+            PropertyValue propertyValue = propertyValueService.selectByPrimaryKey(propertyValueId);
+            AssertUtil.notNull(propertyValue, String.format("根据属性值ID[%s]查询属性值信息为空", propertyValueId));
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("属性[%s]已被禁用", propertyValue.getValue()));
+        }
+    }
+
+    /**
+     * 根据分类ID和属性ID查询分类属性
+     * @param categoryId
+     * @param propertyId
+     * @return
+     * @throws Exception
+     */
+    private CategoryProperty getCategoryProperty(Long categoryId, Long propertyId) throws Exception{
+        CategoryProperty categoryProperty = new CategoryProperty();
+        categoryProperty.setCategoryId(categoryId);
+        categoryProperty.setPropertyId(propertyId);
+        return categoryPropertyService.selectOne(categoryProperty);
     }
 
     /**
@@ -522,7 +576,7 @@ public class GoodsBiz implements IGoodsBiz {
      * 保存商品采购属性
      * @param skuses
      */
-    private void saveItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses){
+    private void saveItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses, Long categoryId)throws Exception{
         JSONArray itemSalesArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
         AssertUtil.notEmpty(itemSalesArray, "保存商品采购属性不能为空");
         List<ItemSalesPropery> itemSalesProperys = new ArrayList<ItemSalesPropery>();
@@ -537,7 +591,8 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemSalesPropery.setSpuCode(skus.getSpuCode());
                 _itemSalesPropery.setSkuCode(skus.getSkuCode());
                 String[] _tmp = getPropertyIdAndPicture(itemSalesArray, propertyValueId);
-                _itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
+                Long propertyId = Long.parseLong(_tmp[0]);
+                _itemSalesPropery.setPropertyId(propertyId);
                 _itemSalesPropery.setPropertyValueId(propertyValueId);
                 _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
                 _itemSalesPropery.setPicture(_tmp[1]);
@@ -545,6 +600,8 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 _itemSalesPropery.setCreateTime(sysTime);
                 _itemSalesPropery.setUpdateTime(sysTime);
+                //判断属性是否停用
+                checkCategoryPropertyValidStatus(categoryId, propertyId, propertyValueId);
                 itemSalesProperys.add(_itemSalesPropery);
             }
         }
@@ -584,6 +641,7 @@ public class GoodsBiz implements IGoodsBiz {
     private void updateItemsBase(Items items) throws Exception{
         AssertUtil.notNull(items.getId(), "商品ID不能为空");
         items.setUpdateTime(Calendar.getInstance().getTime());
+        checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改商品基础信息",JSON.toJSONString(items),"数据库操作失败").toString();
@@ -663,7 +721,7 @@ public class GoodsBiz implements IGoodsBiz {
      * 更新商品自然属性
      * @param itemNaturePropery
      */
-    private void updateItemNatureProperty(ItemNaturePropery itemNaturePropery)throws Exception{
+    private void updateItemNatureProperty(ItemNaturePropery itemNaturePropery, Long categoryId)throws Exception{
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
         checkItemNatureProperty(categoryArray);
         if(categoryArray.size() > 0){
@@ -681,13 +739,18 @@ public class GoodsBiz implements IGoodsBiz {
                 ItemNaturePropery _itemNaturePropery = new ItemNaturePropery();
                 _itemNaturePropery.setItemId(itemNaturePropery.getItemId());
                 _itemNaturePropery.setSpuCode(itemNaturePropery.getSpuCode());
-                _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
-                _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
+                Long propertyId = jbo.getLong("propertyId");
+                _itemNaturePropery.setPropertyId(propertyId);
+                Long propertyValueId = jbo.getLong("propertyValueId");
+                _itemNaturePropery.setPropertyValueId(propertyValueId);
                 _itemNaturePropery.setUpdateTime(sysTime);
                 _itemNaturePropery.setIsValid(jbo.getString("isValid"));
                 _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _itemNaturePropery.getIsValid())){
                     delList.add(_itemNaturePropery.getPropertyValueId());
+                }else {
+                    //判断属性是否停用
+                    checkCategoryPropertyValidStatus(categoryId, propertyId, propertyValueId);
                 }
                 list.add(_itemNaturePropery);
                 Boolean flag = false;
@@ -754,7 +817,7 @@ public class GoodsBiz implements IGoodsBiz {
      * @param skuses
      * @throws Exception
      */
-    private void updateItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses) throws Exception{
+    private void updateItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses, Long categoryId) throws Exception{
         JSONArray itemSalesArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
         AssertUtil.notEmpty(itemSalesArray, "保存商品采购属性不能为空");
         List<ItemSalesPropery> addList = new ArrayList<ItemSalesPropery>();
@@ -773,6 +836,9 @@ public class GoodsBiz implements IGoodsBiz {
                 if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _itemSalesPropery.getIsValid())){
                     delList.add(_itemSalesPropery.getPropertyValueId());
                     stopSkusList.add(_itemSalesPropery.getSkuCode());
+                }else {
+                    //判断属性是否停用
+                    checkCategoryPropertyValidStatus(categoryId, _itemSalesPropery.getPropertyId(), propertyValueId);
                 }
                 list.add(_itemSalesPropery);
                 Boolean flag = false;
