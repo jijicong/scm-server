@@ -95,7 +95,7 @@ public interface IUserAccreditInfoBiz {
      * @param userAddPageDate
      * @throws Exception
      */
-    void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception;
+    void updateUserAccredit(UserAddPageDate userAddPageDate,ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 手机号校验
@@ -117,4 +117,9 @@ public interface IUserAccreditInfoBiz {
      * @throws Exception
      */
     String[] purchaseRole(Long id) throws Exception;
+
+    /**
+     * 查询用户对应用户的起停用状态
+     */
+    String[] checkRoleValid (Long id) throws Exception;
 }

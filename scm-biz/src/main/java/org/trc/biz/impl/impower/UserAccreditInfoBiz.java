@@ -33,6 +33,7 @@ import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
 import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.StringUtil;
@@ -74,6 +75,8 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     @Autowired
     private IPurchaseGroupService purchaseGroupService;
+    @Autowired
+    private IUserNameUtilService userNameUtilService;
 
 
     /**
@@ -93,6 +96,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         map.put("isValid", form.getIsValid());
         List<UserAccreditInfo> pageDateList = userAccreditInfoService.selectAccreditInfoList(map);
         List<UserAddPageDate> pageDateRoleList = page.getResult();
+        userNameUtilService.handleUserName(pageDateList);
         if (pageDateList != null && !pageDateList.isEmpty() && pageDateList.size() > 0) {//1.按要求查处需要的授权用户
             pageDateRoleList = handleRolesStr(pageDateList);
         }
@@ -331,7 +335,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception {
+    public void updateUserAccredit(UserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
@@ -369,7 +373,12 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         AssertUtil.notNull(userDO, "用户中心未查询到该用户");
         UserAccreditInfo userAccreditInfo = userAddPageDate;
         userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        String userId = (String) requestContext.getProperty("userId");
+        if (!StringUtils.isBlank(userId)) {
+            userAccreditInfo.setCreateOperator(userId);
+        }
         userAccreditInfo.setUserId(userDO.getUserId());
+        userAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         userAccreditInfoService.updateByPrimaryKeySelective(userAccreditInfo);
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {
@@ -397,7 +406,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setRoleId(roleIds[i]);
                 userAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 userAccreditRoleRelation.setIsValid(userAccreditInfo.getIsValid());
-                userAccreditRoleRelation.setCreateOperator(userAccreditInfo.getCreateOperator());
+                userAccreditRoleRelation.setCreateOperator(userId);
                 userAccreditRoleRelation.setCreateTime(userAccreditInfo.getCreateTime());
                 userAccreditRoleRelation.setUpdateTime(Calendar.getInstance().getTime());
                 uAcRoleRelationList.add(userAccreditRoleRelation);
@@ -465,6 +474,25 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
             }
             //返回所在采购组的名称,数组形式
             return purchaseGroupArray;
+        }
+        return null;
+    }
+
+    @Override
+    public String[] checkRoleValid(Long id) throws Exception {
+        AssertUtil.notNull(id, "获取用户授权ID为空");
+        Example example = new Example(UserAccreditRoleRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("userAccreditId", id);
+        criteria.andEqualTo("isValid", ValidEnum.NOVALID.getCode());
+        List<UserAccreditRoleRelation> userAccreditRoleRelationList = userAccreditInfoRoleRelationService.selectByExample(example);
+        String noValidNames[] = new String[userAccreditRoleRelationList.size()];
+        if (userAccreditRoleRelationList != null && userAccreditRoleRelationList.size() > 0) {
+            for (int i = 0; i < userAccreditRoleRelationList.size(); i++) {
+                Long roleId = userAccreditRoleRelationList.get(i).getRoleId();
+                noValidNames[i] = roleService.selectByPrimaryKey(roleId).getName();
+            }
+            return noValidNames;
         }
         return null;
     }

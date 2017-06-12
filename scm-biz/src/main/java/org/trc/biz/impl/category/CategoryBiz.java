@@ -305,13 +305,14 @@ public class CategoryBiz implements ICategoryBiz {
                 categoryList.remove(i);
             }
         }
-        int count = categoryService.updateCategorySort(categoryList);
-        if (count == 0) {
-            String msg = "修改分类排序操作失败";
-            log.error(msg);
-            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+        if (categoryList!=null&&categoryList.size()>0) {
+            int count = categoryService.updateCategorySort(categoryList);
+            if (count == 0) {
+                String msg = "修改分类排序操作失败";
+                log.error(msg);
+                throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            }
         }
-
     }
 
     /**
@@ -337,8 +338,8 @@ public class CategoryBiz implements ICategoryBiz {
             updateLastCategory(category1.getParentId());
         }
         //校验起停用
-        if (StringUtils.equals(updateCategory.getIsValid(),ValidEnum.NOVALID.getCode())){
-            if (checkCategoryIsValid(updateCategory.getId())==0){
+        if (StringUtils.equals(updateCategory.getIsValid(), ValidEnum.NOVALID.getCode())) {
+            if (checkCategoryIsValid(updateCategory.getId()) == 0) {
                 String msg = "修改分类状态" + JSON.toJSONString(updateCategory) + "操作失败";
                 log.error(msg);
                 throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
@@ -669,7 +670,7 @@ public class CategoryBiz implements ICategoryBiz {
                 sortProperties.add(categoryProperty);
             }
         }
-        if (insertProperties.size() > 0 && insertProperties != null) {
+        if (insertProperties != null && insertProperties.size() > 0) {
             //整理页面上新增的数据
             List<CategoryProperty> newCategoryProperties = new ArrayList<>();
             Example example = new Example(CategoryBrand.class);
@@ -698,7 +699,7 @@ public class CategoryBiz implements ICategoryBiz {
             List<CategoryProperty> pageList = new ArrayList<>();
             pageList.addAll(newCategoryProperties);
             pageList.addAll(sortProperties);
-            if ((pageList).size() > 0 && pageList != null) {
+            if (pageList != null&&(pageList).size() > 0) {
                 for (CategoryProperty c : pageList) {
                     Property property = new Property();
                     property.setId(c.getPropertyId());
@@ -708,7 +709,7 @@ public class CategoryBiz implements ICategoryBiz {
                     }
                 }
                 if (noValidProperty.size() > 0) {
-                    String msg = "操作失败,存在已被停用的属性" ;
+                    String msg = "操作失败,存在已被停用的属性";
                     log.error(msg);
                     throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
                 } else {
@@ -719,7 +720,7 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
 
-        if (delProperties.size() > 0 && delProperties != null) {
+        if ( delProperties != null&&delProperties.size() > 0) {
             //删除
             int delCount = 0;
             for (CategoryProperty categoryProperty : delProperties) {
@@ -733,7 +734,7 @@ public class CategoryBiz implements ICategoryBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_DELETE_EXCEPTION, msg);
             }
         }
-        if (sortProperties.size() > 0 && sortProperties != null) {
+        if ( sortProperties != null&&sortProperties.size() > 0) {
             int count = categoryPropertyService.updateCategoryPropertySort(sortProperties);
             count++;
             if (count == 0) {
