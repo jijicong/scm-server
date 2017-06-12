@@ -8,6 +8,7 @@ import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IRoleService;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/11.
@@ -19,8 +20,13 @@ public class RoleService extends BaseService<Role ,Long> implements IRoleService
     private RoleMapper roleMapper;
 
     @Override
-    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) {
+    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception{
         return roleMapper.findNumFromRoleAndAccreditInfoByRoleId(roleId);
+    }
+
+    @Override
+    public List<Role> findRoleList(List<Long> roleIds) throws Exception {
+        return roleMapper.findRoleList(roleIds);
     }
 
 }

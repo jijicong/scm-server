@@ -3,6 +3,8 @@ package org.trc.service.impower;
 import org.trc.domain.impower.Role;
 import org.trc.service.IBaseService;
 
+import java.util.List;
+
 /**
  * Created by sone on 2017/5/11.
  */
@@ -15,5 +17,6 @@ public interface IRoleService extends IBaseService<Role,Long>{
      */
     int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception;
 
+    List<Role> findRoleList(List<Long> roleIds) throws Exception;
 }
 

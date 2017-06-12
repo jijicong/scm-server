@@ -504,7 +504,7 @@ public class CategoryBiz implements ICategoryBiz {
                 }
             }
             if (noValidBrands.size() > 0) {
-                String msg = "操作失败,存在已被停用的品牌" + JSON.toJSONString(noValidBrands);
+                String msg = "操作失败,存在已被停用的品牌";
                 log.error(msg);
                 throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
             }
@@ -641,7 +641,7 @@ public class CategoryBiz implements ICategoryBiz {
             //新增的数据
             if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), (tableDate.getStatus()))) {
                 CategoryProperty categoryProperty = new CategoryProperty();
-                categoryProperty.setPropertySort(tableDate.getIndex());
+                categoryProperty.setPropertySort(tableDate.getPropertySort());
                 categoryProperty.setCategoryId(categoryId);
                 categoryProperty.setIsValid(tableDate.getIsValid());
                 categoryProperty.setCreateTime(Calendar.getInstance().getTime());
@@ -655,17 +655,17 @@ public class CategoryBiz implements ICategoryBiz {
                 CategoryProperty categoryProperty = new CategoryProperty();
                 categoryProperty.setId(tableDate.getId());
                 categoryProperty.setPropertyId(tableDate.getPropertyId());
-                categoryProperty.setPropertySort(tableDate.getIndex());
+                categoryProperty.setPropertySort(tableDate.getPropertySort());
                 delProperties.add(categoryProperty);
             }
 
-            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), (tableDate.getStatus()))) {
+            if (StringUtils.equals(ZeroToNineEnum.TWO.getCode(), (tableDate.getStatus()))) {
                 //排序的数据
                 CategoryProperty categoryProperty = new CategoryProperty();
                 categoryProperty.setCategoryId(categoryId);
                 categoryProperty.setId(tableDate.getId());
                 categoryProperty.setPropertyId(tableDate.getPropertyId());
-                categoryProperty.setPropertySort(tableDate.getIndex());
+                categoryProperty.setPropertySort(tableDate.getPropertySort());
                 sortProperties.add(categoryProperty);
             }
         }
@@ -693,6 +693,7 @@ public class CategoryBiz implements ICategoryBiz {
             } else {
                 newCategoryProperties = insertProperties;
             }
+            //校验
             List<Property> noValidProperty = new ArrayList<>();
             List<CategoryProperty> pageList = new ArrayList<>();
             pageList.addAll(newCategoryProperties);
@@ -707,7 +708,7 @@ public class CategoryBiz implements ICategoryBiz {
                     }
                 }
                 if (noValidProperty.size() > 0) {
-                    String msg = "操作失败,存在已被停用的属性" + JSON.toJSONString(noValidProperty);
+                    String msg = "操作失败,存在已被停用的属性" ;
                     log.error(msg);
                     throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
                 } else {

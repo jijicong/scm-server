@@ -9,5 +9,14 @@
             role_id=#{roleId}
         </where>
     </select>
-
+    <select id="findRoleList" resultType="org.trc.domain.impower.Role">
+        SELECT r.id,r.is_valid AS isValid,r.name
+        FROM role r
+        <where>
+          id IN
+            <foreach collection="list" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

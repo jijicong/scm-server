@@ -12,6 +12,7 @@ public class TableDate {
     private String name;
     private Integer index;
     private String sortStatus;
+    private Integer propertySort;
     private String source;
     private String status;
     private String typeCode;
@@ -97,5 +98,13 @@ public class TableDate {
 
     public void setIsValid(String isValid) {
         this.isValid = isValid;
+    }
+
+    public Integer getPropertySort() {
+        return propertySort;
+    }
+
+    public void setPropertySort(Integer propertySort) {
+        this.propertySort = propertySort;
     }
 }
