@@ -328,7 +328,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         System.out.println(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest("http://10.200.5.3/brands", params.toJSONString(), 10000);
+        String result = HttpClientUtil.httpPostJsonRequest("http://ddd.www.trc.com/api/supply/sync/brands", params.toJSONString(), 10000);
         System.out.println("********返回值********");
         System.out.println(result);
     }
