@@ -1,5 +1,6 @@
 package org.trc.service.category;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.PropertyValue;
 import org.trc.service.IBaseService;
 
@@ -8,4 +9,11 @@ import org.trc.service.IBaseService;
  */
 public interface IPropertyValueService extends IBaseService<PropertyValue,Long> {
 
+    /**
+     * 根据属性id更新属性值is_valid字段
+     * @param propertyId
+     * @return
+     * @throws Exception
+     */
+    Integer updateIsValidByPropertyId(Long propertyId)throws Exception;
 }

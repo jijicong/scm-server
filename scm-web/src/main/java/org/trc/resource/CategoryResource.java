@@ -12,11 +12,14 @@ import org.trc.domain.category.CategoryProperty;
 import org.trc.enums.SourceEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.category.CategoryBrandForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.Calendar;
 import java.util.List;
@@ -55,8 +58,8 @@ public class CategoryResource {
     @POST
     @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveClassify(@BeanParam Category category) throws Exception {
-        categoryBiz.saveCategory(category);
+    public AppResult saveClassify(@BeanParam Category category,@Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.saveCategory(category,requestContext);
         return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 
@@ -133,10 +136,21 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_QUERY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<String>> queryCategory(@PathParam("id") Long id) throws Exception {
+    public AppResult<List<String>> queryCategoryPathName(@PathParam("id") Long id) throws Exception {
 
         return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.getCategoryName(id));
     }
+
+    /**
+     * 查询分类列表
+     */
+    @GET
+    @Path(SupplyConstants.Category.Classify.CATEGORY_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<Category>> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception {
+        return ResultUtil.createSucssAppResult("查询分类列表成功", categoryBiz.queryCategorys(categoryForm));
+    }
+
 
     @POST
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")
@@ -173,4 +187,13 @@ public class CategoryResource {
         return ResultUtil.createSucssAppResult("分类属性保存成功", "");
     }
 
+    /**
+     * 启停校验
+     */
+    @GET
+    @Path(SupplyConstants.Category.Classify.CATEGORY_VALID + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult checkCategoryIsValid(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("状态查询成功",  categoryBiz.checkCategoryIsValid(id));
+    }
 }

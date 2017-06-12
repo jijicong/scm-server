@@ -1,5 +1,6 @@
 package org.trc.mapper.supplier;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.supplier.SupplierCategory;
 import org.trc.domain.supplier.SupplierCategoryExt;
@@ -29,4 +30,5 @@ public interface ISupplierCategoryMapper extends BaseMapper<SupplierCategory>{
     Integer updateSupplerCategory(List<SupplierCategory> list) throws Exception;
 
 
+    Integer updateSupplierCategoryIsValid(@Param("isValid")String isValid, @Param("categoryId")Long categoryId) throws Exception;
 }

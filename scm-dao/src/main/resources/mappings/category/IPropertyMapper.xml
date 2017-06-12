@@ -10,7 +10,7 @@
     </select>
 
     <select id="selectOneById" resultType="org.trc.domain.category.Property">
-        SELECT b.id,b.name,b.type_code AS  typeCode,b.value_type AS valueType FROM  property b
+        SELECT b.id,b.name,b.type_code AS  typeCode,b.value_type AS valueType,b.is_valid AS isValid FROM  property b
         WHERE  b.id=#{id}
     </select>
 </mapper>

@@ -53,6 +53,10 @@ public class SkuStock extends ScmDO {
     @NotEmpty
     private Long defectiveInventory;
 
+    @FormParam("isValid")
+    @NotEmpty
+    private String isValid;
+
 
     public Long getId() {
         return id;
@@ -150,4 +154,11 @@ public class SkuStock extends ScmDO {
         this.defectiveInventory = defectiveInventory;
     }
 
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
 }

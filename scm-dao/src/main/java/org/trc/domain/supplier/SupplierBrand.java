@@ -58,6 +58,9 @@ public class SupplierBrand extends ScmDO {
     @Transient
     @FormParam("supplierBrand")
     private String supplierBrand;
+    @FormParam("isValid")
+    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    private String isValid; //是否有效:0-否,1-是
 
     public Long getId() {
         return id;
@@ -161,5 +164,13 @@ public class SupplierBrand extends ScmDO {
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
     }
 }

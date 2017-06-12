@@ -22,4 +22,9 @@ public class BrandService extends BaseService<Brand, Long> implements IBrandServ
     public List<Brand> selectBrandList(List<Long> brandIds) throws Exception {
         return brandMapper.selectBrandList(brandIds);
     }
+
+    @Override
+    public Brand selectOneById(Long id) throws Exception {
+        return brandMapper.selectOneById(id);
+    }
 }

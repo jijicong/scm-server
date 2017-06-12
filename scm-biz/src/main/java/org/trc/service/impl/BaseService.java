@@ -90,8 +90,18 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     }
 
     @Override
+    public int updateByExampleSelective(T t, Example example) {
+        return mapper.updateByExampleSelective(t, example);
+    }
+
+    @Override
     public T selectOne(T record) {
         return mapper.selectOne(record);
+    }
+
+    @Override
+    public T selectByPrimaryKey(PK key) {
+        return mapper.selectByPrimaryKey(key);
     }
 
     @Override

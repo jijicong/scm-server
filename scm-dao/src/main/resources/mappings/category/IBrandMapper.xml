@@ -8,4 +8,8 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="selectOneById" resultType="org.trc.domain.category.Brand">
+       SELECT b.id,b.name,b.brand_code AS  brandCode,b.is_valid AS isValid ,b.is_deleted AS isDeleted FROM  brand b WHERE b.id=#{brandId}
+    </select>
 </mapper>

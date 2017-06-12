@@ -13,6 +13,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -35,16 +37,16 @@ public class PropertyResource {
     @POST
     @Path(SupplyConstants.Category.Property.PROPERTY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveProperty(@BeanParam Property property)throws Exception{
-        propertyBiz.saveProperty(property);
+    public AppResult saveProperty(@BeanParam Property property, @Context ContainerRequestContext requestContext)throws Exception{
+        propertyBiz.saveProperty(property, requestContext);
         return ResultUtil.createSucssAppResult("属性保存成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Category.Property.PROPERTY +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateProperty(@BeanParam Property property) throws Exception{
-        propertyBiz.updateProperty(property);
+    public AppResult updateProperty(@BeanParam Property property, @Context ContainerRequestContext requestContext) throws Exception{
+        propertyBiz.updateProperty(property,requestContext);
         return ResultUtil.createSucssAppResult("属性更改成功","");
     }
 
@@ -65,8 +67,8 @@ public class PropertyResource {
     @POST
     @Path(SupplyConstants.Category.Property.PROPERTY_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateBrandStatus(@BeanParam Property Property)throws Exception{
-        propertyBiz.updatePropertyStatus(Property);
+    public AppResult updateBrandStatus(@BeanParam Property Property, @Context ContainerRequestContext requestContext)throws Exception{
+        propertyBiz.updatePropertyStatus(Property,requestContext);
         return ResultUtil.createSucssAppResult("更新属性状态成功", "");
     }
 

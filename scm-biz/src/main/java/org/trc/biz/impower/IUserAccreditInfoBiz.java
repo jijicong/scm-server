@@ -8,6 +8,8 @@ import org.trc.domain.impower.UserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -76,7 +78,7 @@ public interface IUserAccreditInfoBiz {
     /**
      * 新增授权
      */
-    void saveUserAccreditInfo(UserAddPageDate userAddPageDate,UserDO userDO) throws Exception;
+    void saveUserAccreditInfo(UserAddPageDate userAddPageDate,@Context ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 根据ID查询用户
@@ -93,7 +95,7 @@ public interface IUserAccreditInfoBiz {
      * @param userAddPageDate
      * @throws Exception
      */
-    void updateUserAccredit(UserAddPageDate userAddPageDate,UserDO userDO) throws Exception;
+    void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception;
 
     /**
      * 手机号校验
@@ -102,7 +104,7 @@ public interface IUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    String checkPhone(String phone,UserDO userDO) throws Exception;
+    String checkPhone(String phone) throws Exception;
 
     /**
      * 新增时用户姓名是否已经被使用

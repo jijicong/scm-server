@@ -160,8 +160,10 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
+        Brand selectBrand=brandService.selectOneById(brand.getId());
         brand.setUpdateTime(Calendar.getInstance().getTime());
         String userId= (String) requestContext.getProperty("userId");
         if(!StringUtils.isBlank(userId)){
@@ -173,11 +175,17 @@ public class BrandBiz implements IBrandBiz {
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_BRAND_QUERY_EXCEPTION, msg);
         }
+        if(!selectBrand.getIsValid().equals(brand.getIsValid())){
+            //品牌状态更新时需要更新品牌供应商关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
+            supplierBrandService.updateSupplerBrandIsValid(brand.getIsValid(), brand.getId());
+            //品牌状态更新时需要更新品牌分类关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
+            categoryBrandService.updateCategoryBrandIsValid(brand.getIsValid(),brand.getId());
+        }
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateBrandStatus(Brand brand) throws Exception {
+    public void updateBrandStatus(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
         Brand updateBrand = new Brand();
         updateBrand.setId(brand.getId());
@@ -186,6 +194,10 @@ public class BrandBiz implements IBrandBiz {
             updateBrand.setIsValid(ValidEnum.NOVALID.getCode());
         } else {
             updateBrand.setIsValid(ValidEnum.VALID.getCode());
+        }
+        String userId= (String) requestContext.getProperty("userId");
+        if(!StringUtils.isBlank(userId)){
+            updateBrand.setLastEditOperator(userId);
         }
         int count = brandService.updateByPrimaryKeySelective(updateBrand);
         if (count < 1) {

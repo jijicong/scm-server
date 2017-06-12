@@ -33,4 +33,9 @@ public class SupplierApplyAuditService extends BaseService<SupplierApplyAudit,Lo
     public SupplierApplyAudit selectOneById(Long id) {
         return mapper.selectOneById(id);
     }
+
+    @Override
+    public int updateSupplierApplyAuditStatus(Map<String, Object> map) {
+        return mapper.updateSupplierApplyAuditStatus(map);
+    }
 }

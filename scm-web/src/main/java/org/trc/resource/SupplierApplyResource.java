@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierApplyBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.supplier.Supplier;
@@ -13,11 +14,14 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
  * Created by hzqph on 2017/5/12.
  */
+@Component
 @Path(SupplyConstants.Supply.ROOT)
 public class SupplierApplyResource {
 
@@ -50,15 +54,15 @@ public class SupplierApplyResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page) throws Exception {
-        return supplierApplyBiz.supplierApplyPage(page, form);
+    public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page, @Context ContainerRequestContext requestContext) throws Exception {
+        return supplierApplyBiz.supplierApplyPage(page, form,requestContext);
     }
 
     @POST
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply)throws Exception{
-        supplierApplyBiz.saveSupplierApply(supplierApply);
+    public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
+        supplierApplyBiz.saveSupplierApply(supplierApply,requestContext);
         return ResultUtil.createSucssAppResult("供应商申请成功","");
     }
 

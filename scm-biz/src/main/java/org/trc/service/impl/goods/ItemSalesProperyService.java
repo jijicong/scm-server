@@ -22,4 +22,14 @@ public class ItemSalesProperyService extends BaseService<ItemSalesPropery, Long>
     public Integer updateItemSalesPropery(List<ItemSalesPropery> itemSalesProperyList) throws Exception {
         return itemSalesProperyMapper.updateItemSalesPropery(itemSalesProperyList);
     }
+
+    @Override
+    public Integer updateIsValidByPropertyValueId(String isValid, Long propertyValueId) throws Exception {
+        return itemSalesProperyMapper.updateIsValidByPropertyValueId(isValid,propertyValueId);
+    }
+
+    @Override
+    public Integer updateIsValidByPropertyId(String isValid, Long propertyId) throws Exception {
+        return itemSalesProperyMapper.updateIsValidByPropertyId(isValid,propertyId);
+    }
 }
