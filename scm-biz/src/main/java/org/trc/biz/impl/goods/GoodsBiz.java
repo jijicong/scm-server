@@ -655,6 +655,10 @@ public class GoodsBiz implements IGoodsBiz {
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
         }
+        //禁用商品同时禁用sku信息及sku库存及采购明细单相关信息
+        if(StringUtils.equals(items.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+            updateItemsValid(items.getSpuCode(),items.getIsValid());
+        }
     }
 
     private Long getLongValue(String val){

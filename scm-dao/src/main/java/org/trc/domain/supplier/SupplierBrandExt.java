@@ -14,6 +14,16 @@ public class SupplierBrandExt extends SupplierBrand{
      */
     private String brandName;
 
+    private Long times;
+
+    public Long getTimes() {
+        return times;
+    }
+
+    public void setTimes(Long times) {
+        this.times = times;
+    }
+
     public String getCategoryName() {
         return categoryName;
     }
