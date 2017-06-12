@@ -31,6 +31,7 @@ public class SupplierApply extends CommonDO {
     private String channelCode;//渠道编号
     @FormParam("description")
     private String description;//说明
+    @NotNull
     @FormParam("status")
     private Integer status;//审核状态
     @FormParam("auditOpinion")
