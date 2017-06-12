@@ -1,5 +1,6 @@
 package org.trc.biz.goods;
 
+import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
@@ -74,5 +75,14 @@ public interface IGoodsBiz {
      * @throws Exception
      */
     ItemsExt queryItemsInfo(String spuCode) throws Exception;
+
+    /**
+     * 查询商品分类属性
+     * @param spuCode
+     * @param categoryId
+     * @return
+     * @throws Exception
+     */
+    List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception;
 
 }

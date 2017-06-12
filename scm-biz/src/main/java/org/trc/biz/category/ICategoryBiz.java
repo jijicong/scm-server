@@ -7,8 +7,10 @@ import org.trc.domain.category.CategoryProperty;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import java.util.List;
@@ -146,4 +148,12 @@ public interface ICategoryBiz {
      * 检验启停yong
      */
     Integer checkCategoryIsValid(Long categoryId) throws Exception;
+
+    /**
+     *
+     * @param categoryForm
+     * @return
+     * @throws Exception
+     */
+    List<Category> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception;
 }

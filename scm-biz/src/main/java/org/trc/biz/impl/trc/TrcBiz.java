@@ -12,6 +12,8 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.enums.CategoryActionTypeEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.TrcException;
 import org.trc.model.BrandToTrc;
 import org.trc.model.CategoryToTrc;
 import org.trc.model.PropertyToTrc;
@@ -97,7 +99,14 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         logger.info(params.toJSONString());
-        String result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
+        String result = null;
+        //抛出通知自定义异常
+        try {
+            result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
+        } catch (Exception e) {
+            logger.error(ExceptionEnum.TRC_BRAND_EXCEPTION.getMessage() + " :" + e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_BRAND_EXCEPTION, e.getMessage());
+        }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
@@ -146,7 +155,14 @@ public class TrcBiz implements ITrcBiz {
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info(params.toJSONString());
-        String result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
+        String result = null;
+        //抛出通知自定义异常
+        try {
+            result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
+        } catch (Exception e) {
+            logger.error(ExceptionEnum.TRC_PROPERTY_EXCEPTION.getMessage() + " :" + e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_PROPERTY_EXCEPTION, e.getMessage());
+        }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
@@ -187,7 +203,14 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info(params.toJSONString());
-        String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
+        String result = null;
+        //抛出通知自定义异常
+        try {
+            result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
+        } catch (Exception e) {
+            logger.error(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION.getMessage() + " :" + e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION, e.getMessage());
+        }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
@@ -213,7 +236,14 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
         logger.info(params.toJSONString());
-        String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
+        String result = null;
+        //抛出通知自定义异常
+        try {
+            result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
+        } catch (Exception e) {
+            logger.error(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION.getMessage() + " :" + e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION, e.getMessage());
+        }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
@@ -256,7 +286,14 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
         logger.info(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest(CATEGORY_URL, params.toJSONString(), 10000);
+        String result = null;
+        //抛出通知自定义异常
+        try {
+            result = trcService.sendCategoryToTrc(CATEGORY_URL, params.toJSONString());
+        } catch (Exception e) {
+            logger.error(ExceptionEnum.TRC_CATEGORY_EXCEPTION.getMessage() + " :" + e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_CATEGORY_EXCEPTION, e.getMessage());
+        }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);

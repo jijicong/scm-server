@@ -93,6 +93,13 @@ public enum ExceptionEnum{
 
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
 
+    TRC_BRAND_EXCEPTION("600101","通知品牌更改异常"),
+    TRC_PROPERTY_EXCEPTION("600102","通知属性更改异常"),
+    TRC_CATEGORY_EXCEPTION("600103","通知分类更改异常"),
+    TRC_CATEGORY_BRAND_EXCEPTION("600104","通知分类品牌更改异常"),
+    TRC_CATEGORY_PROPERTY_EXCEPTION("600105","通知分类更改异常"),
+
+
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),
     NOVALID("0","停用");

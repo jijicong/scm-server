@@ -14,9 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
-import org.trc.domain.category.Category;
-import org.trc.domain.category.Property;
+import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.enums.CommonExceptionEnum;
@@ -26,9 +24,7 @@ import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
-import org.trc.service.category.IBrandService;
-import org.trc.service.category.ICategoryService;
-import org.trc.service.category.IPropertyService;
+import org.trc.service.category.*;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
@@ -63,6 +59,10 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String SKU_PROPERTY_COMBINE_NAME_EMPTY = "&nbsp&nbsp&nbsp";
     //金额数字
     public static final Double MONEY_MULTI = 100.0;
+    //自然属性
+    public static final String NATURE_PROPERTY = "natureProperty";
+    //采购属性
+    public static final String PURCHASE_PROPERTY = "purchaseProperty";
 
     @Autowired
     private IItemsService itemsService;
@@ -86,6 +86,10 @@ public class GoodsBiz implements IGoodsBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private IPurchaseDetailService iPurchaseDetailService;
+    @Autowired
+    private IPropertyValueService propertyValueService;
+    @Autowired
+    private ICategoryPropertyService categoryPropertyService;
 
 
     @Override
@@ -662,6 +666,7 @@ public class GoodsBiz implements IGoodsBiz {
         if(categoryArray.size() > 0){
             List<ItemNaturePropery> addList = new ArrayList<ItemNaturePropery>();
             List<ItemNaturePropery> updateList = new ArrayList<ItemNaturePropery>();
+            List<Long> delList = new ArrayList<Long>();
             ItemNaturePropery tmp = new ItemNaturePropery();
             tmp.setSpuCode(itemNaturePropery.getSpuCode());
             tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -676,7 +681,11 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemNaturePropery.setPropertyId(jbo.getLong("propertyId"));
                 _itemNaturePropery.setPropertyValueId(jbo.getLong("propertyValueId"));
                 _itemNaturePropery.setUpdateTime(sysTime);
+                _itemNaturePropery.setIsValid(jbo.getString("isValid"));
                 _itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _itemNaturePropery.getIsValid())){
+                    delList.add(_itemNaturePropery.getPropertyValueId());
+                }
                 list.add(_itemNaturePropery);
                 Boolean flag = false;
                 for(ItemNaturePropery it : itemNatureProperyList){
@@ -701,9 +710,7 @@ public class GoodsBiz implements IGoodsBiz {
                     }
                 }
                 if(!flag){
-                    it.setUpdateTime(sysTime);
-                    it.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                    updateList.add(it);
+                    delList.add(it.getPropertyValueId());
                 }
             }
             int count = 0;
@@ -719,6 +726,18 @@ public class GoodsBiz implements IGoodsBiz {
                 count = itemNatureProperyService.updateItemNaturePropery(updateList);
                 if (count == 0) {
                     String msg = String.format("更细商品自然属性信息%s到数据库失败", JSON.toJSONString(updateList));
+                    log.error(msg);
+                    throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+                }
+            }
+            if(delList.size() > 0){
+                Example example = new Example(ItemNaturePropery.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("spuCode", itemNaturePropery.getSpuCode());
+                criteria.andIn("propertyValueId", delList);
+                count = itemNatureProperyService.deleteByExample(example);
+                if (count == 0) {
+                    String msg = String.format("根据商品SPU编码[%s]和属性值ID[%s]删除自然属性信息", itemNaturePropery.getSpuCode(), JSON.toJSONString(delList));
                     log.error(msg);
                     throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
                 }
@@ -756,6 +775,7 @@ public class GoodsBiz implements IGoodsBiz {
                 _itemSalesPropery.setPropertyActualValue(propertyValuesArray[i]);
                 _itemSalesPropery.setPicture(_tmp[1]);
                 _itemSalesPropery.setUpdateTime(sysTime);
+                _itemSalesPropery.setIsValid(ZeroToNineEnum.ONE.getCode());
                 _itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 list.add(_itemSalesPropery);
                 Boolean flag = false;
@@ -1017,18 +1037,10 @@ public class GoodsBiz implements IGoodsBiz {
             }
         }
         AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
-        //查询商品自然属性信息
-        ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
-        itemNaturePropery.setSpuCode(spuCode);
-        itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
-        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品自然属性信息为空", spuCode));
-        //查询商品采购属性信息
-        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
-        itemSalesPropery.setSpuCode(spuCode);
-        itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
-        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品采购属性信息为空", spuCode));
+        //获取自然属性和采购属性
+        Object[] objs = getItemsPropertys(spuCode);
+        List<ItemNaturePropery> itemNatureProperies = (List<ItemNaturePropery>)objs[0];
+        List<ItemSalesPropery> itemSalesProperies = (List<ItemSalesPropery>)objs[1];
         //返回数据组装
         ItemsExt itemsExt = new ItemsExt();
         itemsExt.setItems(items);
@@ -1036,6 +1048,209 @@ public class GoodsBiz implements IGoodsBiz {
         itemsExt.setItemNatureProperys(itemNatureProperies);
         itemsExt.setItemSalesProperies(itemSalesProperies);
         return itemsExt;
+    }
+
+    private Object[] getItemsPropertys(String spuCode) throws Exception{
+        //查询商品自然属性信息
+        ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
+        itemNaturePropery.setSpuCode(spuCode);
+        itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
+        //查询商品采购属性信息
+        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
+        itemSalesPropery.setSpuCode(spuCode);
+        itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
+        AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码[%s]查询商品采购属性信息为空", spuCode));
+        //设置自然属性和采购属性中文名词
+        setItemNatureProperyValue(itemNatureProperies, itemSalesProperies);
+        Object[] objs = new Object[2];
+        objs[0] = itemNatureProperies;
+        objs[1] = itemSalesProperies;
+        return objs;
+    }
+
+    @Override
+    public List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception {
+        AssertUtil.notBlank(spuCode, "查询商品分类属性spuCode为空");
+        AssertUtil.notNull(categoryId, "查询商品分类属性categoryId为空");
+        Example example = new Example(CategoryProperty.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("categoryId", categoryId);
+        example.orderBy("propertySort").asc();
+        List<CategoryProperty> categoryProperties = categoryPropertyService.selectByExample(example);
+        AssertUtil.notEmpty(categoryProperties, String.format("根据分类ID[%s]查询分类属性为空", categoryId));
+        //设置分类属性名称
+        setCategoryPropertyName(categoryProperties);
+        //获取自然属性和采购属性
+        Object[] objs = getItemsPropertys(spuCode);
+        List<ItemNaturePropery> itemNatureProperies = (List<ItemNaturePropery>)objs[0];
+        List<ItemSalesPropery> itemSalesProperies = (List<ItemSalesPropery>)objs[1];
+        //已禁用的自然属性
+        List<ItemNaturePropery> deletedItemNatures = new ArrayList<ItemNaturePropery>();
+        //已禁用的采购属性
+        List<ItemSalesPropery> deletedItemSales = new ArrayList<ItemSalesPropery>();
+        //获取已经删除的属性
+        getDeletedPropertys(itemNatureProperies, itemSalesProperies, deletedItemNatures, deletedItemSales, categoryProperties);
+        //将已经禁用的属性加入到返回的分类属性列表里面
+        handlerCategoryPropertys(deletedItemNatures, deletedItemSales, categoryProperties, categoryId);
+        return categoryProperties;
+    }
+
+    private void setCategoryPropertyName(List<CategoryProperty> categoryProperties) throws Exception{
+        List<Long> propertyIds = new ArrayList<>();
+        for (CategoryProperty categoryProperty : categoryProperties) {
+            propertyIds.add(categoryProperty.getPropertyId());
+        }
+        List<Property> propertyList = new ArrayList<Property>();
+        if (propertyIds.size() > 0) {
+            propertyList = propertyService.queryPropertyList(propertyIds);
+        }
+        if (propertyList.size() > 0) {
+            for (CategoryProperty c : categoryProperties) {
+                for (Property p : propertyList) {
+                    if (StringUtils.equals(c.getPropertyId().toString(), p.getId().toString())) {
+                        c.setName(p.getName());
+                        c.setTypeCode(p.getTypeCode());
+                        c.setValueType(p.getValueType());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取已经禁用的自然属性和采购属性
+     * @param itemNatureProperies
+     * @param itemSalesProperies
+     * @param deletedItemNatures
+     * @param deletedItemSales
+     * @param categoryProperties
+     */
+    private void getDeletedPropertys(List<ItemNaturePropery> itemNatureProperies, List<ItemSalesPropery> itemSalesProperies,
+           List<ItemNaturePropery> deletedItemNatures, List<ItemSalesPropery> deletedItemSales, List<CategoryProperty> categoryProperties){
+        for(ItemNaturePropery itemNaturePropery: itemNatureProperies){
+            Boolean flag = false;
+            for(CategoryProperty categoryProperty: categoryProperties){
+                if(itemNaturePropery.getPropertyId().longValue() == categoryProperty.getPropertyId().longValue()){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                deletedItemNatures.add(itemNaturePropery);
+            }
+        }
+        for(ItemSalesPropery itemSalesPropery: itemSalesProperies){
+            Boolean flag = false;
+            for(CategoryProperty categoryProperty: categoryProperties){
+                if(itemSalesPropery.getPropertyId().longValue() == categoryProperty.getPropertyId().longValue()){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                deletedItemSales.add(itemSalesPropery);
+            }
+        }
+    }
+
+    /**
+     * 将已经禁用的属性加入到返回的分类属性列表里面
+     * @param deletedItemNatures
+     * @param deletedItemSales
+     * @param categoryProperties
+     */
+    private void handlerCategoryPropertys(List<ItemNaturePropery> deletedItemNatures, List<ItemSalesPropery>
+            deletedItemSales, List<CategoryProperty> categoryProperties, Long categoryId){
+        for(ItemNaturePropery itemNaturePropery: deletedItemNatures){
+            CategoryProperty categoryProperty = new CategoryProperty();
+            categoryProperty.setCategoryId(categoryId);
+            categoryProperty.setPropertyId(itemNaturePropery.getPropertyId());
+            categoryProperty.setName(itemNaturePropery.getPropertyName());
+            categoryProperty.setTypeCode(NATURE_PROPERTY);//自然属性
+            categoryProperty.setValueType(ZeroToNineEnum.ZERO.getCode());//文字类型
+            categoryProperty.setIsValid(ZeroToNineEnum.ZERO.getCode());//禁用
+            if(!hasCategoryProperty(categoryProperties, categoryProperty)){
+                categoryProperties.add(categoryProperty);
+            }
+        }
+        for(ItemSalesPropery itemSalesPropery: deletedItemSales){
+            CategoryProperty categoryProperty = new CategoryProperty();
+            categoryProperty.setCategoryId(categoryId);
+            categoryProperty.setPropertyId(itemSalesPropery.getPropertyId());
+            categoryProperty.setName(itemSalesPropery.getPropertyName());
+            categoryProperty.setTypeCode(PURCHASE_PROPERTY);//采购属性
+            categoryProperty.setValueType(ZeroToNineEnum.ZERO.getCode());//文字类型
+            if(StringUtils.isNotBlank(itemSalesPropery.getPicture())){
+                categoryProperty.setValueType(ZeroToNineEnum.ONE.getCode());//图片类型
+            }
+            categoryProperty.setIsValid(ZeroToNineEnum.ZERO.getCode());//禁用
+            if(!hasCategoryProperty(categoryProperties, categoryProperty)){
+                categoryProperties.add(categoryProperty);
+            }
+        }
+    }
+
+    private Boolean hasCategoryProperty(List<CategoryProperty> categoryProperties, CategoryProperty categoryProperty){
+        for(CategoryProperty categoryProperty2 : categoryProperties){
+            if(categoryProperty2.getCategoryId().longValue() == categoryProperty.getCategoryId().longValue() &&
+                    categoryProperty2.getPropertyId().longValue() == categoryProperty.getPropertyId().longValue()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+    /**
+     * 设置自然属性值
+     * @param itemNatureProperies
+     * @throws Exception
+     */
+    private void setItemNatureProperyValue(List<ItemNaturePropery> itemNatureProperies, List<ItemSalesPropery> itemSalesProperies) throws Exception{
+        Set<Long> propertyIds = new HashSet<Long>();
+        Set<Long> propertyValueIds = new HashSet<Long>();
+        for(ItemNaturePropery itemNaturePropery: itemNatureProperies){
+            propertyIds.add(itemNaturePropery.getPropertyId());
+            propertyValueIds.add(itemNaturePropery.getPropertyValueId());
+        }
+        for(ItemSalesPropery itemSalesPropery: itemSalesProperies){
+            propertyIds.add(itemSalesPropery.getPropertyId());
+            propertyValueIds.add(itemSalesPropery.getPropertyValueId());
+        }
+        Example example = new Example(Property.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", propertyIds);
+        List<Property> propertyList = propertyService.selectByExample(example);
+        AssertUtil.notEmpty(propertyList, String.format("根据属性ID[%s]查询属性信息为空",
+                CommonUtil.converCollectionToString(Arrays.asList(propertyIds.toArray())).toString()));
+        Example example2 = new Example(PropertyValue.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("id", propertyValueIds);
+        List<PropertyValue> propertyValueList = propertyValueService.selectByExample(example2);
+        AssertUtil.notEmpty(propertyValueList, String.format("根据属性值ID[%s]查询属性值信息为空",
+                CommonUtil.converCollectionToString(Arrays.asList(propertyValueIds.toArray()))).toString());
+        for(ItemNaturePropery itemNaturePropery: itemNatureProperies){
+            for(Property property: propertyList){
+                if(itemNaturePropery.getPropertyId().longValue() == property.getId().longValue()){
+                    itemNaturePropery.setPropertyName(property.getName());
+                }
+            }
+            for(PropertyValue propertyValue: propertyValueList){
+                if(itemNaturePropery.getPropertyValueId().longValue() == propertyValue.getId().longValue()){
+                    itemNaturePropery.setPropertyValue(propertyValue.getValue());
+                }
+            }
+        }
+        for(ItemSalesPropery itemSalesPropery: itemSalesProperies){
+            for(Property property: propertyList){
+                if(itemSalesPropery.getPropertyId().longValue() == property.getId().longValue()){
+                    itemSalesPropery.setPropertyName(property.getName());
+                }
+            }
+        }
     }
 
 
