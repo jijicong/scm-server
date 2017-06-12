@@ -34,6 +34,7 @@ public enum ExceptionEnum{
     GOODS_QUERY_EXCEPTION("400100","商品查询异常"),
     GOODS_SAVE_EXCEPTION("400101","商品保存异常"),
     GOODS_UPDATE_EXCEPTION("400102","商品更新异常"),
+    GOODS_DEPEND_DATA_INVALID("400103","商品依赖数据被禁用"),
 
     FILE_UPLOAD_EXCEPTION("1000100","文件上传异常"),
     FILE_DOWNLOAD_EXCEPTION("1000101","文件下载异常"),
