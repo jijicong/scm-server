@@ -275,6 +275,9 @@ public class SupplyConstants {
         //用户采购组状态查询
         public static final String CHECK_PURCHASE = "checkPurchase";
 
+        //编辑用户之前,查询是否有角色被停用
+        public static final String ROLE_VALID = "rolevalid";
+
     }
 
     /**
@@ -547,7 +550,7 @@ public class SupplyConstants {
         //SPU长度
         public static final Integer SPU_LENGTH = 5;
         //SKU名称
-        public static final String SKU_NAME = "SKU";
+        public static final String SKU_NAME = "SP";
         //SKU长度
         public static final Integer SKU_LENGTH = 7;
         //在此模块维护的商品

@@ -1,7 +1,6 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSONArray;
-import com.sun.xml.internal.ws.client.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.IBrandBiz;

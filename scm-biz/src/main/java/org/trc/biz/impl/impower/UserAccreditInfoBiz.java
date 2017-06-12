@@ -24,7 +24,7 @@ import org.trc.domain.purchase.PurchaseGroupUserRelation;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.ConfigException;
+import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.service.System.IChannelService;
 import org.trc.service.impl.UserDoService;
@@ -154,7 +154,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         if (count == 0) {
             String msg = String.format("修改授权%s数据库操作失败", JSON.toJSONString(userAccreditInfo));
             LOGGER.error(msg);
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
 
     }
@@ -167,6 +167,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
+    @Deprecated
     public int checkUserByName(Long id, String name) throws Exception {
         AssertUtil.notNull(id, "根据用户授权的用户名称查询角色的参数id为空");
         AssertUtil.notBlank(name, "根据用户授权的用户名称查询角色的参数name为空");
@@ -219,11 +220,16 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveUserAccreditInfo(UserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
         checkUserAddPageDate(userAddPageDate);
-        //获取页面的UserId
-//        String userId = (String) requestContext.getProperty("userId");
-//        AssertUtil.notBlank(userId, "获取当前登录用户失败,请重新登录!");
         UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
         AssertUtil.notNull(userDO, "该手机号未在泰然城注册");
+        //手机号关联校验
+        String phoneMsg = checkPhone(userDO.getPhone());
+        if (StringUtils.isNoneBlank(phoneMsg)) {
+            String msg = "新增授权用户失败," + phoneMsg;
+            LOGGER.error(msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+        }
+
         //写入user_accredit_info表
         UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
         userAccreditInfo.setName(userAddPageDate.getName());
@@ -255,7 +261,20 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setUpdateTime(userAccreditInfo.getUpdateTime());
                 uAcRoleRelationList.add(userAccreditRoleRelation);
             }
+            //检验被选中个的角色的起停用状态
+            List<Role> selectRoleList = roleService.findRoleList(Arrays.asList(roleIds));
+            for (Role selectRole : selectRoleList) {
+                if (StringUtils.equals(selectRole.getIsValid(), ValidEnum.NOVALID.getCode())) {
+                    String msg = String.format("%s角色已被停用", JSON.toJSONString(selectRole.getName()));
+                    LOGGER.error(msg);
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
+                }
+            }
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);
+        } else {
+            String msg = "未选择关联角色";
+            LOGGER.error(msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
     }
 
@@ -283,7 +302,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
         if (null == userAccreditInfo) {
             String msg = String.format("根据主键ID[id=%s]查询角色为空", id.toString());
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
         }
         userAddPageDate = new UserAddPageDate(userAccreditInfo);
         AssertUtil.notNull(userAddPageDate.getId(), "根据授权Id的查询用户userAccreditRoleRelation，参数Id为空");
@@ -341,11 +360,10 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 if (!flag) {
                     String msg = String.format("%s用户在采购组中,不能取消采购组角色", JSON.toJSONString(userAddPageDate.getName()));
                     LOGGER.error(msg);
-                    throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
                 }
             }
         }
-
         //写入user_accredit_info表
         UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
         AssertUtil.notNull(userDO, "用户中心未查询到该用户");
@@ -353,16 +371,24 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         userAccreditInfo.setUserId(userDO.getUserId());
         userAccreditInfoService.updateByPrimaryKeySelective(userAccreditInfo);
-
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {
             int count = userAccreditInfoRoleRelationService.deleteByUserAccreditId(userAccreditInfo.getId());
             if (count == 0) {
                 String msg = String.format("修改授权%s操作失败", JSON.toJSONString(userAddPageDate.getRoleNames()));
                 LOGGER.error(msg);
-                throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+                throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
             }
             Long roleIds[] = splitByComma(userAddPageDate.getRoleNames());
+            //检验被选中个的角色的起停用状态
+            List<Role> selectRoleList = roleService.findRoleList(Arrays.asList(roleIds));
+            for (Role selectRole : selectRoleList) {
+                if (StringUtils.equals(selectRole.getIsValid(), ValidEnum.NOVALID.getCode())) {
+                    String msg = String.format("%s角色已被停用", JSON.toJSONString(selectRole.getName()));
+                    LOGGER.error(msg);
+                    throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
+                }
+            }
             List<UserAccreditRoleRelation> uAcRoleRelationList = new ArrayList<>();
             for (int i = 0; i < roleIds.length; i++) {
                 UserAccreditRoleRelation userAccreditRoleRelation = new UserAccreditRoleRelation();
@@ -371,9 +397,9 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setRoleId(roleIds[i]);
                 userAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 userAccreditRoleRelation.setIsValid(userAccreditInfo.getIsValid());
-                userAccreditRoleRelation.setCreateOperator("test");
+                userAccreditRoleRelation.setCreateOperator(userAccreditInfo.getCreateOperator());
                 userAccreditRoleRelation.setCreateTime(userAccreditInfo.getCreateTime());
-                userAccreditRoleRelation.setUpdateTime(userAccreditInfo.getUpdateTime());
+                userAccreditRoleRelation.setUpdateTime(Calendar.getInstance().getTime());
                 uAcRoleRelationList.add(userAccreditRoleRelation);
             }
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);

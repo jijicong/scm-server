@@ -6,7 +6,7 @@
         SELECT id , user_id userId,phone,name,user_type userType FROM user_accredit_info u where user_id IN(
             SELECT ar.user_id FROM user_accredit_role_relation ar WHERE role_id=(
                 SELECT id as role_id FROM role r WHERE name='采购组员'
-                )
+                ) AND is_deleted = '0'
         ) AND is_valid='1'
     </select>
 

@@ -17,4 +17,8 @@ public interface IPurchaseGroupMapper extends BaseMapper<PurchaseGroup>{
 
     List<PurchaseGroup> selectPurchaseGroupNames(String[] strs);
 
+    List<UserAccreditInfo> selectInvalidUser(String [] strs);
+
+   Integer selectUserWithPurchaseNum(String [] strs);
+
 }

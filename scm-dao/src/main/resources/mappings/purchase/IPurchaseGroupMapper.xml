@@ -22,5 +22,32 @@
             #{item}
         </foreach>
     </select>
+    <!--在插入数据时，检测是否插入的采购人是否有被停用，以及已不拥有采购角色-->
+    <select id="selectInvalidUser" resultType="org.trc.domain.impower.UserAccreditInfo">
+        SELECT
+            is_valid AS isValid,
+            user_id AS userId
+        FROM
+            user_accredit_info
+        WHERE
+            is_valid = '0'
+        AND user_id IN
+        <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectUserWithPurchaseNum" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            user_accredit_info u
+        LEFT JOIN user_accredit_role_relation ur ON u.user_id = ur.user_id
+        WHERE
+            u.user_id IN
+        <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        AND ur.role_id = '1'
+    </select>
 
 </mapper>

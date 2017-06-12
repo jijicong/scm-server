@@ -17,4 +17,18 @@ public interface IPurchaseGroupService extends IBaseService<PurchaseGroup,Long>{
 
     List<PurchaseGroup> selectPurchaseGroupNames(String[] strs);
 
+    /**
+     * 对采购组的新增或者修改，查询当前的新增是否还有效
+     * @param strs
+     * @return
+     */
+    List<UserAccreditInfo> selectInvalidUser(String [] strs);
+
+    /**
+     * 查询当前userid下可用的采购组员的数量
+     * @param strs
+     * @return
+     */
+    Integer selectUserWithPurchaseNum(String [] strs);
+
 }

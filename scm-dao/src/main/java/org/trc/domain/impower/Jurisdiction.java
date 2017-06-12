@@ -61,7 +61,7 @@ public class Jurisdiction extends BaseDO{
     }  //为zTree的父id做准备
 
     public Long getId() {
-        return id;
+        return code;
     }
 
     public void setId(Long id) {

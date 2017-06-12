@@ -19,6 +19,8 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
+import org.trc.domain.category.Category;
+import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.AuditStatusEnum;
@@ -26,9 +28,12 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
+import org.trc.exception.GoodsException;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.supplier.*;
+import org.trc.service.category.ICategoryBrandService;
+import org.trc.service.category.ICategoryService;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.supplier.SupplierApplyAuditService;
 import org.trc.service.impl.system.ChannelService;
@@ -84,6 +89,10 @@ public class SupplierBiz implements ISupplierBiz {
     private ICategoryBiz categoryBiz;
     @Autowired
     private ISupplierApplyAuditService supplierApplyAuditService;
+    @Autowired
+    private ICategoryService categoryService;
+    @Autowired
+    private ICategoryBrandService categoryBrandService;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -586,7 +595,7 @@ public class SupplierBiz implements ISupplierBiz {
      * 保存供应商代理类目
      * @param supplierCategory
      */
-    private void saveCategory(SupplierCategory supplierCategory) {
+    private void saveCategory(SupplierCategory supplierCategory) throws Exception {
         AssertUtil.notBlank(supplierCategory.getSupplierCetegory(), "新增供应商代理类目不能为空");
         JSONArray categoryArray = JSONArray.parseArray(supplierCategory.getSupplierCetegory());
         AssertUtil.notEmpty(categoryArray, "新增供应商代理类目不能为空");
@@ -597,8 +606,11 @@ public class SupplierBiz implements ISupplierBiz {
             s.setSupplierId(supplierCategory.getSupplierId());
             s.setSupplierCode(supplierCategory.getSupplierCode());
             s.setCategoryId(jbo.getLong("categoryId"));
+            s.setIsValid(ZeroToNineEnum.ONE.getCode());
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
+            //检查分类启停用状态
+            checkCategoryValidStatus(s.getCategoryId());
             list.add(s);
         }
         int count = supplierCategoryService.insertList(list);
@@ -606,6 +618,21 @@ public class SupplierBiz implements ISupplierBiz {
             String msg = CommonUtil.joinStr("保存供应商代理类目", JSON.toJSONString(supplierCategory), "到数据库失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 检查分类启停用状态
+     * @param categoryId
+     * @throws Exception
+     */
+    private void checkCategoryValidStatus(Long categoryId) throws Exception{
+        Category category = categoryService.selectByPrimaryKey(categoryId);
+        AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
+            String msg = String.format("分类[%s]已被停用", category.getName());
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_DEPEND_DATA_INVALID, msg);
         }
     }
 
@@ -636,6 +663,9 @@ public class SupplierBiz implements ISupplierBiz {
             s.setIsValid(isValid);
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
                 deleteList.add(s.getId());
+            }else{
+                //检查分类启停用状态
+                checkCategoryValidStatus(s.getCategoryId());
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
@@ -687,7 +717,7 @@ public class SupplierBiz implements ISupplierBiz {
      * 保存供应商代理品牌
      * @param brand
      */
-    private void saveBrand(SupplierBrand brand){
+    private void saveBrand(SupplierBrand brand) throws Exception{
         AssertUtil.notBlank(brand.getSupplierBrand(), "新增供应商代理品牌不能为空");
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
         AssertUtil.notEmpty(categoryArray, "新增供应商代理品牌不能为空");
@@ -705,8 +735,11 @@ public class SupplierBiz implements ISupplierBiz {
             s.setProxyAptitudeStartDate(jbo.getString("proxyAptitudeStartDate"));
             s.setProxyAptitudeEndDate(jbo.getString("proxyAptitudeEndDate"));
             s.setAptitudePic(jbo.getString("aptitudePic"));
+            s.setIsValid(ZeroToNineEnum.ONE.getCode());
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
+            //检查品牌启停用状态
+            checkBrandValidStatus(s.getCategoryId(), s.getBrandId());
             list.add(s);
         }
         int count = supplierBrandService.insertList(list);
@@ -714,6 +747,24 @@ public class SupplierBiz implements ISupplierBiz {
             String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(list), "到数据库失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
+        }
+    }
+
+    /**
+     * 检查品牌启停用状态
+     * @param brandId
+     * @throws Exception
+     */
+    private void checkBrandValidStatus(Long categoryId, Long brandId) throws Exception{
+        CategoryBrand categoryBrand = new CategoryBrand();
+        categoryBrand.setCategoryId(categoryId);
+        categoryBrand.setBrandId(brandId);
+        categoryBrand = categoryBrandService.selectOne(categoryBrand);
+        AssertUtil.notNull(categoryBrand, String.format("根据分类ID[%s]和品牌ID[%s]查询分类品牌信息为空", categoryId, brandId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
+            Brand brand = brandService.selectByPrimaryKey(brandId);
+            AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已被禁用", brand.getName()));
         }
     }
 
@@ -745,6 +796,9 @@ public class SupplierBiz implements ISupplierBiz {
             s.setIsValid(isValid);
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
                 delList.add(s);
+            }else{
+                //检查品牌启停用状态
+                checkBrandValidStatus(s.getCategoryId(), s.getBrandId());
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);

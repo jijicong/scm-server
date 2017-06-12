@@ -799,6 +799,7 @@ create table purchase_detail
    purchase_id          bigint not null comment '采购单id',
    purchase_order_code  varchar(32) not null comment '采购单编号',
    item_name            varchar(32) not null comment '商品名称',
+   spu_code             varchar(64)  NOT NULL comment '商品SPU编号',
    sku_code             varchar(32) not null comment '商品sku编码',
    brand_id             varchar(32) comment '品牌id',
    category_id          varchar(32) comment '所属分类id',

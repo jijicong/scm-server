@@ -90,6 +90,8 @@ public class GoodsBiz implements IGoodsBiz {
     private IPropertyValueService propertyValueService;
     @Autowired
     private ICategoryPropertyService categoryPropertyService;
+    @Autowired
+    private ICategoryBrandService categoryBrandService;
 
 
     @Override
@@ -523,10 +525,15 @@ public class GoodsBiz implements IGoodsBiz {
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
             throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已被禁用", category.getName()));
         }
-        Brand brand = brandService.selectByPrimaryKey(brandId);
-        AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())){
-            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已被禁用", category.getName()));
+        CategoryBrand categoryBrand = new CategoryBrand();
+        categoryBrand.setCategoryId(categoryId);
+        categoryBrand.setBrandId(brandId);
+        categoryBrand = categoryBrandService.selectOne(categoryBrand);
+        AssertUtil.notNull(categoryBrand, String.format("根据分类ID[%s]和品牌ID[%s]查询分类品牌信息为空", categoryId, brandId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
+            Brand brand = brandService.selectByPrimaryKey(brandId);
+            AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]关联品牌[%s]已被禁用", category.getName(), brand.getName()));
         }
     }
 
