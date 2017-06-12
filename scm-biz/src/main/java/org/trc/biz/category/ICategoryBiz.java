@@ -7,8 +7,12 @@ import org.trc.domain.category.CategoryProperty;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -46,7 +50,7 @@ public interface ICategoryBiz {
     /**
      * 保存
      */
-    void saveCategory(Category category) throws Exception;
+    void saveCategory(Category category, ContainerRequestContext requestContext) throws Exception;
 
 
     /**
@@ -90,6 +94,7 @@ public interface ICategoryBiz {
 
     /**
      * 根据categoryId查询CategoryBrand
+     *
      * @param categoryId
      * @return
      */
@@ -97,6 +102,7 @@ public interface ICategoryBiz {
 
     /**
      * 根据categoryId查询CategoryProperty
+     *
      * @param categoryId
      * @return
      */
@@ -137,4 +143,17 @@ public interface ICategoryBiz {
      * @throws Exception
      */
     String getCategoryName(Long categoryId) throws Exception;
+
+    /**
+     * 检验启停yong
+     */
+    Integer checkCategoryIsValid(Long categoryId) throws Exception;
+
+    /**
+     *
+     * @param categoryForm
+     * @return
+     * @throws Exception
+     */
+    List<Category> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception;
 }

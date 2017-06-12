@@ -18,5 +18,11 @@ public interface ISupplierApplyAuditMapper extends BaseMapper<SupplierApplyAudit
 
     SupplierApplyAudit selectOneById(@Param(value="id")Long id);
 
+    /**
+     * 更新供应商申请审批状态
+     * @param param
+     * @return
+     */
+    int updateSupplierApplyAuditStatus(Map<String, Object> param);
 
 }

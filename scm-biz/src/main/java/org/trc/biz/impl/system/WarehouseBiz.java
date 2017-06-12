@@ -20,6 +20,7 @@ import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -46,6 +47,9 @@ public class WarehouseBiz implements IWarehouseBiz {
     private IWarehouseService warehouseService;
 
     @Resource
+    private IUserNameUtilService userNameUtilService;
+
+    @Resource
     private ISerialUtilService serialUtilService;
 
     @Override
@@ -62,6 +66,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
         example.orderBy("updateTime").desc();
         Pagenation<Warehouse> pagenation = warehouseService.pagination(example, page, form);
+        userNameUtilService.handleUserName(pagenation.getResult());
         return pagenation;
 
     }
@@ -79,13 +84,12 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveWarehouse(Warehouse warehouse, ContainerRequestContext requestContext) throws Exception {
+    public void saveWarehouse(Warehouse warehouse) throws Exception {
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
         AssertUtil.isNull(tmp,String.format("仓库名称[name=%s]的数据已存在,请使用其他名称",warehouse.getName()));
         ParamsUtil.setBaseDO(warehouse);
-        warehouse.setCreateOperator((String) requestContext.getProperty("userId"));
         warehouse.setCode(serialUtilService.generateCode(LENGTH,SERIALNAME));
         int count = warehouseService.insert(warehouse);
         if(count==0){

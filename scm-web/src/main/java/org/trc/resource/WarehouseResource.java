@@ -47,7 +47,7 @@ public class WarehouseResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext) throws Exception{
-        warehouseBiz.saveWarehouse(warehouse,requestContext);
+        warehouseBiz.saveWarehouse(warehouse);
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
     //仓库修改

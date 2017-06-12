@@ -8,6 +8,7 @@ import org.trc.service.supplier.ISupplierService;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hzwdx on 2017/5/6.
@@ -21,5 +22,15 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     @Override
     public List<Supplier> selectSupplierNames(String[] strs) {
         return supplierMapper.selectSupplierNames(strs);
+    }
+
+    @Override
+    public List<Supplier> selectSupplierListByApply(Map<String,Object> map) throws Exception {
+        return supplierMapper.selectSupplierListByApply(map);
+    }
+
+    @Override
+    public Integer selectSupplierListCount(Map<String,Object> map) throws Exception {
+        return supplierMapper.selectSupplierListCount(map);
     }
 }

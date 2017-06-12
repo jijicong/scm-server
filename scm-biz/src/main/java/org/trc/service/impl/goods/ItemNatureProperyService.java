@@ -22,4 +22,14 @@ public class ItemNatureProperyService extends BaseService<ItemNaturePropery, Lon
     public Integer updateItemNaturePropery(List<ItemNaturePropery> itemNatureProperyList) throws Exception {
         return itemNatureProperyMapper.updateItemNaturePropery(itemNatureProperyList);
     }
+
+    @Override
+    public Integer updateIsValidByPropertyValueId(String isValid, Long propertyValueId) throws Exception {
+        return itemNatureProperyMapper.updateIsValidByPropertyValueId(isValid,propertyValueId);
+    }
+
+    @Override
+    public Integer updateIsValidByPropertyId(String isValid, Long propertyId) throws Exception {
+        return itemNatureProperyMapper.updateIsValidByPropertyId(isValid,propertyId);
+    }
 }

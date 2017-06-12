@@ -17,7 +17,7 @@ public interface IPurchaseGroupBiz {
 
     void updatePurchaseStatus(PurchaseGroup purchaseGroup) throws Exception;
 
-    void  savePurchaseGroup(PurchaseGroup purchaseGroup,ContainerRequestContext requestContext) throws Exception;
+    void  savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception;
 
     PurchaseGroup findPurchaseByName(String name) throws Exception;
 

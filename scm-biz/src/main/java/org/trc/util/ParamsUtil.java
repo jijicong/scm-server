@@ -14,19 +14,6 @@ import java.util.Date;
  */
 public class ParamsUtil {
 
-/*    public static void setBaseDO(BaseDO baseDO){
-        if(StringUtils.isEmpty(baseDO.getIsValid())) {
-            baseDO.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }
-        baseDO.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        baseDO.setCreateOperator("test");//FIXME
-        Date currentDate = Calendar.getInstance().getTime();
-        if(null == baseDO.getCreateTime())
-            baseDO.setCreateTime(currentDate);
-        if(null == baseDO.getUpdateTime())
-            baseDO.setUpdateTime(currentDate);
-    }*/
-
     public static void setBaseDO(ScmDO scmDO){
         Date currentDate = Calendar.getInstance().getTime();
         if(null == scmDO.getCreateTime())
@@ -40,11 +27,6 @@ public class ParamsUtil {
                 baseDO.setIsValid(ZeroToNineEnum.ONE.getCode());
             }
         }
-        if(scmDO instanceof CommonDO){
-            CommonDO commonDO = (CommonDO)scmDO;
-            commonDO.setCreateOperator("test");//FIXME
-        }
     }
-
 
 }

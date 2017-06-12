@@ -2,6 +2,8 @@ package org.trc.domain.goods;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.domain.BaseDO;
+import org.trc.domain.util.CommonDO;
 import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
@@ -25,15 +27,22 @@ public class ItemNaturePropery extends ScmDO{
     private String spuCode;
     @FormParam("propertyId")
     private Long propertyId;
+    @Transient
+    private String propertyName;
     @FormParam("propertyValueId")
     private Long propertyValueId;
+    @FormParam("isValid")
+    @Length(max = 2, message = "是否有编码字母和数字不能超过2个")
+    private String isValid; //是否有效:0-否,1-是
+
+    @Transient
+    private String propertyValue;
 
     /**
      * 自然属性信息
      */
     @FormParam("naturePropertys")
     @Transient
-    @NotEmpty
     private String naturePropertys;
 
     public Long getId() {
@@ -82,5 +91,29 @@ public class ItemNaturePropery extends ScmDO{
 
     public void setNaturePropertys(String naturePropertys) {
         this.naturePropertys = naturePropertys;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getPropertyValue() {
+        return propertyValue;
+    }
+
+    public void setPropertyValue(String propertyValue) {
+        this.propertyValue = propertyValue;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
     }
 }

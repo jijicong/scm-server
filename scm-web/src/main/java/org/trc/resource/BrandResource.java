@@ -98,8 +98,8 @@ public class BrandResource {
     @POST
     @Path(SupplyConstants.Category.Brand.BRAND_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateBrandStatus(@BeanParam Brand brand)throws Exception{
-        brandBiz.updateBrandStatus(brand);
+    public AppResult updateBrandStatus(@BeanParam Brand brand, @Context ContainerRequestContext requestContext)throws Exception{
+        brandBiz.updateBrandStatus(brand,requestContext);
         return ResultUtil.createSucssAppResult("更新品牌状态成功", "");
     }
 }

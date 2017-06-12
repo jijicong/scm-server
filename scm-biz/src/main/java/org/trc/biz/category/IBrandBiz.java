@@ -74,7 +74,7 @@ public interface IBrandBiz {
      * @return
      * @throws Exception
      */
-    void updateBrandStatus(Brand brand) throws Exception;
+    void updateBrandStatus(Brand brand, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 根据品牌名称查询品牌列表

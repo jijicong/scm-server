@@ -4,13 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import com.tairanchina.md.account.user.model.UserDO;
-import com.tairanchina.md.account.user.service.UserService;
 import com.tairanchina.md.api.QueryType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
@@ -26,6 +27,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ConfigException;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.impl.UserDoService;
 import org.trc.service.impower.IRoleService;
 import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
 import org.trc.service.impower.IUserAccreditInfoService;
@@ -33,9 +35,12 @@ import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
+import org.trc.util.StringUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.*;
 
 import static org.trc.util.StringUtil.splitByComma;
@@ -47,6 +52,7 @@ import static org.trc.util.StringUtil.splitByComma;
 public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     private Logger LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
+    private final static String ROLE_PURCHASE = "采购组员";
 
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;
@@ -60,14 +66,15 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Autowired
     private IUserAccreditInfoRoleRelationService userAccreditInfoRoleRelationService;
 
-//    @Autowired
-//    private UserService userService;
+    @Resource
+    private UserDoService userDoService;
 
     @Resource
     private IPurchaseGroupuUserRelationService purchaseGroupuUserRelationService;
 
     @Autowired
     private IPurchaseGroupService purchaseGroupService;
+
 
     /**
      * 分页查询
@@ -102,7 +109,6 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     @Override
     public List<UserAddPageDate> handleRolesStr(List<UserAccreditInfo> list) throws Exception {
-
         List<UserAddPageDate> pageDateRoleList = new ArrayList<>();
         Long[] userIds = new Long[list.size()];
         int temp = 0;
@@ -184,7 +190,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
         example.orderBy("updateTime").desc();
         List<Channel> channelList = channelService.selectByExample(example);
-        AssertUtil.notNull(channelList,"未查询到已经启用的渠道");
+        AssertUtil.notNull(channelList, "未查询到已经启用的渠道");
         return channelList;
     }
 
@@ -210,13 +216,13 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     }
 
     @Override
-    public void saveUserAccreditInfo(UserAddPageDate userAddPageDate,UserDO userDO) throws Exception {
-        AssertUtil.notBlank(userAddPageDate.getPhone(), "用户手机号未输入");
-        AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
-        AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
-        AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
-        AssertUtil.notBlank(userAddPageDate.getIsValid(), "参数isValid不能为空");
-//        UserDO userDO = userService.getUserDO(QueryType.Phone, userAddPageDate.getPhone());
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void saveUserAccreditInfo(UserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
+        checkUserAddPageDate(userAddPageDate);
+        //获取页面的UserId
+//        String userId = (String) requestContext.getProperty("userId");
+//        AssertUtil.notBlank(userId, "获取当前登录用户失败,请重新登录!");
+        UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
         AssertUtil.notNull(userDO, "该手机号未在泰然城注册");
         //写入user_accredit_info表
         UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
@@ -227,7 +233,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         userAccreditInfo.setUserType(userAddPageDate.getUserType());
         userAccreditInfo.setUserId(userDO.getUserId());
         userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        userAccreditInfo.setCreateOperator("test");
+        userAccreditInfo.setCreateOperator(userAddPageDate.getCreateOperator());
         userAccreditInfo.setIsValid(userAddPageDate.getIsValid());
         userAccreditInfo.setCreateTime(Calendar.getInstance().getTime());
         userAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
@@ -244,13 +250,21 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setRoleId(roleIds[i]);
                 userAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 userAccreditRoleRelation.setIsValid(userAccreditInfo.getIsValid());
-                userAccreditRoleRelation.setCreateOperator("test");
+                userAccreditInfo.setCreateOperator(userAccreditInfo.getCreateOperator());
                 userAccreditRoleRelation.setCreateTime(userAccreditInfo.getCreateTime());
                 userAccreditRoleRelation.setUpdateTime(userAccreditInfo.getUpdateTime());
                 uAcRoleRelationList.add(userAccreditRoleRelation);
             }
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);
         }
+    }
+
+    private void checkUserAddPageDate(UserAddPageDate userAddPageDate) throws Exception {
+        AssertUtil.notBlank(userAddPageDate.getPhone(), "用户手机号未输入");
+        AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
+        AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
+        AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
+        AssertUtil.notBlank(userAddPageDate.getIsValid(), "参数isValid不能为空");
     }
 
     /**
@@ -297,19 +311,48 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public void updateUserAccredit(UserAddPageDate userAddPageDate,UserDO userDO) throws Exception {
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateUserAccredit(UserAddPageDate userAddPageDate) throws Exception {
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
         AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
-        //
+        AssertUtil.notNull(userAddPageDate.getId(), "更新用户时,参数Id为空");
+        //采购组校验
+        Long roles[] = StringUtil.splitByComma(userAddPageDate.getRoleNames());
+        //采购组员角色的ID
+        Example example = new Example(Role.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("name", ROLE_PURCHASE);
+        List<Role> roleList = roleService.selectByExample(example);
+        //如果在采购组中,就判断页面传进来的采购组角色有没有被选择
+        String purchaseNames[] = purchaseRole(userAddPageDate.getId());
+        if (purchaseNames != null) {
+            if (purchaseNames.length > 0) {
+                //该角色在采购组中
+                boolean flag = false;
+                for (Long role : roles) {
+                    for (Role r : roleList) {
+                        if (role == r.getId()) {
+                            flag = true;//页面上已经勾选
+                        }
+                    }
+                }
+                if (!flag) {
+                    String msg = String.format("%s用户在采购组中,不能取消采购组角色", JSON.toJSONString(userAddPageDate.getName()));
+                    LOGGER.error(msg);
+                    throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+                }
+            }
+        }
+
         //写入user_accredit_info表
-//        UserDO userDO = userService.getUserDO(QueryType.Phone, userAddPageDate.getPhone());
+        UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
+        AssertUtil.notNull(userDO, "用户中心未查询到该用户");
         UserAccreditInfo userAccreditInfo = userAddPageDate;
         userAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         userAccreditInfo.setUserId(userDO.getUserId());
-        userAccreditInfo.setCreateOperator("test");
-        userAccreditInfoService.updateByPrimaryKey(userAccreditInfo);
+        userAccreditInfoService.updateByPrimaryKeySelective(userAccreditInfo);
 
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {
@@ -345,9 +388,9 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public String checkPhone(String phone,UserDO userDO) throws Exception {
+    public String checkPhone(String phone) throws Exception {
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
-//        UserDO userDO = userService.getUserDO(QueryType.Phone, phone);
+        UserDO userDO = userDoService.getUserDo(phone);
         Example example = new Example(UserAccreditInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("phone", phone);
@@ -373,16 +416,19 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     public String[] purchaseRole(Long id) throws Exception {
 
         AssertUtil.notNull(id, "采购组查询输入参数Id为空");
+        //查询到用户
         UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
         userAccreditInfo.setId(id);
         userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
         AssertUtil.notNull(userAccreditInfo, "根据Id未查询到对应的用户");
+        //根据UserID查询采购组
         Example example = new Example(PurchaseGroupUserRelation.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("userId", userAccreditInfo.getUserId());
         criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = purchaseGroupuUserRelationService.selectByExample(example);
         String[] purchaseGroupArray = new String[purchaseGroupUserRelationList.size()];
+        //查到采购组,返回采购组名称
         if (purchaseGroupUserRelationList.size() > 0) {
             for (int i = 0; i < purchaseGroupUserRelationList.size(); i++) {
                 PurchaseGroup purchaseGroup = new PurchaseGroup();
@@ -391,6 +437,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 AssertUtil.notNull(userAccreditInfo, "根据purchaseGroup未查询到对应的用户");
                 purchaseGroupArray[i] = purchaseGroup.getName();
             }
+            //返回所在采购组的名称,数组形式
             return purchaseGroupArray;
         }
         return null;

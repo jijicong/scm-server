@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.dict.DictType;
 import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.domain.goods.ItemSalesPropery;
@@ -17,6 +18,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -42,7 +45,7 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
-                               @BeanParam ItemSalesPropery itemSalesPropery) throws Exception {
+                               @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
         return ResultUtil.createSucssAppResult("保存商品成功", "");
     }
@@ -79,6 +82,19 @@ public class GoodsResource {
     public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode) throws Exception {
         return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode));
     }
+
+    @GET
+    @Path(SupplyConstants.Goods.ITEMS_CATEGORY_PROPERTY+"/{spuCode}/{categoryId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<CategoryProperty>> queryItemsCategoryProperty(@PathParam("spuCode") String spuCode, @PathParam("categoryId") Long categoryId) throws Exception {
+        return ResultUtil.createSucssAppResult("查询商品分类属性成功", goodsBiz.queryItemsCategoryProperty(spuCode, categoryId));
+    }
+
+
+
+
+
+
 
 
 

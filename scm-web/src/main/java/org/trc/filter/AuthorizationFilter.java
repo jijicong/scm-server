@@ -1,6 +1,7 @@
 package org.trc.filter;
 
 import com.alibaba.fastjson.JSONObject;
+import com.tairanchina.beego.api.exception.AuthenticateException;
 import com.tairanchina.beego.api.model.BeegoToken;
 import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
 import com.tairanchina.beego.api.service.BeegoService;
@@ -15,10 +16,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.impower.JurisdictionBiz;
+import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
 import org.trc.exception.CategoryException;
 import org.trc.service.category.IBrandService;
+import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.util.AppResult;
 
 import javax.annotation.Resource;
@@ -49,7 +52,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private BeegoService beegoService;
     @Autowired
     private JurisdictionBiz jurisdictionBiz;
-
+    @Autowired
+    private IUserAccreditInfoService userAccreditInfoService;
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         URI url = ((ContainerRequest) requestContext).getRequestUri();
@@ -61,10 +65,14 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                     appKey,
                     token);
 
-            BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+            try {
+                BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+
             if (null != beegoToken) {
                 String userId = beegoToken.getUserId();
                 requestContext.setProperty("userId", userId);
+                UserAccreditInfo userAccreditInfo=userAccreditInfoService.selectOneById(userId);
+                requestContext.setProperty("userAccreditInfo",userAccreditInfo);
 //                try {
 //                    if (!jurisdictionBiz.authCheck(userId, url.toString(), method)) {
 //                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
@@ -77,6 +85,10 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 //                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
 //                    requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
 //                }
+            }
+            }catch (AuthenticateException e){
+                //另外失效需要用户重新登录
+                requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
         } else {
             //未获取到token返回登录页面

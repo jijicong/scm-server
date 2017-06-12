@@ -13,6 +13,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -34,6 +36,13 @@ public class SupplierResource {
     }
 
     @GET
+    @Path(SupplyConstants.Supply.Supplier.APPLY_SUPPLIER_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext,@BeanParam SupplierForm form) throws Exception {
+        return supplierBiz.supplierPage(page,requestContext,form);
+    }
+
+    @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<Supplier>> querySuppliers(@BeanParam SupplierForm form) throws Exception {
@@ -45,7 +54,7 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
              @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
-             @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+             @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
         supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }

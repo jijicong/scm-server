@@ -27,4 +27,6 @@ public interface ISupplierCategoryService extends IBaseService<SupplierCategory,
      */
     Integer updateSupplerCategory(List<SupplierCategory> list) throws Exception;
 
+    Integer updateSupplierCategoryIsValid(String isValid,Long categoryId) throws  Exception;
+
 }
