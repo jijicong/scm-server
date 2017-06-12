@@ -28,14 +28,14 @@ public class Category extends BaseDO {
     private String fullPathId;
 
     @FormParam("categoryCode")
-    @Length(max = 32, message = "分类编码字母和数字不能超过64个,汉字不能超过32个")
+    @Length(max = 32, message = "分类编码字母和数字不能超过32个,汉字不能超过16个")
     private String categoryCode;
 
     @FormParam("sort")
     private Integer sort;
 
     @FormParam("source")
-    @Length(max = 32)
+    @Length(max = 32, message = "分类编码字母和数字不能超过32个,汉字不能超过16个")
     private String source;
 
     @FormParam("level")
@@ -53,7 +53,7 @@ public class Category extends BaseDO {
     private Long parentId;
 
     @FormParam("classifyDescribe")
-    @Length(max = 40, message = "分类描述字母和数字不能超过40个,汉字不能超过20个")
+    @Length(max = 128, message = "分类描述字母和数字不能超过128个,汉字不能超过64个")
     private String classifyDescribe;
 
     public Long getParentId() {
