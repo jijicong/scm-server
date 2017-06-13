@@ -29,7 +29,7 @@ public class RoleAdd extends BaseDO{
     private String remark;
     @FormParam("roleJurisdiction")
     @NotEmpty
-    @Length(max = 1024, message = "角色信息备注字母和数字不能超过1024个,汉字不能超过512个")
+    @Length(max = 2048, message = "角色信息备注字母和数字不能超过2048个,汉字不能超过1024个")
     private String roleJurisdiction;
 
     public String getRoleJurisdiction() {

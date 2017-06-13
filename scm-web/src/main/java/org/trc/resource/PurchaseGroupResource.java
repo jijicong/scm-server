@@ -93,7 +93,7 @@ public class PurchaseGroupResource {
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<UserAccreditInfo>> findPurchaseGroupMemberStateById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("查询当前采购组id查询无效状态的成员成功",purchaseGroupBiz.findPurchaseGroupMemberStateById(id));
+        return ResultUtil.createSucssAppResult("根据采购组id查询无效状态的成员成功",purchaseGroupBiz.findPurchaseGroupMemberStateById(id));
     }
 
     @GET

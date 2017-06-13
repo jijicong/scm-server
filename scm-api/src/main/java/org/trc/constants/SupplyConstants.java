@@ -193,7 +193,7 @@ public class SupplyConstants {
             //重名验证
             public static final String CATEGORY_CHECK = "check";
 
-            //查询分类
+            //查询分类路径
             public static final String CATEGORY_QUERY = "query";
 
             //校验起停用
@@ -231,7 +231,7 @@ public class SupplyConstants {
         //状态的修改
         public static final String UPDATE_STATE = "warehouse/updateState";
         //查询可用仓库
-        public static final String WAREHOUSE_VALID = "wharehouseValid";
+        public static final String WAREHOUSE_VALID = "wharehouses";
     }
 
     /**
@@ -252,7 +252,7 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "accreditInfo/updateState";
 
         //查询已启用的渠道
-        public static final String CHANNEL = "channel";
+        public static final String CHANNEL = "select/channel";
 
         //查询拥有采购员角色的用户
         public static final String PURCHASE = "purchase";
@@ -260,7 +260,7 @@ public class SupplyConstants {
         //查询选择用户对应角色
         public static final String ROLE = "rolelist";
 
-        //新增角色
+        //新增授权
         public static final String SAVE_ACCREDIT = "saveaccredit";
 
         //用户修改
@@ -286,7 +286,7 @@ public class SupplyConstants {
     public static final class Role {
         //根路径
         public static final String ROOT = "accredit";
-        //授权信息分页查询
+        //角色信息分页查询
         public static final String ROLE_PAGE = "rolePage";
         //授权的用户使用名查询
         public static final String ROLE = "role";
@@ -323,7 +323,7 @@ public class SupplyConstants {
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
         //采购组列表
-        public static final String PURCHASE_GROUP_LIST = "purchaseGroupList";
+        public static final String PURCHASE_GROUP_LIST = "purchaseGroups";
         //根据采购组的编码查询
         public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
