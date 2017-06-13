@@ -3,6 +3,7 @@ package org.trc.biz.jingdong;
 import com.alibaba.fastjson.JSONArray;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.jingdong.AddressDO;
+import org.trc.form.jingdong.MessageDO;
 import org.trc.form.jingdong.NewStockDO;
 import org.trc.form.JDModel.OrderDO;
 import org.trc.form.JDModel.SellPriceDO;
@@ -129,6 +130,24 @@ public interface IJingDongBiz {
     String getAddress(String province, String city, String county,String town) throws Exception;
 
     void getSkuList() throws Exception;
+
+    /**
+     *信息推送接口
+     * @param type 推送类型（非必须，支持多个，以逗号隔开）
+     * @return
+     * @throws Exception
+     */
+    List<MessageDO> getMessage(String type) throws Exception;
+
+
+    /**
+     * 删除信息推送接口
+     *
+     * @param id    推送id
+     * @return
+     * @throws Exception
+     */
+    Boolean delMessage(String id) throws Exception;
 
 
 }
