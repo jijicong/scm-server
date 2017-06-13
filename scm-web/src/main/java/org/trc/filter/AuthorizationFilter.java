@@ -72,47 +72,48 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         //串联完成后删除-----------------end-----------------------
         if (jurisdictionBiz.urlCheck(url)) {
             //说明此url需要被拦截
-        String method = ((ContainerRequest) requestContext).getMethod();
-        String token = _getToken(requestContext);
-        if (StringUtils.isNotBlank(token)) {
-            BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
-            try {
-                BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
-                if (null != beegoToken) {
+            String method = ((ContainerRequest) requestContext).getMethod();
+            String token = _getToken(requestContext);
+            if (StringUtils.isNotBlank(token)) {
+                BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
+                try {
+                    BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+                    if (null != beegoToken) {
 
-                    String userId = beegoToken.getUserId();
-                    UserAccreditInfo userAccreditInfo = userAccreditInfoService.selectOneById(userId);
-                    if (userAccreditInfo == null) {
-                        //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
-                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
-                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                    }
-                    requestContext.setProperty("userId", userId);
-                    requestContext.setProperty("userAccreditInfo", userAccreditInfo);
-                    try {
-                        if (!jurisdictionBiz.authCheck(userId, url, method)) {
-                            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
-                            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                        String userId = beegoToken.getUserId();
+                        UserAccreditInfo userAccreditInfo = userAccreditInfoService.selectOneById(userId);
+                        if (userAccreditInfo == null) {
+                            //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
+                            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
+                            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+
                         }
-                    } catch (CategoryException e) {
-                        log.error(e.getMessage());
-                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), null);
-                        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                    } catch (Exception e) {
-                        log.error(e.getMessage());
-                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
-                        requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                        requestContext.setProperty("userId", userId);
+                        requestContext.setProperty("userAccreditInfo", userAccreditInfo);
+                        try {
+                            if (!jurisdictionBiz.authCheck(userId, url, method)) {
+                                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
+                                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                            }
+                        } catch (CategoryException e) {
+                            log.error(e.getMessage());
+                            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), null);
+                            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                        } catch (Exception e) {
+                            log.error(e.getMessage());
+                            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.SYSTEM_BUSY.getMessage(), null);
+                            requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                        }
                     }
+                } catch (AuthenticateException e) {
+                    //token失效需要用户重新登录
+                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                 }
-            } catch (AuthenticateException e) {
-                //token失效需要用户重新登录
-                requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+            } else {
+                //未获取到token返回登录页面
+                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", null);
+                requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
-        } else {
-            //未获取到token返回登录页面
-            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", null);
-            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-        }
         }
     }
 

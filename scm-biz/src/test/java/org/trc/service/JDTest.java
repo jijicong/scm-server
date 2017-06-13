@@ -177,7 +177,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     //@Test
     public void testGetAddress() {
         try {
-            String str = iJingDongBiz.getAddress("520112", "520115", "520102");
+            String str = iJingDongBiz.getAddress("520112", "520115", "520102",null);
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);
@@ -225,7 +225,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    //@Test
+    @Test
     public void testOrder() {
         try {
             String token = iJingDongBiz.getAccessToken();
@@ -250,7 +250,8 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             orderDO.setCity(2144);
             orderDO.setCounty(21037);
             ijdService.getTown(token, "21037");
-            orderDO.setTown(51695);
+            //orderDO.setTown(51695);
+            orderDO.setTown(0);
             orderDO.setAddress("浙江省杭州市");
             orderDO.setMobile("13725684578");
             orderDO.setEmail("550670854@qq.com");
