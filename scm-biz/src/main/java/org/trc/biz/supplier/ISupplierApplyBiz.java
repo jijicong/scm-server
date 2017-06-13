@@ -56,7 +56,7 @@ public interface ISupplierApplyBiz {
     void deleteSupplierApply(Long supplierApplyId)throws Exception;
 
 
-    void updateSupplierApply(SupplierApply supplierApply)throws Exception;
+    void updateSupplierApply(SupplierApply supplierApply,ContainerRequestContext requestContext)throws Exception;
 
     SupplierApply selectSupplierApplyById(Long id)throws Exception;
 }
