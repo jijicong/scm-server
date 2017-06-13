@@ -717,7 +717,6 @@ public class GoodsBiz implements IGoodsBiz {
         }
         Skus _tmp = new Skus();
         _tmp.setSpuCode(skus.getSpuCode());
-        //_tmp.setIsValid(ZeroToNineEnum.ONE.getCode());
         _tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Skus> _skus = skusService.select(_tmp);
         AssertUtil.notEmpty(_skus, String.format("根据商品SPU编码[%s]查询相关SKU为空", skus.getSpuCode()));
