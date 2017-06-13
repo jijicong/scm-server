@@ -135,7 +135,7 @@ public interface ICategoryBiz {
     /**
      * 更新分类属性
      */
-    void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception;
+    void linkCategoryProperties(Long categoryId, String jsonDate) throws Exception;
 
     /**
      * @param categoryId

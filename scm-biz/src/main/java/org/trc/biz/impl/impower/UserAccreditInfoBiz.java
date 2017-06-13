@@ -43,6 +43,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.trc.util.StringUtil.splitByComma;
 
@@ -54,7 +55,10 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
 
     private Logger LOGGER = LoggerFactory.getLogger(UserAccreditInfoBiz.class);
     private final static String ROLE_PURCHASE = "采购组员";
-
+    /**
+     * 正则表达式：验证手机号
+     */
+    private static final String REGEX_MOBILE = "^((17[0-9])(14[0-9])|(13[0-9])|(15[^4,\\D])|(18[0,5-9]))\\d{8}$";
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;
 
@@ -224,6 +228,11 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveUserAccreditInfo(UserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
         checkUserAddPageDate(userAddPageDate);
+        if (!Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
+            String msg = "手机号格式错误," + userAddPageDate.getPhone();
+            LOGGER.error(msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
+        }
         UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
         AssertUtil.notNull(userDO, "该手机号未在泰然城注册");
         //手机号关联校验
@@ -231,7 +240,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
         if (StringUtils.isNoneBlank(phoneMsg)) {
             String msg = "新增授权用户失败," + phoneMsg;
             LOGGER.error(msg);
-            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
 
         //写入user_accredit_info表
@@ -260,7 +269,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
                 userAccreditRoleRelation.setRoleId(roleIds[i]);
                 userAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 userAccreditRoleRelation.setIsValid(userAccreditInfo.getIsValid());
-                userAccreditInfo.setCreateOperator(userAccreditInfo.getCreateOperator());
+                userAccreditRoleRelation.setCreateOperator(userAccreditInfo.getCreateOperator());
                 userAccreditRoleRelation.setCreateTime(userAccreditInfo.getCreateTime());
                 userAccreditRoleRelation.setUpdateTime(userAccreditInfo.getUpdateTime());
                 uAcRoleRelationList.add(userAccreditRoleRelation);
