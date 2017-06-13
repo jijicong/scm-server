@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,19 +8,15 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
-import org.trc.enums.SourceEnum;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -183,7 +178,7 @@ public class CategoryResource {
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategoryProperty(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate) throws Exception {
-        categoryBiz.updateCategoryProperty(id, jsonDate);
+        categoryBiz.linkCategoryProperties(id, jsonDate);
         return ResultUtil.createSucssAppResult("分类属性保存成功", "");
     }
 

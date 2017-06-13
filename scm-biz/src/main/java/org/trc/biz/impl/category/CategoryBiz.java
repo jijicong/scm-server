@@ -225,6 +225,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @Deprecated
     public int checkCategoryCode(Long id, String categoryCode) throws Exception {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
@@ -305,7 +306,7 @@ public class CategoryBiz implements ICategoryBiz {
                 categoryList.remove(i);
             }
         }
-        if (categoryList!=null&&categoryList.size()>0) {
+        if (categoryList != null && categoryList.size() > 0) {
             int count = categoryService.updateCategorySort(categoryList);
             if (count == 0) {
                 String msg = "修改分类排序操作失败";
@@ -522,7 +523,7 @@ public class CategoryBiz implements ICategoryBiz {
             for (CategoryBrand categoryBrand : saveCategoryBrands) {
                 boolean flag = false;
                 for (CategoryBrand categoryB : oldCategoryBrands) {
-                    if (categoryBrand.getBrandId() == categoryB.getBrandId()) {
+                    if (categoryBrand.getBrandId().equals(categoryB.getBrandId())) {
                         flag = true;
                     }
                 }
@@ -625,7 +626,7 @@ public class CategoryBiz implements ICategoryBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateCategoryProperty(Long categoryId, String jsonDate) throws Exception {
+    public void linkCategoryProperties(Long categoryId, String jsonDate) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
         List<TableDate> tableDates = JSONArray.parseArray(jsonDate, TableDate.class);
@@ -636,7 +637,7 @@ public class CategoryBiz implements ICategoryBiz {
         //需要删除的的数据
         List<CategoryProperty> delProperties = new ArrayList<>();
         //未改动的的数据
-        List<CategoryProperty> defaultProperties = new ArrayList<>();
+//        List<CategoryProperty> defaultProperties = new ArrayList<>();
         //将数据分组
         for (TableDate tableDate : tableDates) {
             //新增的数据
@@ -683,7 +684,7 @@ public class CategoryBiz implements ICategoryBiz {
                 for (CategoryProperty categoryProperty : insertProperties) {
                     boolean flag = false;
                     for (CategoryProperty categoryP : oldCategoryProperties) {
-                        if (categoryProperty.getPropertyId() == categoryP.getPropertyId()) {
+                        if (categoryProperty.getPropertyId().equals(categoryP.getPropertyId())) {
                             flag = true;
                         }
                     }
@@ -699,7 +700,7 @@ public class CategoryBiz implements ICategoryBiz {
             List<CategoryProperty> pageList = new ArrayList<>();
             pageList.addAll(newCategoryProperties);
             pageList.addAll(sortProperties);
-            if (pageList != null&&(pageList).size() > 0) {
+            if (pageList != null && (pageList).size() > 0) {
                 for (CategoryProperty c : pageList) {
                     Property property = new Property();
                     property.setId(c.getPropertyId());
@@ -720,7 +721,7 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
 
-        if ( delProperties != null&&delProperties.size() > 0) {
+        if (delProperties != null && delProperties.size() > 0) {
             //删除
             int delCount = 0;
             for (CategoryProperty categoryProperty : delProperties) {
@@ -734,7 +735,7 @@ public class CategoryBiz implements ICategoryBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_DELETE_EXCEPTION, msg);
             }
         }
-        if ( sortProperties != null&&sortProperties.size() > 0) {
+        if (sortProperties != null && sortProperties.size() > 0) {
             int count = categoryPropertyService.updateCategoryPropertySort(sortProperties);
             count++;
             if (count == 0) {
@@ -791,7 +792,7 @@ public class CategoryBiz implements ICategoryBiz {
         for (int i = 0; i < categoryProperties.size(); i++) {
             for (int j = 0; j < categoryProperties.size(); j++) {
                 if (i == j) continue;
-                if (categoryProperties.get(i).getPropertyId() == (categoryProperties.get(j).getPropertyId())) {
+                if (categoryProperties.get(i).getPropertyId().equals(categoryProperties.get(j).getPropertyId())) {
                     categoryProperties.remove(j);
                 }
             }

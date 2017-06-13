@@ -43,7 +43,7 @@ public class RequestFlow implements Serializable {
     public RequestFlow() {
     }
 
-    public RequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime) {
+    public RequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime,String remark) {
         this.requester = requester;
         this.responder = responder;
         this.type = type;
@@ -52,6 +52,7 @@ public class RequestFlow implements Serializable {
         this.requestParam = requestParam;
         this.responseParam = responseParam;
         this.requestTime = requestTime;
+        this.remark = remark;
     }
 
     public Long getId() {
