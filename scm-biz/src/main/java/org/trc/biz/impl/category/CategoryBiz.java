@@ -368,10 +368,11 @@ public class CategoryBiz implements ICategoryBiz {
         Category category = new Category();
         category.setId(categoryId);
         category = categoryService.selectOne(category);
+
         if (category.getLevel() != 3) {
             Example example = new Example(Category.class);
             Example.Criteria criteria = example.createCriteria();
-            criteria.andEqualTo("parentId", category.getParentId());
+            criteria.andEqualTo("parentId", category.getId());
             List<Category> childCategories = categoryService.selectByExample(example);
             if (childCategories != null && childCategories.size() > 0) {
                 for (Category c : childCategories) {
