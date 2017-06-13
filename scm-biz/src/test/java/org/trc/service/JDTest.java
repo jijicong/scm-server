@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.domain.config.TableMappingDO;
 import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.jingdong.MessageDO;
 import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.util.JingDongUtil;
 import org.trc.form.jingdong.AddressDO;
@@ -167,6 +168,32 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             ReturnTypeDO city = ijdService.getCity(token, "1");
             System.out.println("city:" + city);
             /*String city = ijdService.getCity(token, String.valueOf(list.get(str)));*/
+            System.out.print("结束");
+        } catch (Exception e) {
+            System.out.print(e);
+        }
+
+    }
+    @Test
+    public void testGetMessage() {
+        try {
+            List<MessageDO> message = iJingDongBiz.getMessage(null);
+            System.out.println("message:" + message);
+            for (MessageDO list:message) {
+                String id = list.getId();
+                Boolean result = iJingDongBiz.delMessage(id);
+                System.out.println("result:" + result);
+            }
+            System.out.print("结束");
+        } catch (Exception e) {
+            System.out.print(e);
+        }
+
+    }
+    @Test
+    public void testDelMessage() {
+        try {
+                Boolean result = iJingDongBiz.delMessage("12456");
             System.out.print("结束");
         } catch (Exception e) {
             System.out.print(e);

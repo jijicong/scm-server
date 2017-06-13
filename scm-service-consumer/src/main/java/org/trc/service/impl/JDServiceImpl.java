@@ -680,7 +680,7 @@ public class JDServiceImpl implements IJDService {
             Boolean success = (Boolean) json.get("success");
             String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            JSONObject result = json.getJSONObject("result");
+            JSONArray result = json.getJSONArray("result");
             return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -698,7 +698,7 @@ public class JDServiceImpl implements IJDService {
             Boolean success = (Boolean) json.get("success");
             String resultCode = (String) json.get("resultCode");
             String resultMessage = (String) json.get("resultMessage");
-            JSONObject result = json.getJSONObject("result");
+            Boolean result = (Boolean)json.get("result");
             return returnValue(success, resultCode, resultMessage, result);
         } catch (Exception e) {
             log.error(e.getMessage());
