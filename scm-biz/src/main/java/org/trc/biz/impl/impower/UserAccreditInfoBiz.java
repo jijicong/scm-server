@@ -58,7 +58,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     /**
      * 正则表达式：验证手机号
      */
-    private static final String REGEX_MOBILE = "^((17[0-9])(14[0-9])|(13[0-9])|(15[^4,\\D])|(18[0,5-9]))\\d{8}$";
+    private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
     @Resource
     private IUserAccreditInfoService userAccreditInfoService;
 
@@ -228,7 +228,7 @@ public class UserAccreditInfoBiz<T> implements IUserAccreditInfoBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveUserAccreditInfo(UserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
         checkUserAddPageDate(userAddPageDate);
-        if (!Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
+        if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
