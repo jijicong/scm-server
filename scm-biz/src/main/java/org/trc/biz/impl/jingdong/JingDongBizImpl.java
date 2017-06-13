@@ -15,6 +15,7 @@ import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.JingDongException;
 import org.trc.form.JDModel.*;
+import org.trc.form.jingdong.MessageDO;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.util.*;
 import org.trc.form.jingdong.AddressDO;
@@ -436,6 +437,65 @@ public class JingDongBizImpl implements IJingDongBiz {
     @Override
     public void getSkuList() throws Exception {
 
+    }
+
+    @Override
+    public List<MessageDO> getMessage(String type) throws Exception {
+        ReturnTypeDO message = null;
+        String token = getAccessToken();
+        AssertUtil.notBlank(token, "token不能为空");
+        JSONObject inputParam = new JSONObject();
+        inputParam.put("token", token);
+        inputParam.put("type", type);
+        log.info("输入参数：" + inputParam.toJSONString());
+        try{
+            message = ijdService.get(token,type);
+            if (!message.getSuccess()) {
+                throw new Exception(message.getResultMessage());
+            }
+        }catch (Exception e){
+            log.info("调用结果：" + JSONObject.toJSONString(message));
+            saveRecord(inputParam.toJSONString(), "获取推送信息接口getMessage", JSONArray.toJSONString(message), message.getSuccess());
+            throw new Exception(e.getMessage());
+        }
+        log.info("调用结果：" + JSONObject.toJSONString(message));
+        Boolean state = saveRecord(inputParam.toJSONString(), "获取推送信息接口getMessage", JSONArray.toJSONString(message), message.getSuccess());
+        if (!state) {
+            log.info("添加记录到数据库失败！");
+        }
+        if (!message.getSuccess()) {
+            return null;
+        }
+        List<MessageDO> list= JSONArray.parseArray(JSONArray.toJSONString(message.getResult()), MessageDO.class);
+        return list;
+    }
+
+    @Override
+    public Boolean delMessage(String id) throws Exception {
+        AssertUtil.notBlank(id, "id不能为空");
+        ReturnTypeDO message = null;
+        String token = getAccessToken();
+        AssertUtil.notBlank(token, "token不能为空");
+        JSONObject inputParam = new JSONObject();
+        inputParam.put("token", token);
+        inputParam.put("id", id);
+        log.info("输入参数：" + inputParam.toJSONString());
+        try{
+            message = ijdService.del(token,id);
+            if (!message.getSuccess()){
+                throw new Exception(message.getResultMessage());
+            }
+        }catch (Exception e){
+            log.info("调用结果：" + JSONObject.toJSONString(message));
+            saveRecord(inputParam.toJSONString(), "删除推送信息接口delMessage", JSONArray.toJSONString(message), message.getSuccess());
+            throw new Exception(e.getMessage());
+        }
+        log.info("调用结果：" + JSONObject.toJSONString(message));
+        Boolean state = saveRecord(inputParam.toJSONString(), "删除推送信息接口getMessage", JSONArray.toJSONString(message), message.getSuccess());
+        if (!state) {
+            log.info("添加记录到数据库失败！");
+        }
+        return (Boolean) message.getResult();
     }
 
     private String createToken() throws Exception {

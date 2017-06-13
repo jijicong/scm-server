@@ -219,11 +219,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserRelationList.add(purchaseGroupUserRelation);
             }
         }
-        purchaseGroupuUserRelationService.insertList(purchaseGroupUserRelationList);
-        /*
-        先插入，再查询是否有效，增加了抛出异常的可能性，但是不会造成程序的bug
-         */
         selectInvalidUser(purchaseGroupUserRelationList,purchaseGroupUserRelationList.size());
+
+        purchaseGroupuUserRelationService.insertList(purchaseGroupUserRelationList);
 
     }
 
