@@ -82,6 +82,9 @@ public class ExceptionUtil {
 				exceptionEnum = ExceptionEnum.DATABASE_QUERY_TIME_OUT_EXCEPTION;
 			}else if (StringUtils.equals(exceptionName, DeadlockLoserDataAccessException.class.getSimpleName())) {
 				exceptionEnum = ExceptionEnum.DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION;
+			}else if(StringUtils.equals(exceptionName, JurisdictionException.class.getSimpleName())){
+				JurisdictionException jurisdictionException= (JurisdictionException) e;
+				exceptionEnum=jurisdictionException.getExceptionEnum();
 			}else{
 				exceptionEnum = ExceptionEnum.SYSTEM_EXCEPTION;
 			}

@@ -65,20 +65,6 @@ public class BrandResource {
     }
 
     @GET
-    @Path(SupplyConstants.Category.Brand.BRAND_LIST_SEARCH +"/{name}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findBrandByName(@PathParam("name") String name) throws Exception{
-        List<Brand> list=brandBiz.findBrandsByName(name);
-        Integer flag=0;
-        if(null==list||list.size()<1){
-            flag=null;
-        }else{
-            flag=1;
-        }
-        return ResultUtil.createSucssAppResult("查询品牌成功", flag);
-    }
-
-    @GET
     @Path(SupplyConstants.Category.Brand.BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult queryBrands(@BeanParam BrandForm form) throws Exception{

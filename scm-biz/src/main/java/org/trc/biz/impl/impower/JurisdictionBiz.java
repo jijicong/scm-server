@@ -12,6 +12,7 @@ import org.trc.domain.impower.UserAccreditInfo;
 import org.trc.domain.impower.UserAccreditRoleRelation;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
+import org.trc.exception.JurisdictionException;
 import org.trc.service.impower.IJurisdictionService;
 import org.trc.service.impower.IRoleJurisdictionRelationService;
 import org.trc.service.impower.IUserAccreditInfoRoleRelationService;
@@ -123,12 +124,12 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         try {
             AssertUtil.notNull(userAccreditInfo, "用户授权信息不存在");
         } catch (IllegalArgumentException e) {
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户授权信息不存在");
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户授权信息不存在");
         }
         //2.查询用户所拥有的角色
         List<UserAccreditRoleRelation> userRoleRelationList = userAccreditInfoRoleRelationService.selectListByUserAcId(userAccreditInfo.getId());
         if (AssertUtil.CollectionIsEmpty(userRoleRelationList)) {
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户角色信息不存在");
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户角色信息不存在");
         }
         Long[] roleIds = new Long[userRoleRelationList.size()];
         for (int i = 0; i < userRoleRelationList.size(); i++) {
@@ -137,7 +138,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         //3.查询用户所有角色下的权限
         List<RoleJurisdictionRelation> roleJdRelationList = roleJurisdictionRelationService.selectListByRoleIds(roleIds);
         if (AssertUtil.CollectionIsEmpty(roleJdRelationList)) {
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
         }
         Long[] codes = new Long[roleJdRelationList.size()];
         for (int i = 0; i < roleJdRelationList.size(); i++) {
@@ -146,7 +147,7 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         //4.查询具体的权限
         List<Jurisdiction> jurisdictionList = jurisdictionService.selectJurisdictionListByCodes(codes);
         if (AssertUtil.CollectionIsEmpty(jurisdictionList)) {
-            throw new ConfigException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
         }
         //5.验证权限,正则匹配url，方法类型匹配
         for (Jurisdiction jurisdiction : jurisdictionList) {

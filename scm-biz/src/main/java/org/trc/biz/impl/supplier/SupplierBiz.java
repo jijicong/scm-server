@@ -148,6 +148,7 @@ public class SupplierBiz implements ISupplierBiz {
             map.put("supplierCode",form.getSupplierCode());
             map.put("supplierName",form.getSupplierName());
             map.put("supplierKindCode",form.getSupplierKindCode());
+            map.put("channelId",userAccreditInfo.getChannelId());
             map.put("ids",supplierIdArr);
             List<Supplier> supplierList=supplierService.selectSupplierListByApply(map);
             int count=supplierService.selectSupplierListCount(map);

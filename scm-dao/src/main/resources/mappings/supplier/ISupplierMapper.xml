@@ -15,7 +15,7 @@
           FROM  supplier a
           <where>
               a.id NOT IN(select DISTINCT(b.supplier_id ) FROM apply_for_supplier b
-              WHERE b.`status` IN(0,1,2) AND b.is_deleted=0)
+              WHERE b.`status` IN(0,1,2) AND b.is_deleted=0 AND b.channel_id=#{channelId})
               AND a.id IN
               <foreach collection="ids" index="index" item="item" close=")" open="(" separator=",">
                   #{item}
@@ -38,7 +38,7 @@
            FROM supplier a
             <where>
                 a.id NOT IN(select DISTINCT(b.supplier_id ) FROM apply_for_supplier b
-                WHERE b.`status` IN(1,2))
+                WHERE b.`status` IN(0,1,2) AND b.is_deleted=0 AND b.channel_id=#{channelId})
                 AND a.id IN
                 <foreach collection="ids" index="index" item="item" close=")" open="(" separator=",">
                     #{item}
@@ -52,6 +52,7 @@
                 <if test="supplierKindCode != null and supplierKindCode != ''">
                     AND a.supplier_kind_code = #{supplierKindCode}
                 </if>
+                AND a.is_valid=1
             </where>
     </select>
 </mapper>

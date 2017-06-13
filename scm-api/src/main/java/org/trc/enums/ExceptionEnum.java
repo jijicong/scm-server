@@ -94,6 +94,8 @@ public enum ExceptionEnum{
     USER_CENTER_QUERY_EXCEPTION("600101","用户中心查询异常"),
 
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
+    USER_NOT_LOGIN("900002","用户未登录"),
+    USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),
 
     TRC_BRAND_EXCEPTION("600101","通知品牌更改异常"),
     TRC_PROPERTY_EXCEPTION("600102","通知属性更改异常"),
