@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.category.*;
@@ -42,22 +43,22 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private IRequestFlowService requestFlowService;
 
-    @Value("$(trc.key)")
+    @Value("${trc.key}")
     private String TRC_KEY;
 
-    @Value("$(trc.brand.url)")
+    @Value("${trc.brand.url}")
     private String BRAND_URL;
 
-    @Value("$(trc.property.url)")
+    @Value("${trc.property.url}")
     private String PROPERTY_URL;
 
-    @Value("$(trc.category.url)")
+    @Value("${trc.category.url}")
     private String CATEGORY_URL;
 
-    @Value("$(trc.category.brand.url)")
+    @Value("${trc.category.brand.url}")
     private String CATEGORY_BRAND_URL;
 
-    @Value("$(trc.category.property.url)")
+    @Value("${trc.category.property.url}")
     private String CATEGORY_PROPERTY_URL;
 
 
@@ -74,8 +75,10 @@ public class TrcBiz implements ITrcBiz {
         Assert.notNull(brand.getName(), "品牌名称不能为空");
         Assert.notNull(brand.getWebUrl(), "品牌网址不能为空");
         //判断是否通知
-        if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {
-            return new ResultModel("1", "无需通知品牌变更");
+        if (!action.equals("add")) {
+            if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {
+                return new ResultModel("1", "无需通知品牌变更");
+            }
         }
         BrandToTrc brandToTrc = new BrandToTrc();
         brandToTrc.setAlise(brand.getAlise());
@@ -99,19 +102,19 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         logger.info(params.toJSONString());
-        String result = null;
+        String result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
+        String remark = "消息通知成功:  " + BRAND_URL;
         //抛出通知自定义异常
-        try {
-            result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
-        } catch (Exception e) {
-            logger.error(ExceptionEnum.TRC_BRAND_EXCEPTION.getMessage() + " :" + e.getMessage());
-            throw new TrcException(ExceptionEnum.TRC_BRAND_EXCEPTION, e.getMessage());
+        if (StringUtils.isEmpty(result)) {
+            remark = "消息通知失败:  " + BRAND_URL;
+            logger.error(ExceptionEnum.TRC_BRAND_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_BRAND_EXCEPTION, remark);
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
         RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -125,10 +128,12 @@ public class TrcBiz implements ITrcBiz {
         Assert.notNull(property.getTypeCode(), "属性类型编码不能为空");
         Assert.notNull(property.getValueType(), "属性值类型不能为空");
         //判断是否通知
-        if (oldProperty.getIsValid().equals(property.getIsValid()) && oldProperty.getName().equals(property.getName())
-                && oldProperty.getValueType().equals(property.getValueType()) && oldProperty.getTypeCode().equals(property.getTypeCode())
-                && valueList == null) {
-            return new ResultModel("1", "无需通知属性变更");
+        if (!action.equals("add")) {
+            if (oldProperty.getIsValid().equals(property.getIsValid()) && oldProperty.getName().equals(property.getName())
+                    && oldProperty.getValueType().equals(property.getValueType()) && oldProperty.getTypeCode().equals(property.getTypeCode())
+                    && valueList == null) {
+                return new ResultModel("1", "无需通知属性变更");
+            }
         }
         PropertyToTrc propertyToTrc = new PropertyToTrc();
         propertyToTrc.setSort(property.getSort());
@@ -155,19 +160,19 @@ public class TrcBiz implements ITrcBiz {
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info(params.toJSONString());
-        String result = null;
+        String result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
+        String remark = "消息通知成功:  " + PROPERTY_URL;
         //抛出通知自定义异常
-        try {
-            result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
-        } catch (Exception e) {
-            logger.error(ExceptionEnum.TRC_PROPERTY_EXCEPTION.getMessage() + " :" + e.getMessage());
-            throw new TrcException(ExceptionEnum.TRC_PROPERTY_EXCEPTION, e.getMessage());
+        if (StringUtils.isEmpty(result)) {
+            remark = "消息通知失败:  " + PROPERTY_URL;
+            logger.error(ExceptionEnum.TRC_PROPERTY_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_PROPERTY_EXCEPTION, remark);
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
         RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -203,19 +208,19 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info(params.toJSONString());
-        String result = null;
+        String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
+        String remark = "消息通知成功:  " + CATEGORY_PROPERTY_URL;
         //抛出通知自定义异常
-        try {
-            result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
-        } catch (Exception e) {
-            logger.error(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION.getMessage() + " :" + e.getMessage());
-            throw new TrcException(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION, e.getMessage());
+        if (StringUtils.isEmpty(result)) {
+            remark = "消息通知失败:  " + CATEGORY_PROPERTY_URL;
+            logger.error(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION, remark);
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
         RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -236,19 +241,19 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
         logger.info(params.toJSONString());
-        String result = null;
+        String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
+        String remark = "消息通知成功:  " + CATEGORY_BRAND_URL;
         //抛出通知自定义异常
-        try {
-            result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
-        } catch (Exception e) {
-            logger.error(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION.getMessage() + " :" + e.getMessage());
-            throw new TrcException(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION, e.getMessage());
+        if (StringUtils.isEmpty(result)) {
+            remark = "消息通知失败:  " + CATEGORY_BRAND_URL;
+            logger.error(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION, remark);
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
         RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -260,8 +265,10 @@ public class TrcBiz implements ITrcBiz {
         Assert.notNull(category.getClassifyDescribe(), "分类描述不能为空");
         Assert.notNull(category.getSort(), "分类排序不能为空");
         //判断是否通知
-        if (oldCategory.getName().equals(category.getName()) && oldCategory.getIsValid().equals(category.getIsValid())) {
-            return new ResultModel("1", "无需通知分类变更");
+        if (!action.equals(CategoryActionTypeEnum.ADD_CATEGORY.getCode())) {
+            if (oldCategory.getName().equals(category.getName()) && oldCategory.getIsValid().equals(category.getIsValid())) {
+                return new ResultModel("1", "无需通知分类变更");
+            }
         }
         CategoryToTrc categoryToTrc = new CategoryToTrc();
         categoryToTrc.setIsValid(category.getIsValid());
@@ -286,19 +293,19 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
         logger.info(params.toJSONString());
-        String result = null;
+        String result = trcService.sendCategoryToTrc(CATEGORY_URL, params.toJSONString());
+        String remark = "消息通知成功:  " + CATEGORY_BRAND_URL;
         //抛出通知自定义异常
-        try {
-            result = trcService.sendCategoryToTrc(CATEGORY_URL, params.toJSONString());
-        } catch (Exception e) {
-            logger.error(ExceptionEnum.TRC_CATEGORY_EXCEPTION.getMessage() + " :" + e.getMessage());
-            throw new TrcException(ExceptionEnum.TRC_CATEGORY_EXCEPTION, e.getMessage());
+        if (StringUtils.isEmpty(result)) {
+            remark = "消息通知失败:  " + CATEGORY_BRAND_URL;
+            logger.error(ExceptionEnum.TRC_CATEGORY_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_CATEGORY_EXCEPTION, remark);
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
         RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime());
+                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }

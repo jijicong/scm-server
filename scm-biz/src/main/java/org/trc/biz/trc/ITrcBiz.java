@@ -44,4 +44,7 @@ public interface ITrcBiz {
      */
     ResultModel sendCategory(CategoryActionTypeEnum action, Category oldCategory, Category category,
                              List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception;
+
+
+//    ResultModel
 }

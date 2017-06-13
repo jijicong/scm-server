@@ -10,6 +10,9 @@ public class ResultModel {
 
     private String msg;
 
+    public ResultModel() {
+    }
+
     public ResultModel(String status, String msg) {
         this.status = status;
         this.msg = msg;
