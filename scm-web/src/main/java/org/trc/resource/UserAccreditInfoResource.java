@@ -117,9 +117,9 @@ public class UserAccreditInfoResource {
     @POST
     @Path(SupplyConstants.UserAccreditInfo.SAVE_ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate,@Context ContainerRequestContext requestContext) throws Exception {
+    public AppResult saveUserAccredit(@BeanParam UserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext) throws Exception {
 
-        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate,requestContext);
+        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate, requestContext);
         return ResultUtil.createSucssAppResult("新增授权成功", "");
     }
 
@@ -143,8 +143,8 @@ public class UserAccreditInfoResource {
     @PUT
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_ACCREDIT + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateUserAccreditInfo(@BeanParam UserAddPageDate userAddPageDate) throws Exception {
-        userAccreditInfoBiz.updateUserAccredit(userAddPageDate);
+    public AppResult updateUserAccreditInfo(@BeanParam UserAddPageDate userAddPageDate,@Context ContainerRequestContext requestContext) throws Exception {
+        userAccreditInfoBiz.updateUserAccredit(userAddPageDate,requestContext);
         return ResultUtil.createSucssAppResult("修改用户成功", "");
     }
 
@@ -163,4 +163,13 @@ public class UserAccreditInfoResource {
         return ResultUtil.createSucssAppResult("查询成功", userAccreditInfoBiz.purchaseRole(id));
     }
 
+    /**
+     * 查询用户关联的角色起停用状态
+     */
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.ROLE_VALID + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult checkRoleValid(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("查询成功", userAccreditInfoBiz.checkRoleValid(id));
+    }
 }

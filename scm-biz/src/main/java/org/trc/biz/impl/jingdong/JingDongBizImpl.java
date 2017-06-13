@@ -353,7 +353,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         ReturnTypeDO stock = null;
         String token = getAccessToken();
         AssertUtil.notBlank(token, "token不能为空");
-        String address = getAddress(area.getProvince(), area.getCity(), area.getCounty());
+        String address = getAddress(area.getProvince(), area.getCity(), area.getCounty(),null);
         JSONObject inputParam = new JSONObject();
         inputParam.put("token", token);
         inputParam.put("sku", sku);
@@ -390,7 +390,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         ReturnTypeDO stock = null;
         String token = getAccessToken();
         AssertUtil.notBlank(token, "token不能为空");
-        String address = getAddress(area.getProvince(), area.getCity(), area.getCounty());
+        String address = getAddress(area.getProvince(), area.getCity(), area.getCounty(),null);
         JSONObject inputParam = new JSONObject();
         inputParam.put("token", token);
         inputParam.put("skuNums", skuNums);
@@ -419,14 +419,18 @@ public class JingDongBizImpl implements IJingDongBiz {
     }
 
     @Override
-    public String getAddress(String pro, String ci, String cou) throws Exception {
+    public String getAddress(String pro, String ci, String cou,String tow) throws Exception {
         AssertUtil.notBlank(pro, "province不能为空");
         AssertUtil.notBlank(ci, "city不能为空");
         AssertUtil.notBlank(cou, "county不能为空");
         String province = tableMappingService.selectByCode(pro);
         String city = tableMappingService.selectByCode(ci);
         String county = tableMappingService.selectByCode(cou);
-        return province + "_" + city + "_" + county;
+        if (StringUtils.isBlank(tow)){
+            return province + "_" + city + "_" + county;
+        }
+        String town = tableMappingService.selectByCode(tow);
+        return province + "_" + city + "_" + county+"_"+town;
     }
 
     @Override

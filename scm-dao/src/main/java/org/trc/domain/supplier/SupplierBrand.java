@@ -1,7 +1,10 @@
 package org.trc.domain.supplier;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.TimestampSerializer;
 import org.trc.domain.BaseDO;
 import org.trc.domain.util.ScmDO;
 
@@ -43,11 +46,13 @@ public class SupplierBrand extends ScmDO {
     private String proxyAptitudeId;
     @FormParam("proxyAptitudeStartDate")
     //@NotEmpty
+    @JsonSerialize(using = TimestampSerializer.class)
     @Length(max = 32, message = "资质有效期开始日期长度不能超过32个")
     private String proxyAptitudeStartDate;
     @FormParam("proxyAptitudeEndDate")
     //@NotEmpty
     @Length(max = 32, message = "资质有效期截止日期长度不能超过32个")
+    @JsonSerialize(using = TimestampSerializer.class)
     private String proxyAptitudeEndDate;
     @FormParam("aptitudePic")
     //@NotEmpty

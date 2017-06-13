@@ -150,13 +150,11 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         //5.验证权限,正则匹配url，方法类型匹配
         for (Jurisdiction jurisdiction : jurisdictionList) {
-            if(!url.matches(jurisdiction.getUrl())){
-                return false;
+            if(url.matches(jurisdiction.getUrl())){
+                if(jurisdiction.getMethod().equals(method)){
+                    return true;
+                }
             }
-            if(!jurisdiction.getMethod().equals(method)){
-                return false;
-            }
-            return true;
         }
         return false;
     }
@@ -172,6 +170,5 @@ public class JurisdictionBiz implements IJurisdictionBiz {
         }
         return false;
     }
-
 
 }

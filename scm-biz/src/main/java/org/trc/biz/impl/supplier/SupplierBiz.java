@@ -354,6 +354,14 @@ public class SupplierBiz implements ISupplierBiz {
         String channels = supplier.getChannel();
         List<SupplierChannelRelation> supplierChannelRelations = getSupplierChannelRelations(channels, supplier);
         updateSupplierChannelRelation(supplierChannelRelations, supplier);
+        //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
+        if(StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+            Supplier _supplier = new Supplier();
+            _supplier.setSupplierCode(supplier.getSupplierCode());
+            _supplier = supplierService.selectOne(_supplier);
+            AssertUtil.notNull(_supplier, String.format("根据供应商编码[%s]查询供应商信息为空", supplier.getSupplierCode()));
+            rejectSupplierApply(supplier.getId());
+        }
     }
 
 
@@ -776,6 +784,7 @@ public class SupplierBiz implements ISupplierBiz {
         int count = 0;
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
         List<SupplierBrand> addlist = new ArrayList<SupplierBrand>();
+        List<SupplierBrand> updateList = new ArrayList<SupplierBrand>();
         List<SupplierBrand> delList = new ArrayList<SupplierBrand>();
         Date sysTime = Calendar.getInstance().getTime();
         for(Object obj : categoryArray){
@@ -802,11 +811,29 @@ public class SupplierBiz implements ISupplierBiz {
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
-            if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
-                s.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-                delList.add(s);
-            }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){//原始数据
+                if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), jbo.getString("status"))){//已修改
+                    updateList.add(s);
+                }else if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
+                    delList.add(s);
+                }
+            }else{//新增数据
                 addlist.add(s);
+            }
+        }
+        if(updateList.size() > 0){
+            for(SupplierBrand supplierBrand : updateList){
+                Example example = new Example(SupplierBrand.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("supplierCode", supplierBrand.getSupplierCode());
+                criteria.andEqualTo("categoryId", supplierBrand.getCategoryId());
+                criteria.andEqualTo("brandId", supplierBrand.getBrandId());
+                count = supplierBrandService.updateByExampleSelective(supplierBrand, example);
+                if (count == 0) {
+                    String msg = String.format("更新供应商代理品牌%s失败", JSON.toJSONString(supplierBrand));
+                    log.error(msg);
+                    throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+                }
             }
         }
         if(delList.size() > 0){
@@ -817,11 +844,12 @@ public class SupplierBiz implements ISupplierBiz {
                 criteria.andEqualTo("categoryId", supplierBrand.getCategoryId());
                 criteria.andEqualTo("brandId", supplierBrand.getBrandId());
                 count = supplierBrandService.deleteByExample(example);
-                if (count == 0) {
+                //FIXME
+                /*if (count == 0) {
                     String msg = String.format("删除供应商代理品牌%s失败", JSON.toJSONString(supplierBrand));
                     log.error(msg);
                     throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
-                }
+                }*/
             }
         }
         if(addlist.size() > 0){

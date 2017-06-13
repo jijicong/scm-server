@@ -126,7 +126,7 @@ public interface IJingDongBiz {
      * @return
      * @throws Exception
      */
-    String getAddress(String province, String city, String county) throws Exception;
+    String getAddress(String province, String city, String county,String town) throws Exception;
 
     void getSkuList() throws Exception;
 
