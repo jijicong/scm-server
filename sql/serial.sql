@@ -1,5 +1,5 @@
 INSERT INTO `serial` (`id`, `name`, `number`, `update_time`) VALUES (5, 'GYS', 1, '2017-6-5 16:58:31');
-INSERT INTO `serial` (`id`, `name`, `number`, `update_time`) VALUES (6, 'GYSSQ', 1, '2017-6-5 16:58:31');
+INSERT INTO `serial` (`id`, `name`, `number`, `update_time`) VALUES (6, 'SQGYS', 1, '2017-6-5 16:58:31');
 INSERT INTO `serial` (`id`, `name`, `number`, `update_time`) VALUES (7, 'PP', 1, '2017-6-5 16:58:31');
 INSERT INTO `serial` (`id`, `name`, `number`, `update_time`) VALUES (8, 'SPU', 1, '2017-6-5 16:58:31');
 INSERT INTO `serial` (`id`, `name`, `number`, `update_time`) VALUES (9, 'SP', 1, '2017-6-5 16:58:31');

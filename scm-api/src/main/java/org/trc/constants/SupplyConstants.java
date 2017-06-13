@@ -231,7 +231,7 @@ public class SupplyConstants {
         //状态的修改
         public static final String UPDATE_STATE = "warehouse/updateState";
         //查询可用仓库
-        public static final String WAREHOUSE_VALID = "wharehouseValid";
+        public static final String WAREHOUSE_VALID = "wharehouses";
     }
 
     /**
@@ -323,7 +323,7 @@ public class SupplyConstants {
         //采购组名查询
         public static final String PURCHASE_GROUP = "purchaseGroup";
         //采购组列表
-        public static final String PURCHASE_GROUP_LIST = "purchaseGroupList";
+        public static final String PURCHASE_GROUP_LIST = "purchaseGroups";
         //根据采购组的编码查询
         public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //状态的修改
