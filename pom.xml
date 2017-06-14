@@ -307,6 +307,36 @@
         </dependencies>
     </dependencyManagement>
 
+    <profiles>
+        <profile>
+            <!-- 本地开发环境 -->
+            <id>dev</id>
+            <properties>
+                <package.environment>dev</package.environment>
+                <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <!-- 测试环境 -->
+            <id>test</id>
+            <properties>
+                <package.environment>test</package.environment>
+                <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
+            </properties>
+        </profile>
+        <profile>
+            <!-- 线上环境 -->
+            <id>online</id>
+            <properties>
+                <package.environment>online</package.environment>
+                <jvm.opt.args>-server -Xms2048m -Xmx3072m -Xmn1152m -XX:MetaspaceSize=256m</jvm.opt.args>
+            </properties>
+        </profile>
+    </profiles>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -332,24 +362,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-assembly-plugin</artifactId>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>make-install</id>-->
-            <!--<phase>package</phase>-->
-            <!--<goals>-->
-            <!--<goal>single</goal>-->
-            <!--</goals>-->
-            <!--<configuration>-->
-            <!--<descriptors>-->
-            <!--<descriptor>assembly/assembly.xml</descriptor>-->
-            <!--</descriptors>-->
-            <!--</configuration>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
         </plugins>
     </build>
 
