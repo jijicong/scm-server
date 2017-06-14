@@ -181,14 +181,14 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     public ResultModel sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
-        if (action.getCode().equals(TrcActionTypeEnum.ADD_CATEGORY.getCode()) || action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY.getCode())
-                || action.getCode().equals(TrcActionTypeEnum.STOP_CATEGORY.getCode())) {
+        if (action.equals(TrcActionTypeEnum.ADD_CATEGORY) || action.equals(TrcActionTypeEnum.EDIT_CATEGORY)
+                || action.equals(TrcActionTypeEnum.STOP_CATEGORY)) {
             return sendCategoryToTrc(action, oldCategory, category, operateTime);
         }
-        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_BRAND.getCode())) {
+        if (action.equals(TrcActionTypeEnum.EDIT_CATEGORY_BRAND)) {
             return sendCategoryBrandList(action, categoryBrandList, operateTime);
         }
-        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode())) {
+        if (action.equals(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY)) {
             return sendCategoryPropertyList(action, categoryPropertyList, operateTime);
         }
         return null;
