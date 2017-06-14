@@ -16,10 +16,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
-import org.trc.form.category.CategoryBrandForm;
-import org.trc.form.category.CategoryForm;
-import org.trc.form.category.TableDate;
-import org.trc.form.category.TreeNode;
+import org.trc.form.category.*;
 import org.trc.service.category.*;
 import org.trc.service.supplier.ISupplierCategoryService;
 import org.trc.service.util.ISerialUtilService;
@@ -89,6 +86,48 @@ public class CategoryBiz implements ICategoryBiz {
         example.orderBy("updateTime").desc();
         return categoryService.pagination(example, page, queryModel);
     }
+
+
+    @Override
+    public Pagenation<Brand> brandListCategory(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
+        setQueryParam(example, criteria, queryModel);
+        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
+        return pagenation;
+    }
+
+    public void setQueryParam(Example example, Example.Criteria criteria, BrandForm queryModel) {
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        if (!StringUtils.isBlank(queryModel.getStartUpdateTime())) {
+            criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
+        }
+        if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
+            criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
+        }
+        if (!StringUtils.isBlank(queryModel.getAlise())) {
+            criteria.andEqualTo("alise", queryModel.getAlise());
+        }
+        if (!StringUtils.isBlank(queryModel.getBrandCode())) {
+            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
+        }
+        if (!StringUtils.isBlank(queryModel.getPageIds())) {
+            Long pageIds[] = StringUtil.splitByComma(queryModel.getPageIds());
+
+            if (pageIds.length > 0) {
+                for (Long id : pageIds) {
+                    criteria.andNotEqualTo("id", id);
+                }
+            }
+        }
+        example.orderBy("updateTime").desc();
+    }
+
 
     /**
      * 根据父类id，查找子分类，isRecursive为true，递归查找所有，否则只查一级子分类
