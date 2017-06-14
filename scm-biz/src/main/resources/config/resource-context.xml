@@ -11,11 +11,11 @@
     <bean id="myPropertyConfigurer" class="org.trc.spring.TrPropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:config/dev/scm-jdbc.properties</value>
-                <value>classpath:config/dev/comsumer-config.properties</value>
-                <value>classpath:config/dev/trc.properties</value>
-                <value>classpath:config/dev/redis.properties</value>
-                <value>classpath:config/dev/config.properties</value>
+                <value>classpath:config/${env}/scm-jdbc.properties</value>
+                <value>classpath:config/${env}/comsumer-config.properties</value>
+                <value>classpath:config/${env}/trc.properties</value>
+                <value>classpath:config/${env}/redis.properties</value>
+                <value>classpath:config/${env}/config.properties</value>
             </list>
         </property>
         <property name="fileEncoding">
