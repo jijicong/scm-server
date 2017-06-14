@@ -72,8 +72,6 @@
         <redis.clients.version>2.4.2</redis.clients.version>
         <qiniu.version>7.2.6</qiniu.version>
         <jerseyJson.version>1.19.3</jerseyJson.version>
-        <javassist.version>3.21.0-GA</javassist.version>
-        <javassist.version>3.21.0-GA</javassist.version>
 
     </properties>
 
@@ -299,6 +297,12 @@
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
                 <version>${redis.clients.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${javassist.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
