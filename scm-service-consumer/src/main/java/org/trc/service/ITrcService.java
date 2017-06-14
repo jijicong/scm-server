@@ -47,4 +47,12 @@ public interface ITrcService {
      * @throws Exception
      */
     String sendPropertyNotice(String propertyUrl, String params) throws Exception;
+
+    /**
+     * @param itemsUrl
+     * @param params
+     * @return
+     * @throws Exception
+     */
+    String sendItemsNotice(String itemsUrl, String params) throws Exception;
 }

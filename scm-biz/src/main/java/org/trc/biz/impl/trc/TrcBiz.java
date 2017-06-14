@@ -12,6 +12,10 @@ import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
+import org.trc.domain.goods.ItemNaturePropery;
+import org.trc.domain.goods.ItemSalesPropery;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
 import org.trc.enums.CategoryActionTypeEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.TrcException;
@@ -61,6 +65,8 @@ public class TrcBiz implements ITrcBiz {
     @Value("${trc.category.property.url}")
     private String CATEGORY_PROPERTY_URL;
 
+    @Value("${trc.item.url}")
+    private String ITEMS_URL;
 
     private static final String OR = "|";
 
@@ -101,7 +107,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
-        logger.info(params.toJSONString());
+        logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
         String remark = "消息通知成功:  " + BRAND_URL;
         //抛出通知自定义异常
@@ -112,9 +118,8 @@ public class TrcBiz implements ITrcBiz {
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
-        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, "BRAND",
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -159,7 +164,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
-        logger.info(params.toJSONString());
+        logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
         String remark = "消息通知成功:  " + PROPERTY_URL;
         //抛出通知自定义异常
@@ -170,9 +175,8 @@ public class TrcBiz implements ITrcBiz {
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
-        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, "PROPERTY",
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -192,6 +196,44 @@ public class TrcBiz implements ITrcBiz {
         return null;
     }
 
+    @Override
+    public ResultModel sendItem(String action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
+
+        //TODO 判断石头通知，暂时觉得都得通知
+
+        //传值处理
+        String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(TRC_KEY).append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime);
+        //MD5加密
+        String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
+        JSONObject params = new JSONObject();
+        params.put("action", action);
+        params.put("operateTime", operateTime);
+        params.put("noticeNum", noticeNum);
+        params.put("sign", sign);
+        params.put("items", items);
+        params.put("itemNaturePropery", itemNaturePropery);
+        params.put("itemSalesPropery", itemSalesPropery);
+        params.put("skus", skus);
+        logger.info("请求数据: " + params.toJSONString());
+        String result = trcService.sendItemsNotice(ITEMS_URL,params.toJSONString());
+
+        String remark = "消息通知成功:  " + ITEMS_URL;
+        //抛出通知自定义异常
+        if (StringUtils.isEmpty(result)) {
+            remark = "消息通知失败:  " + ITEMS_URL;
+            logger.error(ExceptionEnum.TRC_ITEMS_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_ITEMS_EXCEPTION, remark);
+        }
+        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, "ITEMS",
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        requestFlowService.insert(requestFlow);
+        return resultModel;
+    }
+
     //发送分类属性改动
     public ResultModel sendCategoryPropertyList(CategoryActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         Assert.notNull(categoryPropertyList, "分类属性列表不能为空");
@@ -207,7 +249,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
-        logger.info(params.toJSONString());
+        logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
         String remark = "消息通知成功:  " + CATEGORY_PROPERTY_URL;
         //抛出通知自定义异常
@@ -218,9 +260,8 @@ public class TrcBiz implements ITrcBiz {
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
-        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, "CATEGORY_PROPERTY",
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -240,7 +281,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
-        logger.info(params.toJSONString());
+        logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
         String remark = "消息通知成功:  " + CATEGORY_BRAND_URL;
         //抛出通知自定义异常
@@ -251,9 +292,8 @@ public class TrcBiz implements ITrcBiz {
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
-        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, "CATEGORY_BRAND",
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
@@ -292,7 +332,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
-        logger.info(params.toJSONString());
+        logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendCategoryToTrc(CATEGORY_URL, params.toJSONString());
         String remark = "消息通知成功:  " + CATEGORY_BRAND_URL;
         //抛出通知自定义异常
@@ -303,9 +343,8 @@ public class TrcBiz implements ITrcBiz {
         }
         ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
         //存储请求记录
-        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.POST + UNDER_LINE);
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowConstant.POST,
-                requestNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, "CATEGORY",
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
     }

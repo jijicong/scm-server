@@ -24,6 +24,12 @@ public class TrcService implements ITrcService {
         return HttpClientUtil.httpPostJsonRequest(propertyUrl, params, 10000);
     }
 
+    //发送商品改动
+    @Override
+    public String sendItemsNotice(String itemsUrl, String params) throws Exception {
+        return HttpClientUtil.httpPostJsonRequest(itemsUrl, params, 10000);
+}
+
     //发送分类属性改动
     @Override
     public String sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception {

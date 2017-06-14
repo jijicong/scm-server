@@ -1,6 +1,10 @@
 package org.trc.biz.trc;
 
 import org.trc.domain.category.*;
+import org.trc.domain.goods.ItemNaturePropery;
+import org.trc.domain.goods.ItemSalesPropery;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
 import org.trc.enums.CategoryActionTypeEnum;
 import org.trc.model.ResultModel;
 
@@ -46,5 +50,17 @@ public interface ITrcBiz {
                              List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception;
 
 
-//    ResultModel
+    /**
+     * 通知商品变更信息
+     *
+     * @param action            行为
+     * @param items             商品信息
+     * @param itemNaturePropery 自然属性信息
+     * @param itemSalesPropery  采购属性信息
+     * @param skus              规格信息
+     * @param operateTime      时间戳
+     * @return
+     * @throws Exception
+     */
+    ResultModel sendItem(String action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
 }
