@@ -619,7 +619,7 @@ public class SupplierBiz implements ISupplierBiz {
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
             //检查分类启停用状态
-            checkCategoryValidStatus(s.getCategoryId());
+            checkCategoryBrandValidStatus(s.getCategoryId(), null);
             list.add(s);
         }
         int count = supplierCategoryService.insertList(list);
@@ -627,21 +627,6 @@ public class SupplierBiz implements ISupplierBiz {
             String msg = CommonUtil.joinStr("保存供应商代理类目", JSON.toJSONString(supplierCategory), "到数据库失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
-        }
-    }
-
-    /**
-     * 检查分类启停用状态
-     * @param categoryId
-     * @throws Exception
-     */
-    private void checkCategoryValidStatus(Long categoryId) throws Exception{
-        Category category = categoryService.selectByPrimaryKey(categoryId);
-        AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
-            String msg = String.format("分类[%s]已被停用", category.getName());
-            log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_DEPEND_DATA_INVALID, msg);
         }
     }
 
@@ -674,7 +659,7 @@ public class SupplierBiz implements ISupplierBiz {
                 deleteList.add(s.getId());
             }else{
                 //检查分类启停用状态
-                checkCategoryValidStatus(s.getCategoryId());
+                checkCategoryBrandValidStatus(s.getCategoryId(), null);
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
@@ -748,7 +733,7 @@ public class SupplierBiz implements ISupplierBiz {
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
             //检查品牌启停用状态
-            checkBrandValidStatus(s.getCategoryId(), s.getBrandId());
+            checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
             list.add(s);
         }
         int count = supplierBrandService.insertList(list);
@@ -760,20 +745,32 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     /**
-     * 检查品牌启停用状态
+     * 检查分类品牌启停用状态
+     * @param categoryId
      * @param brandId
      * @throws Exception
      */
-    private void checkBrandValidStatus(Long categoryId, Long brandId) throws Exception{
-        CategoryBrand categoryBrand = new CategoryBrand();
-        categoryBrand.setCategoryId(categoryId);
-        categoryBrand.setBrandId(brandId);
-        categoryBrand = categoryBrandService.selectOne(categoryBrand);
-        AssertUtil.notNull(categoryBrand, String.format("根据分类ID[%s]和品牌ID[%s]查询分类品牌信息为空", categoryId, brandId));
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
-            Brand brand = brandService.selectByPrimaryKey(brandId);
-            AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
-            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已被禁用", brand.getName()));
+    public void checkCategoryBrandValidStatus(Long categoryId, Long brandId) throws Exception{
+        AssertUtil.notNull(categoryId, "检查分类品牌启停用状态分类ID不能为空");
+        Category category = categoryService.selectByPrimaryKey(categoryId);
+        AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已停用", category.getName()));
+        }else{
+            if(null != brandId){
+                Brand brand = brandService.selectByPrimaryKey(brandId);
+                AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
+                if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())){
+                    throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已停用", brand.getName()));
+                }
+                CategoryBrand categoryBrand = new CategoryBrand();
+                categoryBrand.setCategoryId(categoryId);
+                categoryBrand.setBrandId(brandId);
+                categoryBrand = categoryBrandService.selectOne(categoryBrand);
+                if(null == categoryBrand || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
+                    throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]和品牌[%s]关联已停用", category.getName(), brand.getName()));
+                }
+            }
         }
     }
 
@@ -808,7 +805,7 @@ public class SupplierBiz implements ISupplierBiz {
                 delList.add(s);
             }else{
                 //检查品牌启停用状态
-                checkBrandValidStatus(s.getCategoryId(), s.getBrandId());
+                checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
