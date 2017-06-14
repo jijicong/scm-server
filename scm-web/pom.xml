@@ -129,36 +129,6 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <!-- 本地开发环境 -->
-            <id>dev</id>
-            <properties>
-                <package.environment>dev</package.environment>
-                <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
-            <!-- 测试环境 -->
-            <id>test</id>
-            <properties>
-                <package.environment>test</package.environment>
-                <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
-            </properties>
-        </profile>
-        <profile>
-            <!-- 线上环境 -->
-            <id>online</id>
-            <properties>
-                <package.environment>online</package.environment>
-                <jvm.opt.args>-server -Xms2048m -Xmx3072m -Xmn1152m -XX:MetaspaceSize=256m</jvm.opt.args>
-            </properties>
-        </profile>
-    </profiles>
-
     <properties>
         <warName>scm-server</warName>
     </properties>
@@ -168,16 +138,16 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>false</filtering>
+                <filtering>true</filtering>
             </resource>
             <resource>
                 <directory>src/main/java</directory>
-                <filtering>false</filtering>
+                <filtering>true</filtering>
             </resource>
             <resource>
                 <directory>src/main/resources/config/${package.environment}</directory>
                 <targetPath>resources</targetPath>
-                <filtering>false</filtering>
+                <filtering>true</filtering>
             </resource>
         </resources>
         <!--<resources>
@@ -193,6 +163,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <outputDirectory>/opt/auto</outputDirectory>
