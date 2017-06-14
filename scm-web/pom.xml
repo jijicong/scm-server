@@ -130,7 +130,7 @@
     </dependencies>
 
     <properties>
-        <warName>scm-server</warName>
+        <warName>scm-web</warName>
     </properties>
 
     <build>
