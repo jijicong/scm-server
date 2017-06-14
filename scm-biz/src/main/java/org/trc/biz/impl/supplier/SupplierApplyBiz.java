@@ -169,12 +169,13 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", userAccreditInfo.getChannelId());
         List<String> statusList = new ArrayList<>();
+        statusList.add(ZeroToNineEnum.ZERO.getCode());
         statusList.add(ZeroToNineEnum.ONE.getCode());
         statusList.add(ZeroToNineEnum.TWO.getCode());
         criteria.andIn("status", statusList);
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
         if (!AssertUtil.CollectionIsEmpty(supplierApplyList)) {
-            String msg = "该供应商已经被申请，无法继续申请，supplierId：" + supplierApply.getSupplierId();
+            String msg = "该供应商已经被申请或暂存，无法继续申请";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
         }
@@ -218,8 +219,32 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateSupplierApply(SupplierApply supplierApply) throws Exception {
+    public void updateSupplierApply(SupplierApply supplierApply,ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierApply, "供应商申请申请信息，申请信息不能为空");
+        UserAccreditInfo userAccreditInfo = (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
+        Supplier validateSupplier = supplierService.selectByPrimaryKey(supplierApply.getSupplierId());
+        if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
+            String msg = "该供应商已经被禁用无法申请，supplierId：" + supplierApply.getSupplierId();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
+        }
+        //2.验证供应商是否已经经过申请
+        Example example = new Example(SupplierApply.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
+        criteria.andEqualTo("channelId", userAccreditInfo.getChannelId());
+        List<String> statusList = new ArrayList<>();
+        statusList.add(ZeroToNineEnum.ZERO.getCode());
+        statusList.add(ZeroToNineEnum.ONE.getCode());
+        statusList.add(ZeroToNineEnum.TWO.getCode());
+        criteria.andIn("status", statusList);
+        List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
+        if (!AssertUtil.CollectionIsEmpty(supplierApplyList)) {
+            String msg = "该供应商已经被申请或暂存，无法继续申请";
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
+        }
         SupplierApply update = new SupplierApply();
         update.setId(supplierApply.getId());
         update.setDescription(supplierApply.getDescription());

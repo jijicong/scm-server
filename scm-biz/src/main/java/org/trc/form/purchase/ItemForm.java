@@ -24,9 +24,9 @@ public class ItemForm extends QueryModel{
     /**
      * 商品SKU-CODE
      */
-    @QueryParam("BrandName")
+    @QueryParam("brandName")
     @Length(max = 256)
-    private String BrandName;
+    private String brandName;
 
     public String getName() {
         return name;
@@ -45,10 +45,10 @@ public class ItemForm extends QueryModel{
     }
 
     public String getBrandName() {
-        return BrandName;
+        return brandName;
     }
 
     public void setBrandName(String brandName) {
-        BrandName = brandName;
+        this.brandName = brandName;
     }
 }

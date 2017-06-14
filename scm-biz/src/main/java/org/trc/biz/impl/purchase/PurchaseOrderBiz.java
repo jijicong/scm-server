@@ -216,8 +216,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception {
         //有没有对应的渠道。渠道有没有对应的供应商
+        //TODO userId加入
         String userId = (String)requestContext.getProperty("userId");
-        System.out.println(userId);
+        userId = "E2E4BDAD80354EFAB6E70120C271968C";
         if (StringUtils.isBlank(userId)) {
             String msg = CommonUtil.joinStr("根据userId查询供应商的参数userId为空").toString();
             LOGGER.error(msg);
@@ -308,7 +309,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("supplierCode",supplierCode);
         map.put("name", form.getName());
         map.put("skuCode", form.getSkuCode());
-        map.put("BrandName", form.getBrandName());
+        map.put("brandName", form.getBrandName());
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
 
         List<Long> categoryIds = new ArrayList<>();
@@ -323,7 +324,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 if(purchaseDetailTmp.getCategoryId().equals(purchaseDetail.getCategoryId())){
                     purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
                     purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
-                    System.out.println(purchaseDetail.getAllCategory()+"\\"+purchaseDetail.getAllCategoryName());
                 }
             }
         }
