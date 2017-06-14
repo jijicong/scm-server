@@ -5,7 +5,7 @@ import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
-import org.trc.enums.CategoryActionTypeEnum;
+import org.trc.enums.TrcActionTypeEnum;
 import org.trc.model.ResultModel;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public interface ITrcBiz {
      * @param operateTime 时间戳
      * @return 渠道调回信息
      */
-    ResultModel sendBrand(String action, Brand oldBrand, Brand brand, long operateTime) throws Exception;
+    ResultModel sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception;
 
     /**
      * @param action      行为
@@ -34,7 +34,7 @@ public interface ITrcBiz {
      * @return 渠道调回信息
      * @throws Exception
      */
-    ResultModel sendProperty(String action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception;
+    ResultModel sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception;
 
     /**
      * @param action               行为
@@ -46,7 +46,7 @@ public interface ITrcBiz {
      * @return 渠道调回信息
      * @throws Exception
      */
-    ResultModel sendCategory(CategoryActionTypeEnum action, Category oldCategory, Category category,
+    ResultModel sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category,
                              List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception;
 
 
@@ -58,9 +58,9 @@ public interface ITrcBiz {
      * @param itemNaturePropery 自然属性信息
      * @param itemSalesPropery  采购属性信息
      * @param skus              规格信息
-     * @param operateTime      时间戳
+     * @param operateTime       时间戳
      * @return
      * @throws Exception
      */
-    ResultModel sendItem(String action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
+    ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
 }
