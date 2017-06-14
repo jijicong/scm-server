@@ -1,9 +1,7 @@
 package org.trc.biz.category;
 
-import org.trc.domain.category.Category;
-import org.trc.domain.category.CategoryBrand;
-import org.trc.domain.category.CategoryBrandExt;
-import org.trc.domain.category.CategoryProperty;
+import org.trc.domain.category.*;
+import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
@@ -156,4 +154,6 @@ public interface ICategoryBiz {
      * @throws Exception
      */
     List<Category> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception;
+
+    Pagenation<Brand> brandListCategory(BrandForm queryModel, Pagenation<Brand> page) throws Exception;
 }
