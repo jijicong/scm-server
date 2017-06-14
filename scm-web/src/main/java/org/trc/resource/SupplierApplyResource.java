@@ -68,8 +68,8 @@ public class SupplierApplyResource {
 
     @PUT
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
-    public AppResult updateSupplierApply(@BeanParam SupplierApply supplierApply)throws Exception{
-        supplierApplyBiz.updateSupplierApply(supplierApply);
+    public AppResult updateSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
+        supplierApplyBiz.updateSupplierApply(supplierApply,requestContext);
         return ResultUtil.createSucssAppResult("供应商申请修改成功","");
     }
 

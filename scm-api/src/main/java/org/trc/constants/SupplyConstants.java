@@ -117,8 +117,8 @@ public class SupplyConstants {
             //分类品牌关联
             public static final String CATEGORY_BRAND_LINK = "link";
 
-//            //已经关联的分类品牌
-//            public static final String CATEGORY_BRAND_PAGE = "categoryBrandPage";
+//            //查询品牌列表
+            public static final String  BAND_LIST= "brandPageCategory";
         }
 
 

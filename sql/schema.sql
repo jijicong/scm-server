@@ -224,7 +224,7 @@ create table category_brand
    is_valid             varchar(2) comment '是否启用',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -364,8 +364,8 @@ create table common_config
    type                 varchar(64)  comment '类型',
    description          varchar(255) not null comment '备注',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
-   dead_time            timestamp  comment '失效时间',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   dead_time            timestamp null default null comment '失效时间',
    primary key (id)
 );
 
@@ -639,11 +639,11 @@ create table order_item
    tax_rate             decimal(20,5) comment '税率',
    params               varchar(255) comment '订单冗余参数',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp  comment '支付时间',
-   consign_time         timestamp  comment '发货时间',
+   pay_time             timestamp null default null comment '支付时间',
+   consign_time         timestamp null default null  comment '发货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp  comment '超时确认时间',
-   end_time             timestamp  comment '关闭时间',
+   timeout_action_time  timestamp null default null  comment '超时确认时间',
+   end_time             timestamp null default null  comment '关闭时间',
    primary key (id)
 );
 
@@ -736,12 +736,12 @@ create table platform_order
    group_buy_status     varchar(32) comment '拼团状态 NO_APPLY 不应用拼团 IN_PROCESS拼团中 SUCCESS 成功 FAILED 失败',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp comment '支付时间',
-   consign_time         timestamp comment '发货时间',
-   receive_time         timestamp comment '确认收货时间',
+   pay_time             timestamp null default null comment '支付时间',
+   consign_time         timestamp null default null comment '发货时间',
+   receive_time         timestamp null default null comment '确认收货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp comment '订单未支付超时过期时间',
-   end_time             timestamp comment '订单结束时间',
+   timeout_action_time  timestamp null default null comment '订单未支付超时过期时间',
+   end_time             timestamp null default null comment '订单结束时间',
    pay_bill_id          varchar(32) comment '支付流水号',
    primary key (id)
 );
@@ -981,7 +981,7 @@ create table serial
    id                   bigint(0) not null comment '主键id',
    name                 varchar(32) comment '流水号的前缀',
    number               int comment '流水位置',
-   update_time          timestamp comment '更新时间',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1025,7 +1025,7 @@ create table shop_order
    group_buy_status     varchar(32) comment '拼团状态',
    total_tax            bigint comment '订单总税费,单位/分',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
+   consign_time         timestamp null default null comment '发货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
    primary key (id)
 );
@@ -1355,7 +1355,7 @@ create table warehouse_notice_callback
    warehouse_notice_code varchar(32) comment '入库单编号',
    request_params       longtext comment 'json格式',
    state                tinyint not null comment '状态:1-初始状态,2-处理成功,3-处理失败',
-   request_time         timestamp comment '请求时间,格式yyyy-mm-dd hh:mi:ss',
+   request_time         timestamp null default null comment '请求时间,格式yyyy-mm-dd hh:mi:ss',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
@@ -1377,7 +1377,7 @@ create table warehouse_notice_details
    purchasing_quantity  bigint comment '采购数量',
    actual_storage_quantity bigint comment '实际入库数量',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   storage_time         timestamp comment '入库时间,格式yyyy-mm-dd hh:mi:ss',
+   storage_time         timestamp null default null comment '入库时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1413,7 +1413,7 @@ create table warehouse_order
    payment              bigint comment '实付金额,订单最终总额,单位/分',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   consign_time         timestamp comment '发货时间',
+   consign_time         timestamp null default null comment '发货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
    primary key (id)
 );
