@@ -60,6 +60,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         } catch (RedisConnectionFailureException e) {
             //当redis无法连接从数据库中去accessToken
             acc.setCode("accessToken");
+            acc.setType(JingDongConstant.JD_TYPE);
             acc = commonService.selectOne(acc);
             if (null != acc) {
                 //验证accessToken是否失效，失效则刷新，返回accessToken
@@ -68,6 +69,7 @@ public class JingDongBizImpl implements IJingDongBiz {
                     return acc.getValue();
                 }
                 acc.setCode("refreshToken");
+                acc.setType(JingDongConstant.JD_TYPE);
                 acc = commonService.selectOne(acc);
                 return refreshToken(acc.getValue());
             }

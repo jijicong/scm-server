@@ -586,5 +586,23 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 粮油订单
+     */
+    public static final class LiangYouOrder {
+        //订单接口根路径
+        public static final String ROOT = "LyBill";
+
+        //非签约订单接口路径
+        public static final String OUT_ORDER = "AddOutOrder";
+
+        //签约订单接口路径
+        public static final String TOUT_ORDER = "AddTOutOrder";
+
+        //查询订单状态接口路径
+        public static final String ORDER_STATUS = "OrderStatus";
+
+    }
+
 
 }
