@@ -19,6 +19,8 @@ public class BrandForm extends QueryModel {
     private String startUpdateTime;
     @QueryParam("endUpdateTime")
     private String endUpdateTime;
+    @QueryParam("pageIds")
+    private String pageIds;
 
 
     public String getAlise() {
@@ -60,5 +62,13 @@ public class BrandForm extends QueryModel {
 
     public void setEndUpdateTime(String endUpdateTime) {
         this.endUpdateTime = endUpdateTime;
+    }
+
+    public String getPageIds() {
+        return pageIds;
+    }
+
+    public void setPageIds(String pageIds) {
+        this.pageIds = pageIds;
     }
 }

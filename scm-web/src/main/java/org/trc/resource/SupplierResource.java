@@ -6,6 +6,8 @@ import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.supplier.*;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.GoodsException;
 import org.trc.form.supplier.SupplierChannelRelationForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
@@ -17,6 +19,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by hzwdx on 2017/5/5.
@@ -105,6 +108,19 @@ public class SupplierResource {
         return ResultUtil.createSucssAppResult("查询供应商渠道关系成功", supplierBiz.queryChannelRelation(form));
     }
 
+    @GET
+    @Path(SupplyConstants.Supply.SupplierBrand.CHECK_CATEGORY_BRAND_VALID_STATUS+"/{categoryId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult checkCategoryBrandValidStatus(@PathParam("categoryId") Long categoryId, @QueryParam("brandId") Long brandId) throws Exception {
+        AppResult appResult = ResultUtil.createSucssAppResult("检查分类品牌启停用状态查询成功", "");
+        try{
+            supplierBiz.checkCategoryBrandValidStatus(categoryId, brandId);
+        }catch (GoodsException e){
+            appResult.setAppcode(ZeroToNineEnum.ZERO.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
+    }
 
 
 }

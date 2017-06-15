@@ -5,12 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
+import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.util.AppResult;
+import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
@@ -42,6 +45,15 @@ public class CategoryResource {
         return ResultUtil.createSucssAppResult("成功", categoryBiz.getNodes(parentId, isRecursive));
 
     }
+
+    @GET
+    @Path(SupplyConstants.Category.CategoryBrands.BAND_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Brand> brandPage(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) throws Exception {
+        return categoryBiz.brandListCategory(form,page);
+    }
+
+
 
     /**
      * 新增分类

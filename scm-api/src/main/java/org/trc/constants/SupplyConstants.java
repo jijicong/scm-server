@@ -117,8 +117,8 @@ public class SupplyConstants {
             //分类品牌关联
             public static final String CATEGORY_BRAND_LINK = "link";
 
-//            //已经关联的分类品牌
-//            public static final String CATEGORY_BRAND_PAGE = "categoryBrandPage";
+//            //查询品牌列表
+            public static final String  BAND_LIST= "brandPageCategory";
         }
 
 
@@ -428,10 +428,12 @@ public class SupplyConstants {
          * 供应商品牌
          */
         public static final class SupplierBrand {
-            //供应商分类列表查询路径
+            //供应商品牌列表查询路径
             public static final String SUPPLIER_BRAND_LIST = "supplierBrands";
-            //供应商分类路径
+            //供应商品牌路径
             public static final String SUPPLIER_BRAND = "supplierBrand";
+            //检查分类品牌启停用状态路径
+            public static final String CHECK_CATEGORY_BRAND_VALID_STATUS = "checkCategoryBrandValidStatus";
         }
 
         /**

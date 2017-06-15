@@ -101,5 +101,13 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     void updateValid(Long id, String isValid) throws Exception;
+
+    /**
+     *检查分类品牌启停用状态
+     * @param categoryId
+     * @param brandId
+     * @throws Exception
+     */
+    void checkCategoryBrandValidStatus(Long categoryId, Long brandId) throws Exception;
     
 }
