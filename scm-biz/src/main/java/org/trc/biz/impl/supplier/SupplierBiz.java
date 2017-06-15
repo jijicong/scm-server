@@ -52,7 +52,7 @@ import java.util.*;
 @Service("supplierBiz")
 public class SupplierBiz implements ISupplierBiz {
 
-    private Logger  log = LoggerFactory.getLogger(SupplierBiz.class);
+    private Logger log = LoggerFactory.getLogger(SupplierBiz.class);
 
     //供应商类型：国内供应商
     private static final String INTERNAL_SUPPLIER = "internalSupplier";
@@ -129,50 +129,34 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext,SupplierForm form) throws Exception {
+    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
-        UserAccreditInfo userAccreditInfo= (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
-        Example example = new Example(SupplierChannelRelation.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("channelId",userAccreditInfo.getChannelId());
-        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
-        List<SupplierChannelRelation> supplierChannelRelationList=supplierChannelRelationService.selectByExample(example);
-        if(!AssertUtil.CollectionIsEmpty(supplierChannelRelationList)){
-            Set<Long> supplierIdSet=new HashSet<>();
-            for (SupplierChannelRelation supplierChannelRelation:supplierChannelRelationList) {
-                    supplierIdSet.add(supplierChannelRelation.getSupplierId());
-            }
-            Long[] supplierIdArr=new Long[supplierIdSet.size()];
-            supplierIdSet.toArray(supplierIdArr);
-            Map<String,Object> map=new HashMap<>();
-            map.put("supplierCode",form.getSupplierCode());
-            map.put("supplierName",form.getSupplierName());
-            map.put("supplierKindCode",form.getSupplierKindCode());
-            map.put("channelId",userAccreditInfo.getChannelId());
-            map.put("ids",supplierIdArr);
-            List<Supplier> supplierList=supplierService.selectSupplierListByApply(map);
-            int count=supplierService.selectSupplierListCount(map);
-            page.setResult(supplierList);
-            page.setTotalCount(count);
-            handlerSupplierPage(page);
-            return page;
-        }
-        page.setResult(new ArrayList<>());
-        page.setTotalCount(0);
+        UserAccreditInfo userAccreditInfo = (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        Map<String, Object> map = new HashMap<>();
+        map.put("supplierCode", form.getSupplierCode());
+        map.put("supplierName", form.getSupplierName());
+        map.put("supplierKindCode", form.getSupplierKindCode());
+        map.put("channelId", userAccreditInfo.getChannelId());
+        List<Supplier> supplierList = supplierService.selectSupplierListByApply(map);
+        int count = supplierService.selectSupplierListCount(map);
+        page.setResult(supplierList);
+        page.setTotalCount(count);
+        handlerSupplierPage(page);
         return page;
     }
 
 
     /**
      * 处理供应商分页结果
+     *
      * @param page
      */
-    private void handlerSupplierPage(Pagenation<Supplier> page){
+    private void handlerSupplierPage(Pagenation<Supplier> page) {
         List<String> supplierCodes = new ArrayList<String>();
-        for(Supplier s : page.getResult()){
+        for (Supplier s : page.getResult()) {
             supplierCodes.add(s.getSupplierCode());
         }
-        if(supplierCodes.size() > 0){
+        if (supplierCodes.size() > 0) {
             //查询供应商品牌
             Example example = new Example(SupplierBrand.class);
             Example.Criteria criteria = example.createCriteria();
@@ -188,8 +172,8 @@ public class SupplierBiz implements ISupplierBiz {
             criteria2.andIn("supplierCode", supplierCodes);
             criteria2.andEqualTo("status", AuditStatusEnum.PASS.getCode());//审核通过
             List<SupplierApply> supplierChannels = supplierApplyService.selectByExample(example2);
-            for(Supplier s : page.getResult()){
-                if(supplierChannels.size() > 0){
+            for (Supplier s : page.getResult()) {
+                if (supplierChannels.size() > 0) {
                     //设置渠道名称
                     setChannelName(s, supplierChannels);
                 }
@@ -201,36 +185,38 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 设置渠道名称
+     *
      * @param supplier
      * @param supplierChannels
      */
-    private void setChannelName(Supplier supplier, List<SupplierApply> supplierChannels){
+    private void setChannelName(Supplier supplier, List<SupplierApply> supplierChannels) {
         String _channels = "";
-        for(SupplierApply supplierApplyAudit : supplierChannels){
-            if(StringUtils.equals(supplier.getSupplierCode(), supplierApplyAudit.getSupplierCode())){
+        for (SupplierApply supplierApplyAudit : supplierChannels) {
+            if (StringUtils.equals(supplier.getSupplierCode(), supplierApplyAudit.getSupplierCode())) {
                 Channel channel = new Channel();
                 channel.setCode(supplierApplyAudit.getChannelCode());
                 channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 channel = channelService.selectOne(channel);
                 AssertUtil.notNull(channel, String.format("根据渠道编码[%s]查询渠道信息为空", supplierApplyAudit.getChannelCode()));
-                _channels = _channels + channel.getName()+",";
+                _channels = _channels + channel.getName() + ",";
             }
         }
-        if(_channels.length() > 0){
-            _channels = _channels.substring(0, _channels.length()-1);
+        if (_channels.length() > 0) {
+            _channels = _channels.substring(0, _channels.length() - 1);
             supplier.setChannelName(_channels);
         }
     }
 
     /**
      * 设置代理品牌名称
+     *
      * @param supplier
      * @param supplierBrands
      */
-    private void setBrandName(Supplier supplier, List<SupplierBrand> supplierBrands){
+    private void setBrandName(Supplier supplier, List<SupplierBrand> supplierBrands) {
         String _brands = "";
-        for(SupplierBrand supplierBrand : supplierBrands){
-            if(StringUtils.equals(supplier.getSupplierCode(), supplierBrand.getSupplierCode())){
+        for (SupplierBrand supplierBrand : supplierBrands) {
+            if (StringUtils.equals(supplier.getSupplierCode(), supplierBrand.getSupplierCode())) {
                 Brand brand = new Brand();
                 brand.setBrandCode(supplierBrand.getBrandCode());
                 brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -239,8 +225,8 @@ public class SupplierBiz implements ISupplierBiz {
                 _brands = _brands + brand.getName() + ",";
             }
         }
-        if(_brands.length() > 0){
-            _brands = _brands.substring(0, _brands.length()-1);
+        if (_brands.length() > 0) {
+            _brands = _brands.substring(0, _brands.length() - 1);
             supplier.setBrandName(_brands);
         }
     }
@@ -258,8 +244,8 @@ public class SupplierBiz implements ISupplierBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void  saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+    public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
+                             SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
         //参数校验
         supplierSaveCheck(supplier, certificate);
         //生成序列号
@@ -268,10 +254,10 @@ public class SupplierBiz implements ISupplierBiz {
         //保存供应商
         saveSupplierBase(supplier);
         if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
-        //保存证件
-        certificate.setSupplierId(supplier.getId());
-        certificate.setSupplierCode(supplier.getSupplierCode());
-        saveCertificate(certificate);
+            //保存证件
+            certificate.setSupplierId(supplier.getId());
+            certificate.setSupplierCode(supplier.getSupplierCode());
+            saveCertificate(certificate);
         }
         //保存供应商代理类目
         supplierCategory.setSupplierId(supplier.getId());
@@ -296,11 +282,12 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 获取供应商渠道关系列表
+     *
      * @param channels
      * @param supplier
      * @return
      */
-    private List<SupplierChannelRelation> getSupplierChannelRelations(String channels, Supplier supplier){
+    private List<SupplierChannelRelation> getSupplierChannelRelations(String channels, Supplier supplier) {
         List<SupplierChannelRelation> supplierChannelRelations = new ArrayList<SupplierChannelRelation>();
         /**渠道channels，格式："渠道ID-渠道编号,...",多个渠道用逗号分隔,
          * 每个渠道里面包含渠道ID和渠道编号(渠道ID和编号用"-"号分隔)
@@ -356,7 +343,7 @@ public class SupplierBiz implements ISupplierBiz {
         List<SupplierChannelRelation> supplierChannelRelations = getSupplierChannelRelations(channels, supplier);
         updateSupplierChannelRelation(supplierChannelRelations, supplier);
         //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
-        if(StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+        if (StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())) {
             Supplier _supplier = new Supplier();
             _supplier.setSupplierCode(supplier.getSupplierCode());
             _supplier = supplierService.selectOne(_supplier);
@@ -413,9 +400,10 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 供应链分类校验
+     *
      * @param supplierCategory
      */
-    private void checkSupplierCategory(SupplierCategory supplierCategory){
+    private void checkSupplierCategory(SupplierCategory supplierCategory) {
         AssertUtil.notNull(supplierCategory.getSupplierId(), "供应链分类中供应链ID不能为空");
         AssertUtil.notBlank(supplierCategory.getSupplierCode(), "供应链分类中供应链编码不能为空");
         AssertUtil.notNull(supplierCategory.getCategoryId(), "供应链分类中分类ID不能为空");
@@ -423,9 +411,10 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 供应链品牌校验
+     *
      * @param supplierBrand
      */
-    private void checkSupplierBrand(SupplierBrand supplierBrand){
+    private void checkSupplierBrand(SupplierBrand supplierBrand) {
         AssertUtil.notNull(supplierBrand.getSupplierId(), "供应链品牌中供应链ID不能为空");
         AssertUtil.notBlank(supplierBrand.getSupplierCode(), "供应链品牌中供应链编码不能为空");
         AssertUtil.notNull(supplierBrand.getCategoryId(), "供应链品牌中分类ID不能为空");
@@ -459,14 +448,15 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 更新供应商基本信息
+     *
      * @param supplier
      * @throws Exception
      */
     private void updateSupplierBase(Supplier supplier) throws Exception {
         supplier.setUpdateTime(Calendar.getInstance().getTime());
         int count = supplierService.updateByPrimaryKeySelective(supplier);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("修改供应商基本信息",JSON.toJSONString(supplier),"数据库操作失败").toString();
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("修改供应商基本信息", JSON.toJSONString(supplier), "数据库操作失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
         }
@@ -498,6 +488,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 更新证件信息
+     *
      * @param certificate
      */
     private void updateCertificate(Certificate certificate) {
@@ -508,8 +499,8 @@ public class SupplierBiz implements ISupplierBiz {
         certificate.setUpdateTime(Calendar.getInstance().getTime());
         certificate.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         int count = certificateService.updateByExample(certificate, example);
-        if(count == 0){
-            String msg = CommonUtil.joinStr("修改供应商证件信息",JSON.toJSONString(certificate),"数据库操作失败").toString();
+        if (count == 0) {
+            String msg = CommonUtil.joinStr("修改供应商证件信息", JSON.toJSONString(certificate), "数据库操作失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
         }
@@ -543,44 +534,44 @@ public class SupplierBiz implements ISupplierBiz {
         relation.setSupplierCode(supplier.getSupplierCode());
         relation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<SupplierChannelRelation> currentRelation = supplierChannelRelationService.select(relation);
-        if(null == currentRelation){
+        if (null == currentRelation) {
             String msg = String.format("根据供应商查询%s供应商渠道关系为空", JSON.toJSONString(relation));
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_QUERY_EXCEPTION, msg);
         }
         //新增关系列表
         List<SupplierChannelRelation> addRelations = new ArrayList<SupplierChannelRelation>();
-        for(SupplierChannelRelation r : supplierChannelRelations){
+        for (SupplierChannelRelation r : supplierChannelRelations) {
             Date currentDate = Calendar.getInstance().getTime();
             r.setCreateTime(currentDate);
             r.setUpdateTime(currentDate);
             Boolean flag = false;
-            for(SupplierChannelRelation r2 : currentRelation){
-                if(StringUtils.equals(r.getChannelCode(), r2.getChannelCode())){
+            for (SupplierChannelRelation r2 : currentRelation) {
+                if (StringUtils.equals(r.getChannelCode(), r2.getChannelCode())) {
                     flag = true;
                 }
             }
-            if(!flag){
+            if (!flag) {
                 r.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 addRelations.add(r);
             }
         }
         //删除关系列表
         List<Long> delIds = new ArrayList<Long>();
-        for(SupplierChannelRelation r : currentRelation){
+        for (SupplierChannelRelation r : currentRelation) {
             Boolean flag = false;
-            for(SupplierChannelRelation r2 : supplierChannelRelations){
-                if(StringUtils.equals(r.getChannelCode(), r2.getChannelCode())){
+            for (SupplierChannelRelation r2 : supplierChannelRelations) {
+                if (StringUtils.equals(r.getChannelCode(), r2.getChannelCode())) {
                     flag = true;
                 }
             }
-            if(!flag){
+            if (!flag) {
                 r.setIsDeleted(ZeroToNineEnum.ONE.getCode());
                 delIds.add(r.getId());
             }
         }
         int count = 0;
-        if(addRelations.size() > 0){
+        if (addRelations.size() > 0) {
             count = supplierChannelRelationService.insertList(addRelations);
             if (count == 0) {
                 String msg = CommonUtil.joinStr("保存供应商渠道关系", JSON.toJSONString(addRelations), "到数据库失败").toString();
@@ -588,8 +579,8 @@ public class SupplierBiz implements ISupplierBiz {
                 throw new SupplierException(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION, msg);
             }
         }
-        if(delIds.size() > 0){
-            for(Long id : delIds){
+        if (delIds.size() > 0) {
+            for (Long id : delIds) {
                 count = supplierChannelRelationService.deleteByPrimaryKey(id);
                 if (count == 0) {
                     String msg = CommonUtil.joinStr("根据供应商渠道关系ID[%s]删除供应商渠道关系", id.toString(), "失败").toString();
@@ -602,6 +593,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 保存供应商代理类目
+     *
      * @param supplierCategory
      */
     private void saveCategory(SupplierCategory supplierCategory) throws Exception {
@@ -609,7 +601,7 @@ public class SupplierBiz implements ISupplierBiz {
         JSONArray categoryArray = JSONArray.parseArray(supplierCategory.getSupplierCetegory());
         AssertUtil.notEmpty(categoryArray, "新增供应商代理类目不能为空");
         List<SupplierCategory> list = new ArrayList<SupplierCategory>();
-        for(Object obj : categoryArray){
+        for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
             SupplierCategory s = new SupplierCategory();
             s.setSupplierId(supplierCategory.getSupplierId());
@@ -632,9 +624,10 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 保存供应商代理类目
+     *
      * @param supplierCategory
      */
-    private void updateCategory(SupplierCategory supplierCategory) throws Exception{
+    private void updateCategory(SupplierCategory supplierCategory) throws Exception {
         int count = 0;
         JSONArray categoryArray = JSONArray.parseArray(supplierCategory.getSupplierCetegory());
         List<SupplierCategory> addList = new ArrayList<SupplierCategory>();
@@ -645,7 +638,7 @@ public class SupplierBiz implements ISupplierBiz {
         tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<SupplierCategory> currentCategorys = supplierCategoryService.select(tmp);
         Date sysTime = Calendar.getInstance().getTime();
-        for(Object obj : categoryArray){
+        for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
             SupplierCategory s = new SupplierCategory();
             s.setId(jbo.getLong("id"));
@@ -655,9 +648,9 @@ public class SupplierBiz implements ISupplierBiz {
             s.setUpdateTime(sysTime);
             String isValid = jbo.getString("isValid");
             s.setIsValid(isValid);
-            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
                 deleteList.add(s.getId());
-            }else{
+            } else {
                 //检查分类启停用状态
                 checkCategoryBrandValidStatus(s.getCategoryId(), null);
             }
@@ -665,28 +658,28 @@ public class SupplierBiz implements ISupplierBiz {
             checkSupplierCategory(s);
             tmpList.add(s);
             Boolean flag = false;
-            for(SupplierCategory sp : currentCategorys){
-                if(s.getCategoryId() == sp.getCategoryId()){
+            for (SupplierCategory sp : currentCategorys) {
+                if (s.getCategoryId() == sp.getCategoryId()) {
                     flag = true;
                 }
             }
-            if(!flag){
+            if (!flag) {
                 addList.add(s);
             }
         }
-        for(SupplierCategory s : currentCategorys){
+        for (SupplierCategory s : currentCategorys) {
             Boolean flag = false;
-            for(SupplierCategory s2 : tmpList){
-                if(s.getCategoryId() == s2.getCategoryId()){
+            for (SupplierCategory s2 : tmpList) {
+                if (s.getCategoryId() == s2.getCategoryId()) {
                     flag = true;
                 }
             }
-            if(!flag){
+            if (!flag) {
                 deleteList.add(s.getId());
             }
         }
         //新增
-        if(addList.size() > 0){
+        if (addList.size() > 0) {
             count = supplierCategoryService.insertList(addList);
             if (count == 0) {
                 String msg = CommonUtil.joinStr("保存供应商代理类目", JSON.toJSONString(supplierCategory), "到数据库失败").toString();
@@ -695,8 +688,8 @@ public class SupplierBiz implements ISupplierBiz {
             }
         }
         //删除
-        if(deleteList.size() > 0){
-            for(Long id : deleteList){
+        if (deleteList.size() > 0) {
+            for (Long id : deleteList) {
                 count = supplierCategoryService.deleteByPrimaryKey(id);
                 if (count == 0) {
                     String msg = String.format("根据供应商代理类目主键[%s]删除供应商代理类目失败", id);
@@ -709,14 +702,15 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 保存供应商代理品牌
+     *
      * @param brand
      */
-    private void saveBrand(SupplierBrand brand) throws Exception{
+    private void saveBrand(SupplierBrand brand) throws Exception {
         AssertUtil.notBlank(brand.getSupplierBrand(), "新增供应商代理品牌不能为空");
         JSONArray categoryArray = JSONArray.parseArray(brand.getSupplierBrand());
         AssertUtil.notEmpty(categoryArray, "新增供应商代理品牌不能为空");
         List<SupplierBrand> list = new ArrayList<SupplierBrand>();
-        for(Object obj : categoryArray){
+        for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
             SupplierBrand s = new SupplierBrand();
             s.setSupplierId(brand.getSupplierId());
@@ -746,28 +740,29 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 检查分类品牌启停用状态
+     *
      * @param categoryId
      * @param brandId
      * @throws Exception
      */
-    public void checkCategoryBrandValidStatus(Long categoryId, Long brandId) throws Exception{
+    public void checkCategoryBrandValidStatus(Long categoryId, Long brandId) throws Exception {
         AssertUtil.notNull(categoryId, "检查分类品牌启停用状态分类ID不能为空");
         Category category = categoryService.selectByPrimaryKey(categoryId);
         AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())) {
             throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已停用", category.getName()));
-        }else{
-            if(null != brandId){
+        } else {
+            if (null != brandId) {
                 Brand brand = brandService.selectByPrimaryKey(brandId);
                 AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
-                if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())){
+                if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())) {
                     throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已停用", brand.getName()));
                 }
                 CategoryBrand categoryBrand = new CategoryBrand();
                 categoryBrand.setCategoryId(categoryId);
                 categoryBrand.setBrandId(brandId);
                 categoryBrand = categoryBrandService.selectOne(categoryBrand);
-                if(null == categoryBrand || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
+                if (null == categoryBrand || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())) {
                     throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]和品牌[%s]关联已停用", category.getName(), brand.getName()));
                 }
             }
@@ -776,6 +771,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 更新供应商代理品牌
+     *
      * @param brand
      */
     private void updateBrand(SupplierBrand brand) throws Exception {
@@ -785,7 +781,7 @@ public class SupplierBiz implements ISupplierBiz {
         List<SupplierBrand> updateList = new ArrayList<SupplierBrand>();
         List<SupplierBrand> delList = new ArrayList<SupplierBrand>();
         Date sysTime = Calendar.getInstance().getTime();
-        for(Object obj : categoryArray){
+        for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
             SupplierBrand s = new SupplierBrand();
             s.setSupplierId(brand.getSupplierId());
@@ -801,26 +797,26 @@ public class SupplierBiz implements ISupplierBiz {
             s.setUpdateTime(sysTime);
             String isValid = jbo.getString("isValid");
             s.setIsValid(isValid);
-            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
                 delList.add(s);
-            }else{
+            } else {
                 //检查品牌启停用状态
                 checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
-            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){//原始数据
-                if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), jbo.getString("status"))){//已修改
+            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))) {//原始数据
+                if (StringUtils.equals(ZeroToNineEnum.TWO.getCode(), jbo.getString("status"))) {//已修改
                     updateList.add(s);
-                }else if(StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//已删除
+                } else if (StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//已删除
                     delList.add(s);
                 }
-            }else{//新增数据
+            } else {//新增数据
                 addlist.add(s);
             }
         }
-        if(updateList.size() > 0){
-            for(SupplierBrand supplierBrand : updateList){
+        if (updateList.size() > 0) {
+            for (SupplierBrand supplierBrand : updateList) {
                 Example example = new Example(SupplierBrand.class);
                 Example.Criteria criteria = example.createCriteria();
                 criteria.andEqualTo("supplierCode", supplierBrand.getSupplierCode());
@@ -834,8 +830,8 @@ public class SupplierBiz implements ISupplierBiz {
                 }
             }
         }
-        if(delList.size() > 0){
-            for(SupplierBrand supplierBrand : delList){
+        if (delList.size() > 0) {
+            for (SupplierBrand supplierBrand : delList) {
                 Example example = new Example(SupplierBrand.class);
                 Example.Criteria criteria = example.createCriteria();
                 criteria.andEqualTo("supplierCode", supplierBrand.getSupplierCode());
@@ -850,7 +846,7 @@ public class SupplierBiz implements ISupplierBiz {
                 }*/
             }
         }
-        if(addlist.size() > 0){
+        if (addlist.size() > 0) {
             count = supplierBrandService.insertList(addlist);
             if (count == 0) {
                 String msg = CommonUtil.joinStr("保存供应商代理品牌", JSON.toJSONString(addlist), "到数据库失败").toString();
@@ -863,6 +859,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 保存供应商财务信息
+     *
      * @param supplierFinancialInfo
      */
     private void saveFinancial(SupplierFinancialInfo supplierFinancialInfo) {
@@ -878,6 +875,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 修改供应商财务信息
+     *
      * @param supplierFinancialInfo
      */
     private void updateFinancial(SupplierFinancialInfo supplierFinancialInfo) {
@@ -897,6 +895,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 保存供应商售后信息
+     *
      * @param supplierAfterSaleInfo
      */
     private void saveAfterSale(SupplierAfterSaleInfo supplierAfterSaleInfo) {
@@ -912,6 +911,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 修改供应商财务信息
+     *
      * @param supplierAfterSaleInfo
      */
     private void updateAfterSale(SupplierAfterSaleInfo supplierAfterSaleInfo) {
@@ -935,7 +935,7 @@ public class SupplierBiz implements ISupplierBiz {
         AssertUtil.notBlank(supplierCode, "查询供应商代理分类供应商编码不能为空");
         List<SupplierCategoryExt> supplierCategoryExtList = supplierCategoryService.selectSupplierCategorys(supplierCode);
         AssertUtil.notEmpty(supplierCategoryExtList, String.format("根据供应商编码[%s]查询供应商代理类目为空", supplierCode));
-        for(SupplierCategoryExt supplierCategoryExt : supplierCategoryExtList){
+        for (SupplierCategoryExt supplierCategoryExt : supplierCategoryExtList) {
             String categoryName = categoryBiz.getCategoryName(supplierCategoryExt.getCategoryId());
             supplierCategoryExt.setCategoryName(categoryName);
         }
@@ -948,7 +948,7 @@ public class SupplierBiz implements ISupplierBiz {
         AssertUtil.notBlank(supplierCode, "查询供应商代理品牌供应商编码不能为空");
         List<SupplierBrandExt> supplierBrandExtList = supplierBrandService.selectSupplierBrands(supplierCode);
         AssertUtil.notEmpty(supplierBrandExtList, String.format("根据供应商编码[%s]查询供应商代理品牌为空", supplierCode));
-        for(SupplierBrandExt supplierBrandExt : supplierBrandExtList){
+        for (SupplierBrandExt supplierBrandExt : supplierBrandExtList) {
             String categoryName = categoryBiz.getCategoryName(supplierBrandExt.getCategoryId());
             supplierBrandExt.setCategoryName(categoryName);
         }
@@ -965,7 +965,7 @@ public class SupplierBiz implements ISupplierBiz {
         supplier = supplierService.selectOne(supplier);
         AssertUtil.notNull(supplier, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商基本信息为空"));
 
-        if(StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())){
+        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {
             Certificate certificate = new Certificate();
             certificate.setSupplierCode(supplierCode);
             certificate = certificateService.selectOne(certificate);
@@ -997,8 +997,8 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     public List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception {
         AssertUtil.notNull(form, "查询供应商渠道关系参数SupplierChannelRelationForm不能为空");
-        if(null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) &&
-                null == form.getChannelId() && StringUtils.isBlank(form.getChannelCode())){
+        if (null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) &&
+                null == form.getChannelId() && StringUtils.isBlank(form.getChannelCode())) {
             String msg = "查询供应商渠道关系参数供应商ID、供应商编码、渠道ID、渠道编码不能同时为空";
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
@@ -1008,7 +1008,7 @@ public class SupplierBiz implements ISupplierBiz {
         relation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<SupplierChannelRelationExt> relations = supplierChannelRelationService.
                 selectSupplierChannels(BeanToMapUtil.convertBeanToMap(relation));
-        if(null == relations){
+        if (null == relations) {
             String msg = String.format("根据供应商查询%s供应商渠道关系为空", JSON.toJSONString(form));
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_QUERY_EXCEPTION, msg);
@@ -1024,29 +1024,30 @@ public class SupplierBiz implements ISupplierBiz {
         Supplier supplier = new Supplier();
         supplier.setId(id);
         supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
             supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }else{
+        } else {
             supplier.setIsValid(ZeroToNineEnum.ZERO.getCode());
         }
         int count = supplierService.updateByPrimaryKeySelective(supplier);
-        if(count == 0){
+        if (count == 0) {
             String msg = "供应商启用/停用操作更新数据库失败";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
         }
         //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
-        if(StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+        if (StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())) {
             rejectSupplierApply(id);
         }
     }
 
     /**
      * 驳回供应商申请
+     *
      * @param supplierId 供应商ID
      * @throws Exception
      */
-    private void rejectSupplierApply(Long supplierId) throws Exception{
+    private void rejectSupplierApply(Long supplierId) throws Exception {
         AssertUtil.notNull(supplierId, "供应商启/停用更新供应商申请审批状态参数供应商编码supplierCode不能为空");
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("supplierId", supplierId);
