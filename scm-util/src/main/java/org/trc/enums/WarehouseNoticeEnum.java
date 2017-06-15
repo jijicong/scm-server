@@ -14,8 +14,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum WarehouseNoticeEnum {
 
-	TO_BE_NOTIFIED("8","待通知"),
-	HAVE_NOTIFIED("9","已通知");
+	TO_BE_NOTIFIED("0","待通知"),
+	HAVE_NOTIFIED("1","已通知");
 
 	private String code;
 	private String name;
