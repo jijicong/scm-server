@@ -310,8 +310,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("name", form.getName());
         map.put("skuCode", form.getSkuCode());
         map.put("brandName", form.getBrandName());
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
 
+        String arrs = form.getSkus();
+
+        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        if(purchaseDetailList.size() == 0){
+            page.setTotalCount(0);
+            page.setResult(purchaseDetailList);
+            return  page;
+        }
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){

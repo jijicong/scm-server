@@ -39,7 +39,7 @@
         SELECT bssi.spu_code AS spuCode, bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
         (
         SELECT ssi.spu_code , ssi.sku_code,ssi.name,ssi.brand_id,ssi.category_id,b.name AS brand_name FROM brand b
-        RIGHT JOIN
+        INNER JOIN
         (
             SELECT skus.sku_code,si.name,si.brand_id ,si.category_id,si.spu_code FROM skus
         RIGHT JOIN (
@@ -63,6 +63,7 @@
             <if test="skuCode != null and skuCode != ''">
                 AND skus.sku_code LIKE CONCAT(CONCAT('%', #{skuCode}), '%')
             </if>
+
         ) ssi
         ON
         ssi.brand_id=b.id
@@ -76,7 +77,7 @@
     <!--查询某供应商下对应的可卖商品的总数量-->
     <select id="selectCountItems" resultType="java.lang.Integer">
         SELECT COUNT(*) FROM brand b
-        RIGHT JOIN
+        INNER JOIN
         (
             SELECT si.brand_id FROM skus
             RIGHT JOIN (
@@ -100,6 +101,8 @@
             <if test="skuCode != null and skuCode != ''">
                 AND skus.sku_code LIKE CONCAT(CONCAT('%', #{skuCode}), '%')
             </if>
+
+
         ) ssi
         ON
         ssi.brand_id=b.id
@@ -107,6 +110,10 @@
             AND b.name LIKE CONCAT(CONCAT('%', #{brandName}), '%')
         </if>
     </select>
+    <!--AND skus.sku_code NOT IN
+    <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
+    #{item}
+    </foreach>-->
     <!--根据分类的ids拼接全路径名和ids-->
     <select id="selectAllCategory" resultType="org.trc.domain.purchase.PurchaseDetail">
         SELECT
