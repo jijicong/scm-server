@@ -101,7 +101,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 }
             } else {
                 //未获取到token返回登录页面
-                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", null);
+                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
                 requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
         }
