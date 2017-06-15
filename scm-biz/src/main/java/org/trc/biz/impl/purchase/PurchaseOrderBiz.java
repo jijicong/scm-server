@@ -240,7 +240,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         int count = 0;
         //根据用户的id查询渠道
         UserAccreditInfo user = new UserAccreditInfo();
-        user.setUserId(purchaseOrder.getCreateOperator());
+        //TODO 加入 userId
+       // user.setUserId(purchaseOrder.getCreateOperator());
+        user.setUserId("E2E4BDAD80354EFAB6E70120C271968C");
         user = userAccreditInfoService.selectOne(user);//查询用户对应的渠道
         purchaseOrder.setChannelCode(user.getChannelCode());
         purchaseOrder.setPurchaseOrderCode(serialUtilService.generateCode(LENGTH,SERIALNAME, DateUtils.dateToCompactString(purchaseOrder.getCreateTime())));
@@ -310,8 +312,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("name", form.getName());
         map.put("skuCode", form.getSkuCode());
         map.put("brandName", form.getBrandName());
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
 
+        String arrs = form.getSkus();
+
+        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        if(purchaseDetailList.size() == 0){
+            page.setTotalCount(0);
+            page.setResult(purchaseDetailList);
+            return  page;
+        }
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){

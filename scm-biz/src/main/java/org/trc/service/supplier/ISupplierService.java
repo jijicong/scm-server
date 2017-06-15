@@ -20,7 +20,7 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
 
     /**
      * 申请供应商时的供应商分页查询
-     * @param ids
+     * @param map
      * @return
      * @throws Exception
      */

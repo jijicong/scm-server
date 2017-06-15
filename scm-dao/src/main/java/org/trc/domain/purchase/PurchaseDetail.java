@@ -31,7 +31,8 @@ public class PurchaseDetail extends BaseDO{
     @NotEmpty
     @Length(max = 32, message = "采购的商品SPU编码长度不能超过32个")
     private String spuCode;
-    @Transient
+    @FormParam("itemName")
+    @NotEmpty
     private String itemName;
     @FormParam("skuCode")
     @NotEmpty

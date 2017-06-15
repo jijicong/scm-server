@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/27.
@@ -27,6 +28,17 @@ public class ItemForm extends QueryModel{
     @QueryParam("brandName")
     @Length(max = 256)
     private String brandName;
+
+    @QueryParam("skus")
+    private String skus;
+
+    public String getSkus() {
+        return skus;
+    }
+
+    public void setSkus(String skus) {
+        this.skus = skus;
+    }
 
     public String getName() {
         return name;
