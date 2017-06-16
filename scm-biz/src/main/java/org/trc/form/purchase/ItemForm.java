@@ -29,17 +29,6 @@ public class ItemForm extends QueryModel{
     @Length(max = 256)
     private String brandName;
 
-    @QueryParam("skus")
-    private String skus;
-
-    public String getSkus() {
-        return skus;
-    }
-
-    public void setSkus(String skus) {
-        this.skus = skus;
-    }
-
     public String getName() {
         return name;
     }

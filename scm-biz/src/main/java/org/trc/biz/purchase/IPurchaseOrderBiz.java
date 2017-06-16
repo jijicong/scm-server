@@ -32,7 +32,7 @@ public interface IPurchaseOrderBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page) throws Exception;
+    Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page, String skus) throws Exception;
 
     void savePurchaseOrder(PurchaseOrder purchaseOrder,String status) throws Exception;
 

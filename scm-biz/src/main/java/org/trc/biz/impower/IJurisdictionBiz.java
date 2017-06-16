@@ -1,7 +1,10 @@
 package org.trc.biz.impower;
 
 import org.trc.domain.impower.Jurisdiction;
+import org.trc.form.impower.JurisdictionTreeNode;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -60,4 +63,28 @@ public interface IJurisdictionBiz {
      * @throws Exception
      */
     Boolean urlCheck(String url);
+
+    /**
+     *查询角色资源树
+     * @param parentId
+     * @param isRecursive
+     * @return
+     * @throws Exception
+     */
+    List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception;
+
+    /**
+     * 新增资源
+     * @param jurisdictionTreeNode
+     * @throws Exception
+     */
+    void saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,ContainerRequestContext requestContext) throws Exception;
+
+    /**
+     * 编辑资源
+     * @param jurisdictionTreeNode
+     * @return
+     * @throws Exception
+     */
+    void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode) throws Exception;
 }
