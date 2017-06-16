@@ -117,8 +117,8 @@ public class SupplyConstants {
             //分类品牌关联
             public static final String CATEGORY_BRAND_LINK = "link";
 
-//            //查询品牌列表
-            public static final String  BAND_LIST= "brandPageCategory";
+            //            //查询品牌列表
+            public static final String BAND_LIST = "brandPageCategory";
         }
 
 
@@ -294,6 +294,7 @@ public class SupplyConstants {
         public static final String ROLE_ACCREDITINFO = "roleAccreditInfo";
         //状态的修改
         public static final String UPDATE_STATE = "role/updateState";
+
     }
 
     /**
@@ -309,7 +310,14 @@ public class SupplyConstants {
         //渠道资源查询
         public static final String JURISDICTION_CHANNEL = "jurisdictionChannel";
         //状态的修改--unused
-        //public static final String UPDATE_STATE = "jurisdiction/updateState";
+//        public static final String UPDATE_STATE = "jurisdiction/updateState";
+        //查询资源加载树
+        public static final String JURISDICTION_TREE = "jurisdictionTree";
+        //新增资源
+        public static final String JURISDICTION_SAVE = "jurisdictionSave";
+        //编辑资源
+        public static final String JURISDICTION_EDIT = "jurisdictionEdit";
+
     }
 
     /**
@@ -346,7 +354,7 @@ public class SupplyConstants {
         //采购订单
         public static final String PURCHASE_ORDER = "purchaseOrder";
         //采购单提交审核purchaseOrderAudit
-        public static final String PURCHASE_ORDER_AUDIT="purchaseOrderAudit";
+        public static final String PURCHASE_ORDER_AUDIT = "purchaseOrderAudit";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //采购单状态的修改
@@ -356,7 +364,7 @@ public class SupplyConstants {
         //查询该渠道对应的供应商S
         public static final String SUPPLIERS = "suppliers";
         //根据供应商的编码查询供应商的可卖商品
-        public static final String SUPPLIERS_ITEMS="suppliersItems";
+        public static final String SUPPLIERS_ITEMS = "suppliersItems";
     }
 
     /**
@@ -534,7 +542,7 @@ public class SupplyConstants {
         //海外仓的是否支持清关
         public static final String IS_CUSTOM_CLEARANCE = "clearance";
         //查询采购订单状态
-        public static final String PURCHASE_ORDER_STATUS="purchaseOrderStatus";
+        public static final String PURCHASE_ORDER_STATUS = "purchaseOrderStatus";
     }
 
     /**
@@ -582,9 +590,27 @@ public class SupplyConstants {
         //订单反查路径
         public static final String ORDERSELECT = "orderId";
         //订单信息查询路径
-        public static final String  DETAIL= "detail";
+        public static final String DETAIL = "detail";
         //查询配送信息路径
-        public static final String  TRACK= "track";
+        public static final String TRACK = "track";
+
+    }
+
+    /**
+     * 粮油订单
+     */
+    public static final class LiangYouOrder {
+        //订单接口根路径
+        public static final String ROOT = "LyBill";
+
+        //非签约订单接口路径
+        public static final String OUT_ORDER = "AddOutOrder";
+
+        //签约订单接口路径
+        public static final String TOUT_ORDER = "AddTOutOrder";
+
+        //查询订单状态接口路径
+        public static final String ORDER_STATUS = "OrderStatus";
 
     }
 

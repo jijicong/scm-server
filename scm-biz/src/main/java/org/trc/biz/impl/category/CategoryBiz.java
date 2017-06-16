@@ -120,9 +120,10 @@ public class CategoryBiz implements ICategoryBiz {
             Long pageIds[] = StringUtil.splitByComma(queryModel.getPageIds());
 
             if (pageIds.length > 0) {
-                for (Long id : pageIds) {
-                    criteria.andNotEqualTo("id", id);
-                }
+//                for (Long id : pageIds) {
+//                    criteria.andNotEqualTo("id", id);
+//                }
+                criteria.andNotIn("id",Arrays.asList(pageIds));
             }
         }
         example.orderBy("updateTime").desc();

@@ -90,7 +90,7 @@ public class HttpClientUtil {
         return getResult(httpGet);
     }
 
-    public static String httpPostRequest(String url) {
+    public static String httpPostRequest(String s, String url, int i) {
         HttpPost httpPost = new HttpPost(url);
         return getResult(httpPost);
     }

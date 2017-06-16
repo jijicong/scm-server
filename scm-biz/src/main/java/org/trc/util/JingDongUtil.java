@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.enums.JingDongEnum;
+import org.trc.form.JDModel.JingDongConstant;
 import org.trc.service.IJDService;
 
 import java.text.SimpleDateFormat;
@@ -62,7 +63,7 @@ public class JingDongUtil {
             String tmp = expireToken(time, String.valueOf(expires));
             common.setCode("accessToken");
             common.setValue(accessToken);
-            common.setType("京东");
+            common.setType(JingDongConstant.JD_TYPE);
             common.setDeadTime(tmp);
             common.setDescription("京东AccessToken");
             array.put("accessToken", common);
@@ -70,7 +71,7 @@ public class JingDongUtil {
             common = new Common();
             common.setCode("refreshToken");
             common.setValue(refreshToken);
-            common.setType("京东");
+            common.setType(JingDongConstant.JD_TYPE);
             common.setDeadTime(tmp);
             common.setDescription("京东RefreshToken");
             array.put("refreshToken", common);

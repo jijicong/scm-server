@@ -1,5 +1,8 @@
 package org.trc.domain.config;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,8 +22,10 @@ public class Common {
 
     private String description;
 
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
     private String deadTime;
