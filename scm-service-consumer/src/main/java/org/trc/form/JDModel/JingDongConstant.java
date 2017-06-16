@@ -120,4 +120,6 @@ public class JingDongConstant {
     public static final String ERROR_MESSAGE_GET = "获取推送信息异常";
 
     public static final String ERROR_MESSAGE_DEL = "删除推送信息异常";
+
+    public static final String JD_TYPE = "京东";
 }
