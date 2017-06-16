@@ -17,6 +17,13 @@ public interface ILiangYouBiz {
      */
     String getAccessToken() throws Exception;
 
+
+    /**
+     * 导出所有商品到数据库
+     * @throws Exception
+     */
+    public void ExportGoods() throws Exception;
+
     /**
      * 获取商品信息
      * @return

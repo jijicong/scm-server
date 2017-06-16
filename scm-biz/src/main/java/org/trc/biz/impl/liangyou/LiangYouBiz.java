@@ -9,15 +9,19 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.liangyou.ILiangYouBiz;
 import org.trc.constant.LiangYouConstant;
 import org.trc.domain.config.Common;
+import org.trc.domain.config.LiangYouSkuList;
 import org.trc.domain.config.SkuListForm;
 import org.trc.form.liangyou.*;
 import org.trc.service.ILiangYouService;
+import org.trc.service.config.ISkusListService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.util.AssertUtil;
+import org.trc.util.DateUtils;
 import org.trc.util.JingDongUtil;
 import org.trc.util.RedisUtil;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +40,9 @@ public class LiangYouBiz implements ILiangYouBiz {
 
     @Autowired
     JingDongUtil jingDongUtil;
+
+    @Resource
+    ISkusListService skusListService;
 
     @Override
     public String getAccessToken() throws Exception {
@@ -66,6 +73,52 @@ public class LiangYouBiz implements ILiangYouBiz {
         }
     }
 
+    public void ExportGoods() throws Exception{
+        try {
+            String token = getAccessToken();
+            ResultType<JSONObject> result = liangYouService.exportGoods(token,"1");
+            if (org.apache.commons.lang3.StringUtils.equals(result.getMessage(),"ok")){
+                JSONObject object = result.getData();
+                int count = (int)object.get("pagecount");
+                int e=1;
+                for (int i = 1;i<=count;i++){
+                    System.out.println(i);
+                    ResultType<JSONObject> result01 = liangYouService.exportGoods(token, String.valueOf(i));
+                    JSONObject object01 = result01.getData();
+                    JSONArray array = object01.getJSONArray("goodslist");
+                    List<SkuListForm> liangYouList = new ArrayList<SkuListForm>();
+                    List<LiangYouSkuList> list = JSONArray.parseArray(array.toJSONString(),LiangYouSkuList.class);
+                    for (LiangYouSkuList skuList:list){
+                        SkuListForm temp = new SkuListForm();
+                        StringBuilder sb = new StringBuilder();
+                        String tem = String.valueOf(e++);
+                        if(tem.length()<7){
+                            for(int t=0;t<7-tem.length();t++){
+                                sb.append("0");
+                            }
+                            sb.append(tem);
+                        }
+                        temp.setSku("SP1"+ DateUtils.dateToString(new Date(),DateUtils.COMPACT_DATE_FORMAT)+sb.toString());
+                        temp.setProviderName("粮油");
+                        temp.setProviderSku(skuList.getOnly_sku());
+                        temp.setSkuName(skuList.getGoods_name());
+                        temp.setSupplyPrice(skuList.getGradeprice());
+                        temp.setMarketPrice(skuList.getMarket_price());
+                        temp.setWarehouseName(skuList.getDepot_name());
+                        temp.setStock(Integer.parseInt(skuList.getStock()));
+                        temp.setIfShow(skuList.getIf_show());
+                        temp.setCreateTime(new Date(Long.parseLong(skuList.getAdd_time())));
+                        temp.setUpdateTime(new Date());
+                        liangYouList.add(temp);
+                    }
+                    skusListService.insertList(liangYouList);
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     public SkuListForm getSkuList() throws Exception {
 
