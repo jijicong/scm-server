@@ -305,15 +305,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page) throws Exception {
+    public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page, String skus) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("supplierCode",supplierCode);
         map.put("name", form.getName());
+        if(skus==null || "".equals(skus) || "null".equals(skus)){
+            map.put("skuTemp",null);
+        }else {
+            map.put("skuTemp","TODO");
+            map.put("arrSkus", skus.split(","));
+        }
         map.put("skuCode", form.getSkuCode());
         map.put("brandName", form.getBrandName());
-
-        String arrs = form.getSkus();
 
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         if(purchaseDetailList.size() == 0){

@@ -35,7 +35,7 @@
        商品的名称，商品的sku，品牌id，分类id
        再联合品牌表，分类表来查询查询对应的名称
     -->
-    <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail">
+    <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail" parameterType="java.util.Map">
         SELECT bssi.spu_code AS spuCode, bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
         (
         SELECT ssi.spu_code , ssi.sku_code,ssi.name,ssi.brand_id,ssi.category_id,b.name AS brand_name FROM brand b
@@ -64,6 +64,13 @@
                 AND skus.sku_code LIKE CONCAT(CONCAT('%', #{skuCode}), '%')
             </if>
 
+            <if test="skuTemp != null and skuTemp !=''">
+                AND skus.sku_code NOT IN
+                <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
         ) ssi
         ON
         ssi.brand_id=b.id
@@ -75,7 +82,7 @@
         c.id=bssi.category_id
     </select>
     <!--查询某供应商下对应的可卖商品的总数量-->
-    <select id="selectCountItems" resultType="java.lang.Integer">
+    <select id="selectCountItems" resultType="java.lang.Integer"  parameterType="java.util.Map">
         SELECT COUNT(*) FROM brand b
         INNER JOIN
         (
@@ -102,6 +109,12 @@
                 AND skus.sku_code LIKE CONCAT(CONCAT('%', #{skuCode}), '%')
             </if>
 
+            <if test="skuTemp != null and skuTemp !=''">
+                AND skus.sku_code NOT IN
+                <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
+                    #{item}
+                </foreach>
+            </if>
 
         ) ssi
         ON

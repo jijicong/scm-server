@@ -65,9 +65,9 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ITEMS+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page) throws Exception{
+    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) throws Exception{
 
-        return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page);
+        return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
 
     }
 
