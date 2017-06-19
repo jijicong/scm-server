@@ -2,39 +2,25 @@ package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
-import org.trc.domain.category.Brand;
-import org.trc.domain.dict.DictType;
-import org.trc.domain.impower.UserAccreditInfo;
-import org.trc.domain.util.CommonDO;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ChannelException;
-import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
-import org.trc.service.impower.IUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
-import javax.persistence.Transient;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**

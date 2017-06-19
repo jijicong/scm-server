@@ -11,10 +11,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
-import org.trc.domain.category.Brand;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.FileUrl;
@@ -24,7 +23,7 @@ import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.service.goods.IItemNatureProperyService;
 import org.trc.service.goods.IItemSalesProperyService;
-import org.trc.service.impl.impower.UserAccreditInfoService;
+import org.trc.service.impl.impower.AclUserAccreditInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
@@ -55,7 +54,7 @@ public class PropertyBiz implements IPropertyBiz {
     @Autowired
     private IItemSalesProperyService itemSalesProperyService;
     @Autowired
-    private UserAccreditInfoService userAccreditInfoService;
+    private AclUserAccreditInfoService userAccreditInfoService;
 
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
@@ -76,13 +75,13 @@ public class PropertyBiz implements IPropertyBiz {
         example.orderBy("updateTime").desc();
         page=propertyService.pagination(example, page, queryModel);
         List<Property> list=page.getResult();
-        Map<String, UserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(list);
+        Map<String, AclUserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(list);
         for (Property property : list) {
             if(!StringUtils.isBlank(property.getLastEditOperator())){
                 if(userAccreditInfoMap!=null){
-                    UserAccreditInfo userAccreditInfo=userAccreditInfoMap.get(property.getLastEditOperator());
-                    if(userAccreditInfo!=null){
-                        property.setLastEditOperator(userAccreditInfo.getName());
+                    AclUserAccreditInfo aclUserAccreditInfo =userAccreditInfoMap.get(property.getLastEditOperator());
+                    if(aclUserAccreditInfo !=null){
+                        property.setLastEditOperator(aclUserAccreditInfo.getName());
                     }
                 }
             }
@@ -364,7 +363,7 @@ public class PropertyBiz implements IPropertyBiz {
         }
     }
 
-    private Map<String,UserAccreditInfo> constructUserAccreditInfoMap(List<Property> propertyList){
+    private Map<String,AclUserAccreditInfo> constructUserAccreditInfoMap(List<Property> propertyList){
         if(AssertUtil.CollectionIsEmpty(propertyList)){
             return null;
         }

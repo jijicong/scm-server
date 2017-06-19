@@ -5,23 +5,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.domain.category.Brand;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
-import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryBrandService;
-import org.trc.service.impower.IUserAccreditInfoService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -49,7 +47,7 @@ public class BrandBiz implements IBrandBiz {
     @Autowired
     private ISupplierBrandService supplierBrandService;
     @Autowired
-    private IUserAccreditInfoService userAccreditInfoService;
+    private IAclUserAccreditInfoService userAccreditInfoService;
     @Autowired
     private ICategoryBrandService categoryBrandService;
 
@@ -65,16 +63,16 @@ public class BrandBiz implements IBrandBiz {
             return pagenation;
         }
         Map<String, String> fileUrlMap = constructFileUrlMap(brandList);
-        Map<String, UserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(brandList);
+        Map<String, AclUserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(brandList);
         for (Brand brand : brandList) {
             if (!StringUtils.isBlank(brand.getLogo())){
                 brand.setLogo(fileUrlMap.get(brand.getLogo()));
             }
             if(!StringUtils.isBlank(brand.getLastEditOperator())){
                 if(userAccreditInfoMap!=null){
-                    UserAccreditInfo userAccreditInfo=userAccreditInfoMap.get(brand.getLastEditOperator());
-                    if(userAccreditInfo!=null){
-                        brand.setLastEditOperator(userAccreditInfo.getName());
+                    AclUserAccreditInfo aclUserAccreditInfo =userAccreditInfoMap.get(brand.getLastEditOperator());
+                    if(aclUserAccreditInfo !=null){
+                        brand.setLastEditOperator(aclUserAccreditInfo.getName());
                     }
                 }
             }
@@ -248,7 +246,7 @@ public class BrandBiz implements IBrandBiz {
         return null;
     }
 
-    private Map<String,UserAccreditInfo> constructUserAccreditInfoMap(List<Brand> brandList){
+    private Map<String,AclUserAccreditInfo> constructUserAccreditInfoMap(List<Brand> brandList){
         if(AssertUtil.CollectionIsEmpty(brandList)){
            return null;
         }

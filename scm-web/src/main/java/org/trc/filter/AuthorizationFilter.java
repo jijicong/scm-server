@@ -1,6 +1,5 @@
 package org.trc.filter;
 
-import com.alibaba.fastjson.JSONObject;
 import com.tairanchina.beego.api.exception.AuthenticateException;
 import com.tairanchina.beego.api.model.BeegoToken;
 import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
@@ -9,20 +8,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
-import org.trc.biz.impl.impower.JurisdictionBiz;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.biz.impl.impower.AclResourceBiz;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
-import org.trc.exception.CategoryException;
-import org.trc.exception.JurisdictionException;
-import org.trc.service.category.IBrandService;
-import org.trc.service.impower.IUserAccreditInfoService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 
 import javax.annotation.Resource;
@@ -31,11 +24,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by george on 2017/4/13.
@@ -52,9 +41,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     @Resource
     private BeegoService beegoService;
     @Autowired
-    private JurisdictionBiz jurisdictionBiz;
+    private AclResourceBiz jurisdictionBiz;
     @Autowired
-    private IUserAccreditInfoService userAccreditInfoService;
+    private IAclUserAccreditInfoService userAccreditInfoService;
     //放行url
     private final static String PASS_API_URL = "/api";
 
@@ -73,14 +62,14 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                     BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
                     if (null != beegoToken) {
                         String userId = beegoToken.getUserId();
-                        UserAccreditInfo userAccreditInfo = userAccreditInfoService.selectOneById(userId);
-                        if (userAccreditInfo == null) {
+                        AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
+                        if (aclUserAccreditInfo == null) {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
                             requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
                             requestContext.setProperty("userId", userId);
-                            requestContext.setProperty("userAccreditInfo", userAccreditInfo);
+                            requestContext.setProperty("aclUserAccreditInfo", aclUserAccreditInfo);
                             String method = ((ContainerRequest) requestContext).getMethod();
                             //验证是否在需要验证的权限列表中，需要则验证，不需要url直接放行
                             if (jurisdictionBiz.urlCheck(url)) {

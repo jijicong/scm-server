@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.impower.AclRoleMapper">
+    <!-- 查询某角色被授权使用或者停用的数量 -->
+    <select id="findNumFromRoleAndAccreditInfoByRoleId" resultType="java.lang.Integer">
+        SELECT COUNT(0)
+        FROM acl_user_accredit_role_relation
+        <where>
+            role_id=#{roleId}
+        </where>
+    </select>
+    <select id="findRoleList" resultType="org.trc.domain.impower.AclRole">
+        SELECT r.id,r.is_valid AS isValid,r.name
+        FROM acl_role r
+        <where>
+          id IN
+            <foreach collection="list" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

@@ -1,6 +1,6 @@
 package org.trc.service.purchase;
 
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.service.IBaseService;
 
@@ -11,9 +11,9 @@ import java.util.List;
  */
 public interface IPurchaseGroupService extends IBaseService<PurchaseGroup,Long>{
 
-    List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id);
+    List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id);
 
-    List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode);
+    List<AclUserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode);
 
     List<PurchaseGroup> selectPurchaseGroupNames(String[] strs);
 
@@ -22,7 +22,7 @@ public interface IPurchaseGroupService extends IBaseService<PurchaseGroup,Long>{
      * @param strs
      * @return
      */
-    List<UserAccreditInfo> selectInvalidUser(String [] strs);
+    List<AclUserAccreditInfo> selectInvalidUser(String [] strs);
 
     /**
      * 查询当前userid下可用的采购组员的数量

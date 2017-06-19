@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.impower.AclResourceMapper">
+
+    <!--AND is_valid=1-->
+    <select id="selectJurisdictionListByCodes" resultType="org.trc.domain.impower.AclResource">
+          SELECT  id,code,`name`,url,method FROM acl_resource
+          <where>
+              code IN
+              <foreach collection="codes" index="index" item="item" close=")" open="(" separator=",">
+                  #{item}
+              </foreach>
+              AND is_deleted=0
+          </where>
+    </select>
+</mapper>

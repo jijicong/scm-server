@@ -36,6 +36,7 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page)throws Exception{
+        //采夠訂單列表
         return  purchaseOrderBiz.purchaseOrderPage(form , page);
     }
 

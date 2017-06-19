@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.category.Category;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseOrder;
@@ -23,7 +21,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
-import org.trc.service.impower.IUserAccreditInfoService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderService;
@@ -34,7 +32,6 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +50,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Resource
     private IPurchaseDetailService purchaseDetailService;
     @Resource
-    private IUserAccreditInfoService userAccreditInfoService ;
+    private IAclUserAccreditInfoService userAccreditInfoService ;
     @Resource
     private ISupplierService supplierService;
     @Resource
@@ -133,11 +130,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         for(int i = 0 ; i < purchaseOrderList.size();i++){//purchase_person_id
             userAccreditInfoArray[i] = purchaseOrderList.get(i).getPurchasePersonId();
         }
-        List<UserAccreditInfo> userAccreditInfoList = userAccreditInfoService.selectUserNames(userAccreditInfoArray);
-        for (UserAccreditInfo userAccreditInfo : userAccreditInfoList) {
+        List<AclUserAccreditInfo> aclUserAccreditInfoList = userAccreditInfoService.selectUserNames(userAccreditInfoArray);
+        for (AclUserAccreditInfo aclUserAccreditInfo : aclUserAccreditInfoList) {
             for (PurchaseOrder purchaseOrder : purchaseOrderList) {
-                if(userAccreditInfo.getUserId().equals(purchaseOrder.getPurchasePersonId())){
-                    purchaseOrder.setPurchasePerson(userAccreditInfo.getName());
+                if(aclUserAccreditInfo.getUserId().equals(purchaseOrder.getPurchasePersonId())){
+                    purchaseOrder.setPurchasePerson(aclUserAccreditInfo.getName());
                 }
             }
         }
@@ -186,11 +183,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         String purchaseName = form.getPurchaseName();//采购人name
         if(!StringUtils.isBlank(purchaseName)){
-            UserAccreditInfo userAccreditInfo = new UserAccreditInfo();
-            userAccreditInfo.setName(purchaseName);
-            userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
-            if(userAccreditInfo!=null){
-                criteria.andEqualTo("purchasePersonId", userAccreditInfo.getUserId());
+            AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
+            aclUserAccreditInfo.setName(purchaseName);
+            aclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
+            if(aclUserAccreditInfo !=null){
+                criteria.andEqualTo("purchasePersonId", aclUserAccreditInfo.getUserId());
             }
         }
 
@@ -239,7 +236,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
         //根据用户的id查询渠道
-        UserAccreditInfo user = new UserAccreditInfo();
+        AclUserAccreditInfo user = new AclUserAccreditInfo();
         //TODO 加入 userId
        // user.setUserId(purchaseOrder.getCreateOperator());
         user.setUserId("E2E4BDAD80354EFAB6E70120C271968C");

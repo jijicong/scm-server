@@ -1,7 +1,7 @@
 package org.trc.service.impl.purchase;
 
 import org.springframework.stereotype.Service;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.mapper.purchase.IPurchaseGroupMapper;
 import org.trc.service.impl.BaseService;
@@ -19,12 +19,12 @@ public class PurchaseGroupService extends BaseService<PurchaseGroup,Long> implem
     @Resource
     private IPurchaseGroupMapper ipurchaseGroupMapper;
     @Override
-    public List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) {
+    public List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id) {
         return ipurchaseGroupMapper.findPurchaseGroupMemberStateById(id);
     }
 
     @Override
-    public List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode) {
+    public List<AclUserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode) {
         return ipurchaseGroupMapper.selectPurchaseGroupPersons(purchaseGroupCode);
     }
 
@@ -34,7 +34,7 @@ public class PurchaseGroupService extends BaseService<PurchaseGroup,Long> implem
     }
 
     @Override
-    public List<UserAccreditInfo> selectInvalidUser(String[] strs) {
+    public List<AclUserAccreditInfo> selectInvalidUser(String[] strs) {
         return ipurchaseGroupMapper.selectInvalidUser(strs);
     }
 

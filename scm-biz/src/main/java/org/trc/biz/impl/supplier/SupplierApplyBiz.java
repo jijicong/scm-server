@@ -9,14 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.trc.biz.supplier.ISupplierApplyBiz;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.CategoryException;
 import org.trc.exception.SupplierException;
 import org.trc.form.supplier.SupplierApplyAuditForm;
 import org.trc.form.supplier.SupplierApplyForm;
@@ -26,7 +24,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.*;
 
 /**
@@ -120,7 +117,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel, ContainerRequestContext requestContext) throws Exception {
-        UserAccreditInfo userAccreditInfo = (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty("aclUserAccreditInfo");
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("supplierName", queryModel.getSupplierName());
@@ -130,7 +127,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         map.put("supplierKindCode", queryModel.getSupplierKindCode());
         map.put("startTime", queryModel.getStartDate());
         map.put("endTime", queryModel.getEndDate());
-        map.put("channelId", userAccreditInfo.getChannelId());
+        map.put("channelId", aclUserAccreditInfo.getChannelId());
         List<SupplierApply> list = supplierApplyService.selectList(map);
         //如果查询列表不为空，查询各个供应商下面代理的品牌
         if (list != null && !list.isEmpty() && list.size() > 0) {
@@ -155,7 +152,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierApply, "保存供应商申请信息，申请信息不能为空");
-        UserAccreditInfo userAccreditInfo = (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty("aclUserAccreditInfo");
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
         Supplier validateSupplier = supplierService.selectByPrimaryKey(supplierApply.getSupplierId());
         if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
@@ -167,7 +164,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         Example example = new Example(SupplierApply.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
-        criteria.andEqualTo("channelId", userAccreditInfo.getChannelId());
+        criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
         List<String> statusList = new ArrayList<>();
         statusList.add(ZeroToNineEnum.ZERO.getCode());
         statusList.add(ZeroToNineEnum.ONE.getCode());
@@ -186,9 +183,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         insert.setAuditOpinion(supplierApply.getAuditOpinion());
         insert.setDescription(supplierApply.getDescription());
         insert.setStatus(supplierApply.getStatus());
-        insert.setChannelId(userAccreditInfo.getChannelId());
-        insert.setChannelCode(userAccreditInfo.getChannelCode());
-        insert.setCreateOperator(userAccreditInfo.getUserId());
+        insert.setChannelId(aclUserAccreditInfo.getChannelId());
+        insert.setChannelCode(aclUserAccreditInfo.getChannelCode());
+        insert.setCreateOperator(aclUserAccreditInfo.getUserId());
         ParamsUtil.setBaseDO(insert);
         insert.setApplyCode(serialUtilService.generateCode(SUPPLIER_APPLY_CODE_LENGTH, SUPPLIER_APPLY_CODE_EX_NAME, DateUtils.dateToCompactString(insert.getCreateTime())));
         try {
@@ -221,7 +218,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSupplierApply(SupplierApply supplierApply,ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierApply, "供应商申请申请信息，申请信息不能为空");
-        UserAccreditInfo userAccreditInfo = (UserAccreditInfo) requestContext.getProperty("userAccreditInfo");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty("aclUserAccreditInfo");
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
         Supplier validateSupplier = supplierService.selectByPrimaryKey(supplierApply.getSupplierId());
         if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
@@ -233,7 +230,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         Example example = new Example(SupplierApply.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
-        criteria.andEqualTo("channelId", userAccreditInfo.getChannelId());
+        criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
         List<String> statusList = new ArrayList<>();
         statusList.add(ZeroToNineEnum.ZERO.getCode());
         statusList.add(ZeroToNineEnum.ONE.getCode());

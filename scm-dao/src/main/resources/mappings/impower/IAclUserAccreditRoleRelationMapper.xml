@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.impower.AclUserAccreditRoleRelationMapper">
+    <delete id="deleteByUserAccreditId" >
+        DELETE FROM acl_user_accredit_role_relation WHERE user_accredit_id=#{userAccreditId}
+    </delete>
+
+    <select id="selectListByUserAcId" resultType="org.trc.domain.impower.AclUserAccreditRoleRelation">
+          SELECT  id,user_accredit_id AS 'userAccreditId',user_id AS  'userId',role_id AS 'roleId' FROM acl_user_accredit_role_relation
+          <where>
+              AND user_accredit_id =#{userAccreditId}
+              AND is_valid=1
+          </where>
+    </select>
+    <!--根据角色的id 修改用户和角色关联表中的状态-->
+
+    <update id="updateStatusByRoleId">
+        UPDATE acl_user_accredit_role_relation SET is_valid = #{status} WHERE role_id = #{roleId}
+    </update>
+
+</mapper>

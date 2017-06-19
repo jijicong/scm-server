@@ -1,10 +1,9 @@
 package org.trc.resource;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.AppResult;
@@ -46,7 +45,7 @@ public class PurchaseGroupResource {
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_CODE_USER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<UserAccreditInfo>> findPurchaseGroupPersons(@QueryParam("purchaseGroupCode") String purchaseGroupCode) throws Exception {
+    public AppResult<List<AclUserAccreditInfo>> findPurchaseGroupPersons(@QueryParam("purchaseGroupCode") String purchaseGroupCode) throws Exception {
         return ResultUtil.createSucssAppResult("查询采购组人员成功",purchaseGroupBiz.findPurchaseGroupPersons(purchaseGroupCode));
     }
 
@@ -92,7 +91,7 @@ public class PurchaseGroupResource {
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<UserAccreditInfo>> findPurchaseGroupMemberStateById(@PathParam("id") Long id) throws Exception{
+    public AppResult<List<AclUserAccreditInfo>> findPurchaseGroupMemberStateById(@PathParam("id") Long id) throws Exception{
         return ResultUtil.createSucssAppResult("根据采购组id查询无效状态的成员成功",purchaseGroupBiz.findPurchaseGroupMemberStateById(id));
     }
 

@@ -1,6 +1,6 @@
 package org.trc.mapper.purchase;
 
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.util.BaseMapper;
 
@@ -11,13 +11,13 @@ import java.util.List;
  */
 public interface IPurchaseGroupMapper extends BaseMapper<PurchaseGroup>{
 
-    List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id);
+    List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id);
 
-    List<UserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode);
+    List<AclUserAccreditInfo> selectPurchaseGroupPersons(String purchaseGroupCode);
 
     List<PurchaseGroup> selectPurchaseGroupNames(String[] strs);
 
-    List<UserAccreditInfo> selectInvalidUser(String [] strs);
+    List<AclUserAccreditInfo> selectInvalidUser(String [] strs);
 
    Integer selectUserWithPurchaseNum(String [] strs);
 

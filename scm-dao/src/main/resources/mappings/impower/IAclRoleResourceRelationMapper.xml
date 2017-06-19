@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.impower.AclRoleResourceRelationMapper">
+    <!-- 查询某角色对应的权限id集合 -->
+    <select id="selectJurisdictionIdList" resultType="java.lang.Long">
+        SELECT resource_code from acl_role_resource_relation j WHERE role_id=#{roleId}
+    </select>
+    <delete id="deleteByRoleId">
+        DELETE FROM acl_role_resource_relation WHERE role_id=#{roleId}
+    </delete>
+
+    <!--<update id="deleteByRoleId">
+        UPDATE  role_jurisdiction_relation SET  is_deleted ="1" WHERE role_id=#{roleId}
+    </update>-->
+    <select id="selectListByRoleId" resultType="org.trc.domain.impower.AclRoleResourceRelation">
+        SELECT id,role_id AS 'roleId',resource_code AS 'resourceCode' FROM acl_role_resource_relation
+        <where>
+                role_id IN
+            <foreach collection="roleIds" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

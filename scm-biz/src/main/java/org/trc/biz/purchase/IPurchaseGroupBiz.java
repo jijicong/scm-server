@@ -1,11 +1,10 @@
 package org.trc.biz.purchase;
 
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -32,7 +31,7 @@ public interface IPurchaseGroupBiz {
      * @return
      * @throws Exception
      */
-    List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception;
+    List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception;
 
     /**
      * 查询采购组列表
@@ -47,5 +46,5 @@ public interface IPurchaseGroupBiz {
      * @return
      * @throws Exception
      */
-    List<UserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception;
+    List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception;
 }

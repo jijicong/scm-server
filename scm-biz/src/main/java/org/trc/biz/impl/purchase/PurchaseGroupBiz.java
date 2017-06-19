@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
-import org.trc.domain.impower.UserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
 import org.trc.enums.ExceptionEnum;
@@ -65,11 +65,11 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public List<UserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception {
+    public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception {
 
         AssertUtil.notBlank(purchaseGroupCode,"根据采购组编码查询采购组人员的参数code为空");
-        List<UserAccreditInfo> userAccreditInfoList = purchaseGroupService.selectPurchaseGroupPersons(purchaseGroupCode);
-        return userAccreditInfoList;
+        List<AclUserAccreditInfo> aclUserAccreditInfoList = purchaseGroupService.selectPurchaseGroupPersons(purchaseGroupCode);
+        return aclUserAccreditInfoList;
 
     }
 
@@ -87,7 +87,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public List<UserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception {//查询该组id下的无效状态的用户
+    public List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception {//查询该组id下的无效状态的用户
 
         AssertUtil.notNull(id,"采购组id为空，查询采购组对应的无效状态的用户失败");
         return purchaseGroupService.findPurchaseGroupMemberStateById(id);
@@ -226,7 +226,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private List<UserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list,int size) throws Exception{
+    private List<AclUserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list, int size) throws Exception{
         /*
         首先要确认所插入的用户，不能被停用
         再次考虑，使用的用户据用采购角色
@@ -235,7 +235,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         for (int i = 0 ;i<list.size() ; i++) {
             userIds[i] = list.get(i).getUserId();
         }
-        List<UserAccreditInfo> purchaseGroupList = purchaseGroupService.selectInvalidUser(userIds);
+        List<AclUserAccreditInfo> purchaseGroupList = purchaseGroupService.selectInvalidUser(userIds);
         if(purchaseGroupList.size() != 0){
             throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION,"部分采购员被停用,请重新添加");
         }
