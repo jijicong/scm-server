@@ -10,5 +10,7 @@ import java.util.List;
  * Created by sone on 2017/5/11.
  */
 public interface AclResourceMapper extends BaseMapper<AclResource>{
-        List<AclResource> selectJurisdictionListByCodes(@Param("codes")Long ...code) throws Exception;
+        List<AclResource> selectJurisdictionListByCodes(@Param("codes")Long ...code);
+        
+        void insertOne(AclResource aclResource);
 }

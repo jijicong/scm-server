@@ -11,4 +11,7 @@ import java.util.List;
 public interface IAclResourceService extends IBaseService<AclResource, Long> {
 
     List<AclResource> selectJurisdictionListByCodes(Long... codes) throws Exception;
+
+    void insertOne(AclResource aclResource) throws Exception;
+
 }

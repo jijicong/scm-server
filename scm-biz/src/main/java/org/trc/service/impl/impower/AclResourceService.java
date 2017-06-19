@@ -22,4 +22,9 @@ public class AclResourceService extends BaseService<AclResource, Long> implement
     public List<AclResource> selectJurisdictionListByCodes(Long... codes) throws Exception {
         return aclResourceMapper.selectJurisdictionListByCodes(codes);
     }
+
+    @Override
+    public void insertOne(AclResource aclResource) throws Exception {
+        aclResourceMapper.insertOne(aclResource);
+    }
 }

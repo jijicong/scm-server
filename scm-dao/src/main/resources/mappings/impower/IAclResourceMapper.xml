@@ -13,4 +13,22 @@
               AND is_deleted=0
           </where>
     </select>
+    <insert id="insertOne" parameterType="org.trc.domain.impower.AclResource" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO acl_resource (
+            code,name,url,method,parent_id,create_operator,is_deleted,create_time,update_time,belong
+        )
+        VALUES
+            (
+                #{code,jdbcType=BIGINT},
+                #{name,jdbcType=VARCHAR},
+                #{url,jdbcType=VARCHAR},
+                #{method,jdbcType=VARCHAR},
+                #{parentId,jdbcType=BIGINT},
+                #{createOperator,jdbcType=BIGINT},
+                #{isDeleted,jdbcType=BIGINT},
+                #{createTime,jdbcType=TIMESTAMP},
+                #{updateTime,jdbcType=TIMESTAMP},
+                #{belong,jdbcType=TINYINT}
+            )
+    </insert>
 </mapper>

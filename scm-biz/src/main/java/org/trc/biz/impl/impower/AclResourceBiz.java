@@ -260,7 +260,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         aclResource.setUpdateTime(Calendar.getInstance().getTime());
         //aclResource.setIsValid(jurisdictionTreeNode.getIsValid());
         aclResource.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        jurisdictionService.insert(aclResource);
+        jurisdictionService.insertOne(aclResource);
     }
 
     /**
