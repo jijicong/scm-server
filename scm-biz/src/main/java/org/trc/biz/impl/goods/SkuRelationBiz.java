@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.trc.biz.goods.ISkuRelationBiz;
+import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Skus;
+import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkusService;
 
 /**
@@ -24,6 +26,10 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     @Qualifier("skusService")
     private ISkusService skusService;
 
+    @Autowired
+    @Qualifier("externalItemSkuService")
+    private IExternalItemSkuService externalItemSkuService;
+
     @Override
     public String getSkuInformation(String skuCode) {
         if (skuCode.startsWith("SP0")){
@@ -33,7 +39,10 @@ public class SkuRelationBiz implements ISkuRelationBiz {
             return JSON.toJSONString(skus);
         }
         if (skuCode.startsWith("SP1")){
-
+            ExternalItemSku externalItemSku = new ExternalItemSku();
+            externalItemSku.setSkuCode(skuCode);
+            externalItemSku = externalItemSkuService.selectOne(externalItemSku);
+            return JSON.toJSONString(externalItemSku);
         }
         logger.info("警告，传入错误的skuCode");
         return null;
