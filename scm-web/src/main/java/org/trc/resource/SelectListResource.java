@@ -169,6 +169,13 @@ public class SelectListResource {
         return ResultUtil.createSucssAppResult("查询国家成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.COUNTRY));
     }
 
+    @GET
+    @Path(SupplyConstants.SelectList.SUPPLIER)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> supplier() throws Exception{
+        return ResultUtil.createSucssAppResult("查询一件代发供应商成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.SUPPLIER));
+    }
+
 
 
 

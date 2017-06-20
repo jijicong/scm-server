@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.ICategoryBiz;
+import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
+import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.*;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.enums.CommonExceptionEnum;
@@ -22,12 +24,13 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
+import org.trc.form.config.DictForm;
+import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SupplyItemsForm;
 import org.trc.service.category.*;
-import org.trc.service.goods.IItemsService;
-import org.trc.service.goods.ISkuStockService;
-import org.trc.service.goods.ISkusService;
+import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
 import org.trc.service.purchase.IPurchaseDetailService;
@@ -55,6 +58,8 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
     //SKU的属性组合名称分割符号
     public static final String SKU_PROPERTY_COMBINE_NAME_SPLIT_SYMBOL = ":";
+    //换行符号
+    public static final String SWITCH_LINE = "<br>";
     //SKU的属性组合名称空格
     public static final String SKU_PROPERTY_COMBINE_NAME_EMPTY = "&nbsp&nbsp&nbsp";
     //金额数字
@@ -92,6 +97,12 @@ public class GoodsBiz implements IGoodsBiz {
     private ICategoryPropertyService categoryPropertyService;
     @Autowired
     private ICategoryBrandService categoryBrandService;
+    @Autowired
+    private IExternalItemSkuService externalItemSkuService;
+    @Autowired
+    private ISupplyItemsService supplyItemsService;
+    @Autowired
+    private IConfigBiz configBiz;
 
 
     @Override
@@ -660,8 +671,15 @@ public class GoodsBiz implements IGoodsBiz {
     private Long getLongValue(String val){
         if(StringUtils.isNotBlank(val)){
             Double d = Double.parseDouble(val);
-            d = d*MONEY_MULTI;
-            return d.longValue();
+            getLongValue(d);
+        }
+        return null;
+    }
+
+    private Long getLongValue(Double val){
+        if(null != val){
+            val = val*MONEY_MULTI;
+            return val.longValue();
         }
         return null;
     }
@@ -1228,6 +1246,207 @@ public class GoodsBiz implements IGoodsBiz {
         handlerCategoryPropertys(deletedItemNatures, deletedItemSales, categoryProperties, categoryId);
         return categoryProperties;
     }
+
+    @Override
+    public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception{
+        Example example = new Example(ExternalItemSku.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {//供应商编号
+            criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+        }
+        if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
+            criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
+            criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+            criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
+            criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
+            criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
+        }
+        example.orderBy("updateTime").desc();
+        page = externalItemSkuService.pagination(example, page, queryModel);
+        setSupplierName(page.getResult());
+        return page;
+    }
+
+    /**
+     * 设置一件代发供应商名称
+     * @param externalItemSkuList
+     * @throws Exception
+     */
+    private void setSupplierName(List<ExternalItemSku> externalItemSkuList) throws Exception{
+        for(ExternalItemSku items: externalItemSkuList){
+            items.setSupplierName(getSupplierName(items.getSupplierCode()));
+        }
+    }
+
+    @Override
+    public Pagenation<SupplyItems> externalGoodsPage2(SupplyItemsForm queryModel, Pagenation<SupplyItems> page) throws Exception{
+        Example example = new Example(SupplyItems.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {//供应商编号
+            criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+        }
+        if (StringUtils.isNotBlank(queryModel.getSupplySku())) {//商品SKU编号
+            criteria.andLike("supplySku", "%" + queryModel.getSupplySku() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getSkuName())) {//商品名称
+            criteria.andLike("skuName", "%" + queryModel.getSkuName() + "%");
+        }
+        criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());//启用
+        criteria.andEqualTo("isUsed", ZeroToNineEnum.ZERO.getCode());//只查询未被使用过的
+        example.orderBy("updateTime").desc();
+        page = supplyItemsService.pagination(example, page, queryModel);
+        setOutSupplierName(page.getResult());
+        return page;
+    }
+
+
+    /**
+     * 设置一件代发供应商名称
+     * @param supplyItemsList
+     * @throws Exception
+     */
+    private void setOutSupplierName(List<SupplyItems> supplyItemsList) throws Exception{
+        for(SupplyItems items: supplyItemsList){
+            items.setSupplyName(getSupplierName(items.getSupplierCode()));
+        }
+    }
+
+    /**
+     * 获取一件代发供应商名称
+     * @param supplierCode
+     * @return
+     * @throws Exception
+     */
+    private String getSupplierName(String supplierCode) throws Exception{
+        DictForm form = new DictForm();
+        form.setTypeCode(SupplyConstants.SelectList.SUPPLIER);
+        form.setValue(supplierCode);
+        List<Dict> dicts = configBiz.queryDicts(form);
+        AssertUtil.notEmpty(dicts, String.format("根据字典类型编码[%s]和字典编码[%s]查询字典信息为空",
+                SupplyConstants.SelectList.SUPPLIER, supplierCode));
+        return dicts.get(0).getName();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void saveExternalItems(String supplySkus) {
+        AssertUtil.notBlank(supplySkus, "新增代发商品不能为空");
+        String[] supplySkus2 = supplySkus.split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
+        Example example = new Example(SupplyItems.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("supplySku", Arrays.asList(supplySkus2));
+        List<SupplyItems> supplyItems = supplyItemsService.selectByExample(example);
+        AssertUtil.notEmpty(supplyItems, String.format("根据多个京东一件代发商品SKU[%s]查询商品信息为空",
+                CommonUtil.converCollectionToString(Arrays.asList(supplySkus2))));
+        StringBuilder sb = new StringBuilder();
+        for(SupplyItems items : supplyItems){
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), items.getIsValid())){
+                sb.append(items.getSkuName()).append(SWITCH_LINE);
+            }
+        }
+        if(sb.length() > 0){
+            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, String.format("商品%s已停用", sb.toString()));
+        }
+        //TODO 调用京东商品上下架、商品是否停售校验商品是否可用，校验商品价格是否有变动
+        List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems);
+        int count = externalItemSkuService.insertList(externalItemSkuList);
+        if(count == 0){
+            String msg = String.format("保存京东一件代发商品%s到数据库失败", JSON.toJSONString(externalItemSkuList));
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
+        }
+        updateSupplyItemsUsedStatus(Arrays.asList(supplySkus2));
+    }
+
+    @Override
+    public void updateExternalItemsValid(Long id, String isValid) throws Exception {
+        AssertUtil.notNull(id, "代发商品启用/停用操作参数id不能为空");
+        AssertUtil.notBlank(isValid, "代发商品启用/停用操作参数isValid不能为空");
+        String _isValid = ZeroToNineEnum.ZERO.getCode();
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
+            _isValid = ZeroToNineEnum.ONE.getCode();
+        }
+        ExternalItemSku externalItemSku = new ExternalItemSku();
+        externalItemSku.setId(id);
+        externalItemSku.setIsValid(_isValid);
+        int count = externalItemSkuService.updateByPrimaryKeySelective(externalItemSku);
+        if(count == 0){
+            String msg = "代发商品启用/停用操作更新数据库失败";
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems){
+        List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
+        Date sysDate = Calendar.getInstance().getTime();
+        String sysDateStr = DateUtils.dateToCompactString(sysDate);
+        for(SupplyItems items: supplyItems){
+            String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
+                    SupplyConstants.Serial.SKU_OUTERER, sysDateStr);
+            ExternalItemSku externalItemSku = new ExternalItemSku();
+            externalItemSku.setSkuCode(code);
+            externalItemSku.setSupplierCode(items.getSupplierCode());
+            externalItemSku.setSupplierName(items.getSupplyName());
+            externalItemSku.setSupplierSkuCode(items.getSupplySku());
+            externalItemSku.setItemName(items.getSkuName());
+            externalItemSku.setBarCode(items.getUpc());
+
+            externalItemSku.setSupplyPrice(getLongValue(items.getSupplyPrice()));
+            externalItemSku.setSupplierPrice(getLongValue(items.getSupplierPrice()));
+            externalItemSku.setMarketReferencePrice(getLongValue(items.getMarketPrice()));
+            //externalItemSku.setWarehouse();//仓库 TODO
+            //externalItemSku.setSubtitle();//商品副标题 TODO
+            externalItemSku.setBrand(items.getBrand());
+            externalItemSku.setCategory(items.getCategory());
+            externalItemSku.setWeight(getLongValue(items.getWeight()));
+            externalItemSku.setProducingArea(items.getProductArea());
+            //externalItemSku.setPlaceOfDelivery();//发货地址 TODO
+            externalItemSku.setItemType(items.getSkuType());
+            //externalItemSku.setTariff(); //税率 TODO
+            //externalItemSku.setMainPictrue(items.getImagePath());//主图TODO
+            externalItemSku.setDetail(items.getImagePath());
+            externalItemSku.setDetail(items.getIntroduction());
+            //externalItemSku.setProperties();// 属性 TODO
+            //externalItemSku.setStock();//库存 ,调用京东接口实时设置 TODO
+            externalItemSku.setIsValid(ZeroToNineEnum.ONE.getCode());
+            externalItemSku.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            externalItemSku.setCreateTime(sysDate);
+            externalItemSku.setUpdateTime(sysDate);
+            externalItemSkus.add(externalItemSku);
+        }
+        return externalItemSkus;
+    }
+
+    /**
+     * 更新京东商品是否使用状态
+     * @param supplierSkus
+     */
+    private void updateSupplyItemsUsedStatus(List<String>  supplierSkus){
+        Example example = new Example(SupplyItems.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("supplySku", supplierSkus);
+        SupplyItems supplyItems = new SupplyItems();
+        supplyItems.setIsUsed(ZeroToNineEnum.ONE.getCode());
+        supplyItems.setUpdateTime(Calendar.getInstance().getTime());
+        int count = supplyItemsService.updateByExampleSelective(supplyItems, example);
+        if(count == 0){
+            String msg = String.format("根据京东SKU列表[%s]更新京东一件代发商品是否使用状态到数据库失败", JSON.toJSONString(supplierSkus));
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+
+
 
     private void setCategoryPropertyName(List<CategoryProperty> categoryProperties) throws Exception{
         List<Long> propertyIds = new ArrayList<>();

@@ -1,13 +1,8 @@
 package org.trc.biz.goods;
 
 import org.trc.domain.category.CategoryProperty;
-import org.trc.domain.goods.ItemNaturePropery;
-import org.trc.domain.goods.ItemSalesPropery;
-import org.trc.domain.goods.Items;
-import org.trc.domain.goods.Skus;
-import org.trc.form.goods.ItemsExt;
-import org.trc.form.goods.ItemsForm;
-import org.trc.form.goods.SkusForm;
+import org.trc.domain.goods.*;
+import org.trc.form.goods.*;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -84,5 +79,35 @@ public interface IGoodsBiz {
      * @throws Exception
      */
     List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception;
+
+    /**
+     * 代发商品分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm form, Pagenation<ExternalItemSku> page) throws Exception;
+
+    /**
+     * 代发商品分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<SupplyItems> externalGoodsPage2(SupplyItemsForm form, Pagenation<SupplyItems> page) throws Exception;
+
+    /**
+     * 新增一件代发商品
+     * @param supplySkus
+     */
+    void saveExternalItems(String supplySkus);
+
+    /**
+     * 一件代发商品启用/停用
+     * @param isValid
+     * @throws Exception
+     */
+    void updateExternalItemsValid(Long id, String isValid) throws Exception;
+
 
 }

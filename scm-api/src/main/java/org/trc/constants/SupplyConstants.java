@@ -501,6 +501,14 @@ public class SupplyConstants {
         //商品分类属性
         public static final String ITEMS_CATEGORY_PROPERTY = "itemsCategoryProperty";
 
+        //代发商品分页查询路径
+        public static final String EXTERNAL_GOODS_PAGE = "externalGoodsPage";
+        //代发商品分页查询路径2
+        public static final String EXTERNAL_GOODS_PAGE_2 = "externalGoodsPage2";
+        //代发商品
+        public static final String EXTERNAL_ITEM_SKU = "externalItemSku";
+        //代发商品启用/停用
+        public static final String EXTERNAL_ITEM__VALID = "externalItemsValid";
 
     }
 
@@ -543,6 +551,8 @@ public class SupplyConstants {
         public static final String IS_CUSTOM_CLEARANCE = "clearance";
         //查询采购订单状态
         public static final String PURCHASE_ORDER_STATUS = "purchaseOrderStatus";
+        //供应商
+        public static final String SUPPLIER = "oneAgentSupplier";
     }
 
     /**
