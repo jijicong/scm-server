@@ -1,5 +1,8 @@
 package org.trc.domain.goods;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -101,9 +104,11 @@ public class ExternalItemSku {
     private String isDeleted;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
     // 最后更新时间,格式yyyy-mm-dd hh:mi:ss
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
     public Long getId() {
