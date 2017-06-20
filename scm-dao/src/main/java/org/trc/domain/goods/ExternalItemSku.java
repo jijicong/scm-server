@@ -6,70 +6,108 @@ import org.trc.custom.CustomDateSerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.ws.rs.PathParam;
-import java.math.BigDecimal;
+import javax.persistence.Table;
+import javax.ws.rs.FormParam;
 import java.util.Date;
 
+/**
+ * @author: Ding
+ * @mail: hzdzf@tairanchina.com
+ * @create: 2017-06-20 11:47
+ */
+@Table(name = "external_item_sku")
 public class ExternalItemSku {
 
-    @PathParam("id")
+    // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 供应商id
+    @FormParam("supplierId")
     private Long supplierId;
 
+    // 供应链编号
+    @FormParam("supplierCode")
     private String supplierCode;
 
+    // 供应链名称
     private String supplierName;
 
+    // 商品SKU编号
     private String skuCode;
 
+    // 供应商商品sku编号
     private String supplierSkuCode;
 
+    // 商品名称
     private String itemName;
 
+    // 条形码
     private String barCode;
 
+    // 供货价,单位/分
     private Long supplyPrice;
 
+    // 供应商售价,单位/分
     private Long supplierPrice;
 
+    // 市场参考价,单位/分
     private Long marketReferencePrice;
 
+    // 仓库
     private String warehouse;
 
+    // 商品副标题
     private String subtitle;
 
+    // 品牌
     private String brand;
 
+    // 分类
     private String category;
 
+    // 重量,单位/克
     private Long weight;
 
+    // 产地
     private String producingArea;
 
+    // 发货地
     private String placeOfDelivery;
 
+    // 商品类型
     private String itemType;
 
-    private BigDecimal tariff;
+    // 1-普通商品 2-跨境直邮 3-跨境保税
+    private Double tariff;
 
+    // 商品主图
     private String mainPictrue;
 
+    // 详情图
     private String detailPictrues;
 
+    // 详情
     private String detail;
 
+    // 属性
     private String properties;
 
+    // 库存
     private String stock;
 
+    // 是否有效:0-无效,1-有效
     private String isValid;
 
+    // 是否删除:0-否,1-是
     private String isDeleted;
+
+    // 创建时间,格式yyyy-mm-dd hh:mi:ss
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
+
+    // 最后更新时间,格式yyyy-mm-dd hh:mi:ss
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
@@ -94,7 +132,7 @@ public class ExternalItemSku {
     }
 
     public void setSupplierCode(String supplierCode) {
-        this.supplierCode = supplierCode == null ? null : supplierCode.trim();
+        this.supplierCode = supplierCode;
     }
 
     public String getSupplierName() {
@@ -102,7 +140,7 @@ public class ExternalItemSku {
     }
 
     public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName == null ? null : supplierName.trim();
+        this.supplierName = supplierName;
     }
 
     public String getSkuCode() {
@@ -110,7 +148,7 @@ public class ExternalItemSku {
     }
 
     public void setSkuCode(String skuCode) {
-        this.skuCode = skuCode == null ? null : skuCode.trim();
+        this.skuCode = skuCode;
     }
 
     public String getSupplierSkuCode() {
@@ -118,7 +156,7 @@ public class ExternalItemSku {
     }
 
     public void setSupplierSkuCode(String supplierSkuCode) {
-        this.supplierSkuCode = supplierSkuCode == null ? null : supplierSkuCode.trim();
+        this.supplierSkuCode = supplierSkuCode;
     }
 
     public String getItemName() {
@@ -126,7 +164,7 @@ public class ExternalItemSku {
     }
 
     public void setItemName(String itemName) {
-        this.itemName = itemName == null ? null : itemName.trim();
+        this.itemName = itemName;
     }
 
     public String getBarCode() {
@@ -134,7 +172,7 @@ public class ExternalItemSku {
     }
 
     public void setBarCode(String barCode) {
-        this.barCode = barCode == null ? null : barCode.trim();
+        this.barCode = barCode;
     }
 
     public Long getSupplyPrice() {
@@ -166,7 +204,7 @@ public class ExternalItemSku {
     }
 
     public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse == null ? null : warehouse.trim();
+        this.warehouse = warehouse;
     }
 
     public String getSubtitle() {
@@ -174,7 +212,7 @@ public class ExternalItemSku {
     }
 
     public void setSubtitle(String subtitle) {
-        this.subtitle = subtitle == null ? null : subtitle.trim();
+        this.subtitle = subtitle;
     }
 
     public String getBrand() {
@@ -182,7 +220,7 @@ public class ExternalItemSku {
     }
 
     public void setBrand(String brand) {
-        this.brand = brand == null ? null : brand.trim();
+        this.brand = brand;
     }
 
     public String getCategory() {
@@ -190,7 +228,7 @@ public class ExternalItemSku {
     }
 
     public void setCategory(String category) {
-        this.category = category == null ? null : category.trim();
+        this.category = category;
     }
 
     public Long getWeight() {
@@ -206,7 +244,7 @@ public class ExternalItemSku {
     }
 
     public void setProducingArea(String producingArea) {
-        this.producingArea = producingArea == null ? null : producingArea.trim();
+        this.producingArea = producingArea;
     }
 
     public String getPlaceOfDelivery() {
@@ -214,7 +252,7 @@ public class ExternalItemSku {
     }
 
     public void setPlaceOfDelivery(String placeOfDelivery) {
-        this.placeOfDelivery = placeOfDelivery == null ? null : placeOfDelivery.trim();
+        this.placeOfDelivery = placeOfDelivery;
     }
 
     public String getItemType() {
@@ -222,14 +260,14 @@ public class ExternalItemSku {
     }
 
     public void setItemType(String itemType) {
-        this.itemType = itemType == null ? null : itemType.trim();
+        this.itemType = itemType;
     }
 
-    public BigDecimal getTariff() {
+    public Double getTariff() {
         return tariff;
     }
 
-    public void setTariff(BigDecimal tariff) {
+    public void setTariff(Double tariff) {
         this.tariff = tariff;
     }
 
@@ -238,7 +276,7 @@ public class ExternalItemSku {
     }
 
     public void setMainPictrue(String mainPictrue) {
-        this.mainPictrue = mainPictrue == null ? null : mainPictrue.trim();
+        this.mainPictrue = mainPictrue;
     }
 
     public String getDetailPictrues() {
@@ -246,7 +284,7 @@ public class ExternalItemSku {
     }
 
     public void setDetailPictrues(String detailPictrues) {
-        this.detailPictrues = detailPictrues == null ? null : detailPictrues.trim();
+        this.detailPictrues = detailPictrues;
     }
 
     public String getDetail() {
@@ -254,7 +292,7 @@ public class ExternalItemSku {
     }
 
     public void setDetail(String detail) {
-        this.detail = detail == null ? null : detail.trim();
+        this.detail = detail;
     }
 
     public String getProperties() {
@@ -262,7 +300,7 @@ public class ExternalItemSku {
     }
 
     public void setProperties(String properties) {
-        this.properties = properties == null ? null : properties.trim();
+        this.properties = properties;
     }
 
     public String getStock() {
@@ -270,7 +308,7 @@ public class ExternalItemSku {
     }
 
     public void setStock(String stock) {
-        this.stock = stock == null ? null : stock.trim();
+        this.stock = stock;
     }
 
     public String getIsValid() {
@@ -278,7 +316,7 @@ public class ExternalItemSku {
     }
 
     public void setIsValid(String isValid) {
-        this.isValid = isValid == null ? null : isValid.trim();
+        this.isValid = isValid;
     }
 
     public String getIsDeleted() {
@@ -286,7 +324,7 @@ public class ExternalItemSku {
     }
 
     public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted == null ? null : isDeleted.trim();
+        this.isDeleted = isDeleted;
     }
 
     public Date getCreateTime() {

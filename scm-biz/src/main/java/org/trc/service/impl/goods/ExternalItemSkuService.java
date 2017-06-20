@@ -6,8 +6,10 @@ import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.impl.BaseService;
 
 /**
- * Created by hzwdx on 2017/6/20.
+ * @author: Ding
+ * @mail: hzdzf@tairanchina.com
+ * @create: 2017-06-20 14:24
  */
 @Service("externalItemSkuService")
-public class ExternalItemSkuService  extends BaseService<ExternalItemSku, Long> implements IExternalItemSkuService {
+public class ExternalItemSkuService extends BaseService<ExternalItemSku,Long> implements IExternalItemSkuService {
 }

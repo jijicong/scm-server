@@ -4,7 +4,11 @@ import org.trc.domain.goods.ExternalItemSku;
 import org.trc.service.IBaseService;
 
 /**
- * Created by hzwdx on 2017/6/20.
+ * @author: Ding
+ * @mail: hzdzf@tairanchina.com
+ * @create: 2017-06-20 14:19
  */
-public interface IExternalItemSkuService extends IBaseService<ExternalItemSku, Long> {
+public interface IExternalItemSkuService extends IBaseService<ExternalItemSku,Long> {
+
+
 }

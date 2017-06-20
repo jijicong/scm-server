@@ -1,11 +1,12 @@
 package org.trc.mapper.goods;
 
-
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.util.BaseMapper;
 
 /**
- * Created by hzwdx on 2017/6/20.
+ * @author: Ding
+ * @mail: hzdzf@tairanchina.com
+ * @create: 2017-06-20 13:59
  */
-public interface IExternalItemSkuMapper  extends BaseMapper<ExternalItemSku> {
+public interface IExternalItemSkuMapper extends BaseMapper<ExternalItemSku> {
 }

@@ -14,7 +14,9 @@ import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
+import org.trc.service.config.IRequestFlowService;
 import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -42,6 +44,9 @@ public class TaiRanResource {
 
     @Resource
     private ICategoryBiz categoryBiz;
+
+    @Resource
+    private IRequestFlowService requestFlowService;
 
     /**
      * 分页查询品牌
@@ -178,5 +183,14 @@ public class TaiRanResource {
             logger.error("查询分类属性列表报错："+e.getMessage());
             return ResultUtil.createFailAppResult("查询分类属性列表报错："+e.getMessage());
         }
+    }
+
+
+    @GET
+    @Path(SupplyConstants.TaiRan.SKU_RELATION_RELATION)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<String>  getSpuInformation(@QueryParam("skuCode")String skuCode){
+
+        return null;
     }
 }
