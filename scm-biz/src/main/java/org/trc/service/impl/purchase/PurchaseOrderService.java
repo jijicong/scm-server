@@ -42,4 +42,9 @@ public class PurchaseOrderService extends BaseService<PurchaseOrder,Long> implem
     public List<PurchaseDetail> selectAllCategory(List<Long> categoryIds) {
         return purchaseOrderMapper.selectAllCategory(categoryIds);
     }
+
+    @Override
+    public Integer updateStateByPurchaseOrderCode(Map<String, Object> map) {
+        return purchaseOrderMapper.updateStateByPurchaseOrderCode(map);
+    }
 }

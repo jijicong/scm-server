@@ -8,6 +8,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
 import org.trc.enums.ClearanceEnum;
+import org.trc.enums.PurchaseOrderAuditEnum;
 import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.util.AppResult;
@@ -53,6 +54,15 @@ public class SelectListResource {
     private static final String TRANSORT_COSTS_TAKE="transportCostsTake";
     //处理优先级
     private static final String  HANDLER_PRIORITY = "handlerPriority";
+
+
+    @GET
+    @Path(SupplyConstants.SelectList.PURCHASE_ORDER_AUDIT_STATUS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> purchaseOrderAuditStatus(){
+        return ResultUtil.createSucssAppResult("成功", PurchaseOrderAuditEnum.toJSONArray());
+    }
+
     @GET
     @Path(SupplyConstants.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)

@@ -3,14 +3,14 @@
 <mapper namespace="org.trc.mapper.purchase.IPurchaseGroupMapper">
     <!-- 查询某采购组下的无效状态的用户，用户采购组编辑页面的提示信息 -->
     <select id="findPurchaseGroupMemberStateById" resultType="org.trc.domain.impower.AclUserAccreditInfo">
-        SELECT user_id AS userId,phone,`name` from user_accredit_info WHERE user_id IN(
+        SELECT user_id AS userId,phone,`name` from acl_user_accredit_info WHERE user_id IN(
         SELECT pgr.user_id from purchase_group_user_relation pgr WHERE purchase_group_code=
         (SELECT pg.`code` from purchase_group pg WHERE id=#{id})
         ) AND is_valid='0'
     </select>
     <!--查询用户信息-->
     <select id="selectPurchaseGroupPersons" resultType="org.trc.domain.impower.AclUserAccreditInfo">
-        SELECT user_id as userId , `name` from user_accredit_info WHERE user_id in
+        SELECT user_id as userId , `name` from acl_user_accredit_info WHERE user_id in
         (
         SELECT user_id FROM purchase_group_user_relation WHERE purchase_group_code=#{purchaseGroupCode}
         )
@@ -28,7 +28,7 @@
             is_valid AS isValid,
             user_id AS userId
         FROM
-            user_accredit_info
+        acl_user_accredit_info
         WHERE
             is_valid = '0'
         AND user_id IN
@@ -40,7 +40,7 @@
         SELECT
             COUNT(*)
         FROM
-            user_accredit_info u
+        acl_user_accredit_info u
         LEFT JOIN user_accredit_role_relation ur ON u.user_id = ur.user_id
         WHERE
             u.user_id IN

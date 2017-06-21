@@ -2,6 +2,7 @@ package org.trc.biz.purchase;
 
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
@@ -34,8 +35,10 @@ public interface IPurchaseOrderBiz {
      */
     Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page, String skus) throws Exception;
 
-    void savePurchaseOrder(PurchaseOrder purchaseOrder,String status) throws Exception;
+    void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status) throws Exception;
 
+    void updatePurchaseOrderState(PurchaseOrder purchaseOrder) throws Exception;
 
+    PurchaseOrder findPurchaseOrderAddDataById(Long id) throws Exception;
 
 }

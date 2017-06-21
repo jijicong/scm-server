@@ -1,12 +1,82 @@
 package org.trc.biz.impl.purchase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
+import org.trc.domain.category.Brand;
+import org.trc.domain.purchase.PurchaseDetail;
+import org.trc.service.category.IBrandService;
+import org.trc.service.purchase.IPurchaseDetailService;
+import org.trc.service.purchase.IPurchaseOrderAuditService;
+import org.trc.service.purchase.IPurchaseOrderService;
+import org.trc.util.AssertUtil;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/25.
  */
 @Service("purchaseDetailBiz")
 public class PurchaseDetailBiz implements IPurchaseDetailBiz{
+
+    @Resource
+    private IPurchaseDetailService iPurchaseDetailService;
+
+    @Resource
+    private IPurchaseOrderService purchaseOrderService;
+
+    @Resource
+    private IBrandService iBrandService;
+
+    @Override
+    public List<PurchaseDetail> purchaseDetailList(Long purchaseId) throws Exception {
+
+        AssertUtil.notNull(purchaseId,"采购单id为空,采购明细查询失败");
+
+        PurchaseDetail purchaseDetailTT = new PurchaseDetail();
+
+        purchaseDetailTT.setPurchaseId(purchaseId);
+
+        List<PurchaseDetail> purchaseDetailList = iPurchaseDetailService.select(purchaseDetailTT);
+        //品牌的名称
+        List<Long> brandIds = new ArrayList<>();
+        //分类的全路径
+        List<Long> categoryIds = new ArrayList<>();
+        //获得所有分类的id 拼接，并且显示name的拼接--brand
+        for (PurchaseDetail purchaseDetail: purchaseDetailList){
+            categoryIds.add(purchaseDetail.getCategoryId());
+            brandIds.add(purchaseDetail.getBrandId());
+        }
+
+        List<Brand> brandList = iBrandService.selectBrandList(brandIds);
+        for (Brand brand :brandList) {
+            for (PurchaseDetail purchaseDetail:purchaseDetailList) {
+                if(brand.getId().equals(purchaseDetail.getBrandId())){
+                    //purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
+                    //purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
+                    purchaseDetail.setBrandName(brand.getName());
+                }
+            }
+        }
+
+        List<PurchaseDetail> temp = purchaseOrderService.selectAllCategory(categoryIds);
+        //categoryId    allCategoryName    allCategory >>>>>>分类全路径赋值
+        for (PurchaseDetail purchaseDetailTmp: temp) {
+            for (PurchaseDetail purchaseDetail:purchaseDetailList) {
+                if(purchaseDetailTmp.getCategoryId().equals(purchaseDetail.getCategoryId())){
+                    //purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
+                    purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
+                }
+            }
+        }
+
+
+
+        return purchaseDetailList;
+
+    }
 
 }

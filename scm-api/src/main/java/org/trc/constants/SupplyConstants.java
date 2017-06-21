@@ -345,6 +345,31 @@ public class SupplyConstants {
     }
 
     /**
+     * 采购订单审核
+     */
+    public static final class PurchaseOrderAudit{
+        //根路径
+        public static final String ROOT = "purchase";
+        //采购订单分页查询
+        public static final String PURCHASE_ORDER_AUDIT_PAGE = "purchaseOrderAuditPage";
+
+        public static final String PURCHASE_ORDER_AUDIT = "purchaseOrderAudit";
+
+    }
+
+    /**
+     * 采购明细
+     */
+    public static final class PurchaseDetail{
+        //根路径
+        public static final String ROOT = "purchase";
+        //
+        public static final String  PURCHASE_DETAIL= "purchaseDetail";
+
+    }
+
+
+    /**
      * 采购订单管理
      */
     public static final class PurchaseOrder {
@@ -554,6 +579,8 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_STATUS = "purchaseOrderStatus";
         //供应商
         public static final String SUPPLIER = "oneAgentSupplier";
+        //采购订单的审核状态
+        public static final String PURCHASE_ORDER_AUDIT_STATUS="purchaseOrderAuditStatus";
     }
 
     /**
