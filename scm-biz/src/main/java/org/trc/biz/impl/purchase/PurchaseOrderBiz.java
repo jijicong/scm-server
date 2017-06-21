@@ -1,29 +1,34 @@
 package org.trc.biz.impl.purchase;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
-import org.trc.domain.purchase.PurchaseGroup;
-import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.*;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.PurchaseOrderException;
+import org.trc.exception.WarehouseException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseGroupService;
+import org.trc.service.purchase.IPurchaseOrderAuditService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
@@ -57,10 +62,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IPurchaseGroupService purchaseGroupService;
     @Resource
     private IWarehouseService warehouseService;
+    @Resource
+    private IPurchaseOrderAuditService iPurchaseOrderAuditService;
+    @Resource
+    private ISupplierService iSupplierService;
+    @Resource
+    private IConfigBiz configBiz;
+    @Resource
+    private IAclUserAccreditInfoService iAclUserAccreditInfoService;
 
     private final static String  SERIALNAME = "CGD";
 
     private final static Integer LENGTH = 5;
+
 
     @Resource
     private ISerialUtilService serialUtilService;
@@ -166,9 +180,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private Example setCondition(PurchaseOrderForm form) throws Exception {
         Example example = new Example(PurchaseOrder.class);
         Example.Criteria criteria = example.createCriteria();
-
         if (!StringUtils.isBlank(form.getPurchaseOrderCode())) {
-            criteria.andEqualTo("purchaseOrderCode", form.getPurchaseOrderCode());
+            criteria.andLike("purchaseOrderCode","%"+ form.getPurchaseOrderCode()+"%");
         }
 
         String supplierName = form.getSupplierName();//供应商名称--供应商编码
@@ -205,9 +218,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if (!StringUtils.isBlank(form.getEndDate())) {
             criteria.andLessThan("updateTime", form.getEndDate());
         }
+        criteria.andEqualTo("isDeleted","0");
         example.orderBy("status").asc();
         example.orderBy("updateTime").desc();
         return example;
+
     }
 
     @Override
@@ -228,10 +243,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         return supplierList;
     }
 
-    //保存采购单--状态为暂存
+    //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseOrder(PurchaseOrder purchaseOrder,String status) throws Exception {
+    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status) throws Exception {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
@@ -239,6 +254,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AclUserAccreditInfo user = new AclUserAccreditInfo();
         //TODO 加入 userId
        // user.setUserId(purchaseOrder.getCreateOperator());
+        purchaseOrder.setCreateOperator("E2E4BDAD80354EFAB6E70120C271968C"); //TODO 后期权限注入 可以去掉
         user.setUserId("E2E4BDAD80354EFAB6E70120C271968C");
         user = userAccreditInfoService.selectOne(user);//查询用户对应的渠道
         purchaseOrder.setChannelCode(user.getChannelCode());
@@ -270,6 +286,30 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String code = purchaseOrder.getPurchaseOrderCode();
 
         savePurchaseDetail(purchaseOrderStrs,orderId,code);//保存采购商品
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
+            savePurchaseOrderAudit(purchaseOrder);
+        }
+    }
+    /**
+     * 保存提交审核的采购信息
+     */
+    private void savePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder){
+
+        AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
+        PurchaseOrderAudit purchaseOrderAudit = new PurchaseOrderAudit();
+        purchaseOrderAudit.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
+        purchaseOrderAudit.setPurchaseOrderId(purchaseOrder.getId());
+        purchaseOrderAudit.setStatus(PurchaseOrderAuditEnum.AUDIT.getCode());  //采购单提交审核，审核表的默认状态，提交审核
+        purchaseOrderAudit.setCreateOperator(purchaseOrder.getCreateOperator());
+        //purchaseOrder
+        ParamsUtil.setBaseDO(purchaseOrderAudit);
+        System.out.println(purchaseOrderAudit.toString());
+        int count = iPurchaseOrderAuditService.insert(purchaseOrderAudit);
+        if (count == 0) {
+            String msg = String.format("保存%s采购单审核操作失败", JSON.toJSONString(purchaseOrder));
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
 
     }
 
@@ -345,4 +385,99 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
 
+    @Override
+    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder) throws Exception {
+
+        AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
+        String status = purchaseOrder.getStatus();
+        PurchaseOrder tmp = new PurchaseOrder();
+
+        if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){ //暂存：delete
+            tmp.setId(purchaseOrder.getId());
+            tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+            int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
+            if (count == 0) {
+                String msg = String.format("删除%s采购单操作失败", JSON.toJSONString(purchaseOrder));
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+            }
+        }
+
+    }
+
+    @Override
+    public PurchaseOrder findPurchaseOrderAddDataById(Long id) throws Exception {
+
+        AssertUtil.notNull(id,"根据采购订单id查询采购单失败，采购订单id为空");
+
+        //查询采购单
+        PurchaseOrder purchaseOrder = purchaseOrderService.selectByPrimaryKey(id);
+
+        AssertUtil.notNull(purchaseOrder,"采购单根据主键id查询，数据库查询失败");
+
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(purchaseOrder.getSupplierCode());
+        supplier = iSupplierService.selectOne(supplier);
+        AssertUtil.notNull(supplier,"根据供应商编码查询供应商失败");
+        purchaseOrder.setSupplierName(supplier.getSupplierName()); //赋值供应商名称
+        List<Dict> dicts = configBiz.findDictsByTypeNo("purchaseType");
+        for (Dict dict:dicts) {
+            if(dict.getValue().equals(purchaseOrder.getPurchaseType())){  //赋值采购类型的name
+                purchaseOrder.setPurchaseTypeName(dict.getName());
+            }
+        }
+        dicts = configBiz.findDictsByTypeNo("payType");
+        for (Dict dict:dicts) {
+            if(dict.getValue().equals(purchaseOrder.getPayType())){  //赋值付款方式的name
+                purchaseOrder.setPayTypeName(dict.getName());
+            }
+        }
+        BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
+        if(paymentProportion!=null){
+            purchaseOrder.setPaymentProportion(paymentProportion.multiply(new BigDecimal("100")));
+        }
+        PurchaseGroup purchaseGroup = new PurchaseGroup();
+        purchaseGroup.setCode(purchaseOrder.getPurchaseGroupCode());
+        purchaseGroup = purchaseGroupService.selectOne(purchaseGroup);
+        AssertUtil.notNull(supplier,"根据采购组编码查询采购组失败");
+        purchaseOrder.setPurchaseGroupName(purchaseGroup.getName());    //赋值采购组名称
+
+        AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
+        aclUserAccreditInfo.setUserId(purchaseOrder.getPurchasePersonId());
+        aclUserAccreditInfo = iAclUserAccreditInfoService.selectOne(aclUserAccreditInfo);
+        AssertUtil.notNull(aclUserAccreditInfo,"根据用户的userId查询用户信息失败");
+        purchaseOrder.setPurchasePerson(aclUserAccreditInfo.getName());         //赋值采购人的名称
+
+        dicts = configBiz.findDictsByTypeNo("currency");
+        for (Dict dict:dicts) {
+            if(dict.getValue().equals(purchaseOrder.getCurrencyType())){  //赋值币种的name
+                purchaseOrder.setCurrencyTypeName(dict.getName());
+            }
+        }
+
+        Warehouse warehouse = new Warehouse();
+        warehouse.setCode(purchaseOrder.getWarehouseCode());
+        warehouse = warehouseService.selectOne(warehouse);
+        AssertUtil.notNull(warehouse,"根据用户的仓库编码查询仓库信息失败");
+        purchaseOrder.setWarehouseName(warehouse.getName());
+
+        dicts = configBiz.findDictsByTypeNo("transportCostsTake");
+        for (Dict dict:dicts) {
+            if(dict.getValue().equals(purchaseOrder.getTransportFeeDestId())){
+                purchaseOrder.setTransportFeeDestIdName(dict.getName());
+            }
+        }
+
+        dicts = configBiz.findDictsByTypeNo("handlerPriority");
+        for (Dict dict:dicts) {
+            if(dict.getValue().equals(purchaseOrder.getHandlerPriority())){
+                purchaseOrder.setHandlerPriorityName(dict.getName());
+            }
+        }
+
+
+
+        return purchaseOrder;
+
+    }
 }

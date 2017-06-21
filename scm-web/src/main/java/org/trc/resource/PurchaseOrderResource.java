@@ -6,6 +6,7 @@ import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.form.purchase.ItemForm;
@@ -43,7 +44,7 @@ public class PurchaseOrderResource {
     @POST
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult savePurchaseOrder(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
+    public AppResult savePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder, @Context ContainerRequestContext requestContext) throws Exception{
 
         purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode());
         return ResultUtil.createSucssAppResult("保存采购订单成功","");
@@ -52,7 +53,7 @@ public class PurchaseOrderResource {
     @POST
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult commitAuditPurchaseOrder(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
+    public AppResult commitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
         purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode());
         return ResultUtil.createSucssAppResult("提交审核采购单成功","");
     }
@@ -71,6 +72,26 @@ public class PurchaseOrderResource {
         return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
 
     }
+
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<PurchaseOrder> findPurchaseOrderAddDataById(@PathParam("id") Long id) throws Exception{
+
+        return ResultUtil.createSucssAppResult("根据采购单Id查询采购单信息成功",purchaseOrderBiz.findPurchaseOrderAddDataById(id));
+
+    }
+
+    @POST
+    @Path(SupplyConstants.PurchaseOrder.UPDATE_STATE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder) throws Exception{
+
+        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder);
+        return ResultUtil.createSucssAppResult("状态修改成功","");
+
+    }
+
 
 
 }

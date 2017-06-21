@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.trc.domain.config.TableMappingDO;
+import org.trc.biz.jingdong.IJingDongAreaBiz;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.jingdong.MessageDO;
 import org.trc.mapper.config.ITableMappingMapper;
@@ -27,6 +27,7 @@ import org.trc.mapper.jingdong.IJingDongTestMapper;
 import org.trc.util.BeanToMapUtil;
 import org.trc.util.RedisUtil;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
@@ -48,8 +49,17 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     @Autowired
     private IJingDongTestMapper jingDongTestMapper;//商品sku
 
+    @Resource
+    private IJingDongAreaBiz iJingDongAreaBiz;
+
     @Autowired
     ITableMappingMapper a;
+
+    @Test
+    public void testGetNode() throws Exception{
+        iJingDongAreaBiz.getJingDongAreaTree();
+    }
+
     @Test
     public void testGetToken() {
         try {

@@ -27,4 +27,6 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
      */
     List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
+    Integer updateStateByPurchaseOrderCode(Map<String, Object> map);
+
 }
