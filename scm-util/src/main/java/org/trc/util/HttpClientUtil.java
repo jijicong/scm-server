@@ -63,6 +63,12 @@ public class HttpClientUtil {
         return getResult(httpGet);
     }
 
+    public static String httpGetRequest(String url, Map<String, Object> params) throws URISyntaxException {
+        URIBuilder ub = _createURIBuilder(url,params);
+        HttpGet httpGet = new HttpGet(ub.build());
+        return getResult(httpGet);
+    }
+
     public static String httpGetRequest(String url, Map<String, Object> params, Integer timeout) throws URISyntaxException {
         URIBuilder ub = _createURIBuilder(url,params);
         HttpGet httpGet = new HttpGet(ub.build());
@@ -166,15 +172,23 @@ public class HttpClientUtil {
 
     public static void main(String [] args){
 
-        String tbUrl = "http://101.71.241.100:48080/trcloanweb/tb/";
+        /*String tbUrl = "http://101.71.241.100:48080/trcloanweb/tb/";
         String userId = "6075C1290FF04488A15D4858E7CEDDE9";
 
         Map<String, Object> params = new HashMap();
-        params.put("userId",userId);
+        params.put("userId",userId);*/
 
+        String tbUrl = "http://127.0.0.1:8080/scm-external/items/itemsPage";
+        String param = "start=0&pageNo=1&pageSize=10";
+        Map<String, Object> params = new HashMap();
+        params.put("start",0);
+        params.put("pageNo",1);
+        params.put("pageSize",10);
         try {
-            System.out.println(HttpClientUtil.httpGetRequest(tbUrl+userId,params,200));
-        } catch (URISyntaxException e) {
+            //System.out.println(HttpClientUtil.httpGetRequest(tbUrl+userId,params,200));
+            System.out.println(HttpClientUtil.httpGetRequest(tbUrl,params));
+            //System.out.println(HttpRequestUtil.sendGet(tbUrl, param));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

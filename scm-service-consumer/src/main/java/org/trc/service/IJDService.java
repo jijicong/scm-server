@@ -2,6 +2,7 @@ package org.trc.service;
 
 
 import org.trc.form.JDModel.*;
+import org.trc.util.Pagenation;
 
 import java.util.List;
 
@@ -304,5 +305,21 @@ public interface IJDService {
      */
     ReturnTypeDO del(String token, String id) throws Exception;
 
+    /**
+     *
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO skuPage(SupplyItemsExt form, Pagenation<SupplyItemsExt> page) throws Exception;
+
+    /**
+     * 通知更新Sku使用状态
+     * @param skuDOList
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO noticeUpdateSkuUsedStatus(List<SkuDO> skuDOList);
 
 }

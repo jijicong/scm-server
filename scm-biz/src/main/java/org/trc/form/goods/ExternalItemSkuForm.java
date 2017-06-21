@@ -29,6 +29,9 @@ public class ExternalItemSkuForm extends QueryModel{
     @QueryParam("barCode")
     @Length(max = 64, message = "条形码长度不能超过64个")
     private String barCode;
+    @QueryParam("supplierSkuCode")
+    @Length(max = 32, message = "供应商商品sku编号长度不能超过32个")
+    private String supplierSkuCode;
 
     public String getSupplierCode() {
         return supplierCode;
@@ -84,5 +87,13 @@ public class ExternalItemSkuForm extends QueryModel{
 
     public void setBarCode(String barCode) {
         this.barCode = barCode;
+    }
+
+    public String getSupplierSkuCode() {
+        return supplierSkuCode;
+    }
+
+    public void setSupplierSkuCode(String supplierSkuCode) {
+        this.supplierSkuCode = supplierSkuCode;
     }
 }

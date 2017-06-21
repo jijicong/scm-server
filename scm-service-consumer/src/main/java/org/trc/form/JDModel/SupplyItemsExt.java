@@ -1,11 +1,11 @@
-package org.trc.domain.goods;
+package org.trc.form.JDModel;
 
-import org.trc.domain.BaseDO;
+import java.util.Date;
 
 /**
  * Created by hzszy on 2017/6/19.
  */
-public class SupplyItems extends BaseDO {
+public class SupplyItemsExt {
     private Long id; //主键ID
     private String supplierCode; //供应商编码
     private String supplyName; //供应商名称
@@ -25,9 +25,12 @@ public class SupplyItems extends BaseDO {
     private String introduction;//商品详情文本
     private String imagePath;//商品主图地址
     private String skuName;//商品名称
-    private String detailImagePath;//商品明细图片地址
     private String isUsed;//是否已经使用
-    private String warehouse;//仓库名称
+    private String isValid; //是否有效:0-否,1-是
+    private String createOperator; //创建人
+    private Date createTime; //创建时间
+    private Date updateTime; //更新时间
+    private String isDeleted; //是否删除:0-否,1-是
 
     public Long getId() {
         return id;
@@ -181,12 +184,44 @@ public class SupplyItems extends BaseDO {
         this.isUsed = isUsed;
     }
 
-    public String getDetailImagePath() {
-        return detailImagePath;
+    public String getIsValid() {
+        return isValid;
     }
 
-    public void setDetailImagePath(String detailImagePath) {
-        this.detailImagePath = detailImagePath;
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getCreateOperator() {
+        return createOperator;
+    }
+
+    public void setCreateOperator(String createOperator) {
+        this.createOperator = createOperator;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public String getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(String isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public String getCategoryName() {
@@ -195,13 +230,5 @@ public class SupplyItems extends BaseDO {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-    }
-
-    public String getWarehouse() {
-        return warehouse;
-    }
-
-    public void setWarehouse(String warehouse) {
-        this.warehouse = warehouse;
     }
 }

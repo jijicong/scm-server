@@ -1,4 +1,4 @@
-package org.trc.form.goods;
+package org.trc.form.JDModel;
 
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
