@@ -508,6 +508,8 @@ public class SupplyConstants {
         public static final String EXTERNAL_GOODS_PAGE_2 = "externalGoodsPage2";
         //代发商品
         public static final String EXTERNAL_ITEM_SKU = "externalItemSku";
+        //代发商品
+        public static final String EXTERNAL_ITEM_SKU_LIST = "externalItemSkus";
         //代发商品启用/停用
         public static final String EXTERNAL_ITEM__VALID = "externalItemsValid";
 
