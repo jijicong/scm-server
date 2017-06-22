@@ -654,5 +654,15 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 一件代发供应商
+     */
+    public static final class ExternalSupplier {
+        public static final String ROOT = "externalSupplier";
+        //供应商sku更新通知
+        public static final String SUPPLIER_SKU_UPDATE_NOTICE = "supplierSkuUpdateNotice";
+
+    }
+
 
 }

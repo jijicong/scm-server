@@ -123,4 +123,10 @@ public interface IGoodsBiz {
      * @param externalItemSku
      */
     void updateExternalItems(ExternalItemSku externalItemSku);
+
+    /**
+     * 供应商sku更新通知
+     * @param updateSupplierSkus 更新的供应商sku信息，json数组格式字符串
+     */
+    void supplierSkuUpdateNotice(String updateSupplierSkus);
 }

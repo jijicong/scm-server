@@ -2,6 +2,7 @@ package org.trc.biz.impl.goods;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1371,7 +1372,7 @@ public class GoodsBiz implements IGoodsBiz {
             JSONObject obj =  (JSONObject)jbo;
             supplyItems.add((SupplyItems)obj.toJavaObject(SupplyItems.class));
         }
-        List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems);
+        List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ZERO.getCode());
         int count = externalItemSkuService.insertList(externalItemSkuList);
         if(count == 0){
             String msg = String.format("保存京东一件代发商品%s到数据库失败", JSON.toJSONString(externalItemSkuList));
@@ -1401,6 +1402,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateExternalItems(ExternalItemSku externalItemSku) {
         AssertUtil.notNull(externalItemSku, "更新代发商品不能为空");
         AssertUtil.notNull(externalItemSku.getId(), "更新代发商品ID不能为空");
@@ -1413,15 +1415,65 @@ public class GoodsBiz implements IGoodsBiz {
         //TODO 通知各渠道
     }
 
-    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems){
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void supplierSkuUpdateNotice(String updateSupplierSkus) {
+        AssertUtil.notBlank(updateSupplierSkus, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
+        JSONArray skusArray = null;
+        try{
+            skusArray = JSONArray.parseArray(updateSupplierSkus);
+        }catch (JSONException e){
+            String msg = String.format("根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不是json数组格式,错误信息:%s", e.getMessage());
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
+        }
+        AssertUtil.notEmpty(skusArray, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
+        List<SupplyItems> supplyItems = new ArrayList<SupplyItems>();
+        for(Object obj : skusArray){
+            JSONObject jbo = (JSONObject)obj;
+            supplyItems.add(jbo.toJavaObject(SupplyItems.class));
+        }
+        List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ONE.getCode());
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            Example example = new Example(ExternalItemSku.class);
+            Example.Criteria criteria =example.createCriteria();
+            criteria.andEqualTo("supplierSkuCode", externalItemSku.getSupplierSkuCode());
+            int count = externalItemSkuService.updateByExampleSelective(externalItemSku, example);
+            if(count == 0){
+                String msg = String.format("根据供应商SKU编号[%s]更新代发商品%s失败", externalItemSku.getSupplierSkuCode(), JSONObject.toJSON(externalItemSku));
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
+            }
+            //TODO 通知各渠道
+        }
+    }
+
+
+    /**
+     *
+     * @param supplyItems
+     * @param flag 0-新增代发商品,1-根据供应商sku更新通知更新一件代发商品
+     * @return
+     */
+    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems, String flag){
         List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
         Date sysDate = Calendar.getInstance().getTime();
         String sysDateStr = DateUtils.dateToCompactString(sysDate);
         for(SupplyItems items: supplyItems){
-            String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
-                    SupplyConstants.Serial.SKU_OUTERER, sysDateStr);
             ExternalItemSku externalItemSku = new ExternalItemSku();
-            externalItemSku.setSkuCode(code);
+            if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//新增代发商品
+                String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
+                        SupplyConstants.Serial.SKU_OUTERER, sysDateStr);
+                externalItemSku.setSkuCode(code);
+                externalItemSku.setIsValid(ZeroToNineEnum.ONE.getCode());
+                externalItemSku.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                externalItemSku.setCreateTime(sysDate);
+                if(StringUtils.equals(externalItemSku.getSupplierCode(), JD_SUPPLIER_CODE)){
+                    externalItemSku.setWarehouse(externalSupplierConfig.getJdWarehouse());//京东仓库
+                }else if(StringUtils.equals(externalItemSku.getSupplierCode(), LY_SUPPLIER_CODE)){
+                    externalItemSku.setWarehouse(externalSupplierConfig.getLyWarehouse());//粮油仓库
+                }
+            }
             externalItemSku.setSupplierCode(items.getSupplierCode());
             externalItemSku.setSupplierName(items.getSupplyName());
             externalItemSku.setSupplierSkuCode(items.getSupplySku());
@@ -1432,11 +1484,6 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setSupplyPrice(getLongValue(items.getSupplyPrice()));
             externalItemSku.setSupplierPrice(getLongValue(items.getSupplierPrice()));
             externalItemSku.setMarketReferencePrice(getLongValue(items.getMarketPrice()));
-            if(StringUtils.equals(externalItemSku.getSupplierCode(), JD_SUPPLIER_CODE)){
-                externalItemSku.setWarehouse(externalSupplierConfig.getJdWarehouse());//京东仓库
-            }else if(StringUtils.equals(externalItemSku.getSupplierCode(), LY_SUPPLIER_CODE)){
-                externalItemSku.setWarehouse(externalSupplierConfig.getLyWarehouse());//粮油仓库
-            }
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());
@@ -1450,9 +1497,6 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setDetail(items.getIntroduction());
             //externalItemSku.setProperties();// 属性 TODO
             //externalItemSku.setStock();//库存 ,调用京东接口实时设置 TODO
-            externalItemSku.setIsValid(ZeroToNineEnum.ONE.getCode());
-            externalItemSku.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            externalItemSku.setCreateTime(sysDate);
             externalItemSku.setUpdateTime(sysDate);
             externalItemSkus.add(externalItemSku);
         }
