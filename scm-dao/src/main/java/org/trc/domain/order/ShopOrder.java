@@ -1,5 +1,8 @@
 package org.trc.domain.order;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.Date;
 
 /**
@@ -7,6 +10,8 @@ import java.util.Date;
  */
 public class ShopOrder {
     // 主键
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // 店铺订单编码
