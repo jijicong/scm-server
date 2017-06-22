@@ -128,7 +128,7 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty("aclUserAccreditInfo");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         Map<String, Object> map = new HashMap<>();
         map.put("supplierCode", form.getSupplierCode());
         map.put("supplierName", form.getSupplierName());

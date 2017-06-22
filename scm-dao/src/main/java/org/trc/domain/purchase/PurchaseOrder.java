@@ -26,26 +26,30 @@ public class PurchaseOrder extends BaseDO{
     @Length(max = 32, message = "采购单编号字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseOrderCode;
     @FormParam("channelId")
-    private Long channelId;//TODO
+    private Long channelId;//
     @FormParam("channelCode")
-    private String channelCode;//TODO
+    private String channelCode;//
     @FormParam("supplierId")
-    private Long supplierId;//TODO
+    private Long supplierId;//
     @FormParam("supplierCode")
     @NotEmpty
     private String supplierCode;
     @Transient
     private String supplierName;
-    @FormParam("contractId") //TODO
+    @FormParam("contractId") //
     private Long contractId ;
     @FormParam("contractCode") //TODO "采购合同编号',
     private String contractCode;
     @FormParam("purchaseType")
     @NotEmpty
     private String purchaseType;
+    @Transient
+    private String purchaseTypeName;
     @FormParam("payType")
     @NotEmpty
     private String payType;
+    @Transient
+    private String payTypeName;
     @FormParam("paymentProportion")
     private BigDecimal paymentProportion; //decimal(4,3)
     @FormParam("purchaseGroupCode")
@@ -60,6 +64,8 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("currencyType")
      @NotEmpty
      private String currencyType;
+    @Transient
+     private String currencyTypeName;
      @FormParam("purchasePersonId")
      @NotEmpty
      private String purchasePersonId;
@@ -74,6 +80,8 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("transportFeeDestId")
      @NotEmpty
      private String transportFeeDestId;
+    @Transient
+     private String transportFeeDestIdName;
      @FormParam("takeGoodsNo")
      private String takeGoodsNo; //提运单号
      @FormParam("requriedReceiveDate")
@@ -87,6 +95,8 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("handlerPriority")
      @NotEmpty
      private String handlerPriority;//处理优先级 Integer
+    @Transient
+    private String handlerPriorityName;
      @FormParam("status")
      private String status;//状态:0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-全部收货,5-收货异常,6-冻结,7-作废',
      @FormParam("enterWarehouseNotice")
@@ -102,10 +112,46 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("abnormalRemark")
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
      private String abnormalRemark;//入库异常说明*/
-    @FormParam("gridValue")
-    @NotEmpty
-    @Transient
-    private String gridValue;
+
+    public String getHandlerPriorityName() {
+        return handlerPriorityName;
+    }
+
+    public void setHandlerPriorityName(String handlerPriorityName) {
+        this.handlerPriorityName = handlerPriorityName;
+    }
+
+    public String getTransportFeeDestIdName() {
+        return transportFeeDestIdName;
+    }
+
+    public void setTransportFeeDestIdName(String transportFeeDestIdName) {
+        this.transportFeeDestIdName = transportFeeDestIdName;
+    }
+
+    public String getCurrencyTypeName() {
+        return currencyTypeName;
+    }
+
+    public void setCurrencyTypeName(String currencyTypeName) {
+        this.currencyTypeName = currencyTypeName;
+    }
+
+    public String getPayTypeName() {
+        return payTypeName;
+    }
+
+    public void setPayTypeName(String payTypeName) {
+        this.payTypeName = payTypeName;
+    }
+
+    public String getPurchaseTypeName() {
+        return purchaseTypeName;
+    }
+
+    public void setPurchaseTypeName(String purchaseTypeName) {
+        this.purchaseTypeName = purchaseTypeName;
+    }
 
     public String getPurchaseGroupCode() {
         return purchaseGroupCode;
@@ -363,25 +409,4 @@ public class PurchaseOrder extends BaseDO{
         this.supplierName = supplierName;
     }
 
-    public String getGridValue() {
-        return gridValue;
-    }
-
-    public void setGridValue(String gridValue) {
-        this.gridValue = gridValue;
-    }
-
-    @Override
-    public String toString() {
-        return "PurchaseOrder{" +
-                "id=" + id +
-                ", purchaseOrderCode='" + purchaseOrderCode + '\'' +
-                ", channelId=" + channelId +
-                ", channelCode='" + channelCode + '\'' +
-                ", supplierId=" + supplierId +
-                ", supplierCode='" + supplierCode + '\'' +
-                ", supplierName='" + supplierName + '\'' +
-                ", gridValue='" + gridValue + '\'' +
-                '}';
-    }
 }

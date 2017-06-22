@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import org.springframework.stereotype.Component;
+import org.trc.constants.SupplyConstants;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -21,7 +22,7 @@ public class UserResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public String getUserById(@Context ContainerRequestContext requestContext, @PathParam("id") Long id) {
-        System.out.println(requestContext.getProperty("userId"));
+        System.out.println(requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
         return "hello world:"+id;
     }
 

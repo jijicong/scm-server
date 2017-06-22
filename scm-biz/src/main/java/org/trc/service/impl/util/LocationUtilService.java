@@ -1,8 +1,8 @@
 package org.trc.service.impl.util;
 
 import org.springframework.stereotype.Service;
+import org.trc.domain.util.Area;
 import org.trc.domain.util.AreaTreeNode;
-import org.trc.domain.util.area;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.impl.BaseService;
 
@@ -13,21 +13,21 @@ import java.util.List;
  * Created by sone on 2017/5/6.
  */
 @Service("locationUtilService")
-public class LocationUtilService extends BaseService<area,Long> implements ILocationUtilService {
+public class LocationUtilService extends BaseService<Area,Long> implements ILocationUtilService {
 
     public List<AreaTreeNode> getTreeNodeFromLocation() throws Exception{
          //1.获得location
-        area area =new area();
-        area.setId(1L);
-        area = super.selectOne(area);
+        Area Area =new Area();
+        Area.setId(1L);
+        Area = super.selectOne(Area);
         //2.设置顶级父类的ID和TEXT
         AreaTreeNode node=new AreaTreeNode();
-        node.setId(area.getCode());
-        if(area.getProvince()!=null){
-            node.setText(area.getProvince());
+        node.setId(Area.getCode());
+        if(Area.getProvince()!=null){
+            node.setText(Area.getProvince());
         }
-        //3.设置省 (new area(area.getId()))
-        List<area> provinceAreaList = super.select(new area(area.getId()));
+        //3.设置省 (new Area(Area.getId()))
+        List<Area> provinceAreaList = super.select(new Area(Area.getId()));
 
         List<AreaTreeNode> areaTreeNodeProvinceList =new ArrayList<AreaTreeNode>();//用于存放子集的节点
 
@@ -37,7 +37,7 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
          * 2.创建treeNode对象加入到treeNodeProvinces中
          * 3.用map保存省节点--key==id==code(String)  value==AreaTreeNode
          */
-        for (area area1 : provinceAreaList) {
+        for (Area area1 : provinceAreaList) {
             AreaTreeNode areaTreeNode =new AreaTreeNode();
             areaTreeNode.setId(area1.getCode());
             if(area1.getProvince()!=null){
@@ -48,12 +48,12 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
         }
         node.setChildren(areaTreeNodeProvinceList);//设置子节点
 
-        List<area> allAreaCityList =new ArrayList<area>();//用于存放城市（all）
+        List<Area> allAreaCityList =new ArrayList<Area>();//用于存放城市（all）
         /**
          *为省节点，添加市节点
          */
-        for (area area1 : provinceAreaList) {
-            List<area> cityAreaList = super.select(new area(area1.getId()));//某省下的所有的城市
+        for (Area area1 : provinceAreaList) {
+            List<Area> cityAreaList = super.select(new Area(area1.getId()));//某省下的所有的城市
 
             List<AreaTreeNode> areaTreeNodeCityList =new ArrayList<AreaTreeNode>();//用于存放子集的节点
             //省节点
@@ -61,12 +61,12 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
 
             provinceAreaTreeNode.setChildren(areaTreeNodeCityList);//设置子节点
 
-            for (area area2 : cityAreaList) {
+            for (Area area2 : cityAreaList) {
                 allAreaCityList.add(area2);
 
                 AreaTreeNode areaTreeNode =new AreaTreeNode();
                 areaTreeNode.setId(area2.getCode());
-                if(area.getCity()!=null){
+                if(Area.getCity()!=null){
                     areaTreeNode.setText(area2.getCity());
                 }
                 areaTreeNodeCityList.add(areaTreeNode); //加入节点
@@ -76,7 +76,7 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
         /**
          * 把所有的地区放到城市中
          */
-        for (area area1 : allAreaCityList) {
+        for (Area area1 : allAreaCityList) {
             //市节点
             AreaTreeNode cityAreaTreeNode = treeNodeProvincesMap.get(area1.getCode());
             /**
@@ -97,13 +97,13 @@ public class LocationUtilService extends BaseService<area,Long> implements ILoca
                 continue;
             }
 
-            List<area> districtAreaList = super.select(new area(area1.getId()));//某市下的所有的地区
+            List<Area> districtAreaList = super.select(new Area(area1.getId()));//某市下的所有的地区
 
             List<AreaTreeNode> areaTreeNodeDistrictList =new ArrayList<AreaTreeNode>();//用于存放子集的节点
             /**
              *市添加地区节点
              */
-            for (area area2 : districtAreaList) {
+            for (Area area2 : districtAreaList) {
                 AreaTreeNode areaTreeNode =new AreaTreeNode();
                 areaTreeNode.setId(area2.getCode());
                 areaTreeNode.setIsleaf(true);

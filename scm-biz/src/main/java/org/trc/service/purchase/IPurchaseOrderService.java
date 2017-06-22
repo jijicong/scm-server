@@ -26,4 +26,6 @@ public interface IPurchaseOrderService extends IBaseService<PurchaseOrder,Long>{
       */
      List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
+     Integer updateStateByPurchaseOrderCode(Map<String, Object> map);
+
 }

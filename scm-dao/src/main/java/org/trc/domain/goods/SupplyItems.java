@@ -15,6 +15,7 @@ public class SupplyItems extends BaseDO {
     private Double supplyPrice; //供货价
     private Double marketPrice;//市场价
     private String category;//分类
+    private String categoryName;//分类名称
     private String brand;//品牌
     private String skuType;//商品类型
     private double weight;//重量
@@ -24,7 +25,9 @@ public class SupplyItems extends BaseDO {
     private String introduction;//商品详情文本
     private String imagePath;//商品主图地址
     private String skuName;//商品名称
+    private String detailImagePath;//商品明细图片地址
     private String isUsed;//是否已经使用
+    private String warehouse;//仓库名称
 
     public Long getId() {
         return id;
@@ -176,5 +179,29 @@ public class SupplyItems extends BaseDO {
 
     public void setIsUsed(String isUsed) {
         this.isUsed = isUsed;
+    }
+
+    public String getDetailImagePath() {
+        return detailImagePath;
+    }
+
+    public void setDetailImagePath(String detailImagePath) {
+        this.detailImagePath = detailImagePath;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }

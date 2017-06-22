@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.impower.AclResourceBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
@@ -68,8 +69,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
                             requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
-                            requestContext.setProperty("userId", userId);
-                            requestContext.setProperty("aclUserAccreditInfo", aclUserAccreditInfo);
+                            requestContext.setProperty(SupplyConstants.Authorization.USER_ID, userId);
+                            requestContext.setProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO, aclUserAccreditInfo);
                             String method = ((ContainerRequest) requestContext).getMethod();
                             //验证是否在需要验证的权限列表中，需要则验证，不需要url直接放行
                             if (jurisdictionBiz.urlCheck(url)) {

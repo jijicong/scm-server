@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.JingDongException;
 import org.trc.form.JDModel.*;
 import org.trc.service.IJDService;
 import org.trc.util.*;
@@ -25,6 +24,10 @@ public class JDServiceImpl implements IJDService {
     private final static Logger log = LoggerFactory.getLogger(JDServiceImpl.class);
     @Autowired
     private JdBaseDO jdBaseDO;
+    @Autowired
+    private ExternalSupplierConfig externalSupplierConfig;
+    //接口调用超时时间
+    public final static Integer TIME_OUT = 10000;
 
     @Override
     public ReturnTypeDO createToken() throws Exception {
@@ -704,6 +707,72 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_MESSAGE_DEL.getCode(), JingDongEnum.ERROR_MESSAGE_DEL.getMessage(), null);
         }
+    }
+
+    @Override
+    public ReturnTypeDO<Pagenation<SupplyItemsExt>> skuPage(SupplyItemsExt form, Pagenation<SupplyItemsExt> page) throws Exception {
+        AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
+        AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
+        AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(page);
+        map.putAll(BeanToMapUtil.convertBeanToMap(form));
+        ReturnTypeDO<Pagenation<SupplyItemsExt>> returnTypeDO = new ReturnTypeDO<Pagenation<SupplyItemsExt>>();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            response = HttpClientUtil.httpGetRequest(externalSupplierConfig.getSkuPageUrl(), map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    page = jbo.getJSONObject("result").toJavaObject(Pagenation.class);
+                    List<SupplyItemsExt> supplyItemsExtList = new ArrayList<SupplyItemsExt>();
+                    for(Object obj: page.getResult()){
+                        JSONObject bo = (JSONObject)obj;
+                        supplyItemsExtList.add((SupplyItemsExt)bo.toJavaObject(SupplyItemsExt.class));
+                    }
+                    page.setResult(supplyItemsExtList);
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(page);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用外部供应商商品查询接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用外部供应商商品查询接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO noticeUpdateSkuUsedStatus(List<SkuDO> skuDOList) {
+        AssertUtil.notEmpty(skuDOList, "调用外部供应商商品使用状态更新参数skuDOList不能为空");
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("skus", JSONArray.toJSON(skuDOList));
+            response = HttpClientUtil.httpPostRequest(externalSupplierConfig.getSkuAddNotice(), map, TIME_OUT);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用外部供应商品使用状态更新接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用外部供应商商品使用状态更新接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
     }
 
 

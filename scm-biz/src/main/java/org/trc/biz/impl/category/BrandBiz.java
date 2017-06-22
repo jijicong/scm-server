@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
@@ -130,7 +131,7 @@ public class BrandBiz implements IBrandBiz {
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
         brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(!StringUtils.isBlank(userId)){
             brand.setCreateOperator(userId);
             brand.setLastEditOperator(userId);
@@ -164,7 +165,7 @@ public class BrandBiz implements IBrandBiz {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
         Brand selectBrand=brandService.selectOneById(brand.getId());
         brand.setUpdateTime(Calendar.getInstance().getTime());
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(!StringUtils.isBlank(userId)){
             brand.setLastEditOperator(userId);
         }
@@ -194,7 +195,7 @@ public class BrandBiz implements IBrandBiz {
         } else {
             updateBrand.setIsValid(ValidEnum.VALID.getCode());
         }
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(!StringUtils.isBlank(userId)){
             updateBrand.setLastEditOperator(userId);
         }

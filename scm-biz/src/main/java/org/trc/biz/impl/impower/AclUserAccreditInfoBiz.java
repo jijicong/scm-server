@@ -379,7 +379,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
         AssertUtil.notNull(userDO, "用户中心未查询到该用户");
         AclUserAccreditInfo aclUserAccreditInfo = userAddPageDate;
         aclUserAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        String userId = (String) requestContext.getProperty("userId");
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if (!StringUtils.isBlank(userId)) {
             aclUserAccreditInfo.setCreateOperator(userId);
         }

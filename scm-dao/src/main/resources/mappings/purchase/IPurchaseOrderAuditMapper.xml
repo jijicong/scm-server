@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.purchase.IPurchaseOrderAuditMapper">
+
+    <!--根据查询条件拼接 审核列表页面-->
+    <select id="selectPurchaseOrderAuditList" parameterType="java.util.Map" resultType="org.trc.domain.purchase.PurchaseOrderAddAudit">
+      SELECT
+        s.supplier_name AS supplierName,
+        pao.purchase_order_code AS purchaseOrderCode,
+        pao. STATUS,
+        pao.create_time AS submitTime,
+        pao.create_operator AS createOperator,
+        pao.purchase_type AS purchaseType,
+        pao.purchase_group_code AS purchaseGroupCode,
+        pao.contract_code AS contractCode,
+        pao.warehouse_code AS warehouseCode,
+        pao.requried_receive_date AS requriedReceiveDate,
+        pao.end_receive_date AS endReceiveDate,
+        pao.id
+    FROM
+        supplier s
+    RIGHT JOIN (
+        SELECT
+            ao.purchase_order_code,
+            ao. STATUS,
+            ao.create_time,
+            ao.create_operator,
+            po.purchase_type,
+            po.supplier_code,
+            po.purchase_group_code,
+            po.contract_code,
+            po.warehouse_code,
+            po.requried_receive_date,
+            po.end_receive_date,
+            po.id
+        FROM
+            apply_for_purchase_order ao
+        LEFT JOIN purchase_order po ON ao.purchase_order_code = po.purchase_order_code
+        WHERE
+        ao.is_deleted = '0'
+        <if test="purchaseOrderCode != null and purchaseOrderCode != ''">
+            AND ao.purchase_order_code LIKE CONCAT(CONCAT('%', #{purchaseOrderCode}), '%')
+        </if>
+        <if test="auditStatus != null and auditStatus != ''">
+            AND ao.STATUS = #{auditStatus}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND ao.create_time &gt; #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND ao.create_time &lt; #{startDate}
+        </if>
+        <if test="purchaseType != null and purchaseType != ''">
+            AND po.purchase_type = #{purchaseType}
+        </if>
+    ) pao
+    ON s.supplier_code = pao.supplier_code
+    <if test="supplierName != null and supplierName != ''">
+        WHERE s.supplier_name LIKE CONCAT(CONCAT('%', #{supplierName}), '%')
+    </if>
+    </select>
+
+    <select id="selectCountAuditPurchaseOrder" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+          COUNT(*)
+        FROM
+        supplier s
+        RIGHT JOIN (
+        SELECT
+        ao.purchase_order_code,
+        ao. STATUS,
+        ao.create_time,
+        ao.create_operator,
+        po.purchase_type,
+        po.supplier_code,
+        po.purchase_group_code,
+        po.contract_code,
+        po.warehouse_code,
+        po.requried_receive_date,
+        po.end_receive_date
+        FROM
+        apply_for_purchase_order ao
+        LEFT JOIN purchase_order po ON ao.purchase_order_code = po.purchase_order_code
+        WHERE
+        ao.is_deleted = '0'
+        <if test="purchaseOrderCode != null and purchaseOrderCode != ''">
+            AND ao.purchase_order_code LIKE CONCAT(CONCAT('%', #{purchaseOrderCode}), '%')
+        </if>
+        <if test="auditStatus != null and auditStatus != ''">
+            AND ao.STATUS = #{auditStatus}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND ao.create_time &gt; #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND ao.create_time &lt; #{startDate}
+        </if>
+        <if test="purchaseType != null and purchaseType != ''">
+            AND po.purchase_type = #{purchaseType}
+        </if>
+        ) pao
+        ON s.supplier_code = pao.supplier_code
+        <if test="supplierName != null and supplierName != ''">
+            WHERE s.supplier_name LIKE  CONCAT(CONCAT('%', #{supplierName}), '%')
+        </if>
+    </select>
+    <!--审核采购单-->
+    <update id="updatePurchaseOrderByPurchase" parameterType="java.util.Map">
+        UPDATE  apply_for_purchase_order  SET  `status` =#{status} ,audit_opinion = #{auditOpinion} WHERE purchase_order_code =#{purchaseOrderCode};
+    </update>
+</mapper>

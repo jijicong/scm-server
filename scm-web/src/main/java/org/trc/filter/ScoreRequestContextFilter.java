@@ -1,5 +1,7 @@
 package org.trc.filter;
 
+import org.trc.constants.SupplyConstants;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -12,7 +14,7 @@ public class ScoreRequestContextFilter implements ContainerRequestFilter{
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        System.out.println(requestContext.getProperty("userId"));
+        System.out.println(requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
     }
 
 }

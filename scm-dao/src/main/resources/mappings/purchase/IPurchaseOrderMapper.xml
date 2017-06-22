@@ -22,7 +22,7 @@
             SELECT
             channel_code
             FROM
-            user_accredit_info
+            acl_user_accredit_info
             WHERE
             user_id = #{userId}
             )
@@ -144,8 +144,9 @@
         </foreach>
     </select>
 
-
-
-
+    <!--更改采购单的状态-->
+    <update id="updateStateByPurchaseOrderCode" parameterType="java.util.Map">
+        UPDATE  purchase_order  SET  `status` =#{status}  WHERE purchase_order_code =#{purchaseOrderCode};
+    </update>
 
 </mapper>

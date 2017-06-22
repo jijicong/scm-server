@@ -10,6 +10,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.util.CommonDO;
 import org.trc.enums.ResultEnum;
 import org.trc.util.*;
@@ -128,7 +129,7 @@ public class JerseyServiceAop {
      * @param parameterValues
      */
     private void setOperater(ContainerRequestContext requestContext, Object[] parameterValues){
-        String userId = requestContext.getProperty("userId").toString();
+        String userId = requestContext.getProperty(SupplyConstants.Authorization.USER_ID).toString();
         for(Object obj : parameterValues){
             if(obj instanceof CommonDO){
                 ((CommonDO)obj).setCreateOperator(userId);
