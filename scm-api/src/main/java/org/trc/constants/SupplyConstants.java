@@ -49,8 +49,9 @@ public class SupplyConstants {
 
         public static final String CATEGORY_PROPERTY_LIST = "categoryPrepertyList";//分类属性查询
 
-        public static final String SKU_RELATION_RELATION ="getRelationChange";//获取sku关联关系改变
+        public static final String SKU_INFORMATION ="skuInformation";//获取单个sku信息
 
+        public static final String ORDER_PROCESSING ="OrderProcessing";//订单处理
     }
 
     /**

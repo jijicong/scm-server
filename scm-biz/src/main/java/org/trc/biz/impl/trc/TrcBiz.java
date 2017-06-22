@@ -12,10 +12,7 @@ import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
-import org.trc.domain.goods.ItemNaturePropery;
-import org.trc.domain.goods.ItemSalesPropery;
-import org.trc.domain.goods.Items;
-import org.trc.domain.goods.Skus;
+import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.TrcException;
@@ -231,6 +228,11 @@ public class TrcBiz implements ITrcBiz {
         return resultModel;
     }
 
+    @Override
+    public ResultModel sendSkuUpdation(List<ExternalItemSku> externalItemSkuList, Long operateTime) {
+        return null;
+    }
+
     //发送分类属性改动
     public ResultModel sendCategoryPropertyList(TrcActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         Assert.notNull(categoryPropertyList, "分类属性列表不能为空");
@@ -343,33 +345,37 @@ public class TrcBiz implements ITrcBiz {
         return resultModel;
     }
 
-    public static void main(String[] args) throws Exception {
-        String action = "delete";
-        String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
-        BrandToTrc brandToTrc = new BrandToTrc();
-        brandToTrc.setWebUrl("wqeqeqr");
-        brandToTrc.setAlise("qwqwedqdeqd");
-        brandToTrc.setName("wdad");
-        brandToTrc.setBrandCode("vdfgdghd");
-        long operateTime = System.currentTimeMillis();
-        //model中字段以字典序排序
+    public static void main(String[] args) {
+        try {
+            String action = "delete";
+            String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
+            BrandToTrc brandToTrc = new BrandToTrc();
+            brandToTrc.setWebUrl("wqeqeqr");
+            brandToTrc.setAlise("qwqwedqdeqd");
+            brandToTrc.setName("wdad");
+            brandToTrc.setBrandCode("vdfgdghd");
+            long operateTime = System.currentTimeMillis();
+            //model中字段以字典序排序
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("gyl-tairan").append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
-                append(brandToTrc.getAlise()).append(OR).append(brandToTrc.getBrandCode()).append(OR).append(brandToTrc.getIsValid()).append(OR).
-                append(brandToTrc.getLogo()).append(OR).append(brandToTrc.getName()).append(OR).append(brandToTrc.getWebUrl());
-        //MD5加密
-        System.out.println(stringBuilder.toString());
-        String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
-        JSONObject params = new JSONObject();
-        params.put("action", action);
-        params.put("operateTime", operateTime);
-        params.put("noticeNum", noticeNum);
-        params.put("sign", sign);
-        params.put("brandToTrc", brandToTrc);
-        System.out.println(params.toJSONString());
-        String result = HttpClientUtil.httpPostJsonRequest("http://ddd.www.trc.com/api/supply/sync/brands", params.toJSONString(), 10000);
-        System.out.println("********返回值********");
-        System.out.println(result);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("gyl-tairan").append(OR).append(action).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+                    append(brandToTrc.getAlise()).append(OR).append(brandToTrc.getBrandCode()).append(OR).append(brandToTrc.getIsValid()).append(OR).
+                    append(brandToTrc.getLogo()).append(OR).append(brandToTrc.getName()).append(OR).append(brandToTrc.getWebUrl());
+            //MD5加密
+            System.out.println(stringBuilder.toString());
+            String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
+            JSONObject params = new JSONObject();
+            params.put("action", action);
+            params.put("operateTime", operateTime);
+            params.put("noticeNum", noticeNum);
+            params.put("sign", sign);
+            params.put("brandToTrc", brandToTrc);
+            System.out.println(params.toJSONString());
+            String result = HttpClientUtil.httpPostJsonRequest("http://ddd.www.trc.com/api/supply/sync/brands", params.toJSONString(), 10000);
+            System.out.println("********返回值********");
+            System.out.println(result);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 }

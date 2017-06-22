@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.goods.ISkusMapper">
+
+
+    <select id="selectSupplierSkuCodeList" resultType="java.lang.String">
+        select distinct(supplier_name) from sku_relation a where a.sku_code =
+        <foreach collection="list" item="orderItems" index="index" open="" close=";" separator=";">
+            #{orderItems.sku_code}
+        </foreach>
+
+    </select>
+
+</mapper>
