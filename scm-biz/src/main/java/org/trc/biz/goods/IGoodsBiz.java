@@ -23,6 +23,14 @@ public interface IGoodsBiz {
     Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
 
     /**
+     * 商品SKU分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Skus> itemsSkusPage(SkusForm form, Pagenation<Skus> page) throws Exception;
+
+    /**
      * 查询商品列表
      * @return
      * @throws Exception

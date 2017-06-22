@@ -11,6 +11,7 @@ import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -36,6 +37,13 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Items> goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
         return goodsBiz.itemsPage(form, page);
+    }
+
+    @GET
+    @Path(SupplyConstants.Goods.GOODS_SKU_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Skus> itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page) throws Exception {
+        return goodsBiz.itemsSkusPage(form, page);
     }
 
     @POST

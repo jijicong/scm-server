@@ -7,6 +7,7 @@ import org.trc.domain.util.CommonDO;
 import org.trc.domain.util.ScmDO;
 
 import javax.annotation.Generated;
+import javax.annotation.Resource;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -85,6 +86,38 @@ public class Skus extends ScmDO {
      */
     @Transient
     private String propertyCombineName;
+
+    /**
+     * 可用库存
+     */
+    @Transient
+    private Long availableInventory;
+    /**
+     * 真实库存
+     */
+    @Transient
+    private Long realInventory;
+    /**
+     * 残次品库存
+     */
+    @Transient
+    private Long defectiveInventory;
+
+    /**
+     * 商品名称
+     */
+    @Transient
+    private String itemsName;
+    /**
+     * 分类名称
+     */
+    @Transient
+    private String categoryName;
+    /**
+     * 品牌名称
+     */
+    @Transient
+    private String brandName;
 
     public String getSkuCode() {
         return skuCode;
@@ -268,5 +301,53 @@ public class Skus extends ScmDO {
 
     public void setPropertyCombineName(String propertyCombineName) {
         this.propertyCombineName = propertyCombineName;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public Long getAvailableInventory() {
+        return availableInventory;
+    }
+
+    public void setAvailableInventory(Long availableInventory) {
+        this.availableInventory = availableInventory;
+    }
+
+    public Long getRealInventory() {
+        return realInventory;
+    }
+
+    public void setRealInventory(Long realInventory) {
+        this.realInventory = realInventory;
+    }
+
+    public Long getDefectiveInventory() {
+        return defectiveInventory;
+    }
+
+    public void setDefectiveInventory(Long defectiveInventory) {
+        this.defectiveInventory = defectiveInventory;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getItemsName() {
+        return itemsName;
+    }
+
+    public void setItemsName(String itemsName) {
+        this.itemsName = itemsName;
     }
 }

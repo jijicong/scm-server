@@ -30,6 +30,7 @@ import org.trc.form.config.DictForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.service.IJDService;
 import org.trc.service.category.*;
 import org.trc.service.goods.*;
@@ -41,6 +42,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -127,13 +129,6 @@ public class GoodsBiz implements IGoodsBiz {
         if (null != queryModel.getBrandId()) {//商品所属品牌ID
             criteria.andEqualTo("brandId", queryModel.getBrandId());
         }
-        if (StringUtil.isNotEmpty(queryModel.getStartDate())) {//开始日期
-            criteria.andGreaterThanOrEqualTo("updateTime", DateUtils.parseDate(queryModel.getStartDate()));
-        }
-        if (StringUtil.isNotEmpty(queryModel.getEndDate())) {//截止日期
-            Date endDate = DateUtils.parseDate(queryModel.getEndDate());
-            criteria.andLessThan("updateTime", DateUtils.addDays(endDate, 1));
-        }
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
@@ -143,6 +138,145 @@ public class GoodsBiz implements IGoodsBiz {
         //分页查询
         return page;
     }
+
+    @Override
+    public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page) throws Exception {
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtil.isNotEmpty(queryModel.getSpuCode())) {//spuCode
+            criteria.andLike("spuCode", "%" + queryModel.getSpuCode() + "%");
+        }
+        if (StringUtil.isNotEmpty(queryModel.getSkuCode())) {//skuCode
+            criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
+        }
+        if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
+        if(null != spus){
+            if(spus.size() > 0){
+                criteria.andIn("spuCode", spus);
+            }else{
+                return page;
+            }
+        }
+        example.orderBy("updateTime").desc();
+        page = skusService.pagination(example, page, queryModel);
+        if(page.getResult().size() > 0){
+            handerSkusPage(page);
+        }
+        //分页查询
+        return page;
+    }
+
+    private void handerSkusPage(Pagenation<Skus> page) throws Exception {
+        Set<String> spuCodeList = new HashSet<String>();
+        List<String> skuCodeList = new ArrayList<String>();
+        for(Skus skus: page.getResult()){
+            spuCodeList.add(skus.getSpuCode());
+            skuCodeList.add(skus.getSkuCode());
+        }
+        //查询相关商品
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("spuCode", spuCodeList);
+        List<Items> itemsList = itemsService.selectByExample(example);
+        AssertUtil.notEmpty(itemsList, String.format("根据多个SPU编码[%s]查询商品信息为空",
+                CommonUtil.converCollectionToString(Arrays.asList(spuCodeList))));
+        Set<Long> categoryIdList = new HashSet<Long>();
+        Set<Long> brandIdList = new HashSet<Long>();
+        for(Items items: itemsList){
+            categoryIdList.add(items.getCategoryId());
+            brandIdList.add(items.getBrandId());
+        }
+        //spu和分类名称map
+        Map<String, String> spuCategoryMap = new HashMap<String, String>();
+        for(Items items: itemsList){
+            List<String> namePathList = categoryBiz.queryCategoryNamePath(items.getCategoryId());
+            AssertUtil.notEmpty(namePathList, String.format("根据分类ID[%s]查询分类名称信息为空",items.getCategoryId()));
+            StringBuilder sb = new StringBuilder();
+            for(int i=namePathList.size(); i>0; i--){
+                int j = i-1;
+                if(j == 0){
+                    sb.append(namePathList.get(j));
+                }else{
+                    sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
+                }
+            }
+            spuCategoryMap.put(items.getSpuCode(), sb.toString());
+        }
+        //查询相关品牌
+        Example example3 = new Example(Brand.class);
+        Example.Criteria criteria3 = example3.createCriteria();
+        criteria3.andIn("id", brandIdList);
+        List<Brand> brandList = brandService.selectByExample(example3);
+        AssertUtil.notEmpty(brandList, String.format("根据多个品牌ID[%s]查询品牌信息为空",
+                CommonUtil.converCollectionToString(Arrays.asList(brandIdList))));
+        //spu和商品名称map
+        Map<String, String> spuBrandMap = new HashMap<String, String>();
+        for(Items items: itemsList){
+            for(Brand brand: brandList){
+                if(items.getBrandId().longValue() == brand.getId().longValue()){
+                    spuBrandMap.put(items.getSpuCode(), brand.getName());
+                    break;
+                }
+            }
+        }
+        //查询SKU相关库存信息
+        Example example4 = new Example(SkuStock.class);
+        Example.Criteria criteria4 = example4.createCriteria();
+        criteria4.andIn("spuCode", skuCodeList);
+        List<SkuStock> skuStockList = skuStockService.selectByExample(example4);
+        /*AssertUtil.notEmpty(skuStockList, String.format("根据多个SKU编码[%s]查询SKU库存信息为空",
+                CommonUtil.converCollectionToString(Arrays.asList(skuCodeList))));*/
+        //设置分类名称、品牌名称、库存信息
+        for(Skus skus: page.getResult()){
+            skus.setCategoryName(spuCategoryMap.get(skus.getSpuCode()));
+            skus.setBrandName(spuBrandMap.get(skus.getSpuCode()));
+            for(Items items: itemsList){
+                if(StringUtils.equals(skus.getSpuCode(), items.getSpuCode())){
+                    skus.setItemsName(items.getName());
+                }
+            }
+            for(SkuStock skuStock: skuStockList){
+                if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
+                    skus.setAvailableInventory(skuStock.getAvailableInventory());
+                    skus.setRealInventory(skuStock.getRealInventory());
+                    skus.setDefectiveInventory(skuStock.getDefectiveInventory());
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取SKU查询条件相关的SPU
+     * @param queryModel
+     * @return
+     */
+    private Set<String> getSkusQueryConditonRelateSpus(SkusForm queryModel){
+        if(StringUtil.isNotEmpty(queryModel.getItemName()) || null != queryModel.getCategoryId() || null != queryModel.getBrandId()){
+            Example example = new Example(Items.class);
+            Example.Criteria criteria = example.createCriteria();
+            if(StringUtil.isNotEmpty(queryModel.getItemName())) {//商品名称
+                criteria.andLike("name", "%" + queryModel.getItemName() + "%");
+            }
+            if(null != queryModel.getCategoryId()){
+                criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+            }
+            if(null != queryModel.getBrandId()){
+                criteria.andEqualTo("brandId", queryModel.getBrandId());
+            }
+            List<Items> items = itemsService.selectByExample(example);
+            Set<String> spus = new HashSet<String>();
+            for(Items item: items){
+                spus.add(item.getSpuCode());
+            }
+            return spus;
+        }else{
+            return null;
+        }
+    }
+
 
     private void handlerSkuCondition(Example.Criteria criteria, String skuCode, String spuCode){
         List<String> spuCodes = new ArrayList<String>();

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -229,7 +230,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception {
         //有没有对应的渠道。渠道有没有对应的供应商
         //TODO userId加入
-        String userId = (String)requestContext.getProperty("userId");
+        String userId = (String)requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         userId = "E2E4BDAD80354EFAB6E70120C271968C";
         if (StringUtils.isBlank(userId)) {
             String msg = CommonUtil.joinStr("根据userId查询供应商的参数userId为空").toString();

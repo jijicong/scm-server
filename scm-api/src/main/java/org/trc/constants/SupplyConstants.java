@@ -514,6 +514,8 @@ public class SupplyConstants {
 
         //商品分页查询路径
         public static final String GOODS_PAGE = "goodsPage";
+        //商品SKU分页查询路径
+        public static final String GOODS_SKU_PAGE = "goodsSkuPage";
         //商品列表查询路径
         public static final String GOODS_LIST = "goodsList";
         //商品路径
@@ -664,5 +666,15 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 授权
+     */
+    public static final class Authorization{
+        //用户ID
+        public static final String USER_ID = "userId";
+        //用户授权列表
+        public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
+
+    }
 
 }

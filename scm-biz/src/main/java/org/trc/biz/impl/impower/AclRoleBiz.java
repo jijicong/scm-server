@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IAclRoleBiz;
 import org.trc.biz.impower.IAclRoleResourceRelationBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclRole;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
@@ -174,7 +175,7 @@ public class AclRoleBiz implements IAclRoleBiz {
         AssertUtil.isNull(tmp,String.format("角色名称[name=%s]的名称已存在,请使用其他名称", aclRole.getName()));
         int count=0;
         ParamsUtil.setBaseDO(aclRole);
-        aclRole.setCreateOperator((String) requestContext.getProperty("userId"));
+        aclRole.setCreateOperator((String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
         count=roleService.insert(aclRole);
         if(count==0){
             String msg = String.format("保存角色%s数据库操作失败", JSON.toJSONString(aclRole));

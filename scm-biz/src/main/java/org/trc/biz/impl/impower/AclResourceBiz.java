@@ -254,7 +254,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         aclResource.setParentId(jurisdictionTreeNode.getParentId());
         aclResource.setName(jurisdictionTreeNode.getName());
         aclResource.setUrl(jurisdictionTreeNode.getUrl());
-//        aclResource.setCreateOperator((String) requestContext.getProperty("userId"));
+//        aclResource.setCreateOperator((String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
         aclResource.setCreateOperator("admin");
         aclResource.setCreateTime(Calendar.getInstance().getTime());
         aclResource.setUpdateTime(Calendar.getInstance().getTime());

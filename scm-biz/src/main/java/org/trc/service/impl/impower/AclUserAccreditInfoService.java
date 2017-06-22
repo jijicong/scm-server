@@ -2,6 +2,7 @@ package org.trc.service.impl.impower;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.mapper.impower.AclUserAccreditInfoMapper;
@@ -57,7 +58,7 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
 
     @Override
     public AclUserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext) {
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(StringUtils.isBlank(userId)){
             return null;
         }
