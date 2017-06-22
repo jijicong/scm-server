@@ -19,6 +19,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
@@ -42,6 +43,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
@@ -140,7 +142,10 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page) throws Exception {
+    public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, ContainerRequestContext requestContext) throws Exception {
+        Object accreditObj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        AssertUtil.notNull(accreditObj, "用户授权信息为空");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) accreditObj;
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getSpuCode())) {//spuCode
@@ -163,13 +168,19 @@ public class GoodsBiz implements IGoodsBiz {
         example.orderBy("updateTime").desc();
         page = skusService.pagination(example, page, queryModel);
         if(page.getResult().size() > 0){
-            handerSkusPage(page);
+            handerSkusPage(page, aclUserAccreditInfo.getChannelCode());
         }
         //分页查询
         return page;
     }
 
-    private void handerSkusPage(Pagenation<Skus> page) throws Exception {
+    /**
+     *
+     * @param page
+     * @param channelCode 渠道编码
+     * @throws Exception
+     */
+    private void handerSkusPage(Pagenation<Skus> page, String channelCode) throws Exception {
         Set<String> spuCodeList = new HashSet<String>();
         List<String> skuCodeList = new ArrayList<String>();
         for(Skus skus: page.getResult()){
@@ -226,6 +237,7 @@ public class GoodsBiz implements IGoodsBiz {
         Example example4 = new Example(SkuStock.class);
         Example.Criteria criteria4 = example4.createCriteria();
         criteria4.andIn("spuCode", skuCodeList);
+        criteria4.andEqualTo("channelCode", channelCode);
         List<SkuStock> skuStockList = skuStockService.selectByExample(example4);
         /*AssertUtil.notEmpty(skuStockList, String.format("根据多个SKU编码[%s]查询SKU库存信息为空",
                 CommonUtil.converCollectionToString(Arrays.asList(skuCodeList))));*/
@@ -1304,8 +1316,11 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    public ItemsExt queryItemsInfo(String spuCode) throws Exception {
+    public ItemsExt queryItemsInfo(String spuCode, String skuCode, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
+        Object accreditObj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        AssertUtil.notNull(accreditObj, "用户授权信息为空");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) accreditObj;
         //查询商品基础信息
         Items items = new Items();
         items.setSpuCode(spuCode);
@@ -1317,6 +1332,9 @@ public class GoodsBiz implements IGoodsBiz {
         //查询商品SKU信息
         Skus skus = new Skus();
         skus.setSpuCode(spuCode);
+        if(StringUtils.isNotBlank(skuCode)){
+            skus.setSkuCode(skuCode);
+        }
         skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Skus> skuses = skusService.select(skus);
         //设置商品重量和市场价返回值
@@ -1326,6 +1344,19 @@ public class GoodsBiz implements IGoodsBiz {
             }
             if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
                 s.setMarketPrice2(BigDecimal.valueOf(Math.round(s.getMarketPrice())/MONEY_MULTI));
+            }
+            if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
+                Example example = new Example(SkuStock.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("skuCode", skuCode);
+                criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+                List<SkuStock> skuStocks = skuStockService.selectByExample(example);
+                if(skuStocks.size() > 0){
+                    SkuStock skuStock = skuStocks.get(0);
+                    s.setAvailableInventory(skuStock.getAvailableInventory());
+                    s.setRealInventory(skuStock.getRealInventory());
+                    s.setDefectiveInventory(skuStock.getDefectiveInventory());
+                }
             }
         }
         AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
