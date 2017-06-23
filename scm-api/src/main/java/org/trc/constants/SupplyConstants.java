@@ -390,7 +390,7 @@ public class SupplyConstants {
         public static final String FREEZE = "purchaseOrder/freeze";
         //根据采购单id查询采购单相关的信息
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
-        //查询该渠道对应的供应商S
+        //查询该渠道对应的供应商
         public static final String SUPPLIERS = "suppliers";
         //根据供应商的编码查询供应商的可卖商品（分页）
         public static final String SUPPLIERS_ITEMS = "suppliersItems";

@@ -8,4 +8,6 @@ import org.trc.util.BaseMapper;
  */
 public interface PurcahseDetailMapper extends BaseMapper<PurchaseDetail>{
 
+    Integer deletePurchaseDetailByPurchaseOrderCode(String purchaseOrderCode);
+
 }

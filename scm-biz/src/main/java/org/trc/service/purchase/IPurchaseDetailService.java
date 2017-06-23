@@ -8,4 +8,6 @@ import org.trc.service.IBaseService;
  */
 public interface IPurchaseDetailService extends IBaseService<PurchaseDetail,Long>{
 
+    Integer deletePurchaseDetailByPurchaseOrderCode(String purchaseOrderCode);
+
 }
