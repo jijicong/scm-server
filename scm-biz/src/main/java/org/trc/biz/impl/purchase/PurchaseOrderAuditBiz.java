@@ -33,6 +33,8 @@ import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,9 +64,13 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
     采购单审核表 与 采购单表 左关联
      */
     @Override
-    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page) throws Exception {
+    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, ContainerRequestContext requestContext) throws Exception {
 
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
+
+        AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)requestContext.getProperty("aclUserAccreditInfo");
+        String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
+
         Map<String, Object> map = new HashMap<>();
         map.put("supplierName", form.getSupplierName());
         map.put("auditStatus", form.getPurchaseOrderAuditStatus());
@@ -72,10 +78,13 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         map.put("purchaseType",form.getPurchaseType());
         map.put("endDate",form.getEndDate());
         map.put("startDate",form.getStartDate());
+        map.put("channelCode",channelCode);
         List<PurchaseOrderAddAudit> pageDateList = purchaseOrderAuditService.selectPurchaseOrderAuditList(map);
 
         iUserNameUtilService.handleUserName(pageDateList);
-
+        if(pageDateList==null || pageDateList.size()==0){
+            return page;
+        }
         pageDateList = selectAssignmentWarehouseName(pageDateList);
         pageDateList = selectAssignmentPurchaseGroupName(pageDateList);
         page.setResult(pageDateList);

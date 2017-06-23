@@ -53,11 +53,15 @@
         <if test="purchaseType != null and purchaseType != ''">
             AND po.purchase_type = #{purchaseType}
         </if>
+        <if test="channelCode != null and channelCode != ''">
+            AND po.channel_code = #{channelCode}
+        </if>
     ) pao
     ON s.supplier_code = pao.supplier_code
     <if test="supplierName != null and supplierName != ''">
         WHERE s.supplier_name LIKE CONCAT(CONCAT('%', #{supplierName}), '%')
     </if>
+        order BY submitTime DESC
     </select>
 
     <select id="selectCountAuditPurchaseOrder" parameterType="java.util.Map" resultType="java.lang.Integer">
@@ -97,6 +101,9 @@
         </if>
         <if test="purchaseType != null and purchaseType != ''">
             AND po.purchase_type = #{purchaseType}
+        </if>
+        <if test="channelCode != null and channelCode != ''">
+            AND po.channel_code = #{channelCode}
         </if>
         ) pao
         ON s.supplier_code = pao.supplier_code

@@ -27,4 +27,11 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
     List<Supplier> selectSupplierListByApply(Map<String,Object> map)throws Exception;
 
     Integer selectSupplierListCount(Map<String,Object> map)throws Exception;
+
+    /**
+     * 根据供应商的名称，模糊查询对应的供应商
+     * @return
+     * @throws Exception
+     */
+    List<Supplier> selectSupplierByName(String name) throws Exception;
 }

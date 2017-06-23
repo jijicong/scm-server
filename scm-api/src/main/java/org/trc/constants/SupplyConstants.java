@@ -384,14 +384,18 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_AUDIT = "purchaseOrderAudit";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
-        //采购单状态的修改
+        //采购单状态的修改--删除 作废
         public static final String UPDATE_STATE = "purchaseOrder/updateState";
+        //采购单状态的修改--冻结
+        public static final String FREEZE = "purchaseOrder/freeze";
         //根据采购单id查询采购单相关的信息
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
         //查询该渠道对应的供应商S
         public static final String SUPPLIERS = "suppliers";
-        //根据供应商的编码查询供应商的可卖商品
+        //根据供应商的编码查询供应商的可卖商品（分页）
         public static final String SUPPLIERS_ITEMS = "suppliersItems";
+        //根据供应商的编码查询供应商所有可卖商品
+        public static final String SUPPLIERS_ALL_ITEMS = "suppliersAllItems";
     }
 
     /**

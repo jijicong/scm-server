@@ -49,4 +49,6 @@ public  interface AclUserAccreditInfoMapper extends BaseMapper<AclUserAccreditIn
     AclUserAccreditInfo selectOneById(@Param("userId")String userId);
 
     List<AclUserAccreditInfo> selectByUserIds(@Param("userIds")String ...ids);
+    //根据姓名模糊查询用户
+    List<AclUserAccreditInfo> selectUserByName(String name);
 }

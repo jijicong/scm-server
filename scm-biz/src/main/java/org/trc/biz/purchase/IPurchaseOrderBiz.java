@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface IPurchaseOrderBiz {
 
-    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page) throws Exception;
+    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page,ContainerRequestContext requestContext) throws Exception;
     /**
      * 根据渠道用户的id查询对应的供应商
      * @param requestContext
@@ -40,5 +40,15 @@ public interface IPurchaseOrderBiz {
     void updatePurchaseOrderState(PurchaseOrder purchaseOrder) throws Exception;
 
     PurchaseOrder findPurchaseOrderAddDataById(Long id) throws Exception;
+
+    /**
+     * 冻结，解冻采购单
+     * @param purchaseOrder
+     * @throws Exception
+     */
+    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder) throws Exception;
+
+    //查询所有的可卖商品
+    List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) throws Exception;
 
 }

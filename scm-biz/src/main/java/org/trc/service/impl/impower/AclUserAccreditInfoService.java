@@ -78,4 +78,8 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
         return map;
     }
 
+    @Override
+    public List<AclUserAccreditInfo> selectUserByName(String name) {
+        return aclUserAccreditInfoMapper.selectUserByName(name);
+    }
 }
