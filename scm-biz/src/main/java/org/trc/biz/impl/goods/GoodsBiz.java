@@ -16,6 +16,7 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.*;
@@ -37,6 +38,7 @@ import org.trc.service.category.*;
 import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
+import org.trc.service.impl.system.WarehouseService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -115,6 +117,8 @@ public class GoodsBiz implements IGoodsBiz {
     private IJDService jdService;
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
+    @Autowired
+    private WarehouseService warehouseService;
 
 
     @Override
@@ -1356,6 +1360,11 @@ public class GoodsBiz implements IGoodsBiz {
                     s.setAvailableInventory(skuStock.getAvailableInventory());
                     s.setRealInventory(skuStock.getRealInventory());
                     s.setDefectiveInventory(skuStock.getDefectiveInventory());
+                    Warehouse warehouse = new Warehouse();
+                    warehouse.setCode(skuStock.getWarehouseCode());
+                    warehouse = warehouseService.selectOne(warehouse);
+                    AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
+                    s.setWarehouse(warehouse.getName());
                 }
             }
         }
