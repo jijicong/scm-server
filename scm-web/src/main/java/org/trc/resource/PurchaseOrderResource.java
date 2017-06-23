@@ -36,9 +36,9 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page)throws Exception{
+    public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext)throws Exception{
         //采夠訂單列表
-        return  purchaseOrderBiz.purchaseOrderPage(form , page);
+        return  purchaseOrderBiz.purchaseOrderPage(form , page,requestContext);
     }
 
     @POST
@@ -72,6 +72,12 @@ public class PurchaseOrderResource {
         return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
 
     }
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ALL_ITEMS+"/{supplierCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<PurchaseDetail> findAllPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode) throws Exception{
+        return ResultUtil.createSucssAppResult("根据供应商编码查询所有的有效商品成功",purchaseOrderBiz.findAllPurchaseDetailBysupplierCode(supplierCode));
+    }
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")
@@ -89,6 +95,16 @@ public class PurchaseOrderResource {
 
         purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder);
         return ResultUtil.createSucssAppResult("状态修改成功","");
+
+    }
+
+    @POST
+    @Path(SupplyConstants.PurchaseOrder.FREEZE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder) throws Exception{
+
+        purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder);
+        return ResultUtil.createSucssAppResult("采购单冻结状态修改成功","");
 
     }
 

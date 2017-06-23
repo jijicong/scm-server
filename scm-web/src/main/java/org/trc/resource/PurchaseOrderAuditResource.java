@@ -6,6 +6,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
+import org.trc.enums.PurchaseOrderAuditEnum;
 import org.trc.form.purchase.PurchaseOrderAuditForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AppResult;
@@ -14,6 +15,8 @@ import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -30,8 +33,11 @@ public class PurchaseOrderAuditResource {
     @GET
     @Path(SupplyConstants.PurchaseOrderAudit.PURCHASE_ORDER_AUDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPagenation(@BeanParam PurchaseOrderAuditForm form, @BeanParam Pagenation<PurchaseOrderAddAudit> page)throws Exception{
-        return iPurchaseOrderAuditBiz.purchaseOrderAuditPage(form,page);
+    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPagenation(@BeanParam PurchaseOrderAuditForm form, @BeanParam Pagenation<PurchaseOrderAddAudit> page,@Context ContainerRequestContext requestContext)throws Exception{
+        if(form.getPurchaseOrderAuditStatus()==null){ //说明是第一次请求
+            form.setPurchaseOrderAuditStatus(PurchaseOrderAuditEnum.AUDIT.getCode());
+        }
+        return iPurchaseOrderAuditBiz.purchaseOrderAuditPage(form,page,requestContext);
     }
     //PURCHASE_ORDER_AUDIT
     @PUT

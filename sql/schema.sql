@@ -34,7 +34,7 @@ drop table if exists item_sales_propery;
 
 drop table if exists items;
 
-drop table if exists jurisdiction;
+drop table if exists aclResource;
 
 drop table if exists log_information;
 
@@ -62,7 +62,7 @@ drop table if exists purchase_order_audit_log;
 
 drop table if exists request_flow;
 
-drop table if exists role;
+drop table if exists aclRole;
 
 drop table if exists role_jurisdiction_relation;
 
@@ -518,9 +518,9 @@ create table items
 alter table items comment '商品';
 
 /*==============================================================*/
-/* Table: jurisdiction                                          */
+/* Table: aclResource                                          */
 /*==============================================================*/
-create table jurisdiction
+create table aclResource
 (
    id                   bigint unsigned not null auto_increment comment '主键ID',
    code                 bigint(0) comment '权限编码',
@@ -537,7 +537,7 @@ create table jurisdiction
    primary key (id)
 );
 
-alter table jurisdiction comment '权限表';
+alter table aclResource comment '权限表';
 
 /*==============================================================*/
 /* Table: log_information                                       */
@@ -938,9 +938,9 @@ create temporary table request_flow
 alter table request_flow comment '请求流水记录表';
 
 /*==============================================================*/
-/* Table: role                                                  */
+/* Table: aclRole                                                  */
 /*==============================================================*/
-create table role
+create table aclRole
 (
    id                   bigint unsigned not null auto_increment comment '主键ID',
    name                 varchar(32) not null comment '角色名称',
@@ -953,7 +953,7 @@ create table role
    primary key (id)
 );
 
-alter table role comment '角色表';
+alter table aclRole comment '角色表';
 
 /*==============================================================*/
 /* Table: role_jurisdiction_relation                            */
@@ -1112,7 +1112,7 @@ create table supplier
    country              varchar(32) comment '所在国家',
    province             varchar(32) comment '所在省',
    city                 varchar(32) comment '所在城市',
-   area                 varchar(32) comment '所在区',
+   Area                 varchar(32) comment '所在区',
    address              varchar(256) not null comment '详细地址',
    certificate_type_id  varchar(32) comment '证件类型编号',
    remark               varchar(1024) comment '备注',
@@ -1279,7 +1279,7 @@ create table warehouse
    is_customs_clearance tinyint comment '是否支持清关,在选择保税仓时需要选择  0-不支持 1-支持',
    province             varchar(32) comment '所在省',
    city                 varchar(32) comment '所在市',
-   area                 varchar(32) comment '所在区、县',
+   Area                 varchar(32) comment '所在区、县',
    address              varchar(256) not null comment '详细地址',
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',

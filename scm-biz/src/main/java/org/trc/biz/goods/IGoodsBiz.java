@@ -7,6 +7,7 @@ import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.*;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Skus> itemsSkusPage(SkusForm form, Pagenation<Skus> page) throws Exception;
+    Pagenation<Skus> itemsSkusPage(SkusForm form, Pagenation<Skus> page, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 查询商品列表
@@ -79,7 +80,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    ItemsExt queryItemsInfo(String spuCode) throws Exception;
+    ItemsExt queryItemsInfo(String spuCode, String skuCode, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 查询商品分类属性

@@ -7,13 +7,15 @@ import org.trc.form.purchase.PurchaseOrderAuditForm;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 
 /**
  * Created by sone on 2017/6/20.
  */
 public interface IPurchaseOrderAuditBiz {
 
-    Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page) throws  Exception;
+    Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, ContainerRequestContext requestContext) throws  Exception;
 
     /**
      * 审核采购单

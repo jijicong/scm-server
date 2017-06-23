@@ -94,4 +94,14 @@
         </where>
 
     </select>
+
+    <select id="selectUserByName" resultType="org.trc.domain.impower.AclUserAccreditInfo">
+        SELECT
+            name,
+        user_id AS userId
+        FROM
+            acl_user_accredit_info
+        WHERE
+            name LIKE CONCAT(CONCAT('%', #{name}), '%')
+    </select>
 </mapper>

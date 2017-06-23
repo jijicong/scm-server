@@ -42,8 +42,8 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.GOODS_SKU_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Skus> itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page) throws Exception {
-        return goodsBiz.itemsSkusPage(form, page);
+    public Pagenation<Skus> itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page, @Context ContainerRequestContext requestContext) throws Exception {
+        return goodsBiz.itemsSkusPage(form, page, requestContext);
     }
 
     @POST
@@ -85,8 +85,8 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode) throws Exception {
-        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode));
+    public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode, @QueryParam("skuCode") String skuCode, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, requestContext));
     }
 
     @GET
