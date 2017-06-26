@@ -29,6 +29,14 @@ public class SkuStock extends ScmDO {
     @FormParam("supplierCode")
     @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
+
+    @FormParam("channelId")
+    private Long channelId;
+
+    @FormParam("channelCode")
+    @Length(max = 32, message = "渠道编号长度不能超过32个")
+    private String channelCode;
+
     @FormParam("warehouseId")
     @NotEmpty
     private Long warehouseId;
@@ -160,5 +168,21 @@ public class SkuStock extends ScmDO {
 
     public void setIsValid(String isValid) {
         this.isValid = isValid;
+    }
+
+    public Long getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(Long channelId) {
+        this.channelId = channelId;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 }

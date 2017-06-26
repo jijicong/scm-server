@@ -1,15 +1,13 @@
 package org.trc.biz.goods;
 
 import org.trc.domain.category.CategoryProperty;
-import org.trc.domain.goods.ItemNaturePropery;
-import org.trc.domain.goods.ItemSalesPropery;
-import org.trc.domain.goods.Items;
-import org.trc.domain.goods.Skus;
-import org.trc.form.goods.ItemsExt;
-import org.trc.form.goods.ItemsForm;
-import org.trc.form.goods.SkusForm;
+import org.trc.domain.goods.*;
+import org.trc.form.JDModel.SupplyItemsExt;
+import org.trc.form.JDModel.SupplyItemsForm;
+import org.trc.form.goods.*;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -24,6 +22,14 @@ public interface IGoodsBiz {
      * @throws Exception
      */
     Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
+
+    /**
+     * 商品SKU分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Skus> itemsSkusPage(SkusForm form, Pagenation<Skus> page, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 查询商品列表
@@ -74,7 +80,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    ItemsExt queryItemsInfo(String spuCode) throws Exception;
+    ItemsExt queryItemsInfo(String spuCode, String skuCode, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 查询商品分类属性
@@ -85,4 +91,51 @@ public interface IGoodsBiz {
      */
     List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception;
 
+    /**
+     * 代发商品分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm form, Pagenation<ExternalItemSku> page) throws Exception;
+
+    /**
+     *查询代发商品
+     * @param form
+     * @return
+     */
+    List<ExternalItemSku> queryExternalItems(ExternalItemSkuForm form);
+
+    /**
+     * 代发商品分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm form, Pagenation<SupplyItemsExt> page) throws Exception;
+
+    /**
+     * 新增一件代发商品
+     * @param supplySkus
+     */
+    void saveExternalItems(String supplySkus);
+
+    /**
+     * 一件代发商品启用/停用
+     * @param isValid
+     * @throws Exception
+     */
+    void updateExternalItemsValid(Long id, String isValid) throws Exception;
+
+    /**
+     * 更新一件代发商品
+     * @param externalItemSku
+     */
+    void updateExternalItems(ExternalItemSku externalItemSku);
+
+    /**
+     * 供应商sku更新通知
+     * @param updateSupplierSkus 更新的供应商sku信息，json数组格式字符串
+     */
+    void supplierSkuUpdateNotice(String updateSupplierSkus);
 }

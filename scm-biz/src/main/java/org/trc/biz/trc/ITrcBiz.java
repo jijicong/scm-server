@@ -1,10 +1,7 @@
 package org.trc.biz.trc;
 
 import org.trc.domain.category.*;
-import org.trc.domain.goods.ItemNaturePropery;
-import org.trc.domain.goods.ItemSalesPropery;
-import org.trc.domain.goods.Items;
-import org.trc.domain.goods.Skus;
+import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.model.ResultModel;
 
@@ -63,4 +60,16 @@ public interface ITrcBiz {
      * @throws Exception
      */
     ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
+
+
+    /**
+     * 一件代发商品的sku变更信息
+     *
+     * @param action                 行为
+     * @param oldExternalItemSkuList 旧的sku列表
+     * @param externalItemSkuList    更新的sku列表
+     * @param operateTime            时间戳
+     * @return
+     */
+    ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception;
 }

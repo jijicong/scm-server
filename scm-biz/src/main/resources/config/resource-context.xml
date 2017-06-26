@@ -7,15 +7,15 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
-    <!-- 将多个配置文件读取到容器中，交给Spring管理 -->
+    <!-- 将多个配置文件读取到容器中，交给Spring管理 ${package.environment}-->
     <bean id="myPropertyConfigurer" class="org.trc.spring.TrPropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:config/${package.environment}/scm-jdbc.properties</value>
-                <value>classpath:config/${package.environment}/comsumer-config.properties</value>
-                <value>classpath:config/${package.environment}/trc.properties</value>
-                <value>classpath:config/${package.environment}/redis.properties</value>
-                <value>classpath:config/${package.environment}/config.properties</value>
+                <value>classpath:config/dev/scm-jdbc.properties</value>
+                <value>classpath:config/dev/comsumer-config.properties</value>
+                <value>classpath:config/dev/trc.properties</value>
+                <value>classpath:config/dev/redis.properties</value>
+                <value>classpath:config/dev/config.properties</value>
             </list>
         </property>
         <property name="fileEncoding">

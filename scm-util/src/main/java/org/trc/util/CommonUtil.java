@@ -21,7 +21,6 @@ import java.util.*;
 
 /** 
  * @ClassName: CommonUtil 
- * @Description: TODO
  * @author 吴东雄
  * @date 2016年3月16日 下午10:48:14 
  *  

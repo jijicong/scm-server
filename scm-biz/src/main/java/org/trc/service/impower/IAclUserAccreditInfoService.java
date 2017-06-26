@@ -65,4 +65,6 @@ public interface IAclUserAccreditInfoService extends IBaseService<AclUserAccredi
     AclUserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext);
 
     Map<String,AclUserAccreditInfo> selectByIds(String ...ids);
+
+    List<AclUserAccreditInfo> selectUserByName(String name);
 }

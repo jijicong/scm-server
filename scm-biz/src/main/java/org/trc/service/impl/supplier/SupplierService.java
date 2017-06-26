@@ -33,4 +33,9 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     public Integer selectSupplierListCount(Map<String,Object> map) throws Exception {
         return supplierMapper.selectSupplierListCount(map);
     }
+
+    @Override
+    public List<Supplier> selectSupplierByName(String name) throws Exception {
+        return supplierMapper.selectSupplierByName(name);
+    }
 }

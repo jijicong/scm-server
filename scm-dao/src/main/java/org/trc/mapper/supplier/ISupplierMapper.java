@@ -17,4 +17,7 @@ public interface ISupplierMapper extends BaseMapper<Supplier>{
     List<Supplier> selectSupplierListByApply(Map<String,Object> map)throws Exception;
 
     Integer selectSupplierListCount(Map<String,Object> map)throws Exception;
+
+    List<Supplier> selectSupplierByName(String name) throws Exception;
+
 }

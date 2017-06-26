@@ -222,7 +222,7 @@ public class CategoryBiz implements ICategoryBiz {
         category.setUpdateTime(Calendar.getInstance().getTime());
         //先保存
         ParamsUtil.setBaseDO(category);
-//        String userId = (String) requestContext.getProperty("userId");
+//        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
 //        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
 //        category.setCreateOperator(userId);
         int count = categoryService.insert(category);

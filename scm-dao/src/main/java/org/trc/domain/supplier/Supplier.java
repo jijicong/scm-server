@@ -58,7 +58,7 @@ public class Supplier extends BaseDO{
     @FormParam("city")
     @Length(max = 32, message = "城市市编码长度不能超过32个")
     private String city;
-    @FormParam("area")
+    @FormParam("Area")
     @Length(max = 32, message = "区编码长度不能超过32个")
     private String area;
     @FormParam("address")

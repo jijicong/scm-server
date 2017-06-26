@@ -2,6 +2,7 @@ package org.trc.biz.purchase;
 
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public interface IPurchaseOrderBiz {
 
-    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page) throws Exception;
+    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page,ContainerRequestContext requestContext) throws Exception;
     /**
      * 根据渠道用户的id查询对应的供应商
      * @param requestContext
@@ -34,8 +35,22 @@ public interface IPurchaseOrderBiz {
      */
     Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page, String skus) throws Exception;
 
-    void savePurchaseOrder(PurchaseOrder purchaseOrder,String status) throws Exception;
+    void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status) throws Exception;
 
+    void updatePurchaseOrderState(PurchaseOrder purchaseOrder) throws Exception;
 
+    PurchaseOrder findPurchaseOrderAddDataById(Long id) throws Exception;
+
+    /**
+     * 冻结，解冻采购单
+     * @param purchaseOrder
+     * @throws Exception
+     */
+    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder) throws Exception;
+
+    //查询所有的可卖商品
+    List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) throws Exception;
+
+    void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData) throws Exception;
 
 }

@@ -49,4 +49,13 @@
                 AND a.is_valid=1
             </where>
     </select>
+    <select id="selectSupplierByName" resultType="org.trc.domain.supplier.Supplier">
+         SELECT
+            supplier_code AS supplierCode,
+            supplier_name AS supplierName
+         FROM
+            supplier
+         WHERE
+            supplier_name LIKE  CONCAT(CONCAT('%', #{name}), '%')
+    </select>
 </mapper>

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -96,7 +97,7 @@ public class PropertyBiz implements IPropertyBiz {
     public void saveProperty(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
             property.setCreateOperator(userId);
@@ -147,7 +148,7 @@ public class PropertyBiz implements IPropertyBiz {
         //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
         Property selectProperty=propertyService.selectOneById(property.getId());
         property.setUpdateTime(Calendar.getInstance().getTime());
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
         }
@@ -276,7 +277,7 @@ public class PropertyBiz implements IPropertyBiz {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
         Property updateProperty = new Property();
         updateProperty.setId(property.getId());
-        String userId= (String) requestContext.getProperty("userId");
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
         }

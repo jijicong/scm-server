@@ -49,8 +49,9 @@ public class SupplyConstants {
 
         public static final String CATEGORY_PROPERTY_LIST = "categoryPrepertyList";//分类属性查询
 
-        public static final String SKU_RELATION_RELATION ="getRelationChange";//获取sku关联关系改变
+        public static final String SKU_INFORMATION ="skuInformation";//获取单个sku信息
 
+        public static final String ORDER_PROCESSING ="OrderProcessing";//订单处理
     }
 
     /**
@@ -345,6 +346,31 @@ public class SupplyConstants {
     }
 
     /**
+     * 采购订单审核
+     */
+    public static final class PurchaseOrderAudit{
+        //根路径
+        public static final String ROOT = "purchase";
+        //采购订单分页查询
+        public static final String PURCHASE_ORDER_AUDIT_PAGE = "purchaseOrderAuditPage";
+
+        public static final String PURCHASE_ORDER_AUDIT = "purchaseOrderAudit";
+
+    }
+
+    /**
+     * 采购明细
+     */
+    public static final class PurchaseDetail{
+        //根路径
+        public static final String ROOT = "purchase";
+        //
+        public static final String  PURCHASE_DETAIL= "purchaseDetail";
+
+    }
+
+
+    /**
      * 采购订单管理
      */
     public static final class PurchaseOrder {
@@ -358,14 +384,18 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_AUDIT = "purchaseOrderAudit";
         //根据采购组的编码查询
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
-        //采购单状态的修改
+        //采购单状态的修改--删除 作废
         public static final String UPDATE_STATE = "purchaseOrder/updateState";
+        //采购单状态的修改--冻结
+        public static final String FREEZE = "purchaseOrder/freeze";
         //根据采购单id查询采购单相关的信息
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
-        //查询该渠道对应的供应商S
+        //查询该渠道对应的供应商
         public static final String SUPPLIERS = "suppliers";
-        //根据供应商的编码查询供应商的可卖商品
+        //根据供应商的编码查询供应商的可卖商品（分页）
         public static final String SUPPLIERS_ITEMS = "suppliersItems";
+        //根据供应商的编码查询供应商所有可卖商品
+        public static final String SUPPLIERS_ALL_ITEMS = "suppliersAllItems";
     }
 
     /**
@@ -489,6 +519,8 @@ public class SupplyConstants {
 
         //商品分页查询路径
         public static final String GOODS_PAGE = "goodsPage";
+        //商品SKU分页查询路径
+        public static final String GOODS_SKU_PAGE = "goodsSkuPage";
         //商品列表查询路径
         public static final String GOODS_LIST = "goodsList";
         //商品路径
@@ -502,6 +534,16 @@ public class SupplyConstants {
         //商品分类属性
         public static final String ITEMS_CATEGORY_PROPERTY = "itemsCategoryProperty";
 
+        //代发商品分页查询路径
+        public static final String EXTERNAL_GOODS_PAGE = "externalGoodsPage";
+        //代发商品分页查询路径2
+        public static final String EXTERNAL_GOODS_PAGE_2 = "externalGoodsPage2";
+        //代发商品
+        public static final String EXTERNAL_ITEM_SKU = "externalItemSku";
+        //代发商品
+        public static final String EXTERNAL_ITEM_SKU_LIST = "externalItemSkus";
+        //代发商品启用/停用
+        public static final String EXTERNAL_ITEM__VALID = "externalItemsValid";
 
     }
 
@@ -544,6 +586,10 @@ public class SupplyConstants {
         public static final String IS_CUSTOM_CLEARANCE = "clearance";
         //查询采购订单状态
         public static final String PURCHASE_ORDER_STATUS = "purchaseOrderStatus";
+        //供应商
+        public static final String SUPPLIER = "oneAgentSupplier";
+        //采购订单的审核状态
+        public static final String PURCHASE_ORDER_AUDIT_STATUS="purchaseOrderAuditStatus";
     }
 
     /**
@@ -615,5 +661,25 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 一件代发供应商
+     */
+    public static final class ExternalSupplier {
+        public static final String ROOT = "externalSupplier";
+        //供应商sku更新通知
+        public static final String SUPPLIER_SKU_UPDATE_NOTICE = "supplierSkuUpdateNotice";
+
+    }
+
+    /**
+     * 授权
+     */
+    public static final class Authorization{
+        //用户ID
+        public static final String USER_ID = "userId";
+        //用户授权列表
+        public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
+
+    }
 
 }

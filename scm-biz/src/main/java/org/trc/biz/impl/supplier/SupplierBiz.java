@@ -128,7 +128,7 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty("aclUserAccreditInfo");
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         Map<String, Object> map = new HashMap<>();
         map.put("supplierCode", form.getSupplierCode());
         map.put("supplierName", form.getSupplierName());
@@ -834,13 +834,7 @@ public class SupplierBiz implements ISupplierBiz {
                 criteria.andEqualTo("supplierCode", supplierBrand.getSupplierCode());
                 criteria.andEqualTo("categoryId", supplierBrand.getCategoryId());
                 criteria.andEqualTo("brandId", supplierBrand.getBrandId());
-                count = supplierBrandService.deleteByExample(example);
-                //FIXME
-                /*if (count == 0) {
-                    String msg = String.format("删除供应商代理品牌%s失败", JSON.toJSONString(supplierBrand));
-                    log.error(msg);
-                    throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
-                }*/
+                supplierBrandService.deleteByExample(example);
             }
         }
         if (addlist.size() > 0) {

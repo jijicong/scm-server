@@ -5,11 +5,10 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.CategoryProperty;
-import org.trc.domain.dict.DictType;
-import org.trc.domain.goods.ItemNaturePropery;
-import org.trc.domain.goods.ItemSalesPropery;
-import org.trc.domain.goods.Items;
-import org.trc.domain.goods.Skus;
+import org.trc.domain.goods.*;
+import org.trc.form.JDModel.SupplyItemsExt;
+import org.trc.form.JDModel.SupplyItemsForm;
+import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
@@ -38,6 +37,13 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Items> goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
         return goodsBiz.itemsPage(form, page);
+    }
+
+    @GET
+    @Path(SupplyConstants.Goods.GOODS_SKU_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Skus> itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page, @Context ContainerRequestContext requestContext) throws Exception {
+        return goodsBiz.itemsSkusPage(form, page, requestContext);
     }
 
     @POST
@@ -79,8 +85,8 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode) throws Exception {
-        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode));
+    public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode, @QueryParam("skuCode") String skuCode, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, requestContext));
     }
 
     @GET
@@ -90,13 +96,51 @@ public class GoodsResource {
         return ResultUtil.createSucssAppResult("查询商品分类属性成功", goodsBiz.queryItemsCategoryProperty(spuCode, categoryId));
     }
 
+    @GET
+    @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<ExternalItemSku> externalGoodsPage(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) throws Exception {
+        return goodsBiz.externalGoodsPage(form, page);
+    }
 
+    @GET
+    @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE_2)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<SupplyItemsExt> externalGoodsPage2(@BeanParam SupplyItemsForm form, @BeanParam Pagenation<SupplyItemsExt> page) throws Exception {
+        return goodsBiz.externalGoodsPage2(form, page);
+    }
 
+    @GET
+    @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<ExternalItemSku>> queryExternalItems(@BeanParam ExternalItemSkuForm form) throws Exception {
+        return ResultUtil.createSucssAppResult("查询代发商品列表",goodsBiz.queryExternalItems(form));
+    }
 
+    @POST
+    @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded")
+    public AppResult saveExternalItems(@FormParam("supplySkus") String supplySkus) throws Exception {
+        goodsBiz.saveExternalItems(supplySkus);
+        return ResultUtil.createSucssAppResult("新增代发商品成功", "");
+    }
 
+    @POST
+    @Path(SupplyConstants.Goods.EXTERNAL_ITEM__VALID + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
+        goodsBiz.updateExternalItemsValid(id, isValid);
+        return ResultUtil.createSucssAppResult("启停用商品成功", "");
+    }
 
-
-
-
+    @POST
+    @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded")
+    public AppResult updateExternalItems(@BeanParam ExternalItemSku externalItemSku) throws Exception {
+        goodsBiz.updateExternalItems(externalItemSku);
+        return ResultUtil.createSucssAppResult("更新代发商品成功", "");
+    }
 
 }

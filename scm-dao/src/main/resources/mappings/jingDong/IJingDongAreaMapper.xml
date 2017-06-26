@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.jingdong.IJingDongAreaMapper">
+    <!-- 查询京东的地址
+    mapOut.put("group","province");
+        mapOut.put("where",null);
+        mapOut.put("name",null);
+    -->
+    <select id="selectAreaByName" resultType="org.trc.domain.util.JingDongArea" parameterType="java.util.Map">
+
+        SELECT * from mapping_table
+
+        <if test="where != null and name != ''">
+
+            WHERE ${where} =#{name}
+
+        </if>
+
+        <if test="group != null and name != ''">
+
+            GROUP BY ${group}
+
+        </if>
+
+    </select>
+
+</mapper>

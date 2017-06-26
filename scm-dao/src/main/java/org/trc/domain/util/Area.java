@@ -10,17 +10,16 @@ import java.util.List;
  * 地区信息
  * Created by sone on 2017/5/6.
  */
-public class area implements Serializable {
+public class Area implements Serializable {
     @Id
     private Long id;
     private String code;
-    //三个拼成一个areaName
     private String province;
     private String city;
     private String district;
     private Long parent;
-    public area(){}
-    public area(Long parent){
+    public Area(){}
+    public Area(Long parent){
         this.parent=parent;
     }
 
@@ -74,7 +73,7 @@ public class area implements Serializable {
 
     @Override
     public String toString() {
-        return "area{" +
+        return "Area{" +
                 "id=" + id +
                 ", code='" + code + '\'' +
                 ", province='" + province + '\'' +

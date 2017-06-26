@@ -1,30 +1,34 @@
 package org.trc.resource.api;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.txframework.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
+import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
+import org.trc.biz.trc.IOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
+import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.order.*;
+import org.trc.exception.TrcException;
 import org.trc.form.category.BrandForm;
-import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
 import org.trc.service.config.IRequestFlowService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ResultUtil;
+import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.ISkuRelationService;
+import org.trc.service.order.*;
+import org.trc.util.*;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 对泰然城开放接口
@@ -47,6 +51,14 @@ public class TaiRanResource {
 
     @Resource
     private IRequestFlowService requestFlowService;
+
+    @Resource
+    private ISkuRelationBiz skuRelationBiz;
+
+    @Resource
+    private IOrderBiz orderBiz;
+
+
 
     /**
      * 分页查询品牌
@@ -77,8 +89,8 @@ public class TaiRanResource {
             page.setResult(list);
             return ResultUtil.createSucssAppResult("查询品牌列表成功", page);
         } catch (Exception e) {
-            logger.error("查询品牌列表报错："+e.getMessage());
-            return ResultUtil.createFailAppResult("查询品牌列表报错："+e.getMessage());
+            logger.error("查询品牌列表报错：" + e.getMessage());
+            return ResultUtil.createFailAppResult("查询品牌列表报错：" + e.getMessage());
         }
     }
 
@@ -109,8 +121,8 @@ public class TaiRanResource {
             page.setResult(list);
             return ResultUtil.createSucssAppResult("查询属性列表成功", page);
         } catch (Exception e) {
-            logger.error("查询属性列表报错："+e.getMessage());
-            return ResultUtil.createFailAppResult("查询属性列表报错："+e.getMessage());
+            logger.error("查询属性列表报错：" + e.getMessage());
+            return ResultUtil.createFailAppResult("查询属性列表报错：" + e.getMessage());
         }
     }
 
@@ -144,8 +156,8 @@ public class TaiRanResource {
             page.setResult(list);
             return ResultUtil.createSucssAppResult("查询分类列表成功", page);
         } catch (Exception e) {
-            logger.error("查询分类列表报错："+e.getMessage());
-            return ResultUtil.createFailAppResult("查询分类列表报错："+e.getMessage());
+            logger.error("查询分类列表报错：" + e.getMessage());
+            return ResultUtil.createFailAppResult("查询分类列表报错：" + e.getMessage());
         }
     }
 
@@ -162,8 +174,8 @@ public class TaiRanResource {
         try {
             return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryBrands(categoryId));
         } catch (Exception e) {
-            logger.error("查询分类品牌列表报错："+e.getMessage());
-            return ResultUtil.createFailAppResult("查询分类品牌列表报错："+e.getMessage());
+            logger.error("查询分类品牌列表报错：" + e.getMessage());
+            return ResultUtil.createFailAppResult("查询分类品牌列表报错：" + e.getMessage());
         }
     }
 
@@ -180,17 +192,65 @@ public class TaiRanResource {
         try {
             return ResultUtil.createSucssAppResult("查询分类属性列表成功", categoryBiz.queryProperties(categoryId));
         } catch (Exception e) {
-            logger.error("查询分类属性列表报错："+e.getMessage());
-            return ResultUtil.createFailAppResult("查询分类属性列表报错："+e.getMessage());
+            logger.error("查询分类属性列表报错：" + e.getMessage());
+            return ResultUtil.createFailAppResult("查询分类属性列表报错：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 查询单个sku信息
+     *
+     * @param skuCode 传递供应链skuCode
+     * @return
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.SKU_INFORMATION)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<String> getSpuInformation(@QueryParam("skuCode") String skuCode) {
+        try {
+            return ResultUtil.createSucssAppResult("查询sku信息成功", skuRelationBiz.getSkuInformation(skuCode));
+        } catch (Exception e) {
+            logger.error("查询sku信息报错: " + e.getMessage());
+            return ResultUtil.createFailAppResult("查询sku信息报错：" + e.getMessage());
         }
     }
 
 
-    @GET
-    @Path(SupplyConstants.TaiRan.SKU_RELATION_RELATION)
+    /**
+     * 订单拆分，以仓库级订单传参
+     *
+     * @return
+     */
+    @POST
+    @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<String>  getSpuInformation(@QueryParam("skuCode")String skuCode){
+    public AppResult<String> getOrderList(JSONObject information) {
+        //获取平台订单信息
+        PlatformOrder platformOrder = JSONObject.parseObject(information.getJSONObject("platformOrder").toJSONString(), PlatformOrder.class);
+        JSONArray shopOrders = information.getJSONArray("shopOrders");
+        try{
+            orderBiz.splitOrder(shopOrders,platformOrder);
+        }catch (TrcException e){
+            logger.error(e.getMessage());
+            return ResultUtil.createFailAppResult("平台订单" + platformOrder.getPlatformOrderCode() + e.getMessage());
+        }catch (Exception e){
+            logger.error("订单处理报错: " + e.getMessage());
+            return ResultUtil.createFailAppResult("平台订单" + platformOrder.getPlatformOrderCode() + " 订单处理报错：" + e.getMessage());
+        }
+        logger.info("平台订单推送成功");
+        return ResultUtil.createSucssAppResult("平台订单" + platformOrder.getPlatformOrderCode() + " 订单推送成功，请等待后续通知", "");
 
+    }
+
+
+    public AppResult<String> getSkuRelation(){
         return null;
     }
+
+
+    public AppResult<String> getSkuRelationBatch(){
+        return null;
+    }
+
 }
+
