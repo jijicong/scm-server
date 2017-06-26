@@ -12,10 +12,12 @@ import org.trc.enums.PurchaseOrderAuditEnum;
 import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -184,6 +186,14 @@ public class SelectListResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Dict> supplier() throws Exception{
         return ResultUtil.createSucssAppResult("查询一件代发供应商成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.SUPPLIER));
+    }
+
+    @GET
+    @Path(SupplyConstants.SelectList.SELECT_BY_TYPE_CODE+"/{typeCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Dict> selectByTypeCode(@PathParam("typeCode") String typeCode) throws Exception{
+        AssertUtil.notBlank(typeCode, "根据字典类型查询字典字典类型编码不能为空");
+        return ResultUtil.createSucssAppResult("查询字典成功", configBiz.findDictsByTypeNo(typeCode));
     }
 
 

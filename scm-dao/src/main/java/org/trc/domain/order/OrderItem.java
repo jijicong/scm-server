@@ -1,5 +1,9 @@
 package org.trc.domain.order;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.MoneySerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -81,6 +85,7 @@ public class OrderItem {
     private Long customsPrice;
 
     // 成交单价,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long transactionPrice;
 
     // 购买数量
@@ -111,6 +116,7 @@ public class OrderItem {
     private String invoiceNo;
 
     // 运费分摊,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long postDiscount;
 
     // 促销优惠分摊,单位/分
@@ -126,9 +132,11 @@ public class OrderItem {
     private Long discountFee;
 
     // 应付金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long totalFee;
 
     // 实付金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long payment;
 
     // 商品重量,单位/克
@@ -192,6 +200,7 @@ public class OrderItem {
     private Date createTime;
 
     // 支付时间
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date payTime;
 
     // 发货时间
