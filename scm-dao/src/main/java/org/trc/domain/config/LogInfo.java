@@ -1,18 +1,19 @@
 package org.trc.domain.config;
 
-import org.trc.domain.BaseDO;
-
+import javax.persistence.Table;
 import java.util.Date;
 
 /**
  * Created by hzqph on 2017/6/20.
  */
+@Table(name = "log_information")
 public class LogInfo {
     private Long id;
     private String entityType;
     private String entityId;
     private String operation;
-    private String operatiorUserid;
+    private String operatorUserid;
+    private String operator;
     private String params;
     private String remark;
     private Date operateTime;
@@ -49,14 +50,6 @@ public class LogInfo {
         this.operation = operation;
     }
 
-    public String getOperatiorUserid() {
-        return operatiorUserid;
-    }
-
-    public void setOperatiorUserid(String operatiorUserid) {
-        this.operatiorUserid = operatiorUserid;
-    }
-
     public String getParams() {
         return params;
     }
@@ -79,5 +72,21 @@ public class LogInfo {
 
     public void setOperateTime(Date operateTime) {
         this.operateTime = operateTime;
+    }
+
+    public String getOperatorUserid() {
+        return operatorUserid;
+    }
+
+    public void setOperatorUserid(String operatorUserid) {
+        this.operatorUserid = operatorUserid;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public void setOperator(String operator) {
+        this.operator = operator;
     }
 }
