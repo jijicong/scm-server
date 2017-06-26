@@ -1,5 +1,7 @@
 package org.trc.biz.trc;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
@@ -11,5 +13,6 @@ import java.util.List;
  */
 public interface IOrderBiz {
 
-    void splitOrder(List<OrderItem> orderItems, List<ShopOrder> shopOrders, PlatformOrder platformOrder) throws Exception;
+
+    void splitOrder(JSONArray shopOrders, PlatformOrder platformOrder)throws Exception;
 }

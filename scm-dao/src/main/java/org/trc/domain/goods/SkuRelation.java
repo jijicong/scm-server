@@ -27,14 +27,14 @@ public class SkuRelation {
     @FormParam("supplierSkuCode")
     private String supplierSkuCode;//供应商sku_code
 
-    @FormParam("supplierName")
-    private String supplierName;//供应商代号
+    @FormParam("supplierCode")
+    private String supplierCode;//供应商编码
 
     @FormParam("channelSkuCode")
     private String channelSkuCode;//渠道方sku_code
 
-    @FormParam("channelName")
-    private String channelName;//渠道方代号
+    @FormParam("channelCode")
+    private String channelCode;//渠道方编码
 
     @FormParam("isValid")
     private String isValid;//是否有效:0-无效,1-有效
@@ -71,12 +71,12 @@ public class SkuRelation {
         this.supplierSkuCode = supplierSkuCode;
     }
 
-    public String getSupplierName() {
-        return supplierName;
+    public String getSupplierCode() {
+        return supplierCode;
     }
 
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName;
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
     }
 
     public String getChannelSkuCode() {
@@ -87,12 +87,12 @@ public class SkuRelation {
         this.channelSkuCode = channelSkuCode;
     }
 
-    public String getChannelName() {
-        return channelName;
+    public String getChannelCode() {
+        return channelCode;
     }
 
-    public void setChannelName(String channelName) {
-        this.channelName = channelName;
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 
     public String getIsValid() {

@@ -110,6 +110,7 @@ public enum ExceptionEnum{
     TRC_CATEGORY_PROPERTY_EXCEPTION("600105","通知分类更改异常"),
     TRC_ITEMS_EXCEPTION("600106","通知商品更改异常"),
     TRC_ORDER_PUSH_EXCEPTION("600107","推送订单模块异常"),
+    TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION("600108","一件代发sku更新通知异常"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),

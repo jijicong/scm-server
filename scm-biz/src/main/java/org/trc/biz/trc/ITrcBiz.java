@@ -61,11 +61,15 @@ public interface ITrcBiz {
      */
     ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
 
+
     /**
-     * 通知在售商品的sku变更信息
-     * @param externalItemSkuList 更新的sku列表
-     * @param operateTime  时间戳
+     * 一件代发商品的sku变更信息
+     *
+     * @param action                 行为
+     * @param oldExternalItemSkuList 旧的sku列表
+     * @param externalItemSkuList    更新的sku列表
+     * @param operateTime            时间戳
      * @return
      */
-    ResultModel sendSkuUpdation(List<ExternalItemSku> externalItemSkuList,Long operateTime);
+    ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception;
 }

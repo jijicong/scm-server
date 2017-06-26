@@ -22,11 +22,14 @@ import org.trc.model.PropertyToTrc;
 import org.trc.model.ResultModel;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
+import org.trc.service.goods.ISkuRelationService;
 import org.trc.util.GuidUtil;
 import org.trc.util.HttpClientUtil;
 import org.trc.util.MD5;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,6 +46,9 @@ public class TrcBiz implements ITrcBiz {
 
     @Autowired
     private IRequestFlowService requestFlowService;
+
+    @Autowired
+    private ISkuRelationService skuRelationService;
 
     @Value("${trc.key}")
     private String TRC_KEY;
@@ -64,6 +70,9 @@ public class TrcBiz implements ITrcBiz {
 
     @Value("${trc.item.url}")
     private String ITEMS_URL;
+
+    @Value("${trc.externalItemSku.update.information.url}")
+    private String EXTERNALITEMSKU_UPDATE_INFROMATION_URL;
 
     private static final String OR = "|";
 
@@ -228,10 +237,62 @@ public class TrcBiz implements ITrcBiz {
         return resultModel;
     }
 
+
     @Override
-    public ResultModel sendSkuUpdation(List<ExternalItemSku> externalItemSkuList, Long operateTime) {
-        return null;
+    public ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
+        Assert.notNull(externalItemSkuList, "更新列表不能为空");
+
+        //传值处理
+        String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        //MD5加密
+        String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
+        List<ExternalItemSku> newOldExternalItemSkuList = new ArrayList<>();
+        List<ExternalItemSku> newExternalItemSkuList = new ArrayList<>();
+        List<String> skuCodes = skuRelationService.selectSkuCode(externalItemSkuList);
+        for (int i = 0; i < externalItemSkuList.size(); i++) {
+            Iterator<String> iter = skuCodes.iterator();
+            while (iter.hasNext()) {
+                if (externalItemSkuList.get(i).getSkuCode().equals(iter.next())) {
+                    newExternalItemSkuList.add(externalItemSkuList.get(i));
+                    newOldExternalItemSkuList.add((oldExternalItemSkuList.get(i)));
+                    iter.remove();
+                }
+            }
+        }
+        //对两个新集合做比较判断是否推送
+        List<ExternalItemSku> sendList = new ArrayList<>();
+        for (int i = 0; i < newExternalItemSkuList.size(); i++) {
+            ExternalItemSku externalItemSku = newExternalItemSkuList.get(i);
+            ExternalItemSku oldExternalItemSku = newOldExternalItemSkuList.get(i);
+            Boolean flag = externalItemSku.getSupplierPrice() == oldExternalItemSku.getSupplierPrice() && externalItemSku.getSupplyPrice() == oldExternalItemSku.getSupplyPrice();
+            if (!flag) {
+                sendList.add(externalItemSku);
+            }
+        }
+        //发送数据
+        JSONObject params = new JSONObject();
+        params.put("action", action.getCode());
+        params.put("operateTime", operateTime);
+        params.put("noticeNum", noticeNum);
+        params.put("sign", sign);
+        params.put("externalItemSkuList", sendList);
+        String result = trcService.sendPropertyNotice(EXTERNALITEMSKU_UPDATE_INFROMATION_URL, params.toJSONString());
+        String remark = "调用方法-TrcBiz类中[通知属性变更接口sendExternalItemSkuUpdation]";
+        //抛出通知自定义异常
+        if (StringUtils.isEmpty(result)) {
+            logger.error(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION, "Failure" + remark);
+        }
+        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        //存储请求记录
+        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        requestFlowService.insert(requestFlow);
+        return resultModel;
     }
+
 
     //发送分类属性改动
     public ResultModel sendCategoryPropertyList(TrcActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
@@ -374,7 +435,7 @@ public class TrcBiz implements ITrcBiz {
             String result = HttpClientUtil.httpPostJsonRequest("http://ddd.www.trc.com/api/supply/sync/brands", params.toJSONString(), 10000);
             System.out.println("********返回值********");
             System.out.println(result);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }

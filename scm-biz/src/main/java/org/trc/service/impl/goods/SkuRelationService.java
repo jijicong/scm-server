@@ -1,6 +1,7 @@
 package org.trc.service.impl.goods;
 
 import org.springframework.stereotype.Service;
+import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.order.OrderItem;
 import org.trc.mapper.goods.ISkuRelationMapper;
@@ -22,7 +23,12 @@ public class SkuRelationService extends BaseService<SkuRelation,Long> implements
     private ISkuRelationMapper skuRelationMapper;
 
     @Override
-    public List<String> selectSupplierSkuCode(List<OrderItem> list) throws Exception {
-        return skuRelationMapper.selectSupplierSkuCodeList(list);
+    public List<String> selectSupplierCode(List<OrderItem> list) throws Exception {
+        return skuRelationMapper.selectSupplierCodeList(list);
+    }
+
+    @Override
+    public List<String> selectSkuCode(List<ExternalItemSku> list) throws Exception {
+        return skuRelationMapper.selectSkuCodeList(list);
     }
 }
