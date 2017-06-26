@@ -51,4 +51,6 @@ public interface IPurchaseOrderBiz {
     //查询所有的可卖商品
     List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) throws Exception;
 
+    void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData) throws Exception;
+
 }

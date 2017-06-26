@@ -1,7 +1,6 @@
 /**   
 * @Title: ResultUtil.java 
 * @Package com.hoo.util 
-* @Description: TODO(用一句话描述该文件做什么) 
 * @author 吴东雄
 * @date 2015年11月19日 下午2:17:13 
 * Copyright (c) 2015, 杭州海适云承科技有限公司 All Rights Reserved.
@@ -20,7 +19,6 @@ import java.util.Map;
 
 /** 
  * @ClassName: ResultUtil 
- * @Description: TODO
  * @author 吴东雄
  * @date 2015年11月19日 下午2:17:13 
  *  
@@ -30,7 +28,6 @@ public class ResultUtil {
 	/**
 	 * 判断字符串是否是{"appcode": "0", "databuffer": "","result":""}格式
 	* @Title: isAppcodeFormate 
-	* @Description: TODO
 	* @param @param jsonStr
 	* @param @return    
 	* @return boolean
@@ -71,7 +68,6 @@ public class ResultUtil {
 	/**
 	 * 判断结果字符串是否是true/false
 	* @Title: isAppcodeFormate 
-	* @Description: TODO
 	* @param @param jsonStr
 	* @param @return    
 	* @return boolean
@@ -89,7 +85,6 @@ public class ResultUtil {
 	/**
 	 * 获取线程执行结果
 	* @Title: getThreadResult 
-	* @Description: TODO
 	* @param @param id
 	* @param @param result
 	* @param @return    

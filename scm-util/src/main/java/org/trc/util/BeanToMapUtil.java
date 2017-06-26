@@ -22,7 +22,6 @@ import java.util.Map;
 /**
  * @author 吴东雄
  * @ClassName: BeanToMapUtil
- * @Description: TODO
  * @date 2015年11月18日 下午3:00:41
  */
 public class BeanToMapUtil {

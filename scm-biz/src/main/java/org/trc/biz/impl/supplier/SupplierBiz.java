@@ -834,13 +834,7 @@ public class SupplierBiz implements ISupplierBiz {
                 criteria.andEqualTo("supplierCode", supplierBrand.getSupplierCode());
                 criteria.andEqualTo("categoryId", supplierBrand.getCategoryId());
                 criteria.andEqualTo("brandId", supplierBrand.getBrandId());
-                count = supplierBrandService.deleteByExample(example);
-                //FIXME
-                /*if (count == 0) {
-                    String msg = String.format("删除供应商代理品牌%s失败", JSON.toJSONString(supplierBrand));
-                    log.error(msg);
-                    throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
-                }*/
+                supplierBrandService.deleteByExample(example);
             }
         }
         if (addlist.size() > 0) {

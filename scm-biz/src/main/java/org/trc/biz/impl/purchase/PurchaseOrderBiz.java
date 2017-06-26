@@ -39,10 +39,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sone on 2017/5/25.
@@ -331,7 +328,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrderAudit.setCreateOperator(purchaseOrder.getCreateOperator());
         //purchaseOrder
         ParamsUtil.setBaseDO(purchaseOrderAudit);
-        System.out.println(purchaseOrderAudit.toString());
         int count = iPurchaseOrderAuditService.insert(purchaseOrderAudit);
         if (count == 0) {
             String msg = String.format("保存%s采购单审核操作失败", JSON.toJSONString(purchaseOrder));
@@ -375,7 +371,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("supplierCode",supplierCode);
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         if(purchaseDetailList == null || purchaseDetailList.size()==0){
-            purchaseDetailList = new ArrayList<>();  //如果没有查到，有效票的sku商品
+            purchaseDetailList = new ArrayList<>();  //如果没有查到，有效的sku商品
         }
         return purchaseDetailList;
     }
@@ -448,8 +444,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             handleCancel(purchaseOrder);
             return;
         }
-
-
     }
     //采购单作废操作
     private void handleCancel(PurchaseOrder purchaseOrder)throws Exception {
@@ -576,6 +570,40 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
+        }
+
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData) throws Exception {
+
+        AssertUtil.notNull(purchaseOrderAddData,"修改采购单失败,采购单为空");
+        PurchaseOrder purchaseOrder = purchaseOrderAddData;//转型
+        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
+        BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
+        if(paymentProportion!=null){
+            BigDecimal bd = new BigDecimal("100");
+            paymentProportion=paymentProportion.divide(bd);
+            if(paymentProportion.doubleValue()>1 || paymentProportion.doubleValue()<=0){ //范围校验
+                String msg = CommonUtil.joinStr("采购单修改,付款比例超出范围").toString();
+                LOGGER.error(msg);
+                throw new ConfigException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+            }
+            purchaseOrder.setPaymentProportion(paymentProportion);
+        }
+        int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
+        if (count == 0) {
+            String msg = String.format("修改仓库%s数据库操作失败",JSON.toJSONString(purchaseOrder));
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+        }
+
+        purchaseDetailService.deletePurchaseDetailByPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
+        purchaseOrderAddData.setCreateOperator("zs"); //TODO 创建人的加入
+        savePurchaseDetail(purchaseOrderAddData.getGridValue(),purchaseOrder.getId(),purchaseOrder.getPurchaseOrderCode());
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
+            savePurchaseOrderAudit(purchaseOrderAddData);
         }
 
     }

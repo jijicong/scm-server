@@ -61,7 +61,9 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<Supplier>> findSuppliers(@Context ContainerRequestContext requestContext) throws Exception {
+
         return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(requestContext));
+
     }
 
     @GET
@@ -72,12 +74,33 @@ public class PurchaseOrderResource {
         return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
 
     }
+    @PUT
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")//保存修改
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData) throws Exception{
+
+        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData);
+        return  ResultUtil.createSucssAppResult("修改采购订单信息成功","");
+
+    }
+    @PUT
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT+"/{id}")//提交审核修改
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData) throws Exception{
+
+        purchaseOrderAddData.setStatus(PurchaseOrderStatusEnum.AUDIT.getCode());
+        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData);
+        return  ResultUtil.createSucssAppResult("提交审核修改采购订单信息成功","");
+
+    }
+
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ALL_ITEMS+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<PurchaseDetail> findAllPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode) throws Exception{
         return ResultUtil.createSucssAppResult("根据供应商编码查询所有的有效商品成功",purchaseOrderBiz.findAllPurchaseDetailBysupplierCode(supplierCode));
     }
+
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")

@@ -118,6 +118,11 @@ public class Skus extends ScmDO {
      */
     @Transient
     private String brandName;
+    /**
+     * 仓库名称
+     */
+    @Transient
+    private String warehouse;
 
     public String getSkuCode() {
         return skuCode;
@@ -349,5 +354,13 @@ public class Skus extends ScmDO {
 
     public void setItemsName(String itemsName) {
         this.itemsName = itemsName;
+    }
+
+    public String getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(String warehouse) {
+        this.warehouse = warehouse;
     }
 }
