@@ -32,8 +32,4 @@ public class PurchaseOrderAuditService extends BaseService<PurchaseOrderAudit,Lo
         return iPurchaseOrderAuditMapper.selectCountAuditPurchaseOrder(map);
     }
 
-    @Override
-    public Integer updatePurchaseOrderByPurchase(Map<String, Object> map) {
-        return iPurchaseOrderAuditMapper.updatePurchaseOrderByPurchase(map);
-    }
 }

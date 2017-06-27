@@ -10,16 +10,18 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
+import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.category.BrandForm;
 import org.trc.form.FileUrl;
+import org.trc.form.category.BrandForm;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryBrandService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.util.ISerialUtilService;
@@ -51,7 +53,10 @@ public class BrandBiz implements IBrandBiz {
     private IAclUserAccreditInfoService userAccreditInfoService;
     @Autowired
     private ICategoryBrandService categoryBrandService;
-
+    @Autowired
+    private ILogInfoService logInfoService;
+    @Autowired
+    private ITrcBiz trcBiz;
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
@@ -132,12 +137,18 @@ public class BrandBiz implements IBrandBiz {
         ParamsUtil.setBaseDO(brand);
         brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             brand.setCreateOperator(userId);
             brand.setLastEditOperator(userId);
         }
         try {
             brandService.insert(brand);
+            //记录到日志表中不能影响到主体业务
+            logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.ADD,null);
+            //通知渠道方
+            //TODO 通知渠道方需要修改
+//            trcBiz.sendBrand(TrcActionTypeEnum.ADD_BRAND, null,brand,System.currentTimeMillis());
         } catch (Exception e) {
             log.error(e.getMessage());
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
@@ -163,9 +174,11 @@ public class BrandBiz implements IBrandBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
+        String remark=null;
         Brand selectBrand=brandService.selectOneById(brand.getId());
         brand.setUpdateTime(Calendar.getInstance().getTime());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             brand.setLastEditOperator(userId);
         }
@@ -180,22 +193,37 @@ public class BrandBiz implements IBrandBiz {
             supplierBrandService.updateSupplerBrandIsValid(brand.getIsValid(), brand.getId());
             //品牌状态更新时需要更新品牌分类关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
             categoryBrandService.updateCategoryBrandIsValid(brand.getIsValid(),brand.getId());
+            if(brand.getIsValid().equals(ValidEnum.VALID.getCode())){
+                remark=remarkEnum.VALID_OFF.getMessage();
+            }else{
+                remark=remarkEnum.VALID_ON.getMessage();
+            }
         }
+        //记录到日志表中不能影响到主体业务
+        logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
+        //通知渠道方
+        //TODO 通知渠道方接口需要修改
+//        trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateBrandStatus(Brand brand, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
+        Brand selectBrand=brandService.selectOneById(brand.getId());
         Brand updateBrand = new Brand();
         updateBrand.setId(brand.getId());
         updateBrand.setUpdateTime(Calendar.getInstance().getTime());
+        String remark;
         if (brand.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateBrand.setIsValid(ValidEnum.NOVALID.getCode());
+            remark=remarkEnum.VALID_OFF.getMessage();
         } else {
             updateBrand.setIsValid(ValidEnum.VALID.getCode());
+            remark=remarkEnum.VALID_ON.getMessage();
         }
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             updateBrand.setLastEditOperator(userId);
         }
@@ -209,6 +237,11 @@ public class BrandBiz implements IBrandBiz {
         supplierBrandService.updateSupplerBrandIsValid(updateBrand.getIsValid(), updateBrand.getId());
         //品牌状态更新时需要更新品牌分类关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
         categoryBrandService.updateCategoryBrandIsValid(updateBrand.getIsValid(),updateBrand.getId());
+        //记录到日志表中不能影响到主体业务
+        logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
+        //通知渠道方
+        //TODO 通知渠道方需要修改
+//        trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
     }
 
     @Override

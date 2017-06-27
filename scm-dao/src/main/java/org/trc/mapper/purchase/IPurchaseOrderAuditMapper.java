@@ -15,7 +15,4 @@ public interface IPurchaseOrderAuditMapper extends BaseMapper<PurchaseOrderAudit
     List<PurchaseOrderAddAudit> selectPurchaseOrderAuditList(Map<String, Object> map);
 
     Integer selectCountAuditPurchaseOrder(Map<String, Object> map);
-
-    Integer updatePurchaseOrderByPurchase(Map<String, Object> map);
-
 }

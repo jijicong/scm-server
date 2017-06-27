@@ -28,7 +28,7 @@ public interface IPurchaseOrderBiz {
     List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception;
 
     /**
-     * 根据供应商的code查询可采购的商品列表
+     * 根据供应商的code查询可采购的商品列表-(排除已经在采购列表出现的商品)
      * @param supplierCode
      * @return
      * @throws Exception
@@ -51,6 +51,12 @@ public interface IPurchaseOrderBiz {
     //查询所有的可卖商品
     List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) throws Exception;
 
-    void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData) throws Exception;
+    /**
+     * 更新采购单及采购商品
+     * @param purchaseOrderAddData  更新的数据
+     * @param requestContext         用于采购商品的创建人
+     * @throws Exception
+     */
+    void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext) throws Exception;
 
 }

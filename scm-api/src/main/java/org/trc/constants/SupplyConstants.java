@@ -554,6 +554,8 @@ public class SupplyConstants {
     public static final class SelectList {
         //下拉列表根路径
         public static final String ROOT = "select";
+        //根据类型编码查询
+        public static final String SELECT_BY_TYPE_CODE = "selectByTypeCode";
         //是否启用
         public static final String VALID_LIST = "validList";
         //供应商性质
@@ -680,6 +682,19 @@ public class SupplyConstants {
         //用户授权列表
         public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
 
+    }
+
+    /**
+     * 订单管理
+     */
+    public static final class Order {
+        public static final String ROOT = "order";
+        //订单分页查询路径
+        public static final String SHOP_ORDER_PAGE = "shopOrderPage";
+        //订单列表查询路径
+        public static final String SHOP_ORDER_LIST = "shopOrders";
+        //订单路径
+        public static final String SHOP_ORDER = "shopOrder";
     }
 
 }

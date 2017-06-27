@@ -39,7 +39,7 @@
         WHERE
         ao.is_deleted = '0'
         <if test="purchaseOrderCode != null and purchaseOrderCode != ''">
-            AND ao.purchase_order_code LIKE CONCAT(CONCAT('%', #{purchaseOrderCode}), '%')
+            AND ao.purchase_order_code LIKE CONCAT('%', #{purchaseOrderCode},'%')
         </if>
         <if test="auditStatus != null and auditStatus != ''">
             AND ao.STATUS = #{auditStatus}
@@ -59,7 +59,7 @@
     ) pao
     ON s.supplier_code = pao.supplier_code
     <if test="supplierName != null and supplierName != ''">
-        WHERE s.supplier_name LIKE CONCAT(CONCAT('%', #{supplierName}), '%')
+        WHERE s.supplier_name LIKE CONCAT('%', #{supplierName},'%')
     </if>
         order BY submitTime DESC
     </select>
@@ -88,7 +88,7 @@
         WHERE
         ao.is_deleted = '0'
         <if test="purchaseOrderCode != null and purchaseOrderCode != ''">
-            AND ao.purchase_order_code LIKE CONCAT(CONCAT('%', #{purchaseOrderCode}), '%')
+            AND ao.purchase_order_code LIKE CONCAT('%', #{purchaseOrderCode},'%')
         </if>
         <if test="auditStatus != null and auditStatus != ''">
             AND ao.STATUS = #{auditStatus}
@@ -108,11 +108,11 @@
         ) pao
         ON s.supplier_code = pao.supplier_code
         <if test="supplierName != null and supplierName != ''">
-            WHERE s.supplier_name LIKE  CONCAT(CONCAT('%', #{supplierName}), '%')
+            WHERE s.supplier_name LIKE  CONCAT('%', #{supplierName},'%')
         </if>
     </select>
-    <!--审核采购单-->
-    <update id="updatePurchaseOrderByPurchase" parameterType="java.util.Map">
+    <!--审核采购单，更改审核单的状态-->
+    <!--<update id="updatePurchaseOrderByPurchase" parameterType="java.util.Map">
         UPDATE  apply_for_purchase_order  SET  `status` =#{status} ,audit_opinion = #{auditOpinion} WHERE purchase_order_code =#{purchaseOrderCode};
-    </update>
+    </update>-->
 </mapper>

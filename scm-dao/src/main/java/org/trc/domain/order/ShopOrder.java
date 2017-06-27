@@ -3,12 +3,14 @@ package org.trc.domain.order;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Ding on 2017/6/21.
  */
-public class ShopOrder {
+public class ShopOrder extends OrderBase{
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -115,6 +117,20 @@ public class ShopOrder {
 
     // 交易备注
     private String tradeMemo;
+
+    /**
+     * 订单商品明细
+     */
+    @Transient
+    private List<OrderExt> records;
+
+    public List<OrderExt> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<OrderExt> records) {
+        this.records = records;
+    }
 
     /**
      * 返回卖家备注

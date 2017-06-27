@@ -37,8 +37,10 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext)throws Exception{
-        //采夠訂單列表
+
+        //采购订单分页查询列表
         return  purchaseOrderBiz.purchaseOrderPage(form , page,requestContext);
+
     }
 
     @POST
@@ -52,8 +54,8 @@ public class PurchaseOrderResource {
     }
     @POST
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
-    @Produces(MediaType.APPLICATION_JSON)
-    public AppResult commitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
+    @Produces(MediaType.APPLICATION_JSON)//因为aop只拦截了save***开始的方法，注入创建人，因此这里的提交审核，也为save开始
+    public AppResult saveCommitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) throws Exception{
         purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode());
         return ResultUtil.createSucssAppResult("提交审核采购单成功","");
     }
@@ -77,19 +79,19 @@ public class PurchaseOrderResource {
     @PUT
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")//保存修改
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData) throws Exception{
+    public AppResult updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) throws Exception{
 
-        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData);
+        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,requestContext);
         return  ResultUtil.createSucssAppResult("修改采购订单信息成功","");
 
     }
     @PUT
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT+"/{id}")//提交审核修改
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData) throws Exception{
+    public AppResult updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) throws Exception{
 
         purchaseOrderAddData.setStatus(PurchaseOrderStatusEnum.AUDIT.getCode());
-        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData);
+        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,requestContext);
         return  ResultUtil.createSucssAppResult("提交审核修改采购订单信息成功","");
 
     }

@@ -22,6 +22,7 @@ import org.trc.form.category.PropertyForm;
 import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemNatureProperyService;
 import org.trc.service.goods.IItemSalesProperyService;
 import org.trc.service.impl.impower.AclUserAccreditInfoService;
@@ -56,6 +57,8 @@ public class PropertyBiz implements IPropertyBiz {
     private IItemSalesProperyService itemSalesProperyService;
     @Autowired
     private AclUserAccreditInfoService userAccreditInfoService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
@@ -98,6 +101,7 @@ public class PropertyBiz implements IPropertyBiz {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
             property.setCreateOperator(userId);
@@ -131,6 +135,7 @@ public class PropertyBiz implements IPropertyBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_SAVE_EXCEPTION, str);
             }
         }
+        logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.ADD,null);
     }
 
     /**
@@ -149,6 +154,7 @@ public class PropertyBiz implements IPropertyBiz {
         Property selectProperty=propertyService.selectOneById(property.getId());
         property.setUpdateTime(Calendar.getInstance().getTime());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
         }
@@ -244,6 +250,15 @@ public class PropertyBiz implements IPropertyBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_UPDATE_EXCEPTION, str);
             }
         }
+        String remark=null;
+        if(!property.getIsValid().equals(selectProperty.getIsValid())){
+            if(property.getIsValid().equals(ValidEnum.VALID.getCode())){
+                 remark=remarkEnum.VALID_OFF.getMessage();
+            }else{
+                 remark=remarkEnum.VALID_ON.getMessage();
+            }
+        }
+        logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
     }
 
     @Override
@@ -275,16 +290,20 @@ public class PropertyBiz implements IPropertyBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updatePropertyStatus(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
+        String remark=null;
         Property updateProperty = new Property();
         updateProperty.setId(property.getId());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo)requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
         }
         if (property.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateProperty.setIsValid(ValidEnum.NOVALID.getCode());
+            remark=remarkEnum.VALID_OFF.getMessage();
         } else {
             updateProperty.setIsValid(ValidEnum.VALID.getCode());
+            remark=remarkEnum.VALID_ON.getMessage();
         }
         int count = propertyService.updateByPrimaryKeySelective(updateProperty);
         if (count < 1) {
@@ -302,6 +321,7 @@ public class PropertyBiz implements IPropertyBiz {
         if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
             itemSalesProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(),updateProperty.getId());
         }
+        logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
     }
 
     @Override

@@ -1,5 +1,9 @@
 package org.trc.domain.order;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.MoneySerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -9,8 +13,9 @@ import java.util.Date;
 /**
  * Created by Ding on 2017/6/21.
  */
-@Table(name = "shop_order")
+@Table(name = "platform_order")
 public class PlatformOrder {
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,21 +43,25 @@ public class PlatformOrder {
     private String payType;
 
     // 实付金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long payment;
 
     // 积分抵扣金额,单位/分
     private Long pointsFee;
 
     // 订单总金额(商品单价*数量),单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long totalFee;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分
     private Long adjustFee;
 
     // 邮费,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long postageFee;
 
     // 总税费,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long totalTax;
 
     // 是否开票 1-是 0-不是
@@ -179,6 +188,7 @@ public class PlatformOrder {
     private Date createTime;
 
     // 支付时间
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date payTime;
 
     // 发货时间
