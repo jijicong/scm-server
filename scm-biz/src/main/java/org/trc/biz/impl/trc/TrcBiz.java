@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.trc.biz.trc.ITrcBiz;
@@ -79,6 +81,7 @@ public class TrcBiz implements ITrcBiz {
     private static final String UNDER_LINE = "_";
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public ResultModel sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
         Assert.notNull(brand.getAlise(), "品牌别名不能为空");
         Assert.notNull(brand.getBrandCode(), "品牌编码不能为空");
@@ -130,6 +133,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public ResultModel sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
         Assert.notNull(property.getSort(), "属性排序不能为空");
         Assert.notNull(property.getName(), "属性名称不能为空");
@@ -186,6 +190,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public ResultModel sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         if (action.equals(TrcActionTypeEnum.ADD_CATEGORY) || action.equals(TrcActionTypeEnum.EDIT_CATEGORY)
                 || action.equals(TrcActionTypeEnum.STOP_CATEGORY)) {
@@ -201,6 +206,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
 
         //TODO 判断石头通知，暂时觉得都得通知
@@ -239,6 +245,7 @@ public class TrcBiz implements ITrcBiz {
 
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
         Assert.notNull(externalItemSkuList, "更新列表不能为空");
 
