@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
+import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
@@ -59,6 +60,8 @@ public class PropertyBiz implements IPropertyBiz {
     private AclUserAccreditInfoService userAccreditInfoService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private ITrcBiz trcBiz;
 
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {

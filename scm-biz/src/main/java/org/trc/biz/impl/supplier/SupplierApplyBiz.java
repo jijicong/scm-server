@@ -87,9 +87,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void auditSupplierApply(SupplierApplyAudit supplierApplyAudit,ContainerRequestContext requestContext) throws Exception {
+    public void auditSupplierApply(SupplierApplyAudit supplierApplyAudit, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierApplyAudit.getId(), "根据ID更新供应商审核信息,参数ID不能为空");
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         SupplierApplyAudit updateSupplierApplyAudit = new SupplierApplyAudit();
         updateSupplierApplyAudit.setId(supplierApplyAudit.getId());
         updateSupplierApplyAudit.setStatus(supplierApplyAudit.getStatus());
@@ -103,8 +103,8 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         }
         AuditLog auditLog = new AuditLog();
         auditLog.setApplyCode(supplierApplyAudit.getApplyCode());
-        auditLog.setOperation(AuditStatusEnum.queryNameByCode(supplierApplyAudit.getStatus()).getName());
-        if(!StringUtils.isBlank(userId)){
+        auditLog.setOperation(supplierApplyAudit.getStatus().toString());
+        if (!StringUtils.isBlank(userId)) {
             auditLog.setOperator(userId);
         }
         auditLog.setOperateTime(updateSupplierApplyAudit.getUpdateTime());
@@ -196,6 +196,19 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
             String msg = CommonUtil.joinStr("保存供应商申请信息", JSON.toJSONString(insert), "到数据库失败").toString();
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
         }
+        AuditLog auditLog = new AuditLog();
+        auditLog.setApplyCode(insert.getApplyCode());
+        auditLog.setOperation(insert.getStatus().toString());
+        if (aclUserAccreditInfo != null) {
+            auditLog.setOperator(aclUserAccreditInfo.getUserId());
+        }
+        auditLog.setOperateTime(insert.getCreateTime());
+        int insertFlag = auditLogService.insertSelective(auditLog);
+        if (insertFlag != 1) {
+            String msg = CommonUtil.joinStr("根据申请编号[applyCode=", insert.getApplyCode().toString(), "]保存审核信息日志失败").toString();
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_AUDIT_LOG_INSERT_EXCEPTION, msg);
+        }
     }
 
     @Override
@@ -217,7 +230,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateSupplierApply(SupplierApply supplierApply,ContainerRequestContext requestContext) throws Exception {
+    public void updateSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierApply, "供应商申请申请信息，申请信息不能为空");
         AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效

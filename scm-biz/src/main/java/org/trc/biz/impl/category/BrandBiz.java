@@ -147,8 +147,11 @@ public class BrandBiz implements IBrandBiz {
             //记录到日志表中不能影响到主体业务
             logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.ADD,null);
             //通知渠道方
-            //TODO 通知渠道方需要修改
-//            trcBiz.sendBrand(TrcActionTypeEnum.ADD_BRAND, null,brand,System.currentTimeMillis());
+            try{
+                trcBiz.sendBrand(TrcActionTypeEnum.ADD_BRAND, null,brand,System.currentTimeMillis());
+            }catch (Exception e){
+                log.error("品牌新增通知调用出现异常:"+e.getMessage());
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
             String msg = CommonUtil.joinStr("保存品牌", JSON.toJSONString(brand), "到数据库失败").toString();
@@ -202,8 +205,11 @@ public class BrandBiz implements IBrandBiz {
         //记录到日志表中不能影响到主体业务
         logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
         //通知渠道方
-        //TODO 通知渠道方接口需要修改
-//        trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
+        try{
+            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
+        }catch (Exception e){
+            log.error("品牌修改通知调用出现异常:"+e.getMessage());
+        }
     }
 
     @Override
@@ -240,8 +246,11 @@ public class BrandBiz implements IBrandBiz {
         //记录到日志表中不能影响到主体业务
         logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
         //通知渠道方
-        //TODO 通知渠道方需要修改
-//        trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
+        try{
+            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
+        }catch (Exception e){
+            log.error("品牌状态变更通知调用出现异常:"+e.getMessage());
+        }
     }
 
     @Override
