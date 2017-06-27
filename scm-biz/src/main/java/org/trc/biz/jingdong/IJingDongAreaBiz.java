@@ -13,4 +13,6 @@ public interface IJingDongAreaBiz  {
 
     List<JingDongAreaTreeNode>  getJingDongAreaTree() throws Exception;
 
+    void updateJingDongArea() throws Exception;
+
 }

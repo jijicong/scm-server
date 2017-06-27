@@ -133,7 +133,7 @@ public interface IJingDongBiz {
 
     /**
      *信息推送接口
-     * @param type 推送类型（非必须，支持多个，以逗号隔开）
+     * @param type 推送类型（非必须，支持多个，以逗号隔开）50
      * @return
      * @throws Exception
      */

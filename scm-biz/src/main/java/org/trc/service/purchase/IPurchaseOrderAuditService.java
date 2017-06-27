@@ -17,6 +17,4 @@ public interface IPurchaseOrderAuditService extends IBaseService<PurchaseOrderAu
 
     Integer selectCountAuditPurchaseOrder(Map<String ,Object> map);
 
-    Integer updatePurchaseOrderByPurchase(Map<String ,Object> map);
-
 }

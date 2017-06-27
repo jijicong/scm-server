@@ -4,9 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.biz.jingdong.IJingDongAreaBiz;
+import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.util.AreaTreeNode;
 import org.trc.domain.util.JingDongArea;
 import org.trc.domain.util.JingDongAreaTreeNode;
+import org.trc.form.jingdong.MessageDO;
 import org.trc.service.util.IJingdongAreaService;
 
 import javax.annotation.Resource;
@@ -26,10 +28,24 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
     @Resource
     private IJingdongAreaService iJingdongAreaService;
 
+    @Resource
+    private IJingDongBiz iJingDongBiz;
+
     /*
     1.放缓存，
     2.每天定时刷新
      */
+    public void updateJingDongArea() throws Exception{
+        List<MessageDO> messageDOList=iJingDongBiz.getMessage("50");
+        System.out.println(messageDOList.size());
+        for (MessageDO messageDO : messageDOList) {
+
+            System.out.println(messageDO.getId()+messageDO.getTime()+messageDO.getTime()+messageDO.getType()+messageDO.getResult());
+
+        }
+
+    }
+
     public List<JingDongAreaTreeNode>  getJingDongAreaTree() throws Exception {
 
         return recursion1();
@@ -130,6 +146,5 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
         }
         return jingDongAreaTreeNodes;
     }
-
     
 }

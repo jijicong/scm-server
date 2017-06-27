@@ -5,6 +5,7 @@ import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.util.BaseMapper;
 
+import javax.ws.rs.PathParam;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,5 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
      */
     List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
-    Integer updateStateByPurchaseOrderCode(Map<String, Object> map);
 
 }

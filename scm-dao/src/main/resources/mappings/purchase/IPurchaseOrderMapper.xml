@@ -53,7 +53,7 @@
                 AND s.is_valid='1'
                 AND i.is_valid='1'
                 <if test="name != null and name != ''">
-                    AND name LIKE CONCAT(CONCAT('%', #{name}), '%')
+                    AND name LIKE  CONCAT('%', #{name}, '%')
                 </if>
             ) si
                 ON
@@ -61,7 +61,7 @@
             WHERE
             skus.is_valid='1'
             <if test="skuCode != null and skuCode != ''">
-                AND skus.sku_code LIKE CONCAT(CONCAT('%', #{skuCode}), '%')
+                AND skus.sku_code LIKE CONCAT('%', #{skuCode}, '%')
             </if>
 
             <if test="skuTemp != null and skuTemp !=''">
@@ -75,7 +75,7 @@
         ON
         ssi.brand_id=b.id
         <if test="brandName != null and brandName != ''">
-            AND b.name LIKE CONCAT(CONCAT('%', #{brandName}), '%')
+            AND b.name LIKE CONCAT('%', #{brandName}, '%')
         </if>
         ) bssi
         ON
@@ -98,7 +98,7 @@
                 AND s.is_valid='1'
                 AND i.is_valid='1'
                 <if test="name != null and name != ''">
-                    AND name LIKE CONCAT(CONCAT('%', #{name}), '%')
+                    AND name LIKE  CONCAT('%', #{name}, '%')
                 </if>
             ) si
                 ON
@@ -106,7 +106,7 @@
             WHERE
             skus.is_valid='1'
             <if test="skuCode != null and skuCode != ''">
-                AND skus.sku_code LIKE CONCAT(CONCAT('%', #{skuCode}), '%')
+                AND skus.sku_code LIKE CONCAT('%', #{skuCode}, '%')
             </if>
 
             <if test="skuTemp != null and skuTemp !=''">
@@ -115,12 +115,11 @@
                     #{item}
                 </foreach>
             </if>
-
         ) ssi
         ON
         ssi.brand_id=b.id
         <if test="brandName != null and brandName != ''">
-            AND b.name LIKE CONCAT(CONCAT('%', #{brandName}), '%')
+            AND b.name LIKE  CONCAT('%', #{brandName}, '%')
         </if>
     </select>
     <!--AND skus.sku_code NOT IN
@@ -145,8 +144,8 @@
     </select>
 
     <!--更改采购单的状态-->
-    <update id="updateStateByPurchaseOrderCode" parameterType="java.util.Map">
+    <!--<update id="updateStateByPurchaseOrderCode" parameterType="java.util.Map">
         UPDATE  purchase_order  SET  `status` =#{status}  WHERE purchase_order_code =#{purchaseOrderCode};
-    </update>
+    </update>-->
 
 </mapper>
