@@ -26,7 +26,7 @@ public class PurchaseOrderAudit extends CommonDO implements Serializable {
     private String purchaseOrderCode;
     // '采购单id'
     @FormParam("purchaseId")
-    private Long purchaseId;
+    private Long purchaseOrderId;
     //'申请说明'
     private String description;
     //'状态:0-暂存,1-提交审核,2-审核通过,3-审核驳回'
@@ -53,12 +53,12 @@ public class PurchaseOrderAudit extends CommonDO implements Serializable {
         this.purchaseOrderCode = purchaseOrderCode;
     }
 
-    public Long getPurchaseId() {
-        return purchaseId;
+    public Long getPurchaseOrderId() {
+        return purchaseOrderId;
     }
 
-    public void setPurchaseId(Long purchaseId) {
-        this.purchaseId = purchaseId;
+    public void setPurchaseOrderId(Long purchaseOrderId) {
+        this.purchaseOrderId = purchaseOrderId;
     }
 
     public String getDescription() {
