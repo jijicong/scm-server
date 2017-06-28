@@ -118,6 +118,7 @@ public class WarehouseOrder {
     /**
      * 订单商品明细列表
      */
+    @Transient
     private List<OrderItem> orderItemList;
 
     public List<OrderItem> getOrderItemList() {

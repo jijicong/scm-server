@@ -47,12 +47,12 @@ public class OrderResource {
         return ResultUtil.createSucssAppResult("根据条件查询店铺订单成功", scmOrderBiz.queryShopOrders(form));
     }
 
-    /*@GET
+    @GET
     @Path(SupplyConstants.Order.WAREHOUSE_ORDER_DETAIL+"/{warehouseOrderCode}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<ShopOrder>> queryWarehouseOrdersDetail(@PathParam("warehouseOrderCode") String warehouseOrderCode){
-        return ResultUtil.createSucssAppResult("根据条件查询店铺订单成功", scmOrderBiz.queryShopOrders(form));
-    }*/
+        return ResultUtil.createSucssAppResult("根据仓库订单编码查询仓库订单成功", scmOrderBiz.queryWarehouseOrdersDetail(warehouseOrderCode));
+    }
 
 
 

@@ -139,10 +139,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
-        AssertUtil.notNull(warehouseOrder, "根据仓库订单编码查询仓库订单为空");
-
-
-        return null;
+        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空",warehouseOrderCode));
+        OrderItem orderItem = new OrderItem();
+        orderItem.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
+        orderItem.setShopOrderCode(warehouseOrder.getShopOrderCode());
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
+                warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode()));
+        warehouseOrder.setOrderItemList(orderItemList);
+        return warehouseOrder;
     }
 
     /**
