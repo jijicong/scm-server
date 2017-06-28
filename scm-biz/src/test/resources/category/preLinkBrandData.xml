@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <category id="3" full_path_id="1|2" category_code="FL003" source="trc" parent_id="2" level="3" name="&#22269;&#20135;&#22902;&#31881;" sort="3" classify_describe="1" is_leaf="1" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-06-12 14:23:56.0" update_time="2017-06-14 16:33:00.0"/>
+  <brand id="1" name="&#39134;&#40548;" brand_code="PP2017061200001" source="scm" alise="&#39134;&#40548;" web_url="http://www.feihe.com/" logo="brand/19811384488174.jpg" is_valid="0" create_operator="E2E4BDAD80354EFAB6E70120C271968C" last_edit_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-06-12 14:13:52.0" update_time="2017-06-15 10:28:25.0"/>
+  <brand id="2" name="&#39134;&#40548;" brand_code="PP2017061200002" source="scm" alise="&#39134;&#40548;" web_url="http://www.feihe.com/" logo="brand/19811384488174.jpg" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" last_edit_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-06-12 14:13:52.0" update_time="2017-06-15 10:28:25.0"/>
+</dataset>
