@@ -53,7 +53,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     //3.对url进行验证，如果在权限列表中，则需要验证，不在则直接放行
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        String url = ((ContainerRequest) requestContext).getPath(true);
+       /* String url = ((ContainerRequest) requestContext).getPath(true);
         //"/api"开头的给外部调用的接口直接放行
         if (!url.startsWith(PASS_API_URL)) {
             String token = _getToken(requestContext);
@@ -94,7 +94,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
                 requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
-        }
+        }*/
     }
 
     private String _getToken(ContainerRequestContext requestContext) {
