@@ -19,7 +19,7 @@ import org.trc.service.IUserDoService;
 public class UserDoService implements IUserDoService {
     private Logger LOGGER = LoggerFactory.getLogger(UserDoService.class);
 
-    @Autowired
+//    @Autowired
     private UserService userService;
 
     @Override

@@ -31,7 +31,7 @@ public class GetInterfaceJson {
                 "1", 1L, 1L, 1L, 1L, 1L,
                 1L, 1L, "1", "1", 1L, 1, 1L,
                 false, false, "1", 1L, new Date(), new Date(), new Date(), "1", "1");
-        ShopOrder shop2 = new ShopOrder("1", "1", "1",
+        ShopOrder shop2 = new ShopOrder("2", "1", "1",
                 "1", "1", 1L, "1", "1", "1", "1",
                 "1", 1L, 1L, 1L, 1L, 1L,
                 1L, 1L, "1", "1", 1L, 1, 1L,

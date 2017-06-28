@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
@@ -94,10 +95,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             Pagenation<PurchaseOrder> pagenation = purchaseOrderService.pagination(example,page,form);
 
             List<PurchaseOrder> purchaseOrderList = pagenation.getResult();
-            if( purchaseOrderList == null  ){
-                return pagenation;
-            }
-            if( purchaseOrderList.size() == 0 ){
+            if( CollectionUtils.isEmpty(purchaseOrderList) ){
                 return pagenation;
             }
             selectAssignmentPurchaseGroupName(purchaseOrderList);
@@ -306,6 +304,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrder.setPurchaseOrderCode(code);
         purchaseOrder.setIsValid(ValidEnum.VALID.getCode());
         purchaseOrder.setStatus(status);//设置状态
+        purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
         purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());//设置入库通知的状态
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
@@ -381,8 +380,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
-        AssertUtil.notNull(purchaseDetailList,"采购单保存失败,无采购商品");
+        AssertUtil.notEmpty(purchaseDetailList,"采购单保存失败,无采购商品");
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
+            purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100)).longValue());//设置采购价格*100
+            purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());//设置单品的总采购价*100
             purchaseDetail.setPurchaseId(orderId);
             purchaseDetail.setPurchaseOrderCode(code);
             purchaseDetail.setCreateOperator(createOperator);
@@ -642,7 +643,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
         if (count == 0) {
-            String msg = String.format("修改仓库%s数据库操作失败",JSON.toJSONString(purchaseOrder));
+            String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }

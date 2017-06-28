@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -129,7 +130,9 @@ public class JerseyServiceAop {
      * @param parameterValues
      */
     private void setOperater(ContainerRequestContext requestContext, Object[] parameterValues){
-        String userId = requestContext.getProperty(SupplyConstants.Authorization.USER_ID).toString();
+        Object _obj = requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notNull(_obj, "AOP获取登录用户ID为空");
+        String userId = _obj.toString();
         for(Object obj : parameterValues){
             if(obj instanceof CommonDO){
                 ((CommonDO)obj).setCreateOperator(userId);

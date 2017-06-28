@@ -1,7 +1,9 @@
 package org.trc.domain.purchase;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.MoneySerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -106,8 +108,11 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("remark")
      @Length(max = 3072, message = "采购单编号字母和数字不能超过3072个,汉字不能超过3072个")
      private String remark;
+    @FormParam("totalFeeD")
+    @Transient
+    private BigDecimal totalFeeD;//'采购总金额,单位/分',
      @FormParam("totalFee")
-     //@NotEmpty  TODO
+     @JsonSerialize(using = MoneySerializer.class)
      private Long totalFee;//'采购总金额,单位/分',
      @FormParam("abnormalRemark")
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
@@ -127,6 +132,14 @@ public class PurchaseOrder extends BaseDO{
 
     public void setTransportFeeDestIdName(String transportFeeDestIdName) {
         this.transportFeeDestIdName = transportFeeDestIdName;
+    }
+
+    public BigDecimal getTotalFeeD() {
+        return totalFeeD;
+    }
+
+    public void setTotalFeeD(BigDecimal totalFeeD) {
+        this.totalFeeD = totalFeeD;
     }
 
     public String getCurrencyTypeName() {
@@ -304,6 +317,7 @@ public class PurchaseOrder extends BaseDO{
     public void setTotalFee(Long totalFee) {
         this.totalFee = totalFee;
     }
+
 
     public String getAbnormalRemark() {
         return abnormalRemark;
