@@ -5,6 +5,7 @@ package org.trc.enums;
  */
 public enum TrcActionTypeEnum {
 
+    //通知渠道方部分
     ADD_BRAND("ADD_BRAND", "新增品牌"),
     EDIT_BRAND("EDIT_BRAND", "编辑品牌"),
     STOP_BRAND("STOP_BRAND", "停用品牌"),
@@ -17,14 +18,16 @@ public enum TrcActionTypeEnum {
     STOP_CATEGORY("STOP_CATEGORY", "停用分类"),
     EDIT_CATEGORY_BRAND("EDIT_CATEGORY_BRAND", "编辑分类品牌"),
     EDIT_CATEGORY_PROPERTY("EDIT_CATEGORY_PROPERTY", "编辑分类属性"),
-    EXTERNALITEMSKUS_UPDATE("EXTERNALITEMSKUS_UPDATE","一件代发商品sku更新");
+    EXTERNALITEMSKUS_UPDATE("EXTERNALITEMSKUS_UPDATE", "一件代发商品sku更新"),
+
+    //接收数据部分
+    SKURELATION_EXTERNALSKU_ADD("SKURELATION_EXTERNALSKU_ADD", "一件代发商品关联添加"),
+    SKURELATION_REMOVE("SKURELATION_REMOVE", "关联关系解除"),
+    SKURELATION_SKU_ADD("SKURELATION_SKU_ADD","自采商品关联添加");
 
     private String code;
 
     private String description;
-
-    TrcActionTypeEnum() {
-    }
 
     TrcActionTypeEnum(String code, String description) {
         this.code = code;

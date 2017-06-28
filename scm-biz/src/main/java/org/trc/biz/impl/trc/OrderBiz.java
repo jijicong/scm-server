@@ -6,6 +6,7 @@ import com.txframework.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.trc.IOrderBiz;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.order.*;
@@ -49,10 +50,10 @@ public class OrderBiz implements IOrderBiz {
     private IOrderFlowService orderFlowService;
 
 
-
     @Override
+    @Transactional
     public void splitOrder(JSONArray shopOrders, PlatformOrder platformOrder) throws Exception {
-        try{
+        try {
             Assert.notNull(platformOrder.getChannelCode(), "渠道编码不能为空");
             Assert.notNull(platformOrder.getPlatformCode(), "来源平台编码不能为空");
             Assert.notNull(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -65,9 +66,9 @@ public class OrderBiz implements IOrderBiz {
             Assert.notNull(platformOrder.getPayment(), "实付金额不能为空");
             Assert.notNull(platformOrder.getPayType(), "支付类型不能为空");
             Assert.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
-            for (int i =0;i<shopOrders.size();i++){
+            for (int i = 0; i < shopOrders.size(); i++) {
                 JSONObject shopOrderJson = shopOrders.getJSONObject(i);
-                ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.toJSONString(),ShopOrder.class);
+                ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.toJSONString(), ShopOrder.class);
                 Assert.notNull(shopOrder.getChannelCode(), "渠道编码不能为空");
                 Assert.notNull(shopOrder.getPlatformCode(), "来源平台编码不能为空");
                 Assert.notNull(shopOrder.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -78,9 +79,9 @@ public class OrderBiz implements IOrderBiz {
                 Assert.notNull(shopOrder.getUserId(), "会员id不能为空");
                 Assert.notNull(shopOrder.getStatus(), "订单状态不能为空");
                 JSONArray orderItems = shopOrderJson.getJSONArray("orderItems");
-                for (int j =0;j<orderItems.size();i++){
+                for (int j = 0; j < orderItems.size(); i++) {
                     JSONObject orderItemJson = orderItems.getJSONObject(i);
-                    OrderItem orderItem = JSONObject.parseObject(orderItemJson.toJSONString(),OrderItem.class);
+                    OrderItem orderItem = JSONObject.parseObject(orderItemJson.toJSONString(), OrderItem.class);
                     Assert.notNull(orderItem.getChannelCode(), "渠道编码不能为空");
                     Assert.notNull(orderItem.getPlatformCode(), "来源平台编码不能为空");
                     Assert.notNull(orderItem.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -94,34 +95,40 @@ public class OrderBiz implements IOrderBiz {
                 }
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("参数校验报错: " + e.getMessage());
-            throw new  TrcException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION,"参数校验报错: " + e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "参数校验报错: " + e.getMessage());
         }
-        try{
+        try {
             //插入流水
-            for (int i =0;i<shopOrders.size();i++) {
+            for (int i = 0; i < shopOrders.size(); i++) {
                 OrderFlow orderFlow = new OrderFlow();
                 orderFlow.setPlatformOrderCode(platformOrder.getPlatformOrderCode());
                 orderFlow.setShopOrderCode(shopOrders.getJSONObject(i).getString("shopOrderCode"));
                 orderFlow.setType("DEAL");
                 orderFlowService.insert(orderFlow);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("重复提交订单: " + e.getMessage());
             throw new TrcException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单：" + e.getMessage());
         }
         //向数据库中批量插入platformOrder
         platformOrderService.insert(platformOrder);
         //业务代码，以店铺为单位拆分
-        for (int i =0;i<shopOrders.size();i++){
-            dealShopOrder(shopOrders.getJSONObject(i),platformOrder);
+        for (int i = 0; i < shopOrders.size(); i++) {
+            dealShopOrder(shopOrders.getJSONObject(i), platformOrder);
         }
     }
 
-    public void dealShopOrder(JSONObject shopOrderJson,PlatformOrder platformOrder)throws Exception{
+    @Override
+    public JSONObject sendOrderInformation() {
+        
+        return null;
+    }
+
+    public void dealShopOrder(JSONObject shopOrderJson, PlatformOrder platformOrder) throws Exception {
         JSONArray orderItems = shopOrderJson.getJSONArray("orderItems");
-        List<OrderItem> orderItemList= orderItems.toJavaList(OrderItem.class);
+        List<OrderItem> orderItemList = orderItems.toJavaList(OrderItem.class);
         //分离一件代发和自采商品
         List<OrderItem> orderItemList1 = new ArrayList<>();//TODO 自采商品,二期处理
         List<OrderItem> orderItemList2 = new ArrayList<>();//一件代发
@@ -133,7 +140,7 @@ public class OrderBiz implements IOrderBiz {
             }
         }
         //匹配供应商，新建仓库级订单，修改orderItem，直接发送订单信息
-        ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.toJSONString(),ShopOrder.class);
+        ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.toJSONString(), ShopOrder.class);
         dealSupplier(orderItemList2, shopOrder, platformOrder);
         shopOrderService.insert(shopOrder);
     }

@@ -13,6 +13,79 @@ import java.util.Date;
  * Created by Ding on 2017/6/21.
  */
 public class OrderItem {
+
+    public OrderItem(){
+
+    }
+
+    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, Long categoryId, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, Long price, Long marketPrice, Long promotionPrice, Long customsPrice, Long transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, Boolean isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, Long postDiscount, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, Long totalFee, Long payment, Long totalWeight, Long adjustFee, Byte status, String afterSalesStatus, String complaintsStatus, Long refundFee, Integer catServiceRate, String picPath, String outerIid, String outerSkuId, Boolean subStock, Integer dlytmplId, String supplierName, Long priceTax, String promotionTags, String objType, String type, Double taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
+        this.warehouseOrderCode = warehouseOrderCode;
+        this.shopOrderCode = shopOrderCode;
+        this.platformOrderCode = platformOrderCode;
+        this.channelCode = channelCode;
+        this.platformCode = platformCode;
+        this.warehouseId = warehouseId;
+        this.warehouseName = warehouseName;
+        this.categoryId = categoryId;
+        this.shopId = shopId;
+        this.shopName = shopName;
+        this.userId = userId;
+        this.spuCode = spuCode;
+        this.skuCode = skuCode;
+        this.supplierSkuCode = supplierSkuCode;
+        this.skuStockId = skuStockId;
+        this.itemNo = itemNo;
+        this.barCode = barCode;
+        this.itemName = itemName;
+        this.price = price;
+        this.marketPrice = marketPrice;
+        this.promotionPrice = promotionPrice;
+        this.customsPrice = customsPrice;
+        this.transactionPrice = transactionPrice;
+        this.num = num;
+        this.sendNum = sendNum;
+        this.skuPropertiesName = skuPropertiesName;
+        this.refundId = refundId;
+        this.isOversold = isOversold;
+        this.shippingType = shippingType;
+        this.bindOid = bindOid;
+        this.logisticsCompany = logisticsCompany;
+        this.invoiceNo = invoiceNo;
+        this.postDiscount = postDiscount;
+        this.discountPromotion = discountPromotion;
+        this.discountCouponShop = discountCouponShop;
+        this.discountCouponPlatform = discountCouponPlatform;
+        this.discountFee = discountFee;
+        this.totalFee = totalFee;
+        this.payment = payment;
+        this.totalWeight = totalWeight;
+        this.adjustFee = adjustFee;
+        this.status = status;
+        this.afterSalesStatus = afterSalesStatus;
+        this.complaintsStatus = complaintsStatus;
+        this.refundFee = refundFee;
+        this.catServiceRate = catServiceRate;
+        this.picPath = picPath;
+        this.outerIid = outerIid;
+        this.outerSkuId = outerSkuId;
+        this.subStock = subStock;
+        this.dlytmplId = dlytmplId;
+        this.supplierName = supplierName;
+        this.priceTax = priceTax;
+        this.promotionTags = promotionTags;
+        this.objType = objType;
+        this.type = type;
+        this.taxRate = taxRate;
+        this.params = params;
+        this.createTime = createTime;
+        this.payTime = payTime;
+        this.consignTime = consignTime;
+        this.updateTime = updateTime;
+        this.timeoutActionTime = timeoutActionTime;
+        this.endTime = endTime;
+        this.specNatureInfo = specNatureInfo;
+    }
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -120,15 +193,19 @@ public class OrderItem {
     private Long postDiscount;
 
     // 促销优惠分摊,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountPromotion;
 
     // 店铺优惠卷分摊金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountCouponShop;
 
     // 平台优惠卷优惠分摊,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountCouponPlatform;
 
     // 子订单级订单优惠金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountFee;
 
     // 应付金额,单位/分
@@ -143,6 +220,7 @@ public class OrderItem {
     private Long totalWeight;
 
     // 手工调整金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long adjustFee;
 
     // 订单状态:1-待出库 2-部分出库 3-全部出库
@@ -179,6 +257,7 @@ public class OrderItem {
     private String supplierName;
 
     // 商品税费,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long priceTax;
 
     // 订单应用促销标签

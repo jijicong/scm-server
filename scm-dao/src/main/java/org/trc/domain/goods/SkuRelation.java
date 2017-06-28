@@ -36,9 +36,6 @@ public class SkuRelation {
     @FormParam("channelCode")
     private String channelCode;//渠道方编码
 
-    @FormParam("isValid")
-    private String isValid;//是否有效:0-无效,1-有效
-
     public Long getId() {
         return id;
     }
@@ -95,11 +92,4 @@ public class SkuRelation {
         this.channelCode = channelCode;
     }
 
-    public String getIsValid() {
-        return isValid;
-    }
-
-    public void setIsValid(String isValid) {
-        this.isValid = isValid;
-    }
 }

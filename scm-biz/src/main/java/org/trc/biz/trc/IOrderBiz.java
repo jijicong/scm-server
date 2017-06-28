@@ -9,10 +9,14 @@ import org.trc.domain.order.ShopOrder;
 import java.util.List;
 
 /**
+ * 订单处理模块
  * Created by ding on 2017/6/23.
  */
 public interface IOrderBiz {
 
 
     void splitOrder(JSONArray shopOrders, PlatformOrder platformOrder)throws Exception;
+
+
+    JSONObject sendOrderInformation();
 }

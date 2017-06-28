@@ -1,6 +1,6 @@
-package org.trc.service.util;
+package org.trc.service.impl.jingdong;
 
-import org.trc.domain.util.JingDongArea;
+import org.trc.domain.jingDong.JingDongArea;
 import org.trc.service.IBaseService;
 
 import java.util.List;
@@ -19,4 +19,9 @@ public interface IJingdongAreaService extends IBaseService<JingDongArea,Long>{
      */
     List<JingDongArea> selectAreaByName(Map<String,Object> map);
 
+    String addressUpdate() throws Exception;
+
+    JingDongArea selectProvinceByName(String name);
+
+    JingDongArea selectCityByName(String name);
 }

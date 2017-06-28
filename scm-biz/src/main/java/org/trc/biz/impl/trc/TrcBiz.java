@@ -18,16 +18,20 @@ import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.TrcException;
+import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.model.BrandToTrc;
 import org.trc.model.CategoryToTrc;
 import org.trc.model.PropertyToTrc;
 import org.trc.model.ResultModel;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
+import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.util.GuidUtil;
 import org.trc.util.HttpClientUtil;
 import org.trc.util.MD5;
+import org.trc.util.Pagenation;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,6 +55,9 @@ public class TrcBiz implements ITrcBiz {
 
     @Autowired
     private ISkuRelationService skuRelationService;
+
+    @Autowired
+    private IExternalItemSkuService externalItemSkuService;
 
     @Value("${trc.key}")
     private String TRC_KEY;
@@ -81,7 +88,7 @@ public class TrcBiz implements ITrcBiz {
     private static final String UNDER_LINE = "_";
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResultModel sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
         Assert.notNull(brand.getAlise(), "品牌别名不能为空");
         Assert.notNull(brand.getBrandCode(), "品牌编码不能为空");
@@ -133,7 +140,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResultModel sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
         Assert.notNull(property.getSort(), "属性排序不能为空");
         Assert.notNull(property.getName(), "属性名称不能为空");
@@ -190,7 +197,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResultModel sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         if (action.equals(TrcActionTypeEnum.ADD_CATEGORY) || action.equals(TrcActionTypeEnum.EDIT_CATEGORY)
                 || action.equals(TrcActionTypeEnum.STOP_CATEGORY)) {
@@ -206,7 +213,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
 
         //TODO 判断石头通知，暂时觉得都得通知
@@ -245,7 +252,7 @@ public class TrcBiz implements ITrcBiz {
 
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
         Assert.notNull(externalItemSkuList, "更新列表不能为空");
 
@@ -298,6 +305,24 @@ public class TrcBiz implements ITrcBiz {
                 noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         requestFlowService.insert(requestFlow);
         return resultModel;
+    }
+
+    @Override
+    public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) {
+
+        Example example = new Example(ExternalItemSku.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (queryModel.getSupplierCode() != null) {
+            criteria.andEqualTo("supplierCode",queryModel.getSupplierCode());
+        }
+        if (!StringUtils.isEmpty(queryModel.getSkuCode())) {
+            criteria.andEqualTo("skuCode",queryModel.getSkuCode());
+        }
+        if (!StringUtils.isEmpty(queryModel.getItemName())) {
+            criteria.andEqualTo("itemName",queryModel.getItemName());
+        }
+        example.orderBy("supplierCode").desc();
+        return externalItemSkuService.pagination(example,page,queryModel);
     }
 
 
@@ -412,6 +437,7 @@ public class TrcBiz implements ITrcBiz {
         requestFlowService.insert(requestFlow);
         return resultModel;
     }
+
 
     public static void main(String[] args) {
         try {

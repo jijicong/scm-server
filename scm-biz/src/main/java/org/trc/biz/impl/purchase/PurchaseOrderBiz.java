@@ -343,7 +343,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
         PurchaseOrderAudit purchaseOrderAudit = new PurchaseOrderAudit();
         purchaseOrderAudit.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
-        purchaseOrderAudit.setPurchaseId(purchaseOrder.getId());
+        purchaseOrderAudit.setPurchaseOrderId(purchaseOrder.getId());
         purchaseOrderAudit.setStatus(PurchaseOrderAuditEnum.AUDIT.getCode());  //采购单提交审核，审核表的默认状态，提交审核
         purchaseOrderAudit.setCreateOperator(purchaseOrder.getCreateOperator());
         //purchaseOrder

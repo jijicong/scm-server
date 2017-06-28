@@ -51,7 +51,13 @@ public class SupplyConstants {
 
         public static final String SKU_INFORMATION ="skuInformation";//获取单个sku信息
 
-        public static final String ORDER_PROCESSING ="OrderProcessing";//订单处理
+        public static final String ORDER_PROCESSING ="orderProcessing";//订单处理
+
+        public static final String SKURELATION_UPDATE ="skurelation/update";//sku关联信息变更
+
+        public static final String SKUS_LIST = "skusList";//获取自采商品sku列表
+
+        public static final String EXTERNALITEMSKU_LIST = "externalItemSkuList";//获取自采商品skus列表
     }
 
     /**
