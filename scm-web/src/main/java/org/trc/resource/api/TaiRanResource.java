@@ -224,8 +224,9 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public AppResult<String> getOrderList(JSONObject information) {
-        //获取平台订单信息
+        //获取平台订单信息X
         PlatformOrder platformOrder = JSONObject.parseObject(information.getJSONObject("platformOrder").toJSONString(), PlatformOrder.class);
         JSONArray shopOrders = information.getJSONArray("shopOrders");
         try{

@@ -120,15 +120,19 @@ public class OrderItem {
     private Long postDiscount;
 
     // 促销优惠分摊,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountPromotion;
 
     // 店铺优惠卷分摊金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountCouponShop;
 
     // 平台优惠卷优惠分摊,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountCouponPlatform;
 
     // 子订单级订单优惠金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountFee;
 
     // 应付金额,单位/分
@@ -143,6 +147,7 @@ public class OrderItem {
     private Long totalWeight;
 
     // 手工调整金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long adjustFee;
 
     // 订单状态:1-待出库 2-部分出库 3-全部出库
@@ -179,6 +184,7 @@ public class OrderItem {
     private String supplierName;
 
     // 商品税费,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long priceTax;
 
     // 订单应用促销标签

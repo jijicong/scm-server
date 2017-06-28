@@ -1,5 +1,8 @@
 package org.trc.domain.order;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.MoneySerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -56,24 +59,31 @@ public class ShopOrder extends OrderBase{
     private String isDeleted;
 
     // 实付金额,订单最终总额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long payment;
 
     // 各子订单中商品price * num的和，不包括任何优惠信息,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long totalFee;
 
     // 邮费分摊,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long postageFee;
 
     // 促销优惠总金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountPromotion;
 
     // 店铺优惠卷分摊总金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountCouponShop;
 
     // 平台优惠卷分摊总金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountCouponPlatform;
 
     // 促销优惠金额,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long discountFee;
 
     // 交易标题
@@ -83,6 +93,7 @@ public class ShopOrder extends OrderBase{
     private String buyerMessage;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long adjustFee;
 
     // 子订单商品购买数量总数
@@ -101,6 +112,7 @@ public class ShopOrder extends OrderBase{
     private String groupBuyStatus;
 
     // 订单总税费,单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long totalTax;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
