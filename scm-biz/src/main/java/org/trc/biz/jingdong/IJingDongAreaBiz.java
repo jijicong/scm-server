@@ -1,17 +1,15 @@
 package org.trc.biz.jingdong;
 
-import org.trc.domain.util.JingDongArea;
-import org.trc.domain.util.JingDongAreaTreeNode;
-
-import java.util.List;
-import java.util.Map;
-
 /**
  * Created by sone on 2017/6/19.
  */
 public interface IJingDongAreaBiz  {
-
-    List<JingDongAreaTreeNode>  getJingDongAreaTree() throws Exception;
+    /**
+     * 获得京东地址的json 放入缓存中
+     * @return
+     * @throws Exception
+     */
+    void getJingDongAreaTree() throws Exception;
 
     void updateJingDongArea() throws Exception;
 

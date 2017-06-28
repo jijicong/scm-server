@@ -6,7 +6,7 @@
         mapOut.put("where",null);
         mapOut.put("name",null);
     -->
-    <select id="selectAreaByName" resultType="org.trc.domain.util.JingDongArea" parameterType="java.util.Map">
+    <select id="selectAreaByName" resultType="org.trc.domain.jingDong.JingDongArea" parameterType="java.util.Map">
 
         SELECT * from mapping_table
 
@@ -22,6 +22,16 @@
 
         </if>
 
+    </select>
+
+    <!--根据省的名字查询 省的jd编码-->
+    <select id="selectProvinceByName" resultType="org.trc.domain.jingDong.JingDongArea">
+        SELECT jd_code AS jdCode , province FROM mapping_table WHERE province =#{name}  GROUP BY province
+    </select>
+
+    <!--根据市的名字查询 市的jd编码-->
+    <select id="selectCityByName" resultType="org.trc.domain.jingDong.JingDongArea">
+        SELECT jd_code AS jdCode , city FROM mapping_table WHERE city = #{name}  GROUP BY city
     </select>
 
 </mapper>

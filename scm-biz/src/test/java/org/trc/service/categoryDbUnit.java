@@ -4,6 +4,8 @@ import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.domain.category.Category;
@@ -24,7 +26,7 @@ import java.util.List;
  * 4.读取事先准备的预期数据xml并且进行比较
  */
 public class categoryDbUnit extends BaseTest {
-
+    private Logger log = LoggerFactory.getLogger(categoryDbUnit.class);
     @Autowired
     private ICategoryBiz iCategoryBiz;
 
@@ -82,6 +84,7 @@ public class categoryDbUnit extends BaseTest {
         execSql(conn,"delete from serial");
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "category/preUpdateStatusData.xml");
+        //异常流程测试
         Category category=new Category();
         category.setId(2l);
         category.setIsValid(ValidEnum.VALID.getCode());
@@ -90,12 +93,45 @@ public class categoryDbUnit extends BaseTest {
             throw new TestException("测试异常");
         }catch (CategoryException e){
             if(e.getExceptionEnum().equals(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION)){
-                System.out.println("----------update category status pass test---------");
+                log.info("----------分类启停用异常流程测试通过---------");
+            }
+        }
+        //正常流程测试
+        category.setId(3l);
+        category.setIsValid(ValidEnum.VALID.getCode());
+        iCategoryBiz.updateState(category);
+        ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("category/expUpdateStatusData.xml"));
+        assertDataSet(TABLE_CATEGORY,"select * from category where id=3",expResult,conn);
+        log.info("----------分类启停用正常流程测试通过---------");
+    }
+
+    /**
+     * 测试分类关联品牌的正常流程和异常流程
+     */
+    @Test
+    public void testLinkBrand()throws Exception{
+        //删除原数据
+        execSql(conn,"delete from category");
+        execSql(conn,"delete from brand");
+        execSql(conn,"delete from category_brand");
+        prepareData(conn, "category/preLinkBrandData.xml");
+        //测试正常流程
+        iCategoryBiz.linkCategoryBrands(3l,"2",null);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("category/expLinkBrandData.xml"));
+        //测试异常流程假如id为1的brand 停用，这个时候关联会失败
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet("category_brand","select * from category_brand",expResult,conn);
+        log.info("----------分类关联品牌正常流程测试通过---------");
+        try{
+            iCategoryBiz.linkCategoryBrands(3l,"1",null);
+            throw new TestException("测试异常");
+        }catch (CategoryException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION)){
+                 log.info("----------分类关联品牌异常流程测试通过---------");
             }
         }
     }
-
-
 
     /**
      * 从数据库中导出指定表数据到xml文件中
@@ -104,8 +140,8 @@ public class categoryDbUnit extends BaseTest {
     @Test
     public void exportData() throws Exception {
         List<String> tableNameList = new ArrayList<>();
-        tableNameList.add("category");
-        exportData(tableNameList, "");
+        tableNameList.add("category_brand");
+        exportData(tableNameList, "category_brand");
     }
 
     /**

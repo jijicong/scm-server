@@ -1,6 +1,5 @@
-package org.trc.domain.util;
+package org.trc.domain.jingDong;
 
-import java.lang.ref.SoftReference;
 import java.util.List;
 
 /**
