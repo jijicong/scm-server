@@ -1,9 +1,14 @@
 package org.trc.domain.order;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Ding on 2017/6/21.
@@ -54,7 +59,7 @@ public class WarehouseOrder {
     private String userId;
 
     // 订单状态:1-待出库 2-部分出库 3-全部出库
-    private Byte status;
+    private String status;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
     private Long adjustFee;
@@ -91,6 +96,37 @@ public class WarehouseOrder {
 
     // 更新时间
     private Date updateTime;
+
+    //商品总数量
+    private Integer itemsNum;
+
+    //订单类型:0-自采订单,1-一件代发订单
+    private String orderType;
+
+    //付款时间
+    @Transient
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date payTime;
+
+    //物流公司
+    @Transient
+    private String logisticsCorporation;
+    //物流运单号
+    @Transient
+    private String waybillNumber;
+
+    /**
+     * 订单商品明细列表
+     */
+    private List<OrderItem> orderItemList;
+
+    public List<OrderItem> getOrderItemList() {
+        return orderItemList;
+    }
+
+    public void setOrderItemList(List<OrderItem> orderItemList) {
+        this.orderItemList = orderItemList;
+    }
 
     /**
      * 返回主键
@@ -306,14 +342,14 @@ public class WarehouseOrder {
      * 返回订单状态:1-待出库 2-部分出库 3-全部出库
      * @return 订单状态:1-待出库 2-部分出库 3-全部出库
      */
-    public Byte getStatus() {
+    public String getStatus() {
         return status;
     }
 
     /**
      * 设置订单状态:1-待出库 2-部分出库 3-全部出库
      */
-    public void setStatus(Byte status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -495,5 +531,45 @@ public class WarehouseOrder {
      */
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getItemsNum() {
+        return itemsNum;
+    }
+
+    public void setItemsNum(Integer itemsNum) {
+        this.itemsNum = itemsNum;
+    }
+
+    public String getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
+    }
+
+    public Date getPayTime() {
+        return payTime;
+    }
+
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
+    }
+
+    public String getLogisticsCorporation() {
+        return logisticsCorporation;
+    }
+
+    public void setLogisticsCorporation(String logisticsCorporation) {
+        this.logisticsCorporation = logisticsCorporation;
+    }
+
+    public String getWaybillNumber() {
+        return waybillNumber;
+    }
+
+    public void setWaybillNumber(String waybillNumber) {
+        this.waybillNumber = waybillNumber;
     }
 }

@@ -9,14 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.order.*;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.WarehouseOrderForm;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.order.IPlatformOrderService;
 import org.trc.service.order.IShopOrderService;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
+import org.trc.service.order.IWarehouseOrderService;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -38,6 +38,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IPlatformOrderService platformOrderService;
     @Autowired
     private IOrderItemService orderItemService;
+    @Autowired
+    private IWarehouseOrderService warehouseOrderService;
 
     @Override
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
@@ -52,7 +54,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getStatus())) {//订单状态
             criteria.andEqualTo("status", queryModel.getStatus());
         }
-        List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel);
+        List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel, ZeroToNineEnum.ZERO.getCode());
         List<String> platformOrderCodeList = new ArrayList<String>();
         for(PlatformOrder platformOrder: platformOrderList){
             platformOrderCodeList.add(platformOrder.getPlatformOrderCode());
@@ -64,6 +66,39 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(page.getResult().size() > 0){
             handlerOrderInfo(page, platformOrderList);
         }
+        return page;
+    }
+
+    @Override
+    public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page) {
+        AssertUtil.notNull(form, "查询供应商订单分页参数不能为空");
+        Example example = new Example(WarehouseOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
+            criteria.andEqualTo("orderType", form.getOrderType());
+        }
+        if(StringUtils.isNotBlank(form.getStatus())){//状态
+            criteria.andEqualTo("status", form.getStatus());
+        }
+        if(StringUtils.isNotBlank(form.getWarehouseOrderCode())){//供应商订单编号
+            criteria.andEqualTo("warehouseOrderCode", form.getWarehouseOrderCode());
+        }
+        if(StringUtils.isNotBlank(form.getSupplierName())){//供应商名称
+            criteria.andEqualTo("supplierName", form.getSupplierName());
+        }
+        if(StringUtils.isNotBlank(form.getShopOrderCode())){//店铺订单号
+            criteria.andEqualTo("shopOrderCode", form.getShopOrderCode());
+        }
+        List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(form, ZeroToNineEnum.ONE.getCode());
+        List<String> platformOrderCodeList = new ArrayList<String>();
+        for(PlatformOrder platformOrder: platformOrderList){
+            platformOrderCodeList.add(platformOrder.getPlatformOrderCode());
+        }
+        if(platformOrderCodeList.size() > 0){
+            criteria.andIn("platformOrderCode", platformOrderCodeList);
+        }
+        page = warehouseOrderService.pagination(example, page, form);
+        handlerWarehouseOrderInfo(page, platformOrderList);
         return page;
     }
 
@@ -98,24 +133,40 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return shopOrderList;
     }
 
+    @Override
+    public WarehouseOrder queryWarehouseOrdersDetail(String warehouseOrderCode) {
+        AssertUtil.notBlank(warehouseOrderCode, "查询仓库订单明细参数仓库订单编码不能为空");
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
+        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+        AssertUtil.notNull(warehouseOrder, "根据仓库订单编码查询仓库订单为空");
+
+
+        return null;
+    }
+
     /**
      * 获取平台订单编码列表条件
      * @param queryModel
+     * @param flag 0-店铺订单分页查询,1-仓库订单分页查询
      * @return
      */
-    private List<PlatformOrder> getPlatformOrdersConditon(ShopOrderForm queryModel){
+    private List<PlatformOrder> getPlatformOrdersConditon(QueryModel queryModel, String flag){
         Example example = new Example(PlatformOrder.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andLike("type", queryModel.getPlatformOrderCode());
-        if (StringUtil.isNotEmpty(queryModel.getReceiverName())) {//收货人姓名
-            criteria.andLike("receiverName", "%" + queryModel.getReceiverName() + "%");
-        }
         if (StringUtil.isNotEmpty(queryModel.getStartDate())) {//支付开始日期
             criteria.andGreaterThanOrEqualTo("payTime", DateUtils.parseDate(queryModel.getStartDate()));
         }
         if (StringUtil.isNotEmpty(queryModel.getEndDate())) {//支付截止日期
             Date endDate = DateUtils.parseDate(queryModel.getEndDate());
             criteria.andLessThan("payTime", DateUtils.addDays(endDate, 1));
+        }
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
+            ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
+            criteria.andLike("type", shopOrderForm.getPlatformOrderCode());
+            if (StringUtil.isNotEmpty(shopOrderForm.getReceiverName())) {//收货人姓名
+                criteria.andLike("receiverName", "%" + shopOrderForm.getReceiverName() + "%");
+            }
         }
         return platformOrderService.selectByExample(example);
     }
@@ -161,4 +212,29 @@ public class ScmOrderBiz implements IScmOrderBiz {
         shopOrder.setRecords(orderExts);
     }
 
+    private void handlerWarehouseOrderInfo(Pagenation<WarehouseOrder> page, List<PlatformOrder> platformOrderList){
+        List<PlatformOrder> platformOrders = new ArrayList<PlatformOrder>();
+        if(platformOrderList.size() > 0){
+            platformOrders = platformOrderList;
+        }else{
+            List<String> platformOrdersCodes = new ArrayList<String>();
+            for(WarehouseOrder warehouseOrder: page.getResult()){
+                platformOrdersCodes.add(warehouseOrder.getPlatformCode());
+            }
+            if(platformOrdersCodes.size() > 0){
+                Example example = new Example(PlatformOrder.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andIn("platformOrderCode", platformOrdersCodes);
+                platformOrders = platformOrderService.selectByExample(example);
+            }
+        }
+        //设置仓库订单支付时间
+        for(WarehouseOrder warehouseOrder: page.getResult()){
+            for(PlatformOrder platformOrder: platformOrders){
+                if(StringUtils.equals(warehouseOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
+                    warehouseOrder.setPayTime(platformOrder.getPayTime());
+                }
+            }
+        }
+    }
 }
