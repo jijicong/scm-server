@@ -16,6 +16,75 @@ import java.util.Date;
 @Table(name = "platform_order")
 public class PlatformOrder {
 
+    public PlatformOrder(){
+
+    }
+
+    public PlatformOrder(String platformOrderCode, String channelCode, String platformCode, String userId, String userName, Integer itemNum, String payType, Long payment, Long pointsFee, Long totalFee, Long adjustFee, Long postageFee, Long totalTax, Byte needInvoice, String invoiceName, String invoiceType, String invoiceMain, String receiverProvince, String receiverCity, String receiverDistrict, String receiverAddress, String receiverZip, String receiverName, String receiverIdCard, String receiverIdCardFront, String receiverIdCardBack, String receiverPhone, String receiverMobile, String buyerArea, String zitiMemo, String zitiAddr, Byte anony, Integer obtainPointFee, Integer realPointFee, String stepTradeStatus, Long stepPaidFee, Byte isClearing, String cancelReason, String cancelStatus, String status, Byte isVirtual, String ip, Byte type, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String shippingType, String platformType, Byte rateStatus, String couponCode, String groupBuyStatus, String isDeleted, Date createTime, Date payTime, Date consignTime, Date receiveTime, Date updateTime, Date timeoutActionTime, Date endTime, String payBillId) {
+        this.platformOrderCode = platformOrderCode;
+        this.channelCode = channelCode;
+        this.platformCode = platformCode;
+        this.userId = userId;
+        this.userName = userName;
+        this.itemNum = itemNum;
+        this.payType = payType;
+        this.payment = payment;
+        this.pointsFee = pointsFee;
+        this.totalFee = totalFee;
+        this.adjustFee = adjustFee;
+        this.postageFee = postageFee;
+        this.totalTax = totalTax;
+        this.needInvoice = needInvoice;
+        this.invoiceName = invoiceName;
+        this.invoiceType = invoiceType;
+        this.invoiceMain = invoiceMain;
+        this.receiverProvince = receiverProvince;
+        this.receiverCity = receiverCity;
+        this.receiverDistrict = receiverDistrict;
+        this.receiverAddress = receiverAddress;
+        this.receiverZip = receiverZip;
+        this.receiverName = receiverName;
+        this.receiverIdCard = receiverIdCard;
+        this.receiverIdCardFront = receiverIdCardFront;
+        this.receiverIdCardBack = receiverIdCardBack;
+        this.receiverPhone = receiverPhone;
+        this.receiverMobile = receiverMobile;
+        this.buyerArea = buyerArea;
+        this.zitiMemo = zitiMemo;
+        this.zitiAddr = zitiAddr;
+        this.anony = anony;
+        this.obtainPointFee = obtainPointFee;
+        this.realPointFee = realPointFee;
+        this.stepTradeStatus = stepTradeStatus;
+        this.stepPaidFee = stepPaidFee;
+        this.isClearing = isClearing;
+        this.cancelReason = cancelReason;
+        this.cancelStatus = cancelStatus;
+        this.status = status;
+        this.isVirtual = isVirtual;
+        this.ip = ip;
+        this.type = type;
+        this.discountPromotion = discountPromotion;
+        this.discountCouponShop = discountCouponShop;
+        this.discountCouponPlatform = discountCouponPlatform;
+        this.discountFee = discountFee;
+        this.shippingType = shippingType;
+        this.platformType = platformType;
+        this.rateStatus = rateStatus;
+        this.couponCode = couponCode;
+        this.groupBuyStatus = groupBuyStatus;
+        this.isDeleted = isDeleted;
+        this.createTime = createTime;
+        this.payTime = payTime;
+        this.consignTime = consignTime;
+        this.receiveTime = receiveTime;
+        this.updateTime = updateTime;
+        this.timeoutActionTime = timeoutActionTime;
+        this.endTime = endTime;
+        this.payBillId = payBillId;
+    }
+
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +112,6 @@ public class PlatformOrder {
     private String payType;
 
     // 实付金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
     private Long payment;
 
     // 积分抵扣金额,单位/分

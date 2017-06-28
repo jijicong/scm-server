@@ -3,7 +3,9 @@ package org.trc.biz.trc;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
+import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.model.ResultModel;
+import org.trc.util.Pagenation;
 
 import java.util.List;
 
@@ -72,4 +74,10 @@ public interface ITrcBiz {
      * @return
      */
     ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception;
+
+
+    /**
+     *
+     */
+    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel,Pagenation<ExternalItemSku> page);
 }

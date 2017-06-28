@@ -8,22 +8,32 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
+import org.trc.biz.goods.ISkuBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
 import org.trc.biz.trc.IOrderBiz;
+import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.SkuRelation;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.order.*;
+import org.trc.enums.TrcActionTypeEnum;
 import org.trc.exception.TrcException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
+import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.order.*;
 import org.trc.util.*;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -50,6 +60,12 @@ public class TaiRanResource {
     private ICategoryBiz categoryBiz;
 
     @Resource
+    private ITrcBiz trcBiz;
+
+    @Resource
+    private ISkuBiz skuBiz;
+
+    @Resource
     private IRequestFlowService requestFlowService;
 
     @Resource
@@ -57,7 +73,6 @@ public class TaiRanResource {
 
     @Resource
     private IOrderBiz orderBiz;
-
 
 
     /**
@@ -224,17 +239,18 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public AppResult<String> getOrderList(JSONObject information) {
-        //获取平台订单信息X
+
+
+        //获取平台订单信息
         PlatformOrder platformOrder = JSONObject.parseObject(information.getJSONObject("platformOrder").toJSONString(), PlatformOrder.class);
         JSONArray shopOrders = information.getJSONArray("shopOrders");
-        try{
-            orderBiz.splitOrder(shopOrders,platformOrder);
-        }catch (TrcException e){
+        try {
+            orderBiz.splitOrder(shopOrders, platformOrder);
+        } catch (TrcException e) {
             logger.error(e.getMessage());
             return ResultUtil.createFailAppResult("平台订单" + platformOrder.getPlatformOrderCode() + e.getMessage());
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("订单处理报错: " + e.getMessage());
             return ResultUtil.createFailAppResult("平台订单" + platformOrder.getPlatformOrderCode() + " 订单处理报错：" + e.getMessage());
         }
@@ -243,14 +259,98 @@ public class TaiRanResource {
 
     }
 
+    @Resource
+    private ISkuRelationService skuRelationService;
 
-    public AppResult<String> getSkuRelation(){
-        return null;
+    @Resource
+    private IExternalItemSkuService externalItemSkuService;
+
+    @Resource
+    private IItemsService itemsService;
+
+
+    //批量新增关联关系，待修改
+    @POST
+    @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<String> getSkuRelationBatch(JSONObject information) {
+        String action = information.getString("action");
+        JSONArray relations = information.getJSONArray("relations");
+        AssertUtil.notBlank(action, "动作参数不能为空");
+        AssertUtil.notNull(relations, "关联列表不能为空");
+        List<SkuRelation> skuRelationList = relations.toJavaList(SkuRelation.class);
+        Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)&&action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)&&action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD);
+        AssertUtil.isTrue(flag,"动作参数类型错误");
+       try{
+           //删除关联关系
+           if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)) {
+               for (SkuRelation skuRelation: skuRelationList){
+                   Example example = new Example(SkuRelation.class);
+                   Example.Criteria criteria = example.createCriteria();
+                   criteria.andEqualTo("skuCode",skuRelation.getSkuCode());
+                   criteria.andEqualTo("channelSkuCode",skuRelation.getChannelSkuCode());
+                   skuRelationService.deleteByExample(example);
+               }
+           }
+           //一件代发商品批量关联
+           if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)){
+               Iterator<SkuRelation> iter = skuRelationList.iterator();
+               while (iter.hasNext()){
+                   SkuRelation skuRelation = iter.next();
+                   ExternalItemSku externalItemSku = new ExternalItemSku();
+                   externalItemSku.setSkuCode(skuRelation.getSkuCode());
+                   externalItemSku = externalItemSkuService.selectOne(externalItemSku);
+                   skuRelation.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
+                   skuRelation.setSupplierCode(externalItemSku.getSupplierCode());
+                   skuRelationService.insert(skuRelation);
+               }
+           }
+           //自采商品批量关联
+           if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)){
+               Iterator<SkuRelation> iter = skuRelationList.iterator();
+               while(iter.hasNext()){
+                   SkuRelation skuRelation = iter.next();
+                   Items items = new Items();
+                   items.setSpuCode(skuRelation.getSpuCode());
+                   items = itemsService.selectOne(items);
+                   //TODO自采商品表结构未完善，后续再写
+               }
+           }
+       }catch (Exception e){
+           return ResultUtil.createFailAppResult("关联信息插入失败：" + e.getMessage());
+       }
+        return ResultUtil.createSucssAppResult("关联信息插入成功","");
     }
 
 
-    public AppResult<String> getSkuRelationBatch(){
-        return null;
+
+    //自采商品信息查询
+    @GET
+    @Path(SupplyConstants.TaiRan.SKUS_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm,@BeanParam Pagenation<Skus> pagenation){
+        try {
+            return ResultUtil.createSucssAppResult("查询列表信息成功", skuBiz.skusPage(skusForm,pagenation));
+        } catch (Exception e) {
+            logger.error("查询sku列表信息报错: " + e.getMessage());
+            return ResultUtil.createFailAppResult("查询sku列表信息报错：" + e.getMessage());
+        }
+    }
+
+
+
+    //一件代发商品信息查询
+    @GET
+    @Path(SupplyConstants.TaiRan.EXTERNALITEMSKU_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form,@BeanParam Pagenation<ExternalItemSku> page){
+        try {
+            return ResultUtil.createSucssAppResult("查询列表信息成功", trcBiz.externalItemSkuPage(form,page));
+        } catch (Exception e) {
+            logger.error("查询externalItemSku列表信息报错: " + e.getMessage());
+            return ResultUtil.createFailAppResult("查询externalItemSku列表信息报错：" + e.getMessage());
+        }
     }
 
 }

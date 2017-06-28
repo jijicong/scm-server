@@ -13,7 +13,47 @@ import java.util.List;
 /**
  * Created by Ding on 2017/6/21.
  */
-public class ShopOrder extends OrderBase{
+public class ShopOrder extends OrderBase {
+
+    public ShopOrder() {
+
+    }
+
+    public ShopOrder(String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, String platformType, Long shopId, String shopName, String userId, String dlytmplIds, String status, String isDeleted, Long payment, Long totalFee, Long postageFee, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String title, String buyerMessage, Long adjustFee, Integer itemNum, Long totalWeight, Boolean rateStatus, Boolean isPartConsign, String groupBuyStatus, Long totalTax, Date createTime, Date consignTime, Date updateTime, String shopMemo, String tradeMemo) {
+        this.shopOrderCode = shopOrderCode;
+        this.platformOrderCode = platformOrderCode;
+        this.channelCode = channelCode;
+        this.platformCode = platformCode;
+        this.platformType = platformType;
+        this.shopId = shopId;
+        this.shopName = shopName;
+        this.userId = userId;
+        this.dlytmplIds = dlytmplIds;
+        this.status = status;
+        this.isDeleted = isDeleted;
+        this.payment = payment;
+        this.totalFee = totalFee;
+        this.postageFee = postageFee;
+        this.discountPromotion = discountPromotion;
+        this.discountCouponShop = discountCouponShop;
+        this.discountCouponPlatform = discountCouponPlatform;
+        this.discountFee = discountFee;
+        this.title = title;
+        this.buyerMessage = buyerMessage;
+        this.adjustFee = adjustFee;
+        this.itemNum = itemNum;
+        this.totalWeight = totalWeight;
+        this.rateStatus = rateStatus;
+        this.isPartConsign = isPartConsign;
+        this.groupBuyStatus = groupBuyStatus;
+        this.totalTax = totalTax;
+        this.createTime = createTime;
+        this.consignTime = consignTime;
+        this.updateTime = updateTime;
+        this.shopMemo = shopMemo;
+        this.tradeMemo = tradeMemo;
+    }
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,11 +80,6 @@ public class ShopOrder extends OrderBase{
     // 店铺名称
     private String shopName;
 
-    // 供应链编号
-    private String supplierCode;
-
-    // 供应商名称
-    private String supplierName;
 
     // 会员id
     private String userId;
@@ -304,37 +339,6 @@ public class ShopOrder extends OrderBase{
         this.shopName = shopName == null ? null : shopName.trim();
     }
 
-    /**
-     * 返回供应链编号
-     *
-     * @return 供应链编号
-     */
-    public String getSupplierCode() {
-        return supplierCode;
-    }
-
-    /**
-     * 设置供应链编号
-     */
-    public void setSupplierCode(String supplierCode) {
-        this.supplierCode = supplierCode == null ? null : supplierCode.trim();
-    }
-
-    /**
-     * 返回供应商名称
-     *
-     * @return 供应商名称
-     */
-    public String getSupplierName() {
-        return supplierName;
-    }
-
-    /**
-     * 设置供应商名称
-     */
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName == null ? null : supplierName.trim();
-    }
 
     /**
      * 返回会员id
