@@ -1,4 +1,4 @@
-package org.trc.domain.util;
+package org.trc.domain.jingDong;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
