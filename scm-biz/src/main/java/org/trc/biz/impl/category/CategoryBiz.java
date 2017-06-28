@@ -24,9 +24,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 
-import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.*;
 
 /**
@@ -123,7 +121,7 @@ public class CategoryBiz implements ICategoryBiz {
 //                for (Long id : pageIds) {
 //                    criteria.andNotEqualTo("id", id);
 //                }
-                criteria.andNotIn("id",Arrays.asList(pageIds));
+                criteria.andNotIn("id", Arrays.asList(pageIds));
             }
         }
         example.orderBy("updateTime").desc();
@@ -311,6 +309,7 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
         AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
+        categoryLevel(Long.parseLong(categoryBrandForm.getCategoryId()));
         String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
         List<Long> categoryList = new ArrayList<Long>();
         for (String categoryId : categoryIds) {
@@ -488,6 +487,7 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public List<CategoryBrand> queryBrands(Long categoryId) throws Exception {
         AssertUtil.notNull(categoryId, "根据分类Id查询关联品牌,参数categoryId为空");
+        categoryLevel(categoryId);
         CategoryBrand categoryBrand = new CategoryBrand();
         categoryBrand.setCategoryId(categoryId);
         return categoryBrandService.select(categoryBrand);
@@ -496,6 +496,7 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public List<CategoryProperty> queryProperties(Long categoryId) {
         AssertUtil.notNull(categoryId, "根据分类Id查询关联属性,参数categoryId为空");
+        categoryLevel(categoryId);
         CategoryProperty categoryProperty = new CategoryProperty();
         categoryProperty.setCategoryId(categoryId);
         List<CategoryProperty> queryProperties = new ArrayList<>();
@@ -506,6 +507,18 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
         return categoryPropertyService.select(categoryProperty);
+    }
+
+    private void categoryLevel(Long categoryId) {
+        Category linkCategory = new Category();
+        linkCategory.setId(categoryId);
+        linkCategory = categoryService.selectOne(linkCategory);
+        AssertUtil.notNull(linkCategory, "未查询到该分类");
+        if (linkCategory.getLevel() != 3) {
+            String msg = "操作失败,该分类不属于三级分类";
+            log.error(msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_LINK_LEVEL_EXCEPTION, msg);
+        }
     }
 
     /**
@@ -519,6 +532,7 @@ public class CategoryBiz implements ICategoryBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
+        categoryLevel(categoryId);
         //删除的BrandId
         List<Long> delBrandIdsList = new ArrayList<>();
         List<CategoryBrand> delCategoryBrands = new ArrayList<>();
@@ -613,6 +627,7 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public List<CategoryProperty> queryCategoryProperty(Long categoryId) throws Exception {
         AssertUtil.notNull(categoryId, "查询分类关联属性categoryId为空");
+        categoryLevel(categoryId);
         Example example = new Example(CategoryProperty.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("categoryId", categoryId);
@@ -668,8 +683,9 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void linkCategoryProperties(Long categoryId, String jsonDate) throws Exception {
-        AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
+        AssertUtil.notNull(categoryId, "分类关联属性categoryId为空");
         AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
+        categoryLevel(categoryId);
         List<TableDate> tableDates = JSONArray.parseArray(jsonDate, TableDate.class);
         //需要新增的的数据
         List<CategoryProperty> insertProperties = new ArrayList<>();
