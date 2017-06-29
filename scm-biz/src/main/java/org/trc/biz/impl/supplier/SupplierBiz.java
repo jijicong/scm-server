@@ -59,6 +59,8 @@ public class SupplierBiz implements ISupplierBiz {
     private static final String NORMAL_THREE_CERTIFICATE = "normalThreeCertificate";
     //证件类型:多证合一
     private static final String MULTI_CERTIFICATE_UNION = "multiCertificateUnion";
+    //停用供应商自动拒绝提交审核的申请原因
+    private static final String STOP_SUPPLIER_REJECT_APPLY_REASON = "供应商停用，系统自动驳回";
 
     @Autowired
     private ISupplierService supplierService;
@@ -90,6 +92,8 @@ public class SupplierBiz implements ISupplierBiz {
     private ICategoryService categoryService;
     @Autowired
     private ICategoryBrandService categoryBrandService;
+    @Autowired
+    private IAuditLogService auditLogService;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -306,7 +310,8 @@ public class SupplierBiz implements ISupplierBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand, SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+    public void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
+                               SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplier.getId(), "更新供应商供应商ID不能为空");
         AssertUtil.notNull(supplier.getSupplierCode(), "更新供应商供应商编号不能为空");
         //参数校验
@@ -345,7 +350,7 @@ public class SupplierBiz implements ISupplierBiz {
             _supplier.setSupplierCode(supplier.getSupplierCode());
             _supplier = supplierService.selectOne(_supplier);
             AssertUtil.notNull(_supplier, String.format("根据供应商编码[%s]查询供应商信息为空", supplier.getSupplierCode()));
-            rejectSupplierApply(supplier.getId());
+            rejectSupplierApply(supplier.getId(), requestContext);
         }
     }
 
@@ -1009,7 +1014,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateValid(Long id, String isValid) throws Exception {
+    public void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(id, "供应商启用/停用操作供应商ID不能为空");
         AssertUtil.notBlank(isValid, "供应商启用/停用操作参数isValid不能为空");
         Supplier supplier = new Supplier();
@@ -1028,7 +1033,7 @@ public class SupplierBiz implements ISupplierBiz {
         }
         //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
         if (StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())) {
-            rejectSupplierApply(id);
+            rejectSupplierApply(id, requestContext);
         }
     }
 
@@ -1038,14 +1043,48 @@ public class SupplierBiz implements ISupplierBiz {
      * @param supplierId 供应商ID
      * @throws Exception
      */
-    private void rejectSupplierApply(Long supplierId) throws Exception {
+    private void rejectSupplierApply(Long supplierId, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(supplierId, "供应商启/停用更新供应商申请审批状态参数供应商编码supplierCode不能为空");
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("supplierId", supplierId);
-        map.put("status", AuditStatusEnum.REJECT.getCode());//审核驳回
-        map.put("status2", AuditStatusEnum.COMMIT.getCode());//提交审核
-        supplierApplyAuditService.updateSupplierApplyAuditStatus(map);
+        SupplierApply supplierApply = new SupplierApply();
+        supplierApply.setSupplierId(supplierId);
+        supplierApply.setStatus(AuditStatusEnum.COMMIT.getCode());//提交审核
+        List<SupplierApply> supplierApplyList = supplierApplyService.select(supplierApply);
+        Date sysDate = Calendar.getInstance().getTime();
+        for(SupplierApply supplierApply2: supplierApplyList){
+            supplierApply2.setStatus(AuditStatusEnum.REJECT.getCode());//审核驳回
+            supplierApply2.setAuditOpinion(STOP_SUPPLIER_REJECT_APPLY_REASON);
+            supplierApply2.setUpdateTime(sysDate);
+            int count = supplierApplyService.updateByPrimaryKey(supplierApply2);
+            if(count == 0){
+                String msg = String.format("停用ID为[%s]的供应商自动驳回供应商对应的申请%s失败", supplierId, JSONObject.toJSON(supplierApply2));
+                log.error(msg);
+                throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
+            }else{
+                String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+                AssertUtil.notBlank(userId, "记录供应商停用自动驳回供应商申请审批获取登录用户ID为空");
+                writeRejectSupplierApplyLog(supplierApply2, userId);
+            }
+        }
     }
 
+    /**
+     * 写驳回供应商申请操作日起至
+     * @param supplierApply
+     * @param userId
+     */
+    private void writeRejectSupplierApplyLog(SupplierApply supplierApply, String userId){
+        Date sysDate = Calendar.getInstance().getTime();
+        AuditLog auditLog = new AuditLog();
+        auditLog.setApplyCode(supplierApply.getApplyCode());
+        auditLog.setOperation(supplierApply.getStatus().toString());
+        auditLog.setOperator(userId);
+        auditLog.setOperateTime(sysDate);
+        int count = auditLogService.insert(auditLog);
+        if (count == 0) {
+            String msg = String.format("根据申请编号[%s]保存审核信息日志失败", supplierApply.getApplyCode());
+            log.error(msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_AUDIT_LOG_INSERT_EXCEPTION, msg);
+        }
+    }
 
 }

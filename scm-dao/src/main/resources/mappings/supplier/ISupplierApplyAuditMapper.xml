@@ -121,11 +121,13 @@
 
     <update id="updateSupplierApplyAuditStatus" parameterType="java.util.Map">
         UPDATE
-        apply_for_supplier
+          apply_for_supplier
         SET
-        status = #{status}
+          status = #{status},
+          audit_opinion = #{auditPpinion},
+          update_time = #{updateTime},
         WHERE
-        supplier_id = #{supplierId} AND status = #{status2}
+          supplier_id = #{supplierId} AND status = #{status2}
     </update>
 
 

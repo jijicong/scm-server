@@ -1,7 +1,9 @@
 package org.trc.biz.order;
 
+import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.Pagenation;
@@ -42,5 +44,12 @@ public interface IScmOrderBiz {
      * @return
      */
     WarehouseOrder queryWarehouseOrdersDetail(String warehouseOrderCode);
+
+    /**
+     * 平台订单列表查询
+     * @param form
+     * @return
+     */
+    List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form);
 
 }

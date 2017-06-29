@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.order.*;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.service.order.IOrderItemService;
@@ -148,6 +149,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode()));
         warehouseOrder.setOrderItemList(orderItemList);
         return warehouseOrder;
+    }
+
+    @Override
+    public List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form) {
+        AssertUtil.notNull(form, "查询平台订单列表参数对象不能为空");
+        PlatformOrder platformOrder = new PlatformOrder();
+        BeanUtils.copyProperties(form, platformOrder);
+        return platformOrderService.select(platformOrder);
     }
 
     /**

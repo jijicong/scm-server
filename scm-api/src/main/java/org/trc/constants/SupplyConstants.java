@@ -707,6 +707,8 @@ public class SupplyConstants {
         public static final String WAREHOUSE_ORDER_LIST = "warehouseOrders";
         //根据店铺订单编码查询仓库订单详情路径
         public static final String WAREHOUSE_ORDER_DETAIL = "warehouseOrder/warehouseOrderCode";
+        //平台订单列表查询路径
+        public static final String PLATFORM_ORDER_LIST = "platformOrders";
     }
 
 }

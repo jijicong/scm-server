@@ -67,16 +67,16 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
                                   @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
-                                  @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
-        supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo);
+                                  @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
+        supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 
     @POST
     @Path(SupplyConstants.Supply.Supplier.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
-        supplierBiz.updateValid(id, isValid);
+    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+        supplierBiz.updateValid(id, isValid, requestContext);
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 

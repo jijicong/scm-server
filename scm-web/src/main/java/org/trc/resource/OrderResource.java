@@ -6,6 +6,7 @@ import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
@@ -52,6 +53,13 @@ public class OrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<ShopOrder>> queryWarehouseOrdersDetail(@PathParam("warehouseOrderCode") String warehouseOrderCode){
         return ResultUtil.createSucssAppResult("根据仓库订单编码查询仓库订单成功", scmOrderBiz.queryWarehouseOrdersDetail(warehouseOrderCode));
+    }
+
+    @GET
+    @Path(SupplyConstants.Order.PLATFORM_ORDER_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<ShopOrder>> queryPlatformOrders(@BeanParam PlatformOrderForm form){
+        return ResultUtil.createSucssAppResult("根据条件查询平台订单成功", scmOrderBiz.queryPlatformOrders(form));
     }
 
 

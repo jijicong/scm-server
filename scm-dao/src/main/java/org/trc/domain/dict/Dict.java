@@ -33,7 +33,7 @@ public class Dict extends CommonDO {
     private String value;
 
     @Transient
-    private String typeName;//字典类型名称
+    private String typeName;//字典类型名称 b
 
     public Long getId() {
         return id;

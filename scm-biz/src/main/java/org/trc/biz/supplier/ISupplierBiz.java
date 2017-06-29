@@ -61,7 +61,7 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception;
+                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 查询供应商代理分类列表
@@ -100,7 +100,7 @@ public interface ISupplierBiz {
      * @param isValid
      * @throws Exception
      */
-    void updateValid(Long id, String isValid) throws Exception;
+    void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
 
     /**
      *检查分类品牌启停用状态
