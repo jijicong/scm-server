@@ -1,5 +1,9 @@
 package org.trc.biz.jingdong;
 
+import org.trc.domain.jingDong.JingDongAreaTreeNode;
+
+import java.util.List;
+
 /**
  * Created by sone on 2017/6/19.
  */
@@ -9,7 +13,7 @@ public interface IJingDongAreaBiz  {
      * @return
      * @throws Exception
      */
-    void getJingDongAreaTree() throws Exception;
+    List<JingDongAreaTreeNode> getJingDongAreaTree() throws Exception;
 
     void updateJingDongArea() throws Exception;
 

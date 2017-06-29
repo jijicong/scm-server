@@ -1,5 +1,6 @@
 package org.trc.service.impl.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.trc.domain.jingDong.JingDongArea;
 import org.trc.domain.util.Area;
@@ -129,19 +130,101 @@ public class LocationUtilService extends BaseService<Area,Long> implements ILoca
      * @throws Exception  ------------todo:整合两个地址的适配
      */
     @Override
-    public List<AreaTreeNode> getTreeNodeFromJingDongArea(){
+    public List<AreaTreeNode> getTreeNodeFromJingDongArea(Long parentId, Boolean flag){
+        JingDongArea jingDongArea = new JingDongArea();
+        jingDongArea.setParent(parentId);
+        List<JingDongArea> jingDongAreaList = null;
+        if(parentId==null){
+            Example example = new Example(JingDongArea.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIsNull("parent");
+            jingDongAreaList = iJingdongAreaService.selectByExample(example);
+        }else {
+            jingDongAreaList = iJingdongAreaService.select(jingDongArea);
+        }
+        //List<JingDongArea> jingDongAreaList = iJingdongAreaService.select(jingDongArea);
+        List<AreaTreeNode> areaTreeNodeList = new ArrayList<AreaTreeNode>();
+        for(JingDongArea jingDongArea2: jingDongAreaList){
+            AreaTreeNode areaTreeNode = new AreaTreeNode();
+            areaTreeNode.setId(jingDongArea2.getJdCode());
+            if(StringUtils.isNotBlank(jingDongArea2.getProvince()))
+                areaTreeNode.setText(jingDongArea2.getProvince());
+            if(StringUtils.isNotBlank(jingDongArea2.getCity()))
+                areaTreeNode.setText(jingDongArea2.getCity());
+            if(StringUtils.isNotBlank(jingDongArea2.getDistrict()))
+                areaTreeNode.setText(jingDongArea2.getDistrict());
+            if(StringUtils.isNotBlank(jingDongArea2.getTown()))
+                areaTreeNode.setText(jingDongArea2.getTown());
+            areaTreeNode.setIsleaf(false);
+            if(flag){
+                List<AreaTreeNode> areaTreeNodeList2 = getAreaNodes(jingDongArea2.getId(), flag);
+                if(areaTreeNodeList2.size() > 0){
+                    areaTreeNode.setChildren(areaTreeNodeList2);
+                }else{
+                    areaTreeNode.setIsleaf(true);
+                }
+            }else{
+                jingDongArea.setParent(jingDongArea2.getId());
+                List<JingDongArea> jingDongAreaList2 = iJingdongAreaService.select(jingDongArea);
+                if(jingDongAreaList2.size() > 0){
+                    areaTreeNode.setIsleaf(true);
+                }
+            }
+            areaTreeNodeList.add(areaTreeNode);
+        }
+        return areaTreeNodeList;
+    }
 
-        Example example = new Example(JingDongArea.class);
-        Example.Criteria criteria = example.createCriteria();
+    /*private List<JingDongArea> getAreaNodes(Long parentId, Boolean flag){
+        JingDongArea jingDongArea = new JingDongArea();
+        jingDongArea.setParent(parentId);
+        List<JingDongArea> jingDongAreaList = iJingdongAreaService.select(jingDongArea);
+        if(flag){
+            for(JingDongArea jingDongArea2: jingDongAreaList){
+                List<JingDongArea> jingDongAreaList2 = getAreaNodes(jingDongArea2.getId(), flag);
+                jingDongArea2.set
 
-        criteria.andNotEqualTo("province","");
-        //查询所有的省
-        List<JingDongArea> provinceList = iJingdongAreaService.selectByExample(example);
-
-
+            }
+        }else{
+            return jingDongAreaList;
+        }
         return null;
+    }*/
 
-
+    private List<AreaTreeNode> getAreaNodes(Long parentId, Boolean flag){
+        JingDongArea jingDongArea = new JingDongArea();
+        jingDongArea.setParent(parentId);
+        List<JingDongArea> jingDongAreaList = iJingdongAreaService.select(jingDongArea);
+        List<AreaTreeNode> areaTreeNodeList = new ArrayList<AreaTreeNode>();
+        for(JingDongArea jingDongArea2: jingDongAreaList){
+            AreaTreeNode areaTreeNode = new AreaTreeNode();
+            areaTreeNode.setId(jingDongArea2.getJdCode());
+            if(StringUtils.isNotBlank(jingDongArea2.getProvince()))
+                areaTreeNode.setText(jingDongArea2.getProvince());
+            if(StringUtils.isNotBlank(jingDongArea2.getCity()))
+                areaTreeNode.setText(jingDongArea2.getCity());
+            if(StringUtils.isNotBlank(jingDongArea2.getDistrict()))
+                areaTreeNode.setText(jingDongArea2.getDistrict());
+            if(StringUtils.isNotBlank(jingDongArea2.getTown()))
+                areaTreeNode.setText(jingDongArea2.getTown());
+            areaTreeNode.setIsleaf(false);
+            if(flag){
+                List<AreaTreeNode> areaTreeNodeList2 = getAreaNodes(jingDongArea2.getId(), flag);
+                if(areaTreeNodeList2.size() > 0){
+                    areaTreeNode.setChildren(areaTreeNodeList2);
+                }else{
+                    areaTreeNode.setIsleaf(true);
+                }
+            }else{
+                jingDongArea.setParent(jingDongArea2.getId());
+                List<JingDongArea> jingDongAreaList2 = iJingdongAreaService.select(jingDongArea);
+                if(jingDongAreaList2.size() > 0){
+                    areaTreeNode.setIsleaf(true);
+                }
+            }
+            areaTreeNodeList.add(areaTreeNode);
+        }
+        return areaTreeNodeList;
     }
 
 }
