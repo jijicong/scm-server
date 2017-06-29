@@ -205,11 +205,11 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
 
     }
 
-    public void  getJingDongAreaTree() throws Exception {
+    public List<JingDongAreaTreeNode>  getJingDongAreaTree() throws Exception {
 
         List<JingDongAreaTreeNode> jingDongAreaTreeNodeList = recursion1();
-
-        try {
+        return jingDongAreaTreeNodeList;
+        /*try {
 
             String jsonNodes = JSON.toJSONString(jingDongAreaTreeNodeList);
             boolean  boo = RedisUtil.set("jdArea",jsonNodes);
@@ -224,7 +224,7 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
             String msg = "京东地址初始化失败";
             logger.error(msg);
 
-        }
+        }*/
 
     }
 
@@ -256,7 +256,7 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
             jingDongAreaTreeNode.setId(provinceArea.getId());
             jingDongAreaTreeNode.setAreaCode(provinceArea.getAreaCode());
             jingDongAreaTreeNode.setIsleaf(false);
-            jingDongAreaTreeNode.setJdCode(provinceArea.getJdCode());
+           // jingDongAreaTreeNode.setJdCode(provinceArea.getJdCode());
             jingDongAreaTreeNode.setText(provinceArea.getProvince());
 
             Map<String,Object> map = new HashMap<>();
@@ -264,7 +264,7 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
             map.put("where","province");
             map.put("name",provinceArea.getProvince());
 
-            //jingDongAreaTreeNode.setChildren(recursion2(map));
+            jingDongAreaTreeNode.setChildren(recursion2(map));
             jingDongAreaTreeNodes.add(jingDongAreaTreeNode);
         }
         return jingDongAreaTreeNodes;
@@ -314,7 +314,7 @@ public class JingDongAreaBiz implements IJingDongAreaBiz {
                 jingDongAreaTreeNode.setIsleaf(true);
             }
 
-            jingDongAreaTreeNode.setJdCode(area.getJdCode());
+            //jingDongAreaTreeNode.setJdCode(area.getJdCode());
 
             if(innerMap==null){
                 jingDongAreaTreeNode.setChildren(null);

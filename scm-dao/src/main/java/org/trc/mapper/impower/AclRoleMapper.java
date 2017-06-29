@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface AclRoleMapper extends BaseMapper<AclRole>{
 
-    int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception;
+    int findNumFromRoleAndAccreditInfoByRoleId(Long roleId);
 
-    List<AclRole> findRoleList(List<Long> roleIds) throws Exception;
+    List<AclRole> findRoleList(List<Long> roleIds);
 }

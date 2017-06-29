@@ -53,7 +53,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     private ISerialUtilService serialUtilService;
 
     @Override
-    public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) throws Exception {
+    public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page){
 
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
@@ -72,7 +72,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public List<Warehouse> findWarehouseValid() throws Exception {
+    public List<Warehouse> findWarehouseValid(){
         Warehouse warehouse = new Warehouse();
         warehouse.setIsValid(ValidEnum.VALID.getCode());
         List<Warehouse> warehouseList = warehouseService.select(warehouse);
@@ -84,7 +84,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveWarehouse(Warehouse warehouse) throws Exception {
+    public void saveWarehouse(Warehouse warehouse){
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
@@ -101,7 +101,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public Warehouse findWarehouseByName(String name) throws Exception {
+    public Warehouse findWarehouseByName(String name){
 
         AssertUtil.notBlank(name,"根据渠道名称查询渠道的参数name为空");
         Warehouse warehouse = new Warehouse();
@@ -111,7 +111,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public void updateWarehouseState(Warehouse warehouse) throws Exception {
+    public void updateWarehouseState(Warehouse warehouse){
 
         AssertUtil.notNull(warehouse,"仓库管理模块修改仓库信息失败，仓库信息为空");
         Warehouse updateWarehouse = new Warehouse();
@@ -132,7 +132,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public Warehouse findWarehouseById(Long id) throws Exception {
+    public Warehouse findWarehouseById(Long id){
 
         AssertUtil.notNull(id,"根据ID查询仓库参数ID为空");
         Warehouse warehouse = new Warehouse();
@@ -144,7 +144,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public void updateWarehouse(Warehouse warehouse) throws Exception {
+    public void updateWarehouse(Warehouse warehouse){
 
         AssertUtil.notNull(warehouse.getId(),"根据ID修改仓库参数ID为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());

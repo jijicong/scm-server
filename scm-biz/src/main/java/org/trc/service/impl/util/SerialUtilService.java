@@ -32,6 +32,18 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
           return  iserialMapper.selectNumber(name);
     }
 
+    public String generateRandomCode(int length,String flag,String ...names){ //需要其它的前缀，直接在后面添加
+        int number = this.selectNumber(flag);//获得将要使用的流水号
+        String code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
+        int assess= this.updateSerialByName(flag,number);//修改流水的长度
+        if (assess < 1) {
+            String msg = CommonUtil.joinStr("保存编号数据库操作失败").toString();
+            log.error(msg);
+            throw new ConfigException(ExceptionEnum.DATABASE_SAVE_SERIAL_EXCEPTION, msg);
+        }
+        return code;
+    }
+
     public String generateCode(int length,String ...names){ //需要其它的前缀，直接在后面添加
         int number = this.selectNumber(names[0]);//获得将要使用的流水号
         String code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
@@ -43,6 +55,7 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
         }
         return code;
     }
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int updateSerialByName(String name,int number) {

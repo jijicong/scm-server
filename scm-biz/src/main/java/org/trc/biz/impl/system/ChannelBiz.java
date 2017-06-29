@@ -45,7 +45,7 @@ public class ChannelBiz implements IChannelBiz {
     private ISerialUtilService serialUtilService;
 
     @Override
-    public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) throws Exception {
+    public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
         if(!StringUtils.isBlank(form.getName())) {
@@ -64,15 +64,17 @@ public class ChannelBiz implements IChannelBiz {
     }
 
 
-    public Channel findChannelByName(String name) throws Exception{
+    public Channel findChannelByName(String name){
+
         AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
         Channel channel=new Channel();
         channel.setName(name);
         return channelService.selectOne(channel);
+
     }
 
     @Override
-    public List<Channel> queryChannels(ChannelForm channelForm) throws Exception {
+    public List<Channel> queryChannels(ChannelForm channelForm){
         Channel channel = new Channel();
         if(StringUtils.isEmpty(channelForm.getIsValid())){
             channel.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -83,7 +85,7 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveChannel(Channel channel) throws Exception {
+    public void saveChannel(Channel channel){
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
@@ -102,7 +104,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
-    public void updateChannel(Channel channel) throws Exception {
+    public void updateChannel(Channel channel){
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
         Channel tmp = findChannelByName(channel.getName());
@@ -123,7 +125,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    public Channel findChannelById(Long id) throws Exception {
+    public Channel findChannelById(Long id){
 
         AssertUtil.notNull(id, "根据ID查询渠道明细,参数ID不能为空");
         Channel channel = new Channel();
@@ -135,7 +137,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    public void updateChannelState(Channel channel) throws Exception {
+    public void updateChannelState(Channel channel){
 
         AssertUtil.notNull(channel,"渠道管理模块修改渠道信息失败，仓库信息为空");
         Channel updateChannel=new Channel();

@@ -1,7 +1,6 @@
 package org.trc.resource;
 
 import org.springframework.stereotype.Component;
-import org.springframework.test.web.servlet.ResultActions;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.purchase.PurchaseDetail;
@@ -21,7 +20,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by sone on 2017/5/25.

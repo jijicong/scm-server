@@ -1,10 +1,13 @@
 package org.trc.service.impl.util;
 
 import org.springframework.stereotype.Service;
+import org.trc.domain.jingDong.JingDongArea;
 import org.trc.domain.util.Area;
 import org.trc.domain.util.AreaTreeNode;
+import org.trc.service.impl.jingdong.IJingdongAreaService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.impl.BaseService;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 import java.util.List;
@@ -14,6 +17,8 @@ import java.util.List;
  */
 @Service("locationUtilService")
 public class LocationUtilService extends BaseService<Area,Long> implements ILocationUtilService {
+
+    private IJingdongAreaService iJingdongAreaService;
 
     public List<AreaTreeNode> getTreeNodeFromLocation() throws Exception{
          //1.获得location
@@ -117,4 +122,26 @@ public class LocationUtilService extends BaseService<Area,Long> implements ILoca
         List<AreaTreeNode> nodeList = node.getChildren();
         return  nodeList;
     }
+
+    /**
+     * 获取京东的地址
+     * @return
+     * @throws Exception  ------------todo:整合两个地址的适配
+     */
+    @Override
+    public List<AreaTreeNode> getTreeNodeFromJingDongArea(){
+
+        Example example = new Example(JingDongArea.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        criteria.andNotEqualTo("province","");
+        //查询所有的省
+        List<JingDongArea> provinceList = iJingdongAreaService.selectByExample(example);
+
+
+        return null;
+
+
+    }
+
 }

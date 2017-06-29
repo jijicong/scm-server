@@ -15,8 +15,8 @@ public interface IAclRoleService extends IBaseService<AclRole,Long>{
      * @return 授权用户的数量
      * @throws Exception
      */
-    int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception;
+    int findNumFromRoleAndAccreditInfoByRoleId(Long roleId);
 
-    List<AclRole> findRoleList(List<Long> roleIds) throws Exception;
+    List<AclRole> findRoleList(List<Long> roleIds);
 }
 

@@ -89,7 +89,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) throws Exception {
+    public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page){
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("name", form.getName());
@@ -108,12 +108,12 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public List<AclUserAccreditInfo> findPurchase() throws Exception {
+    public List<AclUserAccreditInfo> findPurchase(){
         return userAccreditInfoService.findPurchase();
     }
 
     @Override
-    public List<AclUserAddPageDate> handleRolesStr(List<AclUserAccreditInfo> list) throws Exception {
+    public List<AclUserAddPageDate> handleRolesStr(List<AclUserAccreditInfo> list){
         List<AclUserAddPageDate> pageDateRoleList = new ArrayList<>();
         Long[] userIds = new Long[list.size()];
         int temp = 0;
@@ -144,7 +144,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(aclUserAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         AclUserAccreditInfo updateAclUserAccreditInfo = new AclUserAccreditInfo();
@@ -173,7 +173,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Deprecated
-    public int checkUserByName(Long id, String name) throws Exception {
+    public int checkUserByName(Long id, String name){
         AssertUtil.notNull(id, "根据用户授权的用户名称查询角色的参数id为空");
         AssertUtil.notBlank(name, "根据用户授权的用户名称查询角色的参数name为空");
         Example example = new Example(AclUserAccreditInfo.class);
@@ -190,7 +190,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public List<Channel> findChannel() throws Exception {
+    public List<Channel> findChannel(){
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
@@ -207,7 +207,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * roleType为空时查询所有角色
      */
     @Override
-    public List<AclRole> findChannelOrWholeJur(String roleType) throws Exception {
+    public List<AclRole> findChannelOrWholeJur(String roleType){
         Example example = new Example(AclRole.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isBlank(roleType)) {
@@ -223,7 +223,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
+    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext){
         checkUserAddPageDate(userAddPageDate);
         if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
@@ -288,7 +288,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
         }
     }
 
-    private void checkUserAddPageDate(AclUserAddPageDate userAddPageDate) throws Exception {
+    private void checkUserAddPageDate(AclUserAddPageDate userAddPageDate) {
         AssertUtil.notBlank(userAddPageDate.getPhone(), "用户手机号未输入");
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
@@ -304,7 +304,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public AclUserAddPageDate findUserAccreditInfoById(Long id) throws Exception {
+    public AclUserAddPageDate findUserAccreditInfoById(Long id){
         AssertUtil.notNull(id, "根据授权Id的查询用户userAccreditInfo，参数Id为空");
         AclUserAddPageDate userAddPageDate;
         AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
@@ -341,7 +341,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception {
+    public void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext){
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
@@ -429,7 +429,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public String checkPhone(String phone) throws Exception {
+    public String checkPhone(String phone){
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
         UserDO userDO = userDoService.getUserDo(phone);
         Example example = new Example(AclUserAccreditInfo.class);
@@ -454,7 +454,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public String[] purchaseRole(Long id) throws Exception {
+    public String[] purchaseRole(Long id){
 
         AssertUtil.notNull(id, "采购组查询输入参数Id为空");
         //查询到用户
@@ -485,7 +485,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public String[] checkRoleValid(Long id) throws Exception {
+    public String[] checkRoleValid(Long id) {
         AssertUtil.notNull(id, "获取用户授权ID为空");
         Example example = new Example(AclUserAccreditRoleRelation.class);
         Example.Criteria criteria = example.createCriteria();

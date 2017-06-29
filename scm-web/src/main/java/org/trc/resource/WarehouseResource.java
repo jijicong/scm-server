@@ -30,14 +30,14 @@ public class WarehouseResource {
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page) throws Exception{
+    public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page){
         return warehouseBiz.warehousePage(form,page);
     }
     //根据仓库名查询仓库
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)  //<WarehouseBiz>
-    public AppResult findWarehouseByName(@QueryParam("name") String name) throws Exception{
+    public AppResult findWarehouseByName(@QueryParam("name") String name){
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
         return  ResultUtil.createSucssAppResult("查询仓库成功", warehouseBiz.findWarehouseByName(name)==null ? null :"1");
     }
@@ -46,7 +46,7 @@ public class WarehouseResource {
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext) throws Exception{
+    public AppResult saveChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
         warehouseBiz.saveWarehouse(warehouse);
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
@@ -54,7 +54,7 @@ public class WarehouseResource {
     @PUT
     @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateChannel(@BeanParam Warehouse warehouse) throws  Exception{
+    public AppResult updateChannel(@BeanParam Warehouse warehouse){
         warehouseBiz.updateWarehouse(warehouse);
         return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
     }
@@ -62,7 +62,7 @@ public class WarehouseResource {
     @POST
     @Path(SupplyConstants.Warehouse.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateWarehouseState(@BeanParam Warehouse warehouse) throws Exception{
+    public AppResult updateWarehouseState(@BeanParam Warehouse warehouse){
         warehouseBiz.updateWarehouseState(warehouse);
         return ResultUtil.createSucssAppResult("状态修改成功","");
     }
@@ -70,14 +70,14 @@ public class WarehouseResource {
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Warehouse> findWarehouseById(@PathParam("id") Long id) throws Exception{
+    public AppResult<Warehouse> findWarehouseById(@PathParam("id") Long id){
         return ResultUtil.createSucssAppResult("查询仓库成功", warehouseBiz.findWarehouseById(id));
     }
     //
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE_VALID)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Warehouse>> findWarehouseValid() throws Exception{
+    public AppResult<List<Warehouse>> findWarehouseValid() {
         return ResultUtil.createSucssAppResult("查询有效的仓库成功",warehouseBiz.findWarehouseValid());
     }
 }

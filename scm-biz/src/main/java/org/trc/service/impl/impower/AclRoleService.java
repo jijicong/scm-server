@@ -19,12 +19,12 @@ public class AclRoleService extends BaseService<AclRole,Long> implements IAclRol
     private AclRoleMapper aclRoleMapper;
 
     @Override
-    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception{
+    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId){
         return aclRoleMapper.findNumFromRoleAndAccreditInfoByRoleId(roleId);
     }
 
     @Override
-    public List<AclRole> findRoleList(List<Long> roleIds) throws Exception {
+    public List<AclRole> findRoleList(List<Long> roleIds){
         return aclRoleMapper.findRoleList(roleIds);
     }
 

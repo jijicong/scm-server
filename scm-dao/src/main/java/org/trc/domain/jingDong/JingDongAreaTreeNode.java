@@ -7,10 +7,10 @@ import java.util.List;
  */
 public class JingDongAreaTreeNode {
 
-    private Long id; //这里的id相当于Location中的code
+    private Long id; //这里的id相当于jingDongArea中的jdcode
     private String text;//Location中的 province city district
     private String areaCode;
-    private String jdCode;
+    //private String jdCode;
     private boolean isleaf;
     private List<JingDongAreaTreeNode> children;//子节点
 
@@ -36,14 +36,6 @@ public class JingDongAreaTreeNode {
 
     public void setAreaCode(String areaCode) {
         this.areaCode = areaCode;
-    }
-
-    public String getJdCode() {
-        return jdCode;
-    }
-
-    public void setJdCode(String jdCode) {
-        this.jdCode = jdCode;
     }
 
     public boolean isIsleaf() {

@@ -20,14 +20,14 @@ public interface IChannelBiz {
      * @param page  分页信息
      * @return  分页信息及当前页面的数据
      */
-    Pagenation<Channel> channelPage(ChannelForm form,Pagenation<Channel> page) throws Exception;
+    Pagenation<Channel> channelPage(ChannelForm form,Pagenation<Channel> page);
 
     /**
      * 根据渠道的name查询
      * @param name 渠道
      * @return  渠道
      */
-    Channel findChannelByName(String name) throws Exception;
+    Channel findChannelByName(String name) ;
 
     /**
      * 渠道列表查询
@@ -35,13 +35,13 @@ public interface IChannelBiz {
      * @return
      * @throws Exception
      */
-    List<Channel> queryChannels(ChannelForm channelForm) throws Exception;
+    List<Channel> queryChannels(ChannelForm channelForm);
     
     /**
      *保存渠道
      * @return 整数改变
      */
-    void saveChannel(Channel channel) throws Exception;
+    void saveChannel(Channel channel);
 
     /**
      * 更新渠道
@@ -50,7 +50,7 @@ public interface IChannelBiz {
      * @return 整数改变
      * @throws Exception
      */
-    void updateChannel(Channel channel) throws Exception;
+    void updateChannel(Channel channel) ;
 
     /**
      * 根据id查询渠道
@@ -58,7 +58,7 @@ public interface IChannelBiz {
      * @return 渠道实例
      * @throws Exception
      */
-    Channel findChannelById(Long id) throws Exception;
+    Channel findChannelById(Long id) ;
 
     /**
      * 渠道状态修改
@@ -66,7 +66,7 @@ public interface IChannelBiz {
      * @return
      * @throws Exception
      */
-    void updateChannelState(Channel channel) throws Exception;
+    void updateChannelState(Channel channel);
 
 
 }

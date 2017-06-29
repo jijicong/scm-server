@@ -14,4 +14,6 @@ public interface ISerialUtilService extends IBaseService<Serial,Long> {
 
     String generateCode(int length,String ...names);
 
+    String generateRandomCode(int length,String flag,String ...names);
+
 }

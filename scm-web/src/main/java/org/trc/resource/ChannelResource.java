@@ -29,7 +29,7 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Channel> channelPage(@BeanParam ChannelForm form, @BeanParam Pagenation<Channel> page) throws Exception{
+    public Pagenation<Channel> channelPage(@BeanParam ChannelForm form, @BeanParam Pagenation<Channel> page){
         return channelBiz.channelPage(form,page);
     }
 
@@ -37,7 +37,7 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findChannelByName(@QueryParam("name") String name) throws Exception{
+    public AppResult findChannelByName(@QueryParam("name") String name){
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
         return  ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.findChannelByName(name)==null ? null :"1");
     }
@@ -46,7 +46,7 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult queryChannels(@BeanParam ChannelForm channelForm) throws Exception{
+    public AppResult queryChannels(@BeanParam ChannelForm channelForm) {
         return  ResultUtil.createSucssAppResult("查询渠道列表成功", channelBiz.queryChannels(channelForm));
     }
 
@@ -55,7 +55,7 @@ public class ChannelResource {
     @Path(SupplyConstants.Channel.CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveChannel(@BeanParam Channel channel,@Context ContainerRequestContext requestContext) throws Exception{
+    public AppResult saveChannel(@BeanParam Channel channel,@Context ContainerRequestContext requestContext){
         channelBiz.saveChannel(channel);
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
@@ -64,7 +64,7 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Channel> findChannelById(@PathParam("id") Long id) throws Exception{
+    public AppResult<Channel> findChannelById(@PathParam("id") Long id){
         return ResultUtil.createSucssAppResult("查询渠道成功", channelBiz.findChannelById(id));
     }
 
@@ -72,7 +72,7 @@ public class ChannelResource {
     @PUT
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateChannel(@BeanParam  Channel channel) throws  Exception{
+    public AppResult updateChannel(@BeanParam  Channel channel){
         channelBiz.updateChannel(channel);
         return  ResultUtil.createSucssAppResult("修改渠道信息成功","");
     }
@@ -81,7 +81,7 @@ public class ChannelResource {
     @POST
     @Path(SupplyConstants.Channel.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateChannelState(@BeanParam Channel channel) throws Exception{
+    public AppResult updateChannelState(@BeanParam Channel channel){
         channelBiz.updateChannelState(channel);
        return ResultUtil.createSucssAppResult("状态修改成功","");
     }

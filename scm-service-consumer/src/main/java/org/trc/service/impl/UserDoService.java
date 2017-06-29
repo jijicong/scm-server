@@ -23,7 +23,7 @@ public class UserDoService implements IUserDoService {
     private UserService userService;
 
     @Override
-    public UserDO getUserDo(String phone) throws Exception {
+    public UserDO getUserDo(String phone) {
         UserDO userDO;
         try {
             userDO = userService.getUserDO(QueryType.Phone, phone);
