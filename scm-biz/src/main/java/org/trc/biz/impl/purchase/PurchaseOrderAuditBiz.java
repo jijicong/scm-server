@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
 import org.trc.domain.System.Warehouse;
@@ -29,16 +30,15 @@ import org.trc.service.purchase.IPurchaseOrderAuditService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
+import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by sone on 2017/6/20.
@@ -74,23 +74,49 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         map.put("auditStatus", form.getPurchaseOrderAuditStatus());
         map.put("purchaseOrderCode", form.getPurchaseOrderCode());
         map.put("purchaseType",form.getPurchaseType());
+
+        SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.NORMAL_DATE_FORMAT);
+        if(!StringUtils.isBlank(form.getEndDate())){
+            Date date = sdf.parse(form.getEndDate());
+            date =DateUtils.addDays(date,2);
+            form.setEndDate(sdf.format(date));
+        }
+
         map.put("endDate",form.getEndDate());
         map.put("startDate",form.getStartDate());
         map.put("channelCode",channelCode);
         List<PurchaseOrderAddAudit> pageDateList = purchaseOrderAuditService.selectPurchaseOrderAuditList(map);
-
         iUserNameUtilService.handleUserName(pageDateList);
-        if(pageDateList==null || pageDateList.size()==0){
+        if(CollectionUtils.isEmpty(pageDateList)){
             return page;
         }
-        selectAssignmentWarehouseName(pageDateList);
-        selectAssignmentPurchaseGroupName(pageDateList);
+        //selectAssignmentWarehouseName(pageDateList);
+        //selectAssignmentPurchaseGroupName(pageDateList);
+        _renderPurchaseOrders(pageDateList);
         page.setResult(pageDateList);
         int count = purchaseOrderAuditService.selectCountAuditPurchaseOrder(map);
         page.setTotalCount(count);
         return page;
 
     }
+    private void  _renderPurchaseOrders(List<PurchaseOrderAddAudit> purchaseOrderList){
+
+        for(PurchaseOrder purchaseOrder : purchaseOrderList){
+            //赋值采购组名称
+            PurchaseGroup paramGroup = new PurchaseGroup();
+            paramGroup.setCode(purchaseOrder.getPurchaseGroupCode());
+            PurchaseGroup entityGroup = purchaseGroupService.selectOne(paramGroup);
+            purchaseOrder.setPurchaseGroupName(entityGroup.getName());
+            //赋值仓库名称
+            Warehouse warehouse = new Warehouse();
+            warehouse.setCode(purchaseOrder.getWarehouseCode());
+            Warehouse entityWarehouse = warehouseService.selectOne(warehouse);
+            purchaseOrder.setWarehouseName(entityWarehouse.getName());
+
+        }
+
+    }
+
 
     //为仓库名称赋值
     private void selectAssignmentWarehouseName(List<PurchaseOrderAddAudit> purchaseOrderList)throws Exception {
@@ -100,7 +126,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
             warehouseArray[i] = purchaseOrderList.get(i).getWarehouseCode();
         }
         List<Warehouse> warehouseList = warehouseService.selectWarehouseNames(warehouseArray);
-        if(warehouseList == null){
+        if(CollectionUtils.isEmpty(warehouseList)){
             String msg = "根据仓库编码,查询仓库失败";
             logger.error(msg);
             throw  new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_QUERY_EXCEPTION, msg);
@@ -123,7 +149,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         }
 
         List<PurchaseGroup> purchaseGroupList = purchaseGroupService.selectPurchaseGroupNames(purchaseGroupArray);
-        if(purchaseGroupList == null){
+        if(CollectionUtils.isEmpty(purchaseGroupList)){
             String msg = "根据采购组编码,查询采购组失败";
             logger.error(msg);
             throw  new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_QUERY_EXCEPTION, msg);

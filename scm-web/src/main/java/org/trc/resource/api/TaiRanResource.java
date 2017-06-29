@@ -2,7 +2,6 @@ package org.trc.resource.api;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.txframework.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -16,24 +15,15 @@ import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
-import org.trc.domain.goods.Items;
-import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.order.*;
-import org.trc.enums.TrcActionTypeEnum;
 import org.trc.exception.TrcException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
-import org.trc.service.config.IRequestFlowService;
-import org.trc.service.goods.IExternalItemSkuService;
-import org.trc.service.goods.IItemsService;
-import org.trc.service.goods.ISkuRelationService;
-import org.trc.service.order.*;
 import org.trc.util.*;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -239,7 +229,6 @@ public class TaiRanResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public AppResult<String> getOrderList(JSONObject information) {
 
-
         //获取平台订单信息
         PlatformOrder platformOrder = JSONObject.parseObject(information.getJSONObject("platformOrder").toJSONString(), PlatformOrder.class);
         JSONArray shopOrders = information.getJSONArray("shopOrders");
@@ -258,7 +247,6 @@ public class TaiRanResource {
     }
 
 
-
     //批量新增关联关系（单个也调用此方法），待修改
     @POST
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
@@ -267,23 +255,22 @@ public class TaiRanResource {
     public AppResult<String> getSkuRelationBatch(JSONObject information) {
         String action = information.getString("action");
         JSONArray relations = information.getJSONArray("relations");
-       try{
-           trcBiz.updateRelation(action,relations);
-       }catch (Exception e){
-           return ResultUtil.createFailAppResult("关联信息插入失败：" + e.getMessage());
-       }
-        return ResultUtil.createSucssAppResult("关联信息插入成功","");
+        try {
+            trcBiz.updateRelation(action, relations);
+        } catch (Exception e) {
+            return ResultUtil.createFailAppResult("关联信息插入失败：" + e.getMessage());
+        }
+        return ResultUtil.createSucssAppResult("关联信息插入成功", "");
     }
-
 
 
     //自采商品信息查询
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm,@BeanParam Pagenation<Skus> pagenation){
+    public AppResult<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
-            return ResultUtil.createSucssAppResult("查询列表信息成功", skuBiz.skusPage(skusForm,pagenation));
+            return ResultUtil.createSucssAppResult("查询列表信息成功", skuBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
             logger.error("查询sku列表信息报错: " + e.getMessage());
             return ResultUtil.createFailAppResult("查询sku列表信息报错：" + e.getMessage());
@@ -291,14 +278,13 @@ public class TaiRanResource {
     }
 
 
-
     //一件代发商品信息查询
     @GET
     @Path(SupplyConstants.TaiRan.EXTERNALITEMSKU_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form,@BeanParam Pagenation<ExternalItemSku> page){
+    public AppResult<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) {
         try {
-            return ResultUtil.createSucssAppResult("查询列表信息成功", trcBiz.externalItemSkuPage(form,page));
+            return ResultUtil.createSucssAppResult("查询列表信息成功", trcBiz.externalItemSkuPage(form, page));
         } catch (Exception e) {
             logger.error("查询externalItemSku列表信息报错: " + e.getMessage());
             return ResultUtil.createFailAppResult("查询externalItemSku列表信息报错：" + e.getMessage());

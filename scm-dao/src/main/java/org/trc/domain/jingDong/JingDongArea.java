@@ -28,6 +28,16 @@ public class JingDongArea {
     private String town;
     //'京东编码'
     private String jdCode;
+    //父id
+    private Long parent;
+
+    public Long getParent() {
+        return parent;
+    }
+
+    public void setParent(Long parent) {
+        this.parent = parent;
+    }
 
     public Long getId() {
         return id;

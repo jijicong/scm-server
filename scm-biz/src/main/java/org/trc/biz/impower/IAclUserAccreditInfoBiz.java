@@ -22,7 +22,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param page 分页信息
      * @return 分页信息及当前页面的数据
      */
-    Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) throws Exception;
+    Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
 
     /**
      * 查询拥有采购员角色的用户
@@ -30,7 +30,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return 采购员列表
      * @throws Exception
      */
-    List<AclUserAccreditInfo> findPurchase() throws Exception;
+    List<AclUserAccreditInfo> findPurchase();
 
     /**
      * 修改授权用户的状态
@@ -38,7 +38,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param
      * @throws Exception
      */
-    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
+    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 根据名称查询用户授权信息
@@ -47,7 +47,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return 用户授权信息
      * @throws Exception
      */
-    int checkUserByName(Long id, String name) throws Exception;
+    int checkUserByName(Long id, String name);
 
     /**
      * 处理用户显示页面的角色拼接和用户显示页面的对象的转换
@@ -56,7 +56,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    List<AclUserAddPageDate> handleRolesStr(List<AclUserAccreditInfo> list) throws Exception;
+    List<AclUserAddPageDate> handleRolesStr(List<AclUserAccreditInfo> list);
 
     /**
      * 查询已启用的渠道
@@ -64,7 +64,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    List<Channel> findChannel() throws Exception;
+    List<Channel> findChannel();
 
     /**
      * 查询渠道角色或者全局角色
@@ -72,12 +72,12 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    List<AclRole> findChannelOrWholeJur(String roleType) throws Exception;
+    List<AclRole> findChannelOrWholeJur(String roleType);
 
     /**
      * 新增授权
      */
-    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext) throws Exception;
+    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext);
 
     /**
      * 根据ID查询用户
@@ -86,7 +86,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    AclUserAccreditInfo findUserAccreditInfoById(Long id) throws Exception;
+    AclUserAccreditInfo findUserAccreditInfoById(Long id);
 
     /**
      * 修改授权
@@ -94,7 +94,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param userAddPageDate
      * @throws Exception
      */
-    void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) throws Exception;
+    void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext);
 
     /**
      * 手机号校验
@@ -103,7 +103,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    String checkPhone(String phone) throws Exception;
+    String checkPhone(String phone);
 
     /**
      * 新增时用户姓名是否已经被使用
@@ -115,10 +115,10 @@ public interface IAclUserAccreditInfoBiz {
      * @param id
      * @throws Exception
      */
-    String[] purchaseRole(Long id) throws Exception;
+    String[] purchaseRole(Long id);
 
     /**
      * 查询用户对应用户的起停用状态
      */
-    String[] checkRoleValid (Long id) throws Exception;
+    String[] checkRoleValid (Long id);
 }

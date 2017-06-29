@@ -7,11 +7,13 @@ import org.trc.custom.MoneySerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 
 /**
  * Created by Ding on 2017/6/21.
  */
+@Table(name = "order_item")
 public class OrderItem {
 
     public OrderItem(){

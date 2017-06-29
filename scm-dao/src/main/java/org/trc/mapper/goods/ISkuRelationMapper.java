@@ -1,5 +1,6 @@
 package org.trc.mapper.goods;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.order.OrderItem;
@@ -14,8 +15,6 @@ import java.util.List;
  */
 public interface ISkuRelationMapper extends BaseMapper<SkuRelation> {
 
-    //获取仓库的skuCode
-    List<String> selectSupplierCodeList(List<OrderItem> list) throws Exception;
 
     List<String> selectSkuCodeList(List<ExternalItemSku> list) throws Exception;
 

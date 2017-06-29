@@ -610,6 +610,9 @@ public class SupplyConstants {
         //供应商编码长度
         public static final Integer SUPPLIER_LENGTH = 6;
 
+        //仓库级订单
+        public static final String WAREHOUSE_ORDER = "ORDER";
+
         //SPU名称
         public static final String SPU_NAME = "SPU";
         //SPU长度
