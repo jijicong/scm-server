@@ -5,12 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.txframework.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.trc.IOrderBiz;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.order.*;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.TrcException;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
@@ -68,7 +70,7 @@ public class OrderBiz implements IOrderBiz {
             Assert.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
             for (int i = 0; i < shopOrders.size(); i++) {
                 JSONObject shopOrderJson = shopOrders.getJSONObject(i);
-                ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.toJSONString(), ShopOrder.class);
+                ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.getJSONObject("shopOrder").toJSONString(), ShopOrder.class);
                 Assert.notNull(shopOrder.getChannelCode(), "渠道编码不能为空");
                 Assert.notNull(shopOrder.getPlatformCode(), "来源平台编码不能为空");
                 Assert.notNull(shopOrder.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -79,9 +81,11 @@ public class OrderBiz implements IOrderBiz {
                 Assert.notNull(shopOrder.getUserId(), "会员id不能为空");
                 Assert.notNull(shopOrder.getStatus(), "订单状态不能为空");
                 JSONArray orderItems = shopOrderJson.getJSONArray("orderItems");
-                for (int j = 0; j < orderItems.size(); i++) {
-                    JSONObject orderItemJson = orderItems.getJSONObject(i);
+                for (int j = 0; j < orderItems.size(); j++) {
+                    JSONObject orderItemJson = orderItems.getJSONObject(j);
                     OrderItem orderItem = JSONObject.parseObject(orderItemJson.toJSONString(), OrderItem.class);
+                    Boolean flag = orderItem.getSkuCode().startsWith("SP0") || orderItem.getSkuCode().startsWith("SP1");
+                    Assert.isTrue(flag, "skuCode不符合规范");
                     Assert.notNull(orderItem.getChannelCode(), "渠道编码不能为空");
                     Assert.notNull(orderItem.getPlatformCode(), "来源平台编码不能为空");
                     Assert.notNull(orderItem.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -104,16 +108,20 @@ public class OrderBiz implements IOrderBiz {
             for (int i = 0; i < shopOrders.size(); i++) {
                 OrderFlow orderFlow = new OrderFlow();
                 orderFlow.setPlatformOrderCode(platformOrder.getPlatformOrderCode());
-                orderFlow.setShopOrderCode(shopOrders.getJSONObject(i).getString("shopOrderCode"));
+                orderFlow.setShopOrderCode(shopOrders.getJSONObject(i).getJSONObject("shopOrder").getString("shopOrderCode"));
                 orderFlow.setType("DEAL");
                 orderFlowService.insert(orderFlow);
             }
-        } catch (Exception e) {
+        } catch (DuplicateKeyException e) {
             logger.error("重复提交订单: " + e.getMessage());
             throw new TrcException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单：" + e.getMessage());
         }
         //向数据库中批量插入platformOrder
-        platformOrderService.insert(platformOrder);
+        try {
+            platformOrderService.insert(platformOrder);
+        } catch (Exception e) {
+
+        }
         //业务代码，以店铺为单位拆分
         for (int i = 0; i < shopOrders.size(); i++) {
             dealShopOrder(shopOrders.getJSONObject(i), platformOrder);
@@ -122,7 +130,7 @@ public class OrderBiz implements IOrderBiz {
 
     @Override
     public JSONObject sendOrderInformation() {
-        
+
         return null;
     }
 
@@ -140,7 +148,7 @@ public class OrderBiz implements IOrderBiz {
             }
         }
         //匹配供应商，新建仓库级订单，修改orderItem，直接发送订单信息
-        ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.toJSONString(), ShopOrder.class);
+        ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.getJSONObject("shopOrder").toJSONString(), ShopOrder.class);
         dealSupplier(orderItemList2, shopOrder, platformOrder);
         shopOrderService.insert(shopOrder);
     }
@@ -165,7 +173,7 @@ public class OrderBiz implements IOrderBiz {
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
-            warehouseOrder.setStatus(new Byte("1"));
+            warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
             warehouseOrder.setWarehouseOrderCode(GuidUtil.getNextUid(supplierCodes.get(i) + "_"));
 
             Boolean flag = true;

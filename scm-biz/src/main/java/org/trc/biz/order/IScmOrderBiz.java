@@ -1,7 +1,9 @@
 package org.trc.biz.order;
 
 import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -20,10 +22,25 @@ public interface IScmOrderBiz {
     Pagenation<ShopOrder> shopOrderPage(ShopOrderForm form, Pagenation<ShopOrder> page);
 
     /**
+     * 仓库订单分页查询
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page);
+
+    /**
      *查询商铺订单列表
      * @param form
      * @return
      */
     List<ShopOrder> queryShopOrders(ShopOrderForm form);
+
+    /**
+     *仓库订单编码
+     * @param warehouseOrderCode
+     * @return
+     */
+    WarehouseOrder queryWarehouseOrdersDetail(String warehouseOrderCode);
 
 }

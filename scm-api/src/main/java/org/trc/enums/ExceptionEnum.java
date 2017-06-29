@@ -57,6 +57,8 @@ public enum ExceptionEnum{
     CATEGORY_CATEGORY_UPDATE_EXCEPTION("200110","分类更新异常"),
     CATEGORY_CATEGORY_SAVE_EXCEPTION("200111","分类保存异常"),
     CATEGORY_PROPERTY_DELETE_EXCEPTION("200112","分类关联属性删除异常"),
+    CATEGORY_LINK_LEVEL_EXCEPTION("200113","分类关联异常"),
+
 
 
     SYSTEM_CHANNEL_QUERY_EXCEPTION("000101","渠道查询异常"),
@@ -113,6 +115,9 @@ public enum ExceptionEnum{
     TRC_ITEMS_EXCEPTION("600106","通知商品更改异常"),
     TRC_ORDER_PUSH_EXCEPTION("600107","推送订单模块异常"),
     TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION("600108","一件代发sku更新通知异常"),
+
+
+    JING_DONG_USE_EXCEPTION("1000101","京东地址更新调用异常"),
 
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),

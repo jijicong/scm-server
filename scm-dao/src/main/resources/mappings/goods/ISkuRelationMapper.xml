@@ -4,14 +4,14 @@
 
 
     <select id="selectSupplierCodeList" resultType="java.lang.String">
-        select distinct(supplier_code) from sku_relation a where a.sku_code =
+        select distinct(supplier_code) from sku_relation a where a.sku_code in
         <foreach collection="list" item="orderItems" index="index" open="" close=";" separator=";">
             #{orderItems.skuCode}
         </foreach>
     </select>
 
     <select id="selectSkuCodeList" resultType="java.lang.String">
-        select sku_code from sku_relation a where a.sku_code =
+        select sku_code from sku_relation a where a.sku_code in
         <foreach collection="list" item="externalItemSkus" index="index" open="" close=";" separator=";">
             #{externalItemSkus.skuCode}
         </foreach>
