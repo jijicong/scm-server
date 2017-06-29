@@ -12,6 +12,7 @@ import org.trc.biz.trc.IOrderBiz;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.order.*;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.TrcException;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
@@ -172,7 +173,7 @@ public class OrderBiz implements IOrderBiz {
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
-            warehouseOrder.setStatus(new Byte("1"));
+            warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
             warehouseOrder.setWarehouseOrderCode(GuidUtil.getNextUid(supplierCodes.get(i) + "_"));
 
             Boolean flag = true;

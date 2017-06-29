@@ -39,7 +39,7 @@ public class GetInterfaceJson {
 
         OrderItem orderItem = new OrderItem("1", "1", "1",
                 "1", "1", 1L, "1", 1L, 1L, "1",
-                "1", "1", "1", "1", 1L, "1", "1", "1",
+                "1", "1", "SPO_sku1", "1", 1L, "1", "1", "1",
                 1L, 1L, 1L, 1L, 1L, 1, 1, "1",
                 "1", false, "1", "1", "1", "1", 1L,
                 1L, 1L, 1L, 1L, 1L, 1L, 1L,
@@ -48,7 +48,7 @@ public class GetInterfaceJson {
                 new Date(), new Date(), new Date(), new Date(), new Date(), new Date(), "1");
         OrderItem orderItem2 = new OrderItem("1", "1", "1",
                 "1", "1", 1L, "1", 1L, 1L, "1",
-                "1", "1", "1", "1", 1L, "1", "1", "1",
+                "1", "1", "SP1_sku1", "1", 1L, "1", "1", "1",
                 1L, 1L, 1L, 1L, 1L, 1, 1, "1",
                 "1", false, "1", "1", "1", "1", 1L,
                 1L, 1L, 1L, 1L, 1L, 1L, 1L,
@@ -57,7 +57,7 @@ public class GetInterfaceJson {
                 new Date(), new Date(), new Date(), new Date(), new Date(), new Date(), "1");
         OrderItem orderItem3 = new OrderItem("1", "1", "1",
                 "1", "1", 1L, "1", 1L, 1L, "1",
-                "1", "1", "1", "1", 1L, "1", "1", "1",
+                "1", "1", "SP1_sku2", "1", 1L, "1", "1", "1",
                 1L, 1L, 1L, 1L, 1L, 1, 1, "1",
                 "1", false, "1", "1", "1", "1", 1L,
                 1L, 1L, 1L, 1L, 1L, 1L, 1L,

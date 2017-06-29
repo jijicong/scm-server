@@ -236,6 +236,7 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public AppResult<String> getOrderList(JSONObject information) {
 
 

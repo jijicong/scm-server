@@ -1,7 +1,9 @@
 package org.trc.domain.purchase;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.MoneySerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -10,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.math.BigDecimal;
 
 /**
  * 采购明细信息
@@ -54,11 +57,33 @@ public class PurchaseDetail extends BaseDO{
     @Length(max = 64, message = "商品的所有分类字母和数字不能超过64个,汉字不能超过32个")
     private String allCategory;//所有分类
     @FormParam("purchasePrice")
+    @JsonSerialize(using = MoneySerializer.class)
     private Long purchasePrice;//采购单价
+    @Transient
+    private BigDecimal purchasePriceD;
     @FormParam("purchasingQuantity")
     private Long purchasingQuantity;//采购总数量
     @FormParam("totalPurchaseAmount")
+    @JsonSerialize(using = MoneySerializer.class)
     private Long totalPurchaseAmount;//采购总金额
+    @Transient
+    private BigDecimal totalPurchaseAmountD;
+
+    public BigDecimal getPurchasePriceD() {
+        return purchasePriceD;
+    }
+
+    public void setPurchasePriceD(BigDecimal purchasePriceD) {
+        this.purchasePriceD = purchasePriceD;
+    }
+
+    public BigDecimal getTotalPurchaseAmountD() {
+        return totalPurchaseAmountD;
+    }
+
+    public void setTotalPurchaseAmountD(BigDecimal totalPurchaseAmountD) {
+        this.totalPurchaseAmountD = totalPurchaseAmountD;
+    }
 
     public String getItemName() {
         return itemName;
@@ -169,7 +194,10 @@ public class PurchaseDetail extends BaseDO{
     }
 
     public void setTotalPurchaseAmount(Long totalPurchaseAmount) {
+
         this.totalPurchaseAmount = totalPurchaseAmount;
+
     }
+
 }
 

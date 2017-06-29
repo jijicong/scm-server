@@ -13,6 +13,7 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,8 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
             categoryIds.add(purchaseDetail.getCategoryId());
             brandIds.add(purchaseDetail.getBrandId());
+            purchaseDetail.setPurchasePriceD(new BigDecimal(purchaseDetail.getPurchasePrice()).divide(new BigDecimal(100)));
+            purchaseDetail.setTotalPurchaseAmountD(new BigDecimal(purchaseDetail.getTotalPurchaseAmount()).divide(new BigDecimal(100)));
         }
 
         List<Brand> brandList = iBrandService.selectBrandList(brandIds);

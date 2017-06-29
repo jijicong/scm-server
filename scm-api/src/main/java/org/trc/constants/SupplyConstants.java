@@ -701,6 +701,12 @@ public class SupplyConstants {
         public static final String SHOP_ORDER_LIST = "shopOrders";
         //订单路径
         public static final String SHOP_ORDER = "shopOrder";
+        //仓库订单分页查询路径
+        public static final String WAREHOUSE_ORDER_PAGE = "warehouseOrderPage";
+        //仓库订单列表查询路径
+        public static final String WAREHOUSE_ORDER_LIST = "warehouseOrders";
+        //根据店铺订单编码查询仓库订单详情路径
+        public static final String WAREHOUSE_ORDER_DETAIL = "warehouseOrder/warehouseOrderCode";
     }
 
 }

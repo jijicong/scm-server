@@ -5,15 +5,14 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -35,11 +34,27 @@ public class OrderResource {
     }
 
     @GET
+    @Path(SupplyConstants.Order.WAREHOUSE_ORDER_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<WarehouseOrder> warehouseOrderPage(@BeanParam WarehouseOrderForm form, @BeanParam Pagenation<WarehouseOrder> page){
+        return scmOrderBiz.warehouseOrderPage(form, page);
+    }
+
+    @GET
     @Path(SupplyConstants.Order.SHOP_ORDER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<ShopOrder>> queryShopOrders(@BeanParam ShopOrderForm form){
         return ResultUtil.createSucssAppResult("根据条件查询店铺订单成功", scmOrderBiz.queryShopOrders(form));
     }
+
+    @GET
+    @Path(SupplyConstants.Order.WAREHOUSE_ORDER_DETAIL+"/{warehouseOrderCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<List<ShopOrder>> queryWarehouseOrdersDetail(@PathParam("warehouseOrderCode") String warehouseOrderCode){
+        return ResultUtil.createSucssAppResult("根据仓库订单编码查询仓库订单成功", scmOrderBiz.queryWarehouseOrdersDetail(warehouseOrderCode));
+    }
+
+
 
 }
 
