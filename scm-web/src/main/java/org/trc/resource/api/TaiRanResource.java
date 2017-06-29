@@ -66,9 +66,6 @@ public class TaiRanResource {
     private ISkuBiz skuBiz;
 
     @Resource
-    private IRequestFlowService requestFlowService;
-
-    @Resource
     private ISkuRelationBiz skuRelationBiz;
 
     @Resource
@@ -259,17 +256,9 @@ public class TaiRanResource {
 
     }
 
-    @Resource
-    private ISkuRelationService skuRelationService;
-
-    @Resource
-    private IExternalItemSkuService externalItemSkuService;
-
-    @Resource
-    private IItemsService itemsService;
 
 
-    //批量新增关联关系，待修改
+    //批量新增关联关系（单个也调用此方法），待修改
     @POST
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -277,46 +266,8 @@ public class TaiRanResource {
     public AppResult<String> getSkuRelationBatch(JSONObject information) {
         String action = information.getString("action");
         JSONArray relations = information.getJSONArray("relations");
-        AssertUtil.notBlank(action, "动作参数不能为空");
-        AssertUtil.notNull(relations, "关联列表不能为空");
-        List<SkuRelation> skuRelationList = relations.toJavaList(SkuRelation.class);
-        Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)&&action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)&&action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD);
-        AssertUtil.isTrue(flag,"动作参数类型错误");
        try{
-           //删除关联关系
-           if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)) {
-               for (SkuRelation skuRelation: skuRelationList){
-                   Example example = new Example(SkuRelation.class);
-                   Example.Criteria criteria = example.createCriteria();
-                   criteria.andEqualTo("skuCode",skuRelation.getSkuCode());
-                   criteria.andEqualTo("channelSkuCode",skuRelation.getChannelSkuCode());
-                   skuRelationService.deleteByExample(example);
-               }
-           }
-           //一件代发商品批量关联
-           if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)){
-               Iterator<SkuRelation> iter = skuRelationList.iterator();
-               while (iter.hasNext()){
-                   SkuRelation skuRelation = iter.next();
-                   ExternalItemSku externalItemSku = new ExternalItemSku();
-                   externalItemSku.setSkuCode(skuRelation.getSkuCode());
-                   externalItemSku = externalItemSkuService.selectOne(externalItemSku);
-                   skuRelation.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
-                   skuRelation.setSupplierCode(externalItemSku.getSupplierCode());
-                   skuRelationService.insert(skuRelation);
-               }
-           }
-           //自采商品批量关联
-           if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)){
-               Iterator<SkuRelation> iter = skuRelationList.iterator();
-               while(iter.hasNext()){
-                   SkuRelation skuRelation = iter.next();
-                   Items items = new Items();
-                   items.setSpuCode(skuRelation.getSpuCode());
-                   items = itemsService.selectOne(items);
-                   //TODO自采商品表结构未完善，后续再写
-               }
-           }
+           trcBiz.updateRelation(action,relations);
        }catch (Exception e){
            return ResultUtil.createFailAppResult("关联信息插入失败：" + e.getMessage());
        }

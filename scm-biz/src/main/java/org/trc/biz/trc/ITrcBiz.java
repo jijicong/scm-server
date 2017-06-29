@@ -1,5 +1,6 @@
 package org.trc.biz.trc;
 
+import com.alibaba.fastjson.JSONArray;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
@@ -79,5 +80,7 @@ public interface ITrcBiz {
     /**
      *
      */
-    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel,Pagenation<ExternalItemSku> page);
+    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel,Pagenation<ExternalItemSku> page) throws Exception;
+
+    void updateRelation(String action, JSONArray relations) throws Exception;
 }

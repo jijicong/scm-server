@@ -115,6 +115,7 @@ public enum ExceptionEnum{
     TRC_ITEMS_EXCEPTION("600106","通知商品更改异常"),
     TRC_ORDER_PUSH_EXCEPTION("600107","推送订单模块异常"),
     TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION("600108","一件代发sku更新通知异常"),
+    TRC_PARAM_EXCEPTION("600109","参数校验异常"),
 
 
     JING_DONG_USE_EXCEPTION("1000101","京东地址更新调用异常"),

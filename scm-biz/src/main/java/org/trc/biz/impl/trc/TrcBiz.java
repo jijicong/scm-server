@@ -1,5 +1,6 @@
 package org.trc.biz.impl.trc;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +27,12 @@ import org.trc.model.ResultModel;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuRelationService;
-import org.trc.util.GuidUtil;
-import org.trc.util.HttpClientUtil;
-import org.trc.util.MD5;
-import org.trc.util.Pagenation;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -58,6 +58,9 @@ public class TrcBiz implements ITrcBiz {
 
     @Autowired
     private IExternalItemSkuService externalItemSkuService;
+
+    @Resource
+    private IItemsService itemsService;
 
     @Value("${trc.key}")
     private String TRC_KEY;
@@ -308,7 +311,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) {
+    public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception {
 
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -323,6 +326,54 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("supplierCode").desc();
         return externalItemSkuService.pagination(example,page,queryModel);
+    }
+
+    @Override
+    public void updateRelation(String action, JSONArray relations) throws Exception {
+        try{
+            AssertUtil.notBlank(action, "动作参数不能为空");
+            AssertUtil.notNull(relations, "关联列表不能为空");
+            Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)&&action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)&&action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD);
+            AssertUtil.isTrue(flag,"动作参数类型错误");
+        }catch (Exception e){
+            logger.error(e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_PARAM_EXCEPTION,e.getMessage());
+        }
+        List<SkuRelation> skuRelationList = relations.toJavaList(SkuRelation.class);
+        //删除关联关系
+        if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)) {
+            for (SkuRelation skuRelation: skuRelationList){
+                Example example = new Example(SkuRelation.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("skuCode",skuRelation.getSkuCode());
+                criteria.andEqualTo("channelSkuCode",skuRelation.getChannelSkuCode());
+                skuRelationService.deleteByExample(example);
+            }
+        }
+        //一件代发商品批量关联
+        if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)){
+            Iterator<SkuRelation> iter = skuRelationList.iterator();
+            while (iter.hasNext()){
+                SkuRelation skuRelation = iter.next();
+                ExternalItemSku externalItemSku = new ExternalItemSku();
+                externalItemSku.setSkuCode(skuRelation.getSkuCode());
+                externalItemSku = externalItemSkuService.selectOne(externalItemSku);
+                skuRelation.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
+                skuRelation.setSupplierCode(externalItemSku.getSupplierCode());
+                skuRelationService.insert(skuRelation);
+            }
+        }
+        //自采商品批量关联
+        if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)){
+            Iterator<SkuRelation> iter = skuRelationList.iterator();
+            while(iter.hasNext()){
+                SkuRelation skuRelation = iter.next();
+                Items items = new Items();
+                items.setSpuCode(skuRelation.getSpuCode());
+                items = itemsService.selectOne(items);
+                //TODO 自采商品表结构未完善，后续再写
+            }
+        }
     }
 
 
