@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.dict.DictType;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.order.PlatformOrderForm;
@@ -14,6 +15,8 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -61,6 +64,17 @@ public class OrderResource {
     public AppResult<List<ShopOrder>> queryPlatformOrders(@BeanParam PlatformOrderForm form){
         return ResultUtil.createSucssAppResult("根据条件查询平台订单成功", scmOrderBiz.queryPlatformOrders(form));
     }
+
+    @POST
+    @Path(SupplyConstants.Order.JING_DONG_ORDER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded")
+    public AppResult submitJingDongOrder(@FormParam("warehouseOrderCode") String warehouseOrderCode,
+            @FormParam("jdAddress") String jdAddress, @Context ContainerRequestContext requestContext) throws Exception {
+
+        return ResultUtil.createSucssAppResult("订单提交京东成功", "");
+    }
+
 
 
 

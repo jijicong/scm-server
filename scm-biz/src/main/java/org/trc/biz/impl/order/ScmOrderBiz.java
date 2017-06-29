@@ -141,6 +141,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
         AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空",warehouseOrderCode));
+        //查询品台订单
+        PlatformOrder platformOrder = new PlatformOrder();
+        platformOrder.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
+        platformOrder = platformOrderService.selectOne(platformOrder);
+        AssertUtil.notNull(platformOrder, String.format("根据平台订单编码[%s]查询平台订单为空", warehouseOrder.getPlatformOrderCode()));
+        warehouseOrder.setPlatformOrder(platformOrder);
+        //查询商品明细
         OrderItem orderItem = new OrderItem();
         orderItem.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
         orderItem.setShopOrderCode(warehouseOrder.getShopOrderCode());
@@ -157,6 +164,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         PlatformOrder platformOrder = new PlatformOrder();
         BeanUtils.copyProperties(form, platformOrder);
         return platformOrderService.select(platformOrder);
+    }
+
+    @Override
+    public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddress) {
+        //TODO
+        return null;
     }
 
     /**

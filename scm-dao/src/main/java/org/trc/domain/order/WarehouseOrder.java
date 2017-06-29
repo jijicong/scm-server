@@ -121,12 +121,23 @@ public class WarehouseOrder {
     @Transient
     private List<OrderItem> orderItemList;
 
+    @Transient
+    private PlatformOrder platformOrder;
+
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
     }
 
     public void setOrderItemList(List<OrderItem> orderItemList) {
         this.orderItemList = orderItemList;
+    }
+
+    public PlatformOrder getPlatformOrder() {
+        return platformOrder;
+    }
+
+    public void setPlatformOrder(PlatformOrder platformOrder) {
+        this.platformOrder = platformOrder;
     }
 
     /**

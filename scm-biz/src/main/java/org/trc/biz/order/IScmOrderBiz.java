@@ -6,8 +6,10 @@ import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.FormParam;
 import java.util.List;
 
 /**
@@ -51,5 +53,13 @@ public interface IScmOrderBiz {
      * @return
      */
     List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form);
+
+    /**
+     * 提交京东订单
+     * @param warehouseOrderCode
+     * @param jdAddress
+     * @return
+     */
+    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddress);
 
 }
