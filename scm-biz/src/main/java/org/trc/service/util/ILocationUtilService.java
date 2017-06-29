@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface ILocationUtilService extends IBaseService<Area,Long>{
      List<AreaTreeNode> getTreeNodeFromLocation() throws Exception;
-     public List<AreaTreeNode> getTreeNodeFromJingDongArea();
+     public List<AreaTreeNode> getTreeNodeFromJingDongArea(Long parentId, Boolean flag);
 }

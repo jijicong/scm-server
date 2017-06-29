@@ -31,7 +31,7 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
     public int selectNumber(String name) {
           return  iserialMapper.selectNumber(name);
     }
-
+    //获得前缀不固定的流水号
     public String generateRandomCode(int length,String flag,String ...names){ //需要其它的前缀，直接在后面添加
         int number = this.selectNumber(flag);//获得将要使用的流水号
         String code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
@@ -43,7 +43,7 @@ public class SerialUtilService extends BaseService<Serial, Long> implements ISer
         }
         return code;
     }
-
+    //获得前缀固定的流水号
     public String generateCode(int length,String ...names){ //需要其它的前缀，直接在后面添加
         int number = this.selectNumber(names[0]);//获得将要使用的流水号
         String code = SerialUtil.getMoveOrderNo(length,number,names);//获得需要的code编码
