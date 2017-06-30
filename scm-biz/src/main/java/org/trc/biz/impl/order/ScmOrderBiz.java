@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.order.*;
 import org.trc.enums.ZeroToNineEnum;
@@ -21,9 +22,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -98,6 +97,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(platformOrderCodeList.size() > 0){
             criteria.andIn("platformOrderCode", platformOrderCodeList);
         }
+        example.orderBy("status").asc();
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
         return page;
@@ -221,6 +221,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
+        //按付款时间将序排序
+        Collections.sort(page.getResult(), new Comparator<ShopOrder>() {
+            @Override
+            public int compare(ShopOrder o1, ShopOrder o2) {
+                return o1.getPayTime().compareTo(o2.getPayTime());
+            }
+        });
     }
 
     private void setShopOrderItemsDetail(ShopOrder shopOrder, PlatformOrder platformOrder){
@@ -263,5 +270,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
+        //按付款时间将序排序
+        Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
+            @Override
+            public int compare(WarehouseOrder o1, WarehouseOrder o2) {
+                return o1.getPayTime().compareTo(o2.getPayTime());
+            }
+        });
     }
 }
