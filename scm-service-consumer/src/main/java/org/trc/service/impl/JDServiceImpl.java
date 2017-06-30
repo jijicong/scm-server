@@ -729,7 +729,10 @@ public class JDServiceImpl implements IJDService {
                     List<SupplyItemsExt> supplyItemsExtList = new ArrayList<SupplyItemsExt>();
                     for(Object obj: page.getResult()){
                         JSONObject bo = (JSONObject)obj;
-                        supplyItemsExtList.add((SupplyItemsExt)bo.toJavaObject(SupplyItemsExt.class));
+                        SupplyItemsExt supplyItemsExt = (SupplyItemsExt)bo.toJavaObject(SupplyItemsExt.class);
+                        supplyItemsExt.setSkuName(bo.getString("name"));
+                        supplyItemsExt.setBrand(bo.getString("brandName"));
+                        supplyItemsExtList.add(supplyItemsExt);
                     }
                     page.setResult(supplyItemsExtList);
                     returnTypeDO.setSuccess(true);
