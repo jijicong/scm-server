@@ -103,6 +103,8 @@ public enum ExceptionEnum{
 
     USER_CENTER_QUERY_EXCEPTION("600101","用户中心查询异常"),
 
+    ORDER_IDEMPOTENT_SAVE_EXCEPTION("600102","订单保存幂等信息异常"),
+
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),
     USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),

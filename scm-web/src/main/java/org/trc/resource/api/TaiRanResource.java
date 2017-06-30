@@ -223,7 +223,7 @@ public class TaiRanResource {
      *
      * @return
      */
-    @POST
+    /*@POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -243,6 +243,16 @@ public class TaiRanResource {
         }
         logger.info("平台订单推送成功");
         return ResultUtil.createSucssAppResult("平台订单" + platformOrder.getPlatformOrderCode() + " 订单推送成功，请等待后续通知", "");
+
+    }*/
+
+    @POST
+    @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
+    public AppResult<String> getOrderList(String information) {
+
+        return ResultUtil.createSucssAppResult("平台订单请等待后续通知", information);
 
     }
 
