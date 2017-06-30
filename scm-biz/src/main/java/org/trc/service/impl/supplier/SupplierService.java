@@ -35,7 +35,7 @@ public class SupplierService extends BaseService<Supplier, Long> implements ISup
     }
 
     @Override
-    public List<Supplier> selectSupplierByName(String name) throws Exception {
+    public List<Supplier> selectSupplierByName(String name){
         return supplierMapper.selectSupplierByName(name);
     }
 }

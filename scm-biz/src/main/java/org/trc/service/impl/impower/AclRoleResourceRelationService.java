@@ -18,17 +18,17 @@ public class AclRoleResourceRelationService extends BaseService<AclRoleResourceR
     @Resource
     private AclRoleResourceRelationMapper aclRoleResourceRelationMapper;
     @Override
-    public List<Long> selectJurisdictionIdList(Long roleId) throws Exception {
+    public List<Long> selectJurisdictionIdList(Long roleId) {
         return aclRoleResourceRelationMapper.selectJurisdictionIdList(roleId);
     }
 
     @Override
-    public int deleteByRoleId(Long roleId) throws Exception {
+    public int deleteByRoleId(Long roleId){
         return aclRoleResourceRelationMapper.deleteByRoleId(roleId);
     }
 
     @Override
-    public List<AclRoleResourceRelation> selectListByRoleIds(Long... roleIds) throws Exception {
+    public List<AclRoleResourceRelation> selectListByRoleIds(Long... roleIds){
         return aclRoleResourceRelationMapper.selectListByRoleId(roleIds);
     }
 }

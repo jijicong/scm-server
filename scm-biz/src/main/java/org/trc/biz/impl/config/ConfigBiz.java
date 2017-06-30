@@ -240,7 +240,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public List<Dict> findDictsByTypeNo(String typeCode) throws Exception {
+    public List<Dict> findDictsByTypeNo(String typeCode){
         AssertUtil.notBlank(typeCode, "根据类型编码查询字典参数typeCode为空");
         Dict dict = new Dict();
         //dict.setIsValid(ZeroToNineEnum.ONE.getCode());

@@ -53,7 +53,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
 
     @Override
-    public AclRole findRoleById(Long roleId) throws Exception {
+    public AclRole findRoleById(Long roleId){
         /*
          根据id查询角色对象
          */
@@ -68,7 +68,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateRoleState(AclRole aclRole) throws Exception {
+    public void updateRoleState(AclRole aclRole){
 
         AssertUtil.notNull(aclRole,"根据角色对象，修改角色的状态，角色对象为空");
         AclRole updateAclRole = new AclRole();
@@ -101,7 +101,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId) throws Exception {
+    public int findNumFromRoleAndAccreditInfoByRoleId(Long roleId){
 
         AssertUtil.notNull(roleId,"根据角色的id查询用户的数量，角色id为空");
         int num = roleService.findNumFromRoleAndAccreditInfoByRoleId(roleId);
@@ -131,7 +131,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateRole(AclRole aclRole, String roleJurisdiction) throws Exception{
+    public void updateRole(AclRole aclRole, String roleJurisdiction){
 
         //判断是否是系统用户,系统用户只能修改，系统角色类型，对应的权限,和备注信息
         AssertUtil.notNull(aclRole,"角色更新时,角色对象为空");
@@ -169,7 +169,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveRole(AclRole aclRole, String roleJurisdiction, ContainerRequestContext requestContext) throws Exception {
+    public void saveRole(AclRole aclRole, String roleJurisdiction, ContainerRequestContext requestContext){
         AssertUtil.notNull(aclRole,"角色管理模块保存角色信息失败，角色信息为空");
         AclRole tmp = findRoleByName(aclRole.getName());
         AssertUtil.isNull(tmp,String.format("角色名称[name=%s]的名称已存在,请使用其他名称", aclRole.getName()));
@@ -187,7 +187,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     }
     @Override
-    public AclRole findRoleByName(String name) throws Exception {
+    public AclRole findRoleByName(String name){
 
         AssertUtil.notNull(name,"根据角色名称查询角色的参数name为空");
         AclRole aclRole = new AclRole();

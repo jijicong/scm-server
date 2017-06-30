@@ -51,7 +51,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     private final static Integer CHANNEL_JURISDICTION_ID = 2;//渠道角色的所属
 
     @Override
-    public List<AclResource> findWholeJurisdiction() throws Exception {
+    public List<AclResource> findWholeJurisdiction(){
 
         AclResource aclResource = new AclResource();
         aclResource.setBelong(WHOLE_JURISDICTION_ID);
@@ -62,7 +62,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public List<AclResource> findChannelJurisdiction() throws Exception {
+    public List<AclResource> findChannelJurisdiction(){
 
         AclResource aclResource = new AclResource();
         aclResource.setBelong(CHANNEL_JURISDICTION_ID);
@@ -74,7 +74,7 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     @Override
     @Transactional
-    public List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId) throws Exception {
+    public List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId){
 
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
@@ -96,7 +96,7 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     @Override
     @Transactional
-    public List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId) throws Exception {
+    public List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId){
 
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
@@ -117,7 +117,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public Boolean authCheck(String userId, String url, String method) throws Exception {
+    public Boolean authCheck(String userId, String url, String method){
         /*
         * 1.查询用户授权信息表
         * 2.查询用户所拥有的角色
@@ -179,7 +179,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception {
+    public List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive){
         Example example = new Example(AclResource.class);
         Example.Criteria criteria = example.createCriteria();
         if (null == parentId) {
@@ -228,7 +228,7 @@ public class AclResourceBiz implements IAclResourceBiz {
      * @throws Exception
      */
     @Override
-    public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, ContainerRequestContext requestContext) throws Exception {
+    public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, ContainerRequestContext requestContext){
         //生成code
         String code = jurisdictionTreeNode.getParentId().toString();
         String  parentMethod=code ;
@@ -270,7 +270,7 @@ public class AclResourceBiz implements IAclResourceBiz {
      * @throws Exception
      */
     @Override
-    public void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode) throws Exception {
+    public void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode){
         AclResource aclResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode),AclResource.class);
         aclResource.setMethod(jurisdictionTreeNode.getOperationType());
         aclResource.setUpdateTime(Calendar.getInstance().getTime());

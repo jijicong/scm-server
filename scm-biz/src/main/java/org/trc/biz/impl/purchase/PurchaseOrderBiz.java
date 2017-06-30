@@ -39,6 +39,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -83,7 +84,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,ContainerRequestContext requestContext) throws Exception {
+    public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,ContainerRequestContext requestContext)  {
 
         Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         AssertUtil.notNull(obj,"查询订单分页中,获得授权信息失败");
@@ -139,7 +140,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
     //为仓库名称赋值
-    private void selectAssignmentWarehouseName(List<PurchaseOrder> purchaseOrderList)throws Exception {
+    private void selectAssignmentWarehouseName(List<PurchaseOrder> purchaseOrderList) {
 
         String[] warehouseArray = new String[purchaseOrderList.size()];
 
@@ -163,7 +164,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     //为供应商名称赋值
-    private void selectAssignmentSupplierName(List<PurchaseOrder> purchaseOrderList)throws Exception {
+    private void selectAssignmentSupplierName(List<PurchaseOrder> purchaseOrderList) {
         String[] supplierArray = new String[purchaseOrderList.size()];
 
         for(int i = 0 ; i < purchaseOrderList.size();i++){
@@ -185,7 +186,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
     //为归属采购人姓名赋值
-    private void selectAssignmentPurchaseName(List<PurchaseOrder> purchaseOrderList) throws Exception{
+    private void selectAssignmentPurchaseName(List<PurchaseOrder> purchaseOrderList) {
 
         String[] userAccreditInfoArray = new String[purchaseOrderList.size()];
 
@@ -209,7 +210,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     //赋值采购组名称
-    private void selectAssignmentPurchaseGroupName(List<PurchaseOrder> purchaseOrderList)throws Exception {
+    private void selectAssignmentPurchaseGroupName(List<PurchaseOrder> purchaseOrderList) {
 
         String[] purchaseGroupArray = new String[purchaseOrderList.size()];
 
@@ -235,7 +236,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
     //赋值过滤条件
-    private Example setCondition(PurchaseOrderForm form,String channelCode) throws Exception {
+    private Example setCondition(PurchaseOrderForm form,String channelCode)  {
         Example example = new Example(PurchaseOrder.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(form.getPurchaseOrderCode())) {
@@ -293,7 +294,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         if (!StringUtils.isBlank(form.getEndDate())) {
             SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.NORMAL_DATE_FORMAT);
-            Date date = sdf.parse(form.getEndDate());
+            Date date = null;
+            try {
+                date = sdf.parse(form.getEndDate());
+            }catch (ParseException e){
+                String msg = "采购订单列表查询,截止日期的格式不正确";
+                LOGGER.error(msg);
+                throw  new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_QUERY_EXCEPTION,msg);
+            }
             date =DateUtils.addDays(date,2);
             form.setEndDate(sdf.format(date));
             criteria.andLessThan("updateTime", form.getEndDate());
@@ -306,7 +314,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) throws Exception {
+    public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext)  {
         //根据渠道用户查询对应的供应商
         String userId = (String)requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if (StringUtils.isBlank(userId)) {
@@ -324,7 +332,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status) throws Exception {
+    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
@@ -396,9 +404,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param orderId 采购订单id
      * @param code  采购订单 编码
      * @param createOperator 创建人
-     * @throws Exception
+     * @
      */
-    public void savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) throws Exception{
+    public void savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
 
         if(StringUtils.isBlank(purchaseOrderStrs)){
             String msg = CommonUtil.joinStr("保存采购商品的信息为空").toString();
@@ -434,7 +442,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) throws Exception {
+    public List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode)  {
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询所有的可采购商品失败,供应商编码为空");
         Map<String, Object> map = new HashMap<>();
         map.put(SUPPLIER_CODE,supplierCode);
@@ -447,7 +455,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page, String skus) throws Exception {
+    public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page, String skus)  {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         AssertUtil.notBlank(supplierCode,"根据供应商查询商品信息,供应商编码为空" );
@@ -493,7 +501,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder) throws Exception {
+    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
@@ -516,7 +524,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
     }
     //采购单作废操作
-    private void handleCancel(PurchaseOrder purchaseOrder)throws Exception {
+    private void handleCancel(PurchaseOrder purchaseOrder) {
 
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
@@ -531,7 +539,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
     //采购单逻辑删除
 
-    private void handleDeleted(PurchaseOrder purchaseOrder)throws Exception{
+    private void handleDeleted(PurchaseOrder purchaseOrder){
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
@@ -557,7 +565,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public PurchaseOrder findPurchaseOrderAddDataById(Long id) throws Exception {
+    public PurchaseOrder findPurchaseOrderAddDataById(Long id)  {
 
         AssertUtil.notNull(id,"根据采购订单id查询采购单失败，采购订单id为空");
         //查询采购单
@@ -627,7 +635,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder) throws Exception {
+    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
@@ -659,7 +667,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext) throws Exception {
+    public void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext)  {
 
         AssertUtil.notNull(purchaseOrderAddData,"修改采购单失败,采购单为空");
         PurchaseOrder purchaseOrder = purchaseOrderAddData;//转型
@@ -699,9 +707,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * 2.比对前台提交的skuss
      *   传入的skus 有的删除， 剩下在原有的skus 也删除
      * @param purchaseOrderStrs
-     * @throws Exception
+     * @
      */
-    /*private void saveSkusAndDeleteSkus(String purchaseOrderStrs,PurchaseOrderAddData purchaseOrderAddData) throws Exception{
+    /*private void saveSkusAndDeleteSkus(String purchaseOrderStrs,PurchaseOrderAddData purchaseOrderAddData) {
 
         List<PurchaseDetail> purchaseDetailList = null;
         try {

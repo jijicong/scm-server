@@ -17,7 +17,7 @@ public interface IAclResourceBiz {
      * @return 资源权限集合
      * @throws Exception
      */
-    List<AclResource> findWholeJurisdiction() throws Exception;
+    List<AclResource> findWholeJurisdiction() ;
 
     /**
      * 查询渠道的资源权限
@@ -25,7 +25,7 @@ public interface IAclResourceBiz {
      * @return 资源权限集合
      * @throws Exception
      */
-    List<AclResource> findChannelJurisdiction() throws Exception;
+    List<AclResource> findChannelJurisdiction();
 
     /**
      * 根据角色的id，查询被选中的全局权限
@@ -34,7 +34,7 @@ public interface IAclResourceBiz {
      * @return
      * @throws Exception
      */
-    List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId) throws Exception;
+    List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId);
 
     /**
      * 根据角色的id，查询被选中的渠道权限
@@ -43,7 +43,7 @@ public interface IAclResourceBiz {
      * @return
      * @throws Exception
      */
-    List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId) throws Exception;
+    List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId);
 
     /**
      * 对用户访问权限的检查
@@ -54,7 +54,7 @@ public interface IAclResourceBiz {
      * @return
      * @throws Exception
      */
-    Boolean authCheck(String userId, String url, String method) throws Exception;
+    Boolean authCheck(String userId, String url, String method);
 
     /**
      * 验证该url是否需要拦截
@@ -71,14 +71,14 @@ public interface IAclResourceBiz {
      * @return
      * @throws Exception
      */
-    List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception;
+    List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive);
 
     /**
      * 新增资源
      * @param jurisdictionTreeNode
      * @throws Exception
      */
-    void saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,ContainerRequestContext requestContext) throws Exception;
+    void saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,ContainerRequestContext requestContext);
 
     /**
      * 编辑资源
@@ -86,5 +86,5 @@ public interface IAclResourceBiz {
      * @return
      * @throws Exception
      */
-    void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode) throws Exception;
+    void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode);
 }

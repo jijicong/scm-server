@@ -30,5 +30,5 @@ public interface AclRoleResourceRelationMapper extends BaseMapper<AclRoleResourc
      * @return
      * @throws Exception
      */
-    List<AclRoleResourceRelation> selectListByRoleId(@Param("roleIds")Long ...roleIds)throws Exception;
+    List<AclRoleResourceRelation> selectListByRoleId(@Param("roleIds")Long ...roleIds) ;
 }

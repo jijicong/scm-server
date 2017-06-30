@@ -109,7 +109,7 @@ public interface IConfigBiz {
      * @param typeCode
      * @return
      */
-    List<Dict> findDictsByTypeNo(String typeCode) throws Exception;
+    List<Dict> findDictsByTypeNo(String typeCode) ;
 
     /**
      * 根据主键删除字典
