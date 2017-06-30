@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.trc.biz.jingdong.IJingDongAreaBiz;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.jingdong.MessageDO;
 import org.trc.mapper.config.ITableMappingMapper;
@@ -48,17 +47,8 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     private IJingDongMapper jingDongMapper;//商品sku
     @Autowired
     private IJingDongTestMapper jingDongTestMapper;//商品sku
-
-    @Resource
-    private IJingDongAreaBiz iJingDongAreaBiz;
-
     @Autowired
     ITableMappingMapper a;
-
-    @Test
-    public void testGetNode() throws Exception{
-        iJingDongAreaBiz.getJingDongAreaTree();
-    }
 
     @Test
     public void testGetToken() {
@@ -70,26 +60,6 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         }
     }
 
-    //@Test
-    public void testJD() {
-        try {
-            String accessToken = iJingDongBiz.getAccessToken();
-           /* JSONObject obj = new JSONObject();
-            obj.put("province","浙江");
-            obj.put("city","杭州市");
-            obj.put("county","滨江区");
-            obj.put("town","西兴街道");*/
-
-            /*String str = {{"province":"浙江省","city":"杭州市","county":"县/区","town":"街道"}};*/
-            /*String tmp = jingDongUtil.getAddress(obj.toJSONString());*/
-            /*"2350848,2374973*/
-            /*iJingDongBiz.getStockById("2350848",obj.toJSONString());*/
-            System.out.print("结束");
-        } catch (Exception e) {
-            System.out.print(e);
-        }
-
-    }
 
     //@Test
     public void testTime() {
