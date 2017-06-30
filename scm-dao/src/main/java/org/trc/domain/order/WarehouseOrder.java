@@ -91,9 +91,6 @@ public class WarehouseOrder {
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
     private Date createTime;
 
-    // 发货时间
-    private Date consignTime;
-
     // 更新时间
     private Date updateTime;
 
@@ -107,13 +104,6 @@ public class WarehouseOrder {
     @Transient
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date payTime;
-
-    //物流公司
-    @Transient
-    private String logisticsCorporation;
-    //物流运单号
-    @Transient
-    private String waybillNumber;
 
     /**
      * 订单商品明细列表
@@ -516,21 +506,6 @@ public class WarehouseOrder {
     }
 
     /**
-     * 返回发货时间
-     * @return 发货时间
-     */
-    public Date getConsignTime() {
-        return consignTime;
-    }
-
-    /**
-     * 设置发货时间
-     */
-    public void setConsignTime(Date consignTime) {
-        this.consignTime = consignTime;
-    }
-
-    /**
      * 返回更新时间
      * @return 更新时间
      */
@@ -567,21 +542,5 @@ public class WarehouseOrder {
 
     public void setPayTime(Date payTime) {
         this.payTime = payTime;
-    }
-
-    public String getLogisticsCorporation() {
-        return logisticsCorporation;
-    }
-
-    public void setLogisticsCorporation(String logisticsCorporation) {
-        this.logisticsCorporation = logisticsCorporation;
-    }
-
-    public String getWaybillNumber() {
-        return waybillNumber;
-    }
-
-    public void setWaybillNumber(String waybillNumber) {
-        this.waybillNumber = waybillNumber;
     }
 }
