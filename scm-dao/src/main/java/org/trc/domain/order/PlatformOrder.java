@@ -174,6 +174,9 @@ public class PlatformOrder {
     // 收货人手机号码
     private String receiverMobile;
 
+    // 收货人电子邮箱
+    private String receiverEmail;
+
     // 买家下单地区
     private String buyerArea;
 
@@ -1202,5 +1205,13 @@ public class PlatformOrder {
      */
     public void setPayBillId(String payBillId) {
         this.payBillId = payBillId == null ? null : payBillId.trim();
+    }
+
+    public String getReceiverEmail() {
+        return receiverEmail;
+    }
+
+    public void setReceiverEmail(String receiverEmail) {
+        this.receiverEmail = receiverEmail;
     }
 }
