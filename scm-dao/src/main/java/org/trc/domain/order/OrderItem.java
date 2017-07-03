@@ -20,7 +20,7 @@ public class OrderItem {
 
     }
 
-    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, Long categoryId, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, Long price, Long marketPrice, Long promotionPrice, Long customsPrice, Long transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, Boolean isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, Long postDiscount, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, Long totalFee, Long payment, Long totalWeight, Long adjustFee, Byte status, String afterSalesStatus, String complaintsStatus, Long refundFee, Integer catServiceRate, String picPath, String outerIid, String outerSkuId, Boolean subStock, Integer dlytmplId, String supplierName, Long priceTax, String promotionTags, String objType, String type, Double taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
+    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, String category, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, Long price, Long marketPrice, Long promotionPrice, Long customsPrice, Long transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, Boolean isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, Long postDiscount, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, Long totalFee, Long payment, Long totalWeight, Long adjustFee, Byte status, String afterSalesStatus, String complaintsStatus, Long refundFee, Integer catServiceRate, String picPath, String outerIid, String outerSkuId, Boolean subStock, Integer dlytmplId, String supplierName, Long priceTax, String promotionTags, String objType, String type, Double taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
         this.warehouseOrderCode = warehouseOrderCode;
         this.shopOrderCode = shopOrderCode;
         this.platformOrderCode = platformOrderCode;
@@ -28,7 +28,7 @@ public class OrderItem {
         this.platformCode = platformCode;
         this.warehouseId = warehouseId;
         this.warehouseName = warehouseName;
-        this.categoryId = categoryId;
+        this.category = category;
         this.shopId = shopId;
         this.shopName = shopName;
         this.userId = userId;
@@ -115,7 +115,7 @@ public class OrderItem {
     private String warehouseName;
 
     // 所属类目编号
-    private Long categoryId;
+    private String category;
 
     // 订单所属的店铺id
     private Long shopId;
@@ -427,19 +427,12 @@ public class OrderItem {
         this.warehouseName = warehouseName == null ? null : warehouseName.trim();
     }
 
-    /**
-     * 返回所属类目编号
-     * @return 所属类目编号
-     */
-    public Long getCategoryId() {
-        return categoryId;
+    public String getCategory() {
+        return category;
     }
 
-    /**
-     * 设置所属类目编号
-     */
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     /**

@@ -9,6 +9,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.annotation.Note;
+import org.trc.biz.impl.trc.model.GoodOrder;
+import org.trc.biz.impl.trc.model.Order;
+import org.trc.biz.impl.trc.model.TrcShopOrder;
 import org.trc.biz.trc.IOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ExternalItemSku;
@@ -62,14 +66,16 @@ public class OrderBiz implements IOrderBiz {
     @Resource
     private IOrderFlowService orderFlowService;
 
-    private final static String SP0 = "SP0";
+    private String SP0 = "SP0";
 
-    private final static String SP1 = "SP1";
+    private String SP1 = "SP1";
+
+    private String ONE = "1";
+
+    private String ZERO = "0";
 
     //业务类型：交易
     public final static String BIZ_TYPE_DEAL = "DEAL";
-
-
 
 
     @Override
@@ -82,15 +88,15 @@ public class OrderBiz implements IOrderBiz {
             AssertUtil.notBlank(platformOrder.getUserId(), "会员id不能为空");
             AssertUtil.notBlank(platformOrder.getUserName(), "会员名称不能为空");
             AssertUtil.notNull(platformOrder.getAdjustFee(), "卖家手工调整金额不能为空");
-            AssertUtil.isTrue(platformOrder.getAdjustFee()>=0,"卖家手工调整金额应大于等于0");
+            AssertUtil.isTrue(platformOrder.getAdjustFee() >= 0, "卖家手工调整金额应大于等于0");
             AssertUtil.notNull(platformOrder.getTotalFee(), "订单总金额不能为空");
-            AssertUtil.isTrue(platformOrder.getTotalFee()>=0,"订单总金额应大于等于0");
+            AssertUtil.isTrue(platformOrder.getTotalFee() >= 0, "订单总金额应大于等于0");
             AssertUtil.notNull(platformOrder.getPostageFee(), "邮费不能为空");
-            AssertUtil.isTrue(platformOrder.getPostageFee()>=0,"邮费应大于等于0");
+            AssertUtil.isTrue(platformOrder.getPostageFee() >= 0, "邮费应大于等于0");
             AssertUtil.notNull(platformOrder.getTotalTax(), "总税费不能为空");
-            AssertUtil.isTrue(platformOrder.getTotalTax()>=0,"总税费应大于等于0");
+            AssertUtil.isTrue(platformOrder.getTotalTax() >= 0, "总税费应大于等于0");
             AssertUtil.notNull(platformOrder.getPayment(), "实付金额不能为空");
-            AssertUtil.isTrue(platformOrder.getPayment()>=0,"实付金额应大于等于0");
+            AssertUtil.isTrue(platformOrder.getPayment() >= 0, "实付金额应大于等于0");
             AssertUtil.notBlank(platformOrder.getPayType(), "支付类型不能为空");
             AssertUtil.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
             Integer totalNum = 0;
@@ -107,7 +113,7 @@ public class OrderBiz implements IOrderBiz {
                 AssertUtil.notBlank(shopOrder.getUserId(), "会员id不能为空");
                 AssertUtil.notBlank(shopOrder.getStatus(), "订单状态不能为空");
                 AssertUtil.notNull(shopOrder.getPayment(), "订单实付总金额不能为空");
-                AssertUtil.isTrue(shopOrder.getPayment()>=0,"订单实付总金额应大于等于0");
+                AssertUtil.isTrue(shopOrder.getPayment() >= 0, "订单实付总金额应大于等于0");
                 AssertUtil.notNull(shopOrder.getItemNum(), "店铺订单商品总数不能为空");
                 totalShop += shopOrder.getPayment();
                 totalNum += shopOrder.getItemNum();
@@ -127,7 +133,7 @@ public class OrderBiz implements IOrderBiz {
                     AssertUtil.notBlank(orderItem.getBarCode(), "条形码不能为空");
                     AssertUtil.notBlank(orderItem.getItemName(), "商品名称不能为空");
                     AssertUtil.notNull(orderItem.getPayment(), "实付金额不能为空");
-                    AssertUtil.isTrue(orderItem.getPayment()>=0, "实付金额应大于等于0");
+                    AssertUtil.isTrue(orderItem.getPayment() >= 0, "实付金额应大于等于0");
                     AssertUtil.notNull(orderItem.getPrice(), "单价不能为空");
                     AssertUtil.notNull(orderItem.getNum(), "购买数量不能为空");
                     totalItem += orderItem.getPayment();
@@ -165,7 +171,6 @@ public class OrderBiz implements IOrderBiz {
     }
 
 
-
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult<String> reciveChannelOrder(String orderInfo) {
@@ -173,7 +178,7 @@ public class OrderBiz implements IOrderBiz {
         JSONObject orderObj = null;
         try {
             orderObj = JSONObject.parseObject(orderInfo);
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             String msg = String.format("渠道同步订单参数不是JSON格式");
             logger.error(msg, e);
             return ResultUtil.createFailAppResult(msg);
@@ -193,7 +198,7 @@ public class OrderBiz implements IOrderBiz {
         }
         //订单商品明细
         List<OrderItem> orderItemList = new ArrayList<OrderItem>();
-        for(WarehouseOrder warehouseOrder: warehouseOrderList){
+        for (WarehouseOrder warehouseOrder : warehouseOrderList) {
             orderItemList.addAll(warehouseOrder.getOrderItemList());
         }
         orderItemService.insertList(orderItemList);
@@ -216,17 +221,19 @@ public class OrderBiz implements IOrderBiz {
 
     /**
      * 保存请求流水
+     *
      * @param orderInfo
      */
-    private void saveRequestFlow(String orderInfo){
+    private void saveRequestFlow(String orderInfo) {
 
     }
 
     /**
      * 保存幂等流水
+     *
      * @param shopOrderList
      */
-    private void saveIdempotentFlow(List<ShopOrder> shopOrderList){
+    private void saveIdempotentFlow(List<ShopOrder> shopOrderList) {
         try {
             for (ShopOrder shopOrder : shopOrderList) {
                 OrderFlow orderFlow = new OrderFlow();
@@ -234,7 +241,7 @@ public class OrderBiz implements IOrderBiz {
                 orderFlow.setShopOrderCode(shopOrder.getShopOrderCode());
                 orderFlow.setType(BIZ_TYPE_DEAL);
                 int count = orderFlowService.insert(orderFlow);
-                if(count == 0){
+                if (count == 0) {
                     String msg = String.format("保存订单同步幂等流水%s失败", JSONObject.toJSON(orderFlow));
                     logger.error(msg);
                     throw new OrderException(ExceptionEnum.ORDER_IDEMPOTENT_SAVE_EXCEPTION, msg);
@@ -250,25 +257,26 @@ public class OrderBiz implements IOrderBiz {
 
     /**
      * 获取店铺订单
+     *
      * @param platformOrder
      * @param shopOrderArray
      * @return
      */
-    private List<ShopOrder> getShopOrderList(PlatformOrder platformOrder, JSONArray shopOrderArray){
+    private List<ShopOrder> getShopOrderList(PlatformOrder platformOrder, JSONArray shopOrderArray) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         Integer totalNum = 0;
         Long totalShop = 0L;
-        for(Object obj : shopOrderArray){
-            ShopOrder shopOrder = ((JSONObject)obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
+        for (Object obj : shopOrderArray) {
+            ShopOrder shopOrder = ((JSONObject) obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
             shopOrderParamCheck(shopOrder);
             shopOrderList.add(shopOrder);
             totalShop += shopOrder.getPayment();
             totalNum += shopOrder.getItemNum();
-            List<OrderItem> orderItemList = ((JSONObject)obj).getJSONArray("orderItems").toJavaList(OrderItem.class);
+            List<OrderItem> orderItemList = ((JSONObject) obj).getJSONArray("orderItems").toJavaList(OrderItem.class);
             shopOrder.setOrderItems(orderItemList);
             Integer totalOneShopNum = 0;
             Long totalItem = 0L;
-            for(OrderItem orderItem: orderItemList){
+            for (OrderItem orderItem : orderItemList) {
                 orderItemsParamCheck(orderItem);
                 totalItem += orderItem.getPayment();
                 totalOneShopNum += orderItem.getNum();
@@ -284,33 +292,36 @@ public class OrderBiz implements IOrderBiz {
 
     /**
      * 平台订单校验
+     *
      * @param platformOrder
      */
-    private void platformOrderParamCheck(PlatformOrder platformOrder){
+    private void platformOrderParamCheck(PlatformOrder platformOrder) {
         AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
         AssertUtil.notBlank(platformOrder.getUserId(), "会员id不能为空");
         AssertUtil.notBlank(platformOrder.getUserName(), "会员名称不能为空");
         AssertUtil.notNull(platformOrder.getAdjustFee(), "卖家手工调整金额不能为空");
-        AssertUtil.isTrue(platformOrder.getAdjustFee()>=0,"卖家手工调整金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getAdjustFee() >= 0, "卖家手工调整金额应大于等于0");
         AssertUtil.notNull(platformOrder.getTotalFee(), "订单总金额不能为空");
-        AssertUtil.isTrue(platformOrder.getTotalFee()>=0,"订单总金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getTotalFee() >= 0, "订单总金额应大于等于0");
         AssertUtil.notNull(platformOrder.getPostageFee(), "邮费不能为空");
-        AssertUtil.isTrue(platformOrder.getPostageFee()>=0,"邮费应大于等于0");
+        AssertUtil.isTrue(platformOrder.getPostageFee() >= 0, "邮费应大于等于0");
         AssertUtil.notNull(platformOrder.getTotalTax(), "总税费不能为空");
-        AssertUtil.isTrue(platformOrder.getTotalTax()>=0,"总税费应大于等于0");
+        AssertUtil.isTrue(platformOrder.getTotalTax() >= 0, "总税费应大于等于0");
         AssertUtil.notNull(platformOrder.getPayment(), "实付金额不能为空");
-        AssertUtil.isTrue(platformOrder.getPayment()>=0,"实付金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getPayment() >= 0, "实付金额应大于等于0");
         AssertUtil.notBlank(platformOrder.getPayType(), "支付类型不能为空");
         AssertUtil.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
     }
 
-    /**&
+    /**
+     * &
      * 店铺订单校验
+     *
      * @param shopOrder
      */
-    private void shopOrderParamCheck(ShopOrder shopOrder){
+    private void shopOrderParamCheck(ShopOrder shopOrder) {
         AssertUtil.notBlank(shopOrder.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -321,15 +332,16 @@ public class OrderBiz implements IOrderBiz {
         AssertUtil.notBlank(shopOrder.getUserId(), "会员id不能为空");
         AssertUtil.notBlank(shopOrder.getStatus(), "订单状态不能为空");
         AssertUtil.notNull(shopOrder.getPayment(), "订单实付总金额不能为空");
-        AssertUtil.isTrue(shopOrder.getPayment()>=0,"订单实付总金额应大于等于0");
+        AssertUtil.isTrue(shopOrder.getPayment() >= 0, "订单实付总金额应大于等于0");
         AssertUtil.notNull(shopOrder.getItemNum(), "店铺订单商品总数不能为空");
     }
 
     /**
      * 商品参数校验
+     *
      * @param orderItem
      */
-    private void orderItemsParamCheck(OrderItem orderItem){
+    private void orderItemsParamCheck(OrderItem orderItem) {
         AssertUtil.notBlank(orderItem.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(orderItem.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(orderItem.getPlatformOrderCode(), "平台订单编码不能为空");
@@ -341,7 +353,7 @@ public class OrderBiz implements IOrderBiz {
         AssertUtil.notBlank(orderItem.getBarCode(), "条形码不能为空");
         AssertUtil.notBlank(orderItem.getItemName(), "商品名称不能为空");
         AssertUtil.notNull(orderItem.getPayment(), "实付金额不能为空");
-        AssertUtil.isTrue(orderItem.getPayment()>=0, "实付金额应大于等于0");
+        AssertUtil.isTrue(orderItem.getPayment() >= 0, "实付金额应大于等于0");
         AssertUtil.notNull(orderItem.getPrice(), "单价不能为空");
         AssertUtil.notNull(orderItem.getNum(), "购买数量不能为空");
     }
@@ -366,7 +378,7 @@ public class OrderBiz implements IOrderBiz {
         shopOrderService.insert(shopOrder);
     }*/
 
-    public List<WarehouseOrder> dealShopOrder(ShopOrder shopOrder, PlatformOrder platformOrder){
+    public List<WarehouseOrder> dealShopOrder(ShopOrder shopOrder, PlatformOrder platformOrder) {
         List<OrderItem> orderItemList = shopOrder.getOrderItems();
         //分离一件代发和自采商品
         List<OrderItem> orderItemList1 = new ArrayList<>();//TODO 自采商品,二期处理
@@ -532,20 +544,131 @@ public class OrderBiz implements IOrderBiz {
         return null;
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         String str = "123";
         try {
             /*JSONArray array = JSONArray.parseArray(str);
             System.out.println(array);*/
             JSONObject array = JSONObject.parseObject(str);
             System.out.println(array);
-        }catch (JSONException exception){
+        } catch (JSONException exception) {
             exception.printStackTrace();
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             e.printStackTrace();
         }
 
     }
 
+    @Note("得到订单拆分接口数据")
+    public void getJson(JSONArray orders, JSONArray trcShopOrders, JSONArray goodOrders) {
+        List<Order> orderList = orders.toJavaList(Order.class);
+        List<TrcShopOrder> trcShopOrderList = trcShopOrders.toJavaList(TrcShopOrder.class);
+        List<GoodOrder> goodOrderList = goodOrders.toJavaList(GoodOrder.class);
+
+        for (Order order : orderList) {
+            JSONObject information = new JSONObject();
+            PlatformOrder platformOrder = getPlatformOrder(order);
+            information.put("platformOrder",platformOrder);
+            //获取平台订单下的店铺订单
+            List<ShopOrder> oneShopOrderList = new ArrayList<>();
+            List<TrcShopOrder> oneTrcShopOrderList = new ArrayList<>();
+            for (TrcShopOrder trcShopOrder : trcShopOrderList){
+                if (order.getId().equals(trcShopOrder.getOrderId())){
+                    oneTrcShopOrderList.add(trcShopOrder);
+                    oneShopOrderList.add(getShopOrder(trcShopOrder,order));
+                }
+            }
+            for (TrcShopOrder trcShopOrder:oneTrcShopOrderList ){
+                //循环goodOrder
+                for (GoodOrder goodOrder:goodOrderList){
+
+                }
+            }
+        }
+
+    }
+
+    @Note("ShopOrder对象转化")
+    private ShopOrder getShopOrder(TrcShopOrder t, Order o) {
+        String channelCode = "trc";
+        ShopOrder shop = new ShopOrder(t.getOrderId(), t.getOrderId(), channelCode,
+                channelCode, o.getPlatform(), (long) t.getShopId(), t.getShopName(), String.valueOf(t.getUserId()),
+                t.getDlytmplIds(), t.getStatus(),
+                t.getIsDel(), getLong(t.getPayment()), getLong(t.getTotalFee()), getLong(t.getPostFee()), getLong(t.getDiscountPromotion()),
+                getLong(t.getDiscountCouponShop()), getLong(t.getDiscountCouponPlatform()), getLong(t.getDiscountFee()), t.getTitle(),
+                t.getBuyerMessage(), getLong(t.getAdjustFee()), t.getItemNum(), getWeight(t.getTotalWeight()),
+                t.getRateStatus(), t.getIsPartConsign(), t.getGroupBuyStatus(), getLong(t.getTotalTax()),
+                getDate((long) t.getCreatedTime()), null, null, t.getShopMemo(), t.getTradeMemo());
+        return shop;
+    }
+
+    @Note("OrderItem对象转化")
+    private OrderItem getOrderItem(GoodOrder g,Order o,TrcShopOrder t) {
+        String channelCode = "trc";
+        OrderItem orderItem = new OrderItem(null, t.getId(), o.getId(),
+                 channelCode, channelCode, null, null,null, (long)g.getShopId(), g.getShopName(),
+                 String.valueOf( g.getUserId()), null, "SP0_sku1", null, null, g.getArtNo(), g.getBarcode(), g.getTitle(),
+                getLong(g.getPrice()), getLong(g.getMarketPrice()), getLong(g.getPromotionPrice()), getLong(g.getCustomsPrice()), getLong(g.getTransactionPrice()) ,
+                g.getNum(), g.getSendNum(), g.getSkuPropertiesName(), g.getRefundId(), g.getIsOversold(), g.getShippingType(), g.getBindOid(), g.getLogisticsCompany(),
+                g.getInvoiceNo(), getLong(g.getPostDiscount()), getLong(g.getDiscountPromotion()), getLong(g.getDiscountCouponShop()),
+                getLong(g.getDiscountCouponPlatform()), getLong(g.getDiscountFee()), getLong(g.getTotalFee()), getLong(g.getPayment()), getWeight(g.getTotalWeight()),
+                getLong(g.getAdjustFee()), new Byte("1"), g.getAfterSalesStatus(), g.getComplaintsStatus(), null, g.getCatServiceRate().intValue(), g.getPicPath(),
+                g.getOuterIid(), g.getOuterSkuId(), g.getSubStock(), g.getDlytmplId(), null, getLong(g.getPriceTax()), g.getPromotionTags(),
+                g.getObjType(), g.getType(), g.getTaxRate(), g.getParams(),
+                getDate((long)g.getCreatedTime()),getDate((long)g.getPayTime()) , null, null, getDate((long) g.getTimeoutActionTime()),null, g.getSpecNatureInfo());
+        return null;
+    }
+
+    @Note("PlatformOrder对象转化")
+    private PlatformOrder getPlatformOrder(Order o) {
+        String channelCode = "trc";
+        PlatformOrder platformOrder = new PlatformOrder(o.getId(), channelCode, channelCode, String.valueOf(o.getUserId()), o.getUserName(),
+                o.getItemNum(), o.getPayType(), getLong(o.getPayment()), getLong(o.getPointsFee()), getLong(o.getTotalFee()),
+                getLong(o.getAdjustFee()), getLong(o.getPostFee()), getLong(o.getTotalTax()),
+                getByte(o.getNeedInvoice()), o.getInvoiceName(), o.getInvoiceType(), o.getInvoiceMain(), o.getReceiverState(), o.getReceiverCity(),
+                o.getReceiverDistrict(), o.getReceiverAddress(), o.getReceiverZip(), o.getReceiverName(), o.getReceiverIdNumber(),
+                o.getReceiverIdCardFront(), o.getReceiverIdCardBack(), o.getReceiverPhone(), o.getReceiverMobile(), o.getBuyerArea(),
+                o.getZitiMemo(), o.getZitiAddr(), getByte(o.getAnony()), o.getObtainPointFee(), o.getRealPointFee(),
+                o.getStepTradeStatus(), getLong(o.getStepPaidFee()), getByte(o.getIsClearing()), o.getCancelReason(), o.getCancelStatus(),
+                o.getStatus(), getByte(o.getIsVirtual()), o.getIp(), getByte(o.getType()),
+                getLong(o.getDiscountPromotion()), getLong(o.getDiscountCouponShop()), getLong(o.getDiscountCouponPlatform()),
+                getLong(o.getDiscountFee()), o.getShippingType(), o.getPlatform(),
+                getByte(o.getRateStatus()), o.getCouponCode(), o.getGroupBuyStatus(), String.valueOf(o.getIsDel()), getDate((long) o.getCreatedTime()),
+                getDate((long) o.getPayTime()), null, null, null,
+                getDate((long) o.getTimeoutActionTime()), null, o.getPayBillId());
+        return platformOrder;
+    }
+
+    @Note("类型转换")
+    public Long getLong(Double fee) {
+        if (fee == null) {
+            return null;
+        }
+        return (long) (fee * 100);
+    }
+
+    @Note("类型转换-重量")
+    public Long getWeight(Double fee) {
+        if (fee == null) {
+            return null;
+        }
+        return (long) (fee * 1000);
+    }
+
+    @Note("类型转换")
+    public Byte getByte(Boolean boo) {
+        if (boo)
+            return new Byte(ONE);
+        else
+            return new Byte(ZERO);
+    }
+
+    @Note("类型转换")
+    public Date getDate(Long date) {
+        if (date == null) {
+            return null;
+        }
+        return new Date(date);
+    }
 }
 
