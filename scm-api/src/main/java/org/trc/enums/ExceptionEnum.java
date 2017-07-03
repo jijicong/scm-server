@@ -108,6 +108,7 @@ public enum ExceptionEnum{
     JING_DONG_ORDER_QUERY_EXCEPTION("600104","调用京东订单反查服务异常"),
     JING_DONG_LOGISTICS_QUERY_EXCEPTION("600105","调用京东订单配送服务异常"),
     SUPPLIER_ORDER_INFO_UPDATE_EXCEPTION("600107","供应商订单信息更新异常"),
+    CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION("600108","渠道发送的订单不是JSON格式参数异常"),
 
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),
