@@ -47,7 +47,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private ISerialUtilService serialUtilService;
 
     @Override
-    public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page) throws Exception {
+    public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page)  {
 
         Example example = new Example(PurchaseGroup.class);
         Example.Criteria criteria = example.createCriteria();
@@ -65,7 +65,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) throws Exception {
+    public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode)  {
 
         AssertUtil.notBlank(purchaseGroupCode,"根据采购组编码查询采购组人员的参数code为空");
         List<AclUserAccreditInfo> aclUserAccreditInfoList = purchaseGroupService.selectPurchaseGroupPersons(purchaseGroupCode);
@@ -74,7 +74,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public List<PurchaseGroup> findPurchaseGroupList() throws Exception {
+    public List<PurchaseGroup> findPurchaseGroupList()  {
 
         PurchaseGroup purchaseGroup = new PurchaseGroup();
         purchaseGroup.setIsValid(ValidEnum.VALID.getCode());
@@ -87,7 +87,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id) throws Exception {//查询该组id下的无效状态的用户
+    public List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id)  {//查询该组id下的无效状态的用户
 
         AssertUtil.notNull(id,"采购组id为空，查询采购组对应的无效状态的用户失败");
         return purchaseGroupService.findPurchaseGroupMemberStateById(id);
@@ -95,7 +95,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public PurchaseGroup findPurchaseGroupByCode(String code) throws Exception {
+    public PurchaseGroup findPurchaseGroupByCode(String code)  {
 
         AssertUtil.notBlank(code,"根据采购组编码查询采购组的参数code为空");
         PurchaseGroup purchaseGroup = new PurchaseGroup();
@@ -107,7 +107,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseStatus(PurchaseGroup purchaseGroup) throws Exception {
+    public void updatePurchaseStatus(PurchaseGroup purchaseGroup)  {
         AssertUtil.notNull(purchaseGroup,"采购组信息为空，修改采购组状态失败");
         PurchaseGroup updatePurchaseGroup = new PurchaseGroup();
         updatePurchaseGroup.setId(purchaseGroup.getId());
@@ -133,7 +133,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public PurchaseGroup findPurchaseByName(String name) throws Exception {
+    public PurchaseGroup findPurchaseByName(String name)  {
 
         AssertUtil.notBlank(name,"根据采购组名称查询采购组的参数name为空");
         PurchaseGroup purchaseGroup=new PurchaseGroup();
@@ -144,7 +144,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
+    public void updatePurchaseGroup(PurchaseGroup purchaseGroup)  {
         AssertUtil.notNull(purchaseGroup,"根据采购组信息修改采购组失败,采购信息为null");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
         if(tmp!=null){
@@ -171,7 +171,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseGroup(PurchaseGroup purchaseGroup) throws Exception {
+    public void savePurchaseGroup(PurchaseGroup purchaseGroup)  {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -199,7 +199,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class) //保存采购组与用户的对应关系
-    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs,String isValid) throws Exception{
+    private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs,String isValid) {
 
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = new ArrayList<>();
         PurchaseGroupUserRelation purchaseGroupUserRelation = new PurchaseGroupUserRelation();//设置组长与采购组的关联关系
@@ -226,7 +226,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private List<AclUserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list, int size) throws Exception{
+    private List<AclUserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list, int size) {
         /*
         首先要确认所插入的用户，不能被停用
         再次考虑，使用的用户据用采购角色
@@ -248,7 +248,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public PurchaseGroup findPurchaseById(Long id) throws Exception {
+    public PurchaseGroup findPurchaseById(Long id)  {
 
         AssertUtil.notNull(id,"采购组管理模块根据id查询采购组失败，采购组信息为空");
         PurchaseGroup purchaseGroup = new PurchaseGroup();

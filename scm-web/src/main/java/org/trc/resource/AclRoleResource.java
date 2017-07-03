@@ -30,14 +30,14 @@ public class AclRoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<AclRole> rolePage(@BeanParam RoleForm form, @BeanParam Pagenation<AclRole> page) throws Exception{
+    public Pagenation<AclRole> rolePage(@BeanParam RoleForm form, @BeanParam Pagenation<AclRole> page){
         return roleBiz.rolePage(form,page);
     }
     //修改角色信息以及与之对应的角色权限关联表信息的修改
     @PUT
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateRole(@BeanParam AclRoleAddPageData roleAddPageData) throws Exception{
+    public AppResult updateRole(@BeanParam AclRoleAddPageData roleAddPageData){
 
         AclRole aclRole = roleAddPageData;
         roleBiz.updateRole(aclRole, roleAddPageData.getRoleJurisdiction());
@@ -48,7 +48,7 @@ public class AclRoleResource {
     @POST
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext) throws Exception{
+    public AppResult saveRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
 
         AclRole aclRole = roleAddPageData;
         roleBiz.saveRole(aclRole, roleAddPageData.getRoleJurisdiction(),requestContext);
@@ -59,7 +59,7 @@ public class AclRoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findRoleByName(@QueryParam("name") String name ) throws Exception{
+    public AppResult findRoleByName(@QueryParam("name") String name ){
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
         return  ResultUtil.createSucssAppResult("查询角色成功", roleBiz.findRoleByName(name)==null ? null :"1");
     }
@@ -67,7 +67,7 @@ public class AclRoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE_ACCREDITINFO)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findNumFromRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId) throws Exception{
+    public AppResult findNumFromRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId){
 
         return  ResultUtil.createSucssAppResult("查询角色数量成功",roleBiz.findNumFromRoleAndAccreditInfoByRoleId(roleId));
 
@@ -76,7 +76,7 @@ public class AclRoleResource {
     @POST
     @Path(SupplyConstants.Role.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult  updateRoleState(@BeanParam AclRole aclRole) throws Exception{
+    public AppResult  updateRoleState(@BeanParam AclRole aclRole){
         roleBiz.updateRoleState(aclRole);
         return ResultUtil.createSucssAppResult("修改角色状态成功","");
     }
@@ -84,7 +84,7 @@ public class AclRoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclRole> findRoleById(@PathParam("id") Long id) throws Exception{
+    public AppResult<AclRole> findRoleById(@PathParam("id") Long id){
         return ResultUtil.createSucssAppResult("查询角色成功",roleBiz.findRoleById(id));
     }
 

@@ -10,8 +10,8 @@ import java.util.List;
  */
 public interface IAclResourceService extends IBaseService<AclResource, Long> {
 
-    List<AclResource> selectJurisdictionListByCodes(Long... codes) throws Exception;
+    List<AclResource> selectJurisdictionListByCodes(Long... codes);
 
-    void insertOne(AclResource aclResource) throws Exception;
+    void insertOne(AclResource aclResource) ;
 
 }

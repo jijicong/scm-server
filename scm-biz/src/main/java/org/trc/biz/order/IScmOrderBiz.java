@@ -55,11 +55,12 @@ public interface IScmOrderBiz {
     List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form);
 
     /**
-     * 提交京东订单
+     * 提交订单
      * @param warehouseOrderCode
-     * @param jdAddress
+     * @param jdAddressCode
+     * @param jdAddressName
      * @return
      */
-    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddress);
+    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName);
 
 }

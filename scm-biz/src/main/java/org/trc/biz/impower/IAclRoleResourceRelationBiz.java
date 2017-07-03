@@ -10,7 +10,7 @@ public interface IAclRoleResourceRelationBiz {
      * @param roleId
      * @throws Exception
      */
-    void updateRoleJurisdictionRelations(String roleJurisdiction,Long roleId) throws Exception;
+    void updateRoleJurisdictionRelations(String roleJurisdiction,Long roleId);
 
     /**
      * 角色和权限关联表的保存
@@ -19,6 +19,6 @@ public interface IAclRoleResourceRelationBiz {
      * @return
      * @throws Exception
      */
-    void  saveRoleJurisdictionRelations(String roleJurisdiction,Long roleId) throws Exception;
+    void  saveRoleJurisdictionRelations(String roleJurisdiction,Long roleId);
 
 }

@@ -19,12 +19,12 @@ public class AclResourceService extends BaseService<AclResource, Long> implement
     private AclResourceMapper aclResourceMapper;
 
     @Override
-    public List<AclResource> selectJurisdictionListByCodes(Long... codes) throws Exception {
+    public List<AclResource> selectJurisdictionListByCodes(Long... codes){
         return aclResourceMapper.selectJurisdictionListByCodes(codes);
     }
 
     @Override
-    public void insertOne(AclResource aclResource) throws Exception {
+    public void insertOne(AclResource aclResource){
         aclResourceMapper.insertOne(aclResource);
     }
 }

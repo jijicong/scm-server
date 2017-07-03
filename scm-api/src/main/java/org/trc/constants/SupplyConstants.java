@@ -697,6 +697,12 @@ public class SupplyConstants {
      * 订单管理
      */
     public static final class Order {
+
+        //京东供应商编码
+        public final static String SUPPLIER_JD_CODE = "JD";
+        //粮油供应商编码
+        public final static String SUPPLIER_LY_CODE = "LY";
+
         public static final String ROOT = "order";
         //订单分页查询路径
         public static final String SHOP_ORDER_PAGE = "shopOrderPage";

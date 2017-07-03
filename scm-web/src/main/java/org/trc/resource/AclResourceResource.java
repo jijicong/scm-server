@@ -33,7 +33,7 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findWholeJurisdiction() throws Exception {
+    public AppResult<AclResource> findWholeJurisdiction(){
 
         return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdiction());
 
@@ -42,7 +42,7 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findChannelJurisdiction() throws Exception {
+    public AppResult<AclResource> findChannelJurisdiction(){
 
         return ResultUtil.createSucssAppResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdiction());
 
@@ -56,7 +56,7 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findWholeJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId) throws Exception {
+    public AppResult<AclResource> findWholeJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId){
 
         return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(roleId));
 
@@ -65,7 +65,7 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findChannelJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId) throws Exception {
+    public AppResult<AclResource> findChannelJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId){
 
         return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedByRoleId(roleId));
 
@@ -74,14 +74,14 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_TREE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> jurisdictionTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) throws Exception {
+    public AppResult<JSONArray> jurisdictionTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive){
         return ResultUtil.createSucssAppResult("查询权限资源成功", jurisdictionBiz.getNodes(parentId, isRecursive));
     }
 
     @POST
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_SAVE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,@Context ContainerRequestContext requestContext) throws Exception {
+    public AppResult<JSONArray> saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,@Context ContainerRequestContext requestContext) {
         jurisdictionBiz.saveJurisdiction(jurisdictionTreeNode,requestContext);
         return ResultUtil.createSucssAppResult("新增权限资源成功", "");
     }
@@ -89,7 +89,7 @@ public class AclResourceResource {
     @PUT
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_EDIT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> updateJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode) throws Exception {
+    public AppResult<JSONArray> updateJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode){
         jurisdictionBiz.updateJurisdiction(jurisdictionTreeNode);
         return ResultUtil.createSucssAppResult("更新权限资源成功", "");
     }

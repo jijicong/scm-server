@@ -33,5 +33,5 @@ public interface ISupplierService extends IBaseService<Supplier, Long>{
      * @return
      * @throws Exception
      */
-    List<Supplier> selectSupplierByName(String name) throws Exception;
+    List<Supplier> selectSupplierByName(String name);
 }

@@ -31,7 +31,7 @@ public class AclRoleResourceRelationBiz implements IAclRoleResourceRelationBiz {
 
     @Override
     @Transactional
-    public void updateRoleJurisdictionRelations(String roleJurisdiction, Long roleId) throws Exception {
+    public void updateRoleJurisdictionRelations(String roleJurisdiction, Long roleId){
 
         AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
         //1.先根据角色id，删除所有的该角色对应的权限
@@ -47,7 +47,7 @@ public class AclRoleResourceRelationBiz implements IAclRoleResourceRelationBiz {
     }
 
     @Override
-    public void saveRoleJurisdictionRelations(String roleJurisdiction, Long roleId) throws Exception{
+    public void saveRoleJurisdictionRelations(String roleJurisdiction, Long roleId){
         System.out.println(roleJurisdiction);
         AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
         AssertUtil.notBlank(roleJurisdiction,"根据权限id,角色和权限关联保存失败,参数name[]为空");

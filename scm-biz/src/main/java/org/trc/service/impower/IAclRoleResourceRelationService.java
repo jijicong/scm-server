@@ -15,7 +15,7 @@ public interface IAclRoleResourceRelationService extends IBaseService<AclRoleRes
      * @return
      * @throws Exception
      */
-    List<Long> selectJurisdictionIdList(Long roleId) throws Exception;
+    List<Long> selectJurisdictionIdList(Long roleId) ;
 
     /**
      * 根据角色id删除该角色对应的权限
@@ -23,7 +23,7 @@ public interface IAclRoleResourceRelationService extends IBaseService<AclRoleRes
      * @return
      * @throws Exception
      */
-    int deleteByRoleId(Long roleId) throws Exception;
+    int deleteByRoleId(Long roleId);
 
     /**
      * 根据多个角色id查询角色信息
@@ -31,5 +31,5 @@ public interface IAclRoleResourceRelationService extends IBaseService<AclRoleRes
      * @return
      * @throws Exception
      */
-    List<AclRoleResourceRelation> selectListByRoleIds(Long ...roleIds)throws Exception;
+    List<AclRoleResourceRelation> selectListByRoleIds(Long ...roleIds);
 }

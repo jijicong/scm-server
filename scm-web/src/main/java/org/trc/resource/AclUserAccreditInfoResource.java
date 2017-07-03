@@ -60,7 +60,6 @@ public class AclUserAccreditInfoResource {
      * @param id
      * @param name
      * @return
-     * @throws Exception
      *//*
     @GET
     @Path(SupplyConstants.AclUserAccreditInfo.CHECK + "/{id}")
@@ -73,7 +72,6 @@ public class AclUserAccreditInfoResource {
      * 新增时用户名是否存在
      * @param name
      * @return
-     * @throws Exception
      *//*
     @GET
     @Path(SupplyConstants.AclUserAccreditInfo.CHECK)

@@ -7,21 +7,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.order.*;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
+import org.trc.exception.OrderException;
+import org.trc.form.JDModel.JdSku;
+import org.trc.form.JDModel.JingDongOrder;
+import org.trc.form.JDModel.OrderPriceSnap;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
-import org.trc.service.order.IOrderItemService;
-import org.trc.service.order.IPlatformOrderService;
-import org.trc.service.order.IShopOrderService;
-import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.IJDService;
+import org.trc.service.order.*;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -32,6 +35,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     private Logger log = LoggerFactory.getLogger(ScmOrderBiz.class);
 
+    //京东地址分隔符
+    public final static String JING_DONG_ADDRESS_SPLIT = "/";
+
     @Autowired
     private IShopOrderService shopOrderService;
     @Autowired
@@ -40,6 +46,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IOrderItemService orderItemService;
     @Autowired
     private IWarehouseOrderService warehouseOrderService;
+    @Autowired
+    private ISupplierOrderInfoService supplierOrderInfoService;
+    @Autowired
+    private IJDService ijdService;
 
     @Override
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
@@ -167,10 +177,162 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddress) {
-        //TODO
-        return null;
+    public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName) {
+        AssertUtil.notBlank(jdAddressCode, "提交订单京东订单四级地址编码不能为空");
+        AssertUtil.notBlank(jdAddressName, "提交订单京东订单四级地址不能为空");
+        AssertUtil.doesNotContain(jdAddressCode, JING_DONG_ADDRESS_SPLIT, "提交订单京东订单四级地址编码格式错误");
+        AssertUtil.doesNotContain(jdAddressName, JING_DONG_ADDRESS_SPLIT, "提交订单京东订单四级地址格式错误");
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
+        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));
+        //获取京东四级地址
+        String[] jdAddressCodes = jdAddressCode.split(JING_DONG_ADDRESS_SPLIT);
+        String[] jdAddressNames = jdAddressName.split(JING_DONG_ADDRESS_SPLIT);
+        AssertUtil.isTrue(jdAddressCodes.length == jdAddressNames.length, "京东四级地址编码与名称个数不匹配");
+        //查询平台订单
+        PlatformOrder platformOrder = new PlatformOrder();
+        platformOrder.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
+        platformOrder = platformOrderService.selectOne(platformOrder);
+        AssertUtil.notNull(platformOrder, String.format("根据平台订单编码[%s]查询平台订单为空", warehouseOrder.getPlatformOrderCode()));
+        //获取京东订单对象
+        JingDongOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, jdAddressCodes);
+        //保存京东订单信息
+        SupplierOrderInfo supplierOrderInfo = saveSupplierOrderInfo(warehouseOrder, jdAddressCodes, jdAddressNames);
+        //调用京东下单服务接口
+        String jdOrderId = invokeSubmitJingDongOrder(jingDongOrder);
+        //更新京东订单信息
+        supplierOrderInfo.setSupplierOrderCode(jdOrderId);
+        supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
+        int count = supplierOrderInfoService.updateByPrimaryKeySelective(supplierOrderInfo);
+        if(count == 0){
+            String msg = String.format("更新京东订单信息%s的供应商订单编码为[%s]异常", supplierOrderInfo, jdOrderId);
+            log.error(msg);
+            return ResultUtil.createFailAppResult(msg);
+        }
+        return ResultUtil.createSucssAppResult("提交京东订单成功","");
     }
+
+    private JingDongOrder getJingDongOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, String[] jdAddressCodes){
+        JingDongOrder jingDongOrder = new JingDongOrder();
+        jingDongOrder.setThirdOrder(warehouseOrder.getWarehouseOrderCode());
+        jingDongOrder.setName(platformOrder.getReceiverName());
+        if(jdAddressCodes.length == 1){
+            jingDongOrder.setProvince(jdAddressCodes[0]);
+            jingDongOrder.setInvoiceProvice(Integer.parseInt(jdAddressCodes[0]));
+        }
+        if(jdAddressCodes.length == 2){
+            jingDongOrder.setCity(jdAddressCodes[1]);
+            jingDongOrder.setInvoiceCity(Integer.parseInt(jdAddressCodes[1]));
+        }
+        if(jdAddressCodes.length == 3){
+            jingDongOrder.setCounty(jdAddressCodes[2]);
+            jingDongOrder.setInvoiceCounty(Integer.parseInt(jdAddressCodes[2]));
+        }
+        if(jdAddressCodes.length == 4){
+            jingDongOrder.setTown(jdAddressCodes[3]);
+        }
+        jingDongOrder.setAddress(platformOrder.getReceiverAddress());
+        jingDongOrder.setZip(platformOrder.getReceiverZip());
+        jingDongOrder.setPhone(platformOrder.getReceiverPhone());
+        jingDongOrder.setMobile(platformOrder.getReceiverMobile());
+        jingDongOrder.setEmail(platformOrder.getReceiverEmail());
+        jingDongOrder.setRemark("");// TODO 备注信息
+        jingDongOrder.setInvoiceState(JdInvoiceStateEnum.FOLLOW_GOODS.getCode());
+        jingDongOrder.setInvoiceType(JdInvoiceTypeEnum.NORMAL.getCode());
+        jingDongOrder.setSelectedInvoiceTitle(JdInvoiceTitleEnum.PERSONAL.getCode());
+        jingDongOrder.setCompanyName(platformOrder.getInvoiceName());//发票抬头
+        jingDongOrder.setInvoiceContent(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));//默认是1-明细
+        jingDongOrder.setPaymentType(JdPaymentTypeEnum.ON_LINE.getCode());
+        jingDongOrder.setIsUseBalance(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+        jingDongOrder.setSubmitState(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));//不预占库存
+        jingDongOrder.setInvoiceName(platformOrder.getReceiverName());
+        jingDongOrder.setInvoiceAddress(platformOrder.getReceiverAddress());
+        jingDongOrder.setDoOrderPriceMode(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));//下单价格模式,1-必需验证客户端订单价格快照
+        // TODO 大家电、中小件配送安装参数设置
+        //设置京东订单SKU信息
+        setJdOrderSkuInfo(jingDongOrder, warehouseOrder.getWarehouseOrderCode());
+        return jingDongOrder;
+    }
+
+    /**
+     * 设置京东订单SKU信息
+     * @param jingDongOrder
+     * @param warehouseOrderCode
+     */
+    private void setJdOrderSkuInfo(JingDongOrder jingDongOrder, String warehouseOrderCode){
+        OrderItem orderItem = new OrderItem();
+        orderItem.setWarehouseOrderCode(warehouseOrderCode);
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        AssertUtil.notEmpty(orderItemList, String.format("根据仓库订单编码[%s]查询订单商品明细信息为空", warehouseOrderCode));
+        List<JdSku> jdSkuList = new ArrayList<JdSku>();
+        List<OrderPriceSnap> orderPriceSnapList = new ArrayList<OrderPriceSnap>();
+        for(OrderItem orderItem2: orderItemList){
+            JdSku jdSku = new JdSku();
+            jdSku.setSkuId(orderItem2.getSupplierSkuCode());
+            jdSku.setNum(orderItem2.getNum());
+            jdSku.setbNeedAnnex(true);
+            jdSku.setbNeedGift(false);
+            jdSkuList.add(jdSku);
+
+            OrderPriceSnap orderPriceSnap = new OrderPriceSnap();
+            orderPriceSnap.setSkuId(Long.parseLong(orderItem2.getSupplierSkuCode()));
+            orderPriceSnap.setPrice(new BigDecimal(orderItem2.getTransactionPrice()));
+            orderPriceSnapList.add(orderPriceSnap);
+        }
+        jingDongOrder.setSku(jdSkuList);
+        jingDongOrder.setOrderPriceSnap(orderPriceSnapList);
+    }
+
+    /**
+     * 保存供应商订单信息
+     * @param warehouseOrder
+     * @param jdAddressCodes
+     * @param jdAddressNames
+     */
+    private SupplierOrderInfo saveSupplierOrderInfo(WarehouseOrder warehouseOrder, String[] jdAddressCodes, String[] jdAddressNames){
+        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+        supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
+        supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
+        if(jdAddressCodes.length == 1){
+            supplierOrderInfo.setJdProvinceCode(jdAddressCodes[0]);
+            supplierOrderInfo.setJdProvince(jdAddressNames[0]);
+        }
+        if(jdAddressCodes.length == 2){
+            supplierOrderInfo.setJdCityCode(jdAddressCodes[1]);
+            supplierOrderInfo.setJdCity(jdAddressNames[1]);
+        }
+        if(jdAddressCodes.length == 3){
+            supplierOrderInfo.setJdDistrictCode(jdAddressCodes[2]);
+            supplierOrderInfo.setJdDistrict(jdAddressNames[2]);
+        }
+        if(jdAddressCodes.length == 4){
+            supplierOrderInfo.setJdTownCode(jdAddressCodes[3]);
+            supplierOrderInfo.setJdTown(jdAddressNames[3]);
+        }
+        ParamsUtil.setBaseDO(supplierOrderInfo);
+        supplierOrderInfoService.insert(supplierOrderInfo);
+        return supplierOrderInfo;
+    }
+
+
+
+    /**
+     * 调用京东下单服务接口
+     * @param jingDongOrder
+     * @return
+     */
+    private String invokeSubmitJingDongOrder(JingDongOrder jingDongOrder){
+        ReturnTypeDO returnTypeDO = ijdService.submitJingDongOrder(jingDongOrder);
+        if(!returnTypeDO.getSuccess()){
+            throw new OrderException(ExceptionEnum.SUBMIT_JING_DONG_ORDER, "调用京东下单服务接口失败");
+        }
+        return returnTypeDO.getResult().toString();
+    }
+
+
+
+
 
     /**
      * 获取平台订单编码列表条件
