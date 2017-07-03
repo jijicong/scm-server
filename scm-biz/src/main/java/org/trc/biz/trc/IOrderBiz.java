@@ -15,9 +15,6 @@ import java.util.List;
  */
 public interface IOrderBiz {
 
-
-    void splitOrder(JSONArray shopOrders, PlatformOrder platformOrder)throws Exception;
-
     /**
      * 接收渠道订单信息
      * @param orderInfo
