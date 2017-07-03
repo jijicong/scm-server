@@ -108,11 +108,6 @@ public class OrderBiz implements IOrderBiz {
         //保存平台订单
         platformOrderService.insert(platformOrder);
 
-        //最后传出去的封装数据
-        /*Map map = new HashMap();
-        map.put("platformOrder", platformOrder);
-        map.put("orderItems", orderItemsToSupplier);
-        map.put("warehouseOrder", warehouseOrder);
         //TODO 根据供应商信息分别调接口*/
 
         return ResultUtil.createSucssAppResult("接收订单成功", "");
@@ -146,7 +141,19 @@ public class OrderBiz implements IOrderBiz {
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
         }
         AssertUtil.notNull(platformObj, "接收渠道订单参数中平台订单信息为空");
-        return platformObj.toJavaObject(PlatformOrder.class);
+        PlatformOrder platformOrder = platformObj.toJavaObject(PlatformOrder.class);
+        platformOrder.setPayment(CommonUtil.getMoneyLong(platformObj.getDouble("payment")));//实付金额
+        platformOrder.setPostageFee(CommonUtil.getMoneyLong(platformObj.getDouble("postageFee")));//积分抵扣金额
+        platformOrder.setTotalFee(CommonUtil.getMoneyLong(platformObj.getDouble("totalFee")));//订单总金额
+        platformOrder.setAdjustFee(CommonUtil.getMoneyLong(platformObj.getDouble("adjustFee")));//卖家手工调整金额
+        platformOrder.setPointsFee(CommonUtil.getMoneyLong(platformObj.getDouble("pointsFee")));//邮费
+        platformOrder.setTotalTax(CommonUtil.getMoneyLong(platformObj.getDouble("totalTax")));//总税费
+        platformOrder.setStepPaidFee(CommonUtil.getMoneyLong(platformObj.getDouble("stepPaidFee")));//分阶段已付金额
+        platformOrder.setDiscountPromotion(CommonUtil.getMoneyLong(platformObj.getDouble("discountPromotion")));//促销优惠总金额
+        platformOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(platformObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
+        platformOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(platformObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
+        platformOrder.setDiscountFee(CommonUtil.getMoneyLong(platformObj.getDouble("discountFee")));//订单优惠总金额
+        return platformOrder;
     }
 
     /**
@@ -220,15 +227,16 @@ public class OrderBiz implements IOrderBiz {
         Long totalShop = 0L;
         for (Object obj : shopOrderArray) {
             JSONObject tmpObj = (JSONObject) obj;
-            ShopOrder shopOrder = null;
-            List<OrderItem> orderItemList = null;
             JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
             AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
-            shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
+            ShopOrder shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
+            shopOrderParamCheck(shopOrder);
+            //设置店铺金额
+            setShopOrderFee(shopOrder, shopOrderObj);
             JSONArray orderItemArray = tmpObj.getJSONArray("orderItems");
             AssertUtil.notEmpty(orderItemArray, String.format("接收渠道订单参数中平店铺订单%s相关商品订单明细信息为空为空", shopOrderObj));
-            orderItemList = orderItemArray.toJavaList(OrderItem.class);
-            shopOrderParamCheck(shopOrder);
+            //获取订单商品明细
+            List<OrderItem> orderItemList = getOrderItem(orderItemArray);
             totalShop += shopOrder.getPayment();
             totalNum += shopOrder.getItemNum();
             shopOrder.setOrderItems(orderItemList);
@@ -239,13 +247,61 @@ public class OrderBiz implements IOrderBiz {
                 totalItem += orderItem.getPayment();
                 totalOneShopNum += orderItem.getNum();
             }
-            AssertUtil.isTrue(totalItem == shopOrder.getPayment(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
-            AssertUtil.isTrue(totalOneShopNum == shopOrder.getItemNum(), "店铺订单商品总数与所有该店铺商品总数不等值");
+            AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+            AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
             shopOrderList.add(shopOrder);
         }
-        AssertUtil.isTrue(totalShop == platformOrder.getPayment(), "平台订单实付金额与所有店铺总实付金额不等值");
-        AssertUtil.isTrue(totalNum == platformOrder.getItemNum(), "平台订单商品总数与所有店铺商品总数不等值");
+        AssertUtil.isTrue(totalShop.longValue() == platformOrder.getPayment().longValue(), "平台订单实付金额与所有店铺总实付金额不等值");
+        AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");
         return shopOrderList;
+    }
+
+    /**
+     * 设置店铺金额
+     * @param shopOrder
+     * @param shopOrderObj
+     */
+    private void setShopOrderFee(ShopOrder shopOrder, JSONObject shopOrderObj){
+        shopOrder.setPayment(CommonUtil.getMoneyLong(shopOrderObj.getDouble("payment")));//实付金额
+        shopOrder.setPostageFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("postageFee")));//积分抵扣金额
+        shopOrder.setTotalFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("totalFee")));//订单总金额
+        shopOrder.setAdjustFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("adjustFee")));//卖家手工调整金额
+        shopOrder.setTotalTax(CommonUtil.getMoneyLong(shopOrderObj.getDouble("totalTax")));//总税费
+        shopOrder.setDiscountPromotion(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountPromotion")));//促销优惠总金额
+        shopOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
+        shopOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
+        shopOrder.setDiscountFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountFee")));//订单优惠总金额
+    }
+
+    /**
+     * 获取订单商品明细
+     * @param orderItemArray
+     * @return
+     */
+    private List<OrderItem> getOrderItem(JSONArray orderItemArray){
+        List<OrderItem> orderItemList = new ArrayList<OrderItem>();
+        for(Object obj: orderItemArray){
+            JSONObject orderItemObj = (JSONObject)obj;
+            OrderItem orderItem = orderItemObj.toJavaObject(OrderItem.class);
+            orderItem.setPayment(CommonUtil.getMoneyLong(orderItemObj.getDouble("payment")));//实付金额
+            orderItem.setTotalFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("totalFee")));//订单总金额
+            orderItem.setAdjustFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("adjustFee")));//卖家手工调整金额
+            orderItem.setDiscountPromotion(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountPromotion")));//促销优惠总金额
+            orderItem.setDiscountCouponShop(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
+            orderItem.setDiscountCouponPlatform(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
+            orderItem.setDiscountFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountFee")));//订单优惠总金额
+            orderItem.setPostDiscount(CommonUtil.getMoneyLong(orderItemObj.getDouble("postDiscount")));//运费分摊
+            orderItem.setRefundFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("refundFee")));//退款金额
+            orderItem.setPriceTax(CommonUtil.getMoneyLong(orderItemObj.getDouble("priceTax")));//商品税费
+            orderItem.setPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("price")));//商品价格
+            orderItem.setMarketPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("marketPrice")));//市场价
+            orderItem.setPromotionPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("promotionPrice")));//促销价
+            orderItem.setCustomsPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("customsPrice")));//报关单价
+            orderItem.setTransactionPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("transactionPrice")));//成交单价
+            orderItem.setTotalWeight(CommonUtil.getMoneyLong(orderItemObj.getDouble("totalWeight")));//商品重量
+            orderItemList.add(orderItem);
+        }
+        return orderItemList;
     }
 
     /**
@@ -406,14 +462,14 @@ public class OrderBiz implements IOrderBiz {
      */
     private void setWarehouseOrderFee(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList){
         Integer itemsNum = 0;//商品总数量
-        Double totalFee = new Double(0);//总金额
-        Double payment = new Double(0);//实付金额
-        Double adjustFee = new Double(0);//卖家手工调整金额
-        Double postageFee = new Double(0);//邮费分摊金额
-        Double discountPromotion = new Double(0);//促销优惠总金额
-        Double discountCouponShop = new Double(0);//店铺优惠卷分摊总金额
-        Double discountCouponPlatform = new Double(0);//平台优惠卷分摊总金额
-        Double discountFee = new Double(0);//促销优惠金额
+        Long totalFee = 0L;//总金额
+        Long payment = 0L;//实付金额
+        Long adjustFee = 0L;//卖家手工调整金额
+        Long postageFee = 0L;//邮费分摊金额
+        Long discountPromotion = 0L;//促销优惠总金额
+        Long discountCouponShop = 0L;//店铺优惠卷分摊总金额
+        Long discountCouponPlatform = 0L;//平台优惠卷分摊总金额
+        Long discountFee = 0L;//促销优惠金额
         for(OrderItem orderItem: orderItemList){
             itemsNum += 1;
             totalFee += orderItem.getTotalFee();
@@ -426,14 +482,14 @@ public class OrderBiz implements IOrderBiz {
             discountFee += orderItem.getDiscountFee();
         }
         warehouseOrder.setItemsNum(itemsNum);
-        warehouseOrder.setTotalFee(CommonUtil.getMoneyLong(totalFee));
-        warehouseOrder.setPayment(CommonUtil.getMoneyLong(payment));
-        warehouseOrder.setAdjustFee(CommonUtil.getMoneyLong(adjustFee));
-        warehouseOrder.setPostageFee(CommonUtil.getMoneyLong(postageFee));
-        warehouseOrder.setDiscountPromotion(CommonUtil.getMoneyLong(discountPromotion));
-        warehouseOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(discountCouponShop));
-        warehouseOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(discountCouponPlatform));
-        warehouseOrder.setDiscountFee(CommonUtil.getMoneyLong(discountFee));
+        warehouseOrder.setTotalFee(totalFee);
+        warehouseOrder.setPayment(payment);
+        warehouseOrder.setAdjustFee(adjustFee);
+        warehouseOrder.setPostageFee(postageFee);
+        warehouseOrder.setDiscountPromotion(discountPromotion);
+        warehouseOrder.setDiscountCouponShop(discountCouponShop);
+        warehouseOrder.setDiscountCouponPlatform(discountCouponPlatform);
+        warehouseOrder.setDiscountFee(discountFee);
     }
 
 

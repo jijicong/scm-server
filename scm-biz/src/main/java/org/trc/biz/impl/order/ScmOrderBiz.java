@@ -387,6 +387,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Collections.sort(page.getResult(), new Comparator<ShopOrder>() {
             @Override
             public int compare(ShopOrder o1, ShopOrder o2) {
+                if(null == o1.getPayTime() || null == o2.getPayTime()){
+                    return 0;
+                }
                 return o1.getPayTime().compareTo(o2.getPayTime());
             }
         });
@@ -401,7 +404,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
                 shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
         OrderExt orderExt = new OrderExt();
-        BeanUtils.copyProperties(orderExt, platformOrder);
+        BeanUtils.copyProperties(platformOrder, orderExt);
         orderExt.setOrderItemList(orderItemList);
         List<OrderExt> orderExts = new ArrayList<OrderExt>();
         orderExts.add(orderExt);
@@ -436,6 +439,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
             @Override
             public int compare(WarehouseOrder o1, WarehouseOrder o2) {
+                if(null == o1.getPayTime() || null == o2.getPayTime()){
+                    return 0;
+                }
                 return o1.getPayTime().compareTo(o2.getPayTime());
             }
         });
