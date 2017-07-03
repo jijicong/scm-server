@@ -308,7 +308,7 @@ public class OrderBiz implements IOrderBiz {
         AssertUtil.notBlank(orderItem.getShopName(), "店铺名称不能为空");
         AssertUtil.notBlank(orderItem.getUserId(), "会员id不能为空");
         AssertUtil.notBlank(orderItem.getItemNo(), "商品货号不能为空");
-        AssertUtil.notBlank(orderItem.getBarCode(), "条形码不能为空");
+        //AssertUtil.notBlank(orderItem.getBarCode(), "条形码不能为空");
         AssertUtil.notBlank(orderItem.getItemName(), "商品名称不能为空");
         AssertUtil.notNull(orderItem.getPayment(), "实付金额不能为空");
         AssertUtil.isTrue(orderItem.getPayment() >= 0, "实付金额应大于等于0");
@@ -392,11 +392,50 @@ public class OrderBiz implements IOrderBiz {
                     orderItemList2.add(orderItem);
                 }
             }
+            setWarehouseOrderFee(warehouseOrder, orderItemList2);
             warehouseOrder.setOrderItemList(orderItemList2);
             warehouseOrderList.add(warehouseOrder);
         }
         return warehouseOrderList;
     }
+
+    /**
+     * 设置仓库订单金额
+     * @param warehouseOrder
+     * @param orderItemList
+     */
+    private void setWarehouseOrderFee(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList){
+        Integer itemsNum = 0;//商品总数量
+        Double totalFee = new Double(0);//总金额
+        Double payment = new Double(0);//实付金额
+        Double adjustFee = new Double(0);//卖家手工调整金额
+        Double postageFee = new Double(0);//邮费分摊金额
+        Double discountPromotion = new Double(0);//促销优惠总金额
+        Double discountCouponShop = new Double(0);//店铺优惠卷分摊总金额
+        Double discountCouponPlatform = new Double(0);//平台优惠卷分摊总金额
+        Double discountFee = new Double(0);//促销优惠金额
+        for(OrderItem orderItem: orderItemList){
+            itemsNum += 1;
+            totalFee += orderItem.getTotalFee();
+            payment += orderItem.getPayment();
+            adjustFee += orderItem.getAdjustFee();
+            postageFee += orderItem.getPostDiscount();
+            discountPromotion += orderItem.getDiscountPromotion();
+            discountCouponShop += orderItem.getDiscountCouponShop();
+            discountCouponPlatform += orderItem.getDiscountCouponPlatform();
+            discountFee += orderItem.getDiscountFee();
+        }
+        warehouseOrder.setItemsNum(itemsNum);
+        warehouseOrder.setTotalFee(CommonUtil.getMoneyLong(totalFee));
+        warehouseOrder.setPayment(CommonUtil.getMoneyLong(payment));
+        warehouseOrder.setAdjustFee(CommonUtil.getMoneyLong(adjustFee));
+        warehouseOrder.setPostageFee(CommonUtil.getMoneyLong(postageFee));
+        warehouseOrder.setDiscountPromotion(CommonUtil.getMoneyLong(discountPromotion));
+        warehouseOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(discountCouponShop));
+        warehouseOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(discountCouponPlatform));
+        warehouseOrder.setDiscountFee(CommonUtil.getMoneyLong(discountFee));
+    }
+
 
     /**
      * 获取仓库商品明细

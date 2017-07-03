@@ -31,6 +31,8 @@ public class CommonUtil {
 
 	public static final String HTTP_SERVLET_REQUEST = "HttpServletRequest";
 	public static final String MODEL_MAP = "ModelMap";
+	//金额数字
+	public static final Double MONEY_MULTI = 100.0;
 	
 	public static Map<String, Object> getMap(String key, String Object){
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -264,6 +266,20 @@ public class CommonUtil {
 			map.put(key, json.get(key));
 		}
 		return map;
+	}
+
+
+	/**
+	 * 金额元转分
+	 * @param val
+	 * @return
+	 */
+	public static Long getMoneyLong(Double val){
+		if(null != val){
+			val = val*MONEY_MULTI;
+			return val.longValue();
+		}
+		return null;
 	}
 
 
