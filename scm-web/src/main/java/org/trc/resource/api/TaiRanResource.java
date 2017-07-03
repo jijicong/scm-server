@@ -251,8 +251,8 @@ public class TaiRanResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.TEXT_PLAIN)
     public AppResult<String> getOrderList(String information) {
-
-        return ResultUtil.createSucssAppResult("平台订单请等待后续通知", information);
+        return orderBiz.reciveChannelOrder(information);
+//        return ResultUtil.createSucssAppResult("平台订单请等待后续通知", information);
 
     }
 

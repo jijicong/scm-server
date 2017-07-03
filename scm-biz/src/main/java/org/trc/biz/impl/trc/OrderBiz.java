@@ -139,6 +139,8 @@ public class OrderBiz implements IOrderBiz {
                     totalItem += orderItem.getPayment();
                     totalOneShopNum += orderItem.getNum();
                 }
+                System.out.println(totalItem);
+                System.out.println(shopOrder.getPayment());
                 AssertUtil.isTrue(totalItem == shopOrder.getPayment(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
                 AssertUtil.isTrue(totalOneShopNum == shopOrder.getItemNum(), "店铺订单商品总数与所有该店铺商品总数不等值");
             }
@@ -263,31 +265,35 @@ public class OrderBiz implements IOrderBiz {
      * @return
      */
     private List<ShopOrder> getShopOrderList(PlatformOrder platformOrder, JSONArray shopOrderArray) {
-        List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
-        Integer totalNum = 0;
-        Long totalShop = 0L;
-        for (Object obj : shopOrderArray) {
-            ShopOrder shopOrder = ((JSONObject) obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
-            shopOrderParamCheck(shopOrder);
-            shopOrderList.add(shopOrder);
-            totalShop += shopOrder.getPayment();
-            totalNum += shopOrder.getItemNum();
-            List<OrderItem> orderItemList = ((JSONObject) obj).getJSONArray("orderItems").toJavaList(OrderItem.class);
-            shopOrder.setOrderItems(orderItemList);
-            Integer totalOneShopNum = 0;
-            Long totalItem = 0L;
-            for (OrderItem orderItem : orderItemList) {
-                orderItemsParamCheck(orderItem);
-                totalItem += orderItem.getPayment();
-                totalOneShopNum += orderItem.getNum();
-            }
-            AssertUtil.isTrue(totalItem == shopOrder.getPayment(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
-            AssertUtil.isTrue(totalOneShopNum == shopOrder.getItemNum(), "店铺订单商品总数与所有该店铺商品总数不等值");
-            orderItemList.addAll(orderItemList);
-        }
-        AssertUtil.isTrue(totalShop == platformOrder.getPayment(), "平台订单实付金额与所有店铺总实付金额不等值");
-        AssertUtil.isTrue(totalNum == platformOrder.getItemNum(), "平台订单商品总数与所有店铺商品总数不等值");
-        return shopOrderList;
+      try{
+          List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
+          Integer totalNum = 0;
+          Long totalShop = 0L;
+          for (Object obj : shopOrderArray) {
+              ShopOrder shopOrder = ((JSONObject) obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
+              shopOrderParamCheck(shopOrder);
+              shopOrderList.add(shopOrder);
+              totalShop += shopOrder.getPayment();
+              totalNum += shopOrder.getItemNum();
+              List<OrderItem> orderItemList = ((JSONObject) obj).getJSONArray("orderItems").toJavaList(OrderItem.class);
+              shopOrder.setOrderItems(orderItemList);
+              Integer totalOneShopNum = 0;
+              Long totalItem = 0L;
+              for (OrderItem orderItem : orderItemList) {
+                  orderItemsParamCheck(orderItem);
+                  totalItem += orderItem.getPayment();
+                  totalOneShopNum += orderItem.getNum();
+              }
+              AssertUtil.isTrue(totalItem == shopOrder.getPayment(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+              AssertUtil.isTrue(totalOneShopNum == shopOrder.getItemNum(), "店铺订单商品总数与所有该店铺商品总数不等值");
+          }
+          AssertUtil.isTrue(totalShop == platformOrder.getPayment(), "平台订单实付金额与所有店铺总实付金额不等值");
+          AssertUtil.isTrue(totalNum == platformOrder.getItemNum(), "平台订单商品总数与所有店铺商品总数不等值");
+          return shopOrderList;
+      }catch (Exception e){
+          System.out.println(e.getMessage());
+      }
+       return null;
     }
 
     /**
@@ -358,25 +364,7 @@ public class OrderBiz implements IOrderBiz {
         AssertUtil.notNull(orderItem.getNum(), "购买数量不能为空");
     }
 
-    /*public void dealShopOrder(JSONObject shopOrderJson, PlatformOrder platformOrder) throws Exception {
-        JSONArray orderItems = shopOrderJson.getJSONArray("orderItems");
-        List<OrderItem> orderItemList = orderItems.toJavaList(OrderItem.class);
-        //分离一件代发和自采商品
-        List<OrderItem> orderItemList1 = new ArrayList<>();//TODO 自采商品,二期处理
-        List<OrderItem> orderItemList2 = new ArrayList<>();//一件代发
-        for (OrderItem orderItem : orderItemList) {
-            if (orderItem.getSkuCode().startsWith(SP0)) {
-                orderItemList1.add(orderItem);
-            }
-            if (orderItem.getSkuCode().startsWith(SP1)) {
-                orderItemList2.add(orderItem);
-            }
-        }
-        //匹配供应商，新建仓库级订单，修改orderItem，直接发送订单信息
-        ShopOrder shopOrder = JSONObject.parseObject(shopOrderJson.getJSONObject("shopOrder").toJSONString(), ShopOrder.class);
-        dealSupplier(orderItemList2, shopOrder, platformOrder);
-        shopOrderService.insert(shopOrder);
-    }*/
+
 
     public List<WarehouseOrder> dealShopOrder(ShopOrder shopOrder, PlatformOrder platformOrder) {
         List<OrderItem> orderItemList = shopOrder.getOrderItems();
@@ -394,80 +382,7 @@ public class OrderBiz implements IOrderBiz {
         return dealSupplier(orderItemList2, shopOrder, platformOrder);
     }
 
-    //一件代发
-    /*public void dealSupplier(List<OrderItem> orderItems, ShopOrder shopOrder, PlatformOrder platformOrder) {
-        //新建仓库级订单
-        List<String> skuCodeList = new ArrayList<>();
-        for (OrderItem orderItem : orderItems) {
-            skuCodeList.add(orderItem.getSkuCode());
-        }
-        Example example = new Example(SkuRelation.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("skuCode", skuCodeList);
-        example.selectProperties("supplierCode");
-        List<SkuRelation> skuRelationList = skuRelationService.selectByExample(example);
-        Set<String> supplierCodes = new HashSet<>();
-        for (SkuRelation skuRelation : skuRelationList) {
-            supplierCodes.add(skuRelation.getSupplierCode());
-        }
-        for (String supplierCode : supplierCodes) {
-            List<OrderItem> orderItemsToSupplier = new ArrayList<>();
-            WarehouseOrder warehouseOrder = new WarehouseOrder();
-            warehouseOrder.setShopId(shopOrder.getShopId());
-            warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
-            warehouseOrder.setShopName(shopOrder.getShopName());
-            warehouseOrder.setSupplierCode(supplierCode);
-            warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
-            warehouseOrder.setChannelCode(shopOrder.getChannelCode());
-            warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-            warehouseOrder.setPlatformType(shopOrder.getPlatformType());
-            warehouseOrder.setUserId(shopOrder.getUserId());
-            warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
-            //流水号
-            String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER, supplierCode, ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
-            warehouseOrder.setWarehouseOrderCode(code);
-            warehouseOrder.setOrderType(ZeroToNineEnum.ONE.getCode());
 
-            Boolean flag = true;
-            //循环orderItem,获取供应商skucode，关联仓库级订单，并修改仓库级订单
-            Iterator<OrderItem> iterator = orderItems.iterator();
-            while (iterator.hasNext()) {
-                OrderItem orderItem = iterator.next();
-                ExternalItemSku externalItemSku = new ExternalItemSku();
-                externalItemSku.setSkuCode(orderItem.getSkuCode());
-                externalItemSku = externalItemSkuService.selectOne(externalItemSku);
-                if (externalItemSku == null) {
-                    throw new TrcException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "未对应到一件代发商品" + orderItem.getSkuCode());
-                }
-                if (externalItemSku.getSupplierCode().equals(warehouseOrder.getSupplierCode())) {
-                    if (flag) {
-                        warehouseOrder.setSupplierName(externalItemSku.getSupplierName());
-                        warehouseOrder.setPayment(orderItem.getPayment());
-                        warehouseOrder.setItemsNum(1);
-                        flag = false;
-                    } else {
-                        warehouseOrder.setPayment(warehouseOrder.getPayment() + orderItem.getPayment());
-                        warehouseOrder.setItemsNum(warehouseOrder.getItemsNum() + 1);
-                    }
-                    orderItem.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
-                    orderItem.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
-                    // 向数据库中插入OrderItem
-                    orderItemService.insert(orderItem);
-                    orderItemsToSupplier.add(orderItem);
-                    iterator.remove();
-                }
-            }
-            //向数据中插入仓库级订单
-            warehouseOrderService.insert(warehouseOrder);
-            //最后传出去的封装数据
-            Map map = new HashMap();
-            map.put("platformOrder", platformOrder);
-            map.put("orderItems", orderItemsToSupplier);
-            map.put("warehouseOrder", warehouseOrder);
-            //TODO 根据供应商信息分别调接口
-
-        }
-    }*/
 
     public List<WarehouseOrder> dealSupplier(List<OrderItem> orderItems, ShopOrder shopOrder, PlatformOrder platformOrder) {
         //新建仓库级订单
@@ -533,8 +448,6 @@ public class OrderBiz implements IOrderBiz {
             warehouseOrder.setOrderItemList(orderItemList2);
             warehouseOrderList.add(warehouseOrder);
         }
-        //orderItemService.insertList(orderItemList);
-        //warehouseOrderService.insertList(warehouseOrderList);
         return warehouseOrderList;
     }
 
