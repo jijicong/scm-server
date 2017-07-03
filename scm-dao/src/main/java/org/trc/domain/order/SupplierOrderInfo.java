@@ -2,8 +2,15 @@ package org.trc.domain.order;
 
 import org.trc.domain.util.ScmDO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 
 public class SupplierOrderInfo extends ScmDO{
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String warehouseOrderCode;

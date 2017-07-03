@@ -7,20 +7,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.order.*;
 import org.trc.enums.*;
+import org.trc.exception.OrderException;
 import org.trc.form.JDModel.JdSku;
 import org.trc.form.JDModel.JingDongOrder;
 import org.trc.form.JDModel.OrderPriceSnap;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
-import org.trc.service.order.IOrderItemService;
-import org.trc.service.order.IPlatformOrderService;
-import org.trc.service.order.IShopOrderService;
-import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.IJDService;
+import org.trc.service.order.*;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -47,6 +46,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IOrderItemService orderItemService;
     @Autowired
     private IWarehouseOrderService warehouseOrderService;
+    @Autowired
+    private ISupplierOrderInfoService supplierOrderInfoService;
+    @Autowired
+    private IJDService ijdService;
 
     @Override
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
@@ -175,7 +178,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName) {
-        AssertUtil.notBlank(warehouseOrderCode, "提交订单京东订单仓库订单编码不能为空");
         AssertUtil.notBlank(jdAddressCode, "提交订单京东订单四级地址编码不能为空");
         AssertUtil.notBlank(jdAddressName, "提交订单京东订单四级地址不能为空");
         AssertUtil.doesNotContain(jdAddressCode, JING_DONG_ADDRESS_SPLIT, "提交订单京东订单四级地址编码格式错误");
@@ -187,6 +189,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //获取京东四级地址
         String[] jdAddressCodes = jdAddressCode.split(JING_DONG_ADDRESS_SPLIT);
         String[] jdAddressNames = jdAddressName.split(JING_DONG_ADDRESS_SPLIT);
+        AssertUtil.isTrue(jdAddressCodes.length == jdAddressNames.length, "京东四级地址编码与名称个数不匹配");
         //查询平台订单
         PlatformOrder platformOrder = new PlatformOrder();
         platformOrder.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
@@ -194,11 +197,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notNull(platformOrder, String.format("根据平台订单编码[%s]查询平台订单为空", warehouseOrder.getPlatformOrderCode()));
         //获取京东订单对象
         JingDongOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, jdAddressCodes);
-
-
-
-
-        return null;
+        //保存京东订单信息
+        SupplierOrderInfo supplierOrderInfo = saveSupplierOrderInfo(warehouseOrder, jdAddressCodes, jdAddressNames);
+        //调用京东下单服务接口
+        String jdOrderId = invokeSubmitJingDongOrder(jingDongOrder);
+        //更新京东订单信息
+        supplierOrderInfo.setSupplierOrderCode(jdOrderId);
+        supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
+        int count = supplierOrderInfoService.updateByPrimaryKeySelective(supplierOrderInfo);
+        if(count == 0){
+            String msg = String.format("更新京东订单信息%s的供应商订单编码为[%s]异常", supplierOrderInfo, jdOrderId);
+            log.error(msg);
+            return ResultUtil.createFailAppResult(msg);
+        }
+        return ResultUtil.createSucssAppResult("提交京东订单成功","");
     }
 
     private JingDongOrder getJingDongOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, String[] jdAddressCodes){
@@ -272,15 +284,50 @@ public class ScmOrderBiz implements IScmOrderBiz {
         jingDongOrder.setOrderPriceSnap(orderPriceSnapList);
     }
 
-
-
-    private void saveSupplierOrderInfo(WarehouseOrder warehouseOrder, String[] jdAddressCodes, String[] jdAddressNames){
+    /**
+     * 保存供应商订单信息
+     * @param warehouseOrder
+     * @param jdAddressCodes
+     * @param jdAddressNames
+     */
+    private SupplierOrderInfo saveSupplierOrderInfo(WarehouseOrder warehouseOrder, String[] jdAddressCodes, String[] jdAddressNames){
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
-        //supplierOrderInfo.set
+        if(jdAddressCodes.length == 1){
+            supplierOrderInfo.setJdProvinceCode(jdAddressCodes[0]);
+            supplierOrderInfo.setJdProvince(jdAddressNames[0]);
+        }
+        if(jdAddressCodes.length == 2){
+            supplierOrderInfo.setJdCityCode(jdAddressCodes[1]);
+            supplierOrderInfo.setJdCity(jdAddressNames[1]);
+        }
+        if(jdAddressCodes.length == 3){
+            supplierOrderInfo.setJdDistrictCode(jdAddressCodes[2]);
+            supplierOrderInfo.setJdDistrict(jdAddressNames[2]);
+        }
+        if(jdAddressCodes.length == 4){
+            supplierOrderInfo.setJdTownCode(jdAddressCodes[3]);
+            supplierOrderInfo.setJdTown(jdAddressNames[3]);
+        }
+        ParamsUtil.setBaseDO(supplierOrderInfo);
+        supplierOrderInfoService.insert(supplierOrderInfo);
+        return supplierOrderInfo;
+    }
 
 
+
+    /**
+     * 调用京东下单服务接口
+     * @param jingDongOrder
+     * @return
+     */
+    private String invokeSubmitJingDongOrder(JingDongOrder jingDongOrder){
+        ReturnTypeDO returnTypeDO = ijdService.submitJingDongOrder(jingDongOrder);
+        if(!returnTypeDO.getSuccess()){
+            throw new OrderException(ExceptionEnum.SUBMIT_JING_DONG_ORDER, "调用京东下单服务接口失败");
+        }
+        return returnTypeDO.getResult().toString();
     }
 
 

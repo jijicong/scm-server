@@ -185,9 +185,7 @@ public class HttpClientUtil {
         params.put("pageNo",1);
         params.put("pageSize",10);
         try {
-            //System.out.println(HttpClientUtil.httpGetRequest(tbUrl+userId,params,200));
             System.out.println(HttpClientUtil.httpGetRequest(tbUrl,params));
-            //System.out.println(HttpRequestUtil.sendGet(tbUrl, param));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -104,6 +104,10 @@ public enum ExceptionEnum{
     USER_CENTER_QUERY_EXCEPTION("600101","用户中心查询异常"),
 
     ORDER_IDEMPOTENT_SAVE_EXCEPTION("600102","订单保存幂等信息异常"),
+    SUBMIT_JING_DONG_ORDER("600103","调用京东下单服务异常"),
+    JING_DONG_ORDER_QUERY_EXCEPTION("600104","调用京东订单反查服务异常"),
+    JING_DONG_LOGISTICS_QUERY_EXCEPTION("600105","调用京东订单配送服务异常"),
+    SUPPLIER_ORDER_INFO_UPDATE_EXCEPTION("600107","供应商订单信息更新异常"),
 
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),

@@ -778,5 +778,33 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+    @Override
+    public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
+        AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            /*Map<String, Object> map = new HashMap<String, Object>();
+            map.put("skus", JSONArray.toJSON(skuDOList));
+            response = HttpClientUtil.httpPostRequest(externalSupplierConfig.getSubmitOrderUrl(), map, TIME_OUT);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用外部供应商品使用状态更新接口返回结果为空");
+            }*/
+        }catch (Exception e){
+            String msg = String.format("调用外部供应商商品使用状态更新接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
 
 }

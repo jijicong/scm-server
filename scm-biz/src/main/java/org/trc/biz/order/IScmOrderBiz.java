@@ -55,7 +55,7 @@ public interface IScmOrderBiz {
     List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form);
 
     /**
-     * 提交京东订单
+     * 提交订单
      * @param warehouseOrderCode
      * @param jdAddressCode
      * @param jdAddressName

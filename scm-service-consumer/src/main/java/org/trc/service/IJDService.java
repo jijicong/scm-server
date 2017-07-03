@@ -322,4 +322,12 @@ public interface IJDService {
      */
     ReturnTypeDO noticeUpdateSkuUsedStatus(List<SkuDO> skuDOList);
 
+    /**
+     * 提交京东订单
+     * @param jingDongOrder
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder);
+
 }
