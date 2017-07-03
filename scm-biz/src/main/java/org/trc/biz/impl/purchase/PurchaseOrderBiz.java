@@ -371,7 +371,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         code = purchaseOrder.getPurchaseOrderCode();
 
-        savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
+        BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
+        /*System.out.println(totalPrice);
+        System.out.println("-----------------------------------");
+        System.out.println(purchaseOrder.getTotalFeeD());*/
+        if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
+
+            String msg = CommonUtil.joinStr("采购单保存,采购商品的总价与页面的总价不相等").toString();
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+
+        }
+
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
             savePurchaseOrderAudit(purchaseOrder);
         }
@@ -404,16 +415,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param orderId 采购订单id
      * @param code  采购订单 编码
      * @param createOperator 创建人
-     * @
+     * @return int 商品的采购总价
      */
-    public void savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
+    public BigDecimal savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
 
         if(StringUtils.isBlank(purchaseOrderStrs)){
             String msg = CommonUtil.joinStr("保存采购商品的信息为空").toString();
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-
         List<PurchaseDetail> purchaseDetailList = null;
         try {
             purchaseDetailList = JSONArray.parseArray(purchaseOrderStrs,PurchaseDetail.class);
@@ -423,7 +433,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
         AssertUtil.notEmpty(purchaseDetailList,"采购单保存失败,无采购商品");
+
+        BigDecimal totalPrice = new BigDecimal(0);
+
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
+            totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
             purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100)).longValue());//设置采购价格*100
             purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());//设置单品的总采购价*100
             purchaseDetail.setPurchaseId(orderId);
@@ -438,7 +452,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
-
+        return totalPrice;
     }
 
     @Override
@@ -671,7 +685,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         AssertUtil.notNull(purchaseOrderAddData,"修改采购单失败,采购单为空");
         PurchaseOrder purchaseOrder = purchaseOrderAddData;//转型
-        System.out.println(purchaseOrderAddData.getTotalFeeD().toString());
         purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
         purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
@@ -695,7 +708,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Object obj =requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         AssertUtil.notNull(obj,"采购单更新失败,获取授权信息失败");
         purchaseOrderAddData.setCreateOperator((String) obj);
-        savePurchaseDetail(purchaseOrderAddData.getGridValue(),purchaseOrderAddData.getId(),purchaseOrderAddData.getPurchaseOrderCode(),purchaseOrderAddData.getCreateOperator());
+
+        BigDecimal totalPrice = savePurchaseDetail(purchaseOrderAddData.getGridValue(),purchaseOrderAddData.getId(),purchaseOrderAddData.getPurchaseOrderCode(),purchaseOrderAddData.getCreateOperator());
+        if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
+            String msg = CommonUtil.joinStr("采购单修改,采购商品的总价与页面的总价不相等").toString();
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+        }
+
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
             savePurchaseOrderAudit(purchaseOrderAddData);
         }
