@@ -5,7 +5,7 @@ package org.trc.model;
  * 品牌
  * Created by hzdzf on 2017/5/23.
  */
-public class BrandToTrc {
+public class BrandToTrcDO {
 
     private String alise;//品牌别名
 

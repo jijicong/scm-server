@@ -13,17 +13,17 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.*;
+import org.trc.enums.RequestFlowStatusEnum;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.TrcException;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.model.BrandToTrc;
-import org.trc.model.CategoryToTrc;
-import org.trc.model.PropertyToTrc;
-import org.trc.model.ResultModel;
+import org.trc.model.*;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
@@ -33,10 +33,8 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * 泰然城交互
@@ -92,7 +90,15 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ResultModel sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
+    public void addRequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime, String remark) throws Exception {
+        RequestFlow requestFlow = new RequestFlow(requester, responder, type, requestNum, status, requestParam, responseParam, requestTime, remark);
+        requestFlowService.insert(requestFlow);
+
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public ToGlyResultDO sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
         Assert.notNull(brand.getAlise(), "品牌别名不能为空");
         Assert.notNull(brand.getBrandCode(), "品牌编码不能为空");
         Assert.notNull(brand.getIsValid(), "是否停用不能为空");
@@ -102,10 +108,10 @@ public class TrcBiz implements ITrcBiz {
         //判断是否通知
         if (!action.equals(TrcActionTypeEnum.ADD_BRAND)) {
             if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {
-                return new ResultModel("1", "无需通知品牌变更");
+                return new ToGlyResultDO("1", "无需通知品牌变更");
             }
         }
-        BrandToTrc brandToTrc = new BrandToTrc();
+        BrandToTrcDO brandToTrc = new BrandToTrcDO();
         brandToTrc.setAlise(brand.getAlise());
         brandToTrc.setBrandCode(brand.getBrandCode());
         brandToTrc.setIsValid(brand.getIsValid());
@@ -132,19 +138,25 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_BRAND_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_BRAND_EXCEPTION, "Failure:" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
-        //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ResultModel sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
+    public ToGlyResultDO sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
         Assert.notNull(property.getSort(), "属性排序不能为空");
         Assert.notNull(property.getName(), "属性名称不能为空");
         Assert.notNull(property.getIsValid(), "属性是否停用不能为空");
@@ -156,10 +168,10 @@ public class TrcBiz implements ITrcBiz {
             if (oldProperty.getIsValid().equals(property.getIsValid()) && oldProperty.getName().equals(property.getName())
                     && oldProperty.getValueType().equals(property.getValueType()) && oldProperty.getTypeCode().equals(property.getTypeCode())
                     && valueList == null) {
-                return new ResultModel("1", "无需通知属性变更");
+                return new ToGlyResultDO("1", "无需通知属性变更");
             }
         }
-        PropertyToTrc propertyToTrc = new PropertyToTrc();
+        PropertyToTrcDO propertyToTrc = new PropertyToTrcDO();
         propertyToTrc.setSort(property.getSort());
         propertyToTrc.setName(property.getName());
         propertyToTrc.setIsValid(property.getIsValid());
@@ -189,19 +201,27 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_PROPERTY_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_PROPERTY_EXCEPTION, "Failure" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ResultModel sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
+    public ToGlyResultDO sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         if (action.equals(TrcActionTypeEnum.ADD_CATEGORY) || action.equals(TrcActionTypeEnum.EDIT_CATEGORY)
                 || action.equals(TrcActionTypeEnum.STOP_CATEGORY)) {
             return sendCategoryToTrc(action, oldCategory, category, operateTime);
@@ -217,7 +237,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
+    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
 
         //TODO 判断石头通知，暂时觉得都得通知
 
@@ -243,20 +263,27 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_ITEMS_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_ITEMS_EXCEPTION, "Failure" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
     }
 
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
+    public ToGlyResultDO sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
         Assert.notNull(externalItemSkuList, "更新列表不能为空");
 
         //传值处理
@@ -300,14 +327,61 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION, "Failure" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public ToGlyResultDO sendLogistic(TrcActionTypeEnum action,String channelPlatformOrderCode, String channelShopOrderCode, String supplierCode, JSONArray jdLogistic, JSONArray waybillNumbers) throws Exception {
+        //传值处理
+        String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
+        JSONObject params = new JSONObject();
+        params.put("channelPlatformOrderCode", channelPlatformOrderCode);//对应泰然成orderId
+        params.put("channelShopOrderCode", channelShopOrderCode);//对应泰然成shopOrderId
+        params.put("supplierCode", supplierCode);//供应商编码
+        String result = null;
+        switch (supplierCode) {
+            case SupplyConstants.Order.SUPPLIER_JD_CODE:
+                params.put("jdLogistic", jdLogistic);
+                break;
+            case SupplyConstants.Order.SUPPLIER_LY_CODE:
+                params.put("waybillNumbers", waybillNumbers);
+                break;
+        }
+        //TODO URL
+        result = trcService.sendPropertyNotice("", params.toJSONString());
+        String remark = "调用方法-TrcBiz类中[通知物流信息接口sendLogistic]";
+        if (StringUtils.isEmpty(result)) {
+            logger.error(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+            throw new TrcException(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION, "Failure" + remark);
+        }
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
+        //存储请求记录
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
     }
 
     @Override
@@ -316,44 +390,44 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
         if (queryModel.getSupplierCode() != null) {
-            criteria.andEqualTo("supplierCode",queryModel.getSupplierCode());
+            criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
         }
         if (!StringUtils.isEmpty(queryModel.getSkuCode())) {
-            criteria.andEqualTo("skuCode",queryModel.getSkuCode());
+            criteria.andEqualTo("skuCode", queryModel.getSkuCode());
         }
         if (!StringUtils.isEmpty(queryModel.getItemName())) {
-            criteria.andEqualTo("itemName",queryModel.getItemName());
+            criteria.andEqualTo("itemName", queryModel.getItemName());
         }
         example.orderBy("supplierCode").desc();
-        return externalItemSkuService.pagination(example,page,queryModel);
+        return externalItemSkuService.pagination(example, page, queryModel);
     }
 
     @Override
     public void updateRelation(String action, JSONArray relations) throws Exception {
-        try{
+        try {
             AssertUtil.notBlank(action, "动作参数不能为空");
             AssertUtil.notNull(relations, "关联列表不能为空");
-            Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)&&action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)&&action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD);
-            AssertUtil.isTrue(flag,"动作参数类型错误");
-        }catch (Exception e){
+            Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE) && action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD) && action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD);
+            AssertUtil.isTrue(flag, "动作参数类型错误");
+        } catch (Exception e) {
             logger.error(e.getMessage());
-            throw new TrcException(ExceptionEnum.TRC_PARAM_EXCEPTION,e.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_PARAM_EXCEPTION, e.getMessage());
         }
         List<SkuRelation> skuRelationList = relations.toJavaList(SkuRelation.class);
         //删除关联关系
         if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)) {
-            for (SkuRelation skuRelation: skuRelationList){
+            for (SkuRelation skuRelation : skuRelationList) {
                 Example example = new Example(SkuRelation.class);
                 Example.Criteria criteria = example.createCriteria();
-                criteria.andEqualTo("skuCode",skuRelation.getSkuCode());
-                criteria.andEqualTo("channelSkuCode",skuRelation.getChannelSkuCode());
+                criteria.andEqualTo("skuCode", skuRelation.getSkuCode());
+                criteria.andEqualTo("channelSkuCode", skuRelation.getChannelSkuCode());
                 skuRelationService.deleteByExample(example);
             }
         }
         //一件代发商品批量关联
-        if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)){
+        if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
-            while (iter.hasNext()){
+            while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();
                 ExternalItemSku externalItemSku = new ExternalItemSku();
                 externalItemSku.setSkuCode(skuRelation.getSkuCode());
@@ -364,9 +438,9 @@ public class TrcBiz implements ITrcBiz {
             }
         }
         //自采商品批量关联
-        if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)){
+        if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
-            while(iter.hasNext()){
+            while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();
                 Items items = new Items();
                 items.setSpuCode(skuRelation.getSpuCode());
@@ -378,7 +452,7 @@ public class TrcBiz implements ITrcBiz {
 
 
     //发送分类属性改动
-    public ResultModel sendCategoryPropertyList(TrcActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
+    public ToGlyResultDO sendCategoryPropertyList(TrcActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
         Assert.notNull(categoryPropertyList, "分类属性列表不能为空");
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
@@ -398,18 +472,26 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION, "Failure" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+
+        }
+        return toGlyResultDO;
     }
 
     //发送分类品牌改动
-    public ResultModel sendCategoryBrandList(TrcActionTypeEnum action, List<CategoryBrand> categoryBrandList, long operateTime) throws Exception {
+    public ToGlyResultDO sendCategoryBrandList(TrcActionTypeEnum action, List<CategoryBrand> categoryBrandList, long operateTime) throws Exception {
         Assert.notNull(categoryBrandList, "分类品牌列表不能为空");
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
@@ -429,18 +511,25 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION, "Failure" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
     }
 
     //发送分类改动
-    public ResultModel sendCategoryToTrc(TrcActionTypeEnum action, Category oldCategory, Category category, long operateTime) throws Exception {
+    public ToGlyResultDO sendCategoryToTrc(TrcActionTypeEnum action, Category oldCategory, Category category, long operateTime) throws Exception {
         Assert.notNull(category.getIsValid(), "是否停用不能为空");
         Assert.notNull(category.getName(), "分类名称不能为空");
         Assert.notNull(category.getClassifyDescribe(), "分类描述不能为空");
@@ -448,10 +537,10 @@ public class TrcBiz implements ITrcBiz {
         //判断是否通知
         if (!action.equals(TrcActionTypeEnum.ADD_CATEGORY.getCode())) {
             if (oldCategory.getName().equals(category.getName()) && oldCategory.getIsValid().equals(category.getIsValid())) {
-                return new ResultModel("1", "无需通知分类变更");
+                return new ToGlyResultDO("1", "无需通知分类变更");
             }
         }
-        CategoryToTrc categoryToTrc = new CategoryToTrc();
+        CategoryToTrcDO categoryToTrc = new CategoryToTrcDO();
         categoryToTrc.setIsValid(category.getIsValid());
         categoryToTrc.setName(category.getName());
         categoryToTrc.setClassifyDescribe(category.getClassifyDescribe());
@@ -479,14 +568,21 @@ public class TrcBiz implements ITrcBiz {
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_CATEGORY_EXCEPTION.getMessage());
+            //存储请求记录
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SEND_TIME_OUT.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
             throw new TrcException(ExceptionEnum.TRC_CATEGORY_EXCEPTION, "Failure" + remark);
         }
-        ResultModel resultModel = JSONObject.parseObject(result, ResultModel.class);
+        ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        RequestFlow requestFlow = new RequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                noticeNum, resultModel.getStatus(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        requestFlowService.insert(requestFlow);
-        return resultModel;
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        } else {
+            addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
+                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+        }
+        return toGlyResultDO;
     }
 
 
@@ -494,7 +590,7 @@ public class TrcBiz implements ITrcBiz {
         try {
             String action = "delete";
             String noticeNum = GuidUtil.getNextUid(action + UNDER_LINE);
-            BrandToTrc brandToTrc = new BrandToTrc();
+            BrandToTrcDO brandToTrc = new BrandToTrcDO();
             brandToTrc.setWebUrl("wqeqeqr");
             brandToTrc.setAlise("qwqwedqdeqd");
             brandToTrc.setName("wdad");

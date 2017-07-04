@@ -22,5 +22,6 @@ public interface IOrderBiz {
      */
     AppResult<String> reciveChannelOrder(String orderInfo);
 
+
     JSONObject sendOrderInformation();
 }

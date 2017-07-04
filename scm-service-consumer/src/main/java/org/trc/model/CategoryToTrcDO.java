@@ -4,7 +4,7 @@ package org.trc.model;
  * 分类
  * Created by hzdzf on 2017/5/25.
  */
-public class CategoryToTrc {
+public class CategoryToTrcDO {
 
     private Long parentId;//父级分类id
 

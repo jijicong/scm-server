@@ -4,16 +4,16 @@ package org.trc.model;
  * 返回值封装
  * Created by hzdzf on 2017/6/5.
  */
-public class ResultModel {
+public class ToGlyResultDO {
 
     private String status;
 
     private String msg;
 
-    public ResultModel() {
+    public ToGlyResultDO() {
     }
 
-    public ResultModel(String status, String msg) {
+    public ToGlyResultDO(String status, String msg) {
         this.status = status;
         this.msg = msg;
     }
