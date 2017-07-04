@@ -32,7 +32,7 @@ public class GetInterfaceJson {
     }
 
     public static void main(String[] args) {
-        String channelCode = "TRC";
+        /*String channelCode = "TRC";
         PlatformOrder platformOrder = new PlatformOrder("1", "1", "1", "1", "1",
                 1, "1", 12L, 12L, 12L, 12L, 12L, 12L,
                 (byte) 1, "1", "1", "1", "1", "1", "1",
@@ -103,6 +103,6 @@ public class GetInterfaceJson {
         shopOrders.add(shopOrder1);
         shopOrders.add(shopOrder2);
         jsonObject.put("shopOrders", shopOrders);
-        System.out.println(jsonObject.toJSONString());
+        System.out.println(jsonObject.toJSONString());*/
     }
 }

@@ -352,7 +352,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            criteria.andLike(" ", shopOrderForm.getPlatformOrderCode());
+            //criteria.andLike("type", shopOrderForm.getPlatformOrderCode());
             if (StringUtil.isNotEmpty(shopOrderForm.getReceiverName())) {//收货人姓名
                 criteria.andLike("receiverName", "%" + shopOrderForm.getReceiverName() + "%");
             }
