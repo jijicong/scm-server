@@ -33,7 +33,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 /**
@@ -83,6 +82,9 @@ public class TrcBiz implements ITrcBiz {
 
     @Value("${trc.externalItemSku.update.information.url}")
     private String EXTERNALITEMSKU_UPDATE_INFROMATION_URL;
+
+    @Value("{trc.send.logistic.url}")
+    private String SEND_LOGISTIC_URL;
 
     private static final String OR = "|";
 
@@ -211,7 +213,6 @@ public class TrcBiz implements ITrcBiz {
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
@@ -239,7 +240,7 @@ public class TrcBiz implements ITrcBiz {
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
 
-        //TODO 判断石头通知，暂时觉得都得通知
+        //TODO 判断通知，暂时觉得都得通知
 
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
@@ -346,7 +347,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendLogistic(TrcActionTypeEnum action,String channelPlatformOrderCode, String channelShopOrderCode, String supplierCode, JSONArray jdLogistic, JSONArray waybillNumbers) throws Exception {
+    public ToGlyResultDO sendLogistic(TrcActionTypeEnum action, String channelPlatformOrderCode, String channelShopOrderCode, String supplierCode, JSONArray jdLogistic, JSONArray waybillNumbers) throws Exception {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         JSONObject params = new JSONObject();
@@ -362,8 +363,8 @@ public class TrcBiz implements ITrcBiz {
                 params.put("waybillNumbers", waybillNumbers);
                 break;
         }
-        //TODO URL
-        result = trcService.sendPropertyNotice("", params.toJSONString());
+        //TODO 传输方式需要与渠道方确定 URL注入  SEND_LOGISTIC_URL
+        //result = trcService.s
         String remark = "调用方法-TrcBiz类中[通知物流信息接口sendLogistic]";
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION.getMessage());

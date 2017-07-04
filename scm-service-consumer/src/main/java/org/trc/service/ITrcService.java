@@ -55,4 +55,12 @@ public interface ITrcService {
      * @throws Exception
      */
     String sendItemsNotice(String itemsUrl, String params) throws Exception;
+
+    /**
+     *
+     * @param getJDLogisticUrl
+     * @return
+     * @throws Exception
+     */
+    String getJDLogistic(String getJDLogisticUrl) throws Exception;
 }

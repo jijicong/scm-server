@@ -2,6 +2,7 @@ package org.trc.resource.api;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.glassfish.jersey.jaxb.internal.XmlJaxbElementProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -300,6 +301,15 @@ public class TaiRanResource {
             return ResultUtil.createFailAppResult("查询externalItemSku列表信息报错：" + e.getMessage());
         }
     }
+
+    //查询店铺下的京东物流
+    @GET
+    @Path(SupplyConstants.TaiRan.JD_LOGISTICS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult JDLogistics(@QueryParam("shopOrderCode")String shopOrderCode) throws  Exception{
+        return orderBiz.getJDLogistics(shopOrderCode);
+    }
+
 
 }
 

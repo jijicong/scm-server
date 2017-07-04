@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import org.trc.service.ITrcService;
 import org.trc.util.HttpClientUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * 通知泰然城
@@ -28,7 +31,12 @@ public class TrcService implements ITrcService {
     @Override
     public String sendItemsNotice(String itemsUrl, String params) throws Exception {
         return HttpClientUtil.httpPostJsonRequest(itemsUrl, params, 10000);
-}
+    }
+
+    @Override
+    public String getJDLogistic(String getJDLogisticUrl) throws Exception {
+        return HttpClientUtil.httpGetRequest(getJDLogisticUrl);
+    }
 
     //发送分类属性改动
     @Override

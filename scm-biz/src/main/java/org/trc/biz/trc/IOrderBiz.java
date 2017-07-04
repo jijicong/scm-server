@@ -23,5 +23,13 @@ public interface IOrderBiz {
     AppResult<String> reciveChannelOrder(String orderInfo);
 
 
+    /**
+     * 查询京东物流信息
+     * @param shopOrderCode
+     * @return
+     */
+    AppResult getJDLogistics(String shopOrderCode) throws  Exception;
+
+
     JSONObject sendOrderInformation();
 }

@@ -1,30 +1,26 @@
 package org.trc.biz.impl.trc;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.trc.annotation.Note;
-import org.trc.biz.impl.trc.model.GoodOrder;
-import org.trc.biz.impl.trc.model.Order;
-import org.trc.biz.impl.trc.model.TrcShopOrder;
+
 import org.trc.biz.trc.IOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ExternalItemSku;
-import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.order.*;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OrderException;
 import org.trc.exception.TrcException;
+import org.trc.service.ITrcService;
 import org.trc.service.goods.IExternalItemSkuService;
-import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.order.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -41,8 +37,6 @@ public class OrderBiz implements IOrderBiz {
 
     private Logger logger = LoggerFactory.getLogger(OrderBiz.class);
 
-    @Resource
-    private ISkuRelationService skuRelationService;
 
     @Resource
     private IExternalItemSkuService externalItemSkuService;
@@ -58,11 +52,21 @@ public class OrderBiz implements IOrderBiz {
 
     @Resource
     private ISerialUtilService serialUtilService;
+
     @Resource
     private IWarehouseOrderService warehouseOrderService;
 
     @Resource
     private IOrderFlowService orderFlowService;
+
+    @Resource
+    private ISupplierOrderInfoService supplierOrderInfoService;
+
+    @Resource
+    private ITrcService trcService;
+
+    @Value("{trc.jd.logistic.url}")
+    private String TRC_JD_LOGISTIC_URL;
 
     private String SP0 = "SP0";
 
@@ -111,6 +115,24 @@ public class OrderBiz implements IOrderBiz {
         //TODO 根据供应商信息分别调接口*/
 
         return ResultUtil.createSucssAppResult("接收订单成功", "");
+    }
+
+    @Override
+    public AppResult<String> getJDLogistics(String shopOrderCode)throws Exception {
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setShopOrderCode(shopOrderCode);
+        warehouseOrder.setSupplierCode(SupplyConstants.Order.SUPPLIER_JD_CODE);
+        //一个店铺订单下只有一个京东仓库订单
+        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+        supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
+        supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
+        String result = trcService.getJDLogistic(TRC_JD_LOGISTIC_URL+supplierOrderInfo.getSupplierOrderCode());
+        if (StringUtils.isEmpty(result)){
+            logger.error(ExceptionEnum.TRC_LOGISTIC_EXCEPTION.getMessage());
+            throw new TrcException(ExceptionEnum.TRC_LOGISTIC_EXCEPTION, ExceptionEnum.TRC_LOGISTIC_EXCEPTION.getMessage());
+        }
+        return ResultUtil.createSucssAppResult("查询订单信息成功",result);
     }
 
     private JSONObject getChannelOrder(String orderInfo){
