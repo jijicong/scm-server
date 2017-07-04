@@ -17,7 +17,7 @@ public class PlatformOrder {
 
     }
 
-    public PlatformOrder(String platformOrderCode, String channelCode, String platformCode, String userId, String userName, Integer itemNum, String payType, Long payment, Long pointsFee, Long totalFee, Long adjustFee, Long postageFee, Long totalTax, Byte needInvoice, String invoiceName, String invoiceType, String invoiceMain, String receiverProvince, String receiverCity, String receiverDistrict, String receiverAddress, String receiverZip, String receiverName, String receiverIdCard, String receiverIdCardFront, String receiverIdCardBack, String receiverPhone, String receiverMobile, String buyerArea, String zitiMemo, String zitiAddr, Byte anony, Integer obtainPointFee, Integer realPointFee, String stepTradeStatus, Long stepPaidFee, Byte isClearing, String cancelReason, String cancelStatus, String status, Byte isVirtual, String ip, Byte type, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String shippingType, String platformType, Byte rateStatus, String couponCode, String groupBuyStatus, String isDeleted, Date createTime, Date payTime, Date consignTime, Date receiveTime, Date updateTime, Date timeoutActionTime, Date endTime, String payBillId) {
+    public PlatformOrder(String platformOrderCode, String channelCode, String platformCode, String userId, String userName, Integer itemNum, String payType, Long payment, Long pointsFee, Long totalFee, Long adjustFee, Long postageFee, Long totalTax, String needInvoice, String invoiceName, String invoiceType, String invoiceMain, String receiverProvince, String receiverCity, String receiverDistrict, String receiverAddress, String receiverZip, String receiverName, String receiverIdCard, String receiverIdCardFront, String receiverIdCardBack, String receiverPhone, String receiverMobile, String buyerArea, String zitiMemo, String zitiAddr, String anony, Integer obtainPointFee, Integer realPointFee, String stepTradeStatus, Long stepPaidFee, String isClearing, String cancelReason, String cancelStatus, String status, String isVirtual, String ip, String type, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String shippingType, String platformType, String rateStatus, String couponCode, String groupBuyStatus, String isDeleted, Date createTime, Date payTime, Date consignTime, Date receiveTime, Date updateTime, Date timeoutActionTime, Date endTime, String payBillId) {
         this.platformOrderCode = platformOrderCode;
         this.channelCode = channelCode;
         this.platformCode = platformCode;
@@ -130,7 +130,7 @@ public class PlatformOrder {
     private Long totalTax;
 
     // 是否开票 1-是 0-不是
-    private Byte needInvoice;
+    private String needInvoice;
 
     // 发票抬头
     private String invoiceName;
@@ -187,7 +187,7 @@ public class PlatformOrder {
     private String zitiAddr;
 
     // 是否匿名下单 1-匿名 0-实名
-    private Byte anony;
+    private String anony;
 
     // 买家下单送积分
     private Integer obtainPointFee;
@@ -202,7 +202,7 @@ public class PlatformOrder {
     private Long stepPaidFee;
 
     // 是否生成结算清单 0-否 1-是
-    private Byte isClearing;
+    private String isClearing;
 
     // 订单取消原因
     private String cancelReason;
@@ -214,13 +214,13 @@ public class PlatformOrder {
     private String status;
 
     // 是否为虚拟订单 0-否 1-是
-    private Byte isVirtual;
+    private String isVirtual;
 
     // ip地址
     private String ip;
 
     // 订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
-    private Byte type;
+    private String type;
 
     // 促销优惠总金额,单位/分
     private Long discountPromotion;
@@ -241,7 +241,7 @@ public class PlatformOrder {
     private String platformType;
 
     // 用户评价状态 0-未评价 1-已评价
-    private Byte rateStatus;
+    private String rateStatus;
 
     // 应用优惠卷码
     private String couponCode;
@@ -491,14 +491,14 @@ public class PlatformOrder {
      * 返回是否开票 1-是 0-不是
      * @return 是否开票 1-是 0-不是
      */
-    public Byte getNeedInvoice() {
+    public String getNeedInvoice() {
         return needInvoice;
     }
 
     /**
      * 设置是否开票 1-是 0-不是
      */
-    public void setNeedInvoice(Byte needInvoice) {
+    public void setNeedInvoice(String needInvoice) {
         this.needInvoice = needInvoice;
     }
 
@@ -761,14 +761,14 @@ public class PlatformOrder {
      * 返回是否匿名下单 1-匿名 0-实名
      * @return 是否匿名下单 1-匿名 0-实名
      */
-    public Byte getAnony() {
+    public String getAnony() {
         return anony;
     }
 
     /**
      * 设置是否匿名下单 1-匿名 0-实名
      */
-    public void setAnony(Byte anony) {
+    public void setAnony(String anony) {
         this.anony = anony;
     }
 
@@ -836,14 +836,14 @@ public class PlatformOrder {
      * 返回是否生成结算清单 0-否 1-是
      * @return 是否生成结算清单 0-否 1-是
      */
-    public Byte getIsClearing() {
+    public String getIsClearing() {
         return isClearing;
     }
 
     /**
      * 设置是否生成结算清单 0-否 1-是
      */
-    public void setIsClearing(Byte isClearing) {
+    public void setIsClearing(String isClearing) {
         this.isClearing = isClearing;
     }
 
@@ -896,14 +896,14 @@ public class PlatformOrder {
      * 返回是否为虚拟订单 0-否 1-是
      * @return 是否为虚拟订单 0-否 1-是
      */
-    public Byte getIsVirtual() {
+    public String getIsVirtual() {
         return isVirtual;
     }
 
     /**
      * 设置是否为虚拟订单 0-否 1-是
      */
-    public void setIsVirtual(Byte isVirtual) {
+    public void setIsVirtual(String isVirtual) {
         this.isVirtual = isVirtual;
     }
 
@@ -926,14 +926,14 @@ public class PlatformOrder {
      * 返回订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
      * @return 订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
      */
-    public Byte getType() {
+    public String getType() {
         return type;
     }
 
     /**
      * 设置订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
      */
-    public void setType(Byte type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -1031,14 +1031,14 @@ public class PlatformOrder {
      * 返回用户评价状态 0-未评价 1-已评价
      * @return 用户评价状态 0-未评价 1-已评价
      */
-    public Byte getRateStatus() {
+    public String getRateStatus() {
         return rateStatus;
     }
 
     /**
      * 设置用户评价状态 0-未评价 1-已评价
      */
-    public void setRateStatus(Byte rateStatus) {
+    public void setRateStatus(String rateStatus) {
         this.rateStatus = rateStatus;
     }
 

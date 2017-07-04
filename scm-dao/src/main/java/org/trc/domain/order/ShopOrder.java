@@ -19,7 +19,7 @@ public class ShopOrder extends OrderBase {
 
     }
 
-    public ShopOrder(String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, String platformType, Long shopId, String shopName, String userId, String dlytmplIds, String status, String isDeleted, Long payment, Long totalFee, Long postageFee, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String title, String buyerMessage, Long adjustFee, Integer itemNum, Long totalWeight, Boolean rateStatus, Boolean isPartConsign, String groupBuyStatus, Long totalTax, Date createTime, Date consignTime, Date updateTime, String shopMemo, String tradeMemo) {
+    public ShopOrder(String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, String platformType, Long shopId, String shopName, String userId, String dlytmplIds, String status, String isDeleted, Long payment, Long totalFee, Long postageFee, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String title, String buyerMessage, Long adjustFee, Integer itemNum, Long totalWeight, String rateStatus, String isPartConsign, String groupBuyStatus, Long totalTax, Date createTime, Date consignTime, Date updateTime, String shopMemo, String tradeMemo) {
         this.shopOrderCode = shopOrderCode;
         this.platformOrderCode = platformOrderCode;
         this.channelCode = channelCode;
@@ -138,10 +138,10 @@ public class ShopOrder extends OrderBase {
     private Long totalWeight;
 
     // 评价状态
-    private Boolean rateStatus;
+    private String rateStatus;
 
     // 是否是多次发货的订单
-    private Boolean isPartConsign;
+    private String isPartConsign;
 
     // 拼团状态
     private String groupBuyStatus;
@@ -612,14 +612,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 评价状态
      */
-    public Boolean getRateStatus() {
+    public String getRateStatus() {
         return rateStatus;
     }
 
     /**
      * 设置评价状态
      */
-    public void setRateStatus(Boolean rateStatus) {
+    public void setRateStatus(String rateStatus) {
         this.rateStatus = rateStatus;
     }
 
@@ -628,14 +628,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 是否是多次发货的订单
      */
-    public Boolean getIsPartConsign() {
+    public String getIsPartConsign() {
         return isPartConsign;
     }
 
     /**
      * 设置是否是多次发货的订单
      */
-    public void setIsPartConsign(Boolean isPartConsign) {
+    public void setIsPartConsign(String isPartConsign) {
         this.isPartConsign = isPartConsign;
     }
 

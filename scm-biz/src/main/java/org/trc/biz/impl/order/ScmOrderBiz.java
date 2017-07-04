@@ -56,10 +56,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getPlatformOrderCode())) {//平台订单编码
-            criteria.andLike("platform_order_code", "%" + queryModel.getPlatformOrderCode() + "%");
+            criteria.andLike("platformOrderCode", "%" + queryModel.getPlatformOrderCode() + "%");
         }
         if (StringUtil.isNotEmpty(queryModel.getShopOrderCode())) {//店铺订单编码
-            criteria.andLike("shop_order_code", "%" + queryModel.getShopOrderCode() + "%");
+            criteria.andLike("shopOrderCode", "%" + queryModel.getShopOrderCode() + "%");
         }
         if (StringUtil.isNotEmpty(queryModel.getStatus())) {//订单状态
             criteria.andEqualTo("status", queryModel.getStatus());
@@ -352,7 +352,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            criteria.andLike("type", shopOrderForm.getPlatformOrderCode());
+            //criteria.andLike("type", shopOrderForm.getPlatformOrderCode());
             if (StringUtil.isNotEmpty(shopOrderForm.getReceiverName())) {//收货人姓名
                 criteria.andLike("receiverName", "%" + shopOrderForm.getReceiverName() + "%");
             }
@@ -378,7 +378,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: page.getResult()){
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(shopOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
-                    BeanUtils.copyProperties(shopOrder, platformOrder);
+                    BeanUtils.copyProperties(platformOrder, (OrderBase)shopOrder);
                     setShopOrderItemsDetail(shopOrder, platformOrder);
                 }
             }
@@ -404,7 +404,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
                 shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
         OrderExt orderExt = new OrderExt();
-        BeanUtils.copyProperties(platformOrder, orderExt);
+        BeanUtils.copyProperties(platformOrder, (OrderBase)orderExt);
+        orderExt.setPayment(shopOrder.getPayment());
+        orderExt.setPostageFee(shopOrder.getPostageFee());
+        orderExt.setTotalTax(shopOrder.getTotalTax());
         orderExt.setOrderItemList(orderItemList);
         List<OrderExt> orderExts = new ArrayList<OrderExt>();
         orderExts.add(orderExt);
