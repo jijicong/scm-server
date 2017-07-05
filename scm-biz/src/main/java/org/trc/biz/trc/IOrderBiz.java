@@ -31,5 +31,6 @@ public interface IOrderBiz {
     AppResult getJDLogistics(String shopOrderCode) throws  Exception;
 
 
-    JSONObject sendOrderInformation();
+
+
 }

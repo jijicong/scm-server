@@ -1,5 +1,6 @@
 package org.trc.biz.impl.order;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -7,10 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.domain.order.*;
+import org.trc.domain.order.SupplierOrderInfo;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
+import org.trc.form.*;
 import org.trc.form.JDModel.JdSku;
 import org.trc.form.JDModel.JingDongOrder;
 import org.trc.form.JDModel.OrderPriceSnap;
@@ -91,13 +96,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
             criteria.andEqualTo("status", form.getStatus());
         }
         if(StringUtils.isNotBlank(form.getWarehouseOrderCode())){//供应商订单编号
-            criteria.andEqualTo("warehouseOrderCode", form.getWarehouseOrderCode());
-        }
-        if(StringUtils.isNotBlank(form.getSupplierName())){//供应商名称
-            criteria.andEqualTo("supplierName", form.getSupplierName());
+            criteria.andLike("warehouseOrderCode", "%" + form.getWarehouseOrderCode() + "%");
         }
         if(StringUtils.isNotBlank(form.getShopOrderCode())){//店铺订单号
-            criteria.andEqualTo("shopOrderCode", form.getShopOrderCode());
+            criteria.andLike("shopOrderCode", "%" + form.getShopOrderCode() + "%");
+        }
+        if(StringUtils.isNotBlank(form.getSupplierCode())){//供应商编码
+            criteria.andEqualTo("supplierCode", form.getSupplierCode());
         }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(form, ZeroToNineEnum.ONE.getCode());
         List<String> platformOrderCodeList = new ArrayList<String>();
@@ -117,7 +122,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
-        BeanUtils.copyProperties(shopOrder, form);
+        BeanUtils.copyProperties(form, shopOrder);
         List<ShopOrder> shopOrderList = shopOrderService.select(shopOrder);
         AssertUtil.notEmpty(shopOrderList, String.format("根据条件%s查询商铺订单为空", JSONObject.toJSON(form)));
         List<String> platformOrderCodeList = new ArrayList<String>();
@@ -136,7 +141,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(ShopOrder shopOrder2: shopOrderList){
                 for(PlatformOrder platformOrder: platformOrderList){
                     if(StringUtils.equals(shopOrder2.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
-                        setShopOrderItemsDetail(shopOrder, platformOrder);
+                        setShopOrderItemsDetail(shopOrder2, platformOrder);
                     }
                 }
             }
@@ -177,11 +182,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName) {
         AssertUtil.notBlank(jdAddressCode, "提交订单京东订单四级地址编码不能为空");
         AssertUtil.notBlank(jdAddressName, "提交订单京东订单四级地址不能为空");
-        AssertUtil.doesNotContain(jdAddressCode, JING_DONG_ADDRESS_SPLIT, "提交订单京东订单四级地址编码格式错误");
-        AssertUtil.doesNotContain(jdAddressName, JING_DONG_ADDRESS_SPLIT, "提交订单京东订单四级地址格式错误");
+        AssertUtil.doesNotContain(JING_DONG_ADDRESS_SPLIT, jdAddressCode, "提交订单京东订单四级地址编码格式错误");
+        AssertUtil.doesNotContain(JING_DONG_ADDRESS_SPLIT, jdAddressName, "提交订单京东订单四级地址格式错误");
         WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
@@ -197,10 +203,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notNull(platformOrder, String.format("根据平台订单编码[%s]查询平台订单为空", warehouseOrder.getPlatformOrderCode()));
         //获取京东订单对象
         JingDongOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, jdAddressCodes);
-        //保存京东订单信息
-        SupplierOrderInfo supplierOrderInfo = saveSupplierOrderInfo(warehouseOrder, jdAddressCodes, jdAddressNames);
         //调用京东下单服务接口
-        String jdOrderId = invokeSubmitJingDongOrder(jingDongOrder);
+        JSONObject jdObj = invokeSubmitJingDongOrder(jingDongOrder);
+        //保存京东订单信息
+        //SupplierOrderInfo supplierOrderInfo = saveSupplierOrderInfo(warehouseOrder, jdObj, jdAddressCodes, jdAddressNames);
+
+
+
+        /*String jdOrderId = invokeSubmitJingDongOrder(jingDongOrder);
         //更新京东订单信息
         supplierOrderInfo.setSupplierOrderCode(jdOrderId);
         supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
@@ -209,7 +219,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String msg = String.format("更新京东订单信息%s的供应商订单编码为[%s]异常", supplierOrderInfo, jdOrderId);
             log.error(msg);
             return ResultUtil.createFailAppResult(msg);
-        }
+        }*/
         return ResultUtil.createSucssAppResult("提交京东订单成功","");
     }
 
@@ -217,19 +227,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
         JingDongOrder jingDongOrder = new JingDongOrder();
         jingDongOrder.setThirdOrder(warehouseOrder.getWarehouseOrderCode());
         jingDongOrder.setName(platformOrder.getReceiverName());
-        if(jdAddressCodes.length == 1){
+        if(jdAddressCodes.length > 0){
             jingDongOrder.setProvince(jdAddressCodes[0]);
             jingDongOrder.setInvoiceProvice(Integer.parseInt(jdAddressCodes[0]));
         }
-        if(jdAddressCodes.length == 2){
+        if(jdAddressCodes.length > 1){
             jingDongOrder.setCity(jdAddressCodes[1]);
             jingDongOrder.setInvoiceCity(Integer.parseInt(jdAddressCodes[1]));
         }
-        if(jdAddressCodes.length == 3){
+        if(jdAddressCodes.length > 2){
             jingDongOrder.setCounty(jdAddressCodes[2]);
             jingDongOrder.setInvoiceCounty(Integer.parseInt(jdAddressCodes[2]));
         }
-        if(jdAddressCodes.length == 4){
+        if(jdAddressCodes.length > 3){
             jingDongOrder.setTown(jdAddressCodes[3]);
         }
         jingDongOrder.setAddress(platformOrder.getReceiverAddress());
@@ -287,32 +297,40 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 保存供应商订单信息
      * @param warehouseOrder
+     * @param jdObj
      * @param jdAddressCodes
      * @param jdAddressNames
+     * @return flag:0-京东订单,1-其他订单
      */
-    private SupplierOrderInfo saveSupplierOrderInfo(WarehouseOrder warehouseOrder, String[] jdAddressCodes, String[] jdAddressNames){
+    private List<SupplierOrderInfo> saveSupplierOrderInfo(WarehouseOrder warehouseOrder,
+            JSONObject jdObj, String[] jdAddressCodes, String[] jdAddressNames, String flag){
+        String warehouseOrderCode = jdObj.getString("warehouseOrderCode");
+        String orderType = jdObj.getString("orderType");
+        JSONArray orders = jdObj.getJSONArray("order");
+
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
-        if(jdAddressCodes.length == 1){
+        supplierOrderInfo.setStatus(ZeroToNineEnum.ONE.getCode());//订单提交
+        if(jdAddressCodes.length > 0){
             supplierOrderInfo.setJdProvinceCode(jdAddressCodes[0]);
             supplierOrderInfo.setJdProvince(jdAddressNames[0]);
         }
-        if(jdAddressCodes.length == 2){
+        if(jdAddressCodes.length > 1){
             supplierOrderInfo.setJdCityCode(jdAddressCodes[1]);
             supplierOrderInfo.setJdCity(jdAddressNames[1]);
         }
-        if(jdAddressCodes.length == 3){
+        if(jdAddressCodes.length > 2){
             supplierOrderInfo.setJdDistrictCode(jdAddressCodes[2]);
             supplierOrderInfo.setJdDistrict(jdAddressNames[2]);
         }
-        if(jdAddressCodes.length == 4){
+        if(jdAddressCodes.length > 3){
             supplierOrderInfo.setJdTownCode(jdAddressCodes[3]);
             supplierOrderInfo.setJdTown(jdAddressNames[3]);
         }
         ParamsUtil.setBaseDO(supplierOrderInfo);
         supplierOrderInfoService.insert(supplierOrderInfo);
-        return supplierOrderInfo;
+        return null;
     }
 
 
@@ -322,12 +340,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param jingDongOrder
      * @return
      */
-    private String invokeSubmitJingDongOrder(JingDongOrder jingDongOrder){
+    private JSONObject invokeSubmitJingDongOrder(JingDongOrder jingDongOrder){
         ReturnTypeDO returnTypeDO = ijdService.submitJingDongOrder(jingDongOrder);
         if(!returnTypeDO.getSuccess()){
             throw new OrderException(ExceptionEnum.SUBMIT_JING_DONG_ORDER, "调用京东下单服务接口失败");
         }
-        return returnTypeDO.getResult().toString();
+        String orderInfo = returnTypeDO.getResult().toString();
+        JSONObject orderObj = null;
+        try {
+            orderObj = JSONObject.parseObject(orderInfo);
+        } catch (ClassCastException e) {
+            String msg = String.format("调用京东下单服务返回结果不是JSON格式");
+            log.error(msg, e);
+            throw new OrderException(ExceptionEnum.SUBMIT_JING_DONG_ORDER, msg);
+        }
+        AssertUtil.notNull(orderObj, "调用京东下单服务返回结为空");
+        return orderObj;
     }
 
 
@@ -352,7 +380,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            //criteria.andLike("type", shopOrderForm.getPlatformOrderCode());
+            if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//收货人姓名
+                criteria.andEqualTo("type", shopOrderForm.getType());
+            }
             if (StringUtil.isNotEmpty(shopOrderForm.getReceiverName())) {//收货人姓名
                 criteria.andLike("receiverName", "%" + shopOrderForm.getReceiverName() + "%");
             }
@@ -404,6 +434,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
                 shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
         OrderExt orderExt = new OrderExt();
+        BeanUtils.copyProperties(platformOrder, (OrderBase)shopOrder);
         BeanUtils.copyProperties(platformOrder, (OrderBase)orderExt);
         orderExt.setPayment(shopOrder.getPayment());
         orderExt.setPostageFee(shopOrder.getPostageFee());

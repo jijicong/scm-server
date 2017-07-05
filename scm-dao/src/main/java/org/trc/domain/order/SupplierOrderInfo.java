@@ -37,6 +37,8 @@ public class SupplierOrderInfo extends ScmDO{
 
     private String jdTown;
 
+    private String skus;
+
     public Long getId() {
         return id;
     }
@@ -141,4 +143,11 @@ public class SupplierOrderInfo extends ScmDO{
         this.jdTown = jdTown == null ? null : jdTown.trim();
     }
 
+    public String getSkus() {
+        return skus;
+    }
+
+    public void setSkus(String skus) {
+        this.skus = skus;
+    }
 }

@@ -19,6 +19,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OrderException;
 import org.trc.exception.TrcException;
+import org.trc.form.order.LogisticForm;
 import org.trc.service.ITrcService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.order.*;
@@ -536,11 +537,6 @@ public class OrderBiz implements IOrderBiz {
         return null;
     }
 
-    @Override
-    public JSONObject sendOrderInformation() {
-
-        return null;
-    }
 
 }
 

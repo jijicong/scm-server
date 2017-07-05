@@ -17,7 +17,7 @@ public class SkusForm extends QueryModel {
     @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
     //商品名称
-    @Length(max = 64, message = "商品SPU编号长度不能超过64个")
+    @Length(max = 64, message = "商品名称长度不能超过64个")
     @QueryParam("itemName")
     private String itemName;
     //商品所属分类ID

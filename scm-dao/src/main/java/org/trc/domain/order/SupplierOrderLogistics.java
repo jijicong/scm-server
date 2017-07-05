@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import java.util.Date;
 
 public class SupplierOrderLogistics extends ScmDO{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,17 +17,17 @@ public class SupplierOrderLogistics extends ScmDO{
 
     private String supplierOrderCode;
 
-    private String supplierSubOrderCode;
+    private String supplierParentOrderCode;
 
     private String supplierCode;
-
-    private Date consignTime;
 
     private String logisticsCorporation;
 
     private String waybillNumber;
 
     private String logisticsInfo;
+
+    private String type;
 
     public Long getId() {
         return id;
@@ -52,12 +53,20 @@ public class SupplierOrderLogistics extends ScmDO{
         this.supplierOrderCode = supplierOrderCode == null ? null : supplierOrderCode.trim();
     }
 
-    public String getSupplierSubOrderCode() {
-        return supplierSubOrderCode;
+    public String getSupplierParentOrderCode() {
+        return supplierParentOrderCode;
     }
 
-    public void setSupplierSubOrderCode(String supplierSubOrderCode) {
-        this.supplierSubOrderCode = supplierSubOrderCode == null ? null : supplierSubOrderCode.trim();
+    public void setSupplierParentOrderCode(String supplierParentOrderCode) {
+        this.supplierParentOrderCode = supplierParentOrderCode;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getSupplierCode() {
@@ -66,14 +75,6 @@ public class SupplierOrderLogistics extends ScmDO{
 
     public void setSupplierCode(String supplierCode) {
         this.supplierCode = supplierCode == null ? null : supplierCode.trim();
-    }
-
-    public Date getConsignTime() {
-        return consignTime;
-    }
-
-    public void setConsignTime(Date consignTime) {
-        this.consignTime = consignTime;
     }
 
     public String getLogisticsCorporation() {

@@ -31,7 +31,7 @@ public class ShopOrderForm extends QueryModel{
 
     // 订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
     @QueryParam("type")
-    private Byte type;
+    private String type;
 
     public String getShopOrderCode() {
         return shopOrderCode;
@@ -65,11 +65,11 @@ public class ShopOrderForm extends QueryModel{
         this.receiverName = receiverName;
     }
 
-    public Byte getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(Byte type) {
+    public void setType(String type) {
         this.type = type;
     }
 }
