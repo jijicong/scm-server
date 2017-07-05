@@ -6,8 +6,8 @@ package org.trc.enums;
  */
 public enum RequestFlowStatusEnum {
 
-    SUCCESS("SEND_SUCCESS", "发送消息成功"),
-    FAILED("SEND_FAILED", "发送失败"),
+    SEND_SUCCESS("SEND_SUCCESS", "发送消息成功"),
+    SEND_FAILED("SEND_FAILED", "发送失败"),
     SEND_TIME_OUT("SEND_TIME_OUT", "请求超时");
 
 

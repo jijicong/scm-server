@@ -27,8 +27,8 @@ import org.trc.model.*;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
-import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuRelationService;
+import org.trc.service.goods.ISkusService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
@@ -57,7 +57,7 @@ public class TrcBiz implements ITrcBiz {
     private IExternalItemSkuService externalItemSkuService;
 
     @Resource
-    private IItemsService itemsService;
+    private ISkusService skusService;
 
     @Value("${trc.key}")
     private String TRC_KEY;
@@ -148,10 +148,10 @@ public class TrcBiz implements ITrcBiz {
         ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
@@ -212,10 +212,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
@@ -273,10 +273,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
@@ -337,10 +337,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
@@ -377,10 +377,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
@@ -428,6 +428,7 @@ public class TrcBiz implements ITrcBiz {
         //一件代发商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
+            List<SkuRelation> skuRelationList1 = new ArrayList<>();
             while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();
                 ExternalItemSku externalItemSku = new ExternalItemSku();
@@ -435,17 +436,19 @@ public class TrcBiz implements ITrcBiz {
                 externalItemSku = externalItemSkuService.selectOne(externalItemSku);
                 skuRelation.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
                 skuRelation.setSupplierCode(externalItemSku.getSupplierCode());
-                skuRelationService.insert(skuRelation);
+                skuRelationList1.add(skuRelation);
             }
+            skuRelationService.insertList(skuRelationList1);
         }
         //自采商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
             while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();
-                Items items = new Items();
-                items.setSpuCode(skuRelation.getSpuCode());
-                items = itemsService.selectOne(items);
+                Skus skus = new Skus();
+                skus.setSpuCode(skuRelation.getSpuCode());
+                skus.setSkuCode(skuRelation.getSkuCode());
+                skus = skusService.selectOne(skus);
                 //TODO 自采商品表结构未完善，后续再写
             }
         }
@@ -482,10 +485,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
 
         }
         return toGlyResultDO;
@@ -521,10 +524,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
@@ -578,10 +581,10 @@ public class TrcBiz implements ITrcBiz {
         //存储请求记录
         if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
-                    noticeNum, RequestFlowStatusEnum.SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
+                    noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
     }
