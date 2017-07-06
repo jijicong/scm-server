@@ -15,7 +15,6 @@ public class LogisticForm {
     private List<Logistic> logistics;
 
 
-
     public String getWarehouseOrderCode() {
         return warehouseOrderCode;
     }
@@ -30,5 +29,13 @@ public class LogisticForm {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public List<Logistic> getLogistics() {
+        return logistics;
+    }
+
+    public void setLogistics(List<Logistic> logistics) {
+        this.logistics = logistics;
     }
 }

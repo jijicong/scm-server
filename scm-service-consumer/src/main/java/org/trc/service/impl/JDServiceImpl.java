@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
+import org.trc.form.liangyou.LiangYouOrder;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
@@ -780,13 +781,13 @@ public class JDServiceImpl implements IJDService {
 
     @Override
     public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
-        AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
+        /*AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            /*Map<String, Object> map = new HashMap<String, Object>();
-            map.put("skus", JSONArray.toJSON(skuDOList));
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("skus", JSONArray.toJSON(jingDongOrder.getSku()));
             response = HttpClientUtil.httpPostRequest(externalSupplierConfig.getSubmitOrderUrl(), map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
@@ -797,12 +798,81 @@ public class JDServiceImpl implements IJDService {
                 returnTypeDO.setResultMessage(appResult.getDatabuffer());
             }else {
                 returnTypeDO.setResultMessage("调用外部供应商品使用状态更新接口返回结果为空");
-            }*/
+            }
         }catch (Exception e){
             String msg = String.format("调用外部供应商商品使用状态更新接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }
+        return returnTypeDO;*/
+        AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
+        return invokeSubmitOrder(externalSupplierConfig.getSubmitOrderUrl(), BeanToMapUtil.convertBeanToMap(jingDongOrder));
+    }
+
+    @Override
+    public ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder) {
+        AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
+        return invokeSubmitOrder(externalSupplierConfig.getSubmitOrderUrl(), BeanToMapUtil.convertBeanToMap(liangYouOrder));
+    }
+
+    @Override
+    public ReturnTypeDO getLogisticsInfo(String warehouseOrderCode) {
+        AssertUtil.notBlank(warehouseOrderCode, "查询代发供应商订单物流信息参数仓库订单编码不能为空");
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String url = "";
+        String response = null;
+        try{
+            url = externalSupplierConfig.getOrderLogisticsUrl()+"/warehouseOrderCode";
+            response = HttpClientUtil.httpGetRequest(url);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用物流查询服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用物流查询服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束调用物流查询" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+
+        return returnTypeDO;
+    }
+
+
+
+    private ReturnTypeDO invokeSubmitOrder(String url ,Map<String, Object> map){
+        log.debug("开始调用提交订单服务" + url + ", 参数：" + JSONObject.toJSON(map) + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用提交订单服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束调用提交订单服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return returnTypeDO;
     }
 

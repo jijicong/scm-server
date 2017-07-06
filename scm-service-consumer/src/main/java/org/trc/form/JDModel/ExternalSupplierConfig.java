@@ -21,7 +21,7 @@ public class ExternalSupplierConfig {
     private String submitOrderUrl;
     //京东订单反查接口地址
     private String orderQueryUrl;
-    //京东图片查看url
+    //配送信息查看url
     private String orderLogisticsUrl;
 
     public String getSkuPageUrl() {
@@ -95,4 +95,5 @@ public class ExternalSupplierConfig {
     public void setOrderLogisticsUrl(String orderLogisticsUrl) {
         this.orderLogisticsUrl = orderLogisticsUrl;
     }
+
 }

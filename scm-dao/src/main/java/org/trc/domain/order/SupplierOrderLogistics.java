@@ -11,6 +11,7 @@ public class SupplierOrderLogistics extends ScmDO{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     private String warehouseOrderCode;
@@ -20,14 +21,24 @@ public class SupplierOrderLogistics extends ScmDO{
     private String supplierParentOrderCode;
 
     private String supplierCode;
-
+    /**
+     *物流公司,当字段type=0-物流信息时不为空
+     */
     private String logisticsCorporation;
-
+    /**
+     *运单号,当字段type=0-物流信息时不为空
+     */
     private String waybillNumber;
-
+    /**
+     *物流信息,当字段type=1-配送信息时不为空
+     */
     private String logisticsInfo;
-
+    /**
+     * 信息类型:0-物流单号,1-配送信息
+     */
     private String type;
+
+    private String logisticsStatus;
 
     public Long getId() {
         return id;
@@ -99,5 +110,13 @@ public class SupplierOrderLogistics extends ScmDO{
 
     public void setLogisticsInfo(String logisticsInfo) {
         this.logisticsInfo = logisticsInfo == null ? null : logisticsInfo.trim();
+    }
+
+    public String getLogisticsStatus() {
+        return logisticsStatus;
+    }
+
+    public void setLogisticsStatus(String logisticsStatus) {
+        this.logisticsStatus = logisticsStatus;
     }
 }

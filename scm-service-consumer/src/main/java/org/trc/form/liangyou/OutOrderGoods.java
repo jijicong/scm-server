@@ -4,11 +4,12 @@ package org.trc.form.liangyou;
  * Created by hzwyz on 2017/6/13 0013.
  */
 public class OutOrderGoods {
+
     private String goodsName;
 
     private String onlySku;
 
-    private String quantity;
+    private Integer quantity;
 
     public String getGoodsName() {
         return goodsName;
@@ -26,11 +27,11 @@ public class OutOrderGoods {
         this.onlySku = onlySku;
     }
 
-    public String getQuantity() {
+    public Integer getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(String quantity) {
+    public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
 }

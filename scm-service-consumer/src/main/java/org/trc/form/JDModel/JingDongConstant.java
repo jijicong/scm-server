@@ -3,7 +3,7 @@ package org.trc.form.JDModel;
 /**
  * Created by hzwyz on 2017/6/5 0005.
  */
-public class JingDongConstant {
+public class   JingDongConstant {
     //创建Token
     public static final String ACCESS_TOKEN = "/oauth2/accessToken";
     //刷新Token

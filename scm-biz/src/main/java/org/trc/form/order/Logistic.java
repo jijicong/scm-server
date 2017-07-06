@@ -1,5 +1,7 @@
 package org.trc.form.order;
 
+import org.trc.form.SkuInfo;
+
 import java.util.List;
 
 /**
@@ -13,8 +15,12 @@ public class Logistic {
     private String logisticsCorporation;
     //运单号
     private String waybillNumber;
+    //物流状态,0-新建,1-妥投,2-拒收
+    private String logisticsStatus;
     //京东物理配送信息
     private List<LogisticInfo> logisticInfo;
+    //skus
+    private List<SkuInfo> skus;
 
     public String getSupplierOrderCode() {
         return supplierOrderCode;
@@ -46,5 +52,21 @@ public class Logistic {
 
     public void setLogisticInfo(List<LogisticInfo> logisticInfo) {
         this.logisticInfo = logisticInfo;
+    }
+
+    public String getLogisticsStatus() {
+        return logisticsStatus;
+    }
+
+    public void setLogisticsStatus(String logisticsStatus) {
+        this.logisticsStatus = logisticsStatus;
+    }
+
+    public List<SkuInfo> getSkus() {
+        return skus;
+    }
+
+    public void setSkus(List<SkuInfo> skus) {
+        this.skus = skus;
     }
 }

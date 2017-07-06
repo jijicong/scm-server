@@ -2,6 +2,7 @@ package org.trc.service;
 
 
 import org.trc.form.JDModel.*;
+import org.trc.form.liangyou.LiangYouOrder;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -329,5 +330,21 @@ public interface IJDService {
      * @throws Exception
      */
     ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder);
+
+    /**
+     * 提交粮油订单
+     * @param liangYouOrder
+     * @return
+     * @throws Exception
+     */
+    ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder);
+
+
+    /**
+     * 查询代发供应商物流信息
+     * @param warehouseOrderCode
+     * @return
+     */
+    ReturnTypeDO getLogisticsInfo(String warehouseOrderCode);
 
 }

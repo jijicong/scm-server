@@ -7,7 +7,6 @@ package org.trc.service;
  */
 public interface ITrcService {
 
-
     /**
      * @param brandUrl
      * @param params

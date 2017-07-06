@@ -5,12 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.IOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ExternalItemSku;
@@ -19,7 +21,6 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OrderException;
 import org.trc.exception.TrcException;
-import org.trc.form.order.LogisticForm;
 import org.trc.service.ITrcService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.order.*;
@@ -29,6 +30,8 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by ding on 2017/6/23.
@@ -37,32 +40,25 @@ import java.util.*;
 public class OrderBiz implements IOrderBiz {
 
     private Logger logger = LoggerFactory.getLogger(OrderBiz.class);
-
+    //创建线程池
+    private ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
     @Resource
     private IExternalItemSkuService externalItemSkuService;
-
     @Resource
     private IOrderItemService orderItemService;
-
     @Resource
     private IPlatformOrderService platformOrderService;
-
     @Resource
     private IShopOrderService shopOrderService;
-
     @Resource
     private ISerialUtilService serialUtilService;
-
     @Resource
     private IWarehouseOrderService warehouseOrderService;
-
     @Resource
     private IOrderFlowService orderFlowService;
-
     @Resource
     private ISupplierOrderInfoService supplierOrderInfoService;
-
     @Resource
     private ITrcService trcService;
 
@@ -80,42 +76,77 @@ public class OrderBiz implements IOrderBiz {
     //业务类型：交易
     public final static String BIZ_TYPE_DEAL = "DEAL";
 
+    @Autowired
+    private IScmOrderBiz scmOrderBiz;
 
-
-
-    @Override
+    /*@Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult<String> reciveChannelOrder(String orderInfo) {
-        JSONObject orderObj = getChannelOrder(orderInfo);
-        //获取平台订单信息
-        PlatformOrder platformOrder = getPlatformOrder(orderObj);
-        platformOrderParamCheck(platformOrder);
-        JSONArray shopOrderArray = getShopOrdersArray(orderObj);
-        //获取店铺订单
-        List<ShopOrder> shopOrderList = getShopOrderList(platformOrder, shopOrderArray);
-        //保存幂等流水
-        saveIdempotentFlow(shopOrderList);
-        //拆分仓库订单
-        List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
-        for (ShopOrder shopOrder : shopOrderList) {
-            warehouseOrderList.addAll(dealShopOrder(shopOrder));
+        PlatformOrder platformOrder = null;
+        try{
+            JSONObject orderObj = getChannelOrder(orderInfo);
+            //获取平台订单信息
+            platformOrder = getPlatformOrder(orderObj);
+            platformOrderParamCheck(platformOrder);
+            JSONArray shopOrderArray = getShopOrdersArray(orderObj);
+            //获取店铺订单
+            List<ShopOrder> shopOrderList = getShopOrderList(platformOrder, shopOrderArray);
+            //保存幂等流水
+            saveIdempotentFlow(shopOrderList);
+            //拆分仓库订单
+            List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
+            for (ShopOrder shopOrder : shopOrderList) {
+                warehouseOrderList.addAll(dealShopOrder(shopOrder));
+            }
+            //订单商品明细
+            List<OrderItem> orderItemList = new ArrayList<OrderItem>();
+            for (WarehouseOrder warehouseOrder : warehouseOrderList) {
+                orderItemList.addAll(warehouseOrder.getOrderItemList());
+            }
+            orderItemService.insertList(orderItemList);
+            //保存仓库订单
+            warehouseOrderService.insertList(warehouseOrderList);
+            //保存商铺订单
+            shopOrderService.insertList(shopOrderList);
+            //保存平台订单
+            platformOrderService.insert(platformOrder);
+            //提交供应商订单
+            try{
+                submitSupplierOrder(warehouseOrderList);
+            }catch (Exception e){
+                logger.error(String.format("多线程提交供应商订单异常,%s", e.getMessage()));
+            }
+            return ResultUtil.createSucssAppResult("接收订单成功", "");
+        }catch (Exception e){
+            String channelCode = "";
+            if(null != platformOrder)
+                channelCode = platformOrder.getChannelCode();
+            String msg = String.format("接收渠道%s订单%s异常,%s",channelCode, orderInfo, e.getMessage());
+            logger.error(msg, e);
+            return ResultUtil.createFailAppResult(msg);
         }
-        //订单商品明细
-        List<OrderItem> orderItemList = new ArrayList<OrderItem>();
-        for (WarehouseOrder warehouseOrder : warehouseOrderList) {
-            orderItemList.addAll(warehouseOrder.getOrderItemList());
+    }
+
+    *//**
+     * @param warehouseOrderList
+     *//*
+    private void submitSupplierOrder(List<WarehouseOrder> warehouseOrderList){
+        for(WarehouseOrder warehouseOrder: warehouseOrderList){
+            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
+                threadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            AppResult appResult = scmOrderBiz.submitLiangYouOrder(warehouseOrder.getWarehouseOrderCode());
+                            // TODO 粮油下单结果通知渠道
+                        }catch (Exception e){
+                            String msg = String.format("调用代发商品供应商%s下单接口提交订单%s异常,%s",warehouseOrder.getSupplierName(), JSONObject.toJSON(warehouseOrder), e.getMessage());
+                            logger.error(msg, e);
+                        }
+                    }
+                });
+            }
         }
-        orderItemService.insertList(orderItemList);
-        //保存仓库订单
-        warehouseOrderService.insertList(warehouseOrderList);
-        //保存商铺订单
-        shopOrderService.insertList(shopOrderList);
-        //保存平台订单
-        platformOrderService.insert(platformOrder);
-
-        //TODO 根据供应商信息分别调接口*/
-
-        return ResultUtil.createSucssAppResult("接收订单成功", "");
     }
 
     @Override
@@ -149,11 +180,11 @@ public class OrderBiz implements IOrderBiz {
         return orderObj;
     }
 
-    /**
+    *//**
      * 获取平台订单
      * @param orderObj
      * @return
-     */
+     *//*
     private PlatformOrder getPlatformOrder(JSONObject orderObj){
         JSONObject platformObj = null;
         try{
@@ -179,11 +210,11 @@ public class OrderBiz implements IOrderBiz {
         return platformOrder;
     }
 
-    /**
+    *//**
      * 获取店铺订单信息JSON数据
      * @param orderObj
      * @return
-     */
+     *//*
     private JSONArray getShopOrdersArray(JSONObject orderObj){
         JSONArray shopOrderArray = null;
         try{
@@ -201,20 +232,20 @@ public class OrderBiz implements IOrderBiz {
         return shopOrderArray;
     }
 
-    /**
+    *//**
      * 保存请求流水
      *
      * @param orderInfo
-     */
+     *//*
     private void saveRequestFlow(String orderInfo) {
 
     }
 
-    /**
+    *//**
      * 保存幂等流水
      *
      * @param shopOrderList
-     */
+     *//*
     private void saveIdempotentFlow(List<ShopOrder> shopOrderList) {
         try {
             for (ShopOrder shopOrder : shopOrderList) {
@@ -237,13 +268,13 @@ public class OrderBiz implements IOrderBiz {
 
     }
 
-    /**
+    *//**
      * 获取店铺订单
      *
      * @param platformOrder
      * @param shopOrderArray
      * @return
-     */
+     *//*
     private List<ShopOrder> getShopOrderList(PlatformOrder platformOrder, JSONArray shopOrderArray) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         Integer totalNum = 0;
@@ -279,11 +310,11 @@ public class OrderBiz implements IOrderBiz {
         return shopOrderList;
     }
 
-    /**
+    *//**
      * 设置店铺金额
      * @param shopOrder
      * @param shopOrderObj
-     */
+     *//*
     private void setShopOrderFee(ShopOrder shopOrder, JSONObject shopOrderObj){
         shopOrder.setPayment(CommonUtil.getMoneyLong(shopOrderObj.getDouble("payment")));//实付金额
         shopOrder.setPostageFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("postageFee")));//积分抵扣金额
@@ -296,11 +327,11 @@ public class OrderBiz implements IOrderBiz {
         shopOrder.setDiscountFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountFee")));//订单优惠总金额
     }
 
-    /**
+    *//**
      * 获取订单商品明细
      * @param orderItemArray
      * @return
-     */
+     *//*
     private List<OrderItem> getOrderItem(JSONArray orderItemArray){
         List<OrderItem> orderItemList = new ArrayList<OrderItem>();
         for(Object obj: orderItemArray){
@@ -327,11 +358,11 @@ public class OrderBiz implements IOrderBiz {
         return orderItemList;
     }
 
-    /**
+    *//**
      * 平台订单校验
      *
      * @param platformOrder
-     */
+     *//*
     private void platformOrderParamCheck(PlatformOrder platformOrder) {
         AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
@@ -352,12 +383,12 @@ public class OrderBiz implements IOrderBiz {
         AssertUtil.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
     }
 
-    /**
+    *//**
      * &
      * 店铺订单校验
      *
      * @param shopOrder
-     */
+     *//*
     private void shopOrderParamCheck(ShopOrder shopOrder) {
         AssertUtil.notBlank(shopOrder.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformCode(), "来源平台编码不能为空");
@@ -373,11 +404,11 @@ public class OrderBiz implements IOrderBiz {
         AssertUtil.notNull(shopOrder.getItemNum(), "店铺订单商品总数不能为空");
     }
 
-    /**
+    *//**
      * 商品参数校验
      *
      * @param orderItem
-     */
+     *//*
     private void orderItemsParamCheck(OrderItem orderItem) {
         AssertUtil.notBlank(orderItem.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(orderItem.getPlatformCode(), "来源平台编码不能为空");
@@ -396,11 +427,11 @@ public class OrderBiz implements IOrderBiz {
     }
 
 
-    /**
+    *//**
      * 拆分店铺级订单
      * @param shopOrder
      * @return
-     */
+     *//*
     public List<WarehouseOrder> dealShopOrder(ShopOrder shopOrder) {
         List<OrderItem> orderItemList = shopOrder.getOrderItems();
         //分离一件代发和自采商品
@@ -478,11 +509,11 @@ public class OrderBiz implements IOrderBiz {
         return warehouseOrderList;
     }
 
-    /**
+    *//**
      * 设置仓库订单金额
      * @param warehouseOrder
      * @param orderItemList
-     */
+     *//*
     private void setWarehouseOrderFee(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList){
         Integer itemsNum = 0;//商品总数量
         Long totalFee = 0L;//总金额
@@ -516,13 +547,13 @@ public class OrderBiz implements IOrderBiz {
     }
 
 
-    /**
+    *//**
      * 获取仓库商品明细
      * @param warehouseOrder
      * @param externalItemSku
      * @param orderItemList
      * @return
-     */
+     *//*
     private OrderItem getWarehouseOrderItems(WarehouseOrder warehouseOrder, ExternalItemSku externalItemSku, List<OrderItem> orderItemList){
         for(OrderItem orderItem: orderItemList){
             if(StringUtils.equals(externalItemSku.getSkuCode(),orderItem.getSkuCode())){
@@ -535,7 +566,7 @@ public class OrderBiz implements IOrderBiz {
             }
         }
         return null;
-    }
+    }*/
 
 
 }

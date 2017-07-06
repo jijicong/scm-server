@@ -9,6 +9,8 @@ public class SkuInfo {
     private String skuCode;
     //sku商品名称
     private String skuName;
+    //购买商品数量
+    private Integer num;
 
     public String getSkuCode() {
         return skuCode;
@@ -16,5 +18,21 @@ public class SkuInfo {
 
     public void setSkuCode(String skuCode) {
         this.skuCode = skuCode;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    public Integer getNum() {
+        return num;
+    }
+
+    public void setNum(Integer num) {
+        this.num = num;
     }
 }

@@ -39,6 +39,8 @@ public class SupplierOrderInfo extends ScmDO{
 
     private String skus;
 
+    private String logisticsStatus;
+
     public Long getId() {
         return id;
     }
@@ -149,5 +151,13 @@ public class SupplierOrderInfo extends ScmDO{
 
     public void setSkus(String skus) {
         this.skus = skus;
+    }
+
+    public String getLogisticsStatus() {
+        return logisticsStatus;
+    }
+
+    public void setLogisticsStatus(String logisticsStatus) {
+        this.logisticsStatus = logisticsStatus;
     }
 }

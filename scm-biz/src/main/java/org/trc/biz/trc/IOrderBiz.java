@@ -20,7 +20,7 @@ public interface IOrderBiz {
      * @param orderInfo
      * @return
      */
-    AppResult<String> reciveChannelOrder(String orderInfo);
+    //AppResult<String> reciveChannelOrder(String orderInfo);
 
 
     /**
@@ -28,7 +28,7 @@ public interface IOrderBiz {
      * @param shopOrderCode
      * @return
      */
-    AppResult getJDLogistics(String shopOrderCode) throws  Exception;
+    //AppResult getJDLogistics(String shopOrderCode) throws  Exception;
 
 
 

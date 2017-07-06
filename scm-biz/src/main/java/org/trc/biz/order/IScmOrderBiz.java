@@ -55,12 +55,39 @@ public interface IScmOrderBiz {
     List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form);
 
     /**
-     * 提交订单
+     * 提交京东订单
      * @param warehouseOrderCode
      * @param jdAddressCode
      * @param jdAddressName
      * @return
      */
     AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName);
+
+    /**
+     *提交粮油订单
+     * @param warehouseOrderCode
+     * @return
+     */
+    AppResult submitLiangYouOrder(String warehouseOrderCode);
+
+    /**
+     * 接收渠道订单信息
+     * @param orderInfo
+     * @return
+     */
+    AppResult<String> reciveChannelOrder(String orderInfo);
+
+    /**
+     * 查询京东物流信息
+     * @param shopOrderCode
+     * @return
+     */
+    AppResult getJDLogistics(String shopOrderCode) throws  Exception;
+
+    /**
+     * 获取物流信息
+     */
+    void fetchLogisticsInfo();
+
 
 }
