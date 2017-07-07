@@ -816,14 +816,14 @@ public class JDServiceImpl implements IJDService {
     }
 
     @Override
-    public ReturnTypeDO getLogisticsInfo(String warehouseOrderCode) {
+    public ReturnTypeDO getLogisticsInfo(String warehouseOrderCode, String flag) {
         AssertUtil.notBlank(warehouseOrderCode, "查询代发供应商订单物流信息参数仓库订单编码不能为空");
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
         String url = "";
         String response = null;
         try{
-            url = externalSupplierConfig.getOrderLogisticsUrl()+"/warehouseOrderCode";
+            url = externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
             response = HttpClientUtil.httpGetRequest(url);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);

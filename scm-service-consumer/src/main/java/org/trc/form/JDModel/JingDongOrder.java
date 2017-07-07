@@ -7,6 +7,8 @@ import java.util.List;
  */
 public class JingDongOrder {
 
+    //仓库订单编码
+    private String warehouseOrderCode;
     //第三方的订单单号
     private String thirdOrder;
     //商品sku列表
@@ -77,6 +79,14 @@ public class JingDongOrder {
     private String promiseTimeRange;
     //中小件预约时间段的标记
     private Integer promiseTimeRangeCode;
+
+    public String getWarehouseOrderCode() {
+        return warehouseOrderCode;
+    }
+
+    public void setWarehouseOrderCode(String warehouseOrderCode) {
+        this.warehouseOrderCode = warehouseOrderCode;
+    }
 
     public String getThirdOrder() {
         return thirdOrder;

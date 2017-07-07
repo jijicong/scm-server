@@ -32,6 +32,21 @@
         <property name="submitOrderUrl" value="${jd.submitOrder.url}"/>
         <property name="orderQueryUrl" value="${jd.orderQuery.url}"/>
         <property name="orderLogisticsUrl" value="${supplier.orderLogistics.url}"/>
+        <property name="companyName" value="${jd.companyName}"/>
+    </bean>
+
+    <!--泰然城接口调用地址-->
+    <bean id="trcConfig" class="org.trc.form.TrcConfig">
+        <property name="key" value="${trc.key}"/>
+        <property name="brandUrl" value="${trc.brand.url}"/>
+        <property name="propertyUrl" value="${trc.property.url}"/>
+        <property name="categoryUrl" value="${trc.category.url}"/>
+        <property name="categoryBrandUrl" value="${trc.category.brand.url}"/>
+        <property name="categoryPropertyUrl" value="${trc.category.property.url}"/>
+        <property name="itemUrl" value="${trc.item.url}"/>
+        <property name="externalItemSkuUpdateUrl" value="${trc.externalItemSku.update.information.url}"/>
+        <property name="logisticsNotifyUrl" value="${trc.send.logistic.url}"/>
+        <property name="orderSubmitNotifyUrl" value="${trc.orderSubmit.notify.url}"/>
     </bean>
 
 </beans>

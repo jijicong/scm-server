@@ -237,7 +237,6 @@ public class TaiRanResource {
         return ResultUtil.createSucssAppResult("关联信息插入成功", "");
     }
 
-
     //自采商品信息查询
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)

@@ -1,6 +1,4 @@
-package org.trc.form.order;
-
-import org.trc.form.SkuInfo;
+package org.trc.form;
 
 import java.util.List;
 

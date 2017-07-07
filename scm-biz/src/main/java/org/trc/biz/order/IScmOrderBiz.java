@@ -3,13 +3,13 @@ package org.trc.biz.order;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.LogisticForm;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.FormParam;
 import java.util.List;
 
 /**
@@ -82,7 +82,7 @@ public interface IScmOrderBiz {
      * @param shopOrderCode
      * @return
      */
-    AppResult getJDLogistics(String shopOrderCode) throws  Exception;
+    AppResult<LogisticForm> getJDLogistics(String shopOrderCode) throws  Exception;
 
     /**
      * 获取物流信息

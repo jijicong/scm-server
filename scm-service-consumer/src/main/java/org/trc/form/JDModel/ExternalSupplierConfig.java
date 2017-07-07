@@ -23,6 +23,8 @@ public class ExternalSupplierConfig {
     private String orderQueryUrl;
     //配送信息查看url
     private String orderLogisticsUrl;
+    //京东下单发票抬头
+    private String companyName;
 
     public String getSkuPageUrl() {
         return skuPageUrl;
@@ -96,4 +98,11 @@ public class ExternalSupplierConfig {
         this.orderLogisticsUrl = orderLogisticsUrl;
     }
 
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
 }

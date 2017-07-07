@@ -343,8 +343,9 @@ public interface IJDService {
     /**
      * 查询代发供应商物流信息
      * @param warehouseOrderCode
+     * @param flag 0-京东,1-粮油
      * @return
      */
-    ReturnTypeDO getLogisticsInfo(String warehouseOrderCode);
+    ReturnTypeDO getLogisticsInfo(String warehouseOrderCode, String flag);
 
 }

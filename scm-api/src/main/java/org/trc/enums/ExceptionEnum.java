@@ -111,6 +111,7 @@ public enum ExceptionEnum{
     CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION("600108","渠道发送的订单不是JSON格式参数异常"),
     SUPPLIER_LOGISTICS_QUERY_EXCEPTION("600109","供应商物流信息查询异常"),
     SUPPLIER_LOGISTICS_UPDATE_EXCEPTION("600110","供应商物流信息更新异常"),
+    SUPPLIER_ORDER_NOTIFY_EXCEPTION("600111","供应商订单下单结果通知信息错误"),
 
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),

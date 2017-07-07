@@ -22,6 +22,7 @@ import org.trc.enums.TrcActionTypeEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.TrcException;
+import org.trc.form.TrcConfig;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.model.*;
 import org.trc.service.ITrcService;
@@ -59,8 +60,11 @@ public class TrcBiz implements ITrcBiz {
     @Resource
     private ISkusService skusService;
 
-    @Value("${trc.key}")
-    private String TRC_KEY;
+    @Autowired
+    private TrcConfig trcConfig;
+
+    /*@Value("${trc.key}")
+    private String trcConfig.getKey();
 
     @Value("${trc.brand.url}")
     private String BRAND_URL;
@@ -84,7 +88,7 @@ public class TrcBiz implements ITrcBiz {
     private String EXTERNALITEMSKU_UPDATE_INFROMATION_URL;
 
     @Value("{trc.send.logistic.url}")
-    private String SEND_LOGISTIC_URL;
+    private String SEND_LOGISTIC_URL;*/
 
     private static final String OR = "|";
 
@@ -123,7 +127,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
                 append(brandToTrc.getAlise()).append(OR).append(brandToTrc.getBrandCode()).append(OR).append(brandToTrc.getIsValid()).append(OR).
                 append(brandToTrc.getLogo()).append(OR).append(brandToTrc.getName()).append(OR).append(brandToTrc.getWebUrl());
 
@@ -135,7 +139,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendBrandNotice(BRAND_URL, params.toJSONString());
+        String result = trcService.sendBrandNotice(trcConfig.getBrandUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知品牌变更接口sendBrand]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
@@ -184,7 +188,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
                 append(propertyToTrc.getDescription()).append(OR).append(propertyToTrc.getIsValid()).append(OR).
                 append(propertyToTrc.getName()).append(OR).append(propertyToTrc.getSort()).append(OR).append(propertyToTrc.getTypeCode()).
                 append(OR).append(propertyToTrc.getValueType());
@@ -198,7 +202,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendPropertyNotice(PROPERTY_URL, params.toJSONString());
+        String result = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知属性变更接口sendProperty]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
@@ -245,7 +249,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
@@ -258,7 +262,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("itemSalesPropery", itemSalesPropery);
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendItemsNotice(ITEMS_URL, params.toJSONString());
+        String result = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
 
         String remark = "调用方法-TrcBiz类中[通知商品变更接口sendItem]";
         //抛出通知自定义异常
@@ -290,7 +294,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         List<ExternalItemSku> newOldExternalItemSkuList = new ArrayList<>();
@@ -323,7 +327,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("externalItemSkuList", sendList);
-        String result = trcService.sendPropertyNotice(EXTERNALITEMSKU_UPDATE_INFROMATION_URL, params.toJSONString());
+        String result = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知一件代发商品变更接口sendExternalItemSkuUpdation]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
@@ -461,7 +465,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
@@ -471,7 +475,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendCategoryPropertyList(CATEGORY_PROPERTY_URL, params.toJSONString());
+        String result = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知分类属性变更接口sendCategoryPropertyList]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
@@ -500,7 +504,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         JSONObject params = new JSONObject();
@@ -510,7 +514,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendCategoryBrandList(CATEGORY_BRAND_URL, params.toJSONString());
+        String result = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知分类品牌变更接口sendCategoryBrandList]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
@@ -555,7 +559,7 @@ public class TrcBiz implements ITrcBiz {
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(TRC_KEY).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
+        stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime).append(OR).
                 append(categoryToTrc.getClassifyDescribe()).append(OR).append(categoryToTrc.getIsValid()).append(OR).append(categoryToTrc.getName()).append(OR).
                 append(categoryToTrc.getParentId()).append(OR).append(categoryToTrc.getSort());
         //MD5加密
@@ -567,7 +571,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendCategoryToTrc(CATEGORY_URL, params.toJSONString());
+        String result = trcService.sendCategoryToTrc(trcConfig.getCategoryUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知分类品牌变更接口sendCategoryToTrc]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {

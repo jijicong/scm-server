@@ -7,6 +7,8 @@ import java.util.List;
  */
 public class LiangYouOrder {
 
+    //仓库订单编码
+    private String warehouseOrderCode;
     //收货人
     private String consignee;
     //商家订单号
@@ -33,6 +35,14 @@ public class LiangYouOrder {
     private String shippingId;
     //商品列表数组
     private List<OutOrderGoods> outOrderGoods;
+
+    public String getWarehouseOrderCode() {
+        return warehouseOrderCode;
+    }
+
+    public void setWarehouseOrderCode(String warehouseOrderCode) {
+        this.warehouseOrderCode = warehouseOrderCode;
+    }
 
     public String getConsignee() {
         return consignee;

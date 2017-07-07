@@ -1,4 +1,4 @@
-package org.trc.form.order;
+package org.trc.form;
 
 import java.util.List;
 
