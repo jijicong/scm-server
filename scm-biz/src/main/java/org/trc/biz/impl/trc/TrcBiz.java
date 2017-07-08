@@ -412,7 +412,7 @@ public class TrcBiz implements ITrcBiz {
         try {
             AssertUtil.notBlank(action, "动作参数不能为空");
             AssertUtil.notNull(relations, "关联列表不能为空");
-            Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE) && action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD) && action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD);
+            Boolean flag = action.equals(TrcActionTypeEnum.SKURELATION_REMOVE.getCode()) || action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD.getCode()) || action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD.getCode());
             AssertUtil.isTrue(flag, "动作参数类型错误");
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -420,7 +420,7 @@ public class TrcBiz implements ITrcBiz {
         }
         List<SkuRelation> skuRelationList = relations.toJavaList(SkuRelation.class);
         //删除关联关系
-        if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE)) {
+        if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE.getCode())) {
             for (SkuRelation skuRelation : skuRelationList) {
                 Example example = new Example(SkuRelation.class);
                 Example.Criteria criteria = example.createCriteria();
@@ -430,7 +430,7 @@ public class TrcBiz implements ITrcBiz {
             }
         }
         //一件代发商品批量关联
-        if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD)) {
+        if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD.getCode())) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
             List<SkuRelation> skuRelationList1 = new ArrayList<>();
             while (iter.hasNext()) {
@@ -445,7 +445,7 @@ public class TrcBiz implements ITrcBiz {
             skuRelationService.insertList(skuRelationList1);
         }
         //自采商品批量关联
-        if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD)) {
+        if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD.getCode())) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
             while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();

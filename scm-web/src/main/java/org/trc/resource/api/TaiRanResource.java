@@ -222,7 +222,7 @@ public class TaiRanResource {
             appResult = scmOrderBiz.reciveChannelOrder(information);
         }catch (Exception e){
             appResult = ResultUtil.createFailAppResult(String.format("接收渠道同步订单异常,%s", e.getMessage()));
-            logger.error(String.format("接收渠道同步订单%异常,%s", information, e.getMessage()));
+            logger.error(String.format("接收渠道同步订单%s异常,%s", information, e));
         }finally {
             scmOrderBiz.saveChannelOrderRequestFlow(information, appResult);
         }
@@ -234,7 +234,7 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<String> getSkuRelationBatch(JSONObject information) {
         String action = information.getString("action");
         JSONArray relations = information.getJSONArray("relations");

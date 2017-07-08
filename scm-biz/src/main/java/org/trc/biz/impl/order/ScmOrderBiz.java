@@ -744,7 +744,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         try{
             submitSupplierOrder(warehouseOrderList);
         }catch (Exception e){
-            log.error(String.format("多线程提交供应商订单异常,%s", e.getMessage()));
+            log.error(String.format("多线程提交供应商订单异常,%s", e));
         }
         /*try{
 
@@ -1199,7 +1199,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 totalItem += orderItem.getPayment();
                 totalOneShopNum += orderItem.getNum();
             }
-            AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+          //  AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
             AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
             shopOrderList.add(shopOrder);
         }
