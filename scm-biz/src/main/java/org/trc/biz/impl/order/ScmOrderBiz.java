@@ -732,7 +732,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItemList.addAll(warehouseOrder.getOrderItemList());
         }
         //校验商品是否不是添加过的供应商商品
-        checkItemsSource(orderItemList);
+        checkItemsSource(orderItemList, platformOrder.getChannelCode());
         orderItemService.insertList(orderItemList);
         //保存仓库订单
         warehouseOrderService.insertList(warehouseOrderList);
@@ -1259,8 +1259,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 检查商品来源
      * @param orderItemList
+     * @param channelCode 渠道编码
      */
-    private void checkItemsSource(List<OrderItem> orderItemList){
+    private void checkItemsSource(List<OrderItem> orderItemList, String channelCode){
         Set<String> skuCodes = new HashSet<String>();
         for(OrderItem orderItem: orderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -1269,9 +1270,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(SkuRelation.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("channel_code", channelCode);
         List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
         AssertUtil.notEmpty(skuRelations, String.format("根据多个skuCode[%s]查询skuRelation列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
-        AssertUtil.isTrue(skuCodes.size() == skuRelations.size(), String.format("根据多个skuCode[%s]查询skuRelation列表结果个数不对", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         StringBuilder sb = new StringBuilder();
         for(OrderItem orderItem: orderItemList){
             Boolean flag = false;
