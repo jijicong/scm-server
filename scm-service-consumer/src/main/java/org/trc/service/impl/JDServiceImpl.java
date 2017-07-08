@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -784,14 +786,14 @@ public class JDServiceImpl implements IJDService {
     @Override
     public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
         AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
-        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSubmitOrderUrl();
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSubmitOrderUrl();
         return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString());
     }
 
     @Override
     public ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder) {
         AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
-        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSubmitOrderUrl();
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getLySubmitOrderUrl();
         return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString());
     }
 
@@ -834,7 +836,10 @@ public class JDServiceImpl implements IJDService {
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, TIME_OUT);
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+            httpPost.setHeader("Accept", "application/json");
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);

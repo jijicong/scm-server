@@ -30,10 +30,11 @@
         <property name="jdWarehouse" value="${jd.warehouse.name}"/>
         <property name="lyWarehouse" value="${ly.warehouse.name}"/>
         <property name="jdPictureUrl" value="${jd.picture.url}"/>
-        <property name="submitOrderUrl" value="${supplier.submitOrder.url}"/>
         <property name="orderQueryUrl" value="${jd.orderQuery.url}"/>
         <property name="orderLogisticsUrl" value="${supplier.orderLogistics.url}"/>
         <property name="companyName" value="${jd.companyName}"/>
+        <property name="jdSubmitOrderUrl" value="${jd.submitOrder.url}"/>
+        <property name="lySubmitOrderUrl" value="${ly.submitOrder.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

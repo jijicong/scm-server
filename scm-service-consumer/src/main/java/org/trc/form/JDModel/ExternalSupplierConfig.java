@@ -19,13 +19,16 @@ public class ExternalSupplierConfig {
     //京东图片查看url
     private String jdPictureUrl;
     //京东下单接口地址
-    private String submitOrderUrl;
+    private String jdSubmitOrderUrl;
     //京东订单反查接口地址
     private String orderQueryUrl;
     //配送信息查看url
     private String orderLogisticsUrl;
     //京东下单发票抬头
     private String companyName;
+
+    //粮油下单接口地址
+    private String lySubmitOrderUrl;
 
     public String getSkuPageUrl() {
         return skuPageUrl;
@@ -75,12 +78,20 @@ public class ExternalSupplierConfig {
         this.jdPictureUrl = jdPictureUrl;
     }
 
-    public String getSubmitOrderUrl() {
-        return submitOrderUrl;
+    public String getJdSubmitOrderUrl() {
+        return jdSubmitOrderUrl;
     }
 
-    public void setSubmitOrderUrl(String submitOrderUrl) {
-        this.submitOrderUrl = submitOrderUrl;
+    public void setJdSubmitOrderUrl(String jdSubmitOrderUrl) {
+        this.jdSubmitOrderUrl = jdSubmitOrderUrl;
+    }
+
+    public String getLySubmitOrderUrl() {
+        return lySubmitOrderUrl;
+    }
+
+    public void setLySubmitOrderUrl(String lySubmitOrderUrl) {
+        this.lySubmitOrderUrl = lySubmitOrderUrl;
     }
 
     public String getOrderQueryUrl() {

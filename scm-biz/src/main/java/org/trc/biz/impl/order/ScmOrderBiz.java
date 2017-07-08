@@ -18,6 +18,7 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.order.*;
 import org.trc.enums.*;
@@ -35,6 +36,7 @@ import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.SkusService;
 import org.trc.service.order.*;
@@ -95,6 +97,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ISkusService skusService;
     @Autowired
     private IRequestFlowService requestFlowService;
+    @Autowired
+    private ISkuRelationService skuRelationService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -259,7 +263,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(jingDongOrder);
             //保存京东订单信息
             saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, jdAddressCodes, jdAddressNames, ZeroToNineEnum.ZERO.getCode());
-            return ResultUtil.createSucssAppResult("提交京东订单成功","");
+            if(returnTypeDO.getSuccess()){
+                return ResultUtil.createSucssAppResult("提交京东订单成功","");
+            }else{
+                return ResultUtil.createFailAppResult(String.format("提交京东订单失败,错误信息:%s", returnTypeDO.getResultMessage()));
+            }
+
         }catch (Exception e){
             return ResultUtil.createFailAppResult(String.format("提交京东订单失败,%s", e.getMessage()));
         }
@@ -332,7 +341,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public AppResult saveChannelOrderRequestFlow(String orderInfo, AppResult appResult) {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         RequestFlow requestFlow = new RequestFlow();
-        requestFlow.setType(RequestFlowConstant.TRC);
+        requestFlow.setType(TrcActionTypeEnum.RECEIVE_CHANNEL_ORDER.getCode());
         requestFlow.setRequester(RequestFlowConstant.TRC);
         requestFlow.setResponder(RequestFlowConstant.GYL);
         requestFlow.setRequestParam(orderInfo);
@@ -384,7 +393,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         jingDongOrder.setEmail(platformOrder.getReceiverEmail());
         jingDongOrder.setRemark("");// TODO 备注信息
         jingDongOrder.setInvoiceState(JdInvoiceStateEnum.FOCUS.getCode());//目前只能选择2-集中开票
-        jingDongOrder.setInvoiceType(JdInvoiceTypeEnum.NORMAL.getCode());
+        jingDongOrder.setInvoiceType(JdInvoiceTypeEnum.VALUE_ADDED_TAX.getCode());//目前只支持：2-增值税发票
         jingDongOrder.setSelectedInvoiceTitle(JdInvoiceTitleEnum.COMPANY.getCode());//目前只能选择5-单位
         jingDongOrder.setCompanyName(externalSupplierConfig.getCompanyName());//目前都填写成固定值
         jingDongOrder.setInvoiceContent(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));////目前选择1-明细
@@ -1257,32 +1266,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
             skuCodes.add(orderItem.getSkuCode());
         }
         //查询自采商品
-        Example example = new Example(Skus.class);
+        Example example = new Example(SkuRelation.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", skuCodes);
-        List<Skus> skusList = skusService.selectByExample(example);
-        AssertUtil.notEmpty(skusList, String.format("根据多个skuCode[%s]查询自采商品skus列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
-        //查询代发商品
-        Example example2 = new Example(ExternalItemSku.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andIn("skuCode", skuCodes);
-        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example2);
-        AssertUtil.notEmpty(externalItemSkuList, String.format("根据多个skuCode[%s]查询代发商品skus列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
+        List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
+        AssertUtil.notEmpty(skuRelations, String.format("根据多个skuCode[%s]查询skuRelation列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
+        AssertUtil.isTrue(skuCodes.size() == skuRelations.size(), String.format("根据多个skuCode[%s]查询skuRelation列表结果个数不对", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         StringBuilder sb = new StringBuilder();
         for(OrderItem orderItem: orderItemList){
             Boolean flag = false;
-            for(Skus skus: skusList){
-                if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
+            for(SkuRelation skuRelation: skuRelations){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuRelation.getSkuCode())){
                     flag = true;
                     break;
-                }
-            }
-            if(!flag){
-                for(ExternalItemSku externalItemSku: externalItemSkuList){
-                    if(StringUtils.equals(orderItem.getSkuCode(), externalItemSku.getSkuCode())){
-                        flag = true;
-                        break;
-                    }
                 }
             }
             if(!flag){
