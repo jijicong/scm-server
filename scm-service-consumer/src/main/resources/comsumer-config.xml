@@ -23,13 +23,14 @@
 
     <!--供应商接口调用地址-->
     <bean id="externalSupplierConfig" class="org.trc.form.JDModel.ExternalSupplierConfig">
+        <property name="scmExternalUrl" value="${scm.external.url}"/>
         <property name="skuPageUrl" value="${externalItems.skuPage.url}"/>
         <property name="skuQueryUrl" value="${externalItems.skuQuery.url}"/>
         <property name="skuAddNotice" value="${externalItems.skuAddNotice.url}"/>
         <property name="jdWarehouse" value="${jd.warehouse.name}"/>
         <property name="lyWarehouse" value="${ly.warehouse.name}"/>
         <property name="jdPictureUrl" value="${jd.picture.url}"/>
-        <property name="submitOrderUrl" value="${jd.submitOrder.url}"/>
+        <property name="submitOrderUrl" value="${supplier.submitOrder.url}"/>
         <property name="orderQueryUrl" value="${jd.orderQuery.url}"/>
         <property name="orderLogisticsUrl" value="${supplier.orderLogistics.url}"/>
         <property name="companyName" value="${jd.companyName}"/>

@@ -1,5 +1,6 @@
 package org.trc.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.liangyou.LiangYouOrder;
+import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
@@ -781,38 +783,16 @@ public class JDServiceImpl implements IJDService {
 
     @Override
     public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
-        /*AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
-        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
-        returnTypeDO.setSuccess(false);
-        String response = null;
-        try{
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("skus", JSONArray.toJSON(jingDongOrder.getSku()));
-            response = HttpClientUtil.httpPostRequest(externalSupplierConfig.getSubmitOrderUrl(), map, TIME_OUT);
-            if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    returnTypeDO.setSuccess(true);
-                }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
-            }else {
-                returnTypeDO.setResultMessage("调用外部供应商品使用状态更新接口返回结果为空");
-            }
-        }catch (Exception e){
-            String msg = String.format("调用外部供应商商品使用状态更新接口异常,错误信息:%s", e.getMessage());
-            log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
-        }
-        return returnTypeDO;*/
         AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
-        return invokeSubmitOrder(externalSupplierConfig.getSubmitOrderUrl(), BeanToMapUtil.convertBeanToMap(jingDongOrder));
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSubmitOrderUrl();
+        return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString());
     }
 
     @Override
     public ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder) {
         AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
-        return invokeSubmitOrder(externalSupplierConfig.getSubmitOrderUrl(), BeanToMapUtil.convertBeanToMap(liangYouOrder));
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSubmitOrderUrl();
+        return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString());
     }
 
     @Override
@@ -823,7 +803,7 @@ public class JDServiceImpl implements IJDService {
         String url = "";
         String response = null;
         try{
-            url = externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
+            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
             response = HttpClientUtil.httpGetRequest(url);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
@@ -847,15 +827,14 @@ public class JDServiceImpl implements IJDService {
     }
 
 
-
-    private ReturnTypeDO invokeSubmitOrder(String url ,Map<String, Object> map){
-        log.debug("开始调用提交订单服务" + url + ", 参数：" + JSONObject.toJSON(map) + ". 开始时间" +
+    private ReturnTypeDO invokeSubmitOrder(String url, String jsonParams){
+        log.debug("开始调用提交订单服务" + url + ", 参数：" + jsonParams + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -876,5 +855,13 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+    public static void main(String[] args){
+        LiangYouOrder liangYouOrder = new LiangYouOrder();
+        OutOrderGoods outOrderGoods = new OutOrderGoods();
+        List<OutOrderGoods> outOrderGoodsList = new ArrayList<OutOrderGoods>();
+        outOrderGoodsList.add(outOrderGoods);
+        liangYouOrder.setOutOrderGoods(outOrderGoodsList);
+        System.out.println(net.sf.json.JSONObject.fromObject(liangYouOrder));
+    }
 
 }

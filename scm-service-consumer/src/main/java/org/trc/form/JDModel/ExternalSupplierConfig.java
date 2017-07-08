@@ -4,7 +4,8 @@ package org.trc.form.JDModel;
  * Created by hzwdx on 2017/6/21.
  */
 public class ExternalSupplierConfig {
-
+    //scm-external项目服务地址
+    private String scmExternalUrl;
     //京东sku分页查询url地址
     private String skuPageUrl;
     //京东sku查询url地址
@@ -104,5 +105,13 @@ public class ExternalSupplierConfig {
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
+    }
+
+    public String getScmExternalUrl() {
+        return scmExternalUrl;
+    }
+
+    public void setScmExternalUrl(String scmExternalUrl) {
+        this.scmExternalUrl = scmExternalUrl;
     }
 }

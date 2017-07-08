@@ -390,7 +390,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         jingDongOrder.setInvoiceContent(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));////目前选择1-明细
         jingDongOrder.setPaymentType(JdPaymentTypeEnum.ON_LINE.getCode());
         jingDongOrder.setIsUseBalance(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
-        jingDongOrder.setSubmitState(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));//不预占库存
+        jingDongOrder.setSubmitState(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));//预占库存
         jingDongOrder.setInvoiceName(platformOrder.getReceiverName());
         jingDongOrder.setInvoiceAddress(platformOrder.getReceiverAddress());
         jingDongOrder.setDoOrderPriceMode(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));//下单价格模式,1-必需验证客户端订单价格快照
@@ -1505,7 +1505,5 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return null;
     }
-
-
 
 }
