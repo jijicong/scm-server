@@ -2,6 +2,7 @@ package org.trc.service;
 
 
 import org.trc.form.JDModel.*;
+import org.trc.form.SupplyItemsExt;
 import org.trc.form.liangyou.LiangYouOrder;
 import org.trc.util.Pagenation;
 

@@ -18,7 +18,7 @@ public class SupplyItems extends BaseDO {
     private String categoryName;//分类名称
     private String brand;//品牌
     private String skuType;//商品类型
-    private double weight;//重量
+    private Double weight;//重量
     private String productArea;//产地
     private String saleUnit;//销售单位
     private String state;//上下架状态
@@ -117,11 +117,11 @@ public class SupplyItems extends BaseDO {
         this.skuType = skuType;
     }
 
-    public double getWeight() {
+    public Double getWeight() {
         return weight;
     }
 
-    public void setWeight(double weight) {
+    public void setWeight(Double weight) {
         this.weight = weight;
     }
 

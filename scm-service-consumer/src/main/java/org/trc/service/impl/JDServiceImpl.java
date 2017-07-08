@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
+import org.trc.form.SupplyItemsExt;
 import org.trc.form.liangyou.LiangYouOrder;
 import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.service.IJDService;
@@ -714,6 +715,7 @@ public class JDServiceImpl implements IJDService {
         }
     }
 
+
     @Override
     public ReturnTypeDO<Pagenation<SupplyItemsExt>> skuPage(SupplyItemsExt form, Pagenation<SupplyItemsExt> page) throws Exception {
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
@@ -725,7 +727,8 @@ public class JDServiceImpl implements IJDService {
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            response = HttpClientUtil.httpGetRequest(externalSupplierConfig.getSkuPageUrl(), map);
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSkuPageUrl();
+            response = HttpClientUtil.httpGetRequest(url, map);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -735,6 +738,9 @@ public class JDServiceImpl implements IJDService {
                     for(Object obj: page.getResult()){
                         JSONObject bo = (JSONObject)obj;
                         SupplyItemsExt supplyItemsExt = (SupplyItemsExt)bo.toJavaObject(SupplyItemsExt.class);
+                        supplyItemsExt.setSupplierPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplierPrice())));
+                        supplyItemsExt.setSupplyPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplyPrice())));
+                        supplyItemsExt.setMarketPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getMarketPrice())));
                         supplyItemsExt.setSkuName(bo.getString("name"));
                         supplyItemsExt.setBrand(bo.getString("brandName"));
                         supplyItemsExtList.add(supplyItemsExt);
@@ -764,7 +770,8 @@ public class JDServiceImpl implements IJDService {
         try{
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("skus", JSONArray.toJSON(skuDOList));
-            response = HttpClientUtil.httpPostRequest(externalSupplierConfig.getSkuAddNotice(), map, TIME_OUT);
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSkuAddNotice();
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);

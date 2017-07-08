@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 
 /**
+ * 金额分转元
  * Created by hzwdx on 2017/6/20.
  */
 public class MoneySerializer extends JsonSerializer<Long> {

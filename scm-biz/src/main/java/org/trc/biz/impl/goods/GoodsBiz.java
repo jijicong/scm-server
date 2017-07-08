@@ -28,6 +28,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.JDModel.*;
+import org.trc.form.SupplyItemsExt;
 import org.trc.form.config.DictForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
@@ -1532,7 +1533,6 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
         AssertUtil.notEmpty(skuArray, "新增代发商品不能为空");
-
         List<SupplyItems> supplyItems = new ArrayList<SupplyItems>();
         for(Object jbo: skuArray){
             JSONObject obj =  (JSONObject)jbo;
@@ -1650,6 +1650,9 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(items.getSupplyPrice()));
             externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(items.getSupplierPrice()));
             externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(items.getMarketPrice()));
+            /*externalItemSku.setSupplyPrice(items.getSupplyPrice().longValue());
+            externalItemSku.setSupplierPrice(items.getSupplierPrice().longValue());
+            externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());*/
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());

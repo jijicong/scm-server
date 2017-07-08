@@ -1270,7 +1270,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(SkuRelation.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", skuCodes);
-        criteria.andEqualTo("channel_code", channelCode);
+        criteria.andEqualTo("channelCode", channelCode);
         List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
         AssertUtil.notEmpty(skuRelations, String.format("根据多个skuCode[%s]查询skuRelation列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         StringBuilder sb = new StringBuilder();

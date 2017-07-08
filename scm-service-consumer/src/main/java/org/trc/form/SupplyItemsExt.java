@@ -1,4 +1,6 @@
-package org.trc.form.JDModel;
+package org.trc.form;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Date;
 
@@ -18,7 +20,7 @@ public class SupplyItemsExt {
     private String categoryName;//分类名称
     private String brand;//品牌
     private String skuType;//商品类型
-    private double weight;//重量
+    private Double weight;//重量
     private String productArea;//产地
     private String saleUnit;//销售单位
     private String state;//上下架状态
@@ -120,11 +122,11 @@ public class SupplyItemsExt {
         this.skuType = skuType;
     }
 
-    public double getWeight() {
+    public Double getWeight() {
         return weight;
     }
 
-    public void setWeight(double weight) {
+    public void setWeight(Double weight) {
         this.weight = weight;
     }
 
