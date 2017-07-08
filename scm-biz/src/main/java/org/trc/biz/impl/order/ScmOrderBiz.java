@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.order.IScmOrderBiz;
+import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.order.*;
@@ -31,7 +33,9 @@ import org.trc.form.order.WarehouseOrderForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
+import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.SkusService;
 import org.trc.service.order.*;
 import org.trc.service.util.ISerialUtilService;
@@ -88,7 +92,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
     @Autowired
-    private SkusService skusService;
+    private ISkusService skusService;
+    @Autowired
+    private IRequestFlowService requestFlowService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -320,6 +326,27 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //保存粮油订单信息
         saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, new String[0], new String[0], ZeroToNineEnum.ZERO.getCode());
         return ResultUtil.createSucssAppResult("提交粮油订单成功","");
+    }
+
+    @Override
+    public AppResult saveChannelOrderRequestFlow(String orderInfo, AppResult appResult) {
+        AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setType(RequestFlowConstant.TRC);
+        requestFlow.setRequester(RequestFlowConstant.TRC);
+        requestFlow.setResponder(RequestFlowConstant.GYL);
+        requestFlow.setRequestParam(orderInfo);
+        requestFlow.setResponseParam(JSON.toJSONString(appResult));
+        requestFlow.setRequestNum(GuidUtil.getNextUid(RequestFlowConstant.JINGDONG));
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        if (StringUtils.equals(appResult.getAppcode(), SuccessFailureEnum.SUCCESS.getCode())) {
+            requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+        } else {
+            requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
+        }
+        requestFlow.setRemark(appResult.getDatabuffer());
+        requestFlowService.insert(requestFlow);
+        return null;
     }
 
     /**
@@ -675,43 +702,43 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult<String> reciveChannelOrder(String orderInfo) {
-        PlatformOrder platformOrder = null;
+        AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
+        JSONObject orderObj = getChannelOrder(orderInfo);
+        //获取平台订单信息
+        PlatformOrder platformOrder = getPlatformOrder(orderObj);
+        platformOrderParamCheck(platformOrder);
+        JSONArray shopOrderArray = getShopOrdersArray(orderObj);
+        //获取店铺订单
+        List<ShopOrder> shopOrderList = getShopOrderList(platformOrder, shopOrderArray);
+        //保存幂等流水
+        saveIdempotentFlow(shopOrderList);
+        //拆分仓库订单
+        List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
+        for (ShopOrder shopOrder : shopOrderList) {
+            warehouseOrderList.addAll(dealShopOrder(shopOrder));
+        }
+        //订单商品明细
+        List<OrderItem> orderItemList = new ArrayList<OrderItem>();
+        for (WarehouseOrder warehouseOrder : warehouseOrderList) {
+            orderItemList.addAll(warehouseOrder.getOrderItemList());
+        }
+        //校验商品是否不是添加过的供应商商品
+        checkItemsSource(orderItemList);
+        orderItemService.insertList(orderItemList);
+        //保存仓库订单
+        warehouseOrderService.insertList(warehouseOrderList);
+        //保存商铺订单
+        shopOrderService.insertList(shopOrderList);
+        //保存平台订单
+        platformOrderService.insert(platformOrder);
+        //提交供应商订单
         try{
-            JSONObject orderObj = getChannelOrder(orderInfo);
-            //获取平台订单信息
-            platformOrder = getPlatformOrder(orderObj);
-            platformOrderParamCheck(platformOrder);
-            JSONArray shopOrderArray = getShopOrdersArray(orderObj);
-            //获取店铺订单
-            List<ShopOrder> shopOrderList = getShopOrderList(platformOrder, shopOrderArray);
-            //保存幂等流水
-            saveIdempotentFlow(shopOrderList);
-            //拆分仓库订单
-            List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
-            for (ShopOrder shopOrder : shopOrderList) {
-                warehouseOrderList.addAll(dealShopOrder(shopOrder));
-            }
-            //订单商品明细
-            List<OrderItem> orderItemList = new ArrayList<OrderItem>();
-            for (WarehouseOrder warehouseOrder : warehouseOrderList) {
-                orderItemList.addAll(warehouseOrder.getOrderItemList());
-            }
-            //校验商品是否不是添加过的供应商商品
-            checkItemsSource(orderItemList);
-            orderItemService.insertList(orderItemList);
-            //保存仓库订单
-            warehouseOrderService.insertList(warehouseOrderList);
-            //保存商铺订单
-            shopOrderService.insertList(shopOrderList);
-            //保存平台订单
-            platformOrderService.insert(platformOrder);
-            //提交供应商订单
-            try{
-                submitSupplierOrder(warehouseOrderList);
-            }catch (Exception e){
-                log.error(String.format("多线程提交供应商订单异常,%s", e.getMessage()));
-            }
-            return ResultUtil.createSucssAppResult("接收订单成功", "");
+            submitSupplierOrder(warehouseOrderList);
+        }catch (Exception e){
+            log.error(String.format("多线程提交供应商订单异常,%s", e.getMessage()));
+        }
+        /*try{
+
         }catch (Exception e){
             String channelCode = "";
             if(null != platformOrder)
@@ -719,8 +746,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String msg = String.format("接收渠道%s订单%s异常,%s",channelCode, orderInfo, e.getMessage());
             log.error(msg, e);
             return ResultUtil.createFailAppResult(msg);
-        }
+        }*/
+        return ResultUtil.createSucssAppResult("接收订单成功", "");
     }
+
+
 
     /**
      * @param warehouseOrderList
@@ -1098,15 +1128,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
         }
         return shopOrderArray;
-    }
-
-    /**
-     * 保存请求流水
-     *
-     * @param orderInfo
-     */
-    private void saveRequestFlow(String orderInfo) {
-
     }
 
     /**

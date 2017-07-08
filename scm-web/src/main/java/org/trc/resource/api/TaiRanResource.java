@@ -217,7 +217,16 @@ public class TaiRanResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.TEXT_PLAIN)
     public AppResult<String> getOrderList(String information) {
-        return scmOrderBiz.reciveChannelOrder(information);
+        AppResult appResult = null;
+        try{
+            appResult = scmOrderBiz.reciveChannelOrder(information);
+        }catch (Exception e){
+            appResult = ResultUtil.createFailAppResult(String.format("接收渠道同步订单异常,%s", e.getMessage()));
+            logger.error(String.format("接收渠道同步订单%异常,%s", information, e.getMessage()));
+        }finally {
+            scmOrderBiz.saveChannelOrderRequestFlow(information, appResult);
+        }
+        return appResult;
     }
 
 

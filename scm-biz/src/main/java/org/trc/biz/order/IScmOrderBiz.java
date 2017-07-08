@@ -71,6 +71,13 @@ public interface IScmOrderBiz {
     AppResult submitLiangYouOrder(String warehouseOrderCode);
 
     /**
+     * 渠道订单请求流水
+     * @param orderInfo
+     * @return
+     */
+    AppResult saveChannelOrderRequestFlow(String orderInfo, AppResult appResult);
+
+    /**
      * 接收渠道订单信息
      * @param orderInfo
      * @return
