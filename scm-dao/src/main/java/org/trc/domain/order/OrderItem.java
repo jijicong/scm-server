@@ -2,12 +2,12 @@ package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
-import org.trc.custom.MoneySerializer;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -20,7 +20,7 @@ public class OrderItem {
 
     }
 
-    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, String category, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, Long price, Long marketPrice, Long promotionPrice, Long customsPrice, Long transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, Boolean isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, Long postDiscount, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, Long totalFee, Long payment, Long totalWeight, Long adjustFee, String status, String afterSalesStatus, String complaintsStatus, Long refundFee, Integer catServiceRate, String picPath, String outerIid, String outerSkuId, Boolean subStock, Integer dlytmplId, String supplierName, Long priceTax, String promotionTags, String objType, String type, Double taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
+    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, String category, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, BigDecimal price, BigDecimal marketPrice, BigDecimal promotionPrice, BigDecimal customsPrice, BigDecimal transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, String  isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, BigDecimal postDiscount, BigDecimal discountPromotion, BigDecimal discountCouponShop, BigDecimal discountCouponPlatform, BigDecimal discountFee, BigDecimal totalFee, BigDecimal payment, BigDecimal totalWeight, BigDecimal adjustFee, String status, String afterSalesStatus, String complaintsStatus, BigDecimal refundFee, Integer catServiceRate, String picPath, String outerIid, String outerSkuId, String subStock, Integer dlytmplId, String supplierName, BigDecimal priceTax, String promotionTags, String objType, String type, BigDecimal taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
         this.warehouseOrderCode = warehouseOrderCode;
         this.shopOrderCode = shopOrderCode;
         this.platformOrderCode = platformOrderCode;
@@ -148,20 +148,20 @@ public class OrderItem {
     private String itemName;
 
     // 商品价格,单位/分
-    private Long price;
+    private BigDecimal price;
 
     // 市场价,单位/分
-    private Long marketPrice;
+    private BigDecimal marketPrice;
 
     // 促销价,单位/分
-    private Long promotionPrice;
+    private BigDecimal promotionPrice;
 
     // 报关单价,单位/分
-    private Long customsPrice;
+    private BigDecimal customsPrice;
 
     // 成交单价,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long transactionPrice;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal transactionPrice;
 
     // 购买数量
     private Integer num;
@@ -176,7 +176,7 @@ public class OrderItem {
     private String refundId;
 
     // 是否超卖
-    private Boolean isOversold;
+    private String isOversold;
 
     // 运送方式
     private String shippingType;
@@ -191,39 +191,39 @@ public class OrderItem {
     private String invoiceNo;
 
     // 运费分摊,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long postDiscount;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal postDiscount;
 
     // 促销优惠分摊,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountPromotion;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountPromotion;
 
     // 店铺优惠卷分摊金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountCouponShop;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountCouponShop;
 
     // 平台优惠卷优惠分摊,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountCouponPlatform;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountCouponPlatform;
 
     // 子订单级订单优惠金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountFee;
 
     // 应付金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalFee;
 
     // 实付金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long payment;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal payment;
 
     // 商品重量,单位/克
-    private Long totalWeight;
+    private BigDecimal totalWeight;
 
     // 手工调整金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long adjustFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal adjustFee;
 
     // 订单状态:1-待出库 2-部分出库 3-全部出库
     private String status;
@@ -235,7 +235,7 @@ public class OrderItem {
     private String complaintsStatus;
 
     // 退款金额,单位/分
-    private Long refundFee;
+    private BigDecimal refundFee;
 
     // 商家三级类目签约佣金比例
     private Integer catServiceRate;
@@ -250,7 +250,7 @@ public class OrderItem {
     private String outerSkuId;
 
     // 是否支持下单减库存
-    private Boolean subStock;
+    private String subStock;
 
     // 配送模板id
     private Integer dlytmplId;
@@ -259,8 +259,8 @@ public class OrderItem {
     private String supplierName;
 
     // 商品税费,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long priceTax;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal priceTax;
 
     // 订单应用促销标签
     private String promotionTags;
@@ -272,7 +272,7 @@ public class OrderItem {
     private String type;
 
     // 税率
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     // 订单冗余参数
     private String params;
@@ -574,14 +574,14 @@ public class OrderItem {
      * 返回商品价格,单位/分
      * @return 商品价格,单位/分
      */
-    public Long getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
     /**
      * 设置商品价格,单位/分
      */
-    public void setPrice(Long price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -589,14 +589,14 @@ public class OrderItem {
      * 返回市场价,单位/分
      * @return 市场价,单位/分
      */
-    public Long getMarketPrice() {
+    public BigDecimal getMarketPrice() {
         return marketPrice;
     }
 
     /**
      * 设置市场价,单位/分
      */
-    public void setMarketPrice(Long marketPrice) {
+    public void setMarketPrice(BigDecimal marketPrice) {
         this.marketPrice = marketPrice;
     }
 
@@ -604,14 +604,14 @@ public class OrderItem {
      * 返回促销价,单位/分
      * @return 促销价,单位/分
      */
-    public Long getPromotionPrice() {
+    public BigDecimal getPromotionPrice() {
         return promotionPrice;
     }
 
     /**
      * 设置促销价,单位/分
      */
-    public void setPromotionPrice(Long promotionPrice) {
+    public void setPromotionPrice(BigDecimal promotionPrice) {
         this.promotionPrice = promotionPrice;
     }
 
@@ -619,14 +619,14 @@ public class OrderItem {
      * 返回报关单价,单位/分
      * @return 报关单价,单位/分
      */
-    public Long getCustomsPrice() {
+    public BigDecimal getCustomsPrice() {
         return customsPrice;
     }
 
     /**
      * 设置报关单价,单位/分
      */
-    public void setCustomsPrice(Long customsPrice) {
+    public void setCustomsPrice(BigDecimal customsPrice) {
         this.customsPrice = customsPrice;
     }
 
@@ -634,14 +634,14 @@ public class OrderItem {
      * 返回成交单价,单位/分
      * @return 成交单价,单位/分
      */
-    public Long getTransactionPrice() {
+    public BigDecimal getTransactionPrice() {
         return transactionPrice;
     }
 
     /**
      * 设置成交单价,单位/分
      */
-    public void setTransactionPrice(Long transactionPrice) {
+    public void setTransactionPrice(BigDecimal transactionPrice) {
         this.transactionPrice = transactionPrice;
     }
 
@@ -709,14 +709,14 @@ public class OrderItem {
      * 返回是否超卖
      * @return 是否超卖
      */
-    public Boolean getIsOversold() {
+    public String getIsOversold() {
         return isOversold;
     }
 
     /**
      * 设置是否超卖
      */
-    public void setIsOversold(Boolean isOversold) {
+    public void setIsOversold(String isOversold) {
         this.isOversold = isOversold;
     }
 
@@ -784,14 +784,14 @@ public class OrderItem {
      * 返回运费分摊,单位/分
      * @return 运费分摊,单位/分
      */
-    public Long getPostDiscount() {
+    public BigDecimal getPostDiscount() {
         return postDiscount;
     }
 
     /**
      * 设置运费分摊,单位/分
      */
-    public void setPostDiscount(Long postDiscount) {
+    public void setPostDiscount(BigDecimal postDiscount) {
         this.postDiscount = postDiscount;
     }
 
@@ -799,14 +799,14 @@ public class OrderItem {
      * 返回促销优惠分摊,单位/分
      * @return 促销优惠分摊,单位/分
      */
-    public Long getDiscountPromotion() {
+    public BigDecimal getDiscountPromotion() {
         return discountPromotion;
     }
 
     /**
      * 设置促销优惠分摊,单位/分
      */
-    public void setDiscountPromotion(Long discountPromotion) {
+    public void setDiscountPromotion(BigDecimal discountPromotion) {
         this.discountPromotion = discountPromotion;
     }
 
@@ -814,14 +814,14 @@ public class OrderItem {
      * 返回店铺优惠卷分摊金额,单位/分
      * @return 店铺优惠卷分摊金额,单位/分
      */
-    public Long getDiscountCouponShop() {
+    public BigDecimal getDiscountCouponShop() {
         return discountCouponShop;
     }
 
     /**
      * 设置店铺优惠卷分摊金额,单位/分
      */
-    public void setDiscountCouponShop(Long discountCouponShop) {
+    public void setDiscountCouponShop(BigDecimal discountCouponShop) {
         this.discountCouponShop = discountCouponShop;
     }
 
@@ -829,14 +829,14 @@ public class OrderItem {
      * 返回平台优惠卷优惠分摊,单位/分
      * @return 平台优惠卷优惠分摊,单位/分
      */
-    public Long getDiscountCouponPlatform() {
+    public BigDecimal getDiscountCouponPlatform() {
         return discountCouponPlatform;
     }
 
     /**
      * 设置平台优惠卷优惠分摊,单位/分
      */
-    public void setDiscountCouponPlatform(Long discountCouponPlatform) {
+    public void setDiscountCouponPlatform(BigDecimal discountCouponPlatform) {
         this.discountCouponPlatform = discountCouponPlatform;
     }
 
@@ -844,14 +844,14 @@ public class OrderItem {
      * 返回子订单级订单优惠金额,单位/分
      * @return 子订单级订单优惠金额,单位/分
      */
-    public Long getDiscountFee() {
+    public BigDecimal getDiscountFee() {
         return discountFee;
     }
 
     /**
      * 设置子订单级订单优惠金额,单位/分
      */
-    public void setDiscountFee(Long discountFee) {
+    public void setDiscountFee(BigDecimal discountFee) {
         this.discountFee = discountFee;
     }
 
@@ -859,14 +859,14 @@ public class OrderItem {
      * 返回应付金额,单位/分
      * @return 应付金额,单位/分
      */
-    public Long getTotalFee() {
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
 
     /**
      * 设置应付金额,单位/分
      */
-    public void setTotalFee(Long totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 
@@ -874,14 +874,14 @@ public class OrderItem {
      * 返回实付金额,单位/分
      * @return 实付金额,单位/分
      */
-    public Long getPayment() {
+    public BigDecimal getPayment() {
         return payment;
     }
 
     /**
      * 设置实付金额,单位/分
      */
-    public void setPayment(Long payment) {
+    public void setPayment(BigDecimal payment) {
         this.payment = payment;
     }
 
@@ -889,14 +889,14 @@ public class OrderItem {
      * 返回商品重量,单位/克
      * @return 商品重量,单位/克
      */
-    public Long getTotalWeight() {
+    public BigDecimal getTotalWeight() {
         return totalWeight;
     }
 
     /**
      * 设置商品重量,单位/克
      */
-    public void setTotalWeight(Long totalWeight) {
+    public void setTotalWeight(BigDecimal totalWeight) {
         this.totalWeight = totalWeight;
     }
 
@@ -904,14 +904,14 @@ public class OrderItem {
      * 返回手工调整金额,单位/分
      * @return 手工调整金额,单位/分
      */
-    public Long getAdjustFee() {
+    public BigDecimal getAdjustFee() {
         return adjustFee;
     }
 
     /**
      * 设置手工调整金额,单位/分
      */
-    public void setAdjustFee(Long adjustFee) {
+    public void setAdjustFee(BigDecimal adjustFee) {
         this.adjustFee = adjustFee;
     }
 
@@ -964,14 +964,14 @@ public class OrderItem {
      * 返回退款金额,单位/分
      * @return 退款金额,单位/分
      */
-    public Long getRefundFee() {
+    public BigDecimal getRefundFee() {
         return refundFee;
     }
 
     /**
      * 设置退款金额,单位/分
      */
-    public void setRefundFee(Long refundFee) {
+    public void setRefundFee(BigDecimal refundFee) {
         this.refundFee = refundFee;
     }
 
@@ -1039,14 +1039,14 @@ public class OrderItem {
      * 返回是否支持下单减库存
      * @return 是否支持下单减库存
      */
-    public Boolean getSubStock() {
+    public String getSubStock() {
         return subStock;
     }
 
     /**
      * 设置是否支持下单减库存
      */
-    public void setSubStock(Boolean subStock) {
+    public void setSubStock(String subStock) {
         this.subStock = subStock;
     }
 
@@ -1084,14 +1084,14 @@ public class OrderItem {
      * 返回商品税费,单位/分
      * @return 商品税费,单位/分
      */
-    public Long getPriceTax() {
+    public BigDecimal getPriceTax() {
         return priceTax;
     }
 
     /**
      * 设置商品税费,单位/分
      */
-    public void setPriceTax(Long priceTax) {
+    public void setPriceTax(BigDecimal priceTax) {
         this.priceTax = priceTax;
     }
 
@@ -1144,14 +1144,14 @@ public class OrderItem {
      * 返回税率
      * @return 税率
      */
-    public Double getTaxRate() {
+    public BigDecimal getTaxRate() {
         return taxRate;
     }
 
     /**
      * 设置税率
      */
-    public void setTaxRate(Double taxRate) {
+    public void setTaxRate(BigDecimal taxRate) {
         this.taxRate = taxRate;
     }
 

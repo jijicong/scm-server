@@ -2,9 +2,12 @@ package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
-import org.trc.custom.MoneySerializer;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -17,7 +20,7 @@ public class PlatformOrder {
 
     }
 
-    public PlatformOrder(String platformOrderCode, String channelCode, String platformCode, String userId, String userName, Integer itemNum, String payType, Long payment, Long pointsFee, Long totalFee, Long adjustFee, Long postageFee, Long totalTax, String needInvoice, String invoiceName, String invoiceType, String invoiceMain, String receiverProvince, String receiverCity, String receiverDistrict, String receiverAddress, String receiverZip, String receiverName, String receiverIdCard, String receiverIdCardFront, String receiverIdCardBack, String receiverPhone, String receiverMobile, String buyerArea, String zitiMemo, String zitiAddr, String anony, Integer obtainPointFee, Integer realPointFee, String stepTradeStatus, Long stepPaidFee, String isClearing, String cancelReason, String cancelStatus, String status, String isVirtual, String ip, String type, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String shippingType, String platformType, String rateStatus, String couponCode, String groupBuyStatus, String isDeleted, Date createTime, Date payTime, Date consignTime, Date receiveTime, Date updateTime, Date timeoutActionTime, Date endTime, String payBillId) {
+    public PlatformOrder(String platformOrderCode, String channelCode, String platformCode, String userId, String userName, Integer itemNum, String payType, BigDecimal payment, BigDecimal pointsFee, BigDecimal totalFee, BigDecimal adjustFee, BigDecimal postageFee, BigDecimal totalTax, String needInvoice, String invoiceName, String invoiceType, String invoiceMain, String receiverProvince, String receiverCity, String receiverDistrict, String receiverAddress, String receiverZip, String receiverName, String receiverIdCard, String receiverIdCardFront, String receiverIdCardBack, String receiverPhone, String receiverMobile, String buyerArea, String zitiMemo, String zitiAddr, String anony, Integer obtainPointFee, Integer realPointFee, String stepTradeStatus, BigDecimal stepPaidFee, String isClearing, String cancelReason, String cancelStatus, String status, String isVirtual, String ip, String type, BigDecimal discountPromotion, BigDecimal discountCouponShop, BigDecimal discountCouponPlatform, BigDecimal discountFee, String shippingType, String platformType, String rateStatus, String couponCode, String groupBuyStatus, String isDeleted, Date createTime, Date payTime, Date consignTime, Date receiveTime, Date updateTime, Date timeoutActionTime, Date endTime, String payBillId) {
         this.platformOrderCode = platformOrderCode;
         this.channelCode = channelCode;
         this.platformCode = platformCode;
@@ -109,25 +112,25 @@ public class PlatformOrder {
     private String payType;
 
     // 实付金额,单位/分
-    private Long payment;
+    private BigDecimal payment;
 
     // 积分抵扣金额,单位/分
-    private Long pointsFee;
+    private BigDecimal pointsFee;
 
     // 订单总金额(商品单价*数量),单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalFee;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分
-    private Long adjustFee;
+    private BigDecimal adjustFee;
 
     // 邮费,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long postageFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal postageFee;
 
     // 总税费,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalTax;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalTax;
 
     // 是否开票 1-是 0-不是
     private String needInvoice;
@@ -199,7 +202,7 @@ public class PlatformOrder {
     private String stepTradeStatus;
 
     // 分阶段已付金额,单位/分
-    private Long stepPaidFee;
+    private BigDecimal stepPaidFee;
 
     // 是否生成结算清单 0-否 1-是
     private String isClearing;
@@ -223,16 +226,16 @@ public class PlatformOrder {
     private String type;
 
     // 促销优惠总金额,单位/分
-    private Long discountPromotion;
+    private BigDecimal discountPromotion;
 
     // 店铺优惠卷优惠金额,单位/分
-    private Long discountCouponShop;
+    private BigDecimal discountCouponShop;
 
     // 平台优惠卷优惠金额,单位/分
-    private Long discountCouponPlatform;
+    private BigDecimal discountCouponPlatform;
 
     // 订单优惠总金额,单位/分
-    private Long discountFee;
+    private BigDecimal discountFee;
 
     // 配送类型
     private String shippingType;
@@ -401,14 +404,14 @@ public class PlatformOrder {
      * 返回实付金额,单位/分
      * @return 实付金额,单位/分
      */
-    public Long getPayment() {
+    public BigDecimal getPayment() {
         return payment;
     }
 
     /**
      * 设置实付金额,单位/分
      */
-    public void setPayment(Long payment) {
+    public void setPayment(BigDecimal payment) {
         this.payment = payment;
     }
 
@@ -416,14 +419,14 @@ public class PlatformOrder {
      * 返回积分抵扣金额,单位/分
      * @return 积分抵扣金额,单位/分
      */
-    public Long getPointsFee() {
+    public BigDecimal getPointsFee() {
         return pointsFee;
     }
 
     /**
      * 设置积分抵扣金额,单位/分
      */
-    public void setPointsFee(Long pointsFee) {
+    public void setPointsFee(BigDecimal pointsFee) {
         this.pointsFee = pointsFee;
     }
 
@@ -431,14 +434,14 @@ public class PlatformOrder {
      * 返回订单总金额(商品单价*数量),单位/分
      * @return 订单总金额(商品单价*数量),单位/分
      */
-    public Long getTotalFee() {
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
 
     /**
      * 设置订单总金额(商品单价*数量),单位/分
      */
-    public void setTotalFee(Long totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 
@@ -446,14 +449,14 @@ public class PlatformOrder {
      * 返回卖家手工调整金额,子订单调整金额之和,单位/分
      * @return 卖家手工调整金额,子订单调整金额之和,单位/分
      */
-    public Long getAdjustFee() {
+    public BigDecimal getAdjustFee() {
         return adjustFee;
     }
 
     /**
      * 设置卖家手工调整金额,子订单调整金额之和,单位/分
      */
-    public void setAdjustFee(Long adjustFee) {
+    public void setAdjustFee(BigDecimal adjustFee) {
         this.adjustFee = adjustFee;
     }
 
@@ -461,14 +464,14 @@ public class PlatformOrder {
      * 返回邮费,单位/分
      * @return 邮费,单位/分
      */
-    public Long getPostageFee() {
+    public BigDecimal getPostageFee() {
         return postageFee;
     }
 
     /**
      * 设置邮费,单位/分
      */
-    public void setPostageFee(Long postageFee) {
+    public void setPostageFee(BigDecimal postageFee) {
         this.postageFee = postageFee;
     }
 
@@ -476,14 +479,14 @@ public class PlatformOrder {
      * 返回总税费,单位/分
      * @return 总税费,单位/分
      */
-    public Long getTotalTax() {
+    public BigDecimal getTotalTax() {
         return totalTax;
     }
 
     /**
      * 设置总税费,单位/分
      */
-    public void setTotalTax(Long totalTax) {
+    public void setTotalTax(BigDecimal totalTax) {
         this.totalTax = totalTax;
     }
 
@@ -821,14 +824,14 @@ public class PlatformOrder {
      * 返回分阶段已付金额,单位/分
      * @return 分阶段已付金额,单位/分
      */
-    public Long getStepPaidFee() {
+    public BigDecimal getStepPaidFee() {
         return stepPaidFee;
     }
 
     /**
      * 设置分阶段已付金额,单位/分
      */
-    public void setStepPaidFee(Long stepPaidFee) {
+    public void setStepPaidFee(BigDecimal stepPaidFee) {
         this.stepPaidFee = stepPaidFee;
     }
 
@@ -941,14 +944,14 @@ public class PlatformOrder {
      * 返回促销优惠总金额,单位/分
      * @return 促销优惠总金额,单位/分
      */
-    public Long getDiscountPromotion() {
+    public BigDecimal getDiscountPromotion() {
         return discountPromotion;
     }
 
     /**
      * 设置促销优惠总金额,单位/分
      */
-    public void setDiscountPromotion(Long discountPromotion) {
+    public void setDiscountPromotion(BigDecimal discountPromotion) {
         this.discountPromotion = discountPromotion;
     }
 
@@ -956,14 +959,14 @@ public class PlatformOrder {
      * 返回店铺优惠卷优惠金额,单位/分
      * @return 店铺优惠卷优惠金额,单位/分
      */
-    public Long getDiscountCouponShop() {
+    public BigDecimal getDiscountCouponShop() {
         return discountCouponShop;
     }
 
     /**
      * 设置店铺优惠卷优惠金额,单位/分
      */
-    public void setDiscountCouponShop(Long discountCouponShop) {
+    public void setDiscountCouponShop(BigDecimal discountCouponShop) {
         this.discountCouponShop = discountCouponShop;
     }
 
@@ -971,14 +974,14 @@ public class PlatformOrder {
      * 返回平台优惠卷优惠金额,单位/分
      * @return 平台优惠卷优惠金额,单位/分
      */
-    public Long getDiscountCouponPlatform() {
+    public BigDecimal getDiscountCouponPlatform() {
         return discountCouponPlatform;
     }
 
     /**
      * 设置平台优惠卷优惠金额,单位/分
      */
-    public void setDiscountCouponPlatform(Long discountCouponPlatform) {
+    public void setDiscountCouponPlatform(BigDecimal discountCouponPlatform) {
         this.discountCouponPlatform = discountCouponPlatform;
     }
 
@@ -986,14 +989,14 @@ public class PlatformOrder {
      * 返回订单优惠总金额,单位/分
      * @return 订单优惠总金额,单位/分
      */
-    public Long getDiscountFee() {
+    public BigDecimal getDiscountFee() {
         return discountFee;
     }
 
     /**
      * 设置订单优惠总金额,单位/分
      */
-    public void setDiscountFee(Long discountFee) {
+    public void setDiscountFee(BigDecimal discountFee) {
         this.discountFee = discountFee;
     }
 

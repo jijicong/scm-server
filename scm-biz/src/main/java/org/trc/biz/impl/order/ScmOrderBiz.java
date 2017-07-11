@@ -19,7 +19,6 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
-import org.trc.domain.goods.Skus;
 import org.trc.domain.order.*;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
@@ -37,8 +36,6 @@ import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
-import org.trc.service.goods.ISkusService;
-import org.trc.service.impl.goods.SkusService;
 import org.trc.service.order.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -93,8 +90,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ISupplierOrderLogisticsService supplierOrderLogisticsService;
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
-    @Autowired
-    private ISkusService skusService;
     @Autowired
     private IRequestFlowService requestFlowService;
     @Autowired
@@ -386,11 +381,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(jdAddressCodes.length > 3){
             jingDongOrder.setTown(jdAddressCodes[3]);
         }
+        if(StringUtils.isBlank(jingDongOrder.getTown()))
+            jingDongOrder.setTown(ZeroToNineEnum.ZERO.getCode());//没有四级地址传0
+        // TODO 目前渠道没有提供电子邮箱地址，所以暂时调试写死
+        //jingDongOrder.setEmail(platformOrder.getReceiverEmail());
+        jingDongOrder.setEmail("471869639@qq.com");//接收人电子邮箱
         jingDongOrder.setAddress(platformOrder.getReceiverAddress());
         jingDongOrder.setZip(platformOrder.getReceiverZip());
         jingDongOrder.setPhone(platformOrder.getReceiverPhone());
         jingDongOrder.setMobile(platformOrder.getReceiverMobile());
-        jingDongOrder.setEmail(platformOrder.getReceiverEmail());
         jingDongOrder.setRemark("");// TODO 备注信息
         jingDongOrder.setInvoiceState(JdInvoiceStateEnum.FOCUS.getCode());//目前只能选择2-集中开票
         jingDongOrder.setInvoiceType(JdInvoiceTypeEnum.VALUE_ADDED_TAX.getCode());//目前只支持：2-增值税发票
@@ -422,7 +421,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         liangYouOrder.setShopOrderCode(warehouseOrder.getShopOrderCode());
         liangYouOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         liangYouOrder.setConsignee(platformOrder.getReceiverName());
-        liangYouOrder.setOutOrderSn(warehouseOrder.getWarehouseOrderCode());
         liangYouOrder.setRealName(platformOrder.getReceiverName());
         liangYouOrder.setImId(platformOrder.getReceiverIdCard());
         liangYouOrder.setDisType(F);
@@ -439,6 +437,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outOrderGoods.setQuantity(orderItem.getNum());
             outOrderGoodsList.add(outOrderGoods);
         }
+        liangYouOrder.setOutOrderGoods(outOrderGoodsList);
         return liangYouOrder;
     }
 
@@ -460,7 +459,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             OrderPriceSnap orderPriceSnap = new OrderPriceSnap();
             orderPriceSnap.setSkuId(Long.parseLong(orderItem2.getSupplierSkuCode()));
-            orderPriceSnap.setPrice(new BigDecimal(orderItem2.getTransactionPrice()));
+            orderPriceSnap.setPrice(orderItem2.getTransactionPrice());
             orderPriceSnapList.add(orderPriceSnap);
         }
         jingDongOrder.setSku(jdSkuList);
@@ -1104,17 +1103,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         AssertUtil.notNull(platformObj, "接收渠道订单参数中平台订单信息为空");
         PlatformOrder platformOrder = platformObj.toJavaObject(PlatformOrder.class);
-        platformOrder.setPayment(CommonUtil.getMoneyLong(platformObj.getBigDecimal("payment")));//实付金额
-        platformOrder.setPostageFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("postageFee")));//积分抵扣金额
-        platformOrder.setTotalFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("totalFee")));//订单总金额
-        platformOrder.setAdjustFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("adjustFee")));//卖家手工调整金额
-        platformOrder.setPointsFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("pointsFee")));//邮费
-        platformOrder.setTotalTax(CommonUtil.getMoneyLong(platformObj.getBigDecimal("totalTax")));//总税费
-        platformOrder.setStepPaidFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("stepPaidFee")));//分阶段已付金额
-        platformOrder.setDiscountPromotion(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountPromotion")));//促销优惠总金额
-        platformOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountCouponShop")));//店铺优惠卷优惠金额
-        platformOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountCouponPlatform")));//平台优惠卷优惠金额
-        platformOrder.setDiscountFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountFee")));//订单优惠总金额
+        platformOrder.setPayment(platformObj.getBigDecimal("payment"));//实付金额
+        platformOrder.setPostageFee(platformObj.getBigDecimal("postageFee"));//积分抵扣金额
+        platformOrder.setTotalFee(platformObj.getBigDecimal("totalFee"));//订单总金额
+        platformOrder.setAdjustFee(platformObj.getBigDecimal("adjustFee"));//卖家手工调整金额
+        platformOrder.setPointsFee(platformObj.getBigDecimal("pointsFee"));//邮费
+        platformOrder.setTotalTax(platformObj.getBigDecimal("totalTax"));//总税费
+        platformOrder.setStepPaidFee(platformObj.getBigDecimal("stepPaidFee"));//分阶段已付金额
+        platformOrder.setDiscountPromotion(platformObj.getBigDecimal("discountPromotion"));//促销优惠总金额
+        platformOrder.setDiscountCouponShop(platformObj.getBigDecimal("discountCouponShop"));//店铺优惠卷优惠金额
+        platformOrder.setDiscountCouponPlatform(platformObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
+        platformOrder.setDiscountFee(platformObj.getBigDecimal("discountFee"));//订单优惠总金额
 
         platformOrder.setCreateTime(DateUtils.timestampToDate(platformObj.getLong("createTime")));//创建时间
         platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
@@ -1186,7 +1185,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private List<ShopOrder> getShopOrderList(PlatformOrder platformOrder, JSONArray shopOrderArray) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         Integer totalNum = 0;
-        Long totalShop = 0L;
+        BigDecimal totalShop = new BigDecimal(0);
         for (Object obj : shopOrderArray) {
             JSONObject tmpObj = (JSONObject) obj;
             JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
@@ -1203,22 +1202,21 @@ public class ScmOrderBiz implements IScmOrderBiz {
             AssertUtil.notEmpty(orderItemArray, String.format("接收渠道订单参数中平店铺订单%s相关商品订单明细信息为空为空", shopOrderObj));
             //获取订单商品明细
             List<OrderItem> orderItemList = getOrderItem(orderItemArray);
-            totalShop += shopOrder.getPayment();
+            totalShop = totalShop.add(shopOrder.getPayment());
             totalNum += shopOrder.getItemNum();
             shopOrder.setOrderItems(orderItemList);
             Integer totalOneShopNum = 0;
-            Long totalItem = 0L;
+            BigDecimal totalItem = new BigDecimal(0);
             for (OrderItem orderItem : orderItemList) {
-                System.out.println("@@@@   "+orderItem.getPayment());
                 orderItemsParamCheck(orderItem);
-                totalItem += orderItem.getPayment();
+                totalItem = totalItem.add(orderItem.getPayment());
                 totalOneShopNum += orderItem.getNum();
             }
-            AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+            AssertUtil.isTrue(totalItem.compareTo(shopOrder.getPayment()) == 0, "店铺订单实付金额与所有该店铺商品总实付金额不等值");
             AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
             shopOrderList.add(shopOrder);
         }
-        AssertUtil.isTrue(totalShop.longValue() == platformOrder.getPayment().longValue(), "平台订单实付金额与所有店铺总实付金额不等值");
+        AssertUtil.isTrue(totalShop.compareTo(platformOrder.getPayment()) == 0, "平台订单实付金额与所有店铺总实付金额不等值");
         AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");
         return shopOrderList;
     }
@@ -1229,15 +1227,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrderObj
      */
     private void setShopOrderFee(ShopOrder shopOrder, JSONObject shopOrderObj){
-        shopOrder.setPayment(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("payment")));//实付金额
-        shopOrder.setPostageFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("postageFee")));//积分抵扣金额
-        shopOrder.setTotalFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("totalFee")));//订单总金额
-        shopOrder.setAdjustFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("adjustFee")));//卖家手工调整金额
-        shopOrder.setTotalTax(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("totalTax")));//总税费
-        shopOrder.setDiscountPromotion(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountPromotion")));//促销优惠总金额
-        shopOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountCouponShop")));//店铺优惠卷优惠金额
-        shopOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountCouponPlatform")));//平台优惠卷优惠金额
-        shopOrder.setDiscountFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountFee")));//订单优惠总金额
+        shopOrder.setPayment(shopOrderObj.getBigDecimal("payment"));//实付金额
+        shopOrder.setPostageFee(shopOrderObj.getBigDecimal("postageFee"));//积分抵扣金额
+        shopOrder.setTotalFee(shopOrderObj.getBigDecimal("totalFee"));//订单总金额
+        shopOrder.setAdjustFee(shopOrderObj.getBigDecimal("adjustFee"));//卖家手工调整金额
+        shopOrder.setTotalTax(shopOrderObj.getBigDecimal("totalTax"));//总税费
+        shopOrder.setDiscountPromotion(shopOrderObj.getBigDecimal("discountPromotion"));//促销优惠总金额
+        shopOrder.setDiscountCouponShop(shopOrderObj.getBigDecimal("discountCouponShop"));//店铺优惠卷优惠金额
+        shopOrder.setDiscountCouponPlatform(shopOrderObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
+        shopOrder.setDiscountFee(shopOrderObj.getBigDecimal("discountFee"));//订单优惠总金额
     }
 
     /**
@@ -1250,22 +1248,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
             OrderItem orderItem = orderItemObj.toJavaObject(OrderItem.class);
-            orderItem.setPayment(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("payment")));//实付金额
-            orderItem.setTotalFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("totalFee")));//订单总金额
-            orderItem.setAdjustFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("adjustFee")));//卖家手工调整金额
-            orderItem.setDiscountPromotion(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountPromotion")));//促销优惠总金额
-            orderItem.setDiscountCouponShop(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountCouponShop")));//店铺优惠卷优惠金额
-            orderItem.setDiscountCouponPlatform(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountCouponPlatform")));//平台优惠卷优惠金额
-            orderItem.setDiscountFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountFee")));//订单优惠总金额
-            orderItem.setPostDiscount(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("postDiscount")));//运费分摊
-            orderItem.setRefundFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("refundFee")));//退款金额
-            orderItem.setPriceTax(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("priceTax")));//商品税费
-            orderItem.setPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("price")));//商品价格
-            orderItem.setMarketPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("marketPrice")));//市场价
-            orderItem.setPromotionPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("promotionPrice")));//促销价
-            orderItem.setCustomsPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("customsPrice")));//报关单价
-            orderItem.setTransactionPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("transactionPrice")));//成交单价
-            orderItem.setTotalWeight(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("totalWeight")));//商品重量
+            orderItem.setPayment(orderItemObj.getBigDecimal("payment"));//实付金额
+            orderItem.setTotalFee(orderItemObj.getBigDecimal("totalFee"));//订单总金额
+            orderItem.setAdjustFee(orderItemObj.getBigDecimal("adjustFee"));//卖家手工调整金额
+            orderItem.setDiscountPromotion(orderItemObj.getBigDecimal("discountPromotion"));//促销优惠总金额
+            orderItem.setDiscountCouponShop(orderItemObj.getBigDecimal("discountCouponShop"));//店铺优惠卷优惠金额
+            orderItem.setDiscountCouponPlatform(orderItemObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
+            orderItem.setDiscountFee(orderItemObj.getBigDecimal("discountFee"));//订单优惠总金额
+            orderItem.setPostDiscount(orderItemObj.getBigDecimal("postDiscount"));//运费分摊
+            orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
+            orderItem.setPriceTax(orderItemObj.getBigDecimal("priceTax"));//商品税费
+            orderItem.setPrice(orderItemObj.getBigDecimal("price"));//商品价格
+            orderItem.setMarketPrice(orderItemObj.getBigDecimal("marketPrice"));//市场价
+            orderItem.setPromotionPrice(orderItemObj.getBigDecimal("promotionPrice"));//促销价
+            orderItem.setCustomsPrice(orderItemObj.getBigDecimal("customsPrice"));//报关单价
+            orderItem.setTransactionPrice(orderItemObj.getBigDecimal("transactionPrice"));//成交单价
+            orderItem.setTotalWeight(orderItemObj.getBigDecimal("totalWeight"));//商品重量
 
             orderItem.setCreateTime(DateUtils.timestampToDate(orderItemObj.getLong("createTime")));//创建时间
             orderItem.setPayTime(DateUtils.timestampToDate(orderItemObj.getLong("payTime")));//支付时间
@@ -1328,15 +1326,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(platformOrder.getUserId(), "会员id不能为空");
         AssertUtil.notBlank(platformOrder.getUserName(), "会员名称不能为空");
         AssertUtil.notNull(platformOrder.getAdjustFee(), "卖家手工调整金额不能为空");
-        AssertUtil.isTrue(platformOrder.getAdjustFee() >= 0, "卖家手工调整金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getAdjustFee().compareTo(new BigDecimal(0))==0 || platformOrder.getAdjustFee().compareTo(new BigDecimal(0))==1, "卖家手工调整金额应大于等于0");
         AssertUtil.notNull(platformOrder.getTotalFee(), "订单总金额不能为空");
-        AssertUtil.isTrue(platformOrder.getTotalFee() >= 0, "订单总金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getTotalFee().compareTo(new BigDecimal(0))==0 || platformOrder.getTotalFee().compareTo(new BigDecimal(0))==1, "订单总金额应大于等于0");
         AssertUtil.notNull(platformOrder.getPostageFee(), "邮费不能为空");
-        AssertUtil.isTrue(platformOrder.getPostageFee() >= 0, "邮费应大于等于0");
+        AssertUtil.isTrue(platformOrder.getPostageFee().compareTo(new BigDecimal(0))==0 || platformOrder.getPostageFee().compareTo(new BigDecimal(0))==1, "邮费应大于等于0");
         AssertUtil.notNull(platformOrder.getTotalTax(), "总税费不能为空");
-        AssertUtil.isTrue(platformOrder.getTotalTax() >= 0, "总税费应大于等于0");
+        AssertUtil.isTrue(platformOrder.getTotalTax().compareTo(new BigDecimal(0))==0 || platformOrder.getTotalTax().compareTo(new BigDecimal(0))==1, "总税费应大于等于0");
         AssertUtil.notNull(platformOrder.getPayment(), "实付金额不能为空");
-        AssertUtil.isTrue(platformOrder.getPayment() >= 0, "实付金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getPayment().compareTo(new BigDecimal(0))==0 || platformOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"实付金额应大于等于0");
         AssertUtil.notBlank(platformOrder.getPayType(), "支付类型不能为空");
         AssertUtil.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
     }
@@ -1358,7 +1356,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(shopOrder.getUserId(), "会员id不能为空");
         AssertUtil.notBlank(shopOrder.getStatus(), "订单状态不能为空");
         AssertUtil.notNull(shopOrder.getPayment(), "订单实付总金额不能为空");
-        AssertUtil.isTrue(shopOrder.getPayment() >= 0, "订单实付总金额应大于等于0");
+        AssertUtil.isTrue(shopOrder.getPayment().compareTo(new BigDecimal(0))==0 || shopOrder.getPayment().compareTo(new BigDecimal(0))==1, "订单实付总金额应大于等于0");
         AssertUtil.notNull(shopOrder.getItemNum(), "店铺订单商品总数不能为空");
     }
 
@@ -1379,7 +1377,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //AssertUtil.notBlank(orderItem.getBarCode(), "条形码不能为空");
         AssertUtil.notBlank(orderItem.getItemName(), "商品名称不能为空");
         AssertUtil.notNull(orderItem.getPayment(), "实付金额不能为空");
-        AssertUtil.isTrue(orderItem.getPayment() >= 0, "实付金额应大于等于0");
+        AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1, "实付金额应大于等于0");
         AssertUtil.notNull(orderItem.getPrice(), "单价不能为空");
         AssertUtil.notNull(orderItem.getNum(), "购买数量不能为空");
     }
@@ -1474,24 +1472,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private void setWarehouseOrderFee(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList){
         Integer itemsNum = 0;//商品总数量
-        Long totalFee = 0L;//总金额
-        Long payment = 0L;//实付金额
-        Long adjustFee = 0L;//卖家手工调整金额
-        Long postageFee = 0L;//邮费分摊金额
-        Long discountPromotion = 0L;//促销优惠总金额
-        Long discountCouponShop = 0L;//店铺优惠卷分摊总金额
-        Long discountCouponPlatform = 0L;//平台优惠卷分摊总金额
-        Long discountFee = 0L;//促销优惠金额
+        BigDecimal totalFee = new BigDecimal(0);//总金额
+        BigDecimal payment = new BigDecimal(0);//实付金额
+        BigDecimal adjustFee = new BigDecimal(0);//卖家手工调整金额
+        BigDecimal postageFee = new BigDecimal(0);//邮费分摊金额
+        BigDecimal discountPromotion = new BigDecimal(0);//促销优惠总金额
+        BigDecimal discountCouponShop = new BigDecimal(0);//店铺优惠卷分摊总金额
+        BigDecimal discountCouponPlatform = new BigDecimal(0);//平台优惠卷分摊总金额
+        BigDecimal discountFee = new BigDecimal(0);//促销优惠金额
         for(OrderItem orderItem: orderItemList){
             itemsNum += 1;
-            totalFee += orderItem.getTotalFee();
-            payment += orderItem.getPayment();
-            adjustFee += orderItem.getAdjustFee();
-            postageFee += orderItem.getPostDiscount();
-            discountPromotion += orderItem.getDiscountPromotion();
-            discountCouponShop += orderItem.getDiscountCouponShop();
-            discountCouponPlatform += orderItem.getDiscountCouponPlatform();
-            discountFee += orderItem.getDiscountFee();
+            totalFee = totalFee.add(orderItem.getTotalFee());
+            payment = payment.add(orderItem.getPayment());
+            adjustFee = adjustFee.add(orderItem.getAdjustFee());
+            postageFee = postageFee.add(orderItem.getPostDiscount());
+            discountPromotion = discountPromotion.add(orderItem.getDiscountPromotion());
+            discountCouponShop = discountCouponShop.add(orderItem.getDiscountCouponShop());
+            discountCouponPlatform = discountCouponPlatform.add(orderItem.getDiscountCouponPlatform());
+            discountFee = discountFee.add(orderItem.getDiscountFee());
         }
         warehouseOrder.setItemsNum(itemsNum);
         warehouseOrder.setTotalFee(totalFee);

@@ -4,6 +4,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.MoneySerializer;
 
 import javax.persistence.Transient;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,17 +15,17 @@ public class OrderExt extends OrderBase{
     // 实付金额,订单最终总额,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     @Transient
-    private Long payment;
+    private BigDecimal payment;
 
     // 邮费分摊,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     @Transient
-    private Long postageFee;
+    private BigDecimal postageFee;
 
     // 订单总税费,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     @Transient
-    private Long totalTax;
+    private BigDecimal totalTax;
 
     /**
      * 订单商品明细列表
@@ -39,27 +40,27 @@ public class OrderExt extends OrderBase{
         this.orderItemList = orderItemList;
     }
 
-    public Long getPayment() {
+    public BigDecimal getPayment() {
         return payment;
     }
 
-    public void setPayment(Long payment) {
+    public void setPayment(BigDecimal payment) {
         this.payment = payment;
     }
 
-    public Long getPostageFee() {
+    public BigDecimal getPostageFee() {
         return postageFee;
     }
 
-    public void setPostageFee(Long postageFee) {
+    public void setPostageFee(BigDecimal postageFee) {
         this.postageFee = postageFee;
     }
 
-    public Long getTotalTax() {
+    public BigDecimal getTotalTax() {
         return totalTax;
     }
 
-    public void setTotalTax(Long totalTax) {
+    public void setTotalTax(BigDecimal totalTax) {
         this.totalTax = totalTax;
     }
 }
