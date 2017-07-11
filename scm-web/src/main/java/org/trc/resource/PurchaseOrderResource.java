@@ -131,6 +131,12 @@ public class PurchaseOrderResource {
 
     }
 
-
+    @POST
+    @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_ADVICE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult saveWarahouseAdvice(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) {
+        purchaseOrderBiz.warahouseAdvice(purchaseOrder,requestContext);
+        return ResultUtil.createSucssAppResult("入库通知单添加成功","");
+    }
 
 }

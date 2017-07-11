@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -26,10 +28,7 @@ import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
-import org.trc.service.purchase.IPurchaseDetailService;
-import org.trc.service.purchase.IPurchaseGroupService;
-import org.trc.service.purchase.IPurchaseOrderAuditService;
-import org.trc.service.purchase.IPurchaseOrderService;
+import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -70,6 +69,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IConfigBiz configBiz;
     @Resource
     private IAclUserAccreditInfoService iAclUserAccreditInfoService;
+    @Resource
+    private IWarehouseNoticeService iWarehouseNoticeService;
+    @Resource
+    private ISerialUtilService iSerialUtilService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -78,6 +81,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private final static String SUPPLIER_CODE = "supplierCode";
 
     private final static String SKU = "sku";
+
+    private final static String CGRKTZ="CGRKTZ";
 
     @Resource
     private ISerialUtilService serialUtilService;
@@ -347,7 +352,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrder.setIsValid(ValidEnum.VALID.getCode());
         purchaseOrder.setStatus(status);//设置状态
         purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
-        purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());//设置入库通知的状态
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
         if(paymentProportion!=null){
             BigDecimal bd = new BigDecimal("100");
@@ -372,9 +376,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         code = purchaseOrder.getPurchaseOrderCode();
 
         BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
-        /*System.out.println(totalPrice);
-        System.out.println("-----------------------------------");
-        System.out.println(purchaseOrder.getTotalFeeD());*/
+
         if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
 
             String msg = CommonUtil.joinStr("采购单保存,采购商品的总价与页面的总价不相等").toString();
@@ -692,7 +694,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             BigDecimal bd = new BigDecimal("100");
             paymentProportion=paymentProportion.divide(bd);
             if(paymentProportion.doubleValue()>1 || paymentProportion.doubleValue()<=0){ //范围校验
-                String msg = CommonUtil.joinStr("采购单修改,付款比例超出范围").toString();
+                String msg = "采购单修改,付款比例超出范围";
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
@@ -711,7 +713,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         BigDecimal totalPrice = savePurchaseDetail(purchaseOrderAddData.getGridValue(),purchaseOrderAddData.getId(),purchaseOrderAddData.getPurchaseOrderCode(),purchaseOrderAddData.getCreateOperator());
         if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
-            String msg = CommonUtil.joinStr("采购单修改,采购商品的总价与页面的总价不相等").toString();
+            String msg = "采购单修改,采购商品的总价与页面的总价不相等";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
@@ -726,8 +728,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * 1.先根据采购订单编码查询，该采购单对应的skus编码
      * 2.比对前台提交的skuss
      *   传入的skus 有的删除， 剩下在原有的skus 也删除
-     * @param purchaseOrderStrs
-     * @
+     * @param
      */
     /*private void saveSkusAndDeleteSkus(String purchaseOrderStrs,PurchaseOrderAddData purchaseOrderAddData) {
 
@@ -787,5 +788,63 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
     }*/
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void warahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext) {
+
+        AssertUtil.notNull(purchaseOrder,"采购单信息为空,保存入库通知单失败");
+        AssertUtil.notNull(purchaseOrder.getId(),"采购单的主键为空,保存入库通知单失败");
+        //根据采购单id,查询采购单的信息
+        PurchaseOrder order = purchaseOrderService.selectByPrimaryKey(purchaseOrder.getId());
+        AssertUtil.notNull(order,"根据主键查询该采购单为空");
+        WarehouseNotice warehouseNotice = new WarehouseNotice();
+        //这里没有继承commDao类，因此创建人要自己的代码处理
+        Object obj = requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notNull(obj,"您的用户信息为空");
+        warehouseNotice.setCreateOperator((String) obj);
+        assignmentWarehouseNotice(order,warehouseNotice);
+        int count = iWarehouseNoticeService.insert(warehouseNotice);
+        if(count == 0){
+            String msg = "保存入库通知单数据库操作失败";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+        //更新采购单的状态
+        PurchaseOrder _purchaseOrder = new PurchaseOrder();
+        _purchaseOrder.setId(order.getId());
+        _purchaseOrder.setStatus(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+        _purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());//待通知
+        int sum = purchaseOrderService.updateByPrimaryKeySelective(_purchaseOrder);
+        if(sum == 0){
+            String msg = "更改采购单的状态,数据库操作失败";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    /**赋值入库通知单
+     */
+    private void assignmentWarehouseNotice(PurchaseOrder order,WarehouseNotice warehouseNotice){
+        //'入库通知单编号',流水的长度为5,前缀为CGRKTZ,加时间
+        String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,Calendar.getInstance().getTime().toString());
+        warehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
+        warehouseNotice.setPurchaseOrderCode(order.getPurchaseOrderCode());
+        warehouseNotice.setContractCode(order.getContractCode());
+        warehouseNotice.setPurchaseGroupCode(order.getPurchaseGroupCode());
+        warehouseNotice.setWarehouseId(order.getWarehouseId());
+        warehouseNotice.setWarehouseCode(order.getWarehouseCode());
+        //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
+        warehouseNotice.setState(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        warehouseNotice.setSupplierId(order.getSupplierId());
+        warehouseNotice.setSupplierCode(order.getSupplierCode());
+        warehouseNotice.setPurchaseType(order.getPurchaseType());
+        warehouseNotice.setPurchasePersonId(order.getPurchasePersonId());
+        warehouseNotice.setTakeGoodsNo(order.getTakeGoodsNo());
+        warehouseNotice.setRequriedReceiveDate(order.getRequriedReceiveDate());
+        warehouseNotice.setEndReceiveDate(order.getEndReceiveDate());
+        warehouseNotice.setRemark("新增入库通知单");
+        warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
+    }
 
 }

@@ -1199,7 +1199,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 totalItem += orderItem.getPayment();
                 totalOneShopNum += orderItem.getNum();
             }
-          //  AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+            if(totalItem.longValue() != shopOrder.getPayment().longValue()){
+                System.out.println(shopOrder);
+            }
+            AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
             AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
             shopOrderList.add(shopOrder);
         }

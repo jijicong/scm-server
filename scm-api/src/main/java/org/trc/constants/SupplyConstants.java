@@ -396,6 +396,7 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "purchaseOrder/updateState";
         //采购单状态的修改--冻结
         public static final String FREEZE = "purchaseOrder/freeze";
+        public static final String WAREHOUSE_ADVICE = "purchaseOrder/warahouseAdvice";
         //根据采购单id查询采购单相关的信息
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
         //查询该渠道对应的供应商
