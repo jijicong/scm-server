@@ -57,7 +57,6 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
-
         if (!StringUtils.isBlank(form.getName())) {
             criteria.andLike("name", "%" + form.getName() + "%");
         }

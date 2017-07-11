@@ -59,4 +59,10 @@ public interface IPurchaseOrderBiz {
      */
     void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext) ;
 
+    /**
+     * 入库通知单的发起
+     * @param purchaseOrder
+     */
+    void warahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext);
+
 }

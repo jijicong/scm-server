@@ -122,6 +122,14 @@ public class HttpClientUtil {
         return getResult(httpPost);
     }
 
+    public static String httpPostJsonRequest(String url, String params, HttpPost httpPost, Integer timeout) throws UnsupportedEncodingException {
+        httpPost.setEntity(new StringEntity(params, Charset.forName("UTF-8")));
+        int time_out = null!=timeout?timeout:SOCKET_TIMEOUT;
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(time_out).setConnectTimeout(time_out).build();//设置请求和传输超时时间
+        httpPost.setConfig(requestConfig);
+        return getResult(httpPost);
+    }
+
     public static String httpPostRequest(String url, Map<String, Object> headers, Map<String, Object> params)
             throws UnsupportedEncodingException {
         HttpPost httpPost = new HttpPost(url);
@@ -185,9 +193,7 @@ public class HttpClientUtil {
         params.put("pageNo",1);
         params.put("pageSize",10);
         try {
-            //System.out.println(HttpClientUtil.httpGetRequest(tbUrl+userId,params,200));
             System.out.println(HttpClientUtil.httpGetRequest(tbUrl,params));
-            //System.out.println(HttpRequestUtil.sendGet(tbUrl, param));
         } catch (Exception e) {
             e.printStackTrace();
         }

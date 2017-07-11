@@ -21,14 +21,34 @@
         <property name="jdurl" value="${jdurl}"/>
     </bean>
 
-    <!--京东接口调用地址-->
-    <bean id="jDConfig" class="org.trc.form.JDModel.ExternalSupplierConfig">
+    <!--供应商接口调用地址-->
+    <bean id="externalSupplierConfig" class="org.trc.form.JDModel.ExternalSupplierConfig">
+        <property name="scmExternalUrl" value="${scm.external.url}"/>
         <property name="skuPageUrl" value="${externalItems.skuPage.url}"/>
         <property name="skuQueryUrl" value="${externalItems.skuQuery.url}"/>
         <property name="skuAddNotice" value="${externalItems.skuAddNotice.url}"/>
         <property name="jdWarehouse" value="${jd.warehouse.name}"/>
         <property name="lyWarehouse" value="${ly.warehouse.name}"/>
         <property name="jdPictureUrl" value="${jd.picture.url}"/>
+        <property name="orderQueryUrl" value="${jd.orderQuery.url}"/>
+        <property name="orderLogisticsUrl" value="${supplier.orderLogistics.url}"/>
+        <property name="companyName" value="${jd.companyName}"/>
+        <property name="jdSubmitOrderUrl" value="${jd.submitOrder.url}"/>
+        <property name="lySubmitOrderUrl" value="${ly.submitOrder.url}"/>
+    </bean>
+
+    <!--泰然城接口调用地址-->
+    <bean id="trcConfig" class="org.trc.form.TrcConfig">
+        <property name="key" value="${trc.key}"/>
+        <property name="brandUrl" value="${trc.brand.url}"/>
+        <property name="propertyUrl" value="${trc.property.url}"/>
+        <property name="categoryUrl" value="${trc.category.url}"/>
+        <property name="categoryBrandUrl" value="${trc.category.brand.url}"/>
+        <property name="categoryPropertyUrl" value="${trc.category.property.url}"/>
+        <property name="itemUrl" value="${trc.item.url}"/>
+        <property name="externalItemSkuUpdateUrl" value="${trc.externalItemSku.update.information.url}"/>
+        <property name="logisticsNotifyUrl" value="${trc.send.logistic.url}"/>
+        <property name="orderSubmitNotifyUrl" value="${trc.orderSubmit.notify.url}"/>
     </bean>
 
 </beans>

@@ -2,6 +2,7 @@ package org.trc.resource.api;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.glassfish.jersey.jaxb.internal.XmlJaxbElementProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.goods.ISkuBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
+import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.IOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
@@ -42,25 +44,18 @@ public class TaiRanResource {
 
     @Resource
     private BrandBiz brandBiz;
-
     @Resource
     private IPropertyBiz propertyBiz;
-
     @Resource
     private ICategoryBiz categoryBiz;
-
     @Resource
     private ITrcBiz trcBiz;
-
     @Resource
     private ISkuBiz skuBiz;
-
     @Resource
     private ISkuRelationBiz skuRelationBiz;
-
     @Resource
-    private IOrderBiz orderBiz;
-
+    private IScmOrderBiz scmOrderBiz;
 
     /**
      * 分页查询品牌
@@ -217,43 +212,21 @@ public class TaiRanResource {
         }
     }
 
-
-    /**
-     * 订单拆分，以仓库级订单传参
-     *
-     * @return
-     */
-    /*@POST
-    @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public AppResult<String> getOrderList(JSONObject information) {
-
-        //获取平台订单信息
-        PlatformOrder platformOrder = JSONObject.parseObject(information.getJSONObject("platformOrder").toJSONString(), PlatformOrder.class);
-        JSONArray shopOrders = information.getJSONArray("shopOrders");
-        try {
-            orderBiz.splitOrder(shopOrders, platformOrder);
-        } catch (TrcException e) {
-            logger.error(e.getMessage());
-            return ResultUtil.createFailAppResult("平台订单" + platformOrder.getPlatformOrderCode() + e.getMessage());
-        } catch (Exception e) {
-            logger.error("订单处理报错: " + e.getMessage());
-            return ResultUtil.createFailAppResult("平台订单" + platformOrder.getPlatformOrderCode() + " 订单处理报错：" + e.getMessage());
-        }
-        logger.info("平台订单推送成功");
-        return ResultUtil.createSucssAppResult("平台订单" + platformOrder.getPlatformOrderCode() + " 订单推送成功，请等待后续通知", "");
-
-    }*/
-
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.TEXT_PLAIN)
     public AppResult<String> getOrderList(String information) {
-
-        return ResultUtil.createSucssAppResult("平台订单请等待后续通知", information);
-
+        AppResult appResult = null;
+        try{
+            appResult = scmOrderBiz.reciveChannelOrder(information);
+        }catch (Exception e){
+            appResult = ResultUtil.createFailAppResult(String.format("接收渠道同步订单异常,%s", e.getMessage()));
+            logger.error(String.format("接收渠道同步订单%s异常,%s", information, e));
+        }finally {
+            scmOrderBiz.saveChannelOrderRequestFlow(information, appResult);
+        }
+        return appResult;
     }
 
 
@@ -261,7 +234,7 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<String> getSkuRelationBatch(JSONObject information) {
         String action = information.getString("action");
         JSONArray relations = information.getJSONArray("relations");
@@ -272,7 +245,6 @@ public class TaiRanResource {
         }
         return ResultUtil.createSucssAppResult("关联信息插入成功", "");
     }
-
 
     //自采商品信息查询
     @GET
@@ -300,6 +272,15 @@ public class TaiRanResource {
             return ResultUtil.createFailAppResult("查询externalItemSku列表信息报错：" + e.getMessage());
         }
     }
+
+    //查询店铺下的京东物流
+    @GET
+    @Path(SupplyConstants.TaiRan.JD_LOGISTICS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult JDLogistics(@QueryParam("shopOrderCode")String shopOrderCode) throws  Exception{
+        return scmOrderBiz.getJDLogistics(shopOrderCode);
+    }
+
 
 }
 

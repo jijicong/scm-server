@@ -5,9 +5,11 @@ import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.model.ResultModel;
+import org.trc.model.JDLogisticsResultDO;
+import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,7 +25,7 @@ public interface ITrcBiz {
      * @param operateTime 时间戳
      * @return 渠道调回信息
      */
-    ResultModel sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception;
+    ToGlyResultDO sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception;
 
     /**
      * @param action      行为
@@ -34,7 +36,7 @@ public interface ITrcBiz {
      * @return 渠道调回信息
      * @throws Exception
      */
-    ResultModel sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception;
+    ToGlyResultDO sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception;
 
     /**
      * @param action               行为
@@ -46,8 +48,8 @@ public interface ITrcBiz {
      * @return 渠道调回信息
      * @throws Exception
      */
-    ResultModel sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category,
-                             List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception;
+    ToGlyResultDO sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category,
+                               List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception;
 
 
     /**
@@ -62,7 +64,7 @@ public interface ITrcBiz {
      * @return
      * @throws Exception
      */
-    ResultModel sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
+    ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception;
 
 
     /**
@@ -74,13 +76,30 @@ public interface ITrcBiz {
      * @param operateTime            时间戳
      * @return
      */
-    ResultModel sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception;
+    ToGlyResultDO sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception;
+
+    /**
+     * 通知物流信息
+     *
+     * @param action                   行为
+     * @param channelPlatformOrderCode 平台订单号  对应泰然成orderId
+     * @param channelShopOrderCode     渠道店铺订单号  对应泰然成shopOrderId
+     * @param supplierCode             供应商编号
+     * @param jdLogistic               京东物流信息
+     * @param waybillNumbers           粮油运单号
+     * @return
+     */
+    ToGlyResultDO sendLogistic(TrcActionTypeEnum action, String channelPlatformOrderCode, String channelShopOrderCode, String supplierCode,
+                               JSONArray jdLogistic, JSONArray waybillNumbers) throws Exception;
+
+    //添加流水
+    void addRequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime, String remark) throws Exception;
 
 
     /**
      *
      */
-    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel,Pagenation<ExternalItemSku> page) throws Exception;
+    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception;
 
     void updateRelation(String action, JSONArray relations) throws Exception;
 }

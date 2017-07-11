@@ -3,13 +3,13 @@ package org.trc.biz.order;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.LogisticForm;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.FormParam;
 import java.util.List;
 
 /**
@@ -57,9 +57,44 @@ public interface IScmOrderBiz {
     /**
      * 提交京东订单
      * @param warehouseOrderCode
-     * @param jdAddress
+     * @param jdAddressCode
+     * @param jdAddressName
      * @return
      */
-    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddress);
+    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName);
+
+    /**
+     *提交粮油订单
+     * @param warehouseOrderCode
+     * @return
+     */
+    AppResult submitLiangYouOrder(String warehouseOrderCode);
+
+    /**
+     * 渠道订单请求流水
+     * @param orderInfo
+     * @return
+     */
+    AppResult saveChannelOrderRequestFlow(String orderInfo, AppResult appResult);
+
+    /**
+     * 接收渠道订单信息
+     * @param orderInfo
+     * @return
+     */
+    AppResult<String> reciveChannelOrder(String orderInfo);
+
+    /**
+     * 查询京东物流信息
+     * @param shopOrderCode
+     * @return
+     */
+    AppResult<LogisticForm> getJDLogistics(String shopOrderCode) throws  Exception;
+
+    /**
+     * 获取物流信息
+     */
+    void fetchLogisticsInfo();
+
 
 }

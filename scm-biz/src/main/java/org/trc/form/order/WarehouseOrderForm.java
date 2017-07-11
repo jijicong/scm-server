@@ -21,9 +21,9 @@ public class WarehouseOrderForm extends QueryModel{
     private String warehouseOrderCode;
 
     //供应商名称
-    @QueryParam("supplierName")
+    @QueryParam("supplierCode")
     @Length(max = 64, message = "供应商名称长度不能超过64个")
-    private String supplierName;
+    private String supplierCode;
 
     //店铺订单号
     @QueryParam("shopOrderCode")
@@ -58,12 +58,12 @@ public class WarehouseOrderForm extends QueryModel{
         this.status = status;
     }
 
-    public String getSupplierName() {
-        return supplierName;
+    public String getSupplierCode() {
+        return supplierCode;
     }
 
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName;
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
     }
 
     public String getShopOrderCode() {

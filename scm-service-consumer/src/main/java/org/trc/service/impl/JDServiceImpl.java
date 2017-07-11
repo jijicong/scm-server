@@ -1,8 +1,11 @@
 package org.trc.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
+import org.trc.form.SupplyItemsExt;
+import org.trc.form.liangyou.LiangYouOrder;
+import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
@@ -709,6 +715,7 @@ public class JDServiceImpl implements IJDService {
         }
     }
 
+
     @Override
     public ReturnTypeDO<Pagenation<SupplyItemsExt>> skuPage(SupplyItemsExt form, Pagenation<SupplyItemsExt> page) throws Exception {
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
@@ -720,7 +727,8 @@ public class JDServiceImpl implements IJDService {
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            response = HttpClientUtil.httpGetRequest(externalSupplierConfig.getSkuPageUrl(), map);
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSkuPageUrl();
+            response = HttpClientUtil.httpGetRequest(url, map);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -730,6 +738,9 @@ public class JDServiceImpl implements IJDService {
                     for(Object obj: page.getResult()){
                         JSONObject bo = (JSONObject)obj;
                         SupplyItemsExt supplyItemsExt = (SupplyItemsExt)bo.toJavaObject(SupplyItemsExt.class);
+                        supplyItemsExt.setSupplierPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplierPrice())));
+                        supplyItemsExt.setSupplyPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplyPrice())));
+                        supplyItemsExt.setMarketPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getMarketPrice())));
                         supplyItemsExt.setSkuName(bo.getString("name"));
                         supplyItemsExt.setBrand(bo.getString("brandName"));
                         supplyItemsExtList.add(supplyItemsExt);
@@ -759,7 +770,8 @@ public class JDServiceImpl implements IJDService {
         try{
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("skus", JSONArray.toJSON(skuDOList));
-            response = HttpClientUtil.httpPostRequest(externalSupplierConfig.getSkuAddNotice(), map, TIME_OUT);
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getSkuAddNotice();
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -778,5 +790,90 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+    @Override
+    public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
+        AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSubmitOrderUrl();
+        return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString());
+    }
+
+    @Override
+    public ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder) {
+        AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getLySubmitOrderUrl();
+        return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString());
+    }
+
+    @Override
+    public ReturnTypeDO getLogisticsInfo(String warehouseOrderCode, String flag) {
+        AssertUtil.notBlank(warehouseOrderCode, "查询代发供应商订单物流信息参数仓库订单编码不能为空");
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String url = "";
+        String response = null;
+        try{
+            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
+            response = HttpClientUtil.httpGetRequest(url);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用物流查询服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用物流查询服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束调用物流查询" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+
+        return returnTypeDO;
+    }
+
+
+    private ReturnTypeDO invokeSubmitOrder(String url, String jsonParams){
+        log.debug("开始调用提交订单服务" + url + ", 参数：" + jsonParams + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+            httpPost.setHeader("Accept", "application/json");
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, TIME_OUT);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用提交订单服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束调用提交订单服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        return returnTypeDO;
+    }
+
+    public static void main(String[] args){
+        LiangYouOrder liangYouOrder = new LiangYouOrder();
+        OutOrderGoods outOrderGoods = new OutOrderGoods();
+        List<OutOrderGoods> outOrderGoodsList = new ArrayList<OutOrderGoods>();
+        outOrderGoodsList.add(outOrderGoods);
+        liangYouOrder.setOutOrderGoods(outOrderGoodsList);
+        System.out.println(net.sf.json.JSONObject.fromObject(liangYouOrder));
+    }
 
 }

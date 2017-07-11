@@ -28,16 +28,16 @@ public class LiangYouServiceImpl implements ILiangYouService {
 
     private final static Logger log = LoggerFactory.getLogger(JDServiceImpl.class);
 
-    @Value("${liangyou.app_id}")
+    //@Value("${liangyou.app_id}")
     private String APP_ID;
 
-    @Value("${liangyou.v}")
+    //@Value("${liangyou.v}")
     private String VERSION;
 
-    @Value("${liangyou.state}")
+    //@Value("${liangyou.state}")
     private String STATE;
 
-    @Value("${liangyou.app_secret}")
+    //@Value("${liangyou.app_secret}")
     private String APP_SECRET;
 
     @Override

@@ -4,7 +4,8 @@ package org.trc.form.JDModel;
  * Created by hzwdx on 2017/6/21.
  */
 public class ExternalSupplierConfig {
-
+    //scm-external项目服务地址
+    private String scmExternalUrl;
     //京东sku分页查询url地址
     private String skuPageUrl;
     //京东sku查询url地址
@@ -17,6 +18,17 @@ public class ExternalSupplierConfig {
     private String lyWarehouse;
     //京东图片查看url
     private String jdPictureUrl;
+    //京东下单接口地址
+    private String jdSubmitOrderUrl;
+    //京东订单反查接口地址
+    private String orderQueryUrl;
+    //配送信息查看url
+    private String orderLogisticsUrl;
+    //京东下单发票抬头
+    private String companyName;
+
+    //粮油下单接口地址
+    private String lySubmitOrderUrl;
 
     public String getSkuPageUrl() {
         return skuPageUrl;
@@ -64,5 +76,53 @@ public class ExternalSupplierConfig {
 
     public void setJdPictureUrl(String jdPictureUrl) {
         this.jdPictureUrl = jdPictureUrl;
+    }
+
+    public String getJdSubmitOrderUrl() {
+        return jdSubmitOrderUrl;
+    }
+
+    public void setJdSubmitOrderUrl(String jdSubmitOrderUrl) {
+        this.jdSubmitOrderUrl = jdSubmitOrderUrl;
+    }
+
+    public String getLySubmitOrderUrl() {
+        return lySubmitOrderUrl;
+    }
+
+    public void setLySubmitOrderUrl(String lySubmitOrderUrl) {
+        this.lySubmitOrderUrl = lySubmitOrderUrl;
+    }
+
+    public String getOrderQueryUrl() {
+        return orderQueryUrl;
+    }
+
+    public void setOrderQueryUrl(String orderQueryUrl) {
+        this.orderQueryUrl = orderQueryUrl;
+    }
+
+    public String getOrderLogisticsUrl() {
+        return orderLogisticsUrl;
+    }
+
+    public void setOrderLogisticsUrl(String orderLogisticsUrl) {
+        this.orderLogisticsUrl = orderLogisticsUrl;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getScmExternalUrl() {
+        return scmExternalUrl;
+    }
+
+    public void setScmExternalUrl(String scmExternalUrl) {
+        this.scmExternalUrl = scmExternalUrl;
     }
 }

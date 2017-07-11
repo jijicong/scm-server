@@ -12,9 +12,17 @@ import java.util.Date;
  */
 public class OrderBase {
 
+    // 用户id
+    @Transient
+    private String userId;
+
+    // 会员名称
+    @Transient
+    private String userName;
+
     // 订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
     @Transient
-    private Byte type;
+    private String type;
 
     // 支付时间
     @Transient
@@ -57,11 +65,11 @@ public class OrderBase {
     @Transient
     private String shopMemo;
 
-    public Byte getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(Byte type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -143,5 +151,21 @@ public class OrderBase {
 
     public void setShopMemo(String shopMemo) {
         this.shopMemo = shopMemo;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

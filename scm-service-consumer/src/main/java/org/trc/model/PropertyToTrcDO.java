@@ -4,7 +4,7 @@ package org.trc.model;
  * 属性
  * Created by hzdzf on 2017/5/24.
  */
-public class PropertyToTrc {
+public class PropertyToTrcDO {
 
     private String name;//属性名称
 

@@ -15,15 +15,22 @@ import java.util.List;
  */
 public interface IOrderBiz {
 
-
-    void splitOrder(JSONArray shopOrders, PlatformOrder platformOrder)throws Exception;
-
     /**
      * 接收渠道订单信息
      * @param orderInfo
      * @return
      */
-    AppResult<String> reciveChannelOrder(String orderInfo);
+    //AppResult<String> reciveChannelOrder(String orderInfo);
 
-    JSONObject sendOrderInformation();
+
+    /**
+     * 查询京东物流信息
+     * @param shopOrderCode
+     * @return
+     */
+    //AppResult getJDLogistics(String shopOrderCode) throws  Exception;
+
+
+
+
 }

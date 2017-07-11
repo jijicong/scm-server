@@ -28,6 +28,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.JDModel.*;
+import org.trc.form.SupplyItemsExt;
 import org.trc.form.config.DictForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
@@ -35,7 +36,10 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.service.IJDService;
 import org.trc.service.category.*;
-import org.trc.service.goods.*;
+import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.IItemsService;
+import org.trc.service.goods.ISkuStockService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
 import org.trc.service.impl.system.WarehouseService;
@@ -46,7 +50,6 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -70,8 +73,6 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String SWITCH_LINE = "<br>";
     //SKU的属性组合名称空格
     public static final String SKU_PROPERTY_COMBINE_NAME_EMPTY = "&nbsp&nbsp&nbsp";
-    //金额数字
-    public static final Double MONEY_MULTI = 100.0;
     //自然属性
     public static final String NATURE_PROPERTY = "natureProperty";
     //采购属性
@@ -829,15 +830,7 @@ public class GoodsBiz implements IGoodsBiz {
     private Long getLongValue(String val){
         if(StringUtils.isNotBlank(val)){
             Double d = Double.parseDouble(val);
-            getLongValue(d);
-        }
-        return null;
-    }
-
-    private Long getLongValue(Double val){
-        if(null != val){
-            val = val*MONEY_MULTI;
-            return val.longValue();
+            CommonUtil.getMoneyLong(d);
         }
         return null;
     }
@@ -1344,10 +1337,10 @@ public class GoodsBiz implements IGoodsBiz {
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
             if(null != s.getWeight() && s.getWeight() > 0){
-                s.setWeight2(BigDecimal.valueOf(Math.round(s.getWeight())/MONEY_MULTI));
+                s.setWeight2(BigDecimal.valueOf(Math.round(s.getWeight())/CommonUtil.MONEY_MULTI));
             }
             if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
-                s.setMarketPrice2(BigDecimal.valueOf(Math.round(s.getMarketPrice())/MONEY_MULTI));
+                s.setMarketPrice2(BigDecimal.valueOf(Math.round(s.getMarketPrice())/CommonUtil.MONEY_MULTI));
             }
             if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
                 Example example = new Example(SkuStock.class);
@@ -1540,7 +1533,6 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
         AssertUtil.notEmpty(skuArray, "新增代发商品不能为空");
-
         List<SupplyItems> supplyItems = new ArrayList<SupplyItems>();
         for(Object jbo: skuArray){
             JSONObject obj =  (JSONObject)jbo;
@@ -1655,13 +1647,16 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setCategory(items.getCategory());
             externalItemSku.setCategoryName(items.getCategoryName());
             externalItemSku.setBarCode(items.getUpc());
-            externalItemSku.setSupplyPrice(getLongValue(items.getSupplyPrice()));
-            externalItemSku.setSupplierPrice(getLongValue(items.getSupplierPrice()));
-            externalItemSku.setMarketReferencePrice(getLongValue(items.getMarketPrice()));
+            externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(items.getSupplyPrice()));
+            externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(items.getSupplierPrice()));
+            externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(items.getMarketPrice()));
+            /*externalItemSku.setSupplyPrice(items.getSupplyPrice().longValue());
+            externalItemSku.setSupplierPrice(items.getSupplierPrice().longValue());
+            externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());*/
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());
-            externalItemSku.setWeight(getLongValue(items.getWeight()));
+            externalItemSku.setWeight(CommonUtil.getMoneyLong(items.getWeight()));
             externalItemSku.setProducingArea(items.getProductArea());
             //externalItemSku.setPlaceOfDelivery();//发货地址 TODO
             externalItemSku.setItemType(items.getSkuType());

@@ -1,12 +1,16 @@
 package org.trc.service;
 
 
+import org.trc.form.ChannelOrderResponse;
+import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.LogisticNoticeForm;
+import org.trc.model.ToGlyResultDO;
+
 /**
  * 通知泰然城
  * Created by hzdzf on 2017/6/6.
  */
 public interface ITrcService {
-
 
     /**
      * @param brandUrl
@@ -55,4 +59,27 @@ public interface ITrcService {
      * @throws Exception
      */
     String sendItemsNotice(String itemsUrl, String params) throws Exception;
+
+    /**
+     *
+     * @param getJDLogisticUrl
+     * @return
+     * @throws Exception
+     */
+    String getJDLogistic(String getJDLogisticUrl) throws Exception;
+
+    /**
+     * 发送订单提交结果通知
+     * @param channelOrderResponse
+     * @return
+     */
+    ToGlyResultDO sendOrderSubmitResultNotice(ChannelOrderResponse channelOrderResponse);
+
+    /**
+     * 发送物流信息通知
+     * @param logisticNoticeForm
+     * @return
+     */
+    ToGlyResultDO sendLogisticInfoNotice(LogisticNoticeForm logisticNoticeForm);
+
 }

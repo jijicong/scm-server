@@ -6,7 +6,7 @@ import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
-import org.trc.form.JDModel.SupplyItemsExt;
+import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;

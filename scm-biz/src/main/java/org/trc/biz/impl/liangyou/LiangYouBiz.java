@@ -153,7 +153,7 @@ public class LiangYouBiz implements ILiangYouBiz {
         for (OutOrderGoods goods:list){
             AssertUtil.notBlank(goods.getGoodsName(),"goodsName不能为空");
             AssertUtil.notBlank(goods.getOnlySku(),"onlySku不能为空");
-            AssertUtil.notBlank(goods.getQuantity(),"quantity不能为空");
+            //AssertUtil.notBlank(goods.getQuantity(),"quantity不能为空");
         }
         ResultType<JSONObject> result = liangYouService.addOutOrder(orderDO);
         return JSONObject.toJSONString(result.getData());
@@ -185,7 +185,7 @@ public class LiangYouBiz implements ILiangYouBiz {
         for (OutTorderGoods goods:list){
             AssertUtil.notBlank(goods.getGoodsName(),"goodsName不能为空");
             AssertUtil.notBlank(goods.getOnlySku(),"onlySku不能为空");
-            AssertUtil.notBlank(goods.getQuantity(),"quantity不能为空");
+            //AssertUtil.notBlank(goods.getQuantity(),"quantity不能为空");
             AssertUtil.notNull(goods.getPrice(),"price不能为空");
         }
         ResultType<JSONObject> result = liangYouService.addToutOrder(orderDO);

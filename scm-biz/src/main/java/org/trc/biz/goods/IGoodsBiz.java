@@ -2,7 +2,7 @@ package org.trc.biz.goods;
 
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
-import org.trc.form.JDModel.SupplyItemsExt;
+import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.*;
 import org.trc.util.Pagenation;

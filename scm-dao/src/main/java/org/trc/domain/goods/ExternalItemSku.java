@@ -34,7 +34,7 @@ public class ExternalItemSku {
     private String supplierCode;
 
     // 供应链名称
-    @FormParam("supplierCode")
+    @FormParam("supplierName")
     @Length(max = 64, message = "供应商名称长度不能超过64个")
     private String supplierName;
 

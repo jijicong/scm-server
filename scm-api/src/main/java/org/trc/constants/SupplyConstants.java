@@ -58,6 +58,8 @@ public class SupplyConstants {
         public static final String SKUS_LIST = "skusList";//获取自采商品sku列表
 
         public static final String EXTERNALITEMSKU_LIST = "externalItemSkuList";//获取自采商品skus列表
+
+        public static final String JD_LOGISTICS = "jdLogistics";//获取京东物流信息
     }
 
     /**
@@ -394,6 +396,7 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "purchaseOrder/updateState";
         //采购单状态的修改--冻结
         public static final String FREEZE = "purchaseOrder/freeze";
+        public static final String WAREHOUSE_ADVICE = "purchaseOrder/warahouseAdvice";
         //根据采购单id查询采购单相关的信息
         //public static final String PURCHASE_ORDER_USER = "purchaseOrderUser";
         //查询该渠道对应的供应商
@@ -697,6 +700,12 @@ public class SupplyConstants {
      * 订单管理
      */
     public static final class Order {
+
+        //京东供应商编码
+        public final static String SUPPLIER_JD_CODE = "JD";
+        //粮油供应商编码
+        public final static String SUPPLIER_LY_CODE = "LY";
+
         public static final String ROOT = "order";
         //订单分页查询路径
         public static final String SHOP_ORDER_PAGE = "shopOrderPage";

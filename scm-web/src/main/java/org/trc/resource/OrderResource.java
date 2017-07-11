@@ -70,9 +70,8 @@ public class OrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult submitJingDongOrder(@FormParam("warehouseOrderCode") String warehouseOrderCode,
-            @FormParam("jdAddress") String jdAddress, @Context ContainerRequestContext requestContext) throws Exception {
-
-        return ResultUtil.createSucssAppResult("订单提交京东成功", "");
+            @FormParam("jdAddressCode") String jdAddressCode, @FormParam("jdAddressName") String jdAddressName, @Context ContainerRequestContext requestContext) throws Exception {
+        return scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName);
     }
 
 

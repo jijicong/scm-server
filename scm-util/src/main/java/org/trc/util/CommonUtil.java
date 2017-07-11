@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /** 
@@ -31,6 +33,9 @@ public class CommonUtil {
 
 	public static final String HTTP_SERVLET_REQUEST = "HttpServletRequest";
 	public static final String MODEL_MAP = "ModelMap";
+	//金额数字
+	public static final int MONEY_MULTI = 100;
+	public final static String TIP = "0.00";
 	
 	public static Map<String, Object> getMap(String key, String Object){
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -267,5 +272,42 @@ public class CommonUtil {
 	}
 
 
+	/**
+	 * 金额元转分
+	 * @param val
+	 * @return
+	 */
+	public static Long getMoneyLong(Double val){
+		if(null != val){
+			val = val*MONEY_MULTI;
+			return val.longValue();
+		}
+		return null;
+	}
+
+    /**
+     * 获取金额元
+     * @param num
+     * @return
+     */
+	public static String getMoneyYuan(Object num){
+		if(null == num){
+			return "0";
+		}
+        DecimalFormat df = new DecimalFormat(TIP);
+		if(num instanceof Double){
+            Double val = (Double)num;
+            return df.format(val/MONEY_MULTI);
+        }
+        if(num instanceof BigDecimal){
+            BigDecimal val = (BigDecimal)num;
+            return df.format(val.divide(new BigDecimal(MONEY_MULTI)));
+        }
+        if(num instanceof Long){
+            Long val = (Long)num;
+            return df.format(val/MONEY_MULTI);
+        }
+        return "0";
+	}
 
 }
