@@ -165,7 +165,6 @@ public class OrderBiz implements IOrderBiz {
     }
 
 
-
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult<String> reciveChannelOrder(String orderInfo) {

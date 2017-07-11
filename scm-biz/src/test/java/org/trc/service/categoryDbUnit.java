@@ -171,9 +171,4 @@ public class categoryDbUnit extends BaseTest {
         category.setCreateOperator("michael");
         return category;
     }
-
-    private String createTableDateArr(String id){
-        return "[{id:5,categoryId:1,propertyId:"+id+",propertySort:1,name:包装,typeCode:natureProperty,valueType:1," +
-                "isValid:1,isDeleted:0,createTime:2017-06-12 22:07:00,source:0,status:0,sortStatus:0}]";
-    }
 }
