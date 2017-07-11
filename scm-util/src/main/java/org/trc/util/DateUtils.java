@@ -3,11 +3,15 @@ package org.trc.util;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.ParamValidException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 /**
  * 严格的日期转换setLenient(false);
@@ -462,10 +466,51 @@ public class DateUtils {
 		return stringToDate(dateFormat.format(date), format);
 	}
 
+	/**
+	 * 时间戳转日期
+	 * @param timestamp
+	 * @return
+	 */
+	public static Date timestampToDate(Object timestamp){
+		if(null == timestamp)
+			return null;
+		String tmp = timestamp.toString();
+		String reg = "^[1-9]*[1-9][0-9]*$";//正整数正则
+		boolean rel = tmp.matches(reg);
+		if(rel){
+			Long stamp = null;
+			if(timestamp instanceof Long){
+				stamp = (Long)timestamp;
+				if(stamp.longValue() == 0L)
+					return null;
+			}
+			else if(timestamp instanceof Integer){
+				stamp = new Long(String.valueOf(timestamp));
+				if(stamp == 0)
+					return null;
+			}
+			else if(timestamp instanceof String){
+				if(StringUtils.isBlank(timestamp.toString())){
+					return null;
+				}
+				stamp = Long.parseLong((String)timestamp);
+				if(stamp.longValue() == 0L)
+					return null;
+			}
+			return new Date(stamp);
+		}else {
+			if(StringUtils.isBlank(tmp) || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), tmp)){
+				return null;
+			}else{
+				throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "时间戳转日期,时间戳格式不对");
+			}
+		}
+	}
+
 	
 	public static void main(String[] paramArrayOfString) {
 		try {
-			System.out.println(dateToNormalFullString(dateFormat(new Date(), DATE_FORMAT)));
+			System.out.println(timestampToDate("0"));
 		} catch (Exception localException) {
 			System.out.println(localException);
 		}

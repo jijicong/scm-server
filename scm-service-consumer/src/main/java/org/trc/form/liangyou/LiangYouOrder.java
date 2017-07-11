@@ -7,6 +7,8 @@ import java.util.List;
  */
 public class LiangYouOrder {
 
+    //店铺订单编码
+    private String shopOrderCode;
     //仓库订单编码
     private String warehouseOrderCode;
     //收货人
@@ -146,5 +148,13 @@ public class LiangYouOrder {
 
     public void setOutOrderGoods(List<OutOrderGoods> outOrderGoods) {
         this.outOrderGoods = outOrderGoods;
+    }
+
+    public String getShopOrderCode() {
+        return shopOrderCode;
+    }
+
+    public void setShopOrderCode(String shopOrderCode) {
+        this.shopOrderCode = shopOrderCode;
     }
 }

@@ -419,6 +419,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private LiangYouOrder getLiangYouOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, List<OrderItem> orderItemList){
         LiangYouOrder liangYouOrder = new LiangYouOrder();
+        liangYouOrder.setShopOrderCode(warehouseOrder.getShopOrderCode());
         liangYouOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         liangYouOrder.setConsignee(platformOrder.getReceiverName());
         liangYouOrder.setOutOrderSn(warehouseOrder.getWarehouseOrderCode());
@@ -1114,6 +1115,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(platformObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
         platformOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(platformObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
         platformOrder.setDiscountFee(CommonUtil.getMoneyLong(platformObj.getDouble("discountFee")));//订单优惠总金额
+
+        platformOrder.setCreateTime(DateUtils.timestampToDate(platformObj.getLong("createTime")));//创建时间
+        platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
+        platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
+        platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
+        platformOrder.setUpdateTime(DateUtils.timestampToDate(platformObj.getLong("updateTime")));//修改时间
+        platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
+        platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
+
         return platformOrder;
     }
 
@@ -1183,6 +1193,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
             ShopOrder shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
             shopOrderParamCheck(shopOrder);
+            shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
+            shopOrder.setPayTime(DateUtils.timestampToDate(shopOrderObj.getLong("payTime")));//支付时间
+            shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
+            shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
             //设置店铺金额
             setShopOrderFee(shopOrder, shopOrderObj);
             JSONArray orderItemArray = tmpObj.getJSONArray("orderItems");
@@ -1254,10 +1268,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItem.setCustomsPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("customsPrice")));//报关单价
             orderItem.setTransactionPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("transactionPrice")));//成交单价
             orderItem.setTotalWeight(CommonUtil.getMoneyLong(orderItemObj.getDouble("totalWeight")));//商品重量
+
+            orderItem.setCreateTime(DateUtils.timestampToDate(orderItemObj.getLong("createTime")));//创建时间
+            orderItem.setPayTime(DateUtils.timestampToDate(orderItemObj.getLong("payTime")));//支付时间
+            orderItem.setConsignTime(DateUtils.timestampToDate(orderItemObj.getLong("consignTime")));//发货时间
+            orderItem.setUpdateTime(DateUtils.timestampToDate(orderItemObj.getLong("updateTime")));//修改时间
+            orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
+
             orderItemList.add(orderItem);
         }
         return orderItemList;
     }
+
 
     /**
      * 检查商品来源

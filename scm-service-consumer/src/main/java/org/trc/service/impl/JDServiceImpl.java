@@ -852,6 +852,7 @@ public class JDServiceImpl implements IJDService {
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(appResult.getResult());
                 }
                 returnTypeDO.setResultMessage(appResult.getDatabuffer());
             }else {
