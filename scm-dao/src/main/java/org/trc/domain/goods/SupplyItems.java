@@ -2,6 +2,8 @@ package org.trc.domain.goods;
 
 import org.trc.domain.BaseDO;
 
+import java.math.BigDecimal;
+
 /**
  * Created by hzszy on 2017/6/19.
  */
@@ -11,9 +13,9 @@ public class SupplyItems extends BaseDO {
     private String supplyName; //供应商名称
     private String supplySku;//供应商商品Sku
     private String upc; //商品名称
-    private Double supplierPrice; //供应商售价
-    private Double supplyPrice; //供货价
-    private Double marketPrice;//市场价
+    private BigDecimal supplierPrice; //供应商售价
+    private BigDecimal supplyPrice; //供货价
+    private BigDecimal marketPrice;//市场价
     private String category;//分类
     private String categoryName;//分类名称
     private String brand;//品牌
@@ -67,30 +69,6 @@ public class SupplyItems extends BaseDO {
 
     public void setUpc(String upc) {
         this.upc = upc;
-    }
-
-    public Double getSupplierPrice() {
-        return supplierPrice;
-    }
-
-    public void setSupplierPrice(Double supplierPrice) {
-        this.supplierPrice = supplierPrice;
-    }
-
-    public Double getSupplyPrice() {
-        return supplyPrice;
-    }
-
-    public void setSupplyPrice(Double supplyPrice) {
-        this.supplyPrice = supplyPrice;
-    }
-
-    public Double getMarketPrice() {
-        return marketPrice;
-    }
-
-    public void setMarketPrice(Double marketPrice) {
-        this.marketPrice = marketPrice;
     }
 
     public String getCategory() {
@@ -203,5 +181,29 @@ public class SupplyItems extends BaseDO {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public BigDecimal getSupplierPrice() {
+        return supplierPrice;
+    }
+
+    public void setSupplierPrice(BigDecimal supplierPrice) {
+        this.supplierPrice = supplierPrice;
+    }
+
+    public BigDecimal getSupplyPrice() {
+        return supplyPrice;
+    }
+
+    public void setSupplyPrice(BigDecimal supplyPrice) {
+        this.supplyPrice = supplyPrice;
+    }
+
+    public BigDecimal getMarketPrice() {
+        return marketPrice;
+    }
+
+    public void setMarketPrice(BigDecimal marketPrice) {
+        this.marketPrice = marketPrice;
     }
 }

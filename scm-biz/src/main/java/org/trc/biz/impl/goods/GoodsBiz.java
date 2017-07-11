@@ -27,7 +27,10 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.JDModel.*;
+import org.trc.form.JDModel.ExternalSupplierConfig;
+import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.JDModel.SkuDO;
+import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.config.DictForm;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -829,7 +832,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     private Long getLongValue(String val){
         if(StringUtils.isNotBlank(val)){
-            Double d = Double.parseDouble(val);
+            BigDecimal d = new BigDecimal(val);
             CommonUtil.getMoneyLong(d);
         }
         return null;

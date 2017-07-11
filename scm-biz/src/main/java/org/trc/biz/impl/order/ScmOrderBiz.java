@@ -1104,17 +1104,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         AssertUtil.notNull(platformObj, "接收渠道订单参数中平台订单信息为空");
         PlatformOrder platformOrder = platformObj.toJavaObject(PlatformOrder.class);
-        platformOrder.setPayment(CommonUtil.getMoneyLong(platformObj.getDouble("payment")));//实付金额
-        platformOrder.setPostageFee(CommonUtil.getMoneyLong(platformObj.getDouble("postageFee")));//积分抵扣金额
-        platformOrder.setTotalFee(CommonUtil.getMoneyLong(platformObj.getDouble("totalFee")));//订单总金额
-        platformOrder.setAdjustFee(CommonUtil.getMoneyLong(platformObj.getDouble("adjustFee")));//卖家手工调整金额
-        platformOrder.setPointsFee(CommonUtil.getMoneyLong(platformObj.getDouble("pointsFee")));//邮费
-        platformOrder.setTotalTax(CommonUtil.getMoneyLong(platformObj.getDouble("totalTax")));//总税费
-        platformOrder.setStepPaidFee(CommonUtil.getMoneyLong(platformObj.getDouble("stepPaidFee")));//分阶段已付金额
-        platformOrder.setDiscountPromotion(CommonUtil.getMoneyLong(platformObj.getDouble("discountPromotion")));//促销优惠总金额
-        platformOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(platformObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
-        platformOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(platformObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
-        platformOrder.setDiscountFee(CommonUtil.getMoneyLong(platformObj.getDouble("discountFee")));//订单优惠总金额
+        platformOrder.setPayment(CommonUtil.getMoneyLong(platformObj.getBigDecimal("payment")));//实付金额
+        platformOrder.setPostageFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("postageFee")));//积分抵扣金额
+        platformOrder.setTotalFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("totalFee")));//订单总金额
+        platformOrder.setAdjustFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("adjustFee")));//卖家手工调整金额
+        platformOrder.setPointsFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("pointsFee")));//邮费
+        platformOrder.setTotalTax(CommonUtil.getMoneyLong(platformObj.getBigDecimal("totalTax")));//总税费
+        platformOrder.setStepPaidFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("stepPaidFee")));//分阶段已付金额
+        platformOrder.setDiscountPromotion(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountPromotion")));//促销优惠总金额
+        platformOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountCouponShop")));//店铺优惠卷优惠金额
+        platformOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountCouponPlatform")));//平台优惠卷优惠金额
+        platformOrder.setDiscountFee(CommonUtil.getMoneyLong(platformObj.getBigDecimal("discountFee")));//订单优惠总金额
 
         platformOrder.setCreateTime(DateUtils.timestampToDate(platformObj.getLong("createTime")));//创建时间
         platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
@@ -1209,12 +1209,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             Integer totalOneShopNum = 0;
             Long totalItem = 0L;
             for (OrderItem orderItem : orderItemList) {
+                System.out.println("@@@@   "+orderItem.getPayment());
                 orderItemsParamCheck(orderItem);
                 totalItem += orderItem.getPayment();
                 totalOneShopNum += orderItem.getNum();
-            }
-            if(totalItem.longValue() != shopOrder.getPayment().longValue()){
-                System.out.println(shopOrder);
             }
             AssertUtil.isTrue(totalItem.longValue() == shopOrder.getPayment().longValue(), "店铺订单实付金额与所有该店铺商品总实付金额不等值");
             AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
@@ -1231,15 +1229,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrderObj
      */
     private void setShopOrderFee(ShopOrder shopOrder, JSONObject shopOrderObj){
-        shopOrder.setPayment(CommonUtil.getMoneyLong(shopOrderObj.getDouble("payment")));//实付金额
-        shopOrder.setPostageFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("postageFee")));//积分抵扣金额
-        shopOrder.setTotalFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("totalFee")));//订单总金额
-        shopOrder.setAdjustFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("adjustFee")));//卖家手工调整金额
-        shopOrder.setTotalTax(CommonUtil.getMoneyLong(shopOrderObj.getDouble("totalTax")));//总税费
-        shopOrder.setDiscountPromotion(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountPromotion")));//促销优惠总金额
-        shopOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
-        shopOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
-        shopOrder.setDiscountFee(CommonUtil.getMoneyLong(shopOrderObj.getDouble("discountFee")));//订单优惠总金额
+        shopOrder.setPayment(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("payment")));//实付金额
+        shopOrder.setPostageFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("postageFee")));//积分抵扣金额
+        shopOrder.setTotalFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("totalFee")));//订单总金额
+        shopOrder.setAdjustFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("adjustFee")));//卖家手工调整金额
+        shopOrder.setTotalTax(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("totalTax")));//总税费
+        shopOrder.setDiscountPromotion(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountPromotion")));//促销优惠总金额
+        shopOrder.setDiscountCouponShop(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountCouponShop")));//店铺优惠卷优惠金额
+        shopOrder.setDiscountCouponPlatform(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountCouponPlatform")));//平台优惠卷优惠金额
+        shopOrder.setDiscountFee(CommonUtil.getMoneyLong(shopOrderObj.getBigDecimal("discountFee")));//订单优惠总金额
     }
 
     /**
@@ -1252,22 +1250,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
             OrderItem orderItem = orderItemObj.toJavaObject(OrderItem.class);
-            orderItem.setPayment(CommonUtil.getMoneyLong(orderItemObj.getDouble("payment")));//实付金额
-            orderItem.setTotalFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("totalFee")));//订单总金额
-            orderItem.setAdjustFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("adjustFee")));//卖家手工调整金额
-            orderItem.setDiscountPromotion(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountPromotion")));//促销优惠总金额
-            orderItem.setDiscountCouponShop(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountCouponShop")));//店铺优惠卷优惠金额
-            orderItem.setDiscountCouponPlatform(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountCouponPlatform")));//平台优惠卷优惠金额
-            orderItem.setDiscountFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("discountFee")));//订单优惠总金额
-            orderItem.setPostDiscount(CommonUtil.getMoneyLong(orderItemObj.getDouble("postDiscount")));//运费分摊
-            orderItem.setRefundFee(CommonUtil.getMoneyLong(orderItemObj.getDouble("refundFee")));//退款金额
-            orderItem.setPriceTax(CommonUtil.getMoneyLong(orderItemObj.getDouble("priceTax")));//商品税费
-            orderItem.setPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("price")));//商品价格
-            orderItem.setMarketPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("marketPrice")));//市场价
-            orderItem.setPromotionPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("promotionPrice")));//促销价
-            orderItem.setCustomsPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("customsPrice")));//报关单价
-            orderItem.setTransactionPrice(CommonUtil.getMoneyLong(orderItemObj.getDouble("transactionPrice")));//成交单价
-            orderItem.setTotalWeight(CommonUtil.getMoneyLong(orderItemObj.getDouble("totalWeight")));//商品重量
+            orderItem.setPayment(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("payment")));//实付金额
+            orderItem.setTotalFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("totalFee")));//订单总金额
+            orderItem.setAdjustFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("adjustFee")));//卖家手工调整金额
+            orderItem.setDiscountPromotion(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountPromotion")));//促销优惠总金额
+            orderItem.setDiscountCouponShop(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountCouponShop")));//店铺优惠卷优惠金额
+            orderItem.setDiscountCouponPlatform(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountCouponPlatform")));//平台优惠卷优惠金额
+            orderItem.setDiscountFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("discountFee")));//订单优惠总金额
+            orderItem.setPostDiscount(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("postDiscount")));//运费分摊
+            orderItem.setRefundFee(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("refundFee")));//退款金额
+            orderItem.setPriceTax(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("priceTax")));//商品税费
+            orderItem.setPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("price")));//商品价格
+            orderItem.setMarketPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("marketPrice")));//市场价
+            orderItem.setPromotionPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("promotionPrice")));//促销价
+            orderItem.setCustomsPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("customsPrice")));//报关单价
+            orderItem.setTransactionPrice(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("transactionPrice")));//成交单价
+            orderItem.setTotalWeight(CommonUtil.getMoneyLong(orderItemObj.getBigDecimal("totalWeight")));//商品重量
 
             orderItem.setCreateTime(DateUtils.timestampToDate(orderItemObj.getLong("createTime")));//创建时间
             orderItem.setPayTime(DateUtils.timestampToDate(orderItemObj.getLong("payTime")));//支付时间

@@ -277,10 +277,16 @@ public class CommonUtil {
 	 * @param val
 	 * @return
 	 */
-	public static Long getMoneyLong(Double val){
+	public static Long getMoneyLong(Object val){
 		if(null != val){
-			val = val*MONEY_MULTI;
-			return val.longValue();
+			if(val instanceof Long){
+				val = (Long)val*MONEY_MULTI;
+				return ((Long) val).longValue();
+			}else if(val instanceof BigDecimal){
+				BigDecimal b = (BigDecimal)val;
+				val = b.multiply(new BigDecimal(MONEY_MULTI));
+				return ((BigDecimal) val).longValue();
+			}
 		}
 		return null;
 	}
