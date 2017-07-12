@@ -812,13 +812,16 @@ public class JDServiceImpl implements IJDService {
         String url = "";
         String response = null;
         try{
-            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
+            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+1;
+            log.debug("开始调用物流查询" + url + ", 参数：warehouseOrderCode=" + warehouseOrderCode + "flag="+flag+". 开始时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             response = HttpClientUtil.httpGetRequest(url);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(appResult.getResult());
                 }
                 returnTypeDO.setResultMessage(appResult.getDatabuffer());
             }else {

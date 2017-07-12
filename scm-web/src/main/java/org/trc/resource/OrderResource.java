@@ -74,9 +74,6 @@ public class OrderResource {
         return scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName);
     }
 
-
-
-
 }
 
 
