@@ -59,8 +59,11 @@ public class WarehouseOrder {
     // 会员id
     private String userId;
 
-    // 订单状态:1-待出库 2-部分出库 3-全部出库
+    // 订单状态(自采):1-待出库 2-部分出库 3-全部出库
     private String status;
+
+    //供应商订单状态(代发):1-待发送,2-已发送,3-代发货,4-已发货,5-下单失败
+    private String supplierOrderStatus;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
     private BigDecimal adjustFee;
@@ -543,5 +546,13 @@ public class WarehouseOrder {
 
     public void setPayTime(Date payTime) {
         this.payTime = payTime;
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
     }
 }
