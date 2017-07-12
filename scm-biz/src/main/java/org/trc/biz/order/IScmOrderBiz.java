@@ -75,7 +75,7 @@ public interface IScmOrderBiz {
      * @param orderInfo
      * @return
      */
-    AppResult saveChannelOrderRequestFlow(String orderInfo, AppResult appResult);
+    void saveChannelOrderRequestFlow(String orderInfo, AppResult appResult);
 
     /**
      * 接收渠道订单信息

@@ -1,8 +1,11 @@
 package org.trc.service.impl;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,14 +82,17 @@ public class TrcService implements ITrcService {
     public ToGlyResultDO sendOrderSubmitResultNotice(ChannelOrderResponse channelOrderResponse) {
         AssertUtil.notNull(channelOrderResponse, "同步订单提交结果给渠道参数不能为空");
         String url = trcConfig.getOrderSubmitNotifyUrl();
-        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(channelOrderResponse);
-        log.debug("开始调用同步订单提交结果给渠服务" + url + ", 参数：" + JSONObject.toJSON(map) + ". 开始时间" +
+        String paramObj = JSON.toJSON(channelOrderResponse).toString();
+        log.debug("开始调用同步订单提交结果给渠服务" + url + ", 参数：" + paramObj + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
         String response = null;
         try{
-            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+            httpPost.setHeader("Accept", "application/json");
+            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);

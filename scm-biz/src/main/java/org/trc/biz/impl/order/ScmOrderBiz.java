@@ -237,36 +237,47 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName) {
-        try{
-            AssertUtil.notBlank(warehouseOrderCode, "提交订单京东订单仓库订单编码不能为空");
-            AssertUtil.notBlank(jdAddressCode, "提交订单京东订单四级地址编码不能为空");
-            AssertUtil.notBlank(jdAddressName, "提交订单京东订单四级地址不能为空");
-            AssertUtil.doesNotContain(JING_DONG_ADDRESS_SPLIT, jdAddressCode, "提交订单京东订单四级地址编码格式错误");
-            AssertUtil.doesNotContain(JING_DONG_ADDRESS_SPLIT, jdAddressName, "提交订单京东订单四级地址格式错误");
-            //获取京东四级地址
-            String[] jdAddressCodes = jdAddressCode.split(JING_DONG_ADDRESS_SPLIT);
-            String[] jdAddressNames = jdAddressName.split(JING_DONG_ADDRESS_SPLIT);
-            AssertUtil.isTrue(jdAddressCodes.length == jdAddressNames.length, "京东四级地址编码与名称个数不匹配");
-            //获取供应链订单数据
-            Map<String, Object> scmOrderMap = getScmOrderMap(warehouseOrderCode);
-            PlatformOrder platformOrder = (PlatformOrder)scmOrderMap.get("platformOrder");
-            WarehouseOrder warehouseOrder = (WarehouseOrder)scmOrderMap.get("warehouseOrder");
-            List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
-            //获取京东订单对象
-            JingDongOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, orderItemList, jdAddressCodes);
-            //调用京东下单服务接口
-            ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(jingDongOrder);
-            //保存京东订单信息
-            saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, jdAddressCodes, jdAddressNames, ZeroToNineEnum.ZERO.getCode());
-            if(returnTypeDO.getSuccess()){
-                return ResultUtil.createSucssAppResult("提交京东订单成功","");
-            }else{
-                return ResultUtil.createFailAppResult(String.format("提交京东订单失败,错误信息:%s", returnTypeDO.getResultMessage()));
-            }
-
-        }catch (Exception e){
-            return ResultUtil.createFailAppResult(String.format("提交京东订单失败,%s", e.getMessage()));
+        AssertUtil.notBlank(warehouseOrderCode, "提交订单京东订单仓库订单编码不能为空");
+        AssertUtil.notBlank(jdAddressCode, "提交订单京东订单四级地址编码不能为空");
+        AssertUtil.notBlank(jdAddressName, "提交订单京东订单四级地址不能为空");
+        AssertUtil.doesNotContain(JING_DONG_ADDRESS_SPLIT, jdAddressCode, "提交订单京东订单四级地址编码格式错误");
+        AssertUtil.doesNotContain(JING_DONG_ADDRESS_SPLIT, jdAddressName, "提交订单京东订单四级地址格式错误");
+        //获取京东四级地址
+        String[] jdAddressCodes = jdAddressCode.split(JING_DONG_ADDRESS_SPLIT);
+        String[] jdAddressNames = jdAddressName.split(JING_DONG_ADDRESS_SPLIT);
+        AssertUtil.isTrue(jdAddressCodes.length == jdAddressNames.length, "京东四级地址编码与名称个数不匹配");
+        AppResult appResult = null;
+        //获取供应链订单数据
+        Map<String, Object> scmOrderMap = getScmOrderMap(warehouseOrderCode);
+        PlatformOrder platformOrder = (PlatformOrder)scmOrderMap.get("platformOrder");
+        WarehouseOrder warehouseOrder = (WarehouseOrder)scmOrderMap.get("warehouseOrder");
+        List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
+        //获取京东订单对象
+        JingDongOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, orderItemList, jdAddressCodes);
+        //调用京东下单服务接口
+        ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(jingDongOrder);
+        //保存京东订单信息
+        saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, jdAddressCodes, jdAddressNames, ZeroToNineEnum.ZERO.getCode());
+        if(returnTypeDO.getSuccess()){
+            String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单成功", warehouseOrderCode);
+            log.info(msg);
+            appResult = ResultUtil.createSucssAppResult(msg,"");
+        }else{
+            String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单失败。京东下单接口返回错误信息:%s",
+                    warehouseOrderCode, appResult.getDatabuffer());
+            log.error(msg);
+            appResult = ResultUtil.createFailAppResult(msg);
         }
+        //下单结果通知渠道
+        try{
+            notifyChannelSubmitOrderResult(warehouseOrder);
+        }catch (Exception e){
+            String msg = String.format("仓库级订单编码为[%s]的京东订单下单结果通知渠道异常,异常信息:%s",
+                    warehouseOrderCode, appResult.getDatabuffer());
+            log.error(msg, e);
+            appResult = ResultUtil.createFailAppResult(msg);
+        }
+        return appResult;
     }
 
     /**
@@ -329,11 +340,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
         ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(liangYouOrder);
         //保存粮油订单信息
         saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, new String[0], new String[0], ZeroToNineEnum.ZERO.getCode());
-        return ResultUtil.createSucssAppResult("提交粮油订单成功","");
+        if(returnTypeDO.getSuccess()){
+            return ResultUtil.createSucssAppResult(String.format("提交仓库级订单编码为[%s]的粮油订单下单成功", warehouseOrderCode),"");
+        }else{
+            String msg = String.format("提交仓库级订单编码为[%s]的粮油订单下单失败。粮油下单接口返回错误信息:%s",
+                    warehouseOrderCode, returnTypeDO.getResultMessage());
+            log.error(msg);
+            return ResultUtil.createFailAppResult(msg);
+        }
     }
 
     @Override
-    public AppResult saveChannelOrderRequestFlow(String orderInfo, AppResult appResult) {
+    public void saveChannelOrderRequestFlow(String orderInfo, AppResult appResult) {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         RequestFlow requestFlow = new RequestFlow();
         requestFlow.setType(TrcActionTypeEnum.RECEIVE_CHANNEL_ORDER.getCode());
@@ -350,7 +368,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         requestFlow.setRemark(appResult.getDatabuffer());
         requestFlowService.insert(requestFlow);
-        return null;
     }
 
     /**
@@ -746,16 +763,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }catch (Exception e){
             log.error(String.format("多线程提交供应商订单异常,%s", e));
         }
-        /*try{
-
-        }catch (Exception e){
-            String channelCode = "";
-            if(null != platformOrder)
-                channelCode = platformOrder.getChannelCode();
-            String msg = String.format("接收渠道%s订单%s异常,%s",channelCode, orderInfo, e.getMessage());
-            log.error(msg, e);
-            return ResultUtil.createFailAppResult(msg);
-        }*/
         return ResultUtil.createSucssAppResult("接收订单成功", "");
     }
 
@@ -773,6 +780,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         try{
                             //提交订单
                             AppResult appResult = submitLiangYouOrder(warehouseOrder.getWarehouseOrderCode());
+                            if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), appResult.getAppcode())){
+                                log.info(appResult.getDatabuffer());
+                            }else{
+                                log.error(appResult.getDatabuffer());
+                            }
                             //下单结果通知渠道
                             notifyChannelSubmitOrderResult(warehouseOrder);
                         }catch (Exception e){
@@ -824,8 +836,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         channelOrderResponse.setOrder(supplierOrderReturnList);
         ToGlyResultDO toGlyResultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
-        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
-            log.error(String.format("仓库级订单订单%s提交结果通知渠道失败", JSON.toJSONString(warehouseOrder)));
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            log.error(String.format("仓库级订单订单%s提交结果通知渠道成功", JSON.toJSONString(warehouseOrder)));
+        }else {
+            log.error(String.format("仓库级订单订单%s提交结果通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(warehouseOrder), toGlyResultDO.getMsg()));
         }
     }
 
@@ -1212,12 +1226,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 totalItem = totalItem.add(orderItem.getPayment());
                 totalOneShopNum += orderItem.getNum();
             }
-            AssertUtil.isTrue(totalItem.compareTo(shopOrder.getPayment()) == 0, "店铺订单实付金额与所有该店铺商品总实付金额不等值");
-            AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
+            /*AssertUtil.isTrue(totalItem.compareTo(shopOrder.getPayment()) == 0, "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+            AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");*/
             shopOrderList.add(shopOrder);
         }
-        AssertUtil.isTrue(totalShop.compareTo(platformOrder.getPayment()) == 0, "平台订单实付金额与所有店铺总实付金额不等值");
-        AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");
+        /*AssertUtil.isTrue(totalShop.compareTo(platformOrder.getPayment()) == 0, "平台订单实付金额与所有店铺总实付金额不等值");
+        AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");*/
         return shopOrderList;
     }
 
