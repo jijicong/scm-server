@@ -881,12 +881,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
             supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
             supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
-            List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
-            for (SupplierOrderInfo supplierOrderInfo2 : supplierOrderInfoList) {
-
-                //更新供应商订单物流信息
-                updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
-            }
+            supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
+            //更新供应商订单物流信息
+            updateSupplierOrderLogistics(supplierOrderInfo, logisticForm);
         }
         return ResultUtil.createSucssAppResult("查询订单配送信息成功", logisticForm);
     }
@@ -1277,7 +1274,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param supplierOrderInfoList
      * @return
      */
-    private boolean isFailure(List<SupplierOrderInfo> supplierOrderInfoList){
+    /*private boolean isFailure(List<SupplierOrderInfo> supplierOrderInfoList){
         boolean flag = true;
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             if(!StringUtils.equals(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode(), supplierOrderInfo2.getStatus())){
@@ -1286,14 +1283,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         return flag;
-    }
+    }*/
 
     /**
      *是否已发送
      * @param supplierOrderInfoList
      * @return
      */
-    private boolean isSubmit(List<SupplierOrderInfo> supplierOrderInfoList){
+    /*private boolean isSubmit(List<SupplierOrderInfo> supplierOrderInfoList){
         boolean flag = false;
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             if(StringUtils.equals(SupplierOrderStatusEnum.SUBMIT.getCode(), supplierOrderInfo2.getStatus())){
@@ -1302,14 +1299,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         return flag;
-    }
+    }*/
 
     /**
      *是否待发货
      * @param supplierOrderInfoList
      * @return
      */
-    private boolean isWaitForDeliver(List<SupplierOrderInfo> supplierOrderInfoList){
+    /*private boolean isWaitForDeliver(List<SupplierOrderInfo> supplierOrderInfoList){
         boolean flag = false;
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo2.getStatus())){
@@ -1318,14 +1315,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         return flag;
-    }
+    }*/
 
     /**
      *是否已发货
      * @param supplierOrderInfoList
      * @return
      */
-    private boolean isDeliver(List<SupplierOrderInfo> supplierOrderInfoList){
+    /*private boolean isDeliver(List<SupplierOrderInfo> supplierOrderInfoList){
         boolean flag = false;
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             if(StringUtils.equals(SupplierOrderStatusEnum.DELIVER.getCode(), supplierOrderInfo2.getStatus())){
@@ -1334,7 +1331,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         return flag;
-    }
+    }*/
 
     /**
      * 保存幂等流水
