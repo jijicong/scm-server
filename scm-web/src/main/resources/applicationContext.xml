@@ -44,8 +44,8 @@
     <context:component-scan base-package="org.trc"/>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
 
-    <task:scheduled-tasks>
-        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */1 * * * ?"/>
-    </task:scheduled-tasks>
+    <!--<task:scheduled-tasks>
+        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */3 * * * ?"/>
+    </task:scheduled-tasks>-->
 
 </beans>

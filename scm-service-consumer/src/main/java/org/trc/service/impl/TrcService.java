@@ -120,14 +120,17 @@ public class TrcService implements ITrcService {
         AssertUtil.notBlank(logisticNoticeForm.getType(), "同步物理新给渠道信息类型type不能为空");
         AssertUtil.notEmpty(logisticNoticeForm.getLogistics(), "同步物理新给渠道物流信息logistics不能为空");
         String url = trcConfig.getLogisticsNotifyUrl();
-        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(logisticNoticeForm);
-        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + JSONObject.toJSON(map) + ". 开始时间" +
+        String paramObj = JSON.toJSONString(logisticNoticeForm);
+        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
         String response = null;
         try{
-            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+            httpPost.setHeader("Accept", "application/json");
+            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);

@@ -895,10 +895,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(shopOrderCode, "查询京东物流信息店铺订单号shopOrderCode不能为空");
         WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setShopOrderCode(shopOrderCode);
-        warehouseOrder.setSupplierCode(SupplyConstants.Order.SUPPLIER_JD_CODE);
+        //warehouseOrder.setSupplierCode(SupplyConstants.Order.SUPPLIER_JD_CODE);
         //一个店铺订单下只有一个京东仓库订单
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
-        AssertUtil.notNull(warehouseOrder, String.format("根据店铺订单编码[%s]查询京东相关仓库订单为空", warehouseOrder.getShopOrderCode()));
+        if(null == warehouseOrder){
+            return ResultUtil.createFailAppResult(String.format("不存在店铺订单编码为[%s]的京东订单信息", shopOrderCode));
+        }
         LogisticForm logisticForm = invokeGetLogisticsInfo(warehouseOrder.getWarehouseOrderCode(), SupplierLogisticsEnum.JD.getCode());
         LogisticNoticeForm logisticNoticeForm = new LogisticNoticeForm();
         logisticNoticeForm.setShopOrderCode(shopOrderCode);
@@ -919,9 +921,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     public void fetchLogisticsInfo() {
-        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
-        supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
-        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+        Example example = new Example(SupplierOrderInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        String[] statusArray = new String[]{SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), SupplierOrderStatusEnum.DELIVER.getCode()};
+        criteria.andIn("status", Arrays.asList(statusArray));
+        criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
+        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             try{
                 String flag = "";
@@ -1052,7 +1057,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         if(flag){
-            supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.COMPLETE.getCode());//已完成
+            supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.COMPLETE.getCode());//未完成);//已完成
         }
         if(supplierOrderLogisticsList.size() > 0){
             supplierOrderInfo.setStatus(SupplierOrderStatusEnum.DELIVER.getCode());//已发货
@@ -1091,7 +1096,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else if(StringUtils.equals(type, LogsticsTypeEnum.LOGSTICS.getCode())){//配送信息
             supplierOrderLogistics.setLogisticsInfo(JSONArray.toJSONString(logistic.getLogisticInfo()));
         }
-        supplierOrderLogistics.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.COMPLETE.getCode());//已完成
+        supplierOrderLogistics.setLogisticsStatus(logistic.getLogisticsStatus());
         ParamsUtil.setBaseDO(supplierOrderLogistics);
         return supplierOrderLogistics;
     }
@@ -1110,11 +1115,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.error(msg);
             return null;
         }
+        if(null == returnTypeDO.getResult()){
+            log.warn(String.format("调用物流查询服务查询仓库订单编码为[%s]的仓库订单物流信息返回结为空", warehouseOrderCode));
+            return null;
+        }
         JSONObject orderObj = null;
         try {
             orderObj = JSONObject.parseObject(returnTypeDO.getResult().toString());
         } catch (ClassCastException e) {
-            String msg = String.format("调用物流查询服务返回结果不是JSON格式");
+            String msg = String.format("调用物流查询服务返回结果%s不是JSON格式", returnTypeDO.getResult());
             log.error(msg, e);
             throw new OrderException(ExceptionEnum.SUPPLIER_LOGISTICS_QUERY_EXCEPTION, msg);
         }
@@ -1224,65 +1233,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return shopOrderArray;
     }
 
-    /**
-     * 更新仓库订单供应商订单状态
-     * @param warehouseOrderCode
-     */
-    /*private void updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode){
-        WarehouseOrder warehouseOrder = new WarehouseOrder();
-        warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
-        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
-        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单信息为空", warehouseOrderCode));
-        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
-        supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
-        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
-        AssertUtil.notEmpty(supplierOrderInfoList, String.format("根据仓库订单编码[%s]查询供应商订单信息为空", warehouseOrderCode));
-        String supplierOrderStatus = "";
-        //当前待发送状态
-        if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            if(isFailure(supplierOrderInfoList)){
-                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-            }else {
-                if(isSubmit(supplierOrderInfoList)){
-                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT.getCode();
-                }else {
-                    if(isWaitForDeliver(supplierOrderInfoList)){
-                        supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
-                    }
-                }
-            }
-        }
-        //当前已发送状态
-        if(StringUtils.equals(SupplierOrderStatusEnum.SUBMIT.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            if(isFailure(supplierOrderInfoList)){
-                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-            }else {
-                if(isWaitForDeliver(supplierOrderInfoList)){
-                    supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
-                }
-            }
-        }
-        //当前待发货状态
-        if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            if(isDeliver(supplierOrderInfoList)){
-                supplierOrderStatus = SupplierOrderStatusEnum.DELIVER.getCode();
-            }
-        }
-        if(StringUtils.isNotBlank(supplierOrderStatus)){
-            WarehouseOrder warehouseOrder2 = new WarehouseOrder();
-            warehouseOrder2.setSupplierOrderStatus(supplierOrderStatus);
-            warehouseOrder2.setUpdateTime(Calendar.getInstance().getTime());
-            Example example = new Example(WarehouseOrder.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andEqualTo("warehouseOrderCode", warehouseOrderCode);
-            int count = warehouseOrderService.updateByExampleSelective(warehouseOrder2, example);
-            if(count == 0){
-                String msg = String.format("更新仓库订单编码为[%s]的仓库订单供应商订单状态为%s失败", warehouseOrderCode, supplierOrderStatus);
-                log.error(msg);
-                throw new OrderException(ExceptionEnum.ORDER_STATUS_UPDATE_EXCEPTION, msg);
-            }
-        }
-    }*/
 
     private void updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode, String supplierOrderStatus){
         AssertUtil.notBlank(warehouseOrderCode, "更新仓库订单供应商订单状态仓库订单编码参数warehouseOrderCode不能为空");
@@ -1301,69 +1251,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
     }
 
-    /**
-     *是否下单失败
-     * @param supplierOrderInfoList
-     * @return
-     */
-    /*private boolean isFailure(List<SupplierOrderInfo> supplierOrderInfoList){
-        boolean flag = true;
-        for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(!StringUtils.equals(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode(), supplierOrderInfo2.getStatus())){
-                flag = false;
-                break;
-            }
-        }
-        return flag;
-    }*/
-
-    /**
-     *是否已发送
-     * @param supplierOrderInfoList
-     * @return
-     */
-    /*private boolean isSubmit(List<SupplierOrderInfo> supplierOrderInfoList){
-        boolean flag = false;
-        for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(StringUtils.equals(SupplierOrderStatusEnum.SUBMIT.getCode(), supplierOrderInfo2.getStatus())){
-                flag = true;
-                break;
-            }
-        }
-        return flag;
-    }*/
-
-    /**
-     *是否待发货
-     * @param supplierOrderInfoList
-     * @return
-     */
-    /*private boolean isWaitForDeliver(List<SupplierOrderInfo> supplierOrderInfoList){
-        boolean flag = false;
-        for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo2.getStatus())){
-                flag = true;
-                break;
-            }
-        }
-        return flag;
-    }*/
-
-    /**
-     *是否已发货
-     * @param supplierOrderInfoList
-     * @return
-     */
-    /*private boolean isDeliver(List<SupplierOrderInfo> supplierOrderInfoList){
-        boolean flag = false;
-        for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(StringUtils.equals(SupplierOrderStatusEnum.DELIVER.getCode(), supplierOrderInfo2.getStatus())){
-                flag = true;
-                break;
-            }
-        }
-        return flag;
-    }*/
 
     /**
      * 保存幂等流水
