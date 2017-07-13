@@ -93,4 +93,13 @@ public class AclResourceResource {
         jurisdictionBiz.updateJurisdiction(jurisdictionTreeNode);
         return ResultUtil.createSucssAppResult("更新权限资源成功", "");
     }
+
+
+    @GET
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_HTML)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> updateJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,@Context ContainerRequestContext requestContext){
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        return ResultUtil.createSucssAppResult("查询用户html页面权限成功", jurisdictionBiz.getHtmlJurisdiction(userId));
+    }
 }

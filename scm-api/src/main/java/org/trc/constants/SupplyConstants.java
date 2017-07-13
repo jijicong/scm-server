@@ -327,7 +327,8 @@ public class SupplyConstants {
         public static final String JURISDICTION_SAVE = "jurisdictionSave";
         //编辑资源
         public static final String JURISDICTION_EDIT = "jurisdictionEdit";
-
+        //页面资源
+        public static final String JURISDICTION_HTML = "jurisdictionHtml";
     }
 
     /**

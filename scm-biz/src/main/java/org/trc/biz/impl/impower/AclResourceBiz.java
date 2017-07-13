@@ -26,9 +26,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sone on 2017/5/11.
@@ -126,6 +124,19 @@ public class AclResourceBiz implements IAclResourceBiz {
         * 5.验证权限
         * */
         //1.查询用户授权信息表
+        List<AclResource> aclResourceList = getAclResources(userId);
+        //5.验证权限,正则匹配url，方法类型匹配
+        for (AclResource aclResource : aclResourceList) {
+            if (url.matches(aclResource.getUrl())) {
+                if (aclResource.getMethod().equals(method)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<AclResource> getAclResources(String userId) {
         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
         try {
             AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息不存在");
@@ -155,15 +166,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         if (AssertUtil.CollectionIsEmpty(aclResourceList)) {
             throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
         }
-        //5.验证权限,正则匹配url，方法类型匹配
-        for (AclResource aclResource : aclResourceList) {
-            if (url.matches(aclResource.getUrl())) {
-                if (aclResource.getMethod().equals(method)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return aclResourceList;
     }
 
     @Override
@@ -280,6 +283,58 @@ public class AclResourceBiz implements IAclResourceBiz {
             logger.error(msg);
             throw new CategoryException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
+    }
+
+    @Override
+    public  List<Map<String,Object>> getHtmlJurisdiction(String userId) {
+        List<Map<String,Object>> JurisdictionList=new ArrayList<>();
+        AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
+        try {
+            AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息不存在");
+        } catch (IllegalArgumentException e) {
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户授权信息不存在");
+        }
+        //2.查询用户所拥有的角色
+        List<AclUserAccreditRoleRelation> userRoleRelationList = userAccreditInfoRoleRelationService.selectListByUserAcId(aclUserAccreditInfo.getId());
+        if (AssertUtil.CollectionIsEmpty(userRoleRelationList)) {
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户角色信息不存在");
+        }
+        Long[] roleIds = new Long[userRoleRelationList.size()];
+        for (int i = 0; i < userRoleRelationList.size(); i++) {
+            roleIds[i] = userRoleRelationList.get(i).getRoleId();
+        }
+        //3.查询用户所有角色下的权限
+        Example example =new Example(AclRoleResourceRelation.class);
+        Example.Criteria criteria=example.createCriteria();
+        List<Long> roleIdList=new ArrayList<>();
+        Collections.addAll(roleIdList,roleIds);
+        criteria.andIn("roleId",roleIdList);
+        criteria.andGreaterThan("resourceCode",100000);
+        List<AclRoleResourceRelation> roleJdRelationList =roleJurisdictionRelationService.selectByExample(example);
+        if (AssertUtil.CollectionIsEmpty(roleJdRelationList)) {
+            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
+        }
+        Map<String ,Object> map=new HashMap<>();
+        Set<Long> resourceCodeSet=new HashSet<>();
+        for (AclRoleResourceRelation aclRoleResourceRelation: roleJdRelationList) {
+            //取得资源码前3位
+            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode()/1000000);
+        }
+        for (Long resourceCode:resourceCodeSet) {
+            Map<String,Object> jurisdictionMap=new HashMap<>();
+            jurisdictionMap.put("parentCode",resourceCode);
+            Set<Long> longSet=new HashSet<>();
+            for (AclRoleResourceRelation aclRoleResourceRelation: roleJdRelationList) {
+                //取得资源码前3位
+                if(resourceCode.equals(aclRoleResourceRelation.getResourceCode()/1000000)){
+                    //取得资源码前5位
+                    longSet.add(aclRoleResourceRelation.getResourceCode()/10000);
+                }
+            }
+            jurisdictionMap.put("codeList",longSet);
+            JurisdictionList.add(jurisdictionMap);
+        }
+        return JurisdictionList;
     }
 
 }

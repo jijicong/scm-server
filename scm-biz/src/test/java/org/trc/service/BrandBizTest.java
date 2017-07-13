@@ -1,11 +1,13 @@
 package org.trc.service;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.biz.category.IBrandBiz;
+import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.category.Brand;
 import org.trc.form.category.BrandForm;
 import org.trc.util.Pagenation;
@@ -18,7 +20,10 @@ import org.trc.util.Pagenation;
 public class BrandBizTest {
     @Autowired
     IBrandBiz iBrandBiz;
-
+    @Autowired
+    ITestService testService;
+    @Autowired
+    IAclResourceBiz aclResourceBiz;
     /**
      * 品牌信息分页
      */
@@ -32,4 +37,11 @@ public class BrandBizTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void Test(){
+        System.out.println(JSONObject.toJSONString(aclResourceBiz.getHtmlJurisdiction("E2E4BDAD80354EFAB6E70120C271968C")));
+    }
+
+
 }
