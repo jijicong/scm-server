@@ -93,6 +93,15 @@ public class PurchaseOrderResource {
         return  ResultUtil.createSucssAppResult("提交审核修改采购订单信息成功","");
 
     }
+    @POST
+    @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_UPDATE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder) {
+
+        purchaseOrderBiz.updateWarahouseAdviceUpdate(purchaseOrder);
+        return ResultUtil.createSucssAppResult("状态修改成功","");
+
+    }
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ALL_ITEMS+"/{supplierCode}")

@@ -395,6 +395,8 @@ public class SupplyConstants {
         //public static final String PURCHASE_GROUP_CODE = "purchaseGroupCode";
         //采购单状态的修改--删除 作废
         public static final String UPDATE_STATE = "purchaseOrder/updateState";
+        //采购单的入库-作废的状态
+        public static final String WAREHOUSE_UPDATE="warahouseAdvice/cancellation";
         //采购单状态的修改--冻结
         public static final String FREEZE = "purchaseOrder/freeze";
         public static final String WAREHOUSE_ADVICE = "purchaseOrder/warahouseAdvice";
@@ -406,6 +408,17 @@ public class SupplyConstants {
         public static final String SUPPLIERS_ITEMS = "suppliersItems";
         //根据供应商的编码查询供应商所有可卖商品
         public static final String SUPPLIERS_ALL_ITEMS = "suppliersAllItems";
+    }
+    /**
+     * 入库通知
+     */
+    public static final class WarehouseNotice{
+        //根路径
+        public static final String ROOT = "warehouse";
+        //入库通知的分页路径
+        public static final String WAREHOUSE_NOTICE_PAGE = "purchaseOrderPage";
+
+
     }
 
     /**
