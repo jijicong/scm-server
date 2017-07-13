@@ -186,14 +186,11 @@ public class HttpClientUtil {
         Map<String, Object> params = new HashMap();
         params.put("userId",userId);*/
 
-        String tbUrl = "http://127.0.0.1:8080/scm-external/items/itemsPage";
-        String param = "start=0&pageNo=1&pageSize=10";
+        String tbUrl = "http://127.0.0.1/scm-external/items/itemsUpdatePrice";
         Map<String, Object> params = new HashMap();
-        params.put("start",0);
-        params.put("pageNo",1);
-        params.put("pageSize",10);
+        params.put("skus","231407");
         try {
-            System.out.println(HttpClientUtil.httpGetRequest(tbUrl,params));
+            System.out.println(HttpClientUtil.httpPostRequest(tbUrl,params, 10000));
         } catch (Exception e) {
             e.printStackTrace();
         }

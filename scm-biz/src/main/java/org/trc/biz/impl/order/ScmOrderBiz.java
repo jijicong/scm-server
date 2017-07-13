@@ -287,7 +287,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             appResult = ResultUtil.createSucssAppResult(msg,"");
         }else{
             String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单失败。京东下单接口返回错误信息:%s",
-                    warehouseOrderCode, appResult.getDatabuffer());
+                    warehouseOrderCode, returnTypeDO.getResultMessage());
             log.error(msg);
             appResult = ResultUtil.createFailAppResult(msg);
         }
@@ -348,27 +348,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else{
             log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
         }
-        //通知更新京东sku价格
-        jdPriceUpdateNotice(skus);
         return returnTypeDO;
-    }
-
-    /**
-     * 通知更新京东sku价格
-     * @param skus
-     */
-    private void jdPriceUpdateNotice(String skus){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ReturnTypeDO returnTypeDO = ijdService.updateSellPriceNotice(skus);
-                if(returnTypeDO.getSuccess()){
-                    log.info(returnTypeDO.getResultMessage());
-                }else{
-                    log.error(returnTypeDO.getResultMessage());
-                }
-            }
-        }).start();
     }
 
     /**
