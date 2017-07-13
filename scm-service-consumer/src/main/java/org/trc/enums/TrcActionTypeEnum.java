@@ -12,7 +12,13 @@ public enum TrcActionTypeEnum {
     ADD_PROPERTY("ADD_PROPERTY", "新增属性"),
     EDIT_PROPERTY("EDIT_PROPERTY", "编辑属性"),
     STOP_PROPERTY("STOP_PROPERTY", "停用属性"),
+
+    ADD_ITEMS("ADD_ITEMS", "新增商品"),
     EDIT_ITEMS("EDIT_ITEMS", "编辑商品"),
+    ITEMS_IS_VALID("ITEMS_IS_VALID", "商品启停用"),
+    ITEMS_SKU_IS_VALID("ITEMS_SKU_IS_VALID", "商品SKU启停用"),
+
+
     ADD_CATEGORY("ADD_CATEGORY", "新增分类"),
     EDIT_CATEGORY("EDIT_CATEGORY", "编辑分类"),
     STOP_CATEGORY("STOP_CATEGORY", "停用分类"),

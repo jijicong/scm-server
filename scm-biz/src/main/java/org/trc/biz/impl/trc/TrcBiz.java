@@ -242,7 +242,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
+    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, Skus skus, Long operateTime) throws Exception {
 
         //TODO 判断通知，暂时觉得都得通知
 
@@ -258,8 +258,8 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("items", items);
-        params.put("itemNaturePropery", itemNaturePropery);
-        params.put("itemSalesPropery", itemSalesPropery);
+        params.put("itemNaturePropery", JSONArray.toJSON(itemNaturePropery));
+        params.put("itemSalesPropery", JSONArray.toJSON(itemSalesPropery));
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
