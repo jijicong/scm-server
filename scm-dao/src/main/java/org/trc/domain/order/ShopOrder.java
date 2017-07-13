@@ -1,12 +1,10 @@
 package org.trc.domain.order;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.trc.custom.MoneySerializer;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +17,7 @@ public class ShopOrder extends OrderBase {
 
     }
 
-    public ShopOrder(String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, String platformType, Long shopId, String shopName, String userId, String dlytmplIds, String status, String isDeleted, Long payment, Long totalFee, Long postageFee, Long discountPromotion, Long discountCouponShop, Long discountCouponPlatform, Long discountFee, String title, String buyerMessage, Long adjustFee, Integer itemNum, Long totalWeight, String rateStatus, String isPartConsign, String groupBuyStatus, Long totalTax, Date createTime, Date consignTime, Date updateTime, String shopMemo, String tradeMemo) {
+    public ShopOrder(String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, String platformType, Long shopId, String shopName, String userId, String dlytmplIds, String status, String isDeleted, BigDecimal payment, BigDecimal totalFee, BigDecimal postageFee, BigDecimal discountPromotion, BigDecimal discountCouponShop, BigDecimal discountCouponPlatform, BigDecimal discountFee, String title, String buyerMessage, BigDecimal adjustFee, Integer itemNum, BigDecimal totalWeight, String rateStatus, String isPartConsign, String groupBuyStatus, BigDecimal totalTax, Date createTime, Date consignTime, Date updateTime, String shopMemo, String tradeMemo) {
         this.shopOrderCode = shopOrderCode;
         this.platformOrderCode = platformOrderCode;
         this.channelCode = channelCode;
@@ -94,32 +92,32 @@ public class ShopOrder extends OrderBase {
     private String isDeleted;
 
     // 实付金额,订单最终总额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long payment;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal payment;
 
     // 各子订单中商品price * num的和，不包括任何优惠信息,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalFee;
 
     // 邮费分摊,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long postageFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal postageFee;
 
     // 促销优惠总金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountPromotion;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountPromotion;
 
     // 店铺优惠卷分摊总金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountCouponShop;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountCouponShop;
 
     // 平台优惠卷分摊总金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountCouponPlatform;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountCouponPlatform;
 
     // 促销优惠金额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long discountFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal discountFee;
 
     // 交易标题
     private String title;
@@ -128,14 +126,14 @@ public class ShopOrder extends OrderBase {
     private String buyerMessage;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long adjustFee;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal adjustFee;
 
     // 子订单商品购买数量总数
     private Integer itemNum;
 
     // 商品重量,单位/克
-    private Long totalWeight;
+    private BigDecimal totalWeight;
 
     // 评价状态
     private String rateStatus;
@@ -147,8 +145,8 @@ public class ShopOrder extends OrderBase {
     private String groupBuyStatus;
 
     // 订单总税费,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
-    private Long totalTax;
+    //@JsonSerialize(using = MoneySerializer.class)
+    private BigDecimal totalTax;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
     private Date createTime;
@@ -420,14 +418,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 实付金额, 订单最终总额, 单位/分
      */
-    public Long getPayment() {
+    public BigDecimal getPayment() {
         return payment;
     }
 
     /**
      * 设置实付金额,订单最终总额,单位/分
      */
-    public void setPayment(Long payment) {
+    public void setPayment(BigDecimal payment) {
         this.payment = payment;
     }
 
@@ -436,14 +434,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 各子订单中商品price * num的和，不包括任何优惠信息,单位/分
      */
-    public Long getTotalFee() {
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
 
     /**
      * 设置各子订单中商品price * num的和，不包括任何优惠信息,单位/分
      */
-    public void setTotalFee(Long totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 
@@ -452,14 +450,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 邮费分摊, 单位/分
      */
-    public Long getPostageFee() {
+    public BigDecimal getPostageFee() {
         return postageFee;
     }
 
     /**
      * 设置邮费分摊,单位/分
      */
-    public void setPostageFee(Long postageFee) {
+    public void setPostageFee(BigDecimal postageFee) {
         this.postageFee = postageFee;
     }
 
@@ -468,14 +466,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 促销优惠总金额, 单位/分
      */
-    public Long getDiscountPromotion() {
+    public BigDecimal getDiscountPromotion() {
         return discountPromotion;
     }
 
     /**
      * 设置促销优惠总金额,单位/分
      */
-    public void setDiscountPromotion(Long discountPromotion) {
+    public void setDiscountPromotion(BigDecimal discountPromotion) {
         this.discountPromotion = discountPromotion;
     }
 
@@ -484,14 +482,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 店铺优惠卷分摊总金额, 单位/分
      */
-    public Long getDiscountCouponShop() {
+    public BigDecimal getDiscountCouponShop() {
         return discountCouponShop;
     }
 
     /**
      * 设置店铺优惠卷分摊总金额,单位/分
      */
-    public void setDiscountCouponShop(Long discountCouponShop) {
+    public void setDiscountCouponShop(BigDecimal discountCouponShop) {
         this.discountCouponShop = discountCouponShop;
     }
 
@@ -500,14 +498,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 平台优惠卷分摊总金额, 单位/分
      */
-    public Long getDiscountCouponPlatform() {
+    public BigDecimal getDiscountCouponPlatform() {
         return discountCouponPlatform;
     }
 
     /**
      * 设置平台优惠卷分摊总金额,单位/分
      */
-    public void setDiscountCouponPlatform(Long discountCouponPlatform) {
+    public void setDiscountCouponPlatform(BigDecimal discountCouponPlatform) {
         this.discountCouponPlatform = discountCouponPlatform;
     }
 
@@ -516,14 +514,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 促销优惠金额, 单位/分
      */
-    public Long getDiscountFee() {
+    public BigDecimal getDiscountFee() {
         return discountFee;
     }
 
     /**
      * 设置促销优惠金额,单位/分
      */
-    public void setDiscountFee(Long discountFee) {
+    public void setDiscountFee(BigDecimal discountFee) {
         this.discountFee = discountFee;
     }
 
@@ -564,14 +562,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 卖家手工调整金额, 子订单调整金额之和, 单位/分,单位/分
      */
-    public Long getAdjustFee() {
+    public BigDecimal getAdjustFee() {
         return adjustFee;
     }
 
     /**
      * 设置卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
      */
-    public void setAdjustFee(Long adjustFee) {
+    public void setAdjustFee(BigDecimal adjustFee) {
         this.adjustFee = adjustFee;
     }
 
@@ -596,14 +594,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 商品重量, 单位/克
      */
-    public Long getTotalWeight() {
+    public BigDecimal getTotalWeight() {
         return totalWeight;
     }
 
     /**
      * 设置商品重量,单位/克
      */
-    public void setTotalWeight(Long totalWeight) {
+    public void setTotalWeight(BigDecimal totalWeight) {
         this.totalWeight = totalWeight;
     }
 
@@ -660,14 +658,14 @@ public class ShopOrder extends OrderBase {
      *
      * @return 订单总税费, 单位/分
      */
-    public Long getTotalTax() {
+    public BigDecimal getTotalTax() {
         return totalTax;
     }
 
     /**
      * 设置订单总税费,单位/分
      */
-    public void setTotalTax(Long totalTax) {
+    public void setTotalTax(BigDecimal totalTax) {
         this.totalTax = totalTax;
     }
 

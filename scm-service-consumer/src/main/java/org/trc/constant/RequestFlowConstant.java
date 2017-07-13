@@ -12,5 +12,7 @@ public class RequestFlowConstant {
 
     public final static String TRC = "TRC";//泰然城
 
+    public final static String LY = "LY";//粮油
+
 
 }

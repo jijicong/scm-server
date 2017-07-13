@@ -812,13 +812,16 @@ public class JDServiceImpl implements IJDService {
         String url = "";
         String response = null;
         try{
-            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
+            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+1;
+            log.debug("开始调用物流查询" + url + ", 参数：warehouseOrderCode=" + warehouseOrderCode + "flag="+flag+". 开始时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             response = HttpClientUtil.httpGetRequest(url);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(appResult.getResult());
                 }
                 returnTypeDO.setResultMessage(appResult.getDatabuffer());
             }else {
@@ -832,6 +835,72 @@ public class JDServiceImpl implements IJDService {
         log.debug("结束调用物流查询" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
 
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO getSellPrice(String skus) {
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSkuPriceUrl();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("sku", skus);
+        log.debug("开始调用京东sku价格查询服务" + url + ", 参数：" + map + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            response = HttpClientUtil.httpGetRequest(url, map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(appResult.getResult());
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用京东sku价格查询服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用京东sku价格查询服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束调用京东sku价格查询服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO updateSellPriceNotice(String skus) {
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSkuPriceUpdateUrl();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("sku", skus);
+        log.debug("开始调用京东sku价格更新服务" + url + ", 参数：" + map + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(appResult.getResult());
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用京东sku价格更新服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用京东sku价格更新服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束京东sku价格更新服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return returnTypeDO;
     }
 
@@ -868,13 +937,6 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
-    public static void main(String[] args){
-        LiangYouOrder liangYouOrder = new LiangYouOrder();
-        OutOrderGoods outOrderGoods = new OutOrderGoods();
-        List<OutOrderGoods> outOrderGoodsList = new ArrayList<OutOrderGoods>();
-        outOrderGoodsList.add(outOrderGoods);
-        liangYouOrder.setOutOrderGoods(outOrderGoodsList);
-        System.out.println(net.sf.json.JSONObject.fromObject(liangYouOrder));
-    }
+
 
 }

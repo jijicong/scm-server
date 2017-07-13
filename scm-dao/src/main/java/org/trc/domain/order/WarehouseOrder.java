@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -58,32 +59,35 @@ public class WarehouseOrder {
     // 会员id
     private String userId;
 
-    // 订单状态:1-待出库 2-部分出库 3-全部出库
+    // 订单状态(自采):1-待出库 2-部分出库 3-全部出库
     private String status;
 
+    //供应商订单状态(代发):1-待发送,2-已发送,3-代发货,4-已发货,5-下单失败
+    private String supplierOrderStatus;
+
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
-    private Long adjustFee;
+    private BigDecimal adjustFee;
 
     // 邮费分摊,单位/分
-    private Long postageFee;
+    private BigDecimal postageFee;
 
     // 促销优惠总金额,单位/分
-    private Long discountPromotion;
+    private BigDecimal discountPromotion;
 
     // 店铺优惠卷分摊总金额,单位/分
-    private Long discountCouponShop;
+    private BigDecimal discountCouponShop;
 
     // 平台优惠卷分摊总金额,单位/分
-    private Long discountCouponPlatform;
+    private BigDecimal discountCouponPlatform;
 
     // 促销优惠金额,单位/分
-    private Long discountFee;
+    private BigDecimal discountFee;
 
     // 各子订单中商品price * num的和，不包括任何优惠信息,单位/分
-    private Long totalFee;
+    private BigDecimal totalFee;
 
     // 实付金额,订单最终总额,单位/分
-    private Long payment;
+    private BigDecimal payment;
 
     // 是否删除:0-否,1-是
     private String isDeleted;
@@ -359,14 +363,14 @@ public class WarehouseOrder {
      * 返回卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
      * @return 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
      */
-    public Long getAdjustFee() {
+    public BigDecimal getAdjustFee() {
         return adjustFee;
     }
 
     /**
      * 设置卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
      */
-    public void setAdjustFee(Long adjustFee) {
+    public void setAdjustFee(BigDecimal adjustFee) {
         this.adjustFee = adjustFee;
     }
 
@@ -374,14 +378,14 @@ public class WarehouseOrder {
      * 返回邮费分摊,单位/分
      * @return 邮费分摊,单位/分
      */
-    public Long getPostageFee() {
+    public BigDecimal getPostageFee() {
         return postageFee;
     }
 
     /**
      * 设置邮费分摊,单位/分
      */
-    public void setPostageFee(Long postageFee) {
+    public void setPostageFee(BigDecimal postageFee) {
         this.postageFee = postageFee;
     }
 
@@ -389,14 +393,14 @@ public class WarehouseOrder {
      * 返回促销优惠总金额,单位/分
      * @return 促销优惠总金额,单位/分
      */
-    public Long getDiscountPromotion() {
+    public BigDecimal getDiscountPromotion() {
         return discountPromotion;
     }
 
     /**
      * 设置促销优惠总金额,单位/分
      */
-    public void setDiscountPromotion(Long discountPromotion) {
+    public void setDiscountPromotion(BigDecimal discountPromotion) {
         this.discountPromotion = discountPromotion;
     }
 
@@ -404,14 +408,14 @@ public class WarehouseOrder {
      * 返回店铺优惠卷分摊总金额,单位/分
      * @return 店铺优惠卷分摊总金额,单位/分
      */
-    public Long getDiscountCouponShop() {
+    public BigDecimal getDiscountCouponShop() {
         return discountCouponShop;
     }
 
     /**
      * 设置店铺优惠卷分摊总金额,单位/分
      */
-    public void setDiscountCouponShop(Long discountCouponShop) {
+    public void setDiscountCouponShop(BigDecimal discountCouponShop) {
         this.discountCouponShop = discountCouponShop;
     }
 
@@ -419,14 +423,14 @@ public class WarehouseOrder {
      * 返回平台优惠卷分摊总金额,单位/分
      * @return 平台优惠卷分摊总金额,单位/分
      */
-    public Long getDiscountCouponPlatform() {
+    public BigDecimal getDiscountCouponPlatform() {
         return discountCouponPlatform;
     }
 
     /**
      * 设置平台优惠卷分摊总金额,单位/分
      */
-    public void setDiscountCouponPlatform(Long discountCouponPlatform) {
+    public void setDiscountCouponPlatform(BigDecimal discountCouponPlatform) {
         this.discountCouponPlatform = discountCouponPlatform;
     }
 
@@ -434,14 +438,14 @@ public class WarehouseOrder {
      * 返回促销优惠金额,单位/分
      * @return 促销优惠金额,单位/分
      */
-    public Long getDiscountFee() {
+    public BigDecimal getDiscountFee() {
         return discountFee;
     }
 
     /**
      * 设置促销优惠金额,单位/分
      */
-    public void setDiscountFee(Long discountFee) {
+    public void setDiscountFee(BigDecimal discountFee) {
         this.discountFee = discountFee;
     }
 
@@ -449,14 +453,14 @@ public class WarehouseOrder {
      * 返回各子订单中商品price * num的和，不包括任何优惠信息,单位/分
      * @return 各子订单中商品price * num的和，不包括任何优惠信息,单位/分
      */
-    public Long getTotalFee() {
+    public BigDecimal getTotalFee() {
         return totalFee;
     }
 
     /**
      * 设置各子订单中商品price * num的和，不包括任何优惠信息,单位/分
      */
-    public void setTotalFee(Long totalFee) {
+    public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 
@@ -464,14 +468,14 @@ public class WarehouseOrder {
      * 返回实付金额,订单最终总额,单位/分
      * @return 实付金额,订单最终总额,单位/分
      */
-    public Long getPayment() {
+    public BigDecimal getPayment() {
         return payment;
     }
 
     /**
      * 设置实付金额,订单最终总额,单位/分
      */
-    public void setPayment(Long payment) {
+    public void setPayment(BigDecimal payment) {
         this.payment = payment;
     }
 
@@ -542,5 +546,13 @@ public class WarehouseOrder {
 
     public void setPayTime(Date payTime) {
         this.payTime = payTime;
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
     }
 }

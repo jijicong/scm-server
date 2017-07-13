@@ -160,4 +160,5 @@ public class SupplierOrderInfo extends ScmDO{
     public void setLogisticsStatus(String logisticsStatus) {
         this.logisticsStatus = logisticsStatus;
     }
+
 }

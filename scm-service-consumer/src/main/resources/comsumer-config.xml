@@ -30,6 +30,8 @@
         <property name="jdWarehouse" value="${jd.warehouse.name}"/>
         <property name="lyWarehouse" value="${ly.warehouse.name}"/>
         <property name="jdPictureUrl" value="${jd.picture.url}"/>
+        <property name="jdSkuPriceUrl" value="${jd.skuPrice.url}"/>
+        <property name="jdSkuPriceUpdateUrl" value="${jd.skuPriceUpdate.url}"/>
         <property name="orderQueryUrl" value="${jd.orderQuery.url}"/>
         <property name="orderLogisticsUrl" value="${supplier.orderLogistics.url}"/>
         <property name="companyName" value="${jd.companyName}"/>

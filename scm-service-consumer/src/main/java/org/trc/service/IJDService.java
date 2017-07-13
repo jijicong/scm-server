@@ -349,4 +349,18 @@ public interface IJDService {
      */
     ReturnTypeDO getLogisticsInfo(String warehouseOrderCode, String flag);
 
+    /**
+     * 京东sku价格查询,多个sku用逗号分隔
+     * @param skus
+     * @return
+     */
+    ReturnTypeDO getSellPrice(String skus);
+
+    /**
+     * 通知更新京东sku价格,多个sku用逗号分隔
+     * @param skus
+     * @return
+     */
+    ReturnTypeDO updateSellPriceNotice(String skus);
+
 }
