@@ -210,7 +210,7 @@ public class CategoryBiz implements ICategoryBiz {
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         } else {
             if (isSave) {
-                noticeCategory(TrcActionTypeEnum.ADD_CATEGORY, null, category, null, null, System.currentTimeMillis());
+                noticeCategory(TrcActionTypeEnum.ADD_CATEGORY, category, category, null, null, System.currentTimeMillis());
 
             } else {
                 noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, System.currentTimeMillis());
@@ -410,6 +410,7 @@ public class CategoryBiz implements ICategoryBiz {
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
         } else {
+            updateCategory = categoryService.selectByPrimaryKey(updateCategory.getId());
             noticeCategory(TrcActionTypeEnum.STOP_CATEGORY, oldCategory, updateCategory, null, null, System.currentTimeMillis());
 
         }

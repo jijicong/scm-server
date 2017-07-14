@@ -222,14 +222,14 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendCategory(TrcActionTypeEnum action, Category oldCategory, Category category, List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
-        if (action.equals(TrcActionTypeEnum.ADD_CATEGORY) || action.equals(TrcActionTypeEnum.EDIT_CATEGORY)
-                || action.equals(TrcActionTypeEnum.STOP_CATEGORY)) {
+        if (action.getCode().equals(TrcActionTypeEnum.ADD_CATEGORY.getCode()) || action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY.getCode())
+                || action.getCode().equals(TrcActionTypeEnum.STOP_CATEGORY.getCode())) {
             return sendCategoryToTrc(action, oldCategory, category, operateTime);
         }
-        if (action.equals(TrcActionTypeEnum.EDIT_CATEGORY_BRAND)) {
+        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_BRAND.getCode())) {
             return sendCategoryBrandList(action, categoryBrandList, operateTime);
         }
-        if (action.equals(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY)) {
+        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode())) {
             return sendCategoryPropertyList(action, categoryPropertyList, operateTime);
         }
         return null;
@@ -525,14 +525,14 @@ public class TrcBiz implements ITrcBiz {
         }
         ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+       /* if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
 
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -564,13 +564,13 @@ public class TrcBiz implements ITrcBiz {
         }
         ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+       /* if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -581,7 +581,7 @@ public class TrcBiz implements ITrcBiz {
         Assert.notNull(category.getClassifyDescribe(), "分类描述不能为空");
         Assert.notNull(category.getSort(), "分类排序不能为空");
         //判断是否通知
-        if (!action.equals(TrcActionTypeEnum.ADD_CATEGORY.getCode())) {
+        if (!action.getCode().equals(TrcActionTypeEnum.ADD_CATEGORY.getCode())) {
             if (oldCategory.getName().equals(category.getName()) && oldCategory.getIsValid().equals(category.getIsValid())) {
                 return new ToGlyResultDO("1", "无需通知分类变更");
             }
