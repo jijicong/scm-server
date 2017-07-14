@@ -326,7 +326,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
-        params.put("externalItemSkuList", sendList);
+        params.put("externalItemSkuList", JSONArray.toJSON(sendList));
         String result = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知一件代发商品变更接口sendExternalItemSkuUpdation]";
         //抛出通知自定义异常
