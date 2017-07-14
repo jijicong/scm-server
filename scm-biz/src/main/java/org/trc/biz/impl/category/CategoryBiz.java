@@ -657,29 +657,10 @@ public class CategoryBiz implements ICategoryBiz {
 
     /**
      * 数据关联
-     *
      * @param categoryId
-     * @param propertyId
+     * @param jsonDate
      * @throws Exception
      */
-    @Override
-    @Deprecated
-    public void linkCategoryProperty(Long categoryId, Long propertyId) throws Exception {
-        AssertUtil.notNull(propertyId, "分类关联属性propertyId为空");
-        AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
-        Category category = new Category();
-        category.setId(categoryId);
-        category = categoryService.selectOne(category);
-        Property property = new Property();
-        property.setId(category.getId());
-        property = propertyService.selectOne(property);
-        CategoryProperty categoryProperty = new CategoryProperty();
-        categoryProperty.setCategoryId(category.getId());
-        categoryProperty.setPropertyId(propertyId);
-        categoryProperty.setPropertySort(property.getSort());
-        categoryPropertyService.insert(categoryProperty);
-    }
-
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void linkCategoryProperties(Long categoryId, String jsonDate) throws Exception {

@@ -125,10 +125,6 @@ public interface ICategoryBiz {
      */
     List<CategoryProperty> queryCategoryProperty(Long id) throws Exception;
 
-    /**
-     * 关联分类品牌
-     */
-    void linkCategoryProperty(Long categoryId, Long propertyId) throws Exception;
 
     /**
      * 更新分类属性
