@@ -43,7 +43,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    void updateCategory(Category category) throws Exception;
+    void updateCategory(Category category,boolean isSave) throws Exception;
 
     /**
      * 保存
@@ -125,10 +125,6 @@ public interface ICategoryBiz {
      */
     List<CategoryProperty> queryCategoryProperty(Long id) throws Exception;
 
-    /**
-     * 关联分类品牌
-     */
-    void linkCategoryProperty(Long categoryId, Long propertyId) throws Exception;
 
     /**
      * 更新分类属性

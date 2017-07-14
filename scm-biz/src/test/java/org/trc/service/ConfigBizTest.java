@@ -18,6 +18,7 @@ import org.trc.form.config.DictTypeForm;
 import org.trc.util.Pagenation;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
     @Resource
     private IConfigBiz configBiz;
 
-    private DictType createDictType(){
+    private DictType createDictType() {
         DictType dictType = new DictType();
         dictType.setCode("testWdx");
         dictType.setName("testWdx");
@@ -46,7 +47,7 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
         return dictType;
     }
 
-    private Dict createDict(){
+    private Dict createDict() {
         Dict dict = new Dict();
         dict.setTypeCode("testWdx");
         dict.setName("testWdx");
@@ -60,9 +61,8 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
     }
 
 
-
     @Test
-    public void testDictType(){
+    public void testDictType() {
         /**
          * 一、正常场景测试
          */
@@ -119,68 +119,69 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
         /**
          * 测试更新字典类型updateDictType
          */
-        try{
+        try {
             DictType dictType = createDictType();
             configBiz.updateDictType(dictType);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         /**
          * 测试按ID查找字典类型findDictTypeById
          */
-        try{
+        try {
             configBiz.findDictTypeById(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         /**
          * 测试按ID查找字典类型findDictTypeById
          */
-        try{
+        try {
             configBiz.findDictTypeById(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         /**
          * 根据类型编码查询字典类型findDictTypeByTypeNo
          */
-        try{
+        try {
             configBiz.findDictTypeByTypeNo("");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         /**
          * 根据ID删除字典类型deleteDictTypeById
          */
-        try{
+        try {
             configBiz.deleteDictTypeById(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         /**
          * 修改字典参数updateDict
          */
-        try{
+        try {
             configBiz.updateDict(new Dict());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         /**
          * 根根据ID删除字典deleteDictById
          */
-        try{
+        try {
             configBiz.deleteDictById(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
     @Test
-    public void testDict(){
-        try{Dict dict = createDict();
+    public void testDict() {
+        try {
+            Dict dict = createDict();
             /**
              * 测试保存字典saveDict
              */
@@ -211,10 +212,23 @@ public class ConfigBizTest extends AbstractJUnit4SpringContextTests {
              *测试根据主键删除字典deleteDictById
              */
             configBiz.deleteDictById(dict.getId());
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @Test
+    public void TestThread() throws Exception {
+        Runnable runnable = () -> {
+            try {
+                Thread.sleep(2000l);
+                System.out.println("123");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+        Thread myThread = new Thread(runnable);
+        myThread.start();
+        System.out.println("536");}
 
 }

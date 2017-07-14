@@ -81,7 +81,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategory(@BeanParam Category category) throws Exception {
-        categoryBiz.updateCategory(category);
+        categoryBiz.updateCategory(category,false);
         return ResultUtil.createSucssAppResult("修改分类成功", "");
     }
 
@@ -176,14 +176,14 @@ public class CategoryResource {
         return ResultUtil.createSucssAppResult("查询分类关联属性", categoryBiz.queryCategoryProperty(id));
     }
 
-    @POST
+  /*  @POST
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_LINK + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult linkCategoryProperty(@PathParam("id") Long id, @FormParam("propertyId") Long propertyId) throws Exception {
         categoryBiz.linkCategoryProperty(id, propertyId);
         return ResultUtil.createSucssAppResult("分类属性关联成功", "");
-    }
+    }*/
 
     @PUT
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_UPDATE + "/{id}")
