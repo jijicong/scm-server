@@ -29,6 +29,16 @@ public class TreeNode {
 
     private String isLeaf;
 
+    private String classifyDescribe;
+
+    public String getClassifyDescribe() {
+        return classifyDescribe;
+    }
+
+    public void setClassifyDescribe(String classifyDescribe) {
+        this.classifyDescribe = classifyDescribe;
+    }
+
     public String getCategoryCode() {
         return categoryCode;
     }
