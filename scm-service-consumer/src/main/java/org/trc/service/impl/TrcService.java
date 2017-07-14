@@ -41,18 +41,21 @@ public class TrcService implements ITrcService {
 
     @Override
     public String sendBrandNotice(String brandUrl, String params) throws Exception {
-        return HttpClientUtil.httpPostJsonRequest(brandUrl, params, 10000);
+        //return HttpClientUtil.httpPostJsonRequest(brandUrl, params, 10000);
+        return invokeUpdateNotice(brandUrl, params);
     }
 
     @Override
     public String sendPropertyNotice(String propertyUrl, String params) throws Exception {
-        return HttpClientUtil.httpPostJsonRequest(propertyUrl, params, 10000);
+        //return HttpClientUtil.httpPostJsonRequest(propertyUrl, params, 10000);
+        return invokeUpdateNotice(propertyUrl, params);
     }
 
     //发送商品改动
     @Override
     public String sendItemsNotice(String itemsUrl, String params) throws Exception {
-        return HttpClientUtil.httpPostJsonRequest(itemsUrl, params, 10000);
+        //return HttpClientUtil.httpPostJsonRequest(itemsUrl, params, 10000);
+        return invokeUpdateNotice(itemsUrl, params);
     }
 
     @Override
@@ -63,19 +66,50 @@ public class TrcService implements ITrcService {
     //发送分类属性改动
     @Override
     public String sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception {
-        return HttpClientUtil.httpPostJsonRequest(categoryPropertyUrl, params, 10000);
+        //return HttpClientUtil.httpPostJsonRequest(categoryPropertyUrl, params, 10000);
+        return invokeUpdateNotice(categoryPropertyUrl, params);
     }
 
     //发送分类品牌改动
     @Override
     public String sendCategoryBrandList(String categoryBrandUrl, String params) throws Exception {
-        return HttpClientUtil.httpPostJsonRequest(categoryBrandUrl, params, 10000);
+        //return HttpClientUtil.httpPostJsonRequest(categoryBrandUrl, params, 10000);
+        return invokeUpdateNotice(categoryBrandUrl, params);
     }
 
     //发送分类改动
     @Override
     public String sendCategoryToTrc(String categoryUrl, String params) throws Exception {
-        return HttpClientUtil.httpPostJsonRequest(categoryUrl, params, 10000);
+        //return HttpClientUtil.httpPostJsonRequest(categoryUrl, params, 10000);
+        return invokeUpdateNotice(categoryUrl, params);
+    }
+
+    /**
+     *
+     * @param url
+     * @param params
+     * @return
+     */
+    private String invokeUpdateNotice(String url, String params){
+        log.debug("开始调用泰然城信息更新同步服务" + url + ", 参数：" + params + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
+        toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+        String response = null;
+        try{
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+            httpPost.setHeader("Accept", "application/json");
+            response = HttpClientUtil.httpPostJsonRequest(url, params, httpPost, TIME_OUT);
+            log.debug("结束泰然城信息更新同步服务" + url + ", 返回结果：" + response + ". 结束时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+            return response;
+        }catch (Exception e){
+            String msg = String.format("调用泰然城信息更新同步服务%s异常,错误信息:%s", url, e.getMessage());
+            log.error(msg, e);
+            toGlyResultDO.setMsg(msg);
+        }
+        return response;
     }
 
     @Override

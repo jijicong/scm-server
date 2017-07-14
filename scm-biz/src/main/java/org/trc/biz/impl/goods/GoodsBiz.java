@@ -581,7 +581,7 @@ public class GoodsBiz implements IGoodsBiz {
                         skus.setSpuCode(items.getSpuCode());
                         List<Skus> skusList = skusService.select(skus);
                         AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码%s查询相关SKU信息为空", items.getSpuCode()));
-                        ToGlyResultDO toGlyResultDO = trcBiz.sendItem(trcActionTypeEnum, items, itemNatureProperies, itemSalesProperies, skus, System.currentTimeMillis());
+                        ToGlyResultDO toGlyResultDO = trcBiz.sendItem(trcActionTypeEnum, items, itemNatureProperies, itemSalesProperies, skusList, System.currentTimeMillis());
                         if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
                             if(log.isInfoEnabled())
                                 log.info(String.format("更新商品%s通知渠道成功", JSON.toJSONString(items)));
@@ -879,7 +879,7 @@ public class GoodsBiz implements IGoodsBiz {
     private Long getLongValue(String val){
         if(StringUtils.isNotBlank(val)){
             BigDecimal d = new BigDecimal(val);
-            CommonUtil.getMoneyLong(d);
+            return CommonUtil.getMoneyLong(d);
         }
         return null;
     }

@@ -446,22 +446,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     public void saveChannelOrderRequestFlow(String orderInfo, AppResult appResult) {
-        AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
-        RequestFlow requestFlow = new RequestFlow();
-        requestFlow.setType(TrcActionTypeEnum.RECEIVE_CHANNEL_ORDER.getCode());
-        requestFlow.setRequester(RequestFlowConstant.TRC);
-        requestFlow.setResponder(RequestFlowConstant.GYL);
-        requestFlow.setRequestParam(orderInfo);
-        requestFlow.setResponseParam(JSON.toJSONString(appResult));
-        requestFlow.setRequestNum(GuidUtil.getNextUid(RequestFlowConstant.JINGDONG));
-        requestFlow.setRequestTime(Calendar.getInstance().getTime());
-        if (StringUtils.equals(appResult.getAppcode(), SuccessFailureEnum.SUCCESS.getCode())) {
-            requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-        } else {
-            requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
-        }
-        requestFlow.setRemark(appResult.getDatabuffer());
-        requestFlowService.insert(requestFlow);
+        requestFlowBiz.saveRequestFlow(orderInfo, RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.RECEIVE_CHANNEL_ORDER, appResult, RequestFlowConstant.GYL);
     }
 
     /**
