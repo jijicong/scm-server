@@ -100,12 +100,12 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
-        //Assert.notNull(brand.getAlise(), "品牌别名不能为空");
+        //AssertUtil.notBlank(brand.getAlise(), "品牌别名不能为空");
         AssertUtil.notBlank(brand.getBrandCode(), "品牌编码不能为空");
         AssertUtil.notBlank(brand.getIsValid(), "是否停用不能为空");
-        //Assert.notNull(brand.getLogo(), "图片路径不能为空");
+        //AssertUtil.notBlank(brand.getLogo(), "图片路径不能为空");
         AssertUtil.notBlank(brand.getName(), "品牌名称不能为空");
-        //Assert.notNull(brand.getWebUrl(), "品牌网址不能为空");
+        //AssertUtil.notBlank(brand.getWebUrl(), "品牌网址不能为空");
         //判断是否通知
         if (!action.equals(TrcActionTypeEnum.ADD_BRAND)) {
             if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {
@@ -157,19 +157,17 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception {
-        Assert.notNull(property.getSort(), "属性排序不能为空");
-        Assert.notNull(property.getName(), "属性名称不能为空");
-        Assert.notNull(property.getIsValid(), "属性是否停用不能为空");
-        Assert.notNull(property.getDescription(), "属性描述不能为空");
-        Assert.notNull(property.getTypeCode(), "属性类型编码不能为空");
-        Assert.notNull(property.getValueType(), "属性值类型不能为空");
-        //判断是否通知
-        if (!action.equals(TrcActionTypeEnum.ADD_PROPERTY)) {
-            if (oldProperty.getIsValid().equals(property.getIsValid()) && oldProperty.getName().equals(property.getName())
-                    && oldProperty.getValueType().equals(property.getValueType()) && oldProperty.getTypeCode().equals(property.getTypeCode())
-                    && valueList == null) {
-                return new ToGlyResultDO("1", "无需通知属性变更");
+    public ToGlyResultDO sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> oldValueList, List<PropertyValue> valueList, long operateTime) throws Exception {
+        AssertUtil.notNull(property.getSort(), "属性排序不能为空");
+        AssertUtil.notBlank(property.getName(), "属性名称不能为空");
+        AssertUtil.notBlank(property.getIsValid(), "属性是否停用不能为空");
+        //AssertUtil.notBlank(property.getDescription(), "属性描述不能为空");
+        AssertUtil.notBlank(property.getTypeCode(), "属性类型编码不能为空");
+        AssertUtil.notBlank(property.getValueType(), "属性值类型不能为空");
+        if (!action.equals(TrcActionTypeEnum.ADD_PROPERTY)) {//更新
+            //判断是否通知
+            if(!propertyNotice(action, oldProperty, property, oldValueList, valueList)){
+                return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "不需要通知渠道");
             }
         }
         PropertyToTrcDO propertyToTrc = new PropertyToTrcDO();
@@ -217,6 +215,47 @@ public class TrcBiz implements ITrcBiz {
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
+    }
+
+    /**
+     * 判断更新属性是否需要通知渠道
+     * @param action
+     * @param oldProperty
+     * @param property
+     * @param oldValueList
+     * @param valueList
+     * @return
+     */
+    private boolean propertyNotice(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> oldValueList, List<PropertyValue> valueList){
+        boolean flag = false;
+        if (oldProperty.getIsValid().equals(property.getIsValid()) && oldProperty.getName().equals(property.getName())
+                && oldProperty.getValueType().equals(property.getValueType()) && oldProperty.getTypeCode().equals(property.getTypeCode())
+                && valueList == null) {
+            flag = true;
+        }else {
+            if(oldValueList.size() != valueList.size()){
+                flag = true;
+            }{
+                for(PropertyValue propertyValue: valueList){
+                    boolean flag2 = false;
+                    for(PropertyValue oldPropertyValue: oldValueList){
+                        if(propertyValue.getId().longValue() == oldPropertyValue.getId().longValue()){
+                            if(!StringUtils.equals(oldPropertyValue.getValue(), propertyValue.getValue()) ||
+                                    !StringUtils.equals(oldPropertyValue.getIsValid(), propertyValue.getIsValid()) ||
+                                    !StringUtils.equals(oldPropertyValue.getPicture(), propertyValue.getPicture())){
+                                flag2 = true;
+                                break;
+                            }
+                        }
+                        if(flag2){
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return flag;
     }
 
     @Override
@@ -499,7 +538,7 @@ public class TrcBiz implements ITrcBiz {
 
     //发送分类属性改动
     public ToGlyResultDO sendCategoryPropertyList(TrcActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {
-        Assert.notNull(categoryPropertyList, "分类属性列表不能为空");
+        AssertUtil.notEmpty(categoryPropertyList, "分类属性列表不能为空");
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
@@ -538,7 +577,7 @@ public class TrcBiz implements ITrcBiz {
 
     //发送分类品牌改动
     public ToGlyResultDO sendCategoryBrandList(TrcActionTypeEnum action, List<CategoryBrand> categoryBrandList, long operateTime) throws Exception {
-        Assert.notNull(categoryBrandList, "分类品牌列表不能为空");
+        AssertUtil.notEmpty(categoryBrandList, "分类品牌列表不能为空");
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
@@ -576,10 +615,10 @@ public class TrcBiz implements ITrcBiz {
 
     //发送分类改动
     public ToGlyResultDO sendCategoryToTrc(TrcActionTypeEnum action, Category oldCategory, Category category, long operateTime) throws Exception {
-        Assert.notNull(category.getIsValid(), "是否停用不能为空");
-        Assert.notNull(category.getName(), "分类名称不能为空");
-        Assert.notNull(category.getClassifyDescribe(), "分类描述不能为空");
-        Assert.notNull(category.getSort(), "分类排序不能为空");
+        AssertUtil.notBlank(category.getIsValid(), "是否停用不能为空");
+        AssertUtil.notBlank(category.getName(), "分类名称不能为空");
+        AssertUtil.notBlank(category.getClassifyDescribe(), "分类描述不能为空");
+        AssertUtil.notNull(category.getSort(), "分类排序不能为空");
         //判断是否通知
         if (!action.getCode().equals(TrcActionTypeEnum.ADD_CATEGORY.getCode())) {
             if (oldCategory.getName().equals(category.getName()) && oldCategory.getIsValid().equals(category.getIsValid())) {
