@@ -20,7 +20,7 @@ public class AssertUtil extends Assert{
             throw new IllegalArgumentException(msg);
     }
 
-    public static boolean CollectionIsEmpty(Collection collection){
+    public static boolean collectionIsEmpty(Collection collection){
         return (collection==null||collection.isEmpty());
     }
 }

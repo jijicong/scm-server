@@ -25,7 +25,7 @@ public class UserNameUtilService implements IUserNameUtilService{
 
     @Override
     public void handleUserName(List list) {
-        if(AssertUtil.CollectionIsEmpty(list)){
+        if(AssertUtil.collectionIsEmpty(list)){
             return;
         }
         Set<String> userIdsSet=new HashSet<>();

@@ -68,7 +68,7 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
     @Override
     public Map<String,AclUserAccreditInfo> selectByIds(String... ids) {
         List<AclUserAccreditInfo> list= aclUserAccreditInfoMapper.selectByUserIds(ids);
-        if(AssertUtil.CollectionIsEmpty(list)){
+        if(AssertUtil.collectionIsEmpty(list)){
             return null;
         }
         Map<String,AclUserAccreditInfo> map=new HashMap<>();
