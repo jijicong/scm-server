@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.ICategoryBiz;
+import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.enums.*;
@@ -20,9 +20,11 @@ import org.trc.form.category.*;
 import org.trc.service.category.*;
 import org.trc.service.supplier.ISupplierCategoryService;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.util.*;
+import org.trc.util.AssertUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ParamsUtil;
+import org.trc.util.StringUtil;
 import tk.mybatis.mapper.entity.Example;
-
 
 import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
@@ -34,6 +36,10 @@ import java.util.*;
 public class CategoryBiz implements ICategoryBiz {
 
     private Logger log = LoggerFactory.getLogger(CategoryBiz.class);
+
+    private final static String SERIALNAME = "FL";
+
+    private final static Integer LENGTH = 3;
 
     //分类名称全路径分割符号
     public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
@@ -59,9 +65,8 @@ public class CategoryBiz implements ICategoryBiz {
     @Autowired
     private ISupplierCategoryService supplierCategoryService;
 
-    private final static String SERIALNAME = "FL";
-
-    private final static Integer LENGTH = 3;
+    @Autowired
+    private ITrcBiz trcBiz;
 
 
     @Override
@@ -184,8 +189,12 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void updateCategory(Category category) throws Exception {
+    public void updateCategory(Category category, boolean isSave) throws Exception {
         AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
+
+        Category oldCategory = new Category();
+        oldCategory.setId(category.getId());
+        oldCategory = categoryService.selectOne(oldCategory);
         //判断是否叶子节点
         if (isLeaf(category.getId()) == 0) {
             category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
@@ -198,6 +207,14 @@ public class CategoryBiz implements ICategoryBiz {
             String msg = "修改分类" + JSON.toJSONString(category) + "数据库操作失败";
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+        } else {
+            if (isSave) {
+                noticeCategory(TrcActionTypeEnum.ADD_CATEGORY, null, category, null, null, Calendar.getInstance().getTimeInMillis());
+
+            } else {
+                noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, Calendar.getInstance().getTimeInMillis());
+
+            }
         }
     }
 
@@ -241,7 +258,7 @@ public class CategoryBiz implements ICategoryBiz {
         } else {
             category.setFullPathId(queryPathId(category.getParentId()) + SupplyConstants.Symbol.FULL_PATH_SPLIT + category.getParentId());
         }
-        updateCategory(category);
+        updateCategory(category, true);
         //判断叶子节点,并更新
         if (category.getLevel() != 1 && isLeaf(category.getParentId()) != 0) {
             updateIsLeaf(category);
@@ -296,13 +313,18 @@ public class CategoryBiz implements ICategoryBiz {
     public void updateIsLeaf(Category category) throws Exception {
         AssertUtil.notNull(category.getParentId(), "根据分类ID查询分类父节点的参数id为空");
         Category categoryParent = new Category();
+        Category oldCategory = new Category();
+        oldCategory.setId(category.getParentId());
         categoryParent.setId(category.getParentId());
+        oldCategory = categoryService.selectOne(oldCategory);
         categoryParent.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
         int count = categoryService.updateByPrimaryKeySelective(categoryParent);
         if (count == 0) {
             String msg = "更新分类是否叶子节点" + JSON.toJSONString(category) + "操作失败";
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+        } else {
+            noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, categoryParent, null, null, Calendar.getInstance().getTimeInMillis());
         }
     }
 
@@ -368,7 +390,7 @@ public class CategoryBiz implements ICategoryBiz {
         Category updateCategory = new Category();
         updateCategory.setId(category.getId());
         Category category1 = categoryService.selectOne(updateCategory);
-
+        Category oldCategory = category1;
         if (StringUtils.equals(category.getIsValid(), ValidEnum.VALID.getCode())) {
             updateCategory.setIsValid(ValidEnum.NOVALID.getCode());
         } else {
@@ -391,6 +413,9 @@ public class CategoryBiz implements ICategoryBiz {
             String msg = "修改分类状态" + JSON.toJSONString(category) + "操作失败";
             log.error(msg);
             throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+        } else {
+            noticeCategory(TrcActionTypeEnum.STOP_CATEGORY, oldCategory, updateCategory, null, null, Calendar.getInstance().getTimeInMillis());
+
         }
 
         //分类状态更新时需要更新分类供应商关系表的is_valid字段
@@ -442,8 +467,10 @@ public class CategoryBiz implements ICategoryBiz {
     private void updateLastCategory(Long parentId) throws Exception {
 
         Category category = new Category();
+        Category oldCategory;
         category.setId(parentId);
         category = categoryService.selectOne(category);
+        oldCategory = category;
         if (StringUtils.equals(category.getIsValid(), ValidEnum.NOVALID.getCode())) {
             category.setIsValid(ValidEnum.VALID.getCode());
             category.setUpdateTime(Calendar.getInstance().getTime());
@@ -452,6 +479,8 @@ public class CategoryBiz implements ICategoryBiz {
                 String msg = "修改分类状态" + JSON.toJSONString(category) + "操作失败";
                 log.error(msg);
                 throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+            } else {
+                noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, Calendar.getInstance().getTimeInMillis());
             }
         }
         if (category.getParentId() != null) {
@@ -590,7 +619,7 @@ public class CategoryBiz implements ICategoryBiz {
             newCategoryBrands = saveCategoryBrands;
         }
         //插入新增的数据
-        if (newCategoryBrands.size() > 0 && newCategoryBrands != null) {
+        if (!AssertUtil.CollectionIsEmpty(newCategoryBrands)) {
             categoryBrandService.insertList(newCategoryBrands);
         }
         //删除的数据
@@ -657,6 +686,7 @@ public class CategoryBiz implements ICategoryBiz {
 
     /**
      * 数据关联
+     *
      * @param categoryId
      * @param jsonDate
      * @throws Exception
@@ -836,5 +866,21 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
         return categoryProperties;
+    }
+
+    /**
+     * 分类变更通知
+     */
+    private void noticeCategory(TrcActionTypeEnum action, Category oldCategory, Category category,
+                                List<CategoryBrand> categoryBrandList, List<CategoryProperty> categoryPropertyList, long operateTime) {
+        Runnable runnable = () -> {
+            try {
+                trcBiz.sendCategory(action, oldCategory, category, categoryBrandList, categoryPropertyList, operateTime);
+            } catch (Exception e) {
+                log.error("通知Trc分类变更异常" + e.getMessage(), e);
+            }
+        };
+        Thread myThread = new Thread(runnable);
+        myThread.start();
     }
 }

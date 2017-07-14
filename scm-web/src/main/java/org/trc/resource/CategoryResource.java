@@ -81,7 +81,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategory(@BeanParam Category category) throws Exception {
-        categoryBiz.updateCategory(category);
+        categoryBiz.updateCategory(category,false);
         return ResultUtil.createSucssAppResult("修改分类成功", "");
     }
 

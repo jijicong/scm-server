@@ -43,7 +43,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    void updateCategory(Category category) throws Exception;
+    void updateCategory(Category category,boolean isSave) throws Exception;
 
     /**
      * 保存
