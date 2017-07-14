@@ -100,12 +100,12 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
-        Assert.notNull(brand.getAlise(), "品牌别名不能为空");
-        Assert.notNull(brand.getBrandCode(), "品牌编码不能为空");
-        Assert.notNull(brand.getIsValid(), "是否停用不能为空");
-        Assert.notNull(brand.getLogo(), "图片路径不能为空");
-        Assert.notNull(brand.getName(), "品牌名称不能为空");
-        Assert.notNull(brand.getWebUrl(), "品牌网址不能为空");
+        //Assert.notNull(brand.getAlise(), "品牌别名不能为空");
+        AssertUtil.notBlank(brand.getBrandCode(), "品牌编码不能为空");
+        AssertUtil.notBlank(brand.getIsValid(), "是否停用不能为空");
+        //Assert.notNull(brand.getLogo(), "图片路径不能为空");
+        AssertUtil.notBlank(brand.getName(), "品牌名称不能为空");
+        //Assert.notNull(brand.getWebUrl(), "品牌网址不能为空");
         //判断是否通知
         if (!action.equals(TrcActionTypeEnum.ADD_BRAND)) {
             if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {

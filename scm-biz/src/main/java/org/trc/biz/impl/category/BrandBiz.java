@@ -247,7 +247,8 @@ public class BrandBiz implements IBrandBiz {
         logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
         //通知渠道方
         try{
-            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
+            Brand newBrand = brandService.selectOneById(brand.getId());
+            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,newBrand,System.currentTimeMillis());
         }catch (Exception e){
             log.error("品牌状态变更通知调用出现异常:"+e.getMessage());
         }
