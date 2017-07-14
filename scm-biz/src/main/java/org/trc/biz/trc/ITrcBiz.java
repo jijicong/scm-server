@@ -64,7 +64,7 @@ public interface ITrcBiz {
      * @return
      * @throws Exception
      */
-    ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, Skus skus, Long operateTime) throws Exception;
+    ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception;
 
 
     /**

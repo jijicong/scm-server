@@ -739,4 +739,14 @@ public class SupplyConstants {
         public static final String JING_DONG_ORDER = "jingDongOrder";
     }
 
+    /**
+     * api
+     */
+    public static final class Api {
+        public final static String Root = "api";
+        //接收代发商品变更通知
+        public final static String EXTERNAL_ITEM_UPDATE = "externalItemUpdate";
+
+    }
+
 }

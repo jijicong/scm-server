@@ -2,30 +2,29 @@ package org.trc.biz.impl.trc;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-import org.trc.biz.requestFlow.IRequestFlowBiz;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.*;
-import org.trc.enums.RequestFlowStatusEnum;
-import org.trc.enums.TrcActionTypeEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.model.*;
+import org.trc.model.BrandToTrcDO;
+import org.trc.model.CategoryToTrcDO;
+import org.trc.model.PropertyToTrcDO;
+import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
@@ -238,7 +237,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, Skus skus, Long operateTime) throws Exception {
+    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception {
 
         //TODO 判断通知，暂时觉得都得通知
 
@@ -254,8 +253,8 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("items", items);
-        params.put("itemNaturePropery", JSONArray.toJSON(itemNaturePropery));
-        params.put("itemSalesPropery", JSONArray.toJSON(itemSalesPropery));
+        params.put("itemNaturePropery", itemNaturePropery);
+        params.put("itemSalesPropery", itemSalesPropery);
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
@@ -285,36 +284,71 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
-        Assert.notNull(externalItemSkuList, "更新列表不能为空");
-
+        AssertUtil.notEmpty(externalItemSkuList, "代发商品更新列表不能为空");
+        ToGlyResultDO toGlyResult = new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "同步成功");
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(trcConfig.getKey()).append(OR).append(action.getCode()).append(OR).append(noticeNum).append(OR).append(operateTime);
         //MD5加密
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
-        List<ExternalItemSku> newOldExternalItemSkuList = new ArrayList<>();
-        List<ExternalItemSku> newExternalItemSkuList = new ArrayList<>();
-        List<String> skuCodes = skuRelationService.selectSkuCode(externalItemSkuList);
-        for (int i = 0; i < externalItemSkuList.size(); i++) {
-            Iterator<String> iter = skuCodes.iterator();
-            while (iter.hasNext()) {
-                if (externalItemSkuList.get(i).getSkuCode().equals(iter.next())) {
-                    newExternalItemSkuList.add(externalItemSkuList.get(i));
-                    newOldExternalItemSkuList.add((oldExternalItemSkuList.get(i)));
-                    iter.remove();
+        //需要推送的sku列表
+        List<ExternalItemSku> sendList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(oldExternalItemSkuList)){
+            sendList = externalItemSkuList;
+        }else{
+            Set<String> skuCodeList = new HashSet<>();
+            for(ExternalItemSku externalItemSku: externalItemSkuList){
+                skuCodeList.add(externalItemSku.getSkuCode());
+            }
+            Example example = new Example(ExternalItemSku.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("skuCode", skuCodeList);
+            List<SkuRelation> skuRelationList = skuRelationService.selectByExample(example);
+            if(!CollectionUtils.isEmpty(skuRelationList)){
+                for(ExternalItemSku externalItemSku: oldExternalItemSkuList){
+                    boolean flag = false;
+                    for(SkuRelation skuRelation: skuRelationList){
+                        if(StringUtils.equals(skuRelation.getSkuCode(), externalItemSku.getSkuCode())){
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        oldExternalItemSkuList.remove(externalItemSku);
+                    }
+                }
+                for(ExternalItemSku externalItemSku: externalItemSkuList){
+                    boolean flag = false;
+                    for(SkuRelation skuRelation: skuRelationList){
+                        if(StringUtils.equals(skuRelation.getSkuCode(), externalItemSku.getSkuCode())){
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        externalItemSkuList.remove(externalItemSku);
+                    }
+                }
+            }else{
+                return toGlyResult;
+            }
+            for(ExternalItemSku externalItemSku: externalItemSkuList){
+                for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
+                    if(StringUtils.equals(externalItemSku.getSkuCode(), externalItemSku2.getSkuCode())){
+                        if(getLongVal(externalItemSku.getSupplierPrice()) != getLongVal(externalItemSku2.getSupplierPrice()) ||
+                                getLongVal(externalItemSku.getSupplyPrice()) != getLongVal(externalItemSku2.getSupplyPrice()) ||
+                                getLongVal(externalItemSku.getMarketReferencePrice()) != getLongVal(externalItemSku2.getMarketReferencePrice()) ||
+                                getLongVal(externalItemSku.getStock()) != getLongVal(externalItemSku2.getStock()) ||
+                                !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid())){
+                            sendList.add(externalItemSku);
+                        }
+                    }
                 }
             }
         }
-        //对两个新集合做比较判断是否推送
-        List<ExternalItemSku> sendList = new ArrayList<>();
-        for (int i = 0; i < newExternalItemSkuList.size(); i++) {
-            ExternalItemSku externalItemSku = newExternalItemSkuList.get(i);
-            ExternalItemSku oldExternalItemSku = newOldExternalItemSkuList.get(i);
-            Boolean flag = externalItemSku.getSupplierPrice() == oldExternalItemSku.getSupplierPrice() && externalItemSku.getSupplyPrice() == oldExternalItemSku.getSupplyPrice();
-            if (!flag) {
-                sendList.add(externalItemSku);
-            }
+        if(sendList.size() == 0){
+            return toGlyResult;
         }
         //发送数据
         JSONObject params = new JSONObject();
@@ -322,7 +356,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
-        params.put("externalItemSkuList", JSONArray.toJSON(sendList));
+        params.put("externalItemSkuList", sendList);
         String result = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知一件代发商品变更接口sendExternalItemSkuUpdation]";
         //抛出通知自定义异常
@@ -343,6 +377,14 @@ public class TrcBiz implements ITrcBiz {
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         }
         return toGlyResultDO;
+    }
+
+    private long getLongVal(Long val){
+        if(null == val)
+            return 0;
+        else{
+            return val.longValue();
+        }
     }
 
     @Override
