@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -47,19 +48,14 @@ public class TrcBiz implements ITrcBiz {
 
     @Autowired
     private ITrcService trcService;
-
     @Autowired
     private IRequestFlowService requestFlowService;
-
     @Autowired
     private ISkuRelationService skuRelationService;
-
     @Autowired
     private IExternalItemSkuService externalItemSkuService;
-
     @Resource
     private ISkusService skusService;
-
     @Autowired
     private TrcConfig trcConfig;
 
