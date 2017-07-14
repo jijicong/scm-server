@@ -65,7 +65,7 @@ public class BrandBiz implements IBrandBiz {
         Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
         //得到所有图片的缩略图,并以fileKey为key，url为value的形式封装成map
         List<Brand> brandList = pagenation.getResult();
-        if(AssertUtil.CollectionIsEmpty(brandList)){
+        if(AssertUtil.collectionIsEmpty(brandList)){
             return pagenation;
         }
         Map<String, String> fileUrlMap = constructFileUrlMap(brandList);
@@ -290,7 +290,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     private Map<String,AclUserAccreditInfo> constructUserAccreditInfoMap(List<Brand> brandList){
-        if(AssertUtil.CollectionIsEmpty(brandList)){
+        if(AssertUtil.collectionIsEmpty(brandList)){
            return null;
         }
         Set<String> userIdsSet=new HashSet<>();

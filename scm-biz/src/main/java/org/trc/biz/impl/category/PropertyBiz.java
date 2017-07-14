@@ -388,7 +388,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     private Map<String,AclUserAccreditInfo> constructUserAccreditInfoMap(List<Property> propertyList){
-        if(AssertUtil.CollectionIsEmpty(propertyList)){
+        if(AssertUtil.collectionIsEmpty(propertyList)){
             return null;
         }
         Set<String> userIdsSet=new HashSet<>();

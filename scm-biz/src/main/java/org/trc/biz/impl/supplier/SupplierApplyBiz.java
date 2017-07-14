@@ -172,7 +172,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         statusList.add(ZeroToNineEnum.TWO.getCode());
         criteria.andIn("status", statusList);
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
-        if (!AssertUtil.CollectionIsEmpty(supplierApplyList)) {
+        if (!AssertUtil.collectionIsEmpty(supplierApplyList)) {
             String msg = "该供应商已经被申请或暂存，无法继续申请";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
@@ -251,7 +251,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         statusList.add(ZeroToNineEnum.TWO.getCode());
         criteria.andIn("status", statusList);
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
-        if (!AssertUtil.CollectionIsEmpty(supplierApplyList)) {
+        if (!AssertUtil.collectionIsEmpty(supplierApplyList)) {
             String msg = "该供应商已经被申请或暂存，无法继续申请";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
