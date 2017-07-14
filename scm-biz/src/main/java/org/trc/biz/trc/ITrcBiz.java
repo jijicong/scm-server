@@ -31,12 +31,13 @@ public interface ITrcBiz {
      * @param action      行为
      * @param oldProperty 旧属性信息
      * @param property    属性信息
+     * @param oldValueList 旧属性值信息
      * @param valueList   修改后属性值信息
      * @param operateTime 时间戳
      * @return 渠道调回信息
      * @throws Exception
      */
-    ToGlyResultDO sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> valueList, long operateTime) throws Exception;
+    ToGlyResultDO sendProperty(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> oldValueList, List<PropertyValue> valueList, long operateTime) throws Exception;
 
     /**
      * @param action               行为
