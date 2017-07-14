@@ -20,8 +20,6 @@ public class ExternalSupplierConfig {
     private String jdPictureUrl;
     //京东sku价格查询接口url地址
     private String jdSkuPriceUrl;
-    //京东sku价格更新接口url地址
-    private String jdSkuPriceUpdateUrl;
     //京东下单接口地址
     private String jdSubmitOrderUrl;
     //京东订单反查接口地址
@@ -138,11 +136,4 @@ public class ExternalSupplierConfig {
         this.jdSkuPriceUrl = jdSkuPriceUrl;
     }
 
-    public String getJdSkuPriceUpdateUrl() {
-        return jdSkuPriceUpdateUrl;
-    }
-
-    public void setJdSkuPriceUpdateUrl(String jdSkuPriceUpdateUrl) {
-        this.jdSkuPriceUpdateUrl = jdSkuPriceUpdateUrl;
-    }
 }

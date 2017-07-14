@@ -31,6 +31,7 @@ import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
 import sun.reflect.generics.tree.FormalTypeParameter;
 import tk.mybatis.mapper.entity.Example;
@@ -73,6 +74,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IWarehouseNoticeService iWarehouseNoticeService;
     @Resource
     private ISerialUtilService iSerialUtilService;
+    @Resource
+    private IWarehouseNoticeDetailsService warehouseNoticeDetailsService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -810,6 +813,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
+         /* //查询该采购单对应的采购商品
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setPurchaseId(purchaseOrder.getId());
+        purchaseDetailService.select(purchaseDetail);
+
+        //入库通知的商品表
+        WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
+        //warehouseNoticeDetails
+        //warehouseNoticeDetailsService*/
         //更新采购单的状态
         PurchaseOrder _purchaseOrder = new PurchaseOrder();
         _purchaseOrder.setId(order.getId());
@@ -827,7 +839,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      */
     private void assignmentWarehouseNotice(PurchaseOrder order,WarehouseNotice warehouseNotice){
         //'入库通知单编号',流水的长度为5,前缀为CGRKTZ,加时间
-        String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,Calendar.getInstance().getTime().toString());
+        String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         warehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
         warehouseNotice.setPurchaseOrderCode(order.getPurchaseOrderCode());
         warehouseNotice.setContractCode(order.getContractCode());
@@ -845,6 +857,52 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setEndReceiveDate(order.getEndReceiveDate());
         warehouseNotice.setRemark("新增入库通知单");
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateWarahouseAdviceUpdate(PurchaseOrder purchaseOrder) {
+
+        AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
+        //更改采购单的状态
+        PurchaseOrder tmp = new PurchaseOrder();
+        tmp.setId(purchaseOrder.getId());
+        tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
+        //是否已经发起入库通知，设为""
+        tmp.setEnterWarehouseNotice("");
+        int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
+        if (count == 0) {
+            String msg = String.format("作废%s采购单操作失败", JSON.toJSONString(purchaseOrder));
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+        }
+
+
+        //更改入库通知单的状态;在修改状态之前。判断入库通知单的状态，是否为待发起入库通知/乐观锁
+        WarehouseNotice warehouseNotice = new WarehouseNotice();
+        warehouseNotice.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
+        warehouseNotice = iWarehouseNoticeService.selectOne(warehouseNotice);
+        if(!warehouseNotice.getState().equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode())){
+            //说明入库通知单已经被推送给仓储,取消失败
+            // String msg = String.format("作废%s入库通知单操作失败", JSON.toJSONString(warehouseNotice));
+            String msg = "入库通知单已经被推送给仓储,取消失败";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
+        //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
+        WarehouseNotice notice = new WarehouseNotice();
+        notice.setState(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+        Example example = new Example(WarehouseNotice.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id",warehouseNotice.getId());
+        criteria.andEqualTo("state",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        int num = iWarehouseNoticeService.updateByExampleSelective(notice,example);
+        if (num == 0) {
+            String msg = String.format("作废%s采购单操作失败,入库通知单已经被执行操作", JSON.toJSONString(warehouseNotice));
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
     }
 
 }

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -47,19 +48,14 @@ public class TrcBiz implements ITrcBiz {
 
     @Autowired
     private ITrcService trcService;
-
     @Autowired
     private IRequestFlowService requestFlowService;
-
     @Autowired
     private ISkuRelationService skuRelationService;
-
     @Autowired
     private IExternalItemSkuService externalItemSkuService;
-
     @Resource
     private ISkusService skusService;
-
     @Autowired
     private TrcConfig trcConfig;
 
@@ -242,7 +238,7 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, Skus skus, Long operateTime) throws Exception {
+    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, Skus skus, Long operateTime) throws Exception {
 
         //TODO 判断通知，暂时觉得都得通知
 
@@ -258,8 +254,8 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("items", items);
-        params.put("itemNaturePropery", itemNaturePropery);
-        params.put("itemSalesPropery", itemSalesPropery);
+        params.put("itemNaturePropery", JSONArray.toJSON(itemNaturePropery));
+        params.put("itemSalesPropery", JSONArray.toJSON(itemSalesPropery));
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
@@ -326,7 +322,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("operateTime", operateTime);
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
-        params.put("externalItemSkuList", sendList);
+        params.put("externalItemSkuList", JSONArray.toJSON(sendList));
         String result = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
         String remark = "调用方法-TrcBiz类中[通知一件代发商品变更接口sendExternalItemSkuUpdation]";
         //抛出通知自定义异常

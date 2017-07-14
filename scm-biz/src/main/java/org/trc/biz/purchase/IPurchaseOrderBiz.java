@@ -60,9 +60,13 @@ public interface IPurchaseOrderBiz {
     void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext) ;
 
     /**
-     * 入库通知单的发起
+     * 入库通知单的发起(信息保存,还未推送)
      * @param purchaseOrder
      */
     void warahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext);
+    /**
+     * 采购单入库通知状态的作废操作
+     */
+    void updateWarahouseAdviceUpdate(PurchaseOrder purchaseOrder);
 
 }

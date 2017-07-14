@@ -842,14 +842,14 @@ public class JDServiceImpl implements IJDService {
     public ReturnTypeDO getSellPrice(String skus) {
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSkuPriceUrl();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("sku", skus);
+        map.put("skus", skus);
         log.debug("开始调用京东sku价格查询服务" + url + ", 参数：" + map + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            response = HttpClientUtil.httpGetRequest(url, map);
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -871,39 +871,6 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
-    @Override
-    public ReturnTypeDO updateSellPriceNotice(String skus) {
-        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSkuPriceUpdateUrl();
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("sku", skus);
-        log.debug("开始调用京东sku价格更新服务" + url + ", 参数：" + map + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
-        returnTypeDO.setSuccess(false);
-        String response = null;
-        try{
-            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
-            if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(appResult.getResult());
-                }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
-            }else {
-                returnTypeDO.setResultMessage("调用京东sku价格更新服务返回结果为空");
-            }
-        }catch (Exception e){
-            String msg = String.format("调用京东sku价格更新服务异常,错误信息:%s", e.getMessage());
-            log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
-        }
-        log.debug("结束京东sku价格更新服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        return returnTypeDO;
-    }
-
 
     private ReturnTypeDO invokeSubmitOrder(String url, String jsonParams){
         log.debug("开始调用提交订单服务" + url + ", 参数：" + jsonParams + ". 开始时间" +
@@ -918,12 +885,12 @@ public class JDServiceImpl implements IJDService {
             response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                if(StringUtils.equals(jbo.getString("appcode"), ZeroToNineEnum.ONE.getCode())){
                     returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(appResult.getResult());
+                    returnTypeDO.setResult(jbo.getString("result"));
                 }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+                returnTypeDO.setResultMessage(jbo.getString("databuffer"));
+                returnTypeDO.setResultCode(jbo.getString("resultCode"));
             }else {
                 returnTypeDO.setResultMessage("调用提交订单服务返回结果为空");
             }

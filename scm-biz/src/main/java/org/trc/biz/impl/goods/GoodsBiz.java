@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.requestFlow.IRequestFlowBiz;
+import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
@@ -22,9 +24,7 @@ import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.JDModel.ExternalSupplierConfig;
@@ -37,7 +37,9 @@ import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
+import org.trc.service.ITrcService;
 import org.trc.service.category.*;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.IItemsService;
@@ -123,6 +125,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ExternalSupplierConfig externalSupplierConfig;
     @Autowired
     private WarehouseService warehouseService;
+    @Autowired
+    private ITrcBiz trcBiz;
 
 
     @Override
@@ -551,6 +555,46 @@ public class GoodsBiz implements IGoodsBiz {
         }
         //保存采购属性信息
         saveItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
+        //商品新增通知渠道
+        itemsUpdateNoticeChannel(items, TrcActionTypeEnum.ADD_ITEMS);
+    }
+
+    /**
+     * 商品更新通知渠道
+     * @param items
+     */
+    private void itemsUpdateNoticeChannel(Items items, TrcActionTypeEnum trcActionTypeEnum){
+        new Thread(
+            new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
+                        itemNaturePropery.setSpuCode(items.getSpuCode());
+                        List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
+                        AssertUtil.notEmpty(itemNatureProperies, String.format("根据商品SPU编码%s查询相关自然属性为空", items.getSpuCode()));
+                        ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
+                        itemSalesPropery.setSpuCode(items.getSpuCode());
+                        List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
+                        AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码%s查询相关采购属性为空", items.getSpuCode()));
+                        Skus skus = new Skus();
+                        skus.setSpuCode(items.getSpuCode());
+                        List<Skus> skusList = skusService.select(skus);
+                        AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码%s查询相关SKU信息为空", items.getSpuCode()));
+                        ToGlyResultDO toGlyResultDO = trcBiz.sendItem(trcActionTypeEnum, items, itemNatureProperies, itemSalesProperies, skus, System.currentTimeMillis());
+                        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+                            if(log.isInfoEnabled())
+                                log.info(String.format("更新商品%s通知渠道成功", JSON.toJSONString(items)));
+                        }else{
+                            log.error(String.format("更新商品%s通知渠道失败", JSON.toJSONString(items)));
+                        }
+                    }catch (Exception e){
+                        String msg = String.format("更新商品%s通知渠道异常,异常信息:%s", JSON.toJSONString(items), e.getMessage());
+                        log.error(msg, e);
+                    }
+                }
+            }
+        ).start();
     }
 
     @Override
@@ -574,6 +618,8 @@ public class GoodsBiz implements IGoodsBiz {
         }
         //保存采购属性信息
         updateItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
+        //商品编辑通知渠道
+        itemsUpdateNoticeChannel(items, TrcActionTypeEnum.EDIT_ITEMS);
     }
 
     /**
@@ -1180,6 +1226,8 @@ public class GoodsBiz implements IGoodsBiz {
         updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);
         //更新采购单明细启停用状态
         updatePurchaseDetailIsValid(items2.getSpuCode(), null, _isValid);
+        //商品启停用通知渠道
+        itemsUpdateNoticeChannel(items2, TrcActionTypeEnum.ITEMS_IS_VALID);
     }
 
     private void updateGoodsSkusValid(String spuCode, String isValid) throws Exception{
@@ -1234,6 +1282,12 @@ public class GoodsBiz implements IGoodsBiz {
         updateSkuStockIsValid(spuCode, skus2.getSkuCode(), _isValid);
         //更新采购单明细启停用状态
         updatePurchaseDetailIsValid(spuCode, skus2.getSkuCode(), _isValid);
+        Items items = new Items();
+        items.setSpuCode(spuCode);
+        items = itemsService.selectOne(items);
+        AssertUtil.notNull(items, String.format("根据商品spuCode编码[%s]查询商品信息为空", spuCode));
+        //商品SKU启停用通知渠道
+        itemsUpdateNoticeChannel(items, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
     }
 
     /**
@@ -1549,25 +1603,65 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
         updateSupplyItemsUsedStatus(externalItemSkuList);
+        //代发商品新增通知渠道
+        externalItemsUpdateNoticeChannel(new ArrayList<ExternalItemSku>(), externalItemSkuList, TrcActionTypeEnum.ADD_EXTERNAL_ITEMS);
+    }
+
+    /**
+     * 代发商品更新通知渠道
+     * @param oldExternalItemSkuList
+     * @param externalItemSkuList
+     * @param trcActionTypeEnum
+     */
+    private void externalItemsUpdateNoticeChannel(List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, TrcActionTypeEnum trcActionTypeEnum){
+        new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            ToGlyResultDO toGlyResultDO = trcBiz.sendExternalItemSkuUpdation(trcActionTypeEnum, oldExternalItemSkuList, externalItemSkuList, System.currentTimeMillis());
+                            if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+                                if(log.isInfoEnabled())
+                                    log.info("更新代发商品通知渠道成功");
+                            }else{
+                                log.error(String.format("更新代发商品通知渠道失败,错误信息:%s", toGlyResultDO.getMsg()));
+                            }
+                        }catch (Exception e){
+                            String msg = String.format("更新代发商品通知渠道异常,异常信息:%s", e.getMessage());
+                            log.error(msg, e);
+                        }
+                    }
+                }
+        ).start();
     }
 
     @Override
     public void updateExternalItemsValid(Long id, String isValid) throws Exception {
         AssertUtil.notNull(id, "代发商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "代发商品启用/停用操作参数isValid不能为空");
+        ExternalItemSku externalItemSku = externalItemSkuService.selectByPrimaryKey(id);
+        AssertUtil.notNull(externalItemSku, String.format("根据主键ID[%s]查询代发商品为空", id));
         String _isValid = ZeroToNineEnum.ZERO.getCode();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
             _isValid = ZeroToNineEnum.ONE.getCode();
         }
-        ExternalItemSku externalItemSku = new ExternalItemSku();
-        externalItemSku.setId(id);
-        externalItemSku.setIsValid(_isValid);
-        int count = externalItemSkuService.updateByPrimaryKeySelective(externalItemSku);
+        ExternalItemSku externalItemSku2 = new ExternalItemSku();
+        externalItemSku2.setId(id);
+        externalItemSku2.setIsValid(_isValid);
+        int count = externalItemSkuService.updateByPrimaryKeySelective(externalItemSku2);
         if(count == 0){
             String msg = "代发商品启用/停用操作更新数据库失败";
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
         }
+        ExternalItemSku externalItemSku3 = externalItemSkuService.selectByPrimaryKey(id);
+        AssertUtil.notNull(externalItemSku3, String.format("根据主键ID[%s]查询代发商品为空", id));
+        List<ExternalItemSku> oldExternalItemSkuList = new ArrayList<ExternalItemSku>();
+        List<ExternalItemSku> externalItemSkuList = new ArrayList<ExternalItemSku>();
+        oldExternalItemSkuList.add(externalItemSku);
+        externalItemSkuList.add(externalItemSku3);
+        //代发商品启停用通知渠道
+        externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.EXTERNAL_ITEMS_IS_VALID);
     }
 
     @Override
@@ -1575,13 +1669,22 @@ public class GoodsBiz implements IGoodsBiz {
     public void updateExternalItems(ExternalItemSku externalItemSku) {
         AssertUtil.notNull(externalItemSku, "更新代发商品不能为空");
         AssertUtil.notNull(externalItemSku.getId(), "更新代发商品ID不能为空");
+        ExternalItemSku externalItemSku2 = externalItemSkuService.selectByPrimaryKey(externalItemSku.getId());
+        AssertUtil.notNull(externalItemSku2, String.format("根据主键ID[%s]查询代发商品为空", externalItemSku.getId()));
         int count = externalItemSkuService.updateByPrimaryKeySelective(externalItemSku);
         if(count == 0){
             String msg = String.format("根据主键ID[%s]更新代发商品%s失败", externalItemSku.getId(), JSONObject.toJSON(externalItemSku));
             log.error(msg);
             throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
         }
-        //TODO 通知各渠道
+        ExternalItemSku externalItemSku3 = externalItemSkuService.selectByPrimaryKey(externalItemSku.getId());
+        AssertUtil.notNull(externalItemSku3, String.format("根据主键ID[%s]查询代发商品为空", externalItemSku.getId()));
+        List<ExternalItemSku> oldExternalItemSkuList = new ArrayList<ExternalItemSku>();
+        List<ExternalItemSku> externalItemSkuList = new ArrayList<ExternalItemSku>();
+        oldExternalItemSkuList.add(externalItemSku2);
+        externalItemSkuList.add(externalItemSku3);
+        //代发商品编辑通知渠道
+        externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.EDIT_EXTERNAL_ITEMS);
     }
 
     @Override
@@ -1597,11 +1700,20 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
         }
         AssertUtil.notEmpty(skusArray, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
+        List<String> supplySkuList = new ArrayList<>();
         List<SupplyItems> supplyItems = new ArrayList<SupplyItems>();
         for(Object obj : skusArray){
             JSONObject jbo = (JSONObject)obj;
-            supplyItems.add(jbo.toJavaObject(SupplyItems.class));
+            SupplyItems supplyItems2 = jbo.toJavaObject(SupplyItems.class);
+            supplyItems.add(supplyItems2);
+            supplySkuList.add(supplyItems2.getSupplySku());
         }
+        Example example2 = new Example(ExternalItemSku.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("supplierSkuCode", supplySkuList);
+        List<ExternalItemSku> oldExternalItemSkuList = externalItemSkuService.selectByExample(example2);
+        AssertUtil.notEmpty(oldExternalItemSkuList, String.format("根据多个供应商skuCode[%]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
+
         List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ONE.getCode());
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             Example example = new Example(ExternalItemSku.class);
@@ -1613,8 +1725,12 @@ public class GoodsBiz implements IGoodsBiz {
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
             }
-            //TODO 通知各渠道
         }
+
+        List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
+        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
+        //代发商品更新通知渠道
+        externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.DAILY_EXTERNAL_ITEMS_UPDATE);
     }
 
 

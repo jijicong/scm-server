@@ -356,11 +356,5 @@ public interface IJDService {
      */
     ReturnTypeDO getSellPrice(String skus);
 
-    /**
-     * 通知更新京东sku价格,多个sku用逗号分隔
-     * @param skus
-     * @return
-     */
-    ReturnTypeDO updateSellPriceNotice(String skus);
 
 }

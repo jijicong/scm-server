@@ -21,8 +21,6 @@ public class BrandBizTest {
     @Autowired
     IBrandBiz iBrandBiz;
     @Autowired
-    ITestService testService;
-    @Autowired
     IAclResourceBiz aclResourceBiz;
     /**
      * 品牌信息分页

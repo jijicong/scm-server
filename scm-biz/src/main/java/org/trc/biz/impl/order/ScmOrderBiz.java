@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.order.IScmOrderBiz;
+import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.RequestFlow;
@@ -94,6 +95,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IRequestFlowService requestFlowService;
     @Autowired
     private ISkuRelationService skuRelationService;
+    @Autowired
+    private IRequestFlowBiz requestFlowBiz;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -263,7 +266,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //调用京东下单服务接口
         ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(jingDongOrder);
         //保存请求流水
-        saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
+        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
         if(returnTypeDO.getSuccess()){
             log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
         }else{
@@ -272,7 +275,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
                 returnTypeDO = reSubmitJingDongOrder(jingDongOrder);
                 //保存请求流水
-                saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
+                requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
             }else{
                 log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
             }
@@ -287,7 +290,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             appResult = ResultUtil.createSucssAppResult(msg,"");
         }else{
             String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单失败。京东下单接口返回错误信息:%s",
-                    warehouseOrderCode, appResult.getDatabuffer());
+                    warehouseOrderCode, returnTypeDO.getResultMessage());
             log.error(msg);
             appResult = ResultUtil.createFailAppResult(msg);
         }
@@ -348,80 +351,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else{
             log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
         }
-        //通知更新京东sku价格
-        jdPriceUpdateNotice(skus);
         return returnTypeDO;
-    }
-
-    /**
-     * 通知更新京东sku价格
-     * @param skus
-     */
-    private void jdPriceUpdateNotice(String skus){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ReturnTypeDO returnTypeDO = ijdService.updateSellPriceNotice(skus);
-                if(returnTypeDO.getSuccess()){
-                    log.info(returnTypeDO.getResultMessage());
-                }else{
-                    log.error(returnTypeDO.getResultMessage());
-                }
-            }
-        }).start();
-    }
-
-    /**
-     * 保存请求流水
-     * @param requestParam 请求参数
-     * @param request 请求方标志
-     * @param responser 响应方标志
-     * @param requestFlowTypeEnum 请求流水枚举
-     * @param remoteInvokeResult 远程调用返回结果
-     * @param guidUtilPrifix 请求流水前缀
-     */
-    public void saveRequestFlow(String requestParam, String request, String responser,
-        RequestFlowTypeEnum requestFlowTypeEnum, Object remoteInvokeResult, String guidUtilPrifix) {
-        try{
-            RequestFlow requestFlow = new RequestFlow();
-            requestFlow.setType(requestFlowTypeEnum.getCode());
-            requestFlow.setRequester(request);
-            requestFlow.setResponder(responser);
-            requestFlow.setRequestParam(requestParam);
-            requestFlow.setResponseParam(JSON.toJSONString(remoteInvokeResult));
-            requestFlow.setRequestNum(GuidUtil.getNextUid(guidUtilPrifix));
-            requestFlow.setRequestTime(Calendar.getInstance().getTime());
-            if(remoteInvokeResult instanceof AppResult){
-                AppResult appResult = (AppResult)remoteInvokeResult;
-                if (StringUtils.equals(appResult.getAppcode(), SuccessFailureEnum.SUCCESS.getCode())) {
-                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                } else {
-                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                }
-                requestFlow.setRemark(appResult.getDatabuffer());
-            }else if(remoteInvokeResult instanceof ReturnTypeDO){
-                ReturnTypeDO returnTypeDO = (ReturnTypeDO)remoteInvokeResult;
-                if (returnTypeDO.getSuccess()) {
-                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                } else {
-                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                }
-                requestFlow.setRemark(returnTypeDO.getResultMessage());
-            }else if(remoteInvokeResult instanceof ToGlyResultDO){
-                ToGlyResultDO toGlyResultDO = (ToGlyResultDO)remoteInvokeResult;
-                if (StringUtils.equals(toGlyResultDO.getStatus(), SuccessFailureEnum.SUCCESS.getCode())) {
-                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                } else {
-                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                }
-                requestFlow.setRemark(toGlyResultDO.getMsg());
-            }
-            requestFlowService.insert(requestFlow);
-        }catch (Exception e){
-            String msg = String.format("保存请求流水异常,异常信息:%s", e.getMessage());
-            log.error(msg, e);
-        }
-
     }
 
 
@@ -487,7 +417,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //调用粮油下单服务接口
         ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(liangYouOrder);
         //保存请求流水
-        saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
+        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
         if(returnTypeDO.getSuccess()){
             log.info(returnTypeDO.getResultMessage());
         }else{
@@ -1003,7 +933,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         channelOrderResponse.setOrder(supplierOrderReturnList);
         ToGlyResultDO toGlyResultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
         //保存请求流水
-        saveRequestFlow(JSONObject.toJSON(channelOrderResponse).toString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(channelOrderResponse).toString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT, toGlyResultDO, RequestFlowConstant.GYL);
         if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
             log.error(String.format("仓库级订单订单%s提交结果通知渠道成功", JSON.toJSONString(warehouseOrder)));
         }else {
@@ -1064,7 +994,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             appResult = ResultUtil.createFailAppResult(msg);
         }
         //保存请求流水
-        saveRequestFlow(String.format("{shopOrderCode:%s}", shopOrderCode), RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY, appResult, RequestFlowConstant.GYL);
+        requestFlowBiz.saveRequestFlow(String.format("{shopOrderCode:%s}", shopOrderCode), RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY, appResult, RequestFlowConstant.GYL);
         return appResult;
     }
 
@@ -1263,7 +1193,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode()))
             requestFlowTypeEnum = RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY;
         //保存请求流水
-        saveRequestFlow(String.format("{warehouseOrderCode:%s,flag:%s", warehouseOrderCode, flag), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, returnTypeDO, RequestFlowConstant.GYL);
+        requestFlowBiz.saveRequestFlow(String.format("{warehouseOrderCode:%s,flag:%s", warehouseOrderCode, flag), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, returnTypeDO, RequestFlowConstant.GYL);
         if(!returnTypeDO.getSuccess()){
             String msg = String.format("调用物流查询服务查询仓库订单编码为[%s]的仓库订单物流信息失败,错误信息:%s",
                     warehouseOrderCode, returnTypeDO.getResultMessage());
