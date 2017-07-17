@@ -120,6 +120,7 @@ public class PropertyBiz implements IPropertyBiz {
         List<PropertyValue> propertyValueList = JSONArray.parseArray(property.getGridValue(), PropertyValue.class);
         //验证属性值信息
         AssertUtil.notNull(propertyValueList, "属性管理模块保存属性值信息失败，属性值信息为空");
+        List<PropertyValue> newPropertyValueList = new ArrayList<>();
         for (int i = 0; i < propertyValueList.size(); i++) {
             PropertyValue propertyValue = propertyValueList.get(i);
             propertyValue.setSort(i);
@@ -132,11 +133,17 @@ public class PropertyBiz implements IPropertyBiz {
             //保存属性值信息
             try {
                 propertyValueService.insertSelective(propertyValue);
+                newPropertyValueList.add(propertyValue);
             } catch (Exception e) {
                 log.error(e.getMessage());
                 String str = CommonUtil.joinStr("属性值类型" + JSON.toJSONString(propertyValue) + "保存失败").toString();
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_SAVE_EXCEPTION, str);
             }
+        }
+        try{
+            trcBiz.sendProperty(TrcActionTypeEnum.ADD_PROPERTY,null,property,null,newPropertyValueList,System.currentTimeMillis());
+        }catch (Exception e){
+            log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
         }
         logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.ADD,null);
     }
@@ -155,6 +162,13 @@ public class PropertyBiz implements IPropertyBiz {
         AssertUtil.notNull(property.getId(), "根据ID更新属性信息参数ID为空");
         //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
         Property selectProperty=propertyService.selectOneById(property.getId());
+        //查询还未变更之前的属性值列表
+        Example example=new Example(PropertyValue.class);
+        Example.Criteria criteria=example.createCriteria();
+        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("propertyId",property.getId());
+        List<PropertyValue> selectPropertyValues=propertyValueService.selectByExample(example);
         property.setUpdateTime(Calendar.getInstance().getTime());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
@@ -253,6 +267,22 @@ public class PropertyBiz implements IPropertyBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_UPDATE_EXCEPTION, str);
             }
         }
+        //通知渠道方
+        //查询变更后的属性信息
+        Property newProperty=propertyService.selectOneById(property.getId());
+        //查询变更后的属性值信息
+        Example newPropertyValueExample=new Example(PropertyValue.class);
+        Example.Criteria newPropertyValueCriteria=example.createCriteria();
+        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("propertyId",property.getId());
+        List<PropertyValue> newPropertyValueList=propertyValueService.selectByExample(example);
+        try{
+            trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY,selectProperty,newProperty,selectPropertyValues,newPropertyValueList,System.currentTimeMillis());
+        }catch (Exception e){
+            log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
+        }
+        //记录日志
         String remark=null;
         if(!property.getIsValid().equals(selectProperty.getIsValid())){
             if(property.getIsValid().equals(ValidEnum.VALID.getCode())){
@@ -293,6 +323,15 @@ public class PropertyBiz implements IPropertyBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updatePropertyStatus(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
+        //查询变更属性
+        Property selectProperty=propertyService.selectOneById(property.getId());
+        //查询需要通知给渠道的属性值信息
+        Example example=new Example(PropertyValue.class);
+        Example.Criteria criteria=example.createCriteria();
+        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("propertyId",property.getId());
+        List<PropertyValue> selectPropertyValues=propertyValueService.selectByExample(example);
         String remark=null;
         Property updateProperty = new Property();
         updateProperty.setId(property.getId());
@@ -323,6 +362,13 @@ public class PropertyBiz implements IPropertyBiz {
         //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
         if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
             itemSalesProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(),updateProperty.getId());
+        }
+        //通知渠道属性变更通知
+        Property newProperty=propertyService.selectOneById(property.getId());
+        try{
+            trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY,selectProperty,newProperty,selectPropertyValues,selectPropertyValues,System.currentTimeMillis());
+        }catch (Exception e){
+            log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
         }
         logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
     }

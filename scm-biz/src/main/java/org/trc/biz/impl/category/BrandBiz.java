@@ -205,8 +205,9 @@ public class BrandBiz implements IBrandBiz {
         //记录到日志表中不能影响到主体业务
         logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
         //通知渠道方
+        Brand newBrand = brandService.selectOneById(brand.getId());
         try{
-            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,brand,System.currentTimeMillis());
+            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,newBrand,System.currentTimeMillis());
         }catch (Exception e){
             log.error("品牌修改通知调用出现异常:"+e.getMessage());
         }
@@ -246,8 +247,8 @@ public class BrandBiz implements IBrandBiz {
         //记录到日志表中不能影响到主体业务
         logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
         //通知渠道方
+        Brand newBrand = brandService.selectOneById(brand.getId());
         try{
-            Brand newBrand = brandService.selectOneById(brand.getId());
             trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,newBrand,System.currentTimeMillis());
         }catch (Exception e){
             log.error("品牌状态变更通知调用出现异常:"+e.getMessage());
