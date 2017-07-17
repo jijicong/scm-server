@@ -555,8 +555,6 @@ public class GoodsBiz implements IGoodsBiz {
         }
         //保存采购属性信息
         saveItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
-        //商品新增通知渠道
-        itemsUpdateNoticeChannel(items, TrcActionTypeEnum.ADD_ITEMS);
     }
 
     /**
@@ -1603,8 +1601,6 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
         updateSupplyItemsUsedStatus(externalItemSkuList);
-        //代发商品新增通知渠道
-        externalItemsUpdateNoticeChannel(new ArrayList<ExternalItemSku>(), externalItemSkuList, TrcActionTypeEnum.ADD_EXTERNAL_ITEMS);
     }
 
     /**
