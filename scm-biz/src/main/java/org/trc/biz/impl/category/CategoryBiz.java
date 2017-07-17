@@ -624,9 +624,10 @@ public class CategoryBiz implements ICategoryBiz {
             categoryBrandService.deleteCategoryBrand(delCategoryBrands);
         }
 
-        List<CategoryBrand> updateCategoryBrandList = categoryBrandService.selectByExample(example);
-        noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_BRAND, null, null, updateCategoryBrandList, null, System.currentTimeMillis());
-
+        if (!AssertUtil.collectionIsEmpty(newCategoryBrands) || !AssertUtil.collectionIsEmpty(delBrandIdsList)) {
+            List<CategoryBrand> updateCategoryBrandList = categoryBrandService.selectByExample(example);
+            noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_BRAND, null, null, updateCategoryBrandList, null, System.currentTimeMillis());
+        }
     }
 
     //根据id组装出List<CategoryBrand
@@ -814,8 +815,10 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
 
-        List<CategoryProperty> updateCategoryProperty = categoryPropertyService.selectByExample(example);
-        noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY, null, null, null, updateCategoryProperty, System.currentTimeMillis());
+        if(!AssertUtil.collectionIsEmpty(newCategoryProperties) || !AssertUtil.collectionIsEmpty(delProperties) || !AssertUtil.collectionIsEmpty(sortProperties)){
+            List<CategoryProperty> updateCategoryProperty = categoryPropertyService.selectByExample(example);
+            noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY, null, null, null, updateCategoryProperty, System.currentTimeMillis());
+        }
 
     }
 

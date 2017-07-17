@@ -129,11 +129,12 @@ public class TrcService implements ITrcService {
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                /*AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
                 }
-                toGlyResultDO.setMsg(appResult.getDatabuffer());
+                toGlyResultDO.setMsg(appResult.getDatabuffer());*/
+                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
             }else {
                 toGlyResultDO.setMsg("调用同步订单提交结果给渠服务返回结果为空");
             }
@@ -167,11 +168,12 @@ public class TrcService implements ITrcService {
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                /*AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
                 }
-                toGlyResultDO.setMsg(appResult.getDatabuffer());
+                toGlyResultDO.setMsg(appResult.getDatabuffer());*/
+                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
             }else {
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");
             }

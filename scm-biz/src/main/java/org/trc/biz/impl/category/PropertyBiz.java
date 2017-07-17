@@ -272,11 +272,11 @@ public class PropertyBiz implements IPropertyBiz {
         Property newProperty=propertyService.selectOneById(property.getId());
         //查询变更后的属性值信息
         Example newPropertyValueExample=new Example(PropertyValue.class);
-        Example.Criteria newPropertyValueCriteria=example.createCriteria();
-        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
-        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
-        criteria.andEqualTo("propertyId",property.getId());
-        List<PropertyValue> newPropertyValueList=propertyValueService.selectByExample(example);
+        Example.Criteria newPropertyValueCriteria=newPropertyValueExample.createCriteria();
+        newPropertyValueCriteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
+        newPropertyValueCriteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
+        newPropertyValueCriteria.andEqualTo("propertyId",property.getId());
+        List<PropertyValue> newPropertyValueList=propertyValueService.selectByExample(newPropertyValueExample);
         try{
             trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY,selectProperty,newProperty,selectPropertyValues,newPropertyValueList,System.currentTimeMillis());
         }catch (Exception e){

@@ -194,7 +194,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             Example.Criteria criteria = example.createCriteria();
             criteria.andIn("platformOrderCode", platformOrderCodeList);
             platformOrderList = platformOrderService.selectByExample(example);
-            AssertUtil.notEmpty(platformOrderList, String.format("根据平台订单编号[%s]查询平台订单为空", CommonUtil.converCollectionToString(platformOrderCodeList)));
+            AssertUtil.notEmpty(platformOrderList, String.format("根据平台订单编号[%s]查询平台订单为空",
+                    CommonUtil.converCollectionToString(platformOrderCodeList)));
         }
         if(platformOrderList.size() > 0){
             for(ShopOrder shopOrder2: shopOrderList){
@@ -479,9 +480,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.isBlank(jingDongOrder.getTown()))
             jingDongOrder.setTown(ZeroToNineEnum.ZERO.getCode());//没有四级地址传0
-        // TODO 目前渠道没有提供电子邮箱地址，所以暂时调试写死
-        //jingDongOrder.setEmail(platformOrder.getReceiverEmail());
-        jingDongOrder.setEmail("471869639@qq.com");//接收人电子邮箱
+        jingDongOrder.setEmail(platformOrder.getReceiverEmail());
         jingDongOrder.setAddress(platformOrder.getReceiverAddress());
         jingDongOrder.setZip(platformOrder.getReceiverZip());
         jingDongOrder.setPhone(platformOrder.getReceiverPhone());

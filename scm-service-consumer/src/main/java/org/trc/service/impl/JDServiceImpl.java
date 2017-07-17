@@ -812,7 +812,7 @@ public class JDServiceImpl implements IJDService {
         String url = "";
         String response = null;
         try{
-            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+1;
+            url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getOrderLogisticsUrl()+"/"+warehouseOrderCode+"/"+flag;
             log.debug("开始调用物流查询" + url + ", 参数：warehouseOrderCode=" + warehouseOrderCode + "flag="+flag+". 开始时间" +
                     DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             response = HttpClientUtil.httpGetRequest(url);

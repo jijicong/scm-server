@@ -844,10 +844,11 @@ public class GoodsBiz implements IGoodsBiz {
      * @return
      */
     private String[] getPropertyIdAndPicture(JSONArray itemSalesArray, Long propertyValueId){
-        String[] _result = new String[3];
+        String[] _result = null;
         for(Object obj : itemSalesArray){
             JSONObject jbo = (JSONObject) obj;
             if(propertyValueId.longValue() == jbo.getLong("propertyValueId").longValue()){
+                _result = new String[3];
                 _result[0] = jbo.getString("propertyId");
                 _result[1] = jbo.getString("picture");
                 _result[2] = jbo.getString("isValid");
