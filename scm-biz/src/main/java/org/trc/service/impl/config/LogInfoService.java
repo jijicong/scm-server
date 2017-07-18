@@ -48,9 +48,12 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
             if(!StringUtils.isBlank(remark)){
                 logInfo.setRemark(remark);
             }
+            if(!StringUtils.isBlank(operateType)){
+                logInfo.setOperateType(operateType);
+            }
             logInfoMapper.insert(logInfo);
         }catch (Exception e){
-            log.error("日志记录异常："+e.getMessage());
+            log.error("日志记录异常message:{},e:{}",e.getMessage(),e);
         }
     }
 
@@ -83,7 +86,7 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
             }
             logInfoMapper.insertList(logInfoList);
         }catch (Exception e){
-            log.error("日志记录异常："+e.getMessage());
+            log.error("日志记录异常message:{},e:{}",e.getMessage(),e);
         }
     }
 }
