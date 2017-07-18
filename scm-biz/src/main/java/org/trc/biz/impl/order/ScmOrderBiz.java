@@ -64,6 +64,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     public final static String F = "F";
 
+    public final static String DISTRICT = "区";
+
     //供应商下单接口调用失败重试次数
     public final static int SUBMIT_SUPPLIER_ORDER_FAILURE_TIMES = 3;
 
@@ -1277,7 +1279,28 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
         platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
 
+        //适配地址,主要是对直辖市处理
+        adapterAddress(platformOrder);
+
         return platformOrder;
+    }
+
+    /**
+     * 适配地址,主要是对直辖市处理
+     * 将渠道过来的平台订单里面市、区进行匹配处理重新赋值
+     * @param platformOrder
+     */
+    private void adapterAddress(PlatformOrder platformOrder){
+        String[] directCitys = SupplyConstants.DirectGovernedCity.DIRECT_CITY;
+        for(String city: directCitys){
+            if(platformOrder.getReceiverProvince().contains(city)){//当前发货地址是直辖市
+                if(platformOrder.getReceiverCity().endsWith(DISTRICT)){//市地址放的是区信息
+                    String districtInfo = platformOrder.getReceiverCity();
+                    platformOrder.setReceiverDistrict(districtInfo);
+                    platformOrder.setReceiverCity(platformOrder.getReceiverProvince());
+                }
+            }
+        }
     }
 
     /**
