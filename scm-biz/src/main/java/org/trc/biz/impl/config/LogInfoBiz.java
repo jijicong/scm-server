@@ -2,6 +2,7 @@ package org.trc.biz.impl.config;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.trc.biz.config.ILogInfoBiz;
 import org.trc.domain.System.Channel;
 import org.trc.domain.config.LogInfo;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * Created by hzqph on 2017/7/14.
  */
+@Service("logInfoBiz")
 public class LogInfoBiz implements ILogInfoBiz {
 
     @Autowired
