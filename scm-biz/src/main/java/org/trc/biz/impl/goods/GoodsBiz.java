@@ -1709,7 +1709,7 @@ public class GoodsBiz implements IGoodsBiz {
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("supplierSkuCode", supplySkuList);
         List<ExternalItemSku> oldExternalItemSkuList = externalItemSkuService.selectByExample(example2);
-        AssertUtil.notEmpty(oldExternalItemSkuList, String.format("根据多个供应商skuCode[%]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
+        AssertUtil.notEmpty(oldExternalItemSkuList, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
 
         List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ONE.getCode());
         for(ExternalItemSku externalItemSku: externalItemSkuList){
@@ -1725,7 +1725,7 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
-        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
+        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
         //代发商品更新通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.DAILY_EXTERNAL_ITEMS_UPDATE);
     }
