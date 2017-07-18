@@ -28,7 +28,7 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
-    public void recordLog(Object object, String objectId, AclUserAccreditInfo aclUserAccreditInfo, String logOperation, String remark) {
+    public void recordLog(Object object, String objectId, String userId, String logOperation, String remark) {
         try{
             LogInfo logInfo=new LogInfo();
             logInfo.setEntityId(objectId);
@@ -40,11 +40,10 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
             }else{
                 logInfo.setOperateTime(Calendar.getInstance().getTime());
             }
-            if(aclUserAccreditInfo!=null){
-                logInfo.setOperator(aclUserAccreditInfo.getName());
-                logInfo.setOperatorUserid(aclUserAccreditInfo.getUserId());
+            if(!StringUtils.isBlank(userId)){
+                logInfo.setOperatorUserid(userId);
             }
-            if(StringUtils.isBlank(remark)){
+            if(!StringUtils.isBlank(remark)){
                 logInfo.setRemark(remark);
             }
             logInfoMapper.insert(logInfo);
