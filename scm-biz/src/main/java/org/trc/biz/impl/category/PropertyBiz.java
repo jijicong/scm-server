@@ -104,7 +104,6 @@ public class PropertyBiz implements IPropertyBiz {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
             property.setCreateOperator(userId);
@@ -145,7 +144,7 @@ public class PropertyBiz implements IPropertyBiz {
         }catch (Exception e){
             log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
         }
-        logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.ADD,null);
+        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null);
     }
 
     /**
@@ -171,7 +170,6 @@ public class PropertyBiz implements IPropertyBiz {
         List<PropertyValue> selectPropertyValues=propertyValueService.selectByExample(example);
         property.setUpdateTime(Calendar.getInstance().getTime());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
         }
@@ -291,7 +289,7 @@ public class PropertyBiz implements IPropertyBiz {
                  remark=remarkEnum.VALID_ON.getMessage();
             }
         }
-        logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
+        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark);
     }
 
     @Override
@@ -336,7 +334,6 @@ public class PropertyBiz implements IPropertyBiz {
         Property updateProperty = new Property();
         updateProperty.setId(property.getId());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo)requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             property.setLastEditOperator(userId);
         }
@@ -370,7 +367,7 @@ public class PropertyBiz implements IPropertyBiz {
         }catch (Exception e){
             log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
         }
-        logInfoService.recordLog(property,property.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
+        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark);
     }
 
     @Override

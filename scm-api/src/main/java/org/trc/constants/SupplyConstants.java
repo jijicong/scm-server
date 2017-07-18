@@ -753,6 +753,13 @@ public class SupplyConstants {
     }
 
     /**
+     * 操作日志
+     */
+    public static final class LogInfo{
+        //日志分页查询路径
+        public static final String LOG_INFO_PAGE = "logInfoPage";
+    }
+    /**
      * 直辖市
      */
     public static final class DirectGovernedCity {

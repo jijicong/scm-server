@@ -137,7 +137,6 @@ public class BrandBiz implements IBrandBiz {
         ParamsUtil.setBaseDO(brand);
         brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             brand.setCreateOperator(userId);
             brand.setLastEditOperator(userId);
@@ -145,7 +144,7 @@ public class BrandBiz implements IBrandBiz {
         try {
             brandService.insert(brand);
             //记录到日志表中不能影响到主体业务
-            logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.ADD,null);
+            logInfoService.recordLog(brand,brand.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null);
             //通知渠道方
             try{
                 trcBiz.sendBrand(TrcActionTypeEnum.ADD_BRAND, null,brand,System.currentTimeMillis());
@@ -181,7 +180,6 @@ public class BrandBiz implements IBrandBiz {
         Brand selectBrand=brandService.selectOneById(brand.getId());
         brand.setUpdateTime(Calendar.getInstance().getTime());
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         if(!StringUtils.isBlank(userId)){
             brand.setLastEditOperator(userId);
         }
@@ -203,7 +201,7 @@ public class BrandBiz implements IBrandBiz {
             }
         }
         //记录到日志表中不能影响到主体业务
-        logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
+        logInfoService.recordLog(brand,brand.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark);
         //通知渠道方
         Brand newBrand = brandService.selectOneById(brand.getId());
         try{
@@ -245,7 +243,7 @@ public class BrandBiz implements IBrandBiz {
         //品牌状态更新时需要更新品牌分类关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
         categoryBrandService.updateCategoryBrandIsValid(updateBrand.getIsValid(),updateBrand.getId());
         //记录到日志表中不能影响到主体业务
-        logInfoService.recordLog(brand,brand.getId().toString(),aclUserAccreditInfo,LogOperationEnum.UPDATE,remark);
+        logInfoService.recordLog(brand,brand.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark);
         //通知渠道方
         Brand newBrand = brandService.selectOneById(brand.getId());
         try{
