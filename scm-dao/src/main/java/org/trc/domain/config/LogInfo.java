@@ -17,6 +17,7 @@ public class LogInfo {
     private String params;
     private String remark;
     private Date operateTime;
+    private String operateType;
 
     public Long getId() {
         return id;
@@ -88,5 +89,13 @@ public class LogInfo {
 
     public void setOperator(String operator) {
         this.operator = operator;
+    }
+
+    public String getOperateType() {
+        return operateType;
+    }
+
+    public void setOperateType(String operateType) {
+        this.operateType = operateType;
     }
 }

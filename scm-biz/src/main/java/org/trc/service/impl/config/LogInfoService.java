@@ -15,7 +15,9 @@ import org.trc.mapper.config.ILogInfoMapper;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.BaseService;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by hzqph on 2017/6/20.
@@ -28,7 +30,7 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
-    public void recordLog(Object object, String objectId, String userId, String logOperation, String remark) {
+    public void recordLog(Object object, String objectId, String userId, String logOperation, String remark,String operateType) {
         try{
             LogInfo logInfo=new LogInfo();
             logInfo.setEntityId(objectId);
@@ -47,6 +49,39 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
                 logInfo.setRemark(remark);
             }
             logInfoMapper.insert(logInfo);
+        }catch (Exception e){
+            log.error("日志记录异常："+e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
+    public void recordLogs(Object object, String userId, String logOperation, String remark, String operateType, List<String> objectIds) {
+        try{
+            List<LogInfo> logInfoList =new ArrayList<>();
+            for (String objectId: objectIds) {
+                LogInfo logInfo=new LogInfo();
+                logInfo.setEntityId(objectId);
+                logInfo.setEntityType(object.getClass().getSimpleName());
+                logInfo.setOperation(logOperation);
+                if(object instanceof ScmDO){
+                    ScmDO scmDO= (ScmDO) object;
+                    logInfo.setOperateTime(scmDO.getCreateTime());
+                }else{
+                    logInfo.setOperateTime(Calendar.getInstance().getTime());
+                }
+                if(!StringUtils.isBlank(userId)){
+                    logInfo.setOperatorUserid(userId);
+                }
+                if(!StringUtils.isBlank(remark)){
+                    logInfo.setRemark(remark);
+                }
+                if(!StringUtils.isBlank(operateType)){
+                    logInfo.setOperateType(operateType);
+                }
+                logInfoList.add(logInfo);
+            }
+            logInfoMapper.insertList(logInfoList);
         }catch (Exception e){
             log.error("日志记录异常："+e.getMessage());
         }

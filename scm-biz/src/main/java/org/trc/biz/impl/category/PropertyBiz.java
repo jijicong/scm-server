@@ -144,7 +144,7 @@ public class PropertyBiz implements IPropertyBiz {
         }catch (Exception e){
             log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
         }
-        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null);
+        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
     }
 
     /**
@@ -289,7 +289,7 @@ public class PropertyBiz implements IPropertyBiz {
                  remark=remarkEnum.VALID_ON.getMessage();
             }
         }
-        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark);
+        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
     }
 
     @Override
@@ -367,7 +367,7 @@ public class PropertyBiz implements IPropertyBiz {
         }catch (Exception e){
             log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
         }
-        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark);
+        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
     }
 
     @Override
