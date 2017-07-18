@@ -49,8 +49,8 @@ public class AclUserAccreditInfoResource {
 
     @POST
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE + "/{id}")
-    public AppResult updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo){
-        userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo);
+    public AppResult updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo,@Context ContainerRequestContext requestContext){
+        userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo,requestContext);
         return ResultUtil.createSucssAppResult("修改状态成功", "");
     }
 
