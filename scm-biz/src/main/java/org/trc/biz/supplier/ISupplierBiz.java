@@ -48,7 +48,7 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception;
+                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 更新供应商

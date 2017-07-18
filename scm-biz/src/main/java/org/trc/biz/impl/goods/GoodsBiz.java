@@ -41,6 +41,7 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.category.*;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuStockService;
@@ -127,6 +128,8 @@ public class GoodsBiz implements IGoodsBiz {
     private WarehouseService warehouseService;
     @Autowired
     private ITrcBiz trcBiz;
+    @Autowired
+    private ILogInfoService logInfoService;
 
 
     @Override
@@ -555,6 +558,8 @@ public class GoodsBiz implements IGoodsBiz {
         }
         //保存采购属性信息
         saveItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
+        //记录操作日志
+        logInfoService.recordLog(items,items.getId().toString(),items.getCreateOperator(),LogOperationEnum.ADD.getMessage(),null, null);
     }
 
     /**
@@ -597,7 +602,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
+    public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
@@ -618,6 +623,8 @@ public class GoodsBiz implements IGoodsBiz {
         updateItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
         //商品编辑通知渠道
         itemsUpdateNoticeChannel(items, TrcActionTypeEnum.EDIT_ITEMS);
+        //记录操作日志
+        logInfoService.recordLog(items,items.getId().toString(),CommonUtil.getUserId(requestContext),LogOperationEnum.UPDATE.getMessage(),null, null);
     }
 
     /**
@@ -1198,7 +1205,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateValid(Long id, String isValid) throws Exception {
+    public void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
         Items items = new Items();
@@ -1227,6 +1234,9 @@ public class GoodsBiz implements IGoodsBiz {
         updatePurchaseDetailIsValid(items2.getSpuCode(), null, _isValid);
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, TrcActionTypeEnum.ITEMS_IS_VALID);
+        //记录操作日志
+        logInfoService.recordLog(items2,items.getId().toString(),CommonUtil.getUserId(requestContext),
+                LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
     }
 
     private void updateGoodsSkusValid(String spuCode, String isValid) throws Exception{
@@ -1254,7 +1264,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateSkusValid(Long id, String spuCode, String isValid) throws Exception {
+    public void updateSkusValid(Long id, String spuCode, String isValid, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
         AssertUtil.notBlank(spuCode, "SKU启用/停用操作参数spuCode不能为空");
         AssertUtil.notBlank(isValid, "SKU启用/停用操作参数isValid不能为空");
@@ -1287,6 +1297,9 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(items, String.format("根据商品spuCode编码[%s]查询商品信息为空", spuCode));
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
+        //记录操作日志
+        logInfoService.recordLog(items,items.getId().toString(),CommonUtil.getUserId(requestContext),
+                LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
     }
 
     /**
@@ -1578,7 +1591,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveExternalItems(String supplySkus) {
+    public void saveExternalItems(String supplySkus, ContainerRequestContext requestContext) {
         AssertUtil.notBlank(supplySkus, "新增代发商品不能为空");
         JSONArray skuArray = null;
         try{
@@ -1602,6 +1615,13 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
         }
         updateSupplyItemsUsedStatus(externalItemSkuList);
+        List<String> newIds = new ArrayList<String>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            newIds.add(externalItemSku.getId().toString());
+        }
+        //记录操作日志
+        logInfoService.recordLogs(new ExternalItemSku(),CommonUtil.getUserId(requestContext),
+                LogOperationEnum.ADD.getMessage(), null, null, newIds);
     }
 
     /**
@@ -1633,7 +1653,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public void updateExternalItemsValid(Long id, String isValid) throws Exception {
+    public void updateExternalItemsValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(id, "代发商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "代发商品启用/停用操作参数isValid不能为空");
         ExternalItemSku externalItemSku = externalItemSkuService.selectByPrimaryKey(id);
@@ -1659,11 +1679,14 @@ public class GoodsBiz implements IGoodsBiz {
         externalItemSkuList.add(externalItemSku3);
         //代发商品启停用通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.EXTERNAL_ITEMS_IS_VALID);
+        //记录操作日志
+        logInfoService.recordLog(externalItemSku3,id.toString(),CommonUtil.getUserId(requestContext),LogOperationEnum.UPDATE.getMessage(),
+                String.format("SKU[%s]状态更新为%s", externalItemSku3.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateExternalItems(ExternalItemSku externalItemSku) {
+    public void updateExternalItems(ExternalItemSku externalItemSku, ContainerRequestContext requestContext) {
         AssertUtil.notNull(externalItemSku, "更新代发商品不能为空");
         AssertUtil.notNull(externalItemSku.getId(), "更新代发商品ID不能为空");
         ExternalItemSku externalItemSku2 = externalItemSkuService.selectByPrimaryKey(externalItemSku.getId());
@@ -1682,6 +1705,8 @@ public class GoodsBiz implements IGoodsBiz {
         externalItemSkuList.add(externalItemSku3);
         //代发商品编辑通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.EDIT_EXTERNAL_ITEMS);
+        //记录操作日志
+        logInfoService.recordLog(externalItemSku3,externalItemSku3.getId().toString(),CommonUtil.getUserId(requestContext),LogOperationEnum.UPDATE.getMessage(), null, null);
     }
 
     @Override

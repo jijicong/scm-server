@@ -22,16 +22,14 @@ import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
-import org.trc.enums.AuditStatusEnum;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.supplier.*;
 import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.*;
@@ -87,13 +85,13 @@ public class SupplierBiz implements ISupplierBiz {
     @Autowired
     private ICategoryBiz categoryBiz;
     @Autowired
-    private ISupplierApplyAuditService supplierApplyAuditService;
-    @Autowired
     private ICategoryService categoryService;
     @Autowired
     private ICategoryBrandService categoryBrandService;
     @Autowired
     private IAuditLogService auditLogService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -246,7 +244,7 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                             SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo) throws Exception {
+                             SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception {
         //参数校验
         supplierSaveCheck(supplier, certificate);
         //生成序列号
@@ -279,6 +277,9 @@ public class SupplierBiz implements ISupplierBiz {
         //保存供应商渠道关系
         String channels = supplier.getChannel();
         saveSupplierChannelRelation(getSupplierChannelRelations(channels, supplier));
+        //记录操作日志
+        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext),
+                LogOperationEnum.ADD.getMessage(),null, null);
     }
 
     /**
@@ -352,6 +353,8 @@ public class SupplierBiz implements ISupplierBiz {
             AssertUtil.notNull(_supplier, String.format("根据供应商编码[%s]查询供应商信息为空", supplier.getSupplierCode()));
             rejectSupplierApply(supplier.getId(), requestContext);
         }
+        //记录操作日志
+        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(),null, null);
     }
 
 
@@ -1035,6 +1038,9 @@ public class SupplierBiz implements ISupplierBiz {
         if (StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())) {
             rejectSupplierApply(id, requestContext);
         }
+        //记录操作日志
+        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext),
+                LogOperationEnum.UPDATE.getMessage(),String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName()), null);
     }
 
     /**
@@ -1062,9 +1068,12 @@ public class SupplierBiz implements ISupplierBiz {
             }else{
                 String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
                 AssertUtil.notBlank(userId, "记录供应商停用自动驳回供应商申请审批获取登录用户ID为空");
-                writeRejectSupplierApplyLog(supplierApply2, userId);
+                //记录操作日志
+                logInfoService.recordLog(supplierApply2, supplierApply2.getId().toString(),"admin",
+                        LogOperationEnum.AUDIT_REJECT.getMessage(),"供应商停用，系统自动驳回", ZeroToNineEnum.ONE.getCode());
             }
         }
+
     }
 
     /**

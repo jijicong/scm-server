@@ -8,6 +8,7 @@ import org.trc.form.goods.*;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -56,14 +57,14 @@ public interface IGoodsBiz {
      * @param itemSalesPropery
      * @throws Exception
      */
-    void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception;
+    void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 商品启用/停用
      * @param isValid
      * @throws Exception
      */
-    void updateValid(Long id, String isValid) throws Exception;
+    void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * SKU启用/停用
@@ -72,7 +73,7 @@ public interface IGoodsBiz {
      * @param isValid
      * @throws Exception
      */
-    void updateSkusValid(Long id, String spuCode, String isValid) throws Exception;
+    void updateSkusValid(Long id, String spuCode, String isValid, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 根据supCode查询商品信息
@@ -118,20 +119,20 @@ public interface IGoodsBiz {
      * 新增一件代发商品
      * @param supplySkus
      */
-    void saveExternalItems(String supplySkus);
+    void saveExternalItems(String supplySkus, ContainerRequestContext requestContext);
 
     /**
      * 一件代发商品启用/停用
      * @param isValid
      * @throws Exception
      */
-    void updateExternalItemsValid(Long id, String isValid) throws Exception;
+    void updateExternalItemsValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 更新一件代发商品
      * @param externalItemSku
      */
-    void updateExternalItems(ExternalItemSku externalItemSku);
+    void updateExternalItems(ExternalItemSku externalItemSku, ContainerRequestContext requestContext);
 
     /**
      * 供应商sku更新通知

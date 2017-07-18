@@ -60,24 +60,24 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.GOODS + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
-                                 @BeanParam ItemSalesPropery itemSalesPropery) throws Exception {
-        goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery);
+                                 @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, requestContext);
         return ResultUtil.createSucssAppResult("编辑商品成功", "");
     }
 
     @POST
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
-        goodsBiz.updateValid(id, isValid);
+    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.updateValid(id, isValid, requestContext);
         return ResultUtil.createSucssAppResult("启停用商品成功", "");
     }
 
     @POST
     @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid) throws Exception {
-        goodsBiz.updateSkusValid(id, spuCode, isValid);
+    public AppResult updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.updateSkusValid(id, spuCode, isValid, requestContext);
         return ResultUtil.createSucssAppResult("启停用SKU成功", "");
     }
 
@@ -121,16 +121,16 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveExternalItems(@FormParam("supplySkus") String supplySkus) throws Exception {
-        goodsBiz.saveExternalItems(supplySkus);
+    public AppResult saveExternalItems(@FormParam("supplySkus") String supplySkus, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.saveExternalItems(supplySkus, requestContext);
         return ResultUtil.createSucssAppResult("新增代发商品成功", "");
     }
 
     @POST
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM__VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid) throws Exception {
-        goodsBiz.updateExternalItemsValid(id, isValid);
+    public AppResult updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.updateExternalItemsValid(id, isValid, requestContext);
         return ResultUtil.createSucssAppResult("启停用商品成功", "");
     }
 
@@ -138,8 +138,8 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult updateExternalItems(@BeanParam ExternalItemSku externalItemSku) throws Exception {
-        goodsBiz.updateExternalItems(externalItemSku);
+    public AppResult updateExternalItems(@BeanParam ExternalItemSku externalItemSku, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.updateExternalItems(externalItemSku, requestContext);
         return ResultUtil.createSucssAppResult("更新代发商品成功", "");
     }
 
