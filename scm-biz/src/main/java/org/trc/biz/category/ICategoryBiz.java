@@ -5,12 +5,10 @@ import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.TreeNode;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -43,7 +41,7 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    void updateCategory(Category category,boolean isSave) throws Exception;
+    void updateCategory(Category category, boolean isSave, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * 保存
@@ -70,7 +68,7 @@ public interface ICategoryBiz {
      */
     void updateSort(String sortDate) throws Exception;
 
-    void updateState(Category category) throws Exception;
+    void updateState(Category category, ContainerRequestContext requestContext) throws Exception;
 
     void updateIsLeaf(Category category) throws Exception;
 
@@ -113,7 +111,7 @@ public interface ICategoryBiz {
      * @param brandIds
      * @throws Exception
      */
-    void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception;
+    void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, ContainerRequestContext requestContext) throws Exception;
 
 
     /**
@@ -129,7 +127,7 @@ public interface ICategoryBiz {
     /**
      * 更新分类属性
      */
-    void linkCategoryProperties(Long categoryId, String jsonDate) throws Exception;
+    void linkCategoryProperties(Long categoryId, String jsonDate, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * @param categoryId
@@ -144,7 +142,6 @@ public interface ICategoryBiz {
     Integer checkCategoryIsValid(Long categoryId) throws Exception;
 
     /**
-     *
      * @param categoryForm
      * @return
      * @throws Exception
