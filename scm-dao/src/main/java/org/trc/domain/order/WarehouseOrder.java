@@ -118,6 +118,12 @@ public class WarehouseOrder {
     @Transient
     private PlatformOrder platformOrder;
 
+    /**
+     * 物流信息
+     */
+    @Transient
+    private String logisticsInfo;
+
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
     }
@@ -554,5 +560,13 @@ public class WarehouseOrder {
 
     public void setSupplierOrderStatus(String supplierOrderStatus) {
         this.supplierOrderStatus = supplierOrderStatus;
+    }
+
+    public String getLogisticsInfo() {
+        return logisticsInfo;
+    }
+
+    public void setLogisticsInfo(String logisticsInfo) {
+        this.logisticsInfo = logisticsInfo;
     }
 }

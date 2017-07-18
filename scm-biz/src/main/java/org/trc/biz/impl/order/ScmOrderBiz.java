@@ -62,6 +62,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //京东地址分隔符
     public final static String JING_DONG_ADDRESS_SPLIT = "/";
 
+    public final static String FLAG_EXT = "-";
+    //html换行符
+    public final static String HTML_BR = "<br>";
+
     public final static String F = "F";
 
     public final static String DISTRICT = "区";
@@ -786,13 +790,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 platformOrders = platformOrderService.selectByExample(example);
             }
         }
-        //设置仓库订单支付时间
+        //设置仓库订单支付时间及物流信息
         for(WarehouseOrder warehouseOrder: page.getResult()){
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(warehouseOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
                     warehouseOrder.setPayTime(platformOrder.getPayTime());
                 }
             }
+            setLogisticsInfo(warehouseOrder);
         }
         //按付款时间将序排序
         Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
@@ -804,6 +809,27 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return o1.getPayTime().compareTo(o2.getPayTime());
             }
         });
+    }
+
+    /**
+     * 设置仓库订单物流新信息
+     * @param warehouseOrder
+     */
+    private void setLogisticsInfo(WarehouseOrder warehouseOrder){
+        SupplierOrderLogistics supplierOrderLogistics = new SupplierOrderLogistics();
+        supplierOrderLogistics.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
+        List<SupplierOrderLogistics> supplierOrderLogisticsList = supplierOrderLogisticsService.select(supplierOrderLogistics);
+        StringBuilder sb = new StringBuilder();
+        for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), supplierOrderLogistics2.getType())){//物流信息
+                sb.append(supplierOrderLogistics2.getLogisticsCorporation()).append(FLAG_EXT).append(supplierOrderLogistics2.getWaybillNumber()).append(HTML_BR);
+            }
+        }
+        if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
+            warehouseOrder.setLogisticsInfo(SupplyConstants.Order.SUPPLIER_JD_LOGISTICS_COMPANY);
+        }else{
+            warehouseOrder.setLogisticsInfo(sb.toString());
+        }
     }
 
     @Override
@@ -1408,12 +1434,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 totalItem = totalItem.add(orderItem.getPayment());
                 totalOneShopNum += orderItem.getNum();
             }
-            /*AssertUtil.isTrue(totalItem.compareTo(shopOrder.getPayment()) == 0, "店铺订单实付金额与所有该店铺商品总实付金额不等值");
-            AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");*/
+            AssertUtil.isTrue(totalItem.compareTo(shopOrder.getPayment()) == 0, "店铺订单实付金额与所有该店铺商品总实付金额不等值");
+            AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
             shopOrderList.add(shopOrder);
         }
-        /*AssertUtil.isTrue(totalShop.compareTo(platformOrder.getPayment()) == 0, "平台订单实付金额与所有店铺总实付金额不等值");
-        AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");*/
+        AssertUtil.isTrue(totalShop.compareTo(platformOrder.getPayment()) == 0, "平台订单实付金额与所有店铺总实付金额不等值");
+        AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");
         return shopOrderList;
     }
 
