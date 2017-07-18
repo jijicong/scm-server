@@ -169,7 +169,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
         }
         String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
-        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "状态改为" +state);
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "状态改为" +state,null);
 
     }
 
@@ -295,7 +295,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
-        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()), aclUserAccreditInfo.getCreateOperator(), "新增", "");
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()), aclUserAccreditInfo.getCreateOperator(), "新增", "" ,null);
 
 
     }
@@ -432,7 +432,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);
         }
 
-        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "");
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "",null);
 
 
     }
