@@ -18,6 +18,7 @@ import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.category.*;
 import org.trc.service.category.*;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.supplier.ISupplierCategoryService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.AssertUtil;
@@ -68,6 +69,8 @@ public class CategoryBiz implements ICategoryBiz {
     @Autowired
     private ITrcBiz trcBiz;
 
+    @Autowired
+    private ILogInfoService logInfoService;
 
     @Override
     public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
@@ -190,7 +193,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void updateCategory(Category category, boolean isSave) throws Exception {
+    public void updateCategory(Category category, boolean isSave, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
 
         Category oldCategory = new Category();
@@ -203,6 +206,11 @@ public class CategoryBiz implements ICategoryBiz {
             category.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
         }
         category.setUpdateTime(Calendar.getInstance().getTime());
+
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
+//        category.setCreateOperator(userId);
+
         int count = categoryService.updateByPrimaryKeySelective(category);
         if (count == 0) {
             String msg = "修改分类" + JSON.toJSONString(category) + "数据库操作失败";
@@ -213,10 +221,36 @@ public class CategoryBiz implements ICategoryBiz {
                 noticeCategory(TrcActionTypeEnum.ADD_CATEGORY, category, category, null, null, System.currentTimeMillis());
 
             } else {
+                category = categoryService.selectByPrimaryKey(category.getId());
+                String categoryAction = getCategoryAction(category);
+                logInfoService.recordLog(category, String.valueOf(category.getId()), userId, categoryAction + category.getName(), "修改");
                 noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, System.currentTimeMillis());
 
             }
         }
+    }
+
+    private String getCategoryAction(Category category) {
+        String categoryAction = "";
+        if (category.getLevel() != null) {
+            switch (category.getLevel()) {
+                case 1:
+                    categoryAction = CategoryActionEnum.EDIT_ONE_LEVEL.getName();
+                    break;
+                case 2:
+                    categoryAction = CategoryActionEnum.EDIT_TWO_LEVEL.getName();
+                    break;
+                case 3:
+                    categoryAction = CategoryActionEnum.EDIT_THREE_LEVEL.getName();
+                    break;
+            }
+            return categoryAction;
+        } else {
+            String msg = "获取分类等级失败";
+            log.error(msg);
+            throw new CategoryException(ExceptionEnum.SYSTEM_EXCEPTION, msg);
+        }
+
     }
 
     /**
@@ -231,6 +265,7 @@ public class CategoryBiz implements ICategoryBiz {
         checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         AssertUtil.notNull(category.getCategoryCode(), "分类编码生成失败");
+        String categoryAction;
 
         category.setSource(SourceEnum.TRC.getCode());
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
@@ -254,17 +289,22 @@ public class CategoryBiz implements ICategoryBiz {
         //判断新增的分类等级
         if (category.getLevel() == 1) {
             category.setFullPathId(null);
+            categoryAction = CategoryActionEnum.ADD_ONE_LEVEL.getName();
         } else if (category.getLevel() == 2) {
             category.setFullPathId(category.getParentId().toString());
+            categoryAction = CategoryActionEnum.ADD_TWO_LEVEL.getName();
         } else {
             category.setFullPathId(queryPathId(category.getParentId()) + SupplyConstants.Symbol.FULL_PATH_SPLIT + category.getParentId());
+            categoryAction = CategoryActionEnum.ADD_THREE_LEVEL.getName();
         }
-        updateCategory(category, true);
+        updateCategory(category, true, requestContext);
         //判断叶子节点,并更新
         if (category.getLevel() != 1 && isLeaf(category.getParentId()) != 0) {
             updateIsLeaf(category);
         }
 
+
+        logInfoService.recordLog(category, String.valueOf(category.getId()), category.getCreateOperator(), categoryAction + category.getName(), "新增");
     }
 
     private void checkSaveCategory(Category category) {
@@ -381,16 +421,19 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateState(Category category) throws Exception {
+    public void updateState(Category category, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(category.getId(), "类目管理模块修改分类信息失败，分类信息为空");
         Category updateCategory = new Category();
         updateCategory.setId(category.getId());
         Category category1 = categoryService.selectOne(updateCategory);
         Category oldCategory = category1;
+        String state = "";
         if (StringUtils.equals(category.getIsValid(), ValidEnum.VALID.getCode())) {
             updateCategory.setIsValid(ValidEnum.NOVALID.getCode());
+            state = ValidEnum.NOVALID.getName();
         } else {
             updateCategory.setIsValid(ValidEnum.VALID.getCode());
+            state = ValidEnum.VALID.getName();
         }
         if (category1.getParentId() != null && StringUtils.equals(category1.getIsValid(), ValidEnum.NOVALID.getCode())) {
             updateLastCategory(category1.getParentId());
@@ -414,9 +457,12 @@ public class CategoryBiz implements ICategoryBiz {
             noticeCategory(TrcActionTypeEnum.STOP_CATEGORY, oldCategory, updateCategory, null, null, System.currentTimeMillis());
 
         }
-
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
         //分类状态更新时需要更新分类供应商关系表的is_valid字段
+        String categoryAction = getCategoryAction(updateCategory);
         supplierCategoryService.updateSupplierCategoryIsValid(updateCategory.getIsValid(), updateCategory.getId());
+        logInfoService.recordLog(updateCategory, String.valueOf(updateCategory.getId()), userId, categoryAction + updateCategory.getName(), "状态修改为" + state);
 
     }
 
@@ -477,6 +523,8 @@ public class CategoryBiz implements ICategoryBiz {
                 log.error(msg);
                 throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
             } else {
+                String categoryAction = getCategoryAction(category);
+                logInfoService.recordLog(category, String.valueOf(category.getId()), "admin", categoryAction + category.getName(), "状态修改为" + ValidEnum.getValidEnumByCode(category.getIsValid()).getName());
                 noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, System.currentTimeMillis());
             }
         }
@@ -556,7 +604,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord) throws Exception {
+    public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         categoryLevel(categoryId);
         //删除的BrandId
@@ -628,6 +676,9 @@ public class CategoryBiz implements ICategoryBiz {
             List<CategoryBrand> updateCategoryBrandList = categoryBrandService.selectByExample(example);
             noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_BRAND, null, null, updateCategoryBrandList, null, System.currentTimeMillis());
         }
+
+        recordLinkLog(categoryId, requestContext, "品牌");
+
     }
 
     //根据id组装出List<CategoryBrand
@@ -695,7 +746,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void linkCategoryProperties(Long categoryId, String jsonDate) throws Exception {
+    public void linkCategoryProperties(Long categoryId, String jsonDate, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联属性categoryId为空");
         AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
         categoryLevel(categoryId);
@@ -815,11 +866,27 @@ public class CategoryBiz implements ICategoryBiz {
             }
         }
 
-        if(!AssertUtil.collectionIsEmpty(newCategoryProperties) || !AssertUtil.collectionIsEmpty(delProperties) || !AssertUtil.collectionIsEmpty(sortProperties)){
+        if (!AssertUtil.collectionIsEmpty(newCategoryProperties) || !AssertUtil.collectionIsEmpty(delProperties) || !AssertUtil.collectionIsEmpty(sortProperties)) {
             List<CategoryProperty> updateCategoryProperty = categoryPropertyService.selectByExample(example);
             noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY, null, null, null, updateCategoryProperty, System.currentTimeMillis());
         }
+        recordLinkLog(categoryId, requestContext, "属性");
 
+    }
+
+    /**
+     * 关联日志
+     *
+     * @param categoryId
+     * @param requestContext
+     */
+    private void recordLinkLog(Long categoryId, ContainerRequestContext requestContext, String type) {
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
+        //分类状态更新时需要更新分类供应商关系表的is_valid字段
+        Category logCategory = categoryService.selectByPrimaryKey(categoryId);
+        String categoryAction = getCategoryAction(logCategory);
+        logInfoService.recordLog(logCategory, String.valueOf(logCategory.getId()), userId, categoryAction + logCategory.getName(), "关联" + type + "修改");
     }
 
     //关联参数属性校验

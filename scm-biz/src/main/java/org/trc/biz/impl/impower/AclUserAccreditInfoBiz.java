@@ -25,6 +25,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.UserDoService;
 import org.trc.service.impower.IAclRoleService;
 import org.trc.service.impower.IAclUserAccreditRoleRelationService;
@@ -78,6 +79,8 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     private IPurchaseGroupService purchaseGroupService;
     @Autowired
     private IUserNameUtilService userNameUtilService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
 
     /**
@@ -89,7 +92,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page){
+    public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("name", form.getName());
@@ -108,12 +111,12 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public List<AclUserAccreditInfo> findPurchase(){
+    public List<AclUserAccreditInfo> findPurchase() {
         return userAccreditInfoService.findPurchase();
     }
 
     @Override
-    public List<AclUserAddPageDate> handleRolesStr(List<AclUserAccreditInfo> list){
+    public List<AclUserAddPageDate> handleRolesStr(List<AclUserAccreditInfo> list) {
         List<AclUserAddPageDate> pageDateRoleList = new ArrayList<>();
         Long[] userIds = new Long[list.size()];
         int temp = 0;
@@ -144,15 +147,18 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo){
+    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo,ContainerRequestContext requestContext) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         AclUserAccreditInfo updateAclUserAccreditInfo = new AclUserAccreditInfo();
         updateAclUserAccreditInfo.setId(aclUserAccreditInfo.getId());
+        String state ;
         if (aclUserAccreditInfo.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateAclUserAccreditInfo.setIsValid(ValidEnum.NOVALID.getCode());
+            state = "停用";
         } else {
             updateAclUserAccreditInfo.setIsValid(ValidEnum.VALID.getCode());
+            state = "启用";
         }
         updateAclUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         int count = userAccreditInfoService.updateByPrimaryKeySelective(updateAclUserAccreditInfo);
@@ -161,6 +167,9 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notBlank(userId, "获取当前登录的userId失败");
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "状态改为" +state);
 
     }
 
@@ -173,7 +182,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Deprecated
-    public int checkUserByName(Long id, String name){
+    public int checkUserByName(Long id, String name) {
         AssertUtil.notNull(id, "根据用户授权的用户名称查询角色的参数id为空");
         AssertUtil.notBlank(name, "根据用户授权的用户名称查询角色的参数name为空");
         Example example = new Example(AclUserAccreditInfo.class);
@@ -190,7 +199,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public List<Channel> findChannel(){
+    public List<Channel> findChannel() {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
@@ -207,7 +216,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * roleType为空时查询所有角色
      */
     @Override
-    public List<AclRole> findChannelOrWholeJur(String roleType){
+    public List<AclRole> findChannelOrWholeJur(String roleType) {
         Example example = new Example(AclRole.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isBlank(roleType)) {
@@ -223,7 +232,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext){
+    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) {
         checkUserAddPageDate(userAddPageDate);
         if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
@@ -286,6 +295,9 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()), aclUserAccreditInfo.getCreateOperator(), "新增", "");
+
+
     }
 
     private void checkUserAddPageDate(AclUserAddPageDate userAddPageDate) {
@@ -304,7 +316,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public AclUserAddPageDate findUserAccreditInfoById(Long id){
+    public AclUserAddPageDate findUserAccreditInfoById(Long id) {
         AssertUtil.notNull(id, "根据授权Id的查询用户userAccreditInfo，参数Id为空");
         AclUserAddPageDate userAddPageDate;
         AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
@@ -341,7 +353,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext){
+    public void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) {
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
@@ -419,6 +431,10 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             }
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);
         }
+
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "");
+
+
     }
 
     /**
@@ -429,7 +445,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public String checkPhone(String phone){
+    public String checkPhone(String phone) {
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
         UserDO userDO = userDoService.getUserDo(phone);
         Example example = new Example(AclUserAccreditInfo.class);
@@ -454,7 +470,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    public String[] purchaseRole(Long id){
+    public String[] purchaseRole(Long id) {
 
         AssertUtil.notNull(id, "采购组查询输入参数Id为空");
         //查询到用户

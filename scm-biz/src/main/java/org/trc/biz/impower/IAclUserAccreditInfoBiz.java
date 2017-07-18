@@ -38,7 +38,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param
      * @throws Exception
      */
-    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo);
+    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo,ContainerRequestContext requestContext);
 
     /**
      * 根据名称查询用户授权信息

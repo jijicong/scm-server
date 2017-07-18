@@ -50,9 +50,8 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryBrands.BAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Brand> brandPage(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) throws Exception {
-        return categoryBiz.brandListCategory(form,page);
+        return categoryBiz.brandListCategory(form, page);
     }
-
 
 
     /**
@@ -65,8 +64,8 @@ public class CategoryResource {
     @POST
     @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveClassify(@BeanParam Category category,@Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.saveCategory(category,requestContext);
+    public AppResult saveClassify(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.saveCategory(category, requestContext);
         return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 
@@ -80,8 +79,8 @@ public class CategoryResource {
     @PUT
     @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateCategory(@BeanParam Category category) throws Exception {
-        categoryBiz.updateCategory(category,false);
+    public AppResult updateCategory(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.updateCategory(category, false, requestContext);
         return ResultUtil.createSucssAppResult("修改分类成功", "");
     }
 
@@ -124,8 +123,8 @@ public class CategoryResource {
     @PUT
     @Path(SupplyConstants.Category.Classify.UPDATE_STATE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateCategoryState(@BeanParam Category category) throws Exception {
-        categoryBiz.updateState(category);
+    public AppResult updateCategoryState(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.updateState(category, requestContext);
         return ResultUtil.createSucssAppResult("状态修改成功", "");
     }
 
@@ -163,8 +162,8 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord) throws Exception {
-        categoryBiz.linkCategoryBrands(id, brandIds, delRecord);
+    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord, @Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.linkCategoryBrands(id, brandIds, delRecord, requestContext);
         return ResultUtil.createSucssAppResult("分类品牌关联成功", "");
     }
 
@@ -189,8 +188,8 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_UPDATE + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateCategoryProperty(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate) throws Exception {
-        categoryBiz.linkCategoryProperties(id, jsonDate);
+    public AppResult updateCategoryProperty(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate,@Context ContainerRequestContext requestContext) throws Exception {
+        categoryBiz.linkCategoryProperties(id, jsonDate,requestContext);
         return ResultUtil.createSucssAppResult("分类属性保存成功", "");
     }
 
@@ -201,6 +200,6 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult checkCategoryIsValid(@PathParam("id") Long id) throws Exception {
-        return ResultUtil.createSucssAppResult("状态查询成功",  categoryBiz.checkCategoryIsValid(id));
+        return ResultUtil.createSucssAppResult("状态查询成功", categoryBiz.checkCategoryIsValid(id));
     }
 }
