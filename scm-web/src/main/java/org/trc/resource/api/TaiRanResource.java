@@ -68,7 +68,6 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) {
-
         try {
             page = brandBiz.brandList(form, page);
             List<Brand> list = new ArrayList<Brand>();

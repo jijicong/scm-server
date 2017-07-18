@@ -36,7 +36,6 @@ public interface IPropertyBiz {
      * 更新属性信息
      *
      * @param property
-     * @param id
      * @return
      * @throws Exception
      */

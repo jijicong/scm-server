@@ -58,33 +58,6 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private TrcConfig trcConfig;
 
-    /*@Value("${trc.key}")
-    private String trcConfig.getKey();
-
-    @Value("${trc.brand.url}")
-    private String BRAND_URL;
-
-    @Value("${trc.property.url}")
-    private String PROPERTY_URL;
-
-    @Value("${trc.category.url}")
-    private String CATEGORY_URL;
-
-    @Value("${trc.category.brand.url}")
-    private String CATEGORY_BRAND_URL;
-
-    @Value("${trc.category.property.url}")
-    private String CATEGORY_PROPERTY_URL;
-
-    @Value("${trc.item.url}")
-    private String ITEMS_URL;
-
-    @Value("${trc.externalItemSku.update.information.url}")
-    private String EXTERNALITEMSKU_UPDATE_INFROMATION_URL;
-
-    @Value("{trc.send.logistic.url}")
-    private String SEND_LOGISTIC_URL;*/
-
     private static final String OR = "|";
 
     private static final String UNDER_LINE = "_";
@@ -161,12 +134,11 @@ public class TrcBiz implements ITrcBiz {
         AssertUtil.notNull(property.getSort(), "属性排序不能为空");
         AssertUtil.notBlank(property.getName(), "属性名称不能为空");
         AssertUtil.notBlank(property.getIsValid(), "属性是否停用不能为空");
-        //AssertUtil.notBlank(property.getDescription(), "属性描述不能为空");
         AssertUtil.notBlank(property.getTypeCode(), "属性类型编码不能为空");
         AssertUtil.notBlank(property.getValueType(), "属性值类型不能为空");
         if (!action.equals(TrcActionTypeEnum.ADD_PROPERTY)) {//更新
             //判断是否通知
-            if(!propertyNotice(action, oldProperty, property, oldValueList, valueList)){
+            if(!propertyNotice(oldProperty, property, oldValueList, valueList)){
                 return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "不需要通知渠道");
             }
         }
@@ -219,18 +191,16 @@ public class TrcBiz implements ITrcBiz {
 
     /**
      * 判断更新属性是否需要通知渠道
-     * @param action
      * @param oldProperty
      * @param property
      * @param oldValueList
      * @param valueList
      * @return
      */
-    private boolean propertyNotice(TrcActionTypeEnum action, Property oldProperty, Property property, List<PropertyValue> oldValueList, List<PropertyValue> valueList){
+    private boolean propertyNotice(Property oldProperty, Property property, List<PropertyValue> oldValueList, List<PropertyValue> valueList){
         boolean flag = false;
-        if (oldProperty.getIsValid().equals(property.getIsValid()) && oldProperty.getName().equals(property.getName())
-                && oldProperty.getValueType().equals(property.getValueType()) && oldProperty.getTypeCode().equals(property.getTypeCode())
-                && valueList == null) {
+        if (!oldProperty.getIsValid().equals(property.getIsValid()) || !oldProperty.getName().equals(property.getName())
+                || !oldProperty.getValueType().equals(property.getValueType()) || !oldProperty.getTypeCode().equals(property.getTypeCode())) {
             flag = true;
         }else {
             if(oldValueList.size() != valueList.size()){
@@ -265,10 +235,10 @@ public class TrcBiz implements ITrcBiz {
                 || action.getCode().equals(TrcActionTypeEnum.STOP_CATEGORY.getCode())) {
             return sendCategoryToTrc(action, oldCategory, category, operateTime);
         }
-        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_BRAND.getCode())) {
+        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_BRAND.getCode()) && !CollectionUtils.isEmpty(categoryBrandList)) {
             return sendCategoryBrandList(action, categoryBrandList, operateTime);
         }
-        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode())) {
+        if (action.getCode().equals(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY.getCode()) && !CollectionUtils.isEmpty(categoryPropertyList)) {
             return sendCategoryPropertyList(action, categoryPropertyList, operateTime);
         }
         return null;
@@ -277,9 +247,23 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception {
-
-        //TODO 判断通知，暂时觉得都得通知
-
+        AssertUtil.notNull(items, "自采商品修改通知渠道商品信息参数items不能为空");
+        AssertUtil.notEmpty(itemNaturePropery, "自采商品修改通知渠道商品自然属性参数itemNaturePropery不能为空");
+        AssertUtil.notEmpty(itemSalesPropery, "自采商品修改通知渠道商品采购属性参数itemNaturePropery不能为空");
+        AssertUtil.notEmpty(skus, "自采商品修改通知渠道商品sku参数skus不能为空");
+        List<SkuRelation> skuRelationList = new ArrayList<SkuRelation>();
+        for(Skus skus2: skus){
+            SkuRelation skuRelation = new SkuRelation();
+            skuRelation.setSpuCode(skus2.getSpuCode());
+            skuRelation.setSkuCode(skus2.getSkuCode());
+            skuRelation = skuRelationService.selectOne(skuRelation);
+            if(null != skuRelation){
+                skuRelationList.add(skuRelation);
+            }
+        }
+        if(skuRelationList.size() == 0){
+            return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "商品修改无需同步");
+        }
         //传值处理
         String noticeNum = GuidUtil.getNextUid(action.getCode() + UNDER_LINE);
         StringBuilder stringBuilder = new StringBuilder();
@@ -297,7 +281,6 @@ public class TrcBiz implements ITrcBiz {
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
         String result = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
-
         String remark = "调用方法-TrcBiz类中[通知商品变更接口sendItem]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
@@ -322,7 +305,9 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList, List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
+    public ToGlyResultDO sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList,
+               List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
+        AssertUtil.notEmpty(oldExternalItemSkuList, "代发商品旧更新列表不能为空");
         AssertUtil.notEmpty(externalItemSkuList, "代发商品更新列表不能为空");
         ToGlyResultDO toGlyResult = new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "同步成功");
         //传值处理
@@ -333,55 +318,54 @@ public class TrcBiz implements ITrcBiz {
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         //需要推送的sku列表
         List<ExternalItemSku> sendList = new ArrayList<>();
-        if(CollectionUtils.isEmpty(oldExternalItemSkuList)){
-            sendList = externalItemSkuList;
+        List<SkuRelation> skuRelationList = new ArrayList<SkuRelation>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            SkuRelation skuRelation = new SkuRelation();
+            skuRelation.setSkuCode(externalItemSku.getSkuCode());
+            skuRelation.setSupplierCode(externalItemSku.getSupplierCode());
+            skuRelation = skuRelationService.selectOne(skuRelation);
+            if(null != skuRelation){
+                skuRelationList.add(skuRelation);
+            }
+        }
+        if(skuRelationList.size() > 0){
+            for(ExternalItemSku externalItemSku: oldExternalItemSkuList){
+                boolean flag = false;
+                for(SkuRelation skuRelation: skuRelationList){
+                    if(StringUtils.equals(skuRelation.getSkuCode(), externalItemSku.getSkuCode())){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    oldExternalItemSkuList.remove(externalItemSku);
+                }
+            }
+            for(ExternalItemSku externalItemSku: externalItemSkuList){
+                boolean flag = false;
+                for(SkuRelation skuRelation: skuRelationList){
+                    if(StringUtils.equals(skuRelation.getSkuCode(), externalItemSku.getSkuCode())){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    externalItemSkuList.remove(externalItemSku);
+                }
+            }
         }else{
-            Set<String> skuCodeList = new HashSet<>();
-            for(ExternalItemSku externalItemSku: externalItemSkuList){
-                skuCodeList.add(externalItemSku.getSkuCode());
-            }
-            Example example = new Example(ExternalItemSku.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andIn("skuCode", skuCodeList);
-            List<SkuRelation> skuRelationList = skuRelationService.selectByExample(example);
-            if(!CollectionUtils.isEmpty(skuRelationList)){
-                for(ExternalItemSku externalItemSku: oldExternalItemSkuList){
-                    boolean flag = false;
-                    for(SkuRelation skuRelation: skuRelationList){
-                        if(StringUtils.equals(skuRelation.getSkuCode(), externalItemSku.getSkuCode())){
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if(!flag){
-                        oldExternalItemSkuList.remove(externalItemSku);
-                    }
-                }
-                for(ExternalItemSku externalItemSku: externalItemSkuList){
-                    boolean flag = false;
-                    for(SkuRelation skuRelation: skuRelationList){
-                        if(StringUtils.equals(skuRelation.getSkuCode(), externalItemSku.getSkuCode())){
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if(!flag){
-                        externalItemSkuList.remove(externalItemSku);
-                    }
-                }
-            }else{
-                return toGlyResult;
-            }
-            for(ExternalItemSku externalItemSku: externalItemSkuList){
-                for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
-                    if(StringUtils.equals(externalItemSku.getSkuCode(), externalItemSku2.getSkuCode())){
-                        if(getLongVal(externalItemSku.getSupplierPrice()) != getLongVal(externalItemSku2.getSupplierPrice()) ||
-                                getLongVal(externalItemSku.getSupplyPrice()) != getLongVal(externalItemSku2.getSupplyPrice()) ||
-                                getLongVal(externalItemSku.getMarketReferencePrice()) != getLongVal(externalItemSku2.getMarketReferencePrice()) ||
-                                getLongVal(externalItemSku.getStock()) != getLongVal(externalItemSku2.getStock()) ||
-                                !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid())){
-                            sendList.add(externalItemSku);
-                        }
+            return toGlyResult;
+        }
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
+                if(StringUtils.equals(externalItemSku.getSkuCode(), externalItemSku2.getSkuCode())){
+                    if(getLongVal(externalItemSku.getSupplierPrice()) != getLongVal(externalItemSku2.getSupplierPrice()) ||
+                            getLongVal(externalItemSku.getSupplyPrice()) != getLongVal(externalItemSku2.getSupplyPrice()) ||
+                            getLongVal(externalItemSku.getMarketReferencePrice()) != getLongVal(externalItemSku2.getMarketReferencePrice()) ||
+                            getLongVal(externalItemSku.getStock()) != getLongVal(externalItemSku2.getStock()) ||
+                            !StringUtils.equals(externalItemSku.getBarCode(), externalItemSku2.getBarCode()) ||
+                            !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid())){
+                        sendList.add(externalItemSku);
                     }
                 }
             }
@@ -564,14 +548,14 @@ public class TrcBiz implements ITrcBiz {
         }
         ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-       /* if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
 
-        }*/
+        }
         return toGlyResultDO;
     }
 
@@ -603,13 +587,13 @@ public class TrcBiz implements ITrcBiz {
         }
         ToGlyResultDO toGlyResultDO = JSONObject.parseObject(result, ToGlyResultDO.class);
         //存储请求记录
-       /* if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
+        if (toGlyResultDO.getStatus().equals(ZeroToNineEnum.ZERO.getCode())) {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }*/
+        }
         return toGlyResultDO;
     }
 
@@ -617,7 +601,7 @@ public class TrcBiz implements ITrcBiz {
     public ToGlyResultDO sendCategoryToTrc(TrcActionTypeEnum action, Category oldCategory, Category category, long operateTime) throws Exception {
         AssertUtil.notBlank(category.getIsValid(), "是否停用不能为空");
         AssertUtil.notBlank(category.getName(), "分类名称不能为空");
-        AssertUtil.notBlank(category.getClassifyDescribe(), "分类描述不能为空");
+        //AssertUtil.notBlank(category.getClassifyDescribe(), "分类描述不能为空");
         AssertUtil.notNull(category.getSort(), "分类排序不能为空");
         //判断是否通知
         if (!action.getCode().equals(TrcActionTypeEnum.ADD_CATEGORY.getCode())) {

@@ -756,4 +756,24 @@ public class SupplyConstants {
         //日志分页查询路径
         public static final String LOG_INFO_PAGE = "logInfoPage";
     }
+    /**
+     * 直辖市
+     */
+    public static final class DirectGovernedCity {
+
+        public final static String BEI_JING = "北京";
+
+        public final static String SHANG_HAI = "上海";
+
+        public final static String  TIAN_JING = "天津";
+
+        public final static String CHONG_QING = "重庆";
+
+        public final static String[]  DIRECT_CITY = {BEI_JING, SHANG_HAI, TIAN_JING, CHONG_QING};
+
+    }
+
+
+
+
 }

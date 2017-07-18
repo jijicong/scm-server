@@ -13,17 +13,17 @@ import java.util.List;
 public class OrderExt extends OrderBase{
 
     // 实付金额,订单最终总额,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
+    //@JsonSerialize(using = MoneySerializer.class)
     @Transient
     private BigDecimal payment;
 
     // 邮费分摊,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
+    //@JsonSerialize(using = MoneySerializer.class)
     @Transient
     private BigDecimal postageFee;
 
     // 订单总税费,单位/分
-    @JsonSerialize(using = MoneySerializer.class)
+    //@JsonSerialize(using = MoneySerializer.class)
     @Transient
     private BigDecimal totalTax;
 

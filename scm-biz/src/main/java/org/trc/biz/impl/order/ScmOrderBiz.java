@@ -64,6 +64,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     public final static String F = "F";
 
+    public final static String DISTRICT = "区";
+
     //供应商下单接口调用失败重试次数
     public final static int SUBMIT_SUPPLIER_ORDER_FAILURE_TIMES = 3;
 
@@ -194,7 +196,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             Example.Criteria criteria = example.createCriteria();
             criteria.andIn("platformOrderCode", platformOrderCodeList);
             platformOrderList = platformOrderService.selectByExample(example);
-            AssertUtil.notEmpty(platformOrderList, String.format("根据平台订单编号[%s]查询平台订单为空", CommonUtil.converCollectionToString(platformOrderCodeList)));
+            AssertUtil.notEmpty(platformOrderList, String.format("根据平台订单编号[%s]查询平台订单为空",
+                    CommonUtil.converCollectionToString(platformOrderCodeList)));
         }
         if(platformOrderList.size() > 0){
             for(ShopOrder shopOrder2: shopOrderList){
@@ -479,9 +482,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.isBlank(jingDongOrder.getTown()))
             jingDongOrder.setTown(ZeroToNineEnum.ZERO.getCode());//没有四级地址传0
-        // TODO 目前渠道没有提供电子邮箱地址，所以暂时调试写死
-        //jingDongOrder.setEmail(platformOrder.getReceiverEmail());
-        jingDongOrder.setEmail("471869639@qq.com");//接收人电子邮箱
+        jingDongOrder.setEmail(platformOrder.getReceiverEmail());
         jingDongOrder.setAddress(platformOrder.getReceiverAddress());
         jingDongOrder.setZip(platformOrder.getReceiverZip());
         jingDongOrder.setPhone(platformOrder.getReceiverPhone());
@@ -1278,7 +1279,28 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
         platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
 
+        //适配地址,主要是对直辖市处理
+        adapterAddress(platformOrder);
+
         return platformOrder;
+    }
+
+    /**
+     * 适配地址,主要是对直辖市处理
+     * 将渠道过来的平台订单里面市、区进行匹配处理重新赋值
+     * @param platformOrder
+     */
+    private void adapterAddress(PlatformOrder platformOrder){
+        String[] directCitys = SupplyConstants.DirectGovernedCity.DIRECT_CITY;
+        for(String city: directCitys){
+            if(platformOrder.getReceiverProvince().contains(city)){//当前发货地址是直辖市
+                if(platformOrder.getReceiverCity().endsWith(DISTRICT)){//市地址放的是区信息
+                    String districtInfo = platformOrder.getReceiverCity();
+                    platformOrder.setReceiverDistrict(districtInfo);
+                    platformOrder.setReceiverCity(platformOrder.getReceiverProvince());
+                }
+            }
+        }
     }
 
     /**
