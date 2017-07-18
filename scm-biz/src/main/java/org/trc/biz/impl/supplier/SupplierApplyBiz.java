@@ -19,6 +19,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.SupplierException;
 import org.trc.form.supplier.SupplierApplyAuditForm;
 import org.trc.form.supplier.SupplierApplyForm;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -48,6 +49,8 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     private ISerialUtilService serialUtilService;
     @Autowired
     private ISupplierService supplierService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
     @Override
     public Pagenation<SupplierApplyAudit> supplierApplyAuditPage(Pagenation<SupplierApplyAudit> page, SupplierApplyAuditForm queryModel) throws Exception {
@@ -101,19 +104,10 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_AUDIT_UPDATE_EXCEPTION, msg);
         }
-        AuditLog auditLog = new AuditLog();
-        auditLog.setApplyCode(supplierApplyAudit.getApplyCode());
-        auditLog.setOperation(supplierApplyAudit.getStatus().toString());
-        if (!StringUtils.isBlank(userId)) {
-            auditLog.setOperator(userId);
-        }
-        auditLog.setOperateTime(updateSupplierApplyAudit.getUpdateTime());
-        int insertFlag = auditLogService.insertSelective(auditLog);
-        if (insertFlag != 1) {
-            String msg = CommonUtil.joinStr("根据申请编号[applyCode=", supplierApplyAudit.getApplyCode().toString(), "]保存审核信息日志失败").toString();
-            log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_AUDIT_LOG_INSERT_EXCEPTION, msg);
-        }
+        SupplierApply supplierApply=new SupplierApply();
+        supplierApply.setCreateTime(updateSupplierApplyAudit.getUpdateTime());
+        //审核日志
+        logInfoService.recordLog(supplierApply,supplierApplyAudit.getId().toString(),userId,AuditStatusEnum.queryNameByCode(supplierApplyAudit.getStatus()).getName(),supplierApplyAudit.getAuditOpinion(),null);
     }
 
     @Override
@@ -196,19 +190,8 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
             String msg = CommonUtil.joinStr("保存供应商申请信息", JSON.toJSONString(insert), "到数据库失败").toString();
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
         }
-        AuditLog auditLog = new AuditLog();
-        auditLog.setApplyCode(insert.getApplyCode());
-        auditLog.setOperation(insert.getStatus().toString());
-        if (aclUserAccreditInfo != null) {
-            auditLog.setOperator(aclUserAccreditInfo.getUserId());
-        }
-        auditLog.setOperateTime(insert.getCreateTime());
-        int insertFlag = auditLogService.insertSelective(auditLog);
-        if (insertFlag != 1) {
-            String msg = CommonUtil.joinStr("根据申请编号[applyCode=", insert.getApplyCode().toString(), "]保存审核信息日志失败").toString();
-            log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_AUDIT_LOG_INSERT_EXCEPTION, msg);
-        }
+        //供应商申请日志添加
+        logInfoService.recordLog(supplierApply,insert.getId().toString(),aclUserAccreditInfo.getUserId(),AuditStatusEnum.queryNameByCode(supplierApply.getStatus()).getName(),null,ZeroToNineEnum.ZERO.getCode());
     }
 
     @Override
