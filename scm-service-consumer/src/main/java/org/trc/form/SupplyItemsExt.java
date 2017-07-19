@@ -1,7 +1,5 @@
 package org.trc.form;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.util.Date;
 
 /**
@@ -33,6 +31,7 @@ public class SupplyItemsExt {
     private Date createTime; //创建时间
     private Date updateTime; //更新时间
     private String isDeleted; //是否删除:0-否,1-是
+    private String highLightName;
 
     public Long getId() {
         return id;
@@ -108,6 +107,14 @@ public class SupplyItemsExt {
 
     public String getBrand() {
         return brand;
+    }
+
+    public String getHighLightName() {
+        return highLightName;
+    }
+
+    public void setHighLightName(String highLightName) {
+        this.highLightName = highLightName;
     }
 
     public void setBrand(String brand) {
