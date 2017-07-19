@@ -234,7 +234,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         statusList.add(ZeroToNineEnum.TWO.getCode());
         criteria.andIn("status", statusList);
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
-        if (!AssertUtil.collectionIsEmpty(supplierApplyList)) {
+        if (!AssertUtil.collectionIsEmpty(supplierApplyList)&&supplierApplyList.size()>1) {
             String msg = "该供应商已经被申请或暂存，无法继续申请";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
@@ -244,12 +244,15 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         update.setDescription(supplierApply.getDescription());
         update.setStatus(supplierApply.getStatus());
         update.setUpdateTime(Calendar.getInstance().getTime());
+        //提交审核时间沿用创建时间,所以每次暂存和提交审核都更新创建时间.
+        update.setCreateTime(Calendar.getInstance().getTime());
         int count = supplierApplyService.updateByPrimaryKeySelective(update);
         if (count < 1) {
             String msg = CommonUtil.joinStr("更新供应商申请信息", JSON.toJSONString(supplierApply), "失败").toString();
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_UPDATE_EXCEPTION, msg);
         }
+        logInfoService.recordLog(supplierApply,supplierApply.getId().toString(),aclUserAccreditInfo.getUserId(),AuditStatusEnum.queryNameByCode(supplierApply.getStatus()).getName(),null,ZeroToNineEnum.ZERO.getCode());
     }
 
     @Override

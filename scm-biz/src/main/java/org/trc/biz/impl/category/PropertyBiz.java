@@ -284,9 +284,9 @@ public class PropertyBiz implements IPropertyBiz {
         String remark=null;
         if(!property.getIsValid().equals(selectProperty.getIsValid())){
             if(property.getIsValid().equals(ValidEnum.VALID.getCode())){
-                 remark=remarkEnum.VALID_OFF.getMessage();
-            }else{
                  remark=remarkEnum.VALID_ON.getMessage();
+            }else{
+                 remark=remarkEnum.VALID_OFF.getMessage();
             }
         }
         logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
