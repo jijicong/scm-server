@@ -1070,7 +1070,7 @@ public class SupplierBiz implements ISupplierBiz {
                 AssertUtil.notBlank(userId, "记录供应商停用自动驳回供应商申请审批获取登录用户ID为空");
                 //记录操作日志
                 logInfoService.recordLog(supplierApply2, supplierApply2.getId().toString(),"admin",
-                        LogOperationEnum.AUDIT_REJECT.getMessage(),"供应商停用，系统自动驳回", ZeroToNineEnum.ONE.getCode());
+                        LogOperationEnum.AUDIT_REJECT.getMessage(),"供应商停用，系统自动驳回", null);
             }
         }
 
