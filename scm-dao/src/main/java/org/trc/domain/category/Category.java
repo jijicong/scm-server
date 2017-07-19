@@ -42,7 +42,7 @@ public class Category extends BaseDO {
     private Integer level;
 
     @FormParam("name")
-    @Length(max = 128, message = "节点内容字母和数字不能超过128个,汉字不能超过64个")
+    @Length(max = 20, message = "节点内容字母和数字不能超过20个,汉字不能超过10个")
     private String name;
 
     @FormParam("isLeaf")
@@ -53,7 +53,7 @@ public class Category extends BaseDO {
     private Long parentId;
 
     @FormParam("classifyDescribe")
-    @Length(max = 128, message = "分类描述字母和数字不能超过128个,汉字不能超过64个")
+    @Length(max = 40, message = "分类描述字母和数字不能超过40个,汉字不能超过20个")
     private String classifyDescribe;
 
     public Long getParentId() {
