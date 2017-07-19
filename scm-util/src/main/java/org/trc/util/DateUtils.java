@@ -497,6 +497,8 @@ public class DateUtils {
 				if(stamp.longValue() == 0L)
 					return null;
 			}
+			if(timestamp.toString().length() == 10)
+				stamp = stamp*1000;
 			return new Date(stamp);
 		}else {
 			if(StringUtils.isBlank(tmp) || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), tmp)){
@@ -510,7 +512,7 @@ public class DateUtils {
 	
 	public static void main(String[] paramArrayOfString) {
 		try {
-			System.out.println(timestampToDate("0"));
+			System.out.println(dateToNormalFullString(timestampToDate("1468568194")));
 		} catch (Exception localException) {
 			System.out.println(localException);
 		}

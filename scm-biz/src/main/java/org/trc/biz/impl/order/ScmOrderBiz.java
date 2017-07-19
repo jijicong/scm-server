@@ -1754,7 +1754,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         BigDecimal discountCouponPlatform = new BigDecimal(0);//平台优惠卷分摊总金额
         BigDecimal discountFee = new BigDecimal(0);//促销优惠金额
         for(OrderItem orderItem: orderItemList){
-            itemsNum += 1;
+            itemsNum += orderItem.getNum();
             totalFee = totalFee.add(orderItem.getTotalFee());
             payment = payment.add(orderItem.getPayment());
             adjustFee = adjustFee.add(orderItem.getAdjustFee());
