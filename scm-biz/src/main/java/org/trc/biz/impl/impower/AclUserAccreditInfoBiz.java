@@ -147,12 +147,12 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo,ContainerRequestContext requestContext) {
+    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo, ContainerRequestContext requestContext) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         AclUserAccreditInfo updateAclUserAccreditInfo = new AclUserAccreditInfo();
         updateAclUserAccreditInfo.setId(aclUserAccreditInfo.getId());
-        String state ;
+        String state;
         if (aclUserAccreditInfo.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateAclUserAccreditInfo.setIsValid(ValidEnum.NOVALID.getCode());
             state = "停用";
@@ -169,7 +169,7 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
         }
         String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
-        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "状态改为" +state,null);
+        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()), userId, "修改", "状态改为" + state, null);
 
     }
 
@@ -295,7 +295,9 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
-        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()), aclUserAccreditInfo.getCreateOperator(), "新增", "" ,null);
+        AclUserAccreditInfo logAclUserAccreditInfo;
+        logAclUserAccreditInfo = userAccreditInfoService.selectByPrimaryKey(aclUserAccreditInfo.getId());
+        logInfoService.recordLog(logAclUserAccreditInfo, String.valueOf(logAclUserAccreditInfo.getId()), aclUserAccreditInfo.getCreateOperator(), "新增", "", null);
 
 
     }
@@ -431,8 +433,9 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
             }
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);
         }
-
-        logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()),userId, "修改", "",null);
+        AclUserAccreditInfo logAclUserAccreditInfo;
+        logAclUserAccreditInfo = userAccreditInfoService.selectByPrimaryKey(userAddPageDate.getId());
+        logInfoService.recordLog(logAclUserAccreditInfo, String.valueOf(logAclUserAccreditInfo.getId()), userId, "修改", "", null);
 
 
     }
