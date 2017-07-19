@@ -41,16 +41,16 @@ public interface IChannelBiz {
      *保存渠道
      * @return 整数改变
      */
-    void saveChannel(Channel channel);
+    void saveChannel(Channel channel,ContainerRequestContext requestContext);
 
     /**
      * 更新渠道
      * @param channel 信息
-     * @param id 主键
+     * @param
      * @return 整数改变
      * @throws Exception
      */
-    void updateChannel(Channel channel) ;
+    void updateChannel(Channel channel,ContainerRequestContext requestContext) ;
 
     /**
      * 根据id查询渠道

@@ -18,7 +18,7 @@ public interface IWarehouseBiz {
      * @return  int 插入的数量
      * @throws Exception
      */
-    void saveWarehouse(Warehouse warehouse);
+    void saveWarehouse(Warehouse warehouse,ContainerRequestContext requestContext);
     /**
      * 根据仓库名称查找仓库（仓库名是否被使用）
      * @param name 仓库名
@@ -39,7 +39,7 @@ public interface IWarehouseBiz {
      * @return 整数改变
      * @throws Exception
      */
-    void updateWarehouse(Warehouse warehouse);
+    void updateWarehouse(Warehouse warehouse,ContainerRequestContext requestContext);
     /**
      * 根据id查询仓库
      * @param id 主键
@@ -53,7 +53,7 @@ public interface IWarehouseBiz {
      * @return
      * @throws Exception
      */
-    void updateWarehouseState(Warehouse warehouse);
+    void updateWarehouseState(Warehouse warehouse, ContainerRequestContext requestContext);
 
     /**
      * 查询有效的仓库

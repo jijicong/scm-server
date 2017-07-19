@@ -47,23 +47,23 @@ public class WarehouseResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
-        warehouseBiz.saveWarehouse(warehouse);
+        warehouseBiz.saveWarehouse(warehouse,requestContext);
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
     //仓库修改
     @PUT
     @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateChannel(@BeanParam Warehouse warehouse){
-        warehouseBiz.updateWarehouse(warehouse);
+    public AppResult updateChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
+        warehouseBiz.updateWarehouse(warehouse,requestContext);
         return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
     }
     //仓库状态的修改
     @POST
     @Path(SupplyConstants.Warehouse.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateWarehouseState(@BeanParam Warehouse warehouse){
-        warehouseBiz.updateWarehouseState(warehouse);
+    public AppResult updateWarehouseState(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
+        warehouseBiz.updateWarehouseState(warehouse,requestContext);
         return ResultUtil.createSucssAppResult("状态修改成功","");
     }
     //根据id查询

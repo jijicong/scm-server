@@ -78,7 +78,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.NORMAL_DATE_FORMAT);
         if(!StringUtils.isBlank(form.getEndDate())){
             Date date = sdf.parse(form.getEndDate());
-            date =DateUtils.addDays(date,2);
+            date =DateUtils.addDays(date,1);
             form.setEndDate(sdf.format(date));
         }
 
@@ -88,6 +88,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         List<PurchaseOrderAddAudit> pageDateList = purchaseOrderAuditService.selectPurchaseOrderAuditList(map);
         iUserNameUtilService.handleUserName(pageDateList);
         if(CollectionUtils.isEmpty(pageDateList)){
+            page.setTotalCount(0);
             return page;
         }
         //selectAssignmentWarehouseName(pageDateList);

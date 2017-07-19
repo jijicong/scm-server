@@ -1,8 +1,12 @@
 package org.trc.domain.warehouseNotice;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -20,18 +24,20 @@ public class WarehouseNoticeDetails {
     //'sku编码',
     private String skuCode;
     //'品牌',
-    private String brandCode;
+    private Long brandId;
     //'分类',
-    private String categoryCode;
+    private Long categoryId;
     //'采购价,单位/分',
-    private Long  purchasePrice;
+    private Long purchasePrice;
     //'采购数量',
     private Long purchasingQuantity;
     //'实际入库数量',
     private Long actualStorageQuantity;
     //'创建时间,格式yyyy-mm-dd hh:mi:ss',
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
     //'入库时间,格式yyyy-mm-dd hh:mi:ss',
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date storageTime;
 
     public Long getId() {
@@ -66,20 +72,20 @@ public class WarehouseNoticeDetails {
         this.skuCode = skuCode;
     }
 
-    public String getBrandCode() {
-        return brandCode;
+    public Long getBrandId() {
+        return brandId;
     }
 
-    public void setBrandCode(String brandCode) {
-        this.brandCode = brandCode;
+    public void setBrandId(Long brandId) {
+        this.brandId = brandId;
     }
 
-    public String getCategoryCode() {
-        return categoryCode;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategoryCode(String categoryCode) {
-        this.categoryCode = categoryCode;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
     public Long getPurchasePrice() {

@@ -7,10 +7,7 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
-import org.trc.enums.ClearanceEnum;
-import org.trc.enums.PurchaseOrderAuditEnum;
-import org.trc.enums.PurchaseOrderStatusEnum;
-import org.trc.enums.ValidEnum;
+import org.trc.enums.*;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
@@ -34,35 +31,41 @@ public class SelectListResource {
     private IConfigBiz configBiz;
 
     //供应商性质字典类型编码
-    private static final String SUPPLIER_NATURE = "supplierNature";
+    public static final String SUPPLIER_NATURE = "supplierNature";
     //供应商类型字典类型编码
-    private static final String SUPPLIER_TYPE = "supplierType";
+    public static final String SUPPLIER_TYPE = "supplierType";
     //仓库类型字典类型编码
-    private static final String WAREHOUSE_TYPE="warehouseType";
+    public static final String WAREHOUSE_TYPE="warehouseType";
     //角色类型字典类型编码
-    private static final String ROLE_TYPE="roleType";
+    public static final String ROLE_TYPE="roleType";
     //用户类型字典类型编码
-    private static final String USER_TYPE="userType";
+    public static final String USER_TYPE="userType";
     //采购类型
-    private static final String PURCHASE_TYPE="purchaseType";
+    public static final String PURCHASE_TYPE="purchaseType";
     //付款方式
-    private static final String PAY_TYPE="payType";
+    public static final String PAY_TYPE="payType";
     //贸易类型字典类型编码
-    private static final String TRADE_TYPE="tradeType";
+    public static final String TRADE_TYPE="tradeType";
 
     //币种
-    private static final String CURRENCY_TYPE="currency";
+    public static final String CURRENCY_TYPE="currency";
     //运输费用承担方
-    private static final String TRANSORT_COSTS_TAKE="transportCostsTake";
+    public static final String TRANSORT_COSTS_TAKE="transportCostsTake";
     //处理优先级
-    private static final String  HANDLER_PRIORITY = "handlerPriority";
-
+    public static final String  HANDLER_PRIORITY = "handlerPriority";
 
     @GET
     @Path(SupplyConstants.SelectList.PURCHASE_ORDER_AUDIT_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> purchaseOrderAuditStatus(){
         return ResultUtil.createSucssAppResult("成功", PurchaseOrderAuditEnum.toJSONArray());
+    }
+
+    @GET
+    @Path(SupplyConstants.SelectList.WAREHOSUE_NOTICE_STATUS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> queryWarehouseNoticeStatus(){
+        return ResultUtil.createSucssAppResult("查询入库通知的状态成功", WarehouseNoticeStatusEnum.toJSONArray());
     }
 
     @GET

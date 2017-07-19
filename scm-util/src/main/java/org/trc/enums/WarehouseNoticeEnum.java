@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * 
 * @ClassName: WarehouseNoticeEnum
-* @Description: 入库通知枚举
+* @Description: 入库通知枚举--采购单中的
 * @author A18ccms a18ccms_gmail_com 
 * @date 2017年6月2日
 *
