@@ -22,12 +22,12 @@ import javax.ws.rs.core.MediaType;
  * Created by hzqph on 2017/7/17.
  */
 @Component
+@Path(SupplyConstants.LogInfo.LOG_INFO_PAGE)
 public class LogInfoResource {
     @Autowired
     private LogInfoBiz logInfoBiz;
 
     @GET
-    @Path(SupplyConstants.LogInfo.LOG_INFO_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<LogInfo> logInfoPage(@BeanParam LogInfoForm form, @BeanParam Pagenation<LogInfo> page){
         return logInfoBiz.logInfoPage(form,page);

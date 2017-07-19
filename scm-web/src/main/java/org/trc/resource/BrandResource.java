@@ -23,7 +23,6 @@ import java.util.List;
  */
 @Component
 @Path(SupplyConstants.Category.ROOT)
-
 public class BrandResource {
 
     @Autowired
