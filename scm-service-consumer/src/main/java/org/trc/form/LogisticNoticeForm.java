@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by hzwdx on 2017/7/5.
  */
-public class LogisticNoticeForm {
+public class LogisticNoticeForm extends TrcParam{
 
     //店铺订单编码
     private String shopOrderCode;

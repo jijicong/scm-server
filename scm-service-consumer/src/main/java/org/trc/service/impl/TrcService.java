@@ -36,6 +36,9 @@ public class TrcService implements ITrcService {
 
     private final static int TIME_OUT = 3000;
 
+    //接口重试次数
+    public final static Integer RETRY_TIMES = 3;
+
     @Autowired
     private TrcConfig trcConfig;
 
@@ -116,24 +119,33 @@ public class TrcService implements ITrcService {
     public ToGlyResultDO sendOrderSubmitResultNotice(ChannelOrderResponse channelOrderResponse) {
         AssertUtil.notNull(channelOrderResponse, "同步订单提交结果给渠道参数不能为空");
         String url = trcConfig.getOrderSubmitNotifyUrl();
+        int count = 0;
         String paramObj = JSON.toJSON(channelOrderResponse).toString();
-        log.debug("开始调用同步订单提交结果给渠服务" + url + ", 参数：" + paramObj + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        return invokeSendOrderSubmitResultNotice(url, paramObj, count);
+    }
+
+    private ToGlyResultDO invokeSendOrderSubmitResultNotice(String url ,String jsonParam, int count){
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+        if(count < RETRY_TIMES){
+            count++;
+        }else{
+            toGlyResultDO.setMsg("渠道订单提交接口服务不可用");
+            return toGlyResultDO;
+        }
+        log.debug("开始调用同步订单提交结果给渠服务" + url + ", 参数：" + jsonParam + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParam, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                /*AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                if(StringUtils.equals(HttpClientUtil.SOCKET_TIMEOUT_CODE, response)){//接口服务不可用
+                    return invokeSendOrderSubmitResultNotice(url, jsonParam, count);
                 }
-                toGlyResultDO.setMsg(appResult.getDatabuffer());*/
+                JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
             }else {
                 toGlyResultDO.setMsg("调用同步订单提交结果给渠服务返回结果为空");
@@ -156,23 +168,32 @@ public class TrcService implements ITrcService {
         AssertUtil.notEmpty(logisticNoticeForm.getLogistics(), "同步物理新给渠道物流信息logistics不能为空");
         String url = trcConfig.getLogisticsNotifyUrl();
         String paramObj = JSON.toJSONString(logisticNoticeForm);
-        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        int count = 0;
+        return invokeSendLogisticInfoNotice(url, paramObj, count);
+    }
+
+    private ToGlyResultDO invokeSendLogisticInfoNotice(String url, String jsonParam, int count){
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+        if(count < RETRY_TIMES){
+            count++;
+        }else{
+            toGlyResultDO.setMsg("渠道订单物流同步接口服务不可用");
+            return toGlyResultDO;
+        }
+        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + jsonParam + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParam, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                /*AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                if(StringUtils.equals(HttpClientUtil.SOCKET_TIMEOUT_CODE, response)){//接口服务不可用
+                    return invokeSendLogisticInfoNotice(url, jsonParam, count);
                 }
-                toGlyResultDO.setMsg(appResult.getDatabuffer());*/
+                JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
             }else {
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");

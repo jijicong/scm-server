@@ -17,9 +17,12 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -31,10 +34,13 @@ import java.util.Map;
  */
 public class HttpClientUtil {
 
+    private static Logger log = LoggerFactory.getLogger(HttpClientUtil.class);
+
     private static PoolingHttpClientConnectionManager cm;
     private static String EMPTY_STR = "";
     private static String UTF_8 = "UTF-8";
     public static final int SOCKET_TIMEOUT = 1000;//超时时间
+    public static final String SOCKET_TIMEOUT_CODE = "404";//超时错误码
 
     private static void init() {
         if (cm == null) {
@@ -159,21 +165,20 @@ public class HttpClientUtil {
         CloseableHttpClient httpClient = getHttpClient();
         try {
             CloseableHttpResponse response = httpClient.execute(request);
-            // response.getStatusLine().getStatusCode();
+            int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 // long len = entity.getContentLength();// -1 表示长度未知
                 String result = EntityUtils.toString(entity);
                 response.close();
-                // httpClient.close();
+                //httpClient.close();
                 return result;
             }
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            log.error(String.format("HttpClientUtil执行接口调用客户端协议异常,%s", e.getMessage()), e);
         } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-
+            log.error(String.format("HttpClientUtil执行接口调用服务不可用,%s", e.getMessage()), e);
+            return SOCKET_TIMEOUT_CODE;
         }
         return EMPTY_STR;
     }
