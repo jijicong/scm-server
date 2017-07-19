@@ -38,7 +38,11 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
             logInfo.setOperation(logOperation);
             if(object instanceof ScmDO){
                 ScmDO scmDO= (ScmDO) object;
-                logInfo.setOperateTime(scmDO.getCreateTime());
+                if (scmDO.getCreateTime()!=null){
+                    logInfo.setOperateTime(scmDO.getCreateTime());
+                }else{
+                    logInfo.setOperateTime(Calendar.getInstance().getTime());
+                }
             }else{
                 logInfo.setOperateTime(Calendar.getInstance().getTime());
             }
@@ -69,7 +73,11 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
                 logInfo.setOperation(logOperation);
                 if(object instanceof ScmDO){
                     ScmDO scmDO= (ScmDO) object;
-                    logInfo.setOperateTime(scmDO.getCreateTime());
+                    if (scmDO.getCreateTime()!=null){
+                        logInfo.setOperateTime(scmDO.getCreateTime());
+                    }else{
+                        logInfo.setOperateTime(Calendar.getInstance().getTime());
+                    }
                 }else{
                     logInfo.setOperateTime(Calendar.getInstance().getTime());
                 }
