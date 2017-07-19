@@ -4,23 +4,29 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**
@@ -43,6 +49,8 @@ public class ChannelBiz implements IChannelBiz {
 
     @Resource
     private ISerialUtilService serialUtilService;
+
+
 
     @Override
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) {
@@ -85,7 +93,7 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveChannel(Channel channel){
+    public void saveChannel(Channel channel,ContainerRequestContext requestContext){
 
         AssertUtil.notNull(channel,"渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
@@ -100,11 +108,12 @@ public class ChannelBiz implements IChannelBiz {
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
 
+
     }
 
 
     @Override
-    public void updateChannel(Channel channel){
+    public void updateChannel(Channel channel,ContainerRequestContext requestContext){
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
         Channel tmp = findChannelByName(channel.getName());
@@ -121,6 +130,8 @@ public class ChannelBiz implements IChannelBiz {
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
+
+
 
     }
 

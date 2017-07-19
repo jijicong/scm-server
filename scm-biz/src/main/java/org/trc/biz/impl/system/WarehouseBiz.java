@@ -4,21 +4,23 @@ import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.Serial;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ValidEnum;
+import org.trc.enums.*;
 import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.service.System.IWarehouseService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
@@ -52,6 +54,9 @@ public class WarehouseBiz implements IWarehouseBiz {
     @Resource
     private ISerialUtilService serialUtilService;
 
+
+
+
     @Override
     public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page){
 
@@ -83,7 +88,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveWarehouse(Warehouse warehouse){
+    public void saveWarehouse(Warehouse warehouse,ContainerRequestContext requestContext){
 
         AssertUtil.notNull(warehouse,"仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
@@ -110,7 +115,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public void updateWarehouseState(Warehouse warehouse){
+    public void updateWarehouseState(Warehouse warehouse, ContainerRequestContext requestContext){
 
         AssertUtil.notNull(warehouse,"仓库管理模块修改仓库信息失败，仓库信息为空");
         Warehouse updateWarehouse = new Warehouse();
@@ -143,7 +148,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public void updateWarehouse(Warehouse warehouse){
+    public void updateWarehouse(Warehouse warehouse, ContainerRequestContext requestContext){
 
         AssertUtil.notNull(warehouse.getId(),"根据ID修改仓库参数ID为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());

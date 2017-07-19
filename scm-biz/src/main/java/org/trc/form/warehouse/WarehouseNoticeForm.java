@@ -13,7 +13,7 @@ public class WarehouseNoticeForm extends QueryModel{
      * 入库通知单编码
      */
     @QueryParam("warehouseNoticeCode")
-    @Length(max = 64)
+    @Length(max = 32)
     private String warehouseNoticeCode;
 
     @QueryParam("purchaseOrderCode")
@@ -24,9 +24,9 @@ public class WarehouseNoticeForm extends QueryModel{
     @Length(max = 32)
     private String purchaseType;
 
-    @QueryParam("state")
+    @QueryParam("warehouseNoticeStatus")
     @Length(max = 2)
-    private String state;
+    private String warehouseNoticeStatus;
 
     @QueryParam("supplierName")
     @Length(max = 64)
@@ -56,12 +56,12 @@ public class WarehouseNoticeForm extends QueryModel{
         this.purchaseType = purchaseType;
     }
 
-    public String getState() {
-        return state;
+    public String getWarehouseNoticeStatus() {
+        return warehouseNoticeStatus;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setWarehouseNoticeStatus(String warehouseNoticeStatus) {
+        this.warehouseNoticeStatus = warehouseNoticeStatus;
     }
 
     public String getSupplierName() {
@@ -70,5 +70,16 @@ public class WarehouseNoticeForm extends QueryModel{
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    @Override
+    public String toString() {
+        return "WarehouseNoticeForm{" +
+                "warehouseNoticeCode='" + warehouseNoticeCode + '\'' +
+                ", purchaseOrderCode='" + purchaseOrderCode + '\'' +
+                ", purchaseType='" + purchaseType + '\'' +
+                ", warehouseNoticeStatus='" + warehouseNoticeStatus + '\'' +
+                ", supplierName='" + supplierName + '\'' +
+                '}';
     }
 }

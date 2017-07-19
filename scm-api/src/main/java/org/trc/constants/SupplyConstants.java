@@ -414,11 +414,13 @@ public class SupplyConstants {
      */
     public static final class WarehouseNotice{
         //根路径
-        public static final String ROOT = "warehouse";
+        public static final String ROOT = "warehouseNotice";
         //入库通知的分页路径
-        public static final String WAREHOUSE_NOTICE_PAGE = "purchaseOrderPage";
-
-
+        public static final String WAREHOUSE_NOTICE_PAGE = "warehouseNoticePage";
+        //入库通知的点击操作
+        public static final String RECEIPT_ADVICE= "receiptAdvice";
+        //入库通知的信息查询
+        public static final String WAERHOUSE_NOTICE_INFO= "warehouseNoticeInfo";
     }
 
     /**
@@ -585,6 +587,8 @@ public class SupplyConstants {
         public static final String SUPPLIER_NATURE = "supplierNature";
         //供应商类型
         public static final String SUPPLIER_TYPE = "supplierType";
+        //查询入库通知单的列表页面
+        public static final String WAREHOSUE_NOTICE_STATUS = "warehouseNoticeStatus";
         //仓库类型字典类型编码
         public static final String WAREHOUSE_TYPE = "warehouseType";
         //省市

@@ -56,7 +56,7 @@ public class ChannelResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveChannel(@BeanParam Channel channel,@Context ContainerRequestContext requestContext){
-        channelBiz.saveChannel(channel);
+        channelBiz.saveChannel(channel,requestContext);
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
 
@@ -72,8 +72,8 @@ public class ChannelResource {
     @PUT
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateChannel(@BeanParam  Channel channel){
-        channelBiz.updateChannel(channel);
+    public AppResult updateChannel(@BeanParam  Channel channel,@Context ContainerRequestContext requestContext){
+        channelBiz.updateChannel(channel,requestContext);
         return  ResultUtil.createSucssAppResult("修改渠道信息成功","");
     }
 

@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,12 +14,12 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.custom.CustomDateSerializer;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.PurchaseOrderException;
@@ -33,7 +32,6 @@ import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
-import sun.reflect.generics.tree.FormalTypeParameter;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -283,7 +281,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                     userIds.add(aclUserAccreditInfo.getUserId());
                 }
                 criteria.andIn("purchasePersonId",userIds);
-            }else { //说明没有查到对应的供应商
+            }else { //说明没有查到对应的采购人
                 return null;
             }
 
@@ -847,7 +845,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setWarehouseId(order.getWarehouseId());
         warehouseNotice.setWarehouseCode(order.getWarehouseCode());
         //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
-        warehouseNotice.setState(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        warehouseNotice.setStatus(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         warehouseNotice.setSupplierId(order.getSupplierId());
         warehouseNotice.setSupplierCode(order.getSupplierCode());
         warehouseNotice.setPurchaseType(order.getPurchaseType());
@@ -882,7 +880,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         WarehouseNotice warehouseNotice = new WarehouseNotice();
         warehouseNotice.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
         warehouseNotice = iWarehouseNoticeService.selectOne(warehouseNotice);
-        if(!warehouseNotice.getState().equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode())){
+        if(!warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode())){
             //说明入库通知单已经被推送给仓储,取消失败
             // String msg = String.format("作废%s入库通知单操作失败", JSON.toJSONString(warehouseNotice));
             String msg = "入库通知单已经被推送给仓储,取消失败";
@@ -892,7 +890,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
-        notice.setState(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+        notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
