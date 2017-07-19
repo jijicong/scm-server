@@ -259,6 +259,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String[] jdAddressCodes = jdAddressCode.split(JING_DONG_ADDRESS_SPLIT);
         String[] jdAddressNames = jdAddressName.split(JING_DONG_ADDRESS_SPLIT);
         AssertUtil.isTrue(jdAddressCodes.length == jdAddressNames.length, "京东四级地址编码与名称个数不匹配");
+        //适配京东地址
+        /*Map<String, String[]> addressMap =  adapterJingDongAddress(jdAddressCodes, jdAddressNames);
+        jdAddressCodes = addressMap.get("jdAddressCodes");
+        jdAddressNames = addressMap.get("jdAddressNames");*/
         AppResult appResult = null;
         //获取供应链订单数据
         Map<String, Object> scmOrderMap = getScmOrderMap(warehouseOrderCode);
@@ -1325,8 +1329,53 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     platformOrder.setReceiverDistrict(districtInfo);
                     platformOrder.setReceiverCity(platformOrder.getReceiverProvince());
                 }
+                break;
             }
         }
+    }
+
+    /**
+     * 适配京东地址
+     * @param jdAddressCodes
+     * @param jdAddressNames
+     * @return
+     */
+    private Map<String, String[]> adapterJingDongAddress(String[] jdAddressCodes, String[] jdAddressNames){
+        String[] directCitys = SupplyConstants.DirectGovernedCity.DIRECT_CITY;
+        Map<String, String[]> map = new HashMap<String, String[]>();
+        boolean flag = false;
+        List<String> jdAddressCodeList = new ArrayList<String>();
+        List<String> jdAddressNameList = new ArrayList<String>();
+        if(jdAddressCodes.length > 0){
+            for(String city: directCitys){
+                if(jdAddressNames[0].contains(city)){//当前发货地址是直辖市
+                    flag = true;
+                    break;
+                }
+            }
+        }
+        if(flag){
+            jdAddressCodeList.add(jdAddressCodes[0]);
+            jdAddressCodeList.add(jdAddressCodes[0]);
+            jdAddressNameList.add(jdAddressNames[0]);
+            jdAddressNameList.add(jdAddressNames[0]);
+            if(jdAddressCodes.length > 1){
+                if(jdAddressNames[1].endsWith(DISTRICT)){//市地址放的是区信息
+                    jdAddressCodeList.add(jdAddressCodes[1]);
+                    jdAddressNameList.add(jdAddressNames[1]);
+                }
+            }
+            if(jdAddressCodes.length > 2){
+                jdAddressCodeList.add(jdAddressCodes[2]);
+                jdAddressNameList.add(jdAddressNames[2]);
+            }
+            map.put("jdAddressCodes", jdAddressCodeList.toArray(new String[jdAddressCodeList.size()]));
+            map.put("jdAddressNames", jdAddressNameList.toArray(new String[jdAddressNameList.size()]));
+        }else{
+            map.put("jdAddressCodes", jdAddressCodes);
+            map.put("jdAddressNames", jdAddressNames);
+        }
+        return map;
     }
 
     /**
