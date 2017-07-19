@@ -36,16 +36,7 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
             logInfo.setEntityId(objectId);
             logInfo.setEntityType(object.getClass().getSimpleName());
             logInfo.setOperation(logOperation);
-            if(object instanceof ScmDO){
-                ScmDO scmDO= (ScmDO) object;
-                if (scmDO.getCreateTime()!=null){
-                    logInfo.setOperateTime(scmDO.getCreateTime());
-                }else{
-                    logInfo.setOperateTime(Calendar.getInstance().getTime());
-                }
-            }else{
-                logInfo.setOperateTime(Calendar.getInstance().getTime());
-            }
+            logInfo.setOperateTime(Calendar.getInstance().getTime());
             if(!StringUtils.isBlank(userId)){
                 logInfo.setOperatorUserid(userId);
             }
@@ -71,16 +62,7 @@ public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInf
                 logInfo.setEntityId(objectId);
                 logInfo.setEntityType(object.getClass().getSimpleName());
                 logInfo.setOperation(logOperation);
-                if(object instanceof ScmDO){
-                    ScmDO scmDO= (ScmDO) object;
-                    if (scmDO.getCreateTime()!=null){
-                        logInfo.setOperateTime(scmDO.getCreateTime());
-                    }else{
-                        logInfo.setOperateTime(Calendar.getInstance().getTime());
-                    }
-                }else{
-                    logInfo.setOperateTime(Calendar.getInstance().getTime());
-                }
+                logInfo.setOperateTime(Calendar.getInstance().getTime());
                 if(!StringUtils.isBlank(userId)){
                     logInfo.setOperatorUserid(userId);
                 }

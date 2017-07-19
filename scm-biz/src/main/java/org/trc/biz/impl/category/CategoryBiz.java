@@ -156,6 +156,8 @@ public class CategoryBiz implements ICategoryBiz {
             criteria.andEqualTo("parentId", parentId);
         }
         example.orderBy("sort").asc();
+        example.orderBy("updateTime").desc();
+
         List<Category> childCategoryList = categoryService.selectByExample(example);
         List<TreeNode> childNodeList = new ArrayList<>();
         for (Category category : childCategoryList) {
@@ -367,7 +369,7 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
         AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
-        categoryLevel(Long.parseLong(categoryBrandForm.getCategoryId()));
+//        categoryLevel(Long.parseLong(categoryBrandForm.getCategoryId()));
         String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
         List<Long> categoryList = new ArrayList<Long>();
         for (String categoryId : categoryIds) {
