@@ -225,7 +225,7 @@ public class CategoryBiz implements ICategoryBiz {
             } else {
                 category = categoryService.selectByPrimaryKey(category.getId());
                 String categoryAction = getCategoryAction(category);
-                logInfoService.recordLog(category, String.valueOf(category.getId()), userId, categoryAction + category.getName(), "修改",null);
+                logInfoService.recordLog(category, String.valueOf(category.getId()), userId, String.format(categoryAction + "[%s]", category.getName()), "修改", null);
                 noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, System.currentTimeMillis());
 
             }
@@ -306,7 +306,7 @@ public class CategoryBiz implements ICategoryBiz {
         }
 
 
-        logInfoService.recordLog(category, String.valueOf(category.getId()), category.getCreateOperator(), categoryAction + category.getName(), "新增",null);
+        logInfoService.recordLog(category, String.valueOf(category.getId()), category.getCreateOperator(), String.format(categoryAction + "[%s]", category.getName()), "新增", null);
     }
 
     private void checkSaveCategory(Category category) {
@@ -464,7 +464,7 @@ public class CategoryBiz implements ICategoryBiz {
         //分类状态更新时需要更新分类供应商关系表的is_valid字段
         String categoryAction = getCategoryAction(updateCategory);
         supplierCategoryService.updateSupplierCategoryIsValid(updateCategory.getIsValid(), updateCategory.getId());
-        logInfoService.recordLog(updateCategory, String.valueOf(updateCategory.getId()), userId, categoryAction + updateCategory.getName(), "状态修改为" + state,null);
+        logInfoService.recordLog(updateCategory, String.valueOf(updateCategory.getId()), userId, String.format(categoryAction + "[%s]", updateCategory.getName()), "状态修改为" + state, null);
 
     }
 
@@ -526,7 +526,7 @@ public class CategoryBiz implements ICategoryBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
             } else {
                 String categoryAction = getCategoryAction(category);
-                logInfoService.recordLog(category, String.valueOf(category.getId()), "admin", categoryAction + category.getName(), "状态修改为" + ValidEnum.getValidEnumByCode(category.getIsValid()).getName(),null);
+                logInfoService.recordLog(category, String.valueOf(category.getId()), "admin", String.format(categoryAction + "[%s]", category.getName()), "状态修改为" + ValidEnum.getValidEnumByCode(category.getIsValid()).getName(), null);
                 noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY, oldCategory, category, null, null, System.currentTimeMillis());
             }
         }
@@ -888,7 +888,7 @@ public class CategoryBiz implements ICategoryBiz {
         //分类状态更新时需要更新分类供应商关系表的is_valid字段
         Category logCategory = categoryService.selectByPrimaryKey(categoryId);
         String categoryAction = getCategoryAction(logCategory);
-        logInfoService.recordLog(logCategory, String.valueOf(logCategory.getId()), userId, categoryAction + logCategory.getName(), "关联" + type + "修改",null);
+        logInfoService.recordLog(logCategory, String.valueOf(logCategory.getId()), userId, String.format(categoryAction + "[%s]", logCategory.getName()), "关联" + type + "修改", null);
     }
 
     //关联参数属性校验
