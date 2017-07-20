@@ -2,35 +2,45 @@ package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.util.Serial;
-import org.trc.enums.*;
-import org.trc.exception.ConfigException;
-import org.trc.exception.ParamValidException;
+import org.trc.enums.ExceptionEnum;
+import org.trc.enums.LogOperationEnum;
+import org.trc.enums.ValidEnum;
+import org.trc.enums.remarkEnum;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
+import org.trc.service.IPageNationService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
-import org.trc.util.*;
+import org.trc.util.AssertUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ParamsUtil;
+import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -56,6 +66,8 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Autowired
     private IPageNationService pageNationService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
 
     @Override
