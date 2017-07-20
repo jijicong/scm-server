@@ -606,13 +606,16 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
+        String userId = CommonUtil.getUserId(requestContext);
         checkSkuInfo(skus);//检查sku参数
-        //保存商品基础信息
-        updateItemsBase(items);
         //保存sku信息
         skus.setItemId(items.getId());
         skus.setSpuCode(items.getSpuCode());
-        List<Skus> skuss = updateSkus(skus);
+        List<Skus> skuss = updateSkus(skus, userId);
+        //根据sku启停用状态设置商品启停用状态
+        boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
+        //保存商品基础信息
+        updateItemsBase(items);
         //保存自然属性信息
         if(StringUtils.isNotBlank(itemNaturePropery.getNaturePropertys())){
             itemNaturePropery.setItemId(items.getId());
@@ -624,7 +627,38 @@ public class GoodsBiz implements IGoodsBiz {
         //商品编辑通知渠道
         itemsUpdateNoticeChannel(items, TrcActionTypeEnum.EDIT_ITEMS);
         //记录操作日志
-        logInfoService.recordLog(items,items.getId().toString(),CommonUtil.getUserId(requestContext),LogOperationEnum.UPDATE.getMessage(),null, null);
+        String remark = null;
+        if(isValidUpdate)
+            remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());
+        logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),remark, null);
+    }
+
+    /**
+     * 根据sku启停用状态设置商品启停用状态
+     * @param items
+     */
+    private boolean setItemsIsValidBySkuStatus(Items items){
+        String _isValid = items.getIsValid();
+        Skus skus = new Skus();
+        skus.setSpuCode(items.getSpuCode());
+        List<Skus> skusList = skusService.select(skus);
+        AssertUtil.notEmpty(skusList, String.format("根据spu编码查询sku信息为空", items.getSpuCode()));
+        boolean flag = false;//商品启用
+        for(Skus skus2: skusList){
+            if(StringUtils.equals(ValidEnum.VALID.getCode(), skus2.getIsValid())){
+                flag = true;
+                break;
+            }
+        }
+        if(flag){
+            items.setIsValid(ValidEnum.VALID.getCode());
+        }else {
+            items.setIsValid(ValidEnum.NOVALID.getCode());
+        }
+        if(StringUtils.equals(_isValid, items.getIsValid()))
+            return false;
+        else
+            return true;
     }
 
     /**
@@ -890,7 +924,7 @@ public class GoodsBiz implements IGoodsBiz {
         return null;
     }
 
-    private List<Skus> updateSkus(Skus skus) throws Exception{
+    private List<Skus> updateSkus(Skus skus, String userId) throws Exception{
         AssertUtil.notBlank(skus.getSpuCode(), "更新SKU信息商品SPU编码不能为空");
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         List<Skus> addlist = new ArrayList<Skus>();
@@ -930,6 +964,8 @@ public class GoodsBiz implements IGoodsBiz {
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
             }
+            //记录sku启停用状态更新日志
+            updateSkusValidStatusLog(updatelist, userId);
         }
         if(addlist.size() > 0){
             count = skusService.insertList(addlist);
@@ -945,6 +981,39 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> _skus = skusService.select(_tmp);
         AssertUtil.notEmpty(_skus, String.format("根据商品SPU编码[%s]查询相关SKU为空", skus.getSpuCode()));
         return _skus;
+    }
+
+    /**
+     * 记录sku启停用状态更新日志
+     * @param skusList
+     */
+    private void updateSkusValidStatusLog(List<Skus> skusList, String userId){
+        List<String> skuCodes = new ArrayList<String>();
+        for(Skus skus: skusList){
+            skuCodes.add(skus.getSkuCode());
+        }
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        List<Skus> skusList2 = skusService.selectByExample(example);
+        AssertUtil.notEmpty(skusList2, String.format("根据多个sku编码查询sku信息为空", CommonUtil.converCollectionToString(skuCodes)));
+        List<Skus> tmpList = new ArrayList<Skus>();
+        for(Skus skus: skusList2){
+            for(Skus skus2: skusList){
+                if(StringUtils.equals(skus.getSkuCode(), skus2.getSkuCode())){
+                    if(!StringUtils.equals(skus.getIsValid(), skus2.getIsValid()))
+                        tmpList.add(skus2);
+                }
+            }
+        }
+        if(tmpList.size() > 0){
+            for(Skus skus: tmpList){
+                //记录操作日志
+                logInfoService.recordLog(skus,skus.getId().toString(),userId,
+                        LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus.getSkuCode(), ValidEnum.getValidEnumByCode(skus.getIsValid()).getName()), null);
+            }
+        }
+
     }
 
     /**
@@ -1227,7 +1296,11 @@ public class GoodsBiz implements IGoodsBiz {
         items2 = itemsService.selectOne(items2);
         AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
         //更新商品相关SKU启用/停用状态
-        updateGoodsSkusValid(items2.getSpuCode(),_isValid);
+        String _isValid2 = ZeroToNineEnum.ZERO.getCode();
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _isValid)){
+            _isValid2 = ZeroToNineEnum.ONE.getCode();
+        }
+        updateGoodsSkusValid(items2.getSpuCode(),_isValid2, CommonUtil.getUserId(requestContext));
         //更新SKU库存启停用状态
         updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);
         //更新采购单明细启停用状态
@@ -1239,26 +1312,33 @@ public class GoodsBiz implements IGoodsBiz {
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
     }
 
-    private void updateGoodsSkusValid(String spuCode, String isValid) throws Exception{
+    private void updateGoodsSkusValid(String spuCode, String isValid, String userId) throws Exception{
         Skus skus = new Skus();
         skus.setSpuCode(spuCode);
+        String _isValid = ZeroToNineEnum.ZERO.getCode();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
-            skus.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }else {
-            skus.setIsValid(ZeroToNineEnum.ZERO.getCode());
+            _isValid = ZeroToNineEnum.ONE.getCode();
         }
+        skus.setIsValid(_isValid);
         List<Skus> skusList = skusService.select(skus);
-        AssertUtil.notEmpty(skusList, String.format("根据商品SPU编码[%s]查询相关SKU信息为空", spuCode));
-        Date sysTime = Calendar.getInstance().getTime();
-        for(Skus sku: skusList){
-            sku.setIsValid(isValid);
-            sku.setUpdateTime(sysTime);
-        }
-        int count = skusService.updateSkus(skusList);
-        if(count == 0){
-            String msg = "商品SKU启用/停用操作更新数据库失败";
-            log.error(msg);
-            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        //AssertUtil.notEmpty(skusList, String.format("根据商品SPU编码[%s]查询相关SKU信息为空", spuCode));
+        if(skusList.size() > 0){
+            Date sysTime = Calendar.getInstance().getTime();
+            for(Skus sku: skusList){
+                sku.setIsValid(isValid);
+                sku.setUpdateTime(sysTime);
+            }
+            int count = skusService.updateSkus(skusList);
+            if(count == 0){
+                String msg = "商品SKU启用/停用操作更新数据库失败";
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
+            for(Skus skus2: skusList){
+                //记录操作日志
+                logInfoService.recordLog(skus2,skus2.getId().toString(),userId,
+                        LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+            }
         }
     }
 
