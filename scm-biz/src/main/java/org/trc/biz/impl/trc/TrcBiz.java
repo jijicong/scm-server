@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -57,6 +58,8 @@ public class TrcBiz implements ITrcBiz {
     private ISkusService skusService;
     @Autowired
     private TrcConfig trcConfig;
+    @Autowired
+    private IRequestFlowBiz requestFlowBiz;
 
     private static final String OR = "|";
 
@@ -73,12 +76,9 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
-        //AssertUtil.notBlank(brand.getAlise(), "品牌别名不能为空");
         AssertUtil.notBlank(brand.getBrandCode(), "品牌编码不能为空");
         AssertUtil.notBlank(brand.getIsValid(), "是否停用不能为空");
-        //AssertUtil.notBlank(brand.getLogo(), "图片路径不能为空");
         AssertUtil.notBlank(brand.getName(), "品牌名称不能为空");
-        //AssertUtil.notBlank(brand.getWebUrl(), "品牌网址不能为空");
         //判断是否通知
         if (!action.equals(TrcActionTypeEnum.ADD_BRAND)) {
             if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {

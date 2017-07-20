@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by hzwdx on 2017/7/7.
  */
-public class ChannelOrderResponse {
+public class ChannelOrderResponse extends TrcParam{
 
     //平台订单编号
     private String platformOrderCode;
