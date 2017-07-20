@@ -4,7 +4,9 @@ import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -15,6 +17,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by sone on 2017/7/11.
@@ -24,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 public class WarehouseNoticeResource {
     @Resource
     private IWarehouseNoticeBiz warehouseNoticeBiz;
+
 
     //入库通知的分页查询
     @GET
@@ -45,12 +49,31 @@ public class WarehouseNoticeResource {
 
     }
 
+    @POST
+    @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE_INFO+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
+
+        warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,requestContext);
+        return ResultUtil.createSucssAppResult("通知收货成功","");
+
+    }
+
     @GET
     @Path(SupplyConstants.WarehouseNotice.WAERHOUSE_NOTICE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<WarehouseNotice> findWarehouseNoticeInfoById(@PathParam("id") Long id){
 
         return ResultUtil.createSucssAppResult("查询入库通知单信息成功",warehouseNoticeBiz.findfindWarehouseNoticeById(id));
+
+    }
+
+    @GET
+    @Path(SupplyConstants.WarehouseNotice.WAREHOUSE_NOTICE_DETAIL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<WarehouseNoticeDetails> warehouseNoticeDetailList(@QueryParam("warehouseNotice") Long warehouseNotice)throws Exception{
+        //"根据入库通知单的id，查询入库明细成功",
+        return warehouseNoticeBiz.warehouseNoticeDetailList(warehouseNotice);
 
     }
 

@@ -21,9 +21,11 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.PurchaseOrderException;
+import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
@@ -389,16 +391,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
 
         }
-
-        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
-            savePurchaseOrderAudit(purchaseOrder,requestContext);
-        }
-
         //保存操作日志
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
+
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
+            savePurchaseOrderAudit(purchaseOrder,requestContext);
+        }
+
     }
     /**
      * 保存提交审核的采购信息
@@ -751,15 +753,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
 
-        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
-            savePurchaseOrderAudit(purchaseOrderAddData,requestContext);
-        }
-
         //修改操作日志
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,null);
+
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
+            savePurchaseOrderAudit(purchaseOrderAddData,requestContext);
+        }
+
 
     }
 
@@ -873,6 +876,44 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.WAREHOUSE_NOTICE.getMessage(),null,null);
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
+        //生成入库通知商品明细
+        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        purchaseDetail.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
+        List<PurchaseDetail> purchaseDetails = purchaseDetailService.select(purchaseDetail);
+        if(CollectionUtils.isEmpty(purchaseDetails)){
+            String msg = String.format("采购单的编码[purchaseOrderCode=%s]的状态没有查到对应的采购商品,请核实该入库明细",warehouseNotice.getPurchaseOrderCode());
+            LOGGER.error(msg);
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+        }
+        insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());
+
+    }
+
+    private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode){
+
+        List<WarehouseNoticeDetails> warehouseNoticeDetails = new ArrayList<WarehouseNoticeDetails>();
+
+        for (PurchaseDetail purchaseDetail: purchaseDetailList) {
+            WarehouseNoticeDetails details = new WarehouseNoticeDetails();
+            details.setWarehouseNoticeCode(warehouseNoticeCode);
+            details.setBrandId(purchaseDetail.getBrandId());
+            details.setCategoryId(purchaseDetail.getCategoryId());
+            details.setSkuCode(purchaseDetail.getSkuCode());
+            details.setSkuName(purchaseDetail.getItemName());
+            //details.setActualStorageQuantity(0L);//初始化0
+            details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
+            details.setCreateTime(Calendar.getInstance().getTime());
+            details.setPurchasePrice(purchaseDetail.getPurchasePrice());//采购价格
+            //details.setStorageTime(details.getCreateTime());
+            warehouseNoticeDetails.add(details);
+        }
+        int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
+        if(count < 1){
+            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]保存入库通知明细初始化失败,无法进行入库通知的操作",warehouseNoticeCode);
+            LOGGER.error(msg);
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+        }
+
     }
 
     /**赋值入库通知单

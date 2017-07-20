@@ -11,4 +11,6 @@ import java.util.List;
 public interface ICategoryMapper extends BaseMapper<Category> {
 
     int updateSort(List<Category> categoryList) throws Exception;
+
+    String selectAllCategoryName(Long categoryId);
 }

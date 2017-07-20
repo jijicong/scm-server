@@ -419,8 +419,13 @@ public class SupplyConstants {
         public static final String WAREHOUSE_NOTICE_PAGE = "warehouseNoticePage";
         //入库通知的点击操作
         public static final String RECEIPT_ADVICE= "receiptAdvice";
+        //入库通知单详情页的入库通知操作
+        public static final String RECEIPT_ADVICE_INFO= "receiptAdviceInfo";
         //入库通知的信息查询
         public static final String WAERHOUSE_NOTICE_INFO= "warehouseNoticeInfo";
+        //入库通知明细查询
+        public static final String WAREHOUSE_NOTICE_DETAIL="warehouseNoticeDetail";
+
     }
 
     /**

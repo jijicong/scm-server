@@ -1,10 +1,12 @@
 package org.trc.biz.warehouseNotice;
 
 import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import java.util.List;
 
 /**
  * Created by sone on 2017/7/12.
@@ -28,5 +30,19 @@ public interface IWarehouseNoticeBiz {
      * @return
      */
     WarehouseNotice findfindWarehouseNoticeById(Long id);
+
+    /**
+     * 根据入库通知的ID，查询入库通知明细
+     * @param warehouseNoticeId
+     * @return
+     */
+    List<WarehouseNoticeDetails> warehouseNoticeDetailList(Long warehouseNoticeId);
+
+    /**
+     * 入库通知单详情页的入库通知操作
+     * @param warehouseNotice
+     * @param requestContext
+     */
+    void  receiptAdviceInfo(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext);
 
 }
