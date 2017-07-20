@@ -2,6 +2,13 @@ package org.trc.biz.impl.category;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +20,15 @@ import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.domain.category.Property;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.BrandForm;
+import org.trc.form.category.PropertyForm;
+import org.trc.service.IPageNationService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.config.ILogInfoService;
@@ -57,6 +67,9 @@ public class BrandBiz implements IBrandBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private ITrcBiz trcBiz;
+    @Autowired
+    private IPageNationService pageNationService;
+
     @Override
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
@@ -86,6 +99,62 @@ public class BrandBiz implements IBrandBiz {
         pagenation.setResult(brandList);
         return pagenation;
     }
+
+
+    @Override
+    public Pagenation<Brand> brandPageES(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
+        TransportClient clientUtil = TransportClientUtil.getTransportClient();
+        HighlightBuilder hiBuilder = new HighlightBuilder();
+        hiBuilder.preTags("<b style=\"color: red\">");
+        hiBuilder.postTags("</b>");
+        hiBuilder.field("name.pinyin");//http://172.30.250.164:9100/ 模糊字段可在这里找到
+        SearchRequestBuilder srb = clientUtil.prepareSearch("item_brand")//es表名
+                .highlighter(hiBuilder)
+                .setFrom(page.getStart())//第几个开始
+                .setSize(page.getPageSize());//长度
+        if (StringUtils.isNotBlank(queryModel.getName())) {
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("name.pinyin", queryModel.getName());
+            srb.setQuery(matchQuery);
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
+            srb.setPostFilter(filterBuilder);
+        }
+        SearchHit[] searchHists = pageNationService.resultES(srb, clientUtil);
+        List<Brand> brandList = new ArrayList<>();
+        for (SearchHit searchHit : searchHists) {
+            Brand brand = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Brand.class);
+            if (StringUtils.isNotBlank(queryModel.getName())) {
+                for (Text text : searchHit.getHighlightFields().get("name.pinyin").getFragments()) {
+                    brand.setHighLightName(text.string());
+                }
+            }
+            brandList.add(brand);
+        }
+
+        if(AssertUtil.collectionIsEmpty(brandList)){
+            return page;
+        }
+        Map<String, String> fileUrlMap = constructFileUrlMap(brandList);
+        Map<String, AclUserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(brandList);
+        for (Brand brand : brandList) {
+            if (!StringUtils.isBlank(brand.getLogo())){
+                brand.setLogo(fileUrlMap.get(brand.getLogo()));
+            }
+            if(!StringUtils.isBlank(brand.getLastEditOperator())){
+                if(userAccreditInfoMap!=null){
+                    AclUserAccreditInfo aclUserAccreditInfo =userAccreditInfoMap.get(brand.getLastEditOperator());
+                    if(aclUserAccreditInfo !=null){
+                        brand.setLastEditOperator(aclUserAccreditInfo.getName());
+                    }
+                }
+            }
+        }
+        page.setResult(brandList);
+        return page;
+    }
+
+
 
     @Override
     public Pagenation<Brand> brandList(BrandForm queryModel, Pagenation<Brand> page) throws Exception {

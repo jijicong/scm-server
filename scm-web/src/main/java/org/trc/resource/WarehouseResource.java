@@ -31,7 +31,7 @@ public class WarehouseResource {
     @Path(SupplyConstants.Warehouse.WAREHOUSE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Warehouse> warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page){
-        return warehouseBiz.warehousePage(form,page);
+        return warehouseBiz.warehousePageEs(form,page);
     }
     //根据仓库名查询仓库
     @GET

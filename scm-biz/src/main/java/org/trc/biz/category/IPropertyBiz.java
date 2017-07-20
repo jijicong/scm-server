@@ -24,6 +24,16 @@ public interface IPropertyBiz {
     Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception;
 
     /**
+     * 属性管理页面ES分页查询
+     *
+     * @param queryModel
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Property> propertyPageES(PropertyForm queryModel, Pagenation<Property> page) throws Exception;
+
+    /**
      * 保存属性信息
      *
      * @param property

@@ -31,7 +31,7 @@ public class PropertyResource {
     @Path(SupplyConstants.Category.Property.PROPERTY_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Property> propertyPage(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) throws Exception {
-        return propertyBiz.propertyPage(form,page);
+        return propertyBiz.propertyPageES(form,page);
     }
 
     @POST

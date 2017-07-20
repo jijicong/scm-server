@@ -61,4 +61,9 @@ public interface IWarehouseBiz {
      * @throws Exception
      */
     List<Warehouse> findWarehouseValid();
+
+    /**
+     * 模糊查询
+     */
+    Pagenation<Warehouse> warehousePageEs(WarehouseForm form, Pagenation<Warehouse> page);
 }
