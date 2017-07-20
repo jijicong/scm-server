@@ -317,13 +317,23 @@ public class SupplierBiz implements ISupplierBiz {
         AssertUtil.notNull(supplier.getSupplierCode(), "更新供应商供应商编号不能为空");
         //参数校验
         supplierSaveCheck(supplier, certificate);
+        //是否也要修改启停用
+        boolean isValidFlag = isSupplerValid(supplier);
         //更新供应商
         updateSupplierBase(supplier);
         if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
             //保存证件
             certificate.setSupplierId(supplier.getId());
             certificate.setSupplierCode(supplier.getSupplierCode());
-            updateCertificate(certificate);
+            Certificate certificate2 = new Certificate();
+            certificate2.setSupplierId(supplier.getId());
+            certificate2.setSupplierCode(supplier.getSupplierCode());
+            certificate2 = certificateService.selectOne(certificate2);
+            if(null == certificate2){
+                saveCertificate(certificate);
+            }else{
+                updateCertificate(certificate);
+            }
         }
         //更新供应商代理类目
         supplierCategory.setSupplierId(supplier.getId());
@@ -354,7 +364,26 @@ public class SupplierBiz implements ISupplierBiz {
             rejectSupplierApply(supplier.getId(), requestContext);
         }
         //记录操作日志
-        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(),null, null);
+        String remark = null;
+        if(isValidFlag)
+            remark = String.format("供应商状态被更新为[%s]", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName());
+        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(),remark, null);
+    }
+
+    /**
+     * 供应商修改是否也修改了启停用
+     * @param supplier
+     */
+    private boolean isSupplerValid(Supplier supplier){
+        Supplier supplier2 = new Supplier();
+        supplier2.setId(supplier.getId());
+        supplier2 = supplierService.selectOne(supplier2);
+        AssertUtil.notNull(supplier2, String.format("根据供应商主键ID[%s]查询供应商信息为空", supplier.getId()));
+        if(!StringUtils.equals(supplier.getIsValid(), supplier2.getIsValid())){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 
@@ -656,8 +685,10 @@ public class SupplierBiz implements ISupplierBiz {
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
                 deleteList.add(s.getId());
             } else {
-                //检查分类启停用状态
-                checkCategoryBrandValidStatus(s.getCategoryId(), null);
+                if(!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的分类
+                    //检查分类启停用状态
+                    checkCategoryBrandValidStatus(s.getCategoryId(), null);
+                }
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
@@ -669,6 +700,7 @@ public class SupplierBiz implements ISupplierBiz {
                 }
             }
             if (!flag) {
+                s.setIsValid(ValidEnum.VALID.getCode());
                 addList.add(s);
             }
         }
@@ -805,8 +837,10 @@ public class SupplierBiz implements ISupplierBiz {
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
                 delList.add(s);
             } else {
-                //检查品牌启停用状态
-                checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
+                if(!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//不是删除状态的品牌
+                    //检查品牌启停用状态
+                    checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
+                }
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
@@ -817,6 +851,7 @@ public class SupplierBiz implements ISupplierBiz {
                     delList.add(s);
                 }
             } else {//新增数据
+                s.setIsValid(ValidEnum.VALID.getCode());
                 addlist.add(s);
             }
         }

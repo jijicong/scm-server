@@ -1209,7 +1209,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode()))
             requestFlowTypeEnum = RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY;
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(String.format("{warehouseOrderCode:%s,flag:%s", warehouseOrderCode, flag), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, returnTypeDO, RequestFlowConstant.GYL);
+        requestFlowBiz.saveRequestFlow(String.format("{warehouseOrderCode:%s,flag:%s}", warehouseOrderCode, flag), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, returnTypeDO, RequestFlowConstant.GYL);
         if(!returnTypeDO.getSuccess()){
             String msg = String.format("调用物流查询服务查询仓库订单编码为[%s]的仓库订单物流信息失败,错误信息:%s",
                     warehouseOrderCode, returnTypeDO.getResultMessage());

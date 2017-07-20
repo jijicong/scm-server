@@ -1406,10 +1406,10 @@ public class GoodsBiz implements IGoodsBiz {
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
             if(null != s.getWeight() && s.getWeight() > 0){
-                s.setWeight2(BigDecimal.valueOf(Math.round(s.getWeight())/CommonUtil.MONEY_MULTI));
+                s.setWeight2(CommonUtil.fenToYuan(s.getWeight()));
             }
             if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
-                s.setMarketPrice2(BigDecimal.valueOf(Math.round(s.getMarketPrice())/CommonUtil.MONEY_MULTI));
+                s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));
             }
             if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
                 Example example = new Example(SkuStock.class);

@@ -18,7 +18,7 @@ public interface ITrcService {
      * @return
      * @throws Exception
      */
-    String sendBrandNotice(String brandUrl, String params) throws Exception;
+    ToGlyResultDO sendBrandNotice(String brandUrl, String params) throws Exception;
 
     /**
      * @param categoryPropertyUrl
@@ -26,7 +26,7 @@ public interface ITrcService {
      * @return
      * @throws Exception
      */
-    String sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception;
+    ToGlyResultDO sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception;
 
     /**
      * @param categoryBrandUrl
@@ -34,7 +34,7 @@ public interface ITrcService {
      * @return
      * @throws Exception
      */
-    String sendCategoryBrandList(String categoryBrandUrl, String params) throws Exception;
+    ToGlyResultDO sendCategoryBrandList(String categoryBrandUrl, String params) throws Exception;
 
     /**
      * @param categoryUrl
@@ -42,7 +42,7 @@ public interface ITrcService {
      * @return
      * @throws Exception
      */
-    String sendCategoryToTrc(String categoryUrl, String params) throws Exception;
+    ToGlyResultDO sendCategoryToTrc(String categoryUrl, String params) throws Exception;
 
     /**
      * @param propertyUrl
@@ -50,7 +50,7 @@ public interface ITrcService {
      * @return
      * @throws Exception
      */
-    String sendPropertyNotice(String propertyUrl, String params) throws Exception;
+    ToGlyResultDO sendPropertyNotice(String propertyUrl, String params) throws Exception;
 
     /**
      * @param itemsUrl
@@ -58,7 +58,7 @@ public interface ITrcService {
      * @return
      * @throws Exception
      */
-    String sendItemsNotice(String itemsUrl, String params) throws Exception;
+    ToGlyResultDO sendItemsNotice(String itemsUrl, String params) throws Exception;
 
     /**
      *
