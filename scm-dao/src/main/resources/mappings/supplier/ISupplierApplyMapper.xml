@@ -58,7 +58,7 @@
                 AND a.channel_id  =#{channelId}
             </if>
         </where>
-        ORDER BY a.status in (0,3),a.update_time DESC
+        ORDER BY instr('0,3,1,2',`status`),a.update_time DESC
     </select>
 
     <select id="selectSupplierApplyCount" resultType="java.lang.Integer" parameterType="java.util.Map">

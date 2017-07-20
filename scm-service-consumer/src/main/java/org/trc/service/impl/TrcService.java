@@ -36,25 +36,25 @@ public class TrcService implements ITrcService {
 
     private final static int TIME_OUT = 3000;
 
+    //接口重试次数
+    public final static Integer RETRY_TIMES = 3;
+
     @Autowired
     private TrcConfig trcConfig;
 
     @Override
-    public String sendBrandNotice(String brandUrl, String params) throws Exception {
-        //return HttpClientUtil.httpPostJsonRequest(brandUrl, params, 10000);
+    public ToGlyResultDO sendBrandNotice(String brandUrl, String params) throws Exception {
         return invokeUpdateNotice(brandUrl, params);
     }
 
     @Override
-    public String sendPropertyNotice(String propertyUrl, String params) throws Exception {
-        //return HttpClientUtil.httpPostJsonRequest(propertyUrl, params, 10000);
+    public ToGlyResultDO sendPropertyNotice(String propertyUrl, String params) throws Exception {
         return invokeUpdateNotice(propertyUrl, params);
     }
 
     //发送商品改动
     @Override
-    public String sendItemsNotice(String itemsUrl, String params) throws Exception {
-        //return HttpClientUtil.httpPostJsonRequest(itemsUrl, params, 10000);
+    public ToGlyResultDO sendItemsNotice(String itemsUrl, String params) throws Exception {
         return invokeUpdateNotice(itemsUrl, params);
     }
 
@@ -65,22 +65,19 @@ public class TrcService implements ITrcService {
 
     //发送分类属性改动
     @Override
-    public String sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception {
-        //return HttpClientUtil.httpPostJsonRequest(categoryPropertyUrl, params, 10000);
+    public ToGlyResultDO sendCategoryPropertyList(String categoryPropertyUrl, String params) throws Exception {
         return invokeUpdateNotice(categoryPropertyUrl, params);
     }
 
     //发送分类品牌改动
     @Override
-    public String sendCategoryBrandList(String categoryBrandUrl, String params) throws Exception {
-        //return HttpClientUtil.httpPostJsonRequest(categoryBrandUrl, params, 10000);
+    public ToGlyResultDO sendCategoryBrandList(String categoryBrandUrl, String params) throws Exception {
         return invokeUpdateNotice(categoryBrandUrl, params);
     }
 
     //发送分类改动
     @Override
-    public String sendCategoryToTrc(String categoryUrl, String params) throws Exception {
-        //return HttpClientUtil.httpPostJsonRequest(categoryUrl, params, 10000);
+    public ToGlyResultDO sendCategoryToTrc(String categoryUrl, String params) throws Exception {
         return invokeUpdateNotice(categoryUrl, params);
     }
 
@@ -90,7 +87,7 @@ public class TrcService implements ITrcService {
      * @param params
      * @return
      */
-    private String invokeUpdateNotice(String url, String params){
+    private ToGlyResultDO invokeUpdateNotice(String url, String params){
         log.debug("开始调用泰然城信息更新同步服务" + url + ", 参数：" + params + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
@@ -101,15 +98,20 @@ public class TrcService implements ITrcService {
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
             response = HttpClientUtil.httpPostJsonRequest(url, params, httpPost, TIME_OUT);
-            log.debug("结束泰然城信息更新同步服务" + url + ", 返回结果：" + response + ". 结束时间" +
-                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-            return response;
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+            }else {
+                toGlyResultDO.setMsg("调用泰然城信息更新同步服务返回结果为空");
+            }
         }catch (Exception e){
             String msg = String.format("调用泰然城信息更新同步服务%s异常,错误信息:%s", url, e.getMessage());
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }
-        return response;
+        log.debug("结束泰然城信息更新同步服务" + url + ", 返回结果：" + response + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        return toGlyResultDO;
     }
 
     @Override
@@ -117,10 +119,10 @@ public class TrcService implements ITrcService {
         AssertUtil.notNull(channelOrderResponse, "同步订单提交结果给渠道参数不能为空");
         String url = trcConfig.getOrderSubmitNotifyUrl();
         String paramObj = JSON.toJSON(channelOrderResponse).toString();
-        log.debug("开始调用同步订单提交结果给渠服务" + url + ", 参数：" + paramObj + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+        log.debug("开始调用同步订单提交结果给渠服务" + url + ", 参数：" + paramObj + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
             HttpPost httpPost = new HttpPost(url);
@@ -129,11 +131,6 @@ public class TrcService implements ITrcService {
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                /*AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                }
-                toGlyResultDO.setMsg(appResult.getDatabuffer());*/
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
             }else {
                 toGlyResultDO.setMsg("调用同步订单提交结果给渠服务返回结果为空");
@@ -156,10 +153,10 @@ public class TrcService implements ITrcService {
         AssertUtil.notEmpty(logisticNoticeForm.getLogistics(), "同步物理新给渠道物流信息logistics不能为空");
         String url = trcConfig.getLogisticsNotifyUrl();
         String paramObj = JSON.toJSONString(logisticNoticeForm);
-        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
         toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
             HttpPost httpPost = new HttpPost(url);
@@ -168,11 +165,6 @@ public class TrcService implements ITrcService {
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                /*AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                }
-                toGlyResultDO.setMsg(appResult.getDatabuffer());*/
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
             }else {
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");
@@ -186,7 +178,6 @@ public class TrcService implements ITrcService {
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return toGlyResultDO;
     }
-
 
 
 

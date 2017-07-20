@@ -2,15 +2,6 @@ package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
@@ -28,7 +18,6 @@ import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
-import org.trc.service.IPageNationService;
 import org.trc.service.System.IChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
@@ -63,6 +52,9 @@ public class ChannelBiz implements IChannelBiz {
 
     @Autowired
     private IPageNationService pageNationService;
+    @Resource
+    private ILogInfoService logInfoService;
+
 
 
     @Override
@@ -165,7 +157,8 @@ public class ChannelBiz implements IChannelBiz {
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(channel,channel.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),"新增渠道%s",null);
 
     }
 
@@ -189,6 +182,9 @@ public class ChannelBiz implements IChannelBiz {
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
+
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(channel,channel.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,null);
 
     }
 

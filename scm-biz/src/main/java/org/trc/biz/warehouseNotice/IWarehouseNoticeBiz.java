@@ -21,7 +21,7 @@ public interface IWarehouseNoticeBiz {
      * 执行通知收货
      * @param warehouseNotice
      */
-    void receiptAdvice(WarehouseNotice warehouseNotice);
+    void receiptAdvice(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext);
 
     /** 根据入库通知单的id查询入库通知单
      * @param id

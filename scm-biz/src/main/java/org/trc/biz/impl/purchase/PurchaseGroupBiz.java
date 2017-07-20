@@ -8,13 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
+import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
+import org.trc.enums.remarkEnum;
 import org.trc.exception.PurchaseGroupException;
 import org.trc.form.purchase.PurchaseGroupForm;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.ISerialUtilService;
@@ -23,6 +28,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**
@@ -45,6 +51,8 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private final static Integer LENGTH = 5;
     @Resource
     private ISerialUtilService serialUtilService;
+    @Resource
+    private ILogInfoService logInfoService;
 
     @Override
     public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page)  {
@@ -107,14 +115,17 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseStatus(PurchaseGroup purchaseGroup)  {
+    public void updatePurchaseStatus(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext)  {
         AssertUtil.notNull(purchaseGroup,"采购组信息为空，修改采购组状态失败");
         PurchaseGroup updatePurchaseGroup = new PurchaseGroup();
         updatePurchaseGroup.setId(purchaseGroup.getId());
+        String remark = null;
         if (purchaseGroup.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updatePurchaseGroup.setIsValid(ValidEnum.NOVALID.getCode());
+            remark = remarkEnum.VALID_OFF.getMessage();
         } else {
             updatePurchaseGroup.setIsValid(ValidEnum.VALID.getCode());
+            remark = remarkEnum.VALID_ON.getMessage();
         }
 
         Map<String,Object> map = new HashMap<>();
@@ -129,6 +140,8 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             logger.error(msg);
             throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(purchaseGroup,purchaseGroup.getId().toString(),userId, LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 
@@ -144,7 +157,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseGroup(PurchaseGroup purchaseGroup)  {
+    public void updatePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext)  {
         AssertUtil.notNull(purchaseGroup,"根据采购组信息修改采购组失败,采购信息为null");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
         if(tmp!=null){
@@ -153,6 +166,17 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             }
         }
         purchaseGroup.setUpdateTime(Calendar.getInstance().getTime());
+
+        PurchaseGroup _purchaseGroup = purchaseGroupService.selectByPrimaryKey(purchaseGroup.getId());
+        String remark = null;
+        if(!_purchaseGroup.getIsValid().equals(purchaseGroup.getIsValid())){
+            if(purchaseGroup.getIsValid().equals(ValidEnum.VALID.getCode())){
+                remark=remarkEnum.VALID_ON.getMessage();
+            }else{
+                remark=remarkEnum.VALID_OFF.getMessage();
+            }
+        }
+
         int count = purchaseGroupService.updateByPrimaryKeySelective(purchaseGroup);
         if(count == 0){
             String msg = String.format("修改采购组%s数据库操作失败",JSON.toJSONString(purchaseGroup));
@@ -167,11 +191,14 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         }*/
         savePurchaseGroupUserRelation(purchaseGroup.getCode(),purchaseGroup.getLeaderUserId(),purchaseGroup.getMemberUserId(),purchaseGroup.getIsValid());
 
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(purchaseGroup,purchaseGroup.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
+
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseGroup(PurchaseGroup purchaseGroup)  {
+    public void savePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext)  {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -195,6 +222,9 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         String laederUserId = purchaseGroup.getLeaderUserId();
         String memberUserStrs = purchaseGroup.getMemberUserId();
         savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs,purchaseGroup.getIsValid());
+
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(purchaseGroup,purchaseGroup.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
 
     }
 

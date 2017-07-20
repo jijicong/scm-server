@@ -2,15 +2,6 @@ package org.trc.biz.impl.system;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.Serial;
 import org.trc.enums.*;
@@ -29,7 +19,6 @@ import org.trc.exception.ConfigException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
-import org.trc.service.IPageNationService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
@@ -157,13 +146,15 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
 
     }
 
     @Override
     public Warehouse findWarehouseByName(String name) {
 
-        AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
+        AssertUtil.notBlank(name,"根据渠道名称查询渠道的参数name为空");
         Warehouse warehouse = new Warehouse();
         warehouse.setName(name);
         return warehouseService.selectOne(warehouse);
@@ -176,8 +167,10 @@ public class WarehouseBiz implements IWarehouseBiz {
         AssertUtil.notNull(warehouse, "仓库管理模块修改仓库信息失败，仓库信息为空");
         Warehouse updateWarehouse = new Warehouse();
         updateWarehouse.setId(warehouse.getId());
+        String remark = null;
         if (warehouse.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateWarehouse.setIsValid(ValidEnum.NOVALID.getCode());
+            remark = remarkEnum.VALID_OFF.getMessage();
         } else {
             updateWarehouse.setIsValid(ValidEnum.VALID.getCode());
         }
@@ -188,6 +181,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 
@@ -214,12 +209,24 @@ public class WarehouseBiz implements IWarehouseBiz {
             }
         }
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
+        Warehouse _warehouse = warehouseService.selectByPrimaryKey(warehouse.getId());
+        String remark = null;
+        AssertUtil.notNull(_warehouse,"根据id查询仓库为空");
         int count = warehouseService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败", JSON.toJSONString(warehouse));
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
+        if(!_warehouse.getIsValid().equals(warehouse.getIsValid())){
+            if(warehouse.getIsValid().equals(ValidEnum.VALID.getCode())){
+                remark=remarkEnum.VALID_ON.getMessage();
+            }else{
+                remark=remarkEnum.VALID_OFF.getMessage();
+            }
+        }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 

@@ -38,9 +38,9 @@ public class WarehouseNoticeResource {
     @POST
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult receiptAdvice(@BeanParam WarehouseNotice warehouseNotice){
+    public AppResult receiptAdvice(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
 
-        warehouseNoticeBiz.receiptAdvice(warehouseNotice);
+        warehouseNoticeBiz.receiptAdvice(warehouseNotice,requestContext);
         return ResultUtil.createSucssAppResult("通知收货成功","");
 
     }

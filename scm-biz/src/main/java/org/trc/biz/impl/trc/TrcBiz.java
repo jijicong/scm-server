@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -57,6 +57,8 @@ public class TrcBiz implements ITrcBiz {
     private ISkusService skusService;
     @Autowired
     private TrcConfig trcConfig;
+    @Autowired
+    private IRequestFlowBiz requestFlowBiz;
 
     private static final String OR = "|";
 
@@ -67,18 +69,14 @@ public class TrcBiz implements ITrcBiz {
     public void addRequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime, String remark) throws Exception {
         RequestFlow requestFlow = new RequestFlow(requester, responder, type, requestNum, status, requestParam, responseParam, requestTime, remark);
         requestFlowService.insert(requestFlow);
-
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendBrand(TrcActionTypeEnum action, Brand oldBrand, Brand brand, long operateTime) throws Exception {
-        //AssertUtil.notBlank(brand.getAlise(), "品牌别名不能为空");
         AssertUtil.notBlank(brand.getBrandCode(), "品牌编码不能为空");
         AssertUtil.notBlank(brand.getIsValid(), "是否停用不能为空");
-        //AssertUtil.notBlank(brand.getLogo(), "图片路径不能为空");
         AssertUtil.notBlank(brand.getName(), "品牌名称不能为空");
-        //AssertUtil.notBlank(brand.getWebUrl(), "品牌网址不能为空");
         //判断是否通知
         if (!action.equals(TrcActionTypeEnum.ADD_BRAND)) {
             if (oldBrand.getName().equals(brand.getName()) && oldBrand.getIsValid().equals(brand.getIsValid())) {
@@ -107,8 +105,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("brandToTrc", brandToTrc);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendBrandNotice(trcConfig.getBrandUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知品牌变更接口sendBrand]";
+        ToGlyResultDO toGlyResultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.BRAND_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知品牌变更接口sendBrand]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_BRAND_EXCEPTION.getMessage());
@@ -124,7 +124,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -167,8 +167,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知属性变更接口sendProperty]";
+        ToGlyResultDO toGlyResultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知属性变更接口sendProperty]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_PROPERTY_EXCEPTION.getMessage());
@@ -185,7 +187,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -280,8 +282,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("itemSalesPropery", itemSalesPropery);
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知商品变更接口sendItem]";
+        ToGlyResultDO toGlyResultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.ITEM_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知商品变更接口sendItem]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_ITEMS_EXCEPTION.getMessage());
@@ -298,7 +302,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -380,8 +384,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("noticeNum", noticeNum);
         params.put("sign", sign);
         params.put("externalItemSkuList", sendList);
-        String result = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知一件代发商品变更接口sendExternalItemSkuUpdation]";
+        ToGlyResultDO toGlyResultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知一件代发商品变更接口sendExternalItemSkuUpdation]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_EXTERNALITEMSKU_UPDATE_EXCEPTION.getMessage());
@@ -398,7 +404,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -536,8 +542,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知分类属性变更接口sendCategoryPropertyList]";
+        ToGlyResultDO toGlyResultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知分类属性变更接口sendCategoryPropertyList]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_CATEGORY_PROPERTY_EXCEPTION.getMessage());
@@ -554,8 +562,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -575,8 +582,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryBrandList", categoryBrandList);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知分类品牌变更接口sendCategoryBrandList]";
+        ToGlyResultDO toGlyResultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知分类品牌变更接口sendCategoryBrandList]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_CATEGORY_BRAND_EXCEPTION.getMessage());
@@ -593,7 +602,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_FAILED.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 
@@ -601,7 +610,6 @@ public class TrcBiz implements ITrcBiz {
     public ToGlyResultDO sendCategoryToTrc(TrcActionTypeEnum action, Category oldCategory, Category category, long operateTime) throws Exception {
         AssertUtil.notBlank(category.getIsValid(), "是否停用不能为空");
         AssertUtil.notBlank(category.getName(), "分类名称不能为空");
-        //AssertUtil.notBlank(category.getClassifyDescribe(), "分类描述不能为空");
         AssertUtil.notNull(category.getSort(), "分类排序不能为空");
         //判断是否通知
         if (!action.getCode().equals(TrcActionTypeEnum.ADD_CATEGORY.getCode())) {
@@ -632,8 +640,10 @@ public class TrcBiz implements ITrcBiz {
         params.put("sign", sign);
         params.put("categoryToTrc", categoryToTrc);
         logger.info("请求数据: " + params.toJSONString());
-        String result = trcService.sendCategoryToTrc(trcConfig.getCategoryUrl(), params.toJSONString());
-        String remark = "调用方法-TrcBiz类中[通知分类品牌变更接口sendCategoryToTrc]";
+        ToGlyResultDO toGlyResultDO = trcService.sendCategoryToTrc(trcConfig.getCategoryUrl(), params.toJSONString());
+        //保存请求流水
+        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        /*String remark = "调用方法-TrcBiz类中[通知分类品牌变更接口sendCategoryToTrc]";
         //抛出通知自定义异常
         if (StringUtils.isEmpty(result)) {
             logger.error(ExceptionEnum.TRC_CATEGORY_EXCEPTION.getMessage());
@@ -650,7 +660,7 @@ public class TrcBiz implements ITrcBiz {
         } else {
             addRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, action.getCode(),
                     noticeNum, RequestFlowStatusEnum.SEND_SUCCESS.getCode(), params.toJSONString(), result, Calendar.getInstance().getTime(), remark);
-        }
+        }*/
         return toGlyResultDO;
     }
 

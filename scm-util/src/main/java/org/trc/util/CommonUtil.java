@@ -19,6 +19,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -39,6 +40,8 @@ public class CommonUtil {
 
 	//金额数字
 	public static final int MONEY_MULTI = 100;
+	//金额小数位
+	public static final int DECIMAL_NUM = 2;
 	public final static String TIP = "0.00";
 	
 	public static Map<String, Object> getMap(String key, String Object){
@@ -332,6 +335,21 @@ public class CommonUtil {
 			return "";
 		}else{
 			return userId.toString();
+		}
+	}
+
+	/**
+	 * 分转元
+	 * @param val
+	 * @return
+	 */
+	public static BigDecimal fenToYuan(Long val){
+		if(val == null){
+			return new BigDecimal(0);
+		}else{
+			BigDecimal b1 = new BigDecimal(val);
+			BigDecimal b2 = new BigDecimal(MONEY_MULTI);
+			return b1.divide(b2).setScale(DECIMAL_NUM, RoundingMode.HALF_EVEN);
 		}
 	}
 

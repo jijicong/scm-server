@@ -16,7 +16,7 @@ public class SupplierApplyAuditForm extends QueryModel {
         private String supplierCode;//供应商编号
         @QueryParam("status")
         private String status;//审核状态
-        @QueryParam("applySquare")
+        @QueryParam("channelId")
         private String applySquare;//申请方
 
     public String getSupplierName() {

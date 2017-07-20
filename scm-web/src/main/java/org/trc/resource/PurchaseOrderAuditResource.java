@@ -43,9 +43,9 @@ public class PurchaseOrderAuditResource {
     @PUT
     @Path(SupplyConstants.PurchaseOrderAudit.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult auditPurchaseOrder(@BeanParam PurchaseOrderAudit purchaseOrderAudit) throws Exception{
+    public AppResult auditPurchaseOrder(@BeanParam PurchaseOrderAudit purchaseOrderAudit,@Context ContainerRequestContext requestContext) throws Exception{
 
-        iPurchaseOrderAuditBiz.auditPurchaseOrder(purchaseOrderAudit);
+        iPurchaseOrderAuditBiz.auditPurchaseOrder(purchaseOrderAudit,requestContext);
         return ResultUtil.createSucssAppResult("审核采购单信息成功","");
 
     }

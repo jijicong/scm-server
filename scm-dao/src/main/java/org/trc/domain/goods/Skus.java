@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 import org.trc.domain.util.CommonDO;
 import org.trc.domain.util.ScmDO;
+import org.trc.util.CommonUtil;
 
 import javax.annotation.Generated;
 import javax.annotation.Resource;
@@ -16,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
 public class Skus extends ScmDO {
@@ -363,4 +365,6 @@ public class Skus extends ScmDO {
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
     }
+
+
 }

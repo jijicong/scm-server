@@ -264,9 +264,9 @@ public class BrandBiz implements IBrandBiz {
             //品牌状态更新时需要更新品牌分类关系表的is_valid字段，但可能此时该品牌还未使用，故不对返回值进行判断
             categoryBrandService.updateCategoryBrandIsValid(brand.getIsValid(),brand.getId());
             if(brand.getIsValid().equals(ValidEnum.VALID.getCode())){
-                remark=remarkEnum.VALID_OFF.getMessage();
-            }else{
                 remark=remarkEnum.VALID_ON.getMessage();
+            }else{
+                remark=remarkEnum.VALID_OFF.getMessage();
             }
         }
         //记录到日志表中不能影响到主体业务

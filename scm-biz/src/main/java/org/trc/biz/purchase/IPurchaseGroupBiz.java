@@ -5,6 +5,8 @@ import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -14,9 +16,9 @@ public interface IPurchaseGroupBiz {
 
     Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form , Pagenation<PurchaseGroup> page);
 
-    void updatePurchaseStatus(PurchaseGroup purchaseGroup);
+    void updatePurchaseStatus(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext);
 
-    void  savePurchaseGroup(PurchaseGroup purchaseGroup) ;
+    void  savePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext) ;
 
     PurchaseGroup findPurchaseByName(String name) ;
 
@@ -24,7 +26,7 @@ public interface IPurchaseGroupBiz {
 
     PurchaseGroup findPurchaseGroupByCode(String code) ;
 
-    void updatePurchaseGroup(PurchaseGroup purchaseGroup) ;
+    void updatePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext) ;
     /**
      * 查询该采购组，对应的无效状态的成员
      * @param id

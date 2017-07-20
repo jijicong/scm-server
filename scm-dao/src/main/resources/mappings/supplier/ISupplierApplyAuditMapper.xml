@@ -47,12 +47,15 @@
             <if test="contact != null and contact != ''">
                 AND b.contact  <![CDATA[LIKE '%${contact}%']]>
             </if>
+            <if test="channelId !=null and channelId !=''">
+                AND a.channel_id = #{channelId}
+            </if>
             <choose>
-                <when test="status != null and status != ''">
-                    AND a.status = #{status}
+                <when test="status != null and status != '' and status == 1">
+                    AND (a.status = 2 OR a.status=3)
                 </when>
                 <otherwise>
-                    AND a.status!=0
+                    AND a.status=1
                 </otherwise>
             </choose>
             <if test="startTime != null and startTime != ''">
@@ -62,7 +65,7 @@
                 AND a.create_time &lt; #{endTime}
             </if>
         </where>
-        ORDER BY a.status ASC
+        ORDER BY a.create_time DESC
     </select>
 
     <select id="selectSupplierApplyAuditCount" resultType="java.lang.Integer" parameterType="java.util.Map">
@@ -79,12 +82,15 @@
             <if test="contact != null and contact != ''">
                 AND b.contact  <![CDATA[LIKE '%${contact}%']]>
             </if>
+            <if test="channelId !=null and channelId !=''">
+                AND a.channel_id = #{channelId}
+            </if>
             <choose>
-                <when test="status != null and status != ''">
-                    AND a.status = #{status}
+                <when test="status != null and status != '' and status == 1">
+                    AND (a.status = 2 OR a.status=3)
                 </when>
                 <otherwise>
-                    AND a.status!=0
+                    AND a.status=1
                 </otherwise>
             </choose>
             <if test="startTime != null and startTime != ''">
