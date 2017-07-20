@@ -1297,10 +1297,6 @@ public class GoodsBiz implements IGoodsBiz {
         items2 = itemsService.selectOne(items2);
         AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
         //更新商品相关SKU启用/停用状态
-        /*String _isValid2 = ZeroToNineEnum.ZERO.getCode();
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _isValid)){
-            _isValid2 = ZeroToNineEnum.ONE.getCode();
-        }*/
         updateGoodsSkusValid(items2.getSpuCode(),_isValid, CommonUtil.getUserId(requestContext));
         //更新SKU库存启停用状态
         updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);

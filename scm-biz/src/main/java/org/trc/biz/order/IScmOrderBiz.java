@@ -11,6 +11,7 @@ import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -62,7 +63,7 @@ public interface IScmOrderBiz {
      * @param jdAddressName
      * @return
      */
-    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName);
+    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, ContainerRequestContext requestContext);
 
     /**
      *提交粮油订单
