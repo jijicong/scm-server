@@ -11,20 +11,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
 import org.trc.domain.supplier.Supplier;
+import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.PurchaseOrderAuditException;
 import org.trc.exception.PurchaseOrderException;
 import org.trc.form.purchase.PurchaseOrderAuditForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderAuditService;
 import org.trc.service.purchase.IPurchaseOrderService;
@@ -60,6 +65,11 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
     @Resource
     private IUserNameUtilService iUserNameUtilService;
+
+    @Resource
+    private ILogInfoService logInfoService;
+
+
     /*
     采购单审核表 与 采购单表 左关联
      */
@@ -167,7 +177,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit) throws Exception {
+    public void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, ContainerRequestContext requestContext) throws Exception {
         //根据采购订单的编码审核采购单
         AssertUtil.notNull(purchaseOrderAudit,"根据采购订单的编码审核采购单,审核信息为空");
         if(purchaseOrderAudit.getStatus().equals(ZeroToNineEnum.THREE.getCode())){ //若是审核驳回 ,校验审核意见
@@ -190,6 +200,17 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         audit.setStatus(purchaseOrderAudit.getStatus());
         audit.setAuditOpinion(purchaseOrderAudit.getAuditOpinion());
         int count = purchaseOrderAuditService.updateByExampleSelective(audit,exampleAudit);//审核采购单，更改审核单的状态
+        //采购单审核的日志记录
+        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){
+            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            logInfoService.recordLog(purchaseOrderAudit,purchaseOrderAudit.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+        }
+        if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrderAudit.getStatus())){
+            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            logInfoService.recordLog(purchaseOrderAudit,purchaseOrderAudit.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+        }
+
+
         if (count == 0) {
             String msg = String.format("审核%s采购单数据库操作失败", JSON.toJSONString(purchaseOrderAudit));
             logger.error(msg);
@@ -202,13 +223,22 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         Example.Criteria criteriaOrder = exampleOrder.createCriteria();
         criteriaOrder.andEqualTo("purchaseOrderCode",purchaseOrderAudit.getPurchaseOrderCode());
         PurchaseOrder purchaseOrder = new PurchaseOrder();
-
+        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         if(purchaseOrderAudit.getStatus().equals(ZeroToNineEnum.THREE.getCode())){
             purchaseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
         }else {
             purchaseOrder.setStatus(purchaseOrderAudit.getStatus());
         }
         count = iPurchaseOrderService.updateByExampleSelective(purchaseOrder,exampleOrder);
+        //保存采购单的单据日志
+        if(ZeroToNineEnum.ONE.getCode().equals(purchaseOrder.getStatus())){//审核驳回
+            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+        }
+        if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrder.getStatus())){//审核通过
+            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+        }
         if (count == 0) {
             String msg = String.format("修改%s采购单状态数据库操作失败", JSON.toJSONString(purchaseOrderAudit));
             logger.error(msg);

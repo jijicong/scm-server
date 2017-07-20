@@ -21,13 +21,11 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.util.CommonDO;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.PurchaseOrderStatusEnum;
-import org.trc.enums.WarehouseNoticeEnum;
-import org.trc.enums.WarehouseNoticeStatusEnum;
+import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.service.System.IWarehouseService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseGroupService;
@@ -71,6 +69,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IWarehouseNoticeDetailsService warehouseNoticeDetailsService;
     @Resource
     private IPurchaseGroupService purchaseGroupService;
+    @Resource
+    private ILogInfoService logInfoService;
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
@@ -199,7 +199,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void receiptAdvice(WarehouseNotice warehouseNotice) {
+    public void receiptAdvice(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext) {
         /*
         执行通知收货，关联的操作
             1.更改采购单的是否通知入库 为已通知（1）
@@ -218,7 +218,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("purchaseOrderCode",warehouseNotice.getPurchaseOrderCode());
         criteria.andEqualTo("status", PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+        List<PurchaseOrder> purchaseOrders = purchaseOrderService.selectByExample(example);
+        if(CollectionUtils.isEmpty(purchaseOrders)){
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,"查询采购单失败！");
+        }
         int count = purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
+
         if(count != 1){
             String msg = String.format("采购单的编码[purchaseOrderCode=%s]的状态已作废,无法进行入库通知的操作",warehouseNotice.getPurchaseOrderCode());
             logger.error(msg);
@@ -246,7 +251,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());
-        //todo 调用仓储的入库通知的接口
+        //todo
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
+
     }
 
     private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode){

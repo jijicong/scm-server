@@ -3,6 +3,7 @@ package org.trc.biz.impl.impower;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,10 +12,13 @@ import org.trc.biz.impower.IAclRoleResourceRelationBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclRole;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
+import org.trc.enums.remarkEnum;
 import org.trc.exception.ConfigException;
 import org.trc.exception.RoleException;
 import org.trc.form.impower.RoleForm;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclRoleService;
 import org.trc.service.impower.IAclUserAccreditRoleRelationService;
 import org.trc.service.util.IUserNameUtilService;
@@ -50,6 +54,8 @@ public class AclRoleBiz implements IAclRoleBiz {
     private IAclRoleResourceRelationBiz roleJurisdictionRelationBiz;
     @Resource
     private IAclUserAccreditRoleRelationService userAccreditInfoRoleRelationService;
+    @Resource
+    private ILogInfoService logInfoService;
 
 
     @Override
@@ -68,7 +74,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateRoleState(AclRole aclRole){
+    public void updateRoleState(AclRole aclRole, ContainerRequestContext requestContext){
 
         AssertUtil.notNull(aclRole,"根据角色对象，修改角色的状态，角色对象为空");
         AclRole updateAclRole = new AclRole();
@@ -78,11 +84,13 @@ public class AclRoleBiz implements IAclRoleBiz {
             throw  new RoleException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION,tip);
         }
         updateAclRole.setId(aclRole.getId());
-
+        String remark = null;
         if (aclRole.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateAclRole.setIsValid(ValidEnum.NOVALID.getCode());
+            remark = remarkEnum.VALID_OFF.getMessage();
         } else {
             updateAclRole.setIsValid(ValidEnum.VALID.getCode());
+            remark = remarkEnum.VALID_ON.getMessage();
         }
         updateAclRole.setUpdateTime(Calendar.getInstance().getTime());
         int count = roleService.updateByPrimaryKeySelective(updateAclRole);
@@ -96,6 +104,9 @@ public class AclRoleBiz implements IAclRoleBiz {
         map.put("status", updateAclRole.getIsValid());
         map.put("roleId", updateAclRole.getId());
         userAccreditInfoRoleRelationService.updateStatusByRoleId(map);
+
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(aclRole,aclRole.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 
@@ -131,7 +142,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateRole(AclRole aclRole, String roleJurisdiction){
+    public void updateRole(AclRole aclRole, String roleJurisdiction,ContainerRequestContext requestContext){
 
         //判断是否是系统用户,系统用户只能修改，系统角色类型，对应的权限,和备注信息
         AssertUtil.notNull(aclRole,"角色更新时,角色对象为空");
@@ -151,6 +162,15 @@ public class AclRoleBiz implements IAclRoleBiz {
             aclRole.setRoleType("channelJurisdiction");
             aclRole.setIsValid(null);//为防止对不需要改变的值，做修改
         }
+        AclRole _aclRole = roleService.selectByPrimaryKey(aclRole.getId());
+        String remark = null;
+        if(!_aclRole.getIsValid().equals(aclRole.getIsValid())){
+            if(aclRole.getIsValid().equals(ValidEnum.VALID.getCode())){
+                remark=remarkEnum.VALID_ON.getMessage();
+            }else{
+                remark=remarkEnum.VALID_OFF.getMessage();
+            }
+        }
 
         aclRole.setUpdateTime(Calendar.getInstance().getTime());
         int count = roleService.updateByPrimaryKeySelective(aclRole);
@@ -165,6 +185,11 @@ public class AclRoleBiz implements IAclRoleBiz {
         map.put("status", aclRole.getIsValid());
         map.put("roleId", aclRole.getId());
         userAccreditInfoRoleRelationService.updateStatusByRoleId(map);
+
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclRole aclRole1 = new AclRole();
+        aclRole1.setCreateTime(aclRole.getCreateTime());
+        logInfoService.recordLog(aclRole1,aclRole.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
     @Override
@@ -184,6 +209,10 @@ public class AclRoleBiz implements IAclRoleBiz {
         }
         //用来保存角色和授权的关联信息
         roleJurisdictionRelationBiz.saveRoleJurisdictionRelations(roleJurisdiction, aclRole.getId());
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AclRole aclRole1 = new AclRole();
+        aclRole1.setCreateTime(aclRole.getCreateTime());
+        logInfoService.recordLog(aclRole1,aclRole.getId().toString(),userId, LogOperationEnum.ADD.getMessage(),null,null);
 
     }
     @Override

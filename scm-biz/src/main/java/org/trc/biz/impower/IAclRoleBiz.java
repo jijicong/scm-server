@@ -22,7 +22,7 @@ public interface IAclRoleBiz {
      * @param aclRole  角色对象
      * @throws Exception
      */
-    void updateRoleState(AclRole aclRole);
+    void updateRoleState(AclRole aclRole, ContainerRequestContext requestContext);
     /**
      * 根据角色id，查询使用者(授权用户)的数量
      * @param roleId 角色id
@@ -48,7 +48,7 @@ public interface IAclRoleBiz {
      * @param aclRole
      * @param roleJurisdiction
      */
-    void updateRole(AclRole aclRole, String roleJurisdiction);
+    void updateRole(AclRole aclRole, String roleJurisdiction,ContainerRequestContext requestContext);
     /**
      * 角色保存和保存角色与权限的对应关系
      * @param aclRole 角色信息

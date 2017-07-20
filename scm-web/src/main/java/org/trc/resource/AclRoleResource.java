@@ -37,10 +37,10 @@ public class AclRoleResource {
     @PUT
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateRole(@BeanParam AclRoleAddPageData roleAddPageData){
+    public AppResult updateRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
 
         AclRole aclRole = roleAddPageData;
-        roleBiz.updateRole(aclRole, roleAddPageData.getRoleJurisdiction());
+        roleBiz.updateRole(aclRole, roleAddPageData.getRoleJurisdiction(),requestContext);
         return  ResultUtil.createSucssAppResult("修改角色信息成功","");
 
     }
@@ -76,8 +76,8 @@ public class AclRoleResource {
     @POST
     @Path(SupplyConstants.Role.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult  updateRoleState(@BeanParam AclRole aclRole){
-        roleBiz.updateRoleState(aclRole);
+    public AppResult  updateRoleState(@BeanParam AclRole aclRole, @Context ContainerRequestContext requestContext){
+        roleBiz.updateRoleState(aclRole,requestContext);
         return ResultUtil.createSucssAppResult("修改角色状态成功","");
     }
 

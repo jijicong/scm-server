@@ -12,10 +12,7 @@ import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
 import org.trc.service.System.IChannelService;
@@ -49,6 +46,9 @@ public class ChannelBiz implements IChannelBiz {
 
     @Resource
     private ISerialUtilService serialUtilService;
+
+    @Resource
+    private ILogInfoService logInfoService;
 
 
 
@@ -107,7 +107,8 @@ public class ChannelBiz implements IChannelBiz {
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(channel,channel.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),"新增渠道%s",null);
 
     }
 
@@ -116,6 +117,8 @@ public class ChannelBiz implements IChannelBiz {
     public void updateChannel(Channel channel,ContainerRequestContext requestContext){
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
+        Channel _channel = channelService.selectByPrimaryKey(channel.getId());
+        AssertUtil.notNull(_channel,"根据渠道id,查询渠道为空");
         Channel tmp = findChannelByName(channel.getName());
         if(tmp!=null){
             if(!tmp.getId().equals(channel.getId())){
@@ -130,8 +133,8 @@ public class ChannelBiz implements IChannelBiz {
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
-
-
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(channel,channel.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,null);
 
     }
 

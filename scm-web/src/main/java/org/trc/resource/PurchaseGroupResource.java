@@ -37,8 +37,8 @@ public class PurchaseGroupResource {
     @POST
     @Path(SupplyConstants.PurchaseGroup.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseStatus(@BeanParam PurchaseGroup purchaseGroup){
-        purchaseGroupBiz.updatePurchaseStatus(purchaseGroup);
+    public AppResult updatePurchaseStatus(@BeanParam PurchaseGroup purchaseGroup,@Context ContainerRequestContext requestContext){
+        purchaseGroupBiz.updatePurchaseStatus(purchaseGroup,requestContext);
         return ResultUtil.createSucssAppResult("修改采购组状态成功","");
     }
     //TODO
@@ -75,8 +75,8 @@ public class PurchaseGroupResource {
     @PUT
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseGroup(@BeanParam PurchaseGroup purchaseGroup ){
-        purchaseGroupBiz.updatePurchaseGroup(purchaseGroup);
+    public AppResult updatePurchaseGroup(@BeanParam PurchaseGroup purchaseGroup ,@Context ContainerRequestContext requestContext){
+        purchaseGroupBiz.updatePurchaseGroup(purchaseGroup,requestContext);
         return ResultUtil.createSucssAppResult("修改采购组成功","");
     }
 
@@ -84,7 +84,7 @@ public class PurchaseGroupResource {
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult savePurchaseGroup(@BeanParam  PurchaseGroup purchaseGroup,@Context ContainerRequestContext requestContext){
-        purchaseGroupBiz.savePurchaseGroup(purchaseGroup);
+        purchaseGroupBiz.savePurchaseGroup(purchaseGroup,requestContext);
         return  ResultUtil.createSucssAppResult("保存采购组成功","");
     }
 

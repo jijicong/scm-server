@@ -35,9 +35,9 @@ public interface IPurchaseOrderBiz {
      */
     Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page, String skus) ;
 
-    void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status) ;
+    void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,ContainerRequestContext requestContext) ;
 
-    void updatePurchaseOrderState(PurchaseOrder purchaseOrder) ;
+    void updatePurchaseOrderState(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) ;
 
     PurchaseOrder findPurchaseOrderAddDataById(Long id) ;
 
@@ -46,7 +46,7 @@ public interface IPurchaseOrderBiz {
      * @param purchaseOrder
      * @
      */
-    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder) ;
+    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) ;
 
     //查询所有的可卖商品
     List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) ;
@@ -67,6 +67,6 @@ public interface IPurchaseOrderBiz {
     /**
      * 采购单入库通知状态的作废操作
      */
-    void updateWarahouseAdviceUpdate(PurchaseOrder purchaseOrder);
+    void cancelWarahouseAdvice(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext);
 
 }

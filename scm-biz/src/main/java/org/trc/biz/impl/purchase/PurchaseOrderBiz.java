@@ -16,6 +16,7 @@ import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
+import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
@@ -26,6 +27,7 @@ import org.trc.exception.PurchaseOrderException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
@@ -74,6 +76,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ISerialUtilService iSerialUtilService;
     @Resource
     private IWarehouseNoticeDetailsService warehouseNoticeDetailsService;
+    @Resource
+    private ILogInfoService logInfoService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -338,7 +342,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status)  {
+    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,ContainerRequestContext requestContext)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
@@ -387,13 +391,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
-            savePurchaseOrderAudit(purchaseOrder);
+            savePurchaseOrderAudit(purchaseOrder,requestContext);
         }
+
+        //保存操作日志
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
     }
     /**
      * 保存提交审核的采购信息
      */
-    private void savePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder){
+    private void savePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,ContainerRequestContext requestContext){
 
         AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
         PurchaseOrderAudit purchaseOrderAudit = new PurchaseOrderAudit();
@@ -409,6 +419,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
+
+        //提交审核操作日志
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,AuditStatusEnum.COMMIT.getName(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
 
@@ -518,30 +534,30 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder)  {
+    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
 
         if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){ //暂存：的删除操作
-            handleDeleted(purchaseOrder);
+            handleDeleted(purchaseOrder,requestContext);
             return;
         }
         if(PurchaseOrderStatusEnum.REJECT.getCode().equals(status)){ //审核驳回：的删除操作
-            handleDeleted(purchaseOrder);
+            handleDeleted(purchaseOrder,requestContext);
             return;
         }
         if(PurchaseOrderStatusEnum.PASS.getCode().equals(status)){//审核通过：的作废操作
-            handleCancel(purchaseOrder);
+            handleCancel(purchaseOrder,requestContext);
             return;
         }
         if(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode().equals(status)){ //入库通知的（未通知仓储）：的作废操作
-            handleCancel(purchaseOrder);
+            handleCancel(purchaseOrder,requestContext);
             return;
         }
     }
     //采购单作废操作
-    private void handleCancel(PurchaseOrder purchaseOrder) {
+    private void handleCancel(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) {
 
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
@@ -552,11 +568,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
 
     }
     //采购单逻辑删除
-
-    private void handleDeleted(PurchaseOrder purchaseOrder){
+    private void handleDeleted(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext){
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
@@ -578,6 +597,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.DELETE.getMessage(),null,null);
 
     }
 
@@ -652,7 +676,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder)  {
+    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
@@ -666,6 +690,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
+            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+            purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.FREEZE.getMessage(),null,null);
             return;
         }
         if(PurchaseOrderStatusEnum.FREEZE.getCode().equals(status)){ //需解冻
@@ -678,6 +706,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
+            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+            purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UN_FREEZE.getMessage(),null,null);
         }
 
     }
@@ -720,8 +752,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
-            savePurchaseOrderAudit(purchaseOrderAddData);
+            savePurchaseOrderAudit(purchaseOrderAddData,requestContext);
         }
+
+        //修改操作日志
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,null);
 
     }
 
@@ -831,6 +869,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
+
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.WAREHOUSE_NOTICE.getMessage(),null,null);
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
     }
 
     /**赋值入库通知单
@@ -859,7 +901,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateWarahouseAdviceUpdate(PurchaseOrder purchaseOrder) {
+    public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext) {
 
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
         //更改采购单的状态
@@ -901,6 +943,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
     }
 
 }

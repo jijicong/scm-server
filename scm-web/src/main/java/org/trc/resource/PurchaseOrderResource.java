@@ -46,7 +46,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult savePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode());
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode(),requestContext);
         return ResultUtil.createSucssAppResult("保存采购订单成功","");
 
     }
@@ -54,7 +54,7 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)//因为aop只拦截了save***开始的方法，注入创建人，因此这里的提交审核，也为save开始
     public AppResult saveCommitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) {
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode());
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode(),requestContext);
         return ResultUtil.createSucssAppResult("提交审核采购单成功","");
     }
     @GET
@@ -96,10 +96,10 @@ public class PurchaseOrderResource {
     @POST
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_UPDATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder) {
+    public AppResult updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updateWarahouseAdviceUpdate(purchaseOrder);
-        return ResultUtil.createSucssAppResult("状态修改成功","");
+        purchaseOrderBiz.cancelWarahouseAdvice(purchaseOrder,requestContext);
+        return ResultUtil.createSucssAppResult("入库通知作废成功","");
 
     }
 
@@ -123,9 +123,9 @@ public class PurchaseOrderResource {
     @POST
     @Path(SupplyConstants.PurchaseOrder.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder) {
+    public AppResult updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder);
+        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,requestContext);
         return ResultUtil.createSucssAppResult("状态修改成功","");
 
     }
@@ -133,9 +133,9 @@ public class PurchaseOrderResource {
     @POST
     @Path(SupplyConstants.PurchaseOrder.FREEZE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder) {
+    public AppResult updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder);
+        purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,requestContext);
         return ResultUtil.createSucssAppResult("采购单冻结状态修改成功","");
 
     }

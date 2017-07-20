@@ -54,7 +54,8 @@ public class WarehouseBiz implements IWarehouseBiz {
     @Resource
     private ISerialUtilService serialUtilService;
 
-
+    @Resource
+    private ILogInfoService logInfoService;
 
 
     @Override
@@ -101,6 +102,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
 
     }
 
@@ -120,10 +123,13 @@ public class WarehouseBiz implements IWarehouseBiz {
         AssertUtil.notNull(warehouse,"仓库管理模块修改仓库信息失败，仓库信息为空");
         Warehouse updateWarehouse = new Warehouse();
         updateWarehouse.setId(warehouse.getId());
+        String remark = null;
         if (warehouse.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateWarehouse.setIsValid(ValidEnum.NOVALID.getCode());
+            remark = remarkEnum.VALID_OFF.getMessage();
         } else {
             updateWarehouse.setIsValid(ValidEnum.VALID.getCode());
+            remark=remarkEnum.VALID_ON.getMessage();
         }
         updateWarehouse.setUpdateTime(Calendar.getInstance().getTime());
         int count = warehouseService.updateByPrimaryKeySelective(updateWarehouse);
@@ -132,6 +138,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 
@@ -158,12 +166,24 @@ public class WarehouseBiz implements IWarehouseBiz {
             }
         }
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
+        Warehouse _warehouse = warehouseService.selectByPrimaryKey(warehouse.getId());
+        String remark = null;
+        AssertUtil.notNull(_warehouse,"根据id查询仓库为空");
         int count = warehouseService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败",JSON.toJSONString(warehouse));
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
+        if(!_warehouse.getIsValid().equals(warehouse.getIsValid())){
+            if(warehouse.getIsValid().equals(ValidEnum.VALID.getCode())){
+                remark=remarkEnum.VALID_ON.getMessage();
+            }else{
+                remark=remarkEnum.VALID_OFF.getMessage();
+            }
+        }
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 

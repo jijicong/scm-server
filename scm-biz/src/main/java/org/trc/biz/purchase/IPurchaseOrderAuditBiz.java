@@ -22,6 +22,6 @@ public interface IPurchaseOrderAuditBiz {
      * @param purchaseOrderAudit
      * @throws Exception
      */
-    void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit) throws Exception;
+    void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, ContainerRequestContext requestContext) throws Exception;
 
 }
