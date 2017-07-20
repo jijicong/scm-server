@@ -366,7 +366,7 @@ public class SupplierBiz implements ISupplierBiz {
         //记录操作日志
         String remark = null;
         if(isValidFlag)
-            remark = String.format("供应商状态被更新为[%s]", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName());
+            remark = String.format("状态更新为[%s]", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName());
         logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(),remark, null);
     }
 
