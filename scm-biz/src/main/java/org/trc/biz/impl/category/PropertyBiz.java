@@ -149,6 +149,20 @@ public class PropertyBiz implements IPropertyBiz {
             }
             propertyList.add(property);
         }
+        if(AssertUtil.collectionIsEmpty(propertyList)){
+            return page;
+        }
+        Map<String, AclUserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(propertyList);
+        for (Property property : propertyList) {
+            if(!StringUtils.isBlank(property.getLastEditOperator())){
+                if(userAccreditInfoMap!=null){
+                    AclUserAccreditInfo aclUserAccreditInfo =userAccreditInfoMap.get(property.getLastEditOperator());
+                    if(aclUserAccreditInfo !=null){
+                        property.setLastEditOperator(aclUserAccreditInfo.getName());
+                    }
+                }
+            }
+        }
         page.setResult(propertyList);
         return page;
     }

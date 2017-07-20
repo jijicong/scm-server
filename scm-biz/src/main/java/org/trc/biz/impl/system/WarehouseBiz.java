@@ -37,7 +37,6 @@ import org.trc.util.ParamsUtil;
 import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -126,9 +125,11 @@ public class WarehouseBiz implements IWarehouseBiz {
             }
             warehouseList.add(warehouse);
         }
-        if (!AssertUtil.collectionIsEmpty(warehouseList)) {
-            page.setResult(warehouseList);
+        if (AssertUtil.collectionIsEmpty(warehouseList)) {
+            return page;
         }
+        page.setResult(warehouseList);
+        userNameUtilService.handleUserName(page.getResult());
         return page;
     }
 
@@ -158,15 +159,15 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
 
     }
 
     @Override
     public Warehouse findWarehouseByName(String name) {
 
-        AssertUtil.notBlank(name,"根据渠道名称查询渠道的参数name为空");
+        AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
         Warehouse warehouse = new Warehouse();
         warehouse.setName(name);
         return warehouseService.selectOne(warehouse);
@@ -193,8 +194,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
 
     }
 
@@ -223,22 +224,22 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
         Warehouse _warehouse = warehouseService.selectByPrimaryKey(warehouse.getId());
         String remark = null;
-        AssertUtil.notNull(_warehouse,"根据id查询仓库为空");
+        AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
         int count = warehouseService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败", JSON.toJSONString(warehouse));
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
-        if(!_warehouse.getIsValid().equals(warehouse.getIsValid())){
-            if(warehouse.getIsValid().equals(ValidEnum.VALID.getCode())){
-                remark=remarkEnum.VALID_ON.getMessage();
-            }else{
-                remark=remarkEnum.VALID_OFF.getMessage();
+        if (!_warehouse.getIsValid().equals(warehouse.getIsValid())) {
+            if (warehouse.getIsValid().equals(ValidEnum.VALID.getCode())) {
+                remark = remarkEnum.VALID_ON.getMessage();
+            } else {
+                remark = remarkEnum.VALID_OFF.getMessage();
             }
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(warehouse,warehouse.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
 
     }
 

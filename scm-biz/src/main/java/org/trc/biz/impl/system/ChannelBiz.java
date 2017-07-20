@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
-import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
@@ -32,12 +31,17 @@ import org.trc.service.System.IChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
-import org.trc.util.*;
+import org.trc.util.AssertUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ParamsUtil;
+import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by sone on 2017/5/2.
@@ -64,7 +68,6 @@ public class ChannelBiz implements IChannelBiz {
     private IPageNationService pageNationService;
     @Resource
     private ILogInfoService logInfoService;
-
 
 
     @Override
@@ -124,9 +127,11 @@ public class ChannelBiz implements IChannelBiz {
             }
             channelList.add(channel);
         }
-        if (!AssertUtil.collectionIsEmpty(channelList)) {
-            page.setResult(channelList);
+        if (AssertUtil.collectionIsEmpty(channelList)) {
+            return page;
         }
+        page.setResult(channelList);
+        userNameUtilService.handleUserName(page.getResult());
         return page;
 
     }
@@ -167,8 +172,8 @@ public class ChannelBiz implements IChannelBiz {
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(channel,channel.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),"新增渠道%s",null);
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增渠道%s", null);
 
     }
 
@@ -193,8 +198,8 @@ public class ChannelBiz implements IChannelBiz {
         }
 
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(channel,channel.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,null);
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
 
     }
 

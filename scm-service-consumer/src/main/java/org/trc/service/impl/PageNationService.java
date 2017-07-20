@@ -1,12 +1,9 @@
 package org.trc.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -16,10 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.trc.service.IPageNationService;
 import org.trc.util.Pagenation;
-import org.trc.util.TransportClientUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service("pageNationService")
 public class PageNationService implements IPageNationService {
