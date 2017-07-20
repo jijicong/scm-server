@@ -79,6 +79,7 @@ public class PropertyBiz implements IPropertyBiz {
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
+        example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
         page=propertyService.pagination(example, page, queryModel);
         List<Property> list=page.getResult();
