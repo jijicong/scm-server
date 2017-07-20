@@ -958,14 +958,14 @@ public class GoodsBiz implements IGoodsBiz {
         }
         int count = 0;
         if(updatelist.size() > 0){
+            //记录sku启停用状态更新日志
+            updateSkusValidStatusLog(updatelist, userId);
             count = skusService.updateSkus(updatelist);
             if (count == 0) {
                 String msg = CommonUtil.joinStr("更新商品SKU", JSON.toJSONString(updatelist), "到数据库失败").toString();
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
             }
-            //记录sku启停用状态更新日志
-            updateSkusValidStatusLog(updatelist, userId);
         }
         if(addlist.size() > 0){
             count = skusService.insertList(addlist);
@@ -1001,6 +1001,7 @@ public class GoodsBiz implements IGoodsBiz {
         for(Skus skus: skusList2){
             for(Skus skus2: skusList){
                 if(StringUtils.equals(skus.getSkuCode(), skus2.getSkuCode())){
+                    skus2.setId(skus.getId());
                     if(!StringUtils.equals(skus.getIsValid(), skus2.getIsValid()))
                         tmpList.add(skus2);
                 }
@@ -1296,11 +1297,11 @@ public class GoodsBiz implements IGoodsBiz {
         items2 = itemsService.selectOne(items2);
         AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
         //更新商品相关SKU启用/停用状态
-        String _isValid2 = ZeroToNineEnum.ZERO.getCode();
+        /*String _isValid2 = ZeroToNineEnum.ZERO.getCode();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), _isValid)){
             _isValid2 = ZeroToNineEnum.ONE.getCode();
-        }
-        updateGoodsSkusValid(items2.getSpuCode(),_isValid2, CommonUtil.getUserId(requestContext));
+        }*/
+        updateGoodsSkusValid(items2.getSpuCode(),_isValid, CommonUtil.getUserId(requestContext));
         //更新SKU库存启停用状态
         updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);
         //更新采购单明细启停用状态
@@ -1337,7 +1338,7 @@ public class GoodsBiz implements IGoodsBiz {
             for(Skus skus2: skusList){
                 //记录操作日志
                 logInfoService.recordLog(skus2,skus2.getId().toString(),userId,
-                        LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+                        LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(isValid).getName()), null);
             }
         }
     }
