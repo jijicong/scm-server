@@ -1605,7 +1605,8 @@ public class GoodsBiz implements IGoodsBiz {
         List<SupplyItems> supplyItems = new ArrayList<SupplyItems>();
         for(Object jbo: skuArray){
             JSONObject obj =  (JSONObject)jbo;
-            supplyItems.add((SupplyItems)obj.toJavaObject(SupplyItems.class));
+            SupplyItems items = JSON.parseObject(JSON.toJSONString(obj),SupplyItems.class);
+            supplyItems.add(items);
         }
         List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ZERO.getCode());
         int count = externalItemSkuService.insertList(externalItemSkuList);
