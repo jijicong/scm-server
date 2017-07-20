@@ -30,7 +30,7 @@ public class ChannelResource {
     @Path(SupplyConstants.Channel.CHANNEL_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Channel> channelPage(@BeanParam ChannelForm form, @BeanParam Pagenation<Channel> page){
-        return channelBiz.channelPageES(form,page);
+        return channelBiz.channelPage(form,page);
     }
 
     //根据渠道名查询渠道
