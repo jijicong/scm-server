@@ -71,7 +71,7 @@ public class OrderResource {
     @Consumes("application/x-www-form-urlencoded")
     public AppResult submitJingDongOrder(@FormParam("warehouseOrderCode") String warehouseOrderCode,
             @FormParam("jdAddressCode") String jdAddressCode, @FormParam("jdAddressName") String jdAddressName, @Context ContainerRequestContext requestContext) throws Exception {
-        return scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName);
+        return scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName, requestContext);
     }
 
 }

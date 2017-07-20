@@ -78,11 +78,14 @@ public class WarehouseNotice {
     @NotEmpty
     @Length(max = 32, message = "采购类型字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseType;
+    @Transient
+    private String purchaseTypeName;
     //'归属采购人编号',
     private String purchasePersonId;
     @Transient //归属采购人名称
     private String purchasePersonName;
     //'提运单号',
+    @FormParam("takeGoodsNo")
     private String takeGoodsNo;
     // '要求到货日期,格式:yyyy-mm-dd',
     private String requriedReceiveDate;
@@ -110,6 +113,14 @@ public class WarehouseNotice {
 
     public void setPurchasePersonName(String purchasePersonName) {
         this.purchasePersonName = purchasePersonName;
+    }
+
+    public String getPurchaseTypeName() {
+        return purchaseTypeName;
+    }
+
+    public void setPurchaseTypeName(String purchaseTypeName) {
+        this.purchaseTypeName = purchaseTypeName;
     }
 
     public Long getPurhcaseOrderId() {

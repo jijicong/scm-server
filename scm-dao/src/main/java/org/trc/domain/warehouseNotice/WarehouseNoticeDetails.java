@@ -6,6 +6,7 @@ import org.trc.custom.CustomDateSerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -25,10 +26,18 @@ public class WarehouseNoticeDetails {
     private String skuCode;
     //'品牌',
     private Long brandId;
+    //品牌名称
+    @Transient
+    private String brandName;
     //'分类',
     private Long categoryId;
+    @Transient
+    private String allCategoryName;
     //'采购价,单位/分',
     private Long purchasePrice;
+    //采购价格转化成元
+    @Transient
+    private BigDecimal purchasePriceT;
     //'采购数量',
     private Long purchasingQuantity;
     //'实际入库数量',
@@ -46,6 +55,30 @@ public class WarehouseNoticeDetails {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public BigDecimal getPurchasePriceT() {
+        return purchasePriceT;
+    }
+
+    public void setPurchasePriceT(BigDecimal purchasePriceT) {
+        this.purchasePriceT = purchasePriceT;
+    }
+
+    public String getAllCategoryName() {
+        return allCategoryName;
+    }
+
+    public void setAllCategoryName(String allCategoryName) {
+        this.allCategoryName = allCategoryName;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 
     public String getWarehouseNoticeCode() {

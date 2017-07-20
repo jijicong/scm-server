@@ -28,6 +28,17 @@ public class ScmDO {
     private String updateAuth;
     @Transient
     private String selectAuth;
+
+    @Transient
+    private String highLightName;
+
+    public String getHighLightName() {
+        return highLightName;
+    }
+
+    public void setHighLightName(String highLightName) {
+        this.highLightName = highLightName;
+    }
     public Date getCreateTime() {
         return createTime;
     }

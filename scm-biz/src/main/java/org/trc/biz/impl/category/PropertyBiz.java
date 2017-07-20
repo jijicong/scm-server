@@ -3,6 +3,13 @@ package org.trc.biz.impl.category;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +27,7 @@ import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.PropertyForm;
+import org.trc.service.IPageNationService;
 import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
@@ -39,7 +47,7 @@ import java.util.*;
 @Service("propertyBiz")
 public class PropertyBiz implements IPropertyBiz {
 
-    private Logger  log = LoggerFactory.getLogger(PropertyBiz.class);
+    private Logger log = LoggerFactory.getLogger(PropertyBiz.class);
 
     //多个属性ID分隔符
     public final static String MULTI_PRRPERTY_ID_SPLIT = ",";
@@ -62,6 +70,8 @@ public class PropertyBiz implements IPropertyBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private ITrcBiz trcBiz;
+    @Autowired
+    private IPageNationService pageNationService;
 
     @Override
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
@@ -81,14 +91,14 @@ public class PropertyBiz implements IPropertyBiz {
         }
         example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
-        page=propertyService.pagination(example, page, queryModel);
-        List<Property> list=page.getResult();
-        Map<String, AclUserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(list);
+        page = propertyService.pagination(example, page, queryModel);
+        List<Property> list = page.getResult();
+        Map<String, AclUserAccreditInfo> userAccreditInfoMap = constructUserAccreditInfoMap(list);
         for (Property property : list) {
-            if(!StringUtils.isBlank(property.getLastEditOperator())){
-                if(userAccreditInfoMap!=null){
-                    AclUserAccreditInfo aclUserAccreditInfo =userAccreditInfoMap.get(property.getLastEditOperator());
-                    if(aclUserAccreditInfo !=null){
+            if (!StringUtils.isBlank(property.getLastEditOperator())) {
+                if (userAccreditInfoMap != null) {
+                    AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoMap.get(property.getLastEditOperator());
+                    if (aclUserAccreditInfo != null) {
                         property.setLastEditOperator(aclUserAccreditInfo.getName());
                     }
                 }
@@ -98,14 +108,74 @@ public class PropertyBiz implements IPropertyBiz {
         return page;
     }
 
+    @Override
+    public Pagenation<Property> propertyPageES(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
+        TransportClient clientUtil = TransportClientUtil.getTransportClient();
+        HighlightBuilder hiBuilder = new HighlightBuilder();
+        hiBuilder.preTags("<b style=\"color: red\">");
+        hiBuilder.postTags("</b>");
+        hiBuilder.field("name.pinyin");//http://172.30.250.164:9100/ 模糊字段可在这里找到
+        SearchRequestBuilder srb = clientUtil.prepareSearch("item_property")//es表名
+                .highlighter(hiBuilder)
+                .setFrom(page.getStart())//第几个开始
+                .setSize(page.getPageSize());//长度
+        if (StringUtils.isNotBlank(queryModel.getName())) {
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("name.pinyin", queryModel.getName());
+
+            srb.setQuery(QueryBuilders.boolQuery().should(matchQuery));
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            QueryBuilder filterBuilderA = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
+
+            srb.setPostFilter(QueryBuilders.boolQuery().must(filterBuilderA));
+        }
+        if (!StringUtils.isBlank(queryModel.getTypeCode())) {
+            QueryBuilder filterBuilderB = QueryBuilders.termQuery("type_code", queryModel.getTypeCode());
+            srb.setPostFilter(QueryBuilders.boolQuery().must(filterBuilderB));
+        }
+        if (!StringUtils.isBlank(queryModel.getTypeCode()) && !StringUtils.isBlank(queryModel.getIsValid())) {
+            QueryBuilder filterBuilderA = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
+            QueryBuilder filterBuilderB = QueryBuilders.termQuery("type_code", queryModel.getTypeCode());
+            srb.setPostFilter(QueryBuilders.boolQuery().must(filterBuilderA).must(filterBuilderB));
+        }
+
+        SearchHit[] searchHists = pageNationService.resultES(srb, clientUtil);
+        List<Property> propertyList = new ArrayList<>();
+        for (SearchHit searchHit : searchHists) {
+            Property property = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Property.class);
+            if (StringUtils.isNotBlank(queryModel.getName())) {
+                for (Text text : searchHit.getHighlightFields().get("name.pinyin").getFragments()) {
+                    property.setHighLightName(text.string());
+                }
+            }
+            propertyList.add(property);
+        }
+        if(AssertUtil.collectionIsEmpty(propertyList)){
+            return page;
+        }
+        Map<String, AclUserAccreditInfo> userAccreditInfoMap=constructUserAccreditInfoMap(propertyList);
+        for (Property property : propertyList) {
+            if(!StringUtils.isBlank(property.getLastEditOperator())){
+                if(userAccreditInfoMap!=null){
+                    AclUserAccreditInfo aclUserAccreditInfo =userAccreditInfoMap.get(property.getLastEditOperator());
+                    if(aclUserAccreditInfo !=null){
+                        property.setLastEditOperator(aclUserAccreditInfo.getName());
+                    }
+                }
+            }
+        }
+        page.setResult(propertyList);
+        return page;
+    }
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveProperty(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        if(!StringUtils.isBlank(userId)){
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        if (!StringUtils.isBlank(userId)) {
             property.setLastEditOperator(userId);
             property.setCreateOperator(userId);
         }
@@ -127,7 +197,7 @@ public class PropertyBiz implements IPropertyBiz {
             propertyValue.setPropertyId(property.getId());
             propertyValue.setCreateTime(property.getCreateTime());
             propertyValue.setUpdateTime(property.getUpdateTime());
-            if(!StringUtils.isBlank(userId)){
+            if (!StringUtils.isBlank(userId)) {
                 propertyValue.setCreateOperator(userId);
             }
             //保存属性值信息
@@ -140,12 +210,12 @@ public class PropertyBiz implements IPropertyBiz {
                 throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_SAVE_EXCEPTION, str);
             }
         }
-        try{
-            trcBiz.sendProperty(TrcActionTypeEnum.ADD_PROPERTY,null,property,null,newPropertyValueList,System.currentTimeMillis());
-        }catch (Exception e){
-            log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
+        try {
+            trcBiz.sendProperty(TrcActionTypeEnum.ADD_PROPERTY, null, property, null, newPropertyValueList, System.currentTimeMillis());
+        } catch (Exception e) {
+            log.error("属性新增渠道通知调用出现异常,message:{}", e.getMessage(), e);
         }
-        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
+        logInfoService.recordLog(property, property.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
     }
 
     /**
@@ -153,6 +223,7 @@ public class PropertyBiz implements IPropertyBiz {
      * 2.判断用户是否有启停用属性，如果改变了，需要改变相关关联关系表
      * 3.更新属性
      * 4.更新属性值属性值，也需要更新相关关联关系表
+     *
      * @param property
      * @throws Exception
      */
@@ -161,35 +232,35 @@ public class PropertyBiz implements IPropertyBiz {
     public void updateProperty(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property.getId(), "根据ID更新属性信息参数ID为空");
         //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
-        Property selectProperty=propertyService.selectOneById(property.getId());
+        Property selectProperty = propertyService.selectOneById(property.getId());
         //查询还未变更之前的属性值列表
-        Example example=new Example(PropertyValue.class);
-        Example.Criteria criteria=example.createCriteria();
-        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
-        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
-        criteria.andEqualTo("propertyId",property.getId());
-        List<PropertyValue> selectPropertyValues=propertyValueService.selectByExample(example);
+        Example example = new Example(PropertyValue.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("propertyId", property.getId());
+        List<PropertyValue> selectPropertyValues = propertyValueService.selectByExample(example);
         property.setUpdateTime(Calendar.getInstance().getTime());
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        if(!StringUtils.isBlank(userId)){
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        if (!StringUtils.isBlank(userId)) {
             property.setLastEditOperator(userId);
         }
         //需要判断用户是否有修改了属性值类型
-        if(!property.getValueType().equals(selectProperty.getValueType())){
+        if (!property.getValueType().equals(selectProperty.getValueType())) {
             //用户修改属性值类型，先删除原先的属性值
-            int count=propertyValueService.updateIsValidByPropertyId(property.getId());
-            if (count <1){
-                String str=CommonUtil.joinStr("属性值类型更新失败propertyId:"+property.getId()).toString();
+            int count = propertyValueService.updateIsValidByPropertyId(property.getId());
+            if (count < 1) {
+                String str = CommonUtil.joinStr("属性值类型更新失败propertyId:" + property.getId()).toString();
                 log.error(str);
-                throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_UPDATE_EXCEPTION,str);
+                throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_UPDATE_EXCEPTION, str);
             }
             //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
-                itemNatureProperyService.updateIsValidByPropertyId(ZeroToNineEnum.ZERO.getCode(),property.getId());
+            if (PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())) {
+                itemNatureProperyService.updateIsValidByPropertyId(ZeroToNineEnum.ZERO.getCode(), property.getId());
             }
             //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
-                itemSalesProperyService.updateIsValidByPropertyId(ZeroToNineEnum.ZERO.getCode(),property.getId());
+            if (PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())) {
+                itemSalesProperyService.updateIsValidByPropertyId(ZeroToNineEnum.ZERO.getCode(), property.getId());
             }
         }
         int count = propertyService.updateByPrimaryKeySelective(property);
@@ -199,16 +270,16 @@ public class PropertyBiz implements IPropertyBiz {
             throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_UPDATE_EXCEPTION, msg);
         }
         //需判断用户是否有改变属性启停用状态如果有变更需要更改关联关系表
-        if(!property.getIsValid().equals(selectProperty.getIsValid())){
+        if (!property.getIsValid().equals(selectProperty.getIsValid())) {
             //属性状态更新时需要更新属性分类关系表的is_valid字段，但可能此时该属性还未使用，故不对返回值进行判断
-            categoryPropertyService.updateCategoryPropertyIsValid(property.getIsValid(),property.getId());
+            categoryPropertyService.updateCategoryPropertyIsValid(property.getIsValid(), property.getId());
             //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
-                itemNatureProperyService.updateIsValidByPropertyId(property.getIsValid(),property.getId());
+            if (PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())) {
+                itemNatureProperyService.updateIsValidByPropertyId(property.getIsValid(), property.getId());
             }
             //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-            if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
-                itemSalesProperyService.updateIsValidByPropertyId(property.getIsValid(),property.getId());
+            if (PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())) {
+                itemSalesProperyService.updateIsValidByPropertyId(property.getIsValid(), property.getId());
             }
         }
         List<PropertyValue> propertyValueList = JSONArray.parseArray(property.getGridValue(), PropertyValue.class);
@@ -247,12 +318,12 @@ public class PropertyBiz implements IPropertyBiz {
                 del.setUpdateTime(property.getUpdateTime());
                 propertyValueCount = propertyValueService.updateByPrimaryKeySelective(del);
                 //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-                if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
-                    itemNatureProperyService.updateIsValidByPropertyValueId(ZeroToNineEnum.ZERO.getCode(),propertyValue.getId());
+                if (PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())) {
+                    itemNatureProperyService.updateIsValidByPropertyValueId(ZeroToNineEnum.ZERO.getCode(), propertyValue.getId());
                 }
                 //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-                if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
-                    itemSalesProperyService.updateIsValidByPropertyValueId(ZeroToNineEnum.ZERO.getCode(),propertyValue.getId());
+                if (PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())) {
+                    itemSalesProperyService.updateIsValidByPropertyValueId(ZeroToNineEnum.ZERO.getCode(), propertyValue.getId());
                 }
             }
             //用户进行删除操作是不占用sort字段的
@@ -268,29 +339,29 @@ public class PropertyBiz implements IPropertyBiz {
         }
         //通知渠道方
         //查询变更后的属性信息
-        Property newProperty=propertyService.selectOneById(property.getId());
+        Property newProperty = propertyService.selectOneById(property.getId());
         //查询变更后的属性值信息
-        Example newPropertyValueExample=new Example(PropertyValue.class);
-        Example.Criteria newPropertyValueCriteria=newPropertyValueExample.createCriteria();
-        newPropertyValueCriteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
-        newPropertyValueCriteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
-        newPropertyValueCriteria.andEqualTo("propertyId",property.getId());
-        List<PropertyValue> newPropertyValueList=propertyValueService.selectByExample(newPropertyValueExample);
-        try{
-            trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY,selectProperty,newProperty,selectPropertyValues,newPropertyValueList,System.currentTimeMillis());
-        }catch (Exception e){
-            log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
+        Example newPropertyValueExample = new Example(PropertyValue.class);
+        Example.Criteria newPropertyValueCriteria = newPropertyValueExample.createCriteria();
+        newPropertyValueCriteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+        newPropertyValueCriteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        newPropertyValueCriteria.andEqualTo("propertyId", property.getId());
+        List<PropertyValue> newPropertyValueList = propertyValueService.selectByExample(newPropertyValueExample);
+        try {
+            trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY, selectProperty, newProperty, selectPropertyValues, newPropertyValueList, System.currentTimeMillis());
+        } catch (Exception e) {
+            log.error("属性新增渠道通知调用出现异常,message:{}", e.getMessage(), e);
         }
         //记录日志
-        String remark=null;
-        if(!property.getIsValid().equals(selectProperty.getIsValid())){
-            if(property.getIsValid().equals(ValidEnum.VALID.getCode())){
-                 remark=remarkEnum.VALID_ON.getMessage();
-            }else{
-                 remark=remarkEnum.VALID_OFF.getMessage();
+        String remark = null;
+        if (!property.getIsValid().equals(selectProperty.getIsValid())) {
+            if (property.getIsValid().equals(ValidEnum.VALID.getCode())) {
+                remark = remarkEnum.VALID_OFF.getMessage();
+            } else {
+                remark = remarkEnum.VALID_ON.getMessage();
             }
         }
-        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
+        logInfoService.recordLog(property, property.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
     }
 
     @Override
@@ -323,27 +394,27 @@ public class PropertyBiz implements IPropertyBiz {
     public void updatePropertyStatus(Property property, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
         //查询变更属性
-        Property selectProperty=propertyService.selectOneById(property.getId());
+        Property selectProperty = propertyService.selectOneById(property.getId());
         //查询需要通知给渠道的属性值信息
-        Example example=new Example(PropertyValue.class);
-        Example.Criteria criteria=example.createCriteria();
-        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
-        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
-        criteria.andEqualTo("propertyId",property.getId());
-        List<PropertyValue> selectPropertyValues=propertyValueService.selectByExample(example);
-        String remark=null;
+        Example example = new Example(PropertyValue.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("propertyId", property.getId());
+        List<PropertyValue> selectPropertyValues = propertyValueService.selectByExample(example);
+        String remark = null;
         Property updateProperty = new Property();
         updateProperty.setId(property.getId());
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        if(!StringUtils.isBlank(userId)){
+        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        if (!StringUtils.isBlank(userId)) {
             property.setLastEditOperator(userId);
         }
         if (property.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateProperty.setIsValid(ValidEnum.NOVALID.getCode());
-            remark=remarkEnum.VALID_OFF.getMessage();
+            remark = remarkEnum.VALID_OFF.getMessage();
         } else {
             updateProperty.setIsValid(ValidEnum.VALID.getCode());
-            remark=remarkEnum.VALID_ON.getMessage();
+            remark = remarkEnum.VALID_ON.getMessage();
         }
         int count = propertyService.updateByPrimaryKeySelective(updateProperty);
         if (count < 1) {
@@ -352,23 +423,23 @@ public class PropertyBiz implements IPropertyBiz {
             throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_UPDATE_EXCEPTION, msg);
         }
         //属性状态更新时需要更新属性分类关系表的is_valid字段，但可能此时该属性还未使用，故不对返回值进行判断
-        categoryPropertyService.updateCategoryPropertyIsValid(updateProperty.getIsValid(),updateProperty.getId());
+        categoryPropertyService.updateCategoryPropertyIsValid(updateProperty.getIsValid(), updateProperty.getId());
         //更新自然属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-        if(PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())){
-            itemNatureProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(),updateProperty.getId());
+        if (PropertyTypeEnum.NATURE_PROPERTY.getCode().equals(property.getTypeCode())) {
+            itemNatureProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(), updateProperty.getId());
         }
         //更新销售属性表中关联记录状态,不用判断返回值因为不确定是否有关联关系
-        if(PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())){
-            itemSalesProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(),updateProperty.getId());
+        if (PropertyTypeEnum.PURCHASE_PROPERTY.getCode().equals(property.getTypeCode())) {
+            itemSalesProperyService.updateIsValidByPropertyId(updateProperty.getIsValid(), updateProperty.getId());
         }
         //通知渠道属性变更通知
-        Property newProperty=propertyService.selectOneById(property.getId());
-        try{
-            trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY,selectProperty,newProperty,selectPropertyValues,selectPropertyValues,System.currentTimeMillis());
-        }catch (Exception e){
-            log.error("属性新增渠道通知调用出现异常,message:{}",e.getMessage(),e);
+        Property newProperty = propertyService.selectOneById(property.getId());
+        try {
+            trcBiz.sendProperty(TrcActionTypeEnum.EDIT_PROPERTY, selectProperty, newProperty, selectPropertyValues, selectPropertyValues, System.currentTimeMillis());
+        } catch (Exception e) {
+            log.error("属性新增渠道通知调用出现异常,message:{}", e.getMessage(), e);
         }
-        logInfoService.recordLog(property,property.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
+        logInfoService.recordLog(property, property.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
     }
 
     @Override
@@ -398,7 +469,7 @@ public class PropertyBiz implements IPropertyBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isValid", 1);
         criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-        if (!StringUtils.isBlank(queryString)){
+        if (!StringUtils.isBlank(queryString)) {
             criteria.andLike("name", "%" + queryString + "%");
         }
         example.orderBy("isValid").desc();
@@ -431,15 +502,15 @@ public class PropertyBiz implements IPropertyBiz {
         }
     }
 
-    private Map<String,AclUserAccreditInfo> constructUserAccreditInfoMap(List<Property> propertyList){
-        if(AssertUtil.collectionIsEmpty(propertyList)){
+    private Map<String, AclUserAccreditInfo> constructUserAccreditInfoMap(List<Property> propertyList) {
+        if (AssertUtil.collectionIsEmpty(propertyList)) {
             return null;
         }
-        Set<String> userIdsSet=new HashSet<>();
-        for (Property property:propertyList) {
+        Set<String> userIdsSet = new HashSet<>();
+        for (Property property : propertyList) {
             userIdsSet.add(property.getLastEditOperator());
         }
-        String[] userIdArr=new String[userIdsSet.size()];
+        String[] userIdArr = new String[userIdsSet.size()];
         userIdsSet.toArray(userIdArr);
         return userAccreditInfoService.selectByIds(userIdArr);
     }

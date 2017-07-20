@@ -21,4 +21,9 @@ public class CategoryService extends BaseService<Category, Long> implements ICat
     public int updateCategorySort(List<Category> categoryList) throws Exception {
         return   categoryMapper.updateSort(categoryList);
     }
+
+    @Override
+    public String selectAllCategoryName(Long categoryId) {
+        return categoryMapper.selectAllCategoryName(categoryId);
+    }
 }

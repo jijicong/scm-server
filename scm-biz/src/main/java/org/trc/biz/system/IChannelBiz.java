@@ -67,6 +67,10 @@ public interface IChannelBiz {
      * @throws Exception
      */
     void updateChannelState(Channel channel);
+    /**
+     * 渠道Es搜索
+     */
+    Pagenation<Channel> channelPageES(ChannelForm form, Pagenation<Channel> page);
 
 
 }
