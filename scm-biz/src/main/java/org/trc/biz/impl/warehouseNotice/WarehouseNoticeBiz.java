@@ -8,11 +8,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.category.Brand;
+import org.trc.domain.category.Category;
+import org.trc.domain.dict.Dict;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseGroup;
@@ -25,7 +30,10 @@ import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.service.System.IWarehouseService;
+import org.trc.service.category.IBrandService;
+import org.trc.service.category.ICategoryService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseGroupService;
@@ -71,6 +79,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IPurchaseGroupService purchaseGroupService;
     @Resource
     private ILogInfoService logInfoService;
+    @Resource
+    private ISkusService skusService;
+    @Resource
+    private IBrandService brandService;
+    @Resource
+    private ICategoryService categoryService;
+    @Resource
+    private IConfigBiz configBiz;
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
@@ -199,12 +215,54 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void receiptAdviceInfo(WarehouseNotice warehouseNotice, ContainerRequestContext requestContext) {
+        //提运单号可能会修改
+        AssertUtil.notNull(warehouseNotice,"入库通知单的信息为空!");
+
+        WarehouseNotice entryWarehouseNotice = warehouseNoticeService.selectByPrimaryKey(warehouseNotice.getId());
+
+        if(entryWarehouseNotice.getTakeGoodsNo() == null){
+            if(warehouseNotice.getTakeGoodsNo() != null){
+                handleTakeGoodsNo(warehouseNotice);
+            }
+        }
+        if(entryWarehouseNotice.getTakeGoodsNo() != null){
+            if(warehouseNotice.getTakeGoodsNo() != null){
+                if(!warehouseNotice.getTakeGoodsNo().equals(entryWarehouseNotice.getTakeGoodsNo())){
+                    handleTakeGoodsNo(warehouseNotice);
+                }
+            }
+            if(warehouseNotice.getTakeGoodsNo() == null){
+                handleTakeGoodsNo(warehouseNotice);
+            }
+        }
+        //发送入库通知
+        receiptAdvice(warehouseNotice,requestContext);
+    }
+
+    void handleTakeGoodsNo(WarehouseNotice warehouseNotice){
+        WarehouseNotice updateWareshouseNotice = new WarehouseNotice();
+        updateWareshouseNotice.setId(warehouseNotice.getId());
+        updateWareshouseNotice.setTakeGoodsNo(warehouseNotice.getTakeGoodsNo());
+        warehouseNoticeService.updateByPrimaryKeySelective(updateWareshouseNotice);//更改入库通知单的提运单号
+        //这里没有记录日志
+        PurchaseOrder updatePurchaseOrder = new PurchaseOrder();
+        updatePurchaseOrder.setTakeGoodsNo(warehouseNotice.getTakeGoodsNo());
+        Example example = new Example(PurchaseOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("purchaseOrderCode",warehouseNotice.getPurchaseOrderCode());
+        purchaseOrderService.updateByExampleSelective(updatePurchaseOrder,example);//更改采购单的提运单号
+        //这里没有记录日志
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void receiptAdvice(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext) {
         /*
         执行通知收货，关联的操作
             1.更改采购单的是否通知入库 为已通知（1）
            2.更改入库通知单的状态 为待仓库反馈（1）
-           3.调用仓储的入库通知的接口，给仓库发入库通知单
+           3.调用仓储的入库通知的接口，给仓库发入库通知单----------（跟产品原型不符，已经迁移到，采购单点击入库通知，既生成入库明细）
                 {
                 此时，生成入库通知明细
                 该入库通知明细，只所以没有在生成scm的入库通知单的时候，生成。
@@ -242,7 +300,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             logger.error(msg);
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
-        PurchaseDetail purchaseDetail = new PurchaseDetail();
+        /*PurchaseDetail purchaseDetail = new PurchaseDetail();
         purchaseDetail.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
         List<PurchaseDetail> purchaseDetails = purchaseDetailService.select(purchaseDetail);
         if(CollectionUtils.isEmpty(purchaseDetails)){
@@ -250,7 +308,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             logger.error(msg);
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
-        insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());
+        insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());*/
         //todo
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
@@ -258,32 +316,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     }
 
-    private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode){
-
-        List<WarehouseNoticeDetails> warehouseNoticeDetails = new ArrayList<WarehouseNoticeDetails>();
-
-        for (PurchaseDetail purchaseDetail: purchaseDetailList) {
-            WarehouseNoticeDetails details = new WarehouseNoticeDetails();
-            details.setWarehouseNoticeCode(warehouseNoticeCode);
-            details.setBrandId(purchaseDetail.getBrandId());
-            details.setCategoryId(purchaseDetail.getCategoryId());
-            details.setSkuCode(purchaseDetail.getSkuCode());
-            details.setSkuName(purchaseDetail.getItemName());
-            details.setActualStorageQuantity(0L);//初始化0
-            details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
-            details.setCreateTime(Calendar.getInstance().getTime());
-            details.setPurchasePrice(purchaseDetail.getPurchasePrice());
-            details.setStorageTime(details.getCreateTime());
-            warehouseNoticeDetails.add(details);
-        }
-        int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
-        if(count < 1){
-            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]保存入库通知明细初始化失败,无法进行入库通知的操作",warehouseNoticeCode);
-            logger.error(msg);
-            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
-        }
-
-    }
 
     @Override
     public WarehouseNotice findfindWarehouseNoticeById(Long id) {
@@ -304,6 +336,69 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(purchaseGroup.getName(),"采购组名称查询失败");
         warehouseNotice.setPurchaseGroupName(purchaseGroup.getName());//采购组名称
 
-        return null;
+        AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
+        aclUserAccreditInfo.setUserId(warehouseNotice.getPurchasePersonId());
+        aclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
+        AssertUtil.notNull(aclUserAccreditInfo.getName(),"采购人名称查询失败");
+        warehouseNotice.setPurchasePersonName(aclUserAccreditInfo.getName());
+
+        Warehouse warehouse = new Warehouse();
+        warehouse.setCode(warehouseNotice.getWarehouseCode());
+        warehouse = warehouseService.selectOne(warehouse);
+        AssertUtil.notNull(warehouse.getName(),"仓库名称查询失败");
+        warehouseNotice.setWarehouseName(warehouse.getName());
+
+        //purchaseTypeName
+
+        List<Dict> dicts = configBiz.findDictsByTypeNo(SupplyConstants.SelectList.PURCHASE_TYPE);
+        for(Dict dict: dicts){
+            if(warehouseNotice.getPurchaseType().equals(dict.getValue())){
+                warehouseNotice.setPurchaseTypeName(dict.getName());
+            }
+        }
+        return warehouseNotice;
+
     }
+
+    @Override
+    public List<WarehouseNoticeDetails> warehouseNoticeDetailList(Long warehouseNoticeId) {
+
+        AssertUtil.notNull(warehouseNoticeId,"入库通知的id为空");
+
+        WarehouseNotice warehouseNotice = warehouseNoticeService.selectByPrimaryKey(warehouseNoticeId);
+
+        AssertUtil.notNull(warehouseNotice,"查询入库通知信息为空");
+
+        //根据入库通知的编码，查询所有的入库通知明细
+
+        WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
+
+        warehouseNoticeDetails.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
+
+        List<WarehouseNoticeDetails> warehouseNoticeDetailsList = warehouseNoticeDetailsService.select(warehouseNoticeDetails);
+
+        _renderPurchaseOrder(warehouseNoticeDetailsList);
+
+        return warehouseNoticeDetailsList;
+
+    }
+    private void  _renderPurchaseOrder(List<WarehouseNoticeDetails> warehouseNoticeDetailsList){
+        //价格转化成元
+        for (WarehouseNoticeDetails warehouseNoticeDetails : warehouseNoticeDetailsList) {
+            //为品牌名称赋值
+            Brand brand = brandService.selectByPrimaryKey(warehouseNoticeDetails.getBrandId());
+            AssertUtil.notNull(brand,"查询品牌信息失败!");
+            warehouseNoticeDetails.setBrandName(brand.getName());
+            //为三级分类赋值
+            String allCategoryName = categoryService.selectAllCategoryName(warehouseNoticeDetails.getCategoryId());
+            AssertUtil.notBlank(allCategoryName,"获得分类的全路径失败!");
+            warehouseNoticeDetails.setAllCategoryName(allCategoryName);
+            //价格转化成元
+            warehouseNoticeDetails.setPurchasePriceT(new BigDecimal(warehouseNoticeDetails.getPurchasePrice()).divide(new BigDecimal(100)));
+
+        }
+
+
+    }
+
 }

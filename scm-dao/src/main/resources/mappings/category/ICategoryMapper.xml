@@ -10,4 +10,14 @@
             where id = #{category.id}
         </foreach>
     </update>
+
+    <select id="selectAllCategoryName" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT
+        concat(C. name,'/ ',B. name,'/ ',A. name) AS allCategoryName
+        FROM
+        category A
+        LEFT JOIN category B ON A.parent_id = B.id
+        LEFT JOIN category C ON B.parent_id = C.id
+        WHERE A.id =#{categoryId}
+    </select>
 </mapper>

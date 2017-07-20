@@ -41,7 +41,7 @@
             COUNT(*)
         FROM
         acl_user_accredit_info u
-        LEFT JOIN user_accredit_role_relation ur ON u.user_id = ur.user_id
+        LEFT JOIN acl_user_accredit_role_relation ur ON u.user_id = ur.user_id
         WHERE
             u.user_id IN
         <foreach collection="array" index="index" item="item" close=")" open="(" separator=",">
