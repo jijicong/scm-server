@@ -60,6 +60,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         map.put("contact", queryModel.getContact());
         map.put("supplierCode", queryModel.getSupplierCode());
         map.put("status", queryModel.getStatus());
+        map.put("channelId",queryModel.getApplySquare());
         map.put("startTime", queryModel.getStartDate());
         map.put("endTime", queryModel.getEndDate());
         List<SupplierApplyAudit> list = supplierApplyAuditService.selectList(map);
