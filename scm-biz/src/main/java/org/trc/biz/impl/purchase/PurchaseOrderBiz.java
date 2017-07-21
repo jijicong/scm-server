@@ -678,6 +678,22 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public PurchaseOrder findPurchaseOrderAddDataByCode(String purchaseCode) {
+
+        AssertUtil.notBlank(purchaseCode,"采购单的编码为空!");
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setPurchaseOrderCode(purchaseCode);
+        purchaseOrder = purchaseOrderService.selectOne(purchaseOrder);
+        AssertUtil.notNull(purchaseOrder.getId(),"查询采购单信息失败!");
+        //使用根据采购单id的方法直接查询采购单信息
+        PurchaseOrder purchaseOrderSele = findPurchaseOrderAddDataById(purchaseOrder.getId());
+        AssertUtil.notNull(purchaseOrderSele,"根据id查询采购单信息为空");
+        return purchaseOrderSele;
+
+    }
+
+    @Override
     public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");

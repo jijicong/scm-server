@@ -34,6 +34,15 @@ public class PurchaseDetailResource {
         //"根据采购单的id，查询采购明细成功",
         return iPurchaseDetailBiz.purchaseDetailList(purchaseId);
 
+    }//
+
+    @GET
+    @Path(SupplyConstants.PurchaseDetail.PURCHASE_DETAILE_BY_CODE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<PurchaseDetail> purchaseDetailListByPurchaseCode(@QueryParam("purchaseOrderCode") String purchaseOrderCode)throws Exception{
+        //"根据采购单的id，查询采购明细成功",
+        return iPurchaseDetailBiz.purchaseDetailListByPurchaseCode(purchaseOrderCode);
+
     }
 
 
