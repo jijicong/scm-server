@@ -272,6 +272,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notNull(warehouseNotice,"入库通知的信息为空");
         PurchaseOrder purchaseOrder = new PurchaseOrder();
         purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(PurchaseOrder.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("purchaseOrderCode",warehouseNotice.getPurchaseOrderCode());
@@ -294,6 +295,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         warehouseNoticeCriteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         WarehouseNotice warehouseNotice1 = new WarehouseNotice();
         warehouseNotice1.setStatus(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
+        warehouseNotice1.setUpdateTime(Calendar.getInstance().getTime());
         int num = warehouseNoticeService.updateByExampleSelective(warehouseNotice1,warehouseNoticeExample);
         if(num != 1){
             String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合修改条件,无法进行入库通知的操作",warehouseNotice.getWarehouseNoticeCode());

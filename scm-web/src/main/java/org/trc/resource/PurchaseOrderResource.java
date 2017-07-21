@@ -118,7 +118,7 @@ public class PurchaseOrderResource {
 
         return ResultUtil.createSucssAppResult("根据采购单Id查询采购单信息成功",purchaseOrderBiz.findPurchaseOrderAddDataById(id));
 
-    }//
+    }
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_BY_CODE+"/{purchaseOrderCode}")
     @Produces(MediaType.APPLICATION_JSON)

@@ -53,7 +53,7 @@ public class WarehouseNoticeResource {
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
-
+        //入库通知单详情页的入库通知操作
         warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,requestContext);
         return ResultUtil.createSucssAppResult("通知收货成功","");
 

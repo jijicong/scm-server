@@ -564,6 +564,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
         if (count == 0) {
             String msg = String.format("作废%s采购单操作失败", JSON.toJSONString(purchaseOrder));
@@ -581,6 +582,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
         if (count == 0) {
             String msg = String.format("删除%s采购单操作失败", JSON.toJSONString(purchaseOrder));
@@ -702,6 +704,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             PurchaseOrder tmp = new PurchaseOrder();
             tmp.setId(purchaseOrder.getId());
             tmp.setStatus(PurchaseOrderStatusEnum.FREEZE.getCode());
+            tmp.setUpdateTime(Calendar.getInstance().getTime());
             int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
             if (count == 0) {
                 String msg = String.format("冻结%s采购单操作失败", JSON.toJSONString(purchaseOrder));
@@ -719,6 +722,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             tmp.setId(purchaseOrder.getId());
             tmp.setStatus(PurchaseOrderStatusEnum.PASS.getCode());
             int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
+            tmp.setUpdateTime(Calendar.getInstance().getTime());
             if (count == 0) {
                 String msg = String.format("解冻%s采购单操作失败", JSON.toJSONString(purchaseOrder));
                 LOGGER.error(msg);
@@ -882,6 +886,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         _purchaseOrder.setId(order.getId());
         _purchaseOrder.setStatus(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
         _purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());//待通知
+        _purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         int sum = purchaseOrderService.updateByPrimaryKeySelective(_purchaseOrder);
         if(sum == 0){
             String msg = "更改采购单的状态,数据库操作失败";
@@ -954,6 +959,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setEndReceiveDate(order.getEndReceiveDate());
         warehouseNotice.setRemark("新增入库通知单");
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
+        warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
     }
 
     @Override
@@ -965,6 +971,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         //是否已经发起入库通知，设为""
         tmp.setEnterWarehouseNotice("");
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
@@ -990,6 +997,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
         notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+        notice.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
