@@ -88,6 +88,9 @@ public class TrcService implements ITrcService {
      * @return
      */
     private ToGlyResultDO invokeUpdateNotice(String url, String params){
+        if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
+            return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
+        }
         log.debug("开始调用泰然城信息更新同步服务" + url + ", 参数：" + params + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
@@ -116,6 +119,9 @@ public class TrcService implements ITrcService {
 
     @Override
     public ToGlyResultDO sendOrderSubmitResultNotice(ChannelOrderResponse channelOrderResponse) {
+        if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
+            return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
+        }
         AssertUtil.notNull(channelOrderResponse, "同步订单提交结果给渠道参数不能为空");
         String url = trcConfig.getOrderSubmitNotifyUrl();
         String paramObj = JSON.toJSON(channelOrderResponse).toString();
@@ -147,6 +153,9 @@ public class TrcService implements ITrcService {
 
     @Override
     public ToGlyResultDO sendLogisticInfoNotice(LogisticNoticeForm logisticNoticeForm) {
+        if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
+            return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
+        }
         AssertUtil.notNull(logisticNoticeForm, "同步物理新给渠道参数logisticNoticeForm不能为空");
         AssertUtil.notBlank(logisticNoticeForm.getShopOrderCode(), "同步物理新给渠道店铺订单编码shopOrderCode不能为空");
         AssertUtil.notBlank(logisticNoticeForm.getType(), "同步物理新给渠道信息类型type不能为空");

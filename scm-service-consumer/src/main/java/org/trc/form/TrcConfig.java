@@ -25,6 +25,8 @@ public class TrcConfig {
     private String logisticsNotifyUrl;
     //订单下单结果同步URL
     private String orderSubmitNotifyUrl;
+    //是否通知渠道,0-不通知,1-通知
+    private String noticeChannal;
 
     public String getKey() {
         return key;
@@ -104,5 +106,13 @@ public class TrcConfig {
 
     public void setOrderSubmitNotifyUrl(String orderSubmitNotifyUrl) {
         this.orderSubmitNotifyUrl = orderSubmitNotifyUrl;
+    }
+
+    public String getNoticeChannal() {
+        return noticeChannal;
+    }
+
+    public void setNoticeChannal(String noticeChannal) {
+        this.noticeChannal = noticeChannal;
     }
 }
