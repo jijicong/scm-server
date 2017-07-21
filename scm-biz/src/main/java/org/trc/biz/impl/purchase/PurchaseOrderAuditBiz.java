@@ -181,21 +181,10 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         //根据采购订单的编码审核采购单
         AssertUtil.notNull(purchaseOrderAudit,"根据采购订单的编码审核采购单,审核信息为空");
 
-        PurchaseOrderAudit purchaseOrderAuditLog = new PurchaseOrderAudit();
-        purchaseOrderAuditLog.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
-        purchaseOrderAuditLog = purchaseOrderAuditService.selectOne(purchaseOrderAuditLog);
-        AssertUtil.notNull(purchaseOrderAuditLog.getId(),"根据采购单的编码,查询采购单申请失败");
-        purchaseOrderAudit.setId(purchaseOrderAuditLog.getId());
-
-        if(purchaseOrderAudit.getStatus().equals(ZeroToNineEnum.THREE.getCode())){ //若是审核驳回 ,校验审核意见
-            String auditOpinion = purchaseOrderAudit.getAuditOpinion();
-            if(StringUtils.isBlank(auditOpinion)){
-                String msg = String.format("审核%s采购单操作失败,%s", JSON.toJSONString(purchaseOrderAudit),"驳回意见为空");
-                logger.error(msg);
-                throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, msg);
-            }
-        }
-
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
+        purchaseOrderLog = iPurchaseOrderService.selectOne(purchaseOrderLog);
+        AssertUtil.notNull(purchaseOrderLog.getId(),"根据采购单的编码,查询采购单失败");
        //审核驳回，检验审核意见是否为空
         if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){//判断时是否为驳回
             AssertUtil.notBlank(purchaseOrderAudit.getAuditOpinion(),"审核驳回,审核意见不能为空");
@@ -210,11 +199,10 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         //采购单审核的日志记录
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){
-            logInfoService.recordLog(purchaseOrderAudit,purchaseOrderAudit.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
         }
         if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrderAudit.getStatus())){
-            Long id = purchaseOrderAudit.getId();
-            logInfoService.recordLog(purchaseOrderAudit,purchaseOrderAudit.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
         }
 
         if (count == 0) {
@@ -236,16 +224,12 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
             purchaseOrder.setStatus(purchaseOrderAudit.getStatus());
         }
         count = iPurchaseOrderService.updateByExampleSelective(purchaseOrder,exampleOrder);
-        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
-        purchaseOrderLog.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
-        purchaseOrderLog = iPurchaseOrderService.selectOne(purchaseOrderLog);
-        AssertUtil.notNull(purchaseOrderLog.getId(),"查询采购单信息失败!");
         //保存采购单的单据日志
         if(ZeroToNineEnum.ONE.getCode().equals(purchaseOrder.getStatus())){//审核驳回
-            logInfoService.recordLog(purchaseOrder,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+            logInfoService.recordLog(purchaseOrder,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),ZeroToNineEnum.ZERO.getCode());
         }
         if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrder.getStatus())){//审核通过
-            logInfoService.recordLog(purchaseOrder,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+            logInfoService.recordLog(purchaseOrder,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),ZeroToNineEnum.ZERO.getCode());
         }
         if (count == 0) {
             String msg = String.format("修改%s采购单状态数据库操作失败", JSON.toJSONString(purchaseOrderAudit));
