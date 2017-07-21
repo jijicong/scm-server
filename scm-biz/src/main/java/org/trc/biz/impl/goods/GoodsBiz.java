@@ -1215,6 +1215,7 @@ public class GoodsBiz implements IGoodsBiz {
         itemSalesPropery.setSpuCode(skus.getSpuCode());
         itemSalesPropery.setSkuCode(skus.getSkuCode());
         String[] _tmp = getPropertyIdAndPicture(itemSalesArray, propertyValueId);
+        AssertUtil.notNull(_tmp, String.format("获取采购属性%s相关信息为空", propertyValue));
         itemSalesPropery.setPropertyId(Long.parseLong(_tmp[0]));
         itemSalesPropery.setPropertyValueId(propertyValueId);
         itemSalesPropery.setPropertyActualValue(propertyValue);
