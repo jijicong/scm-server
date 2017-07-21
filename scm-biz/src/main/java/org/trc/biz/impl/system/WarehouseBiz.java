@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.util.Area;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
@@ -29,6 +30,7 @@ import org.trc.form.system.WarehouseForm;
 import org.trc.service.IPageNationService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
@@ -65,8 +67,12 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Autowired
     private IPageNationService pageNationService;
+
     @Autowired
     private ILogInfoService logInfoService;
+
+    @Autowired
+    private ILocationUtilService locationUtilService;
 
 
     @Override
@@ -83,7 +89,39 @@ public class WarehouseBiz implements IWarehouseBiz {
         example.orderBy("updateTime").desc();
         Pagenation<Warehouse> pagenation = warehouseService.pagination(example, page, form);
         userNameUtilService.handleUserName(pagenation.getResult());
+        //为所有的仓库赋值
+        List<Warehouse> warehouses = pagenation.getResult();
+
+        handleAreaName(warehouses);
+
         return pagenation;
+
+    }
+
+    private void handleAreaName(List<Warehouse> warehouses){
+        for (Warehouse warehouse : warehouses) {
+            StringBuffer allAreaName = new StringBuffer();
+            Area privinceArea = new Area();
+            privinceArea.setCode(warehouse.getProvince());
+            privinceArea = locationUtilService.selectOne(privinceArea);
+            AssertUtil.notNull(privinceArea.getProvince(),"数据库查询失败!");
+            allAreaName.append(privinceArea.getProvince());
+            Area cityArea = new Area();
+            cityArea.setCode(warehouse.getCity());
+            cityArea = locationUtilService.selectOne(cityArea);
+            AssertUtil.notNull(cityArea.getCity(),"数据库查询失败!");
+            allAreaName.append("."+cityArea.getCity());
+            if(StringUtils.isNotBlank(cityArea.getDistrict())){
+                warehouse.setAllAreaName(allAreaName.toString());
+                continue;
+            }
+            Area districtArea = new Area();
+            districtArea.setCode(warehouse.getArea());
+            districtArea = locationUtilService.selectOne(districtArea);
+            AssertUtil.notNull(districtArea.getDistrict(),"数据库查询失败!");
+            allAreaName.append("."+districtArea.getDistrict());
+            warehouse.setAllAreaName(allAreaName.toString());
+        }
 
     }
 
