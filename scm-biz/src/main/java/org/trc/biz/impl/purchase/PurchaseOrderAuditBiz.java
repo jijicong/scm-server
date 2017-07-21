@@ -195,6 +195,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         PurchaseOrderAudit audit = new PurchaseOrderAudit();
         audit.setStatus(purchaseOrderAudit.getStatus());
         audit.setAuditOpinion(purchaseOrderAudit.getAuditOpinion());
+        audit.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseOrderAuditService.updateByExampleSelective(audit,exampleAudit);//审核采购单，更改审核单的状态
         //采购单审核的日志记录
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);

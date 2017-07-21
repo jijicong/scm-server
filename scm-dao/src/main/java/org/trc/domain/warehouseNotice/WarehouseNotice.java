@@ -98,6 +98,8 @@ public class WarehouseNotice {
     //'创建时间,格式yyyy-mm-dd hh:mi:ss',
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date updateTime;
 
     public String getPurchaseGroupName() {
         return purchaseGroupName;
@@ -145,6 +147,14 @@ public class WarehouseNotice {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 
     public Long getId() {

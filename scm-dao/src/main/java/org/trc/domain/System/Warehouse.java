@@ -51,6 +51,8 @@ public class Warehouse extends BaseDO{
     @FormParam("remark")
     @Length(max = 1024, message = "仓库的备注信息字母和数字不能超过1024个,汉字不能超过512个")
     private String remark;
+    @Transient
+    private String allAreaName;
 
     public Integer getIsCustomsClearance() {
         return isCustomsClearance;
@@ -58,6 +60,14 @@ public class Warehouse extends BaseDO{
 
     public void setIsCustomsClearance(Integer isCustomsClearance) {
         this.isCustomsClearance = isCustomsClearance;
+    }
+
+    public String getAllAreaName() {
+        return allAreaName;
+    }
+
+    public void setAllAreaName(String allAreaName) {
+        this.allAreaName = allAreaName;
     }
 
     public String getRemark() {
