@@ -1001,7 +1001,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
-        criteria.andEqualTo("state",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         int num = iWarehouseNoticeService.updateByExampleSelective(notice,example);
         if (num == 0) {
             String msg = String.format("作废%s采购单操作失败,入库通知单已经被执行操作", JSON.toJSONString(warehouseNotice));
