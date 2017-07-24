@@ -988,5 +988,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
     }
-
+    @Override
+    public   List<String> associationSearch(String queryString) throws Exception{
+        List<String> brandNameList = new ArrayList<>();
+        return brandNameList;
+    }
 }

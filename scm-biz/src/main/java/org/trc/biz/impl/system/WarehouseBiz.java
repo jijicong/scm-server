@@ -26,6 +26,7 @@ import org.trc.enums.ValidEnum;
 import org.trc.enums.remarkEnum;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
+import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
@@ -108,15 +109,15 @@ public class WarehouseBiz implements IWarehouseBiz {
             QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
             srb.setPostFilter(filterBuilder);
         }
-        SearchHit[] searchHists = new SearchHit[0];
+        SearchResult searchResult;
         try {
-            searchHists = pageNationService.resultES(srb, clientUtil);
+            searchResult = pageNationService.resultES(srb, clientUtil);
         } catch (Exception e) {
             logger.error("es查询失败" + e.getMessage(), e);
             return page;
         }
         List<Warehouse> warehouseList = new ArrayList<>();
-        for (SearchHit searchHit : searchHists) {
+        for (SearchHit searchHit : searchResult.getSearchHits()) {
             Warehouse warehouse = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Warehouse.class);
             if (StringUtils.isNotBlank(queryModel.getName())) {
                 for (Text text : searchHit.getHighlightFields().get("name.pinyin").getFragments()) {
@@ -130,6 +131,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
         page.setResult(warehouseList);
         userNameUtilService.handleUserName(page.getResult());
+        page.setTotalCount(searchResult.getCount());
         return page;
     }
 

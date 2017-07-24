@@ -89,4 +89,9 @@ public interface IBrandBiz {
      * Es搜索
      */
     Pagenation<Brand> brandPageES(BrandForm queryModel, Pagenation<Brand> page) throws Exception;
+
+    /**
+     * 联想查询
+     */
+    List<String> associationSearch(String queryString) throws Exception;
 }

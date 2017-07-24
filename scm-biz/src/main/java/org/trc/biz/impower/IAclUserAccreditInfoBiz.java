@@ -24,6 +24,17 @@ public interface IAclUserAccreditInfoBiz {
      */
     Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
 
+
+    /**
+     * 分页查询授权信息es搜索
+     *
+     * @param form 授权信息查询条件
+     * @param page 分页信息
+     * @return 分页信息及当前页面的数据
+     */
+    Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
+
+
     /**
      * 查询拥有采购员角色的用户
      *

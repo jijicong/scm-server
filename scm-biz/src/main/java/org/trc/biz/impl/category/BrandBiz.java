@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -26,6 +27,7 @@ import org.trc.exception.CategoryException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.BrandForm;
+import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryBrandService;
@@ -118,9 +120,15 @@ public class BrandBiz implements IBrandBiz {
             QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
             srb.setPostFilter(filterBuilder);
         }
-        SearchHit[] searchHists = pageNationService.resultES(srb, clientUtil);
+        SearchResult searchResult;
+        try {
+            searchResult = pageNationService.resultES(srb, clientUtil);
+        } catch (Exception e) {
+            log.error("es查询失败" + e.getMessage(), e);
+            return page;
+        }
         List<Brand> brandList = new ArrayList<>();
-        for (SearchHit searchHit : searchHists) {
+        for (SearchHit searchHit : searchResult.getSearchHits()) {
             Brand brand = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Brand.class);
             if (StringUtils.isNotBlank(queryModel.getName())) {
                 for (Text text : searchHit.getHighlightFields().get("name.pinyin").getFragments()) {
@@ -149,9 +157,36 @@ public class BrandBiz implements IBrandBiz {
             }
         }
         page.setResult(brandList);
+        page.setTotalCount(searchResult.getCount());
         return page;
     }
+    @Override
+    public  List<String> associationSearch(String queryString) throws Exception{
+        List<String> brandNameList = new ArrayList<>();
+        if (StringUtils.isNotBlank(queryString)){
+            TransportClient clientUtil = TransportClientUtil.getTransportClient();
+            SearchRequestBuilder srb = clientUtil.prepareSearch("item_brand").setFrom(0)
+                    //前10个
+                    .setSize(10);
+            MultiMatchQueryBuilder query = QueryBuilders.multiMatchQuery(queryString, "name.pinyin");
+            srb.setQuery(query);
+            pageNationService.resultES(srb, clientUtil);
+            SearchResult searchResult;
+            try {
+                searchResult = pageNationService.resultES(srb, clientUtil);
+            } catch (Exception e) {
+                log.error("es查询失败" + e.getMessage(), e);
+                return brandNameList;
+            }
+            for (SearchHit searchHit : searchResult.getSearchHits()) {
+                Brand brand = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Brand.class);
+                brandNameList.add(brand.getName());
+            }
+        }
 
+
+        return  brandNameList;
+    }
 
 
     @Override

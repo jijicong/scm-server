@@ -11,6 +11,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.util.Pagenation;
 
@@ -18,7 +19,9 @@ import org.trc.util.Pagenation;
 public class PageNationService implements IPageNationService {
     private Logger log = LoggerFactory.getLogger(PageNationService.class);
 
-    public SearchHit[] resultES(SearchRequestBuilder srb, TransportClient clientUtil) throws Exception {
+    @Override
+    public SearchResult resultES(SearchRequestBuilder srb, TransportClient clientUtil) throws Exception {
+        SearchResult searchResult = new SearchResult();
         MultiSearchResponse sr;
         SearchHit[] searchHists = new SearchHit[0];
         try {
@@ -27,15 +30,16 @@ public class PageNationService implements IPageNationService {
                     .get();
         } catch (Exception e) {
             log.error("es搜索异常" + e.getMessage(), e);
-            return searchHists;
+            return searchResult;
         }
         for (MultiSearchResponse.Item item : sr.getResponses()) {
             SearchResponse response = item.getResponse();
             searchHists = response.getHits().getHits();
-
+            searchResult.setSearchHits(searchHists);
+            searchResult.setCount((int) response.getHits().getTotalHits());
         }
 
-        return searchHists;
+        return searchResult;
     }
 
     @Override

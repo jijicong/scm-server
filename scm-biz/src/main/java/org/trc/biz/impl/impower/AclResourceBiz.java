@@ -49,7 +49,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     private final static Integer CHANNEL_JURISDICTION_ID = 2;//渠道角色的所属
 
     @Override
-    public List<AclResource> findWholeJurisdiction(){
+    public List<AclResource> findWholeJurisdiction() {
 
         AclResource aclResource = new AclResource();
         aclResource.setBelong(WHOLE_JURISDICTION_ID);
@@ -60,7 +60,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public List<AclResource> findChannelJurisdiction(){
+    public List<AclResource> findChannelJurisdiction() {
 
         AclResource aclResource = new AclResource();
         aclResource.setBelong(CHANNEL_JURISDICTION_ID);
@@ -72,7 +72,7 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     @Override
     @Transactional
-    public List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId){
+    public List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId) {
 
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
@@ -94,7 +94,7 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     @Override
     @Transactional
-    public List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId){
+    public List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId) {
 
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
@@ -115,7 +115,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public Boolean authCheck(String userId, String url, String method){
+    public Boolean authCheck(String userId, String url, String method) {
         /*
         * 1.查询用户授权信息表
         * 2.查询用户所拥有的角色
@@ -182,7 +182,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive){
+    public List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive) {
         Example example = new Example(AclResource.class);
         Example.Criteria criteria = example.createCriteria();
         if (null == parentId) {
@@ -231,17 +231,17 @@ public class AclResourceBiz implements IAclResourceBiz {
      * @throws Exception
      */
     @Override
-    public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, ContainerRequestContext requestContext){
+    public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, ContainerRequestContext requestContext) {
         //生成code
         String code = jurisdictionTreeNode.getParentId().toString();
-        String  parentMethod=code ;
-        parentMethod = parentMethod+ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType();
+        String parentMethod = code;
+        parentMethod = parentMethod + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType();
         AclResource aclResource = new AclResource();
 //        aclResource.setId(jurisdictionService.selectMaxId()+1);
         //2.查询到当前方法,当前父资源下最大的序号,如果存在加1,如果不存在,自行组合
         Example example = new Example(AclResource.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andLike("code", parentMethod+"%");
+        criteria.andLike("code", parentMethod + "%");
         example.orderBy("code").desc();
         List<AclResource> aclResourceList = jurisdictionService.selectByExample(example);
         if (aclResourceList != null && aclResourceList.size() > 0) {
@@ -251,6 +251,13 @@ public class AclResourceBiz implements IAclResourceBiz {
             //不存在,手动组合,从一开始
             code = code + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType() + ZeroToNineEnum.ZERO.getCode() + ZeroToNineEnum.ONE.getCode();
             aclResource.setCode(Long.parseLong(code));
+        }
+        if (jurisdictionTreeNode.getParentId().toString().length() == 3) {
+            String acl = String.valueOf(aclResource.getCode());
+            if (acl.length() >= 5) {// 判断是否长度大于等于4
+                acl = acl.substring(acl.length() - 5, acl.length());
+            }
+            aclResource.setCode(Long.parseLong(acl));
         }
         aclResource.setBelong(jurisdictionTreeNode.getBelong());
         aclResource.setMethod(jurisdictionTreeNode.getMethod());
@@ -267,18 +274,19 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     /**
-     *  编辑资源
+     * 编辑资源
+     *
      * @param jurisdictionTreeNode
      * @return
      * @throws Exception
      */
     @Override
-    public void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode){
-        AclResource aclResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode),AclResource.class);
+    public void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode) {
+        AclResource aclResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode), AclResource.class);
         aclResource.setMethod(jurisdictionTreeNode.getOperationType());
         aclResource.setUpdateTime(Calendar.getInstance().getTime());
-        int count =   jurisdictionService.updateByPrimaryKeySelective(aclResource);
-        if (count==0){
+        int count = jurisdictionService.updateByPrimaryKeySelective(aclResource);
+        if (count == 0) {
             String msg = "更新资源" + JSON.toJSONString(aclResource.getName()) + "操作失败";
             logger.error(msg);
             throw new CategoryException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
@@ -286,8 +294,8 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public  List<Map<String,Object>> getHtmlJurisdiction(String userId) {
-        List<Map<String,Object>> JurisdictionList=new ArrayList<>();
+    public List<Map<String, Object>> getHtmlJurisdiction(String userId) {
+        List<Map<String, Object>> JurisdictionList = new ArrayList<>();
         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
         try {
             AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息不存在");
@@ -304,34 +312,34 @@ public class AclResourceBiz implements IAclResourceBiz {
             roleIds[i] = userRoleRelationList.get(i).getRoleId();
         }
         //3.查询用户所有角色下的权限
-        Example example =new Example(AclRoleResourceRelation.class);
-        Example.Criteria criteria=example.createCriteria();
-        List<Long> roleIdList=new ArrayList<>();
-        Collections.addAll(roleIdList,roleIds);
-        criteria.andIn("roleId",roleIdList);
-        criteria.andGreaterThan("resourceCode",100000);
-        List<AclRoleResourceRelation> roleJdRelationList =roleJurisdictionRelationService.selectByExample(example);
+        Example example = new Example(AclRoleResourceRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        List<Long> roleIdList = new ArrayList<>();
+        Collections.addAll(roleIdList, roleIds);
+        criteria.andIn("roleId", roleIdList);
+        criteria.andGreaterThan("resourceCode", 100000);
+        List<AclRoleResourceRelation> roleJdRelationList = roleJurisdictionRelationService.selectByExample(example);
         if (AssertUtil.collectionIsEmpty(roleJdRelationList)) {
             throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
         }
-        Map<String ,Object> map=new HashMap<>();
-        Set<Long> resourceCodeSet=new HashSet<>();
-        for (AclRoleResourceRelation aclRoleResourceRelation: roleJdRelationList) {
+        Map<String, Object> map = new HashMap<>();
+        Set<Long> resourceCodeSet = new HashSet<>();
+        for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
             //取得资源码前3位
-            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode()/1000000);
+            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode() / 1000000);
         }
-        for (Long resourceCode:resourceCodeSet) {
-            Map<String,Object> jurisdictionMap=new HashMap<>();
-            jurisdictionMap.put("parentCode",resourceCode);
-            Set<Long> longSet=new HashSet<>();
-            for (AclRoleResourceRelation aclRoleResourceRelation: roleJdRelationList) {
+        for (Long resourceCode : resourceCodeSet) {
+            Map<String, Object> jurisdictionMap = new HashMap<>();
+            jurisdictionMap.put("parentCode", resourceCode);
+            Set<Long> longSet = new HashSet<>();
+            for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
                 //取得资源码前3位
-                if(resourceCode.equals(aclRoleResourceRelation.getResourceCode()/1000000)){
+                if (resourceCode.equals(aclRoleResourceRelation.getResourceCode() / 1000000)) {
                     //取得资源码前5位
-                    longSet.add(aclRoleResourceRelation.getResourceCode()/10000);
+                    longSet.add(aclRoleResourceRelation.getResourceCode() / 10000);
                 }
             }
-            jurisdictionMap.put("codeList",longSet);
+            jurisdictionMap.put("codeList", longSet);
             JurisdictionList.add(jurisdictionMap);
         }
         return JurisdictionList;

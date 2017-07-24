@@ -68,5 +68,8 @@ public interface IPurchaseOrderBiz {
      * 采购单入库通知状态的作废操作
      */
     void cancelWarahouseAdvice(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext);
-
+    /**
+     *联想搜索
+     */
+    List<String> associationSearch(String queryString) throws Exception;
 }

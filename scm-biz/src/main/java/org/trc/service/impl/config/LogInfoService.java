@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by hzqph on 2017/6/20.
  */
-@Service
+@Service("logInfoService")
 public class LogInfoService extends BaseService<LogInfo,Long> implements ILogInfoService{
     private Logger log = LoggerFactory.getLogger(LogInfoService.class);
     @Autowired
