@@ -156,7 +156,7 @@ public class CategoryBiz implements ICategoryBiz {
             criteria.andEqualTo("parentId", parentId);
         }
         example.orderBy("sort").asc();
-        example.orderBy("updateTime").desc();
+        example.orderBy("createTime").desc();
 
         List<Category> childCategoryList = categoryService.selectByExample(example);
         List<TreeNode> childNodeList = new ArrayList<>();
