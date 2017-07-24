@@ -68,6 +68,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
                         if (aclUserAccreditInfo == null) {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
+                            log.warn("用户授权信息不存在或已经被禁用!");
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
                             requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
@@ -82,17 +83,20 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                                     requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                                 }
                             }
+                            log.info("url:{}不需要验证放行成功",url);
                         }
                     }
                 } catch (AuthenticateException e) {
                     //token失效需要用户重新登录
+                    log.error("message:{},e:{}",e.getMessage(),e);
                     requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                 } catch (Exception e) {
-                    log.error(e.getMessage());
+                    log.error("message:{},e:{}",e.getMessage(),e);
                     requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                 }
             } else {
                 //未获取到token返回登录页面
+                log.info("页面token不存在,需要重新登录");
                 AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
                 requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }

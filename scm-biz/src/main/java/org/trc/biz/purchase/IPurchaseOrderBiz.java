@@ -48,6 +48,8 @@ public interface IPurchaseOrderBiz {
      */
     void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) ;
 
+    PurchaseOrder findPurchaseOrderAddDataByCode(String purchaseCode);
+
     //查询所有的可卖商品
     List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode) ;
 

@@ -395,7 +395,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
-        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
             savePurchaseOrderAudit(purchaseOrder,requestContext);
@@ -564,6 +564,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
         if (count == 0) {
             String msg = String.format("作废%s采购单操作失败", JSON.toJSONString(purchaseOrder));
@@ -573,7 +574,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
-        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
     //采购单逻辑删除
@@ -581,6 +582,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
         if (count == 0) {
             String msg = String.format("删除%s采购单操作失败", JSON.toJSONString(purchaseOrder));
@@ -603,7 +605,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
-        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.DELETE.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.DELETE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
 
@@ -678,6 +680,22 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public PurchaseOrder findPurchaseOrderAddDataByCode(String purchaseCode) {
+
+        AssertUtil.notBlank(purchaseCode,"采购单的编码为空!");
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setPurchaseOrderCode(purchaseCode);
+        purchaseOrder = purchaseOrderService.selectOne(purchaseOrder);
+        AssertUtil.notNull(purchaseOrder.getId(),"查询采购单信息失败!");
+        //使用根据采购单id的方法直接查询采购单信息
+        PurchaseOrder purchaseOrderSele = findPurchaseOrderAddDataById(purchaseOrder.getId());
+        AssertUtil.notNull(purchaseOrderSele,"根据id查询采购单信息为空");
+        return purchaseOrderSele;
+
+    }
+
+    @Override
     public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
@@ -686,6 +704,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             PurchaseOrder tmp = new PurchaseOrder();
             tmp.setId(purchaseOrder.getId());
             tmp.setStatus(PurchaseOrderStatusEnum.FREEZE.getCode());
+            tmp.setUpdateTime(Calendar.getInstance().getTime());
             int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
             if (count == 0) {
                 String msg = String.format("冻结%s采购单操作失败", JSON.toJSONString(purchaseOrder));
@@ -695,7 +714,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
             PurchaseOrder purchaseOrderLog = new PurchaseOrder();
             purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
-            logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.FREEZE.getMessage(),null,null);
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.FREEZE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
             return;
         }
         if(PurchaseOrderStatusEnum.FREEZE.getCode().equals(status)){ //需解冻
@@ -703,6 +722,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             tmp.setId(purchaseOrder.getId());
             tmp.setStatus(PurchaseOrderStatusEnum.PASS.getCode());
             int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
+            tmp.setUpdateTime(Calendar.getInstance().getTime());
             if (count == 0) {
                 String msg = String.format("解冻%s采购单操作失败", JSON.toJSONString(purchaseOrder));
                 LOGGER.error(msg);
@@ -711,7 +731,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
             PurchaseOrder purchaseOrderLog = new PurchaseOrder();
             purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
-            logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UN_FREEZE.getMessage(),null,null);
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UN_FREEZE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         }
 
     }
@@ -757,7 +777,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
-        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
             savePurchaseOrderAudit(purchaseOrderAddData,requestContext);
@@ -866,6 +886,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         _purchaseOrder.setId(order.getId());
         _purchaseOrder.setStatus(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
         _purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());//待通知
+        _purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         int sum = purchaseOrderService.updateByPrimaryKeySelective(_purchaseOrder);
         if(sum == 0){
             String msg = "更改采购单的状态,数据库操作失败";
@@ -874,8 +895,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.WAREHOUSE_NOTICE.getMessage(),null,null);
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.WAREHOUSE_NOTICE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         //生成入库通知商品明细
         PurchaseDetail purchaseDetail = new PurchaseDetail();
         purchaseDetail.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
@@ -938,6 +959,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setEndReceiveDate(order.getEndReceiveDate());
         warehouseNotice.setRemark("新增入库通知单");
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
+        warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
     }
 
     @Override
@@ -949,6 +971,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setStatus(PurchaseOrderStatusEnum.CANCEL.getCode());
+        tmp.setUpdateTime(Calendar.getInstance().getTime());
         //是否已经发起入库通知，设为""
         tmp.setEnterWarehouseNotice("");
         int count = purchaseOrderService.updateByPrimaryKeySelective(tmp);
@@ -974,6 +997,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
         notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+        notice.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
@@ -985,8 +1009,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,null);
+        logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
     }
     @Override
     public   List<String> associationSearch(String queryString) throws Exception{

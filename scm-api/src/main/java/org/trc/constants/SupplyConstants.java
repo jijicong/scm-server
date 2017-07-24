@@ -377,7 +377,8 @@ public class SupplyConstants {
         public static final String ROOT = "purchase";
         //
         public static final String  PURCHASE_DETAIL= "purchaseDetail";
-
+        //根据采购单编码查询采购信息列表
+        public static final String  PURCHASE_DETAILE_BY_CODE= "purchaseDetailByCode";
     }
 
 
@@ -410,6 +411,8 @@ public class SupplyConstants {
         public static final String SUPPLIERS_ITEMS = "suppliersItems";
         //根据供应商的编码查询供应商所有可卖商品
         public static final String SUPPLIERS_ALL_ITEMS = "suppliersAllItems";
+        //根据采购单编码查询采购单
+        public static final String PURCHASE_ORDER_BY_CODE = "purchaseOrderByCode";
     }
     /**
      * 入库通知

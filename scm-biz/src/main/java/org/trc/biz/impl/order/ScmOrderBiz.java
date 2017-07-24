@@ -1748,6 +1748,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
             warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
+            warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
             //流水号
             String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER, supplierCode, ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
