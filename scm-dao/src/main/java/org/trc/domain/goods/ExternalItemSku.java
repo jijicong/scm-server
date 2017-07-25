@@ -143,7 +143,7 @@ public class ExternalItemSku {
     private Long stock;
 
     // 是否有效:0-无效,1-有效
-    @FormParam("stock")
+    @FormParam("isValid")
     @Length(max = 2, message = "是否有效长度不能超过2个")
     private String isValid;
 

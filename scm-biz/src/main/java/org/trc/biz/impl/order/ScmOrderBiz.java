@@ -1463,7 +1463,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 OrderFlow orderFlow = new OrderFlow();
                 orderFlow.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
                 orderFlow.setShopOrderCode(shopOrder.getShopOrderCode());
-                orderFlow.setType(BIZ_TYPE_DEAL);
+                orderFlow.setType(shopOrder.getChannelCode());
                 int count = orderFlowService.insert(orderFlow);
                 if (count == 0) {
                     String msg = String.format("保存订单同步幂等流水%s失败", JSONObject.toJSON(orderFlow));
