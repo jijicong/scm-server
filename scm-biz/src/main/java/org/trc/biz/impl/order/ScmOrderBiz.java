@@ -134,9 +134,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getShopOrderCode())) {//店铺订单编码
             criteria.andLike("shopOrderCode", "%" + queryModel.getShopOrderCode() + "%");
         }
-        if (StringUtil.isNotEmpty(queryModel.getStatus())) {//订单状态
-            criteria.andEqualTo("status", queryModel.getStatus());
-        }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel, ZeroToNineEnum.ZERO.getCode());
         List<String> platformOrderCodeList = new ArrayList<String>();
         for(PlatformOrder platformOrder: platformOrderList){
@@ -144,8 +141,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(platformOrderCodeList.size() > 0){
             criteria.andIn("platformOrderCode", platformOrderCodeList);
+        }else {
+            return page;
         }
-        page = shopOrderService.pagination(example, page, queryModel);
+        page = shopOrderService.pagination(example, page, new QueryModel());
         if(page.getResult().size() > 0){
             handlerOrderInfo(page, platformOrderList);
         }
@@ -729,7 +728,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//收货人姓名
+            if (StringUtil.isNotEmpty(shopOrderForm.getStatus())) {//订单状态
+                criteria.andGreaterThanOrEqualTo("status", shopOrderForm.getStatus());
+            }
+            if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//
                 criteria.andEqualTo("type", shopOrderForm.getType());
             }
             if (StringUtil.isNotEmpty(shopOrderForm.getReceiverName())) {//收货人姓名
