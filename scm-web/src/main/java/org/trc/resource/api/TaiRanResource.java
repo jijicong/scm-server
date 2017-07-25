@@ -213,7 +213,7 @@ public class TaiRanResource {
 
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     @Consumes(MediaType.TEXT_PLAIN)
     public AppResult<String> getOrderList(String information) {
         AppResult appResult = null;

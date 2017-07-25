@@ -286,15 +286,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), CommonUtil.getUserId(requestContext), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         }else{
-            supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
             if(StringUtils.isNotBlank(returnTypeDO.getResultCode()) && StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, returnTypeDO.getResultCode())){
                 log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
                 returnTypeDO = reSubmitJingDongOrder(jingDongOrder);
+                if(!returnTypeDO.getSuccess()){
+                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                }
                 //保存请求流水
                 requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
                 //记录操作日志
                 logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
             }else{
+                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
                 log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
             }
         }
@@ -1472,8 +1475,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         } catch (DuplicateKeyException e) {
-            log.error("重复提交订单: " + e.getMessage());
-            throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单：" + e.getMessage());
+            log.error("重复提交订单: ",e);
+            throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单");
         }
 
 
