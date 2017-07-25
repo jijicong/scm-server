@@ -66,7 +66,7 @@ public class TaiRanResource {
      */
     @GET
     @Path(SupplyConstants.TaiRan.BRAND_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) {
         try {
             page = brandBiz.brandList(form, page);
@@ -99,7 +99,7 @@ public class TaiRanResource {
      */
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<Pagenation<Property>> queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) {
         try {
             page = propertyBiz.propertyPage(form, page);
@@ -131,7 +131,7 @@ public class TaiRanResource {
      */
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<Pagenation<Category>> queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) {
         try {
             page = categoryBiz.categoryPage(categoryForm, page);
@@ -165,7 +165,7 @@ public class TaiRanResource {
      */
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_BRAND_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId) {
         try {
             return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryBrands(categoryId));
@@ -183,7 +183,7 @@ public class TaiRanResource {
      */
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_PROPERTY_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId) {
         try {
             return ResultUtil.createSucssAppResult("查询分类属性列表成功", categoryBiz.queryProperties(categoryId));
@@ -201,7 +201,7 @@ public class TaiRanResource {
      */
     @GET
     @Path(SupplyConstants.TaiRan.SKU_INFORMATION)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<String> getSpuInformation(@QueryParam("skuCode") String skuCode) {
         try {
             return ResultUtil.createSucssAppResult("查询sku信息成功", skuRelationBiz.getSkuInformation(skuCode));
@@ -248,7 +248,7 @@ public class TaiRanResource {
     //自采商品信息查询
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
             return ResultUtil.createSucssAppResult("查询列表信息成功", skuBiz.skusPage(skusForm, pagenation));
@@ -262,7 +262,7 @@ public class TaiRanResource {
     //一件代发商品信息查询
     @GET
     @Path(SupplyConstants.TaiRan.EXTERNALITEMSKU_LIST)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) {
         try {
             return ResultUtil.createSucssAppResult("查询列表信息成功", trcBiz.externalItemSkuPage(form, page));
@@ -275,7 +275,7 @@ public class TaiRanResource {
     //查询店铺下的京东物流
     @GET
     @Path(SupplyConstants.TaiRan.JD_LOGISTICS)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     public AppResult JDLogistics(@QueryParam("shopOrderCode")String shopOrderCode) throws  Exception{
         return scmOrderBiz.getJDLogistics(shopOrderCode);
     }

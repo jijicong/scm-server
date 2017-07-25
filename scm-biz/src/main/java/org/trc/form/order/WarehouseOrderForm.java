@@ -34,6 +34,10 @@ public class WarehouseOrderForm extends QueryModel{
     @QueryParam("status")
     private String status;
 
+    //供应商订单状态
+    @QueryParam("supplierOrderStatus")
+    private String supplierOrderStatus;
+
     public String getOrderType() {
         return orderType;
     }
@@ -72,5 +76,13 @@ public class WarehouseOrderForm extends QueryModel{
 
     public void setShopOrderCode(String shopOrderCode) {
         this.shopOrderCode = shopOrderCode;
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
     }
 }
