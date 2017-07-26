@@ -31,7 +31,7 @@ public class Brand extends BaseDO {
     @Length(max = 50, message = "品牌别名不得超过50个字符")
     private String alise;//品牌别名
     @FormParam("webUrl")
-    @Length(max = 50, message = "品牌网址不得超过50个字符")
+    @Length(max = 200, message = "品牌网址不得超过50个字符")
     private String webUrl;//品牌网址
     @FormParam("logo")
     private String logo;//品牌LOGO的图片路径
