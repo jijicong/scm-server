@@ -5,14 +5,16 @@
         <foreach collection="list" item="itemSalesPropery" index="index" open="" close=";" separator=";">
             update item_sales_propery
             <set>
-                property_value_id = #{itemSalesPropery.propertyValueId},
                 property_actual_value = #{itemSalesPropery.propertyActualValue},
                 picture = #{itemSalesPropery.picture},
                 update_time = #{itemSalesPropery.updateTime},
                 is_deleted = #{itemSalesPropery.isDeleted}
             </set>
             where
-              spu_code = #{itemSalesPropery.spuCode} AND property_id = #{itemSalesPropery.propertyId}
+              spu_code = #{itemSalesPropery.spuCode} AND
+              sku_code = #{itemSalesPropery.skuCode} AND
+              property_id = #{itemSalesPropery.propertyId} AND
+              property_value_id = #{itemSalesPropery.propertyValueId}
         </foreach>
     </update>
 

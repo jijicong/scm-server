@@ -5,6 +5,7 @@ import org.trc.domain.goods.*;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.*;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -64,7 +65,7 @@ public interface IGoodsBiz {
      * @param isValid
      * @throws Exception
      */
-    void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
+    AppResult updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
 
     /**
      * SKU启用/停用

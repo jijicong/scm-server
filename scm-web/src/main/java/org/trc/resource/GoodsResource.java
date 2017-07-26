@@ -69,8 +69,7 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.updateValid(id, isValid, requestContext);
-        return ResultUtil.createSucssAppResult("启停用商品成功", "");
+        return goodsBiz.updateValid(id, isValid, requestContext);
     }
 
     @POST

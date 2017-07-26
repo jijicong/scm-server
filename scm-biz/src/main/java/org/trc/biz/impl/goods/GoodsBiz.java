@@ -1277,9 +1277,16 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
+    public AppResult updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
+        Items items2 = new Items();
+        items2.setId(id);
+        items2 = itemsService.selectOne(items2);
+        AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
+        if(stopItemsSkusCheck(items2.getSpuCode())){
+            return ResultUtil.createFailAppResult("当前SPU下还存在启用的商品,无法停用!");
+        }
         Items items = new Items();
         items.setId(id);
         items.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -1288,27 +1295,41 @@ public class GoodsBiz implements IGoodsBiz {
             _isValid = ZeroToNineEnum.ONE.getCode();
         }
         items.setIsValid(_isValid);
+        items2.setIsValid(_isValid);
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){
             String msg = "商品启用/停用操作更新数据库失败";
             log.error(msg);
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
         }
-        Items items2 = new Items();
-        items2.setId(id);
-        items2 = itemsService.selectOne(items2);
-        AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
         //更新商品相关SKU启用/停用状态
-        updateGoodsSkusValid(items2.getSpuCode(),_isValid, CommonUtil.getUserId(requestContext));
+        //updateGoodsSkusValid(items2.getSpuCode(),_isValid, CommonUtil.getUserId(requestContext));
         //更新SKU库存启停用状态
-        updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);
+        //updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);
         //更新采购单明细启停用状态
-        updatePurchaseDetailIsValid(items2.getSpuCode(), null, _isValid);
+        //updatePurchaseDetailIsValid(items2.getSpuCode(), null, _isValid);
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, TrcActionTypeEnum.ITEMS_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items2,items.getId().toString(),CommonUtil.getUserId(requestContext),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+        return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
+    }
+
+    /**
+     * 停用自采商品检查是否存在启用的SKU
+     * @param spuCode
+     * @return
+     */
+    private boolean stopItemsSkusCheck(String spuCode){
+        boolean flag = false;
+        Skus skus = new Skus();
+        skus.setSpuCode(spuCode);
+        skus.setIsValid(ValidEnum.VALID.getCode());
+        List<Skus> skusList = skusService.select(skus);
+        if(skusList.size() > 0)
+            flag = true;
+        return flag;
     }
 
     private void updateGoodsSkusValid(String spuCode, String isValid, String userId) throws Exception{
@@ -1361,7 +1382,7 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
         }
         //更新商品启停用状态
-        updateItemsValid(spuCode, _isValid);
+        //updateItemsValid(spuCode, _isValid);
         Skus skus2 = new Skus();
         skus2.setId(id);
         skus2 = skusService.selectOne(skus2);
