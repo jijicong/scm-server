@@ -1,5 +1,6 @@
 package org.trc.service.impl.util;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.domain.util.Area;
 import org.trc.domain.util.AreaTreeNode;
@@ -15,19 +16,22 @@ import java.util.List;
 @Service("locationUtilService")
 public class LocationUtilService extends BaseService<Area,Long> implements ILocationUtilService {
 
+    @Value("${areaId}")
+    private Long areaId;
+
     public List<AreaTreeNode> getTreeNodeFromLocation() throws Exception{
          //1.获得location
-        Area Area =new Area();
-        Area.setId(1L);
-        Area = super.selectOne(Area);
+        Area area =new Area();
+        area.setId(areaId);
+        area = super.selectOne(area);
         //2.设置顶级父类的ID和TEXT
         AreaTreeNode node=new AreaTreeNode();
-        node.setId(Area.getCode());
-        if(Area.getProvince()!=null){
-            node.setText(Area.getProvince());
+        node.setId(area.getCode());
+        if(area.getProvince()!=null){
+            node.setText(area.getProvince());
         }
         //3.设置省 (new Area(Area.getId()))
-        List<Area> provinceAreaList = super.select(new Area(Area.getId()));
+        List<Area> provinceAreaList = super.select(new Area(area.getId()));
 
         List<AreaTreeNode> areaTreeNodeProvinceList =new ArrayList<AreaTreeNode>();//用于存放子集的节点
 
@@ -66,7 +70,7 @@ public class LocationUtilService extends BaseService<Area,Long> implements ILoca
 
                 AreaTreeNode areaTreeNode =new AreaTreeNode();
                 areaTreeNode.setId(area2.getCode());
-                if(Area.getCity()!=null){
+                if(area.getCity()!=null){
                     areaTreeNode.setText(area2.getCity());
                 }
                 areaTreeNodeCityList.add(areaTreeNode); //加入节点

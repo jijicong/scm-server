@@ -81,7 +81,24 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         Map<String, Object> map = new HashMap<>();
         map.put("supplierName", form.getSupplierName());
-        map.put("auditStatus", form.getPurchaseOrderAuditStatus());
+        //若审核状态为已经审核，需要查询审核驳回，和审核通过的订单
+        List<String>  statusStrs = new ArrayList<String>();
+        String status = form.getPurchaseOrderAuditStatus();
+        if(StringUtils.isBlank(status)){
+            statusStrs.add(ZeroToNineEnum.ONE.getCode());
+            statusStrs.add(ZeroToNineEnum.TWO.getCode());
+            statusStrs.add(ZeroToNineEnum.THREE.getCode());
+            map.put("auditStatus",statusStrs);
+        }
+        if(ZeroToNineEnum.ONE.getCode().equals(form.getPurchaseOrderAuditStatus())){
+            statusStrs.add(ZeroToNineEnum.ONE.getCode());
+            map.put("auditStatus",statusStrs);
+        }
+        if(ZeroToNineEnum.TWO.getCode().equals(form.getPurchaseOrderAuditStatus())){
+            statusStrs.add(ZeroToNineEnum.TWO.getCode());
+            statusStrs.add(ZeroToNineEnum.THREE.getCode());
+            map.put("auditStatus",statusStrs);
+        }
         map.put("purchaseOrderCode", form.getPurchaseOrderCode());
         map.put("purchaseType",form.getPurchaseType());
 
@@ -91,7 +108,6 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
             date =DateUtils.addDays(date,1);
             form.setEndDate(sdf.format(date));
         }
-
         map.put("endDate",form.getEndDate());
         map.put("startDate",form.getStartDate());
         map.put("channelCode",channelCode);
@@ -185,8 +201,12 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         purchaseOrderLog.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
         purchaseOrderLog = iPurchaseOrderService.selectOne(purchaseOrderLog);
         AssertUtil.notNull(purchaseOrderLog.getId(),"根据采购单的编码,查询采购单失败");
+        //只有审核状态为待审核，才能具有审核操作
+        if(purchaseOrderLog.getStatus() != ZeroToNineEnum.ONE.getCode()){
+            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, "该审核单不具有审核操作");
+        }
        //审核驳回，检验审核意见是否为空
-        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){//判断时是否为驳回
+        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){//判断是否为驳回
             AssertUtil.notBlank(purchaseOrderAudit.getAuditOpinion(),"审核驳回,审核意见不能为空");
         }
         Example exampleAudit = new Example(PurchaseOrderAudit.class);

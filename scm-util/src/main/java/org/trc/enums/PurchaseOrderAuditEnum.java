@@ -18,9 +18,11 @@ public enum PurchaseOrderAuditEnum {
 	 * :0-暂存,1-提交审核,2-审核通过,3-审核驳回'
 	 */
 	//HOLD("0","暂存"),  //待审核
-	AUDIT("1","提交审核"),
-	PASS("2","审核通过"), //已审核
-	REJECT("3","审核驳回");//已审核
+	//AUDIT("1","提交审核"),
+	//PASS("2","审核通过"), //已审核
+	//REJECT("3","审核驳回");//已审核
+	referendum("1","待审核"),
+	audited("2","已审核");
 
 	private String code;
 	private String name;

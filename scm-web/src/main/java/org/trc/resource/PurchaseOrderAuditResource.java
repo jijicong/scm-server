@@ -7,6 +7,7 @@ import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
 import org.trc.enums.PurchaseOrderAuditEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.purchase.PurchaseOrderAuditForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AppResult;
@@ -34,8 +35,8 @@ public class PurchaseOrderAuditResource {
     @Path(SupplyConstants.PurchaseOrderAudit.PURCHASE_ORDER_AUDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPagenation(@BeanParam PurchaseOrderAuditForm form, @BeanParam Pagenation<PurchaseOrderAddAudit> page,@Context ContainerRequestContext requestContext)throws Exception{
-        if(form.getPurchaseOrderAuditStatus()==null){ //说明是第一次请求
-            form.setPurchaseOrderAuditStatus(PurchaseOrderAuditEnum.AUDIT.getCode());
+        if(form.getPurchaseOrderAuditStatus()==null){ //说明是第一次请求.查询待审核的状态
+            form.setPurchaseOrderAuditStatus(ZeroToNineEnum.ONE.getCode());
         }
         return iPurchaseOrderAuditBiz.purchaseOrderAuditPage(form,page,requestContext);
     }

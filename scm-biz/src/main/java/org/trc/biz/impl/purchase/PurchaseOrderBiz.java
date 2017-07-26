@@ -314,7 +314,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw  new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_QUERY_EXCEPTION,msg);
             }
-            date =DateUtils.addDays(date,2);
+            date =DateUtils.addDays(date,1);
             form.setEndDate(sdf.format(date));
             criteria.andLessThan("updateTime", form.getEndDate());
         }
@@ -411,7 +411,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrderAudit purchaseOrderAudit = new PurchaseOrderAudit();
         purchaseOrderAudit.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
         purchaseOrderAudit.setPurchaseOrderId(purchaseOrder.getId());
-        purchaseOrderAudit.setStatus(PurchaseOrderAuditEnum.AUDIT.getCode());  //采购单提交审核，审核表的默认状态，提交审核
+        purchaseOrderAudit.setStatus(ZeroToNineEnum.ONE.getCode());  //采购单提交审核，审核表的默认状态，提交审核
         purchaseOrderAudit.setCreateOperator(purchaseOrder.getCreateOperator());
         //purchaseOrder
         ParamsUtil.setBaseDO(purchaseOrderAudit);
@@ -802,7 +802,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //AssertUtil.notNull(purchaseOrderAudit.getId(),"查询采购单审核失败!");
         PurchaseOrderAudit updatePurchaseOrderAudit = new PurchaseOrderAudit();
         updatePurchaseOrderAudit.setId(purchaseOrderAudit.getId());
-        updatePurchaseOrderAudit.setStatus(PurchaseOrderAuditEnum.AUDIT.getCode());
+        updatePurchaseOrderAudit.setStatus(ZeroToNineEnum.ONE.getCode());//待审核的状态
         updatePurchaseOrderAudit.setUpdateTime(Calendar.getInstance().getTime());
         int count = iPurchaseOrderAuditService.updateByPrimaryKeySelective(updatePurchaseOrderAudit);
         if (count == 0) {

@@ -41,9 +41,10 @@
         <if test="purchaseOrderCode != null and purchaseOrderCode != ''">
             AND ao.purchase_order_code LIKE CONCAT('%', #{purchaseOrderCode},'%')
         </if>
-        <if test="auditStatus != null and auditStatus != ''">
-            AND ao.STATUS = #{auditStatus}
-        </if>
+            AND ao.STATUS IN
+            <foreach collection="auditStatus" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
         <if test="startDate != null and startDate != ''">
             AND ao.create_time &gt; #{startDate}
         </if>
@@ -90,9 +91,10 @@
         <if test="purchaseOrderCode != null and purchaseOrderCode != ''">
             AND ao.purchase_order_code LIKE CONCAT('%', #{purchaseOrderCode},'%')
         </if>
-        <if test="auditStatus != null and auditStatus != ''">
-            AND ao.STATUS = #{auditStatus}
-        </if>
+            AND ao.STATUS IN
+            <foreach collection="auditStatus" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
         <if test="startDate != null and startDate != ''">
             AND ao.create_time &gt; #{startDate}
         </if>
