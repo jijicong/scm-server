@@ -62,7 +62,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         map.put("status", queryModel.getStatus());
         map.put("channelId",queryModel.getApplySquare());
         map.put("startTime", queryModel.getStartDate());
-        map.put("endTime", queryModel.getEndDate());
+        if(!StringUtils.isBlank(queryModel.getEndDate())){
+            map.put("endTime",DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndDate(),DateUtils.NORMAL_DATE_FORMAT,1)));
+        }
         List<SupplierApplyAudit> list = supplierApplyAuditService.selectList(map);
         //如果查询列表不为空，查询各个供应商下面代理的品牌
         if (list != null && !list.isEmpty() && list.size() > 0) {
@@ -122,7 +124,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         map.put("status", queryModel.getStatus());
         map.put("supplierKindCode", queryModel.getSupplierKindCode());
         map.put("startTime", queryModel.getStartDate());
-        map.put("endTime", queryModel.getEndDate());
+        if(!StringUtils.isBlank(queryModel.getEndDate())){
+            map.put("endTime",DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndDate(),DateUtils.NORMAL_DATE_FORMAT,1)));
+        }
         map.put("channelId", aclUserAccreditInfo.getChannelId());
         List<SupplierApply> list = supplierApplyService.selectList(map);
         //如果查询列表不为空，查询各个供应商下面代理的品牌

@@ -209,7 +209,7 @@ public class BrandBiz implements IBrandBiz {
             criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
         }
         if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
-            criteria.andLessThan("updateTime", queryModel.getEndUpdateTime());
+            criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndUpdateTime(),DateUtils.NORMAL_DATE_FORMAT,1)));
         }
         if (!StringUtils.isBlank(queryModel.getAlise())) {
             criteria.andEqualTo("alise", queryModel.getAlise());

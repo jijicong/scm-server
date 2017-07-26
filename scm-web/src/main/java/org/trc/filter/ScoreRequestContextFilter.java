@@ -14,7 +14,6 @@ public class ScoreRequestContextFilter implements ContainerRequestFilter{
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        System.out.println(requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
     }
 
 }
