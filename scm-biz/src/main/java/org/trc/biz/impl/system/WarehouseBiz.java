@@ -20,16 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.dict.Dict;
 import org.trc.domain.util.Area;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.remarkEnum;
+import org.trc.enums.*;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.service.System.IWarehouseService;
+import org.trc.service.config.IDictService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
@@ -74,6 +73,9 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Autowired
     private ILocationUtilService locationUtilService;
+
+    @Autowired
+    private IDictService dictService;
 
 
     @Override
@@ -193,6 +195,15 @@ public class WarehouseBiz implements IWarehouseBiz {
         AssertUtil.isNull(tmp, String.format("仓库名称[name=%s]的数据已存在,请使用其他名称", warehouse.getName()));
         ParamsUtil.setBaseDO(warehouse);
         warehouse.setCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
+        /*
+        校验如果是保税仓，必须要是否支持清关的数据<否则，为不合理的，或者非法提交>
+        如果是其它仓，不能接受是否支持清关的数据
+         */
+        String strs = warehouse.getWarehouseTypeCode();
+        AssertUtil.notBlank(strs,"仓库类型为空");
+        if(strs.equals("bondedWarehouse")){
+            AssertUtil.notNull(warehouse.getIsCustomsClearance(),"仓库类型为保税仓,是否支持清关不能为空");
+        }
         int count = warehouseService.insert(warehouse);
         if (count == 0) {
             String msg = "仓库保存,数据库操作失败";
