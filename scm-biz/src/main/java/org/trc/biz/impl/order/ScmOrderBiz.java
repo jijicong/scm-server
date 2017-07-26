@@ -134,18 +134,21 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getShopOrderCode())) {//店铺订单编码
             criteria.andLike("shopOrderCode", "%" + queryModel.getShopOrderCode() + "%");
         }
-        if (StringUtil.isNotEmpty(queryModel.getStatus())) {//订单状态
-            criteria.andEqualTo("status", queryModel.getStatus());
-        }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel, ZeroToNineEnum.ZERO.getCode());
-        List<String> platformOrderCodeList = new ArrayList<String>();
-        for(PlatformOrder platformOrder: platformOrderList){
-            platformOrderCodeList.add(platformOrder.getPlatformOrderCode());
+        if(null != platformOrderList){
+            if(platformOrderList.size() > 0){
+                List<String> platformOrderCodeList = new ArrayList<String>();
+                for(PlatformOrder platformOrder: platformOrderList){
+                    platformOrderCodeList.add(platformOrder.getPlatformOrderCode());
+                }
+                if(platformOrderCodeList.size() > 0){
+                    criteria.andIn("platformOrderCode", platformOrderCodeList);
+                }
+            }else {
+                return page;
+            }
         }
-        if(platformOrderCodeList.size() > 0){
-            criteria.andIn("platformOrderCode", platformOrderCodeList);
-        }
-        page = shopOrderService.pagination(example, page, queryModel);
+        page = shopOrderService.pagination(example, page, new QueryModel());
         if(page.getResult().size() > 0){
             handlerOrderInfo(page, platformOrderList);
         }
@@ -160,8 +163,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
             criteria.andEqualTo("orderType", form.getOrderType());
         }
-        if(StringUtils.isNotBlank(form.getStatus())){//状态
-            criteria.andEqualTo("status", form.getStatus());
+        if(StringUtils.isNotBlank(form.getSupplierOrderStatus())){//状态
+            criteria.andEqualTo("supplierOrderStatus", form.getSupplierOrderStatus());
         }
         if(StringUtils.isNotBlank(form.getWarehouseOrderCode())){//供应商订单编号
             criteria.andLike("warehouseOrderCode", "%" + form.getWarehouseOrderCode() + "%");
@@ -173,12 +176,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
             criteria.andEqualTo("supplierCode", form.getSupplierCode());
         }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(form, ZeroToNineEnum.ONE.getCode());
-        List<String> platformOrderCodeList = new ArrayList<String>();
-        for(PlatformOrder platformOrder: platformOrderList){
-            platformOrderCodeList.add(platformOrder.getPlatformOrderCode());
-        }
-        if(platformOrderCodeList.size() > 0){
-            criteria.andIn("platformOrderCode", platformOrderCodeList);
+        if(null != platformOrderList){
+            if(platformOrderList.size() > 0){
+                List<String> platformOrderCodeList = new ArrayList<String>();
+                for(PlatformOrder platformOrder: platformOrderList){
+                    platformOrderCodeList.add(platformOrder.getPlatformOrderCode());
+                }
+                if(platformOrderCodeList.size() > 0){
+                    criteria.andIn("platformOrderCode", platformOrderCodeList);
+                }
+            }else {
+                return page;
+            }
         }
         example.orderBy("status").asc();
         page = warehouseOrderService.pagination(example, page, form);
@@ -286,15 +295,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), CommonUtil.getUserId(requestContext), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         }else{
-            supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
             if(StringUtils.isNotBlank(returnTypeDO.getResultCode()) && StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, returnTypeDO.getResultCode())){
                 log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
                 returnTypeDO = reSubmitJingDongOrder(jingDongOrder);
+                if(!returnTypeDO.getSuccess()){
+                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                }
                 //保存请求流水
                 requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
                 //记录操作日志
                 logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
             }else{
+                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
                 log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
             }
         }
@@ -717,38 +729,52 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private List<PlatformOrder> getPlatformOrdersConditon(QueryModel queryModel, String flag){
         Example example = new Example(PlatformOrder.class);
         Example.Criteria criteria = example.createCriteria();
+        boolean isQuery = false;
         if (StringUtil.isNotEmpty(queryModel.getStartDate())) {//支付开始日期
             criteria.andGreaterThanOrEqualTo("payTime", DateUtils.parseDate(queryModel.getStartDate()));
+            isQuery = true;
         }
         if (StringUtil.isNotEmpty(queryModel.getEndDate())) {//支付截止日期
             Date endDate = DateUtils.parseDate(queryModel.getEndDate());
             criteria.andLessThan("payTime", DateUtils.addDays(endDate, 1));
+            isQuery = true;
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//收货人姓名
+            if (StringUtil.isNotEmpty(shopOrderForm.getStatus())) {//订单状态
+                criteria.andGreaterThanOrEqualTo("status", shopOrderForm.getStatus());
+                isQuery = true;
+            }
+            if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//
                 criteria.andEqualTo("type", shopOrderForm.getType());
+                isQuery = true;
             }
             if (StringUtil.isNotEmpty(shopOrderForm.getReceiverName())) {//收货人姓名
                 criteria.andLike("receiverName", "%" + shopOrderForm.getReceiverName() + "%");
+                isQuery = true;
             }
         }
-        return platformOrderService.selectByExample(example);
+        if(isQuery){
+            return platformOrderService.selectByExample(example);
+        }else {
+            return null;
+        }
+
     }
 
     private void handlerOrderInfo(Pagenation<ShopOrder> page, List<PlatformOrder> platformOrderList){
         List<PlatformOrder> platformOrders = new ArrayList<PlatformOrder>();
-        if(platformOrderList.size() > 0){
-            platformOrders = platformOrderList;
-        }else{
+        if(null == platformOrderList || platformOrderList.size() == 0){
             List<String> platformOrdersCodes = new ArrayList<String>();
             for(ShopOrder shopOrder: page.getResult()){
-                platformOrdersCodes.add(shopOrder.getPlatformCode());
+                platformOrdersCodes.add(shopOrder.getPlatformOrderCode());
             }
             Example example = new Example(PlatformOrder.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andIn("platformOrderCode", platformOrdersCodes);
             platformOrders = platformOrderService.selectByExample(example);
+        }else {
+            platformOrders = platformOrderList;
         }
         //设置商品订单扩展信息
         for(ShopOrder shopOrder: page.getResult()){
@@ -793,18 +819,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     private void handlerWarehouseOrderInfo(Pagenation<WarehouseOrder> page, List<PlatformOrder> platformOrderList){
         List<PlatformOrder> platformOrders = new ArrayList<PlatformOrder>();
-        if(platformOrderList.size() > 0){
-            platformOrders = platformOrderList;
-        }else{
+        if(null == platformOrderList || platformOrderList.size() == 0){
             List<String> platformOrdersCodes = new ArrayList<String>();
             for(WarehouseOrder warehouseOrder: page.getResult()){
-                platformOrdersCodes.add(warehouseOrder.getPlatformCode());
+                platformOrdersCodes.add(warehouseOrder.getPlatformOrderCode());
             }
             if(platformOrdersCodes.size() > 0){
                 Example example = new Example(PlatformOrder.class);
                 Example.Criteria criteria = example.createCriteria();
                 criteria.andIn("platformOrderCode", platformOrdersCodes);
                 platformOrders = platformOrderService.selectByExample(example);
+            }
+        }else{
+            if(platformOrderList.size() > 0){
+                platformOrders = platformOrderList;
             }
         }
         //设置仓库订单支付时间及物流信息
@@ -1463,7 +1491,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 OrderFlow orderFlow = new OrderFlow();
                 orderFlow.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
                 orderFlow.setShopOrderCode(shopOrder.getShopOrderCode());
-                orderFlow.setType(BIZ_TYPE_DEAL);
+                orderFlow.setType(shopOrder.getChannelCode());
                 int count = orderFlowService.insert(orderFlow);
                 if (count == 0) {
                     String msg = String.format("保存订单同步幂等流水%s失败", JSONObject.toJSON(orderFlow));
@@ -1472,8 +1500,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         } catch (DuplicateKeyException e) {
-            log.error("重复提交订单: " + e.getMessage());
-            throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单：" + e.getMessage());
+            log.error("重复提交订单: ",e);
+            throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单");
         }
 
 

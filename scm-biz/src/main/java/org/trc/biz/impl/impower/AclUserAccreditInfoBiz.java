@@ -5,6 +5,17 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import com.tairanchina.md.account.user.model.UserDO;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.search.MatchQuery;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,28 +25,33 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
-import org.trc.domain.impower.*;
+import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.impower.AclUserAccreditRoleRelation;
 import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
+import org.trc.domain.supplier.Supplier;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.impower.UserAccreditInfoForm;
+import org.trc.model.SearchResult;
+import org.trc.service.IPageNationService;
 import org.trc.service.System.IChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.UserDoService;
 import org.trc.service.impower.IAclRoleService;
-import org.trc.service.impower.IAclUserAccreditRoleRelationService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.impower.IAclUserAccreditRoleRelationService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.StringUtil;
+import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -49,7 +65,7 @@ import static org.trc.util.StringUtil.splitByComma;
  * Created by sone on 2017/5/11.
  */
 @Service("userAccreditInfoBiz")
-public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
+public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     private Logger LOGGER = LoggerFactory.getLogger(AclUserAccreditInfoBiz.class);
     private final static String ROLE_PURCHASE = "采购组员";
@@ -81,6 +97,8 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
     private IUserNameUtilService userNameUtilService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IPageNationService pageNationService;
 
 
     /**
@@ -106,6 +124,66 @@ public class AclUserAccreditInfoBiz<T> implements IAclUserAccreditInfoBiz {
         }
         int count = userAccreditInfoService.selectCountUser(map);
         page.setTotalCount(count);
+        page.setResult(pageDateRoleList);
+        return page;
+    }
+
+    @Override
+    public Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
+        TransportClient clientUtil = TransportClientUtil.getTransportClient();
+        HighlightBuilder hiBuilder = new HighlightBuilder();
+        hiBuilder.preTags("<b style=\"color: red\">");
+        hiBuilder.postTags("</b>");
+        //设置高亮字段
+        hiBuilder.fields().add(new HighlightBuilder.Field("name.pinyin"));
+        SearchRequestBuilder srb = clientUtil.prepareSearch("acl_user_accredit_info")//es表名
+                .highlighter(hiBuilder)
+                .setFrom(page.getStart())//第几个开始
+                .setSize(page.getPageSize());//长度
+        //查询条件
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+        if (StringUtils.isNotBlank(form.getName())) {
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("name.pinyin", form.getName());
+            queryBuilder.should(matchQuery);
+        }
+        if (StringUtils.isNotBlank(form.getPhone())) {
+            QueryBuilder filterBuilder = QueryBuilders.multiMatchQuery(form.getPhone(),"phone" ).
+                    type(MatchQuery.Type.PHRASE_PREFIX);
+            queryBuilder.should(filterBuilder);
+        }
+        if (StringUtils.isNotBlank(form.getIsValid())) {
+            QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", form.getIsValid());
+            queryBuilder.must(filterBuilder);
+        }
+        srb.setQuery(queryBuilder);
+        SearchResult searchResult;
+        try {
+            searchResult = pageNationService.resultES(srb, clientUtil);
+        } catch (Exception e) {
+            LOGGER.error("es查询失败" + e.getMessage(), e);
+            return page;
+        }
+        List<AclUserAccreditInfo> accreditInfoList = new ArrayList<>();
+        for (SearchHit searchHit : searchResult.getSearchHits()) {
+            AclUserAccreditInfo aclUserAccreditInfo = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), AclUserAccreditInfo.class);
+            for(Map.Entry<String, HighlightField> entry : searchHit.getHighlightFields().entrySet()) {
+                if("name.pinyin".equals(entry.getKey())) {
+                    for (Text text : entry.getValue().getFragments()) {
+                        aclUserAccreditInfo.setHighLightName(text.string());
+                    }
+                }
+            }
+            accreditInfoList.add(aclUserAccreditInfo);
+        }
+        if (AssertUtil.collectionIsEmpty(accreditInfoList)) {
+            return page;
+        }
+        List<AclUserAddPageDate> pageDateRoleList = page.getResult();
+        userNameUtilService.handleUserName(accreditInfoList);
+        if (!AssertUtil.collectionIsEmpty(accreditInfoList)) {//1.按要求查处需要的授权用户
+            pageDateRoleList = handleRolesStr(accreditInfoList);
+        }
+        page.setTotalCount(searchResult.getCount());
         page.setResult(pageDateRoleList);
         return page;
     }

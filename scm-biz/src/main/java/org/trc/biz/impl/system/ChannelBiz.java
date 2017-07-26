@@ -26,6 +26,7 @@ import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
+import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.service.System.IChannelService;
 import org.trc.service.config.ILogInfoService;
@@ -110,15 +111,15 @@ public class ChannelBiz implements IChannelBiz {
             QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
             srb.setPostFilter(filterBuilder);
         }
-        SearchHit[] searchHists = new SearchHit[0];
+        SearchResult searchResult;
         try {
-            searchHists = pageNationService.resultES(srb, clientUtil);
+            searchResult = pageNationService.resultES(srb, clientUtil);
         } catch (Exception e) {
             logger.error("es查询失败" + e.getMessage(), e);
             return page;
         }
         List<Channel> channelList = new ArrayList<>();
-        for (SearchHit searchHit : searchHists) {
+        for (SearchHit searchHit : searchResult.getSearchHits()) {
             Channel channel = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Channel.class);
             if (StringUtils.isNotBlank(queryModel.getName())) {
                 for (Text text : searchHit.getHighlightFields().get(name).getFragments()) {
@@ -132,6 +133,7 @@ public class ChannelBiz implements IChannelBiz {
         }
         page.setResult(channelList);
         userNameUtilService.handleUserName(page.getResult());
+        page.setTotalCount(searchResult.getCount());
         return page;
 
     }
@@ -173,7 +175,7 @@ public class ChannelBiz implements IChannelBiz {
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
         String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增渠道%s", null);
+        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增渠道", null);
 
     }
 

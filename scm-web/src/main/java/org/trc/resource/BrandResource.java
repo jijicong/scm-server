@@ -41,6 +41,12 @@ public class BrandResource {
     public AppResult<JSONArray> queryValidList(){
         return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
     }
+    @GET
+    @Path(SupplyConstants.Category.Brand.ASSOCIATION_SEARCH)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> associationSearch(@QueryParam("queryString") String queryString) throws Exception{
+        return ResultUtil.createSucssAppResult("成功", brandBiz.associationSearch(queryString));
+    }
 
     /**
      *

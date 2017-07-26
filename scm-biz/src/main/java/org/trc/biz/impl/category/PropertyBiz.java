@@ -27,6 +27,7 @@ import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.PropertyForm;
+import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
 import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.category.IPropertyService;
@@ -121,12 +122,10 @@ public class PropertyBiz implements IPropertyBiz {
                 .setSize(page.getPageSize());//长度
         if (StringUtils.isNotBlank(queryModel.getName())) {
             QueryBuilder matchQuery = QueryBuilders.matchQuery("name.pinyin", queryModel.getName());
-
             srb.setQuery(QueryBuilders.boolQuery().should(matchQuery));
         }
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
             QueryBuilder filterBuilderA = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
-
             srb.setPostFilter(QueryBuilders.boolQuery().must(filterBuilderA));
         }
         if (!StringUtils.isBlank(queryModel.getTypeCode())) {
@@ -139,9 +138,15 @@ public class PropertyBiz implements IPropertyBiz {
             srb.setPostFilter(QueryBuilders.boolQuery().must(filterBuilderA).must(filterBuilderB));
         }
 
-        SearchHit[] searchHists = pageNationService.resultES(srb, clientUtil);
+        SearchResult searchResult;
+        try {
+            searchResult = pageNationService.resultES(srb, clientUtil);
+        } catch (Exception e) {
+            log.error("es查询失败" + e.getMessage(), e);
+            return page;
+        }
         List<Property> propertyList = new ArrayList<>();
-        for (SearchHit searchHit : searchHists) {
+        for (SearchHit searchHit : searchResult.getSearchHits()) {
             Property property = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Property.class);
             if (StringUtils.isNotBlank(queryModel.getName())) {
                 for (Text text : searchHit.getHighlightFields().get("name.pinyin").getFragments()) {
@@ -165,6 +170,7 @@ public class PropertyBiz implements IPropertyBiz {
             }
         }
         page.setResult(propertyList);
+        page.setTotalCount(searchResult.getCount());
         return page;
     }
 

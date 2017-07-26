@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
@@ -1813,10 +1814,17 @@ public class GoodsBiz implements IGoodsBiz {
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("supplierSkuCode", supplySkuList);
         List<ExternalItemSku> oldExternalItemSkuList = externalItemSkuService.selectByExample(example2);
-        AssertUtil.notEmpty(oldExternalItemSkuList, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
-
+        if(CollectionUtils.isEmpty(oldExternalItemSkuList)){
+            return;
+        }
         List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ONE.getCode());
         for(ExternalItemSku externalItemSku: externalItemSkuList){
+            for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
+                if(StringUtils.equals(externalItemSku.getSupplierCode(), externalItemSku2.getSupplierCode())&&
+                        StringUtils.equals(externalItemSku.getSupplierSkuCode(), externalItemSku2.getSupplierSkuCode())){
+                    externalItemSku.setSkuCode(externalItemSku2.getSkuCode());
+                }
+            }
             Example example = new Example(ExternalItemSku.class);
             Example.Criteria criteria =example.createCriteria();
             criteria.andEqualTo("supplierSkuCode", externalItemSku.getSupplierSkuCode());

@@ -4,6 +4,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
+import org.trc.util.CommonUtil;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -23,8 +24,9 @@ public class MoneySerializer extends JsonSerializer<Long> {
         if(null == s){
             s = 0L;
         }
-        DecimalFormat df = new DecimalFormat(TIP);
-        String rel = df.format((float)s/PERCENT);
+        /*DecimalFormat df = new DecimalFormat(TIP);
+        String rel = df.format((float)s/PERCENT);*/
+        String rel = CommonUtil.fenToYuan(s).toPlainString();
         jsonGenerator.writeNumber(rel);
     }
 

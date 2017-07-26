@@ -779,10 +779,43 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
-        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //保存提交审核
-            savePurchaseOrderAudit(purchaseOrderAddData,requestContext);
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //修改提交审核
+            updatePurchaseOrderAudit(purchaseOrderAddData,requestContext);
         }
 
+    }
+    /**
+     * 修改提交审核的采购信息
+     */
+    private void updatePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,ContainerRequestContext requestContext){
+
+        AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
+        AssertUtil.notNull(purchaseOrder.getPurchaseOrderCode(),"采购订单编码为空");
+
+        PurchaseOrderAudit purchaseOrderAudit = new PurchaseOrderAudit();
+        purchaseOrderAudit.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
+        purchaseOrderAudit = iPurchaseOrderAuditService.selectOne(purchaseOrderAudit);
+        if(purchaseOrderAudit == null){
+            savePurchaseOrderAudit(purchaseOrder,requestContext);
+            return;
+        }
+        //AssertUtil.notNull(purchaseOrderAudit.getId(),"查询采购单审核失败!");
+        PurchaseOrderAudit updatePurchaseOrderAudit = new PurchaseOrderAudit();
+        updatePurchaseOrderAudit.setId(purchaseOrderAudit.getId());
+        updatePurchaseOrderAudit.setStatus(PurchaseOrderAuditEnum.AUDIT.getCode());
+        updatePurchaseOrderAudit.setUpdateTime(Calendar.getInstance().getTime());
+        int count = iPurchaseOrderAuditService.updateByPrimaryKeySelective(updatePurchaseOrderAudit);
+        if (count == 0) {
+            String msg = String.format("保存%s采购单审核操作失败", JSON.toJSONString(purchaseOrder));
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
+
+        //提交审核操作日志
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        PurchaseOrder purchaseOrderLog = new PurchaseOrder();
+        purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,AuditStatusEnum.COMMIT.getName(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
 
@@ -1001,7 +1034,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",warehouseNotice.getId());
-        criteria.andEqualTo("state",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         int num = iWarehouseNoticeService.updateByExampleSelective(notice,example);
         if (num == 0) {
             String msg = String.format("作废%s采购单操作失败,入库通知单已经被执行操作", JSON.toJSONString(warehouseNotice));
@@ -1012,5 +1045,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
     }
-
+    @Override
+    public   List<String> associationSearch(String queryString) throws Exception{
+        List<String> brandNameList = new ArrayList<>();
+        return brandNameList;
+    }
 }

@@ -4,22 +4,17 @@ drop table if exists acl_role;
 
 drop table if exists acl_role_resource_relation;
 
-
-
 drop table if exists acl_user_accredit_info;
 
 drop table if exists acl_user_accredit_role_relation;
 
 drop table if exists apply_for_purchase_order;
 
-
 drop table if exists apply_for_supplier;
 
 drop table if exists audit_log;
 
-
 drop table if exists brand;
-
 
 drop table if exists category;
 
@@ -45,6 +40,8 @@ drop table if exists dict_type;
 
 drop table if exists external_item_sku;
 
+drop table if exists idempotent;
+
 drop table if exists input_record;
 
 
@@ -63,13 +60,11 @@ drop table if exists log_information;
 drop table if exists mapping_table;
 
 
-
 drop table if exists order_item;
 
 drop table if exists outbound_order;
 
 drop table if exists output_record;
-
 
 
 drop table if exists platform_order;
@@ -81,17 +76,18 @@ drop table if exists property_value;
 drop table if exists purchase_detail;
 
 
-
 drop table if exists purchase_group;
 
 drop table if exists purchase_group_user_relation;
-
 
 
 drop table if exists purchase_order;
 
 drop table if exists purchase_order_audit_log;
 
+drop table if exists rder_flow;
+
+drop table if exists serial;
 
 
 drop table if exists shop_order;
@@ -99,7 +95,6 @@ drop table if exists shop_order;
 drop table if exists sku_relation;
 
 drop table if exists sku_stock;
-
 
 
 drop table if exists skus;
@@ -110,9 +105,7 @@ drop table if exists supplier;
 drop table if exists supplier_after_sale_info;
 
 
-
 drop table if exists supplier_brand;
-
 
 
 drop table if exists supplier_category;
@@ -122,26 +115,20 @@ drop table if exists supplier_channel_relation;
 drop table if exists supplier_financial_info;
 
 
-
 drop table if exists supplier_order_info;
 
 drop table if exists supplier_order_logistics;
-
 
 
 drop table if exists warehouse;
 
 drop table if exists warehouse_item;
 
-
-
 drop table if exists warehouse_notice;
 
 drop table if exists warehouse_notice_callback;
 
 drop table if exists warehouse_notice_details;
-
-
 
 drop table if exists warehouse_order;
 
@@ -193,7 +180,7 @@ create table acl_role_resource_relation
    id                   bigint unsigned not null auto_increment comment '主键ID',
    role_id              bigint not null comment '角色id',
    resource_code        bigint not null comment '权限id',
-   create_operator      varchar(32) not null comment '创建人',
+   create_operator      varchar(32) comment '创建人',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
@@ -250,7 +237,7 @@ create table acl_user_accredit_role_relation
    role_id              bigint not null comment '角色id',
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    remark               varchar(1024) comment '备注',
-   create_operator      varchar(64) not null comment '创建人',
+   create_operator      varchar(64) comment '创建人',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
@@ -549,7 +536,7 @@ create table common_config
    description          varchar(255) not null comment '备注',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP comment '更新时间',
-   dead_time            timestamp null default NULL comment '失效时间',
+   dead_time            timestamp NULL default NULL comment '失效时间',
    primary key (id)
 );
 
@@ -605,7 +592,7 @@ create table external_item_sku
    sku_code             varchar(32) not null comment '商品SKU编号',
    supplier_sku_code    varchar(32) not null comment '供应商商品sku编号',
    item_name            varchar(255) comment '商品名称',
-   bar_code             varchar(255) not null comment '条形码',
+   bar_code             varchar(255) comment '条形码',
    supply_price         bigint comment '供货价,单位/分',
    supplier_price       bigint comment '供应商售价,单位/分',
    market_reference_price bigint comment '市场参考价,单位/分',
@@ -634,21 +621,28 @@ create table external_item_sku
 alter table external_item_sku comment '一件代发商品';
 
 /*==============================================================*/
-/* Index: uniq_externalItemSku_skuCode                          */
+/* Index: uniq_externalItemSku_supplierCode_supplierSkuCode     */
 /*==============================================================*/
-create unique index uniq_externalItemSku_skuCode on external_item_sku
-(
-   supplier_code
-);
-
-/*==============================================================*/
-/* Index: idx_externalItemSku_supplierCode_supplierSkuCode      */
-/*==============================================================*/
-create index idx_externalItemSku_supplierCode_supplierSkuCode on external_item_sku
+create unique index uniq_externalItemSku_supplierCode_supplierSkuCode on external_item_sku
 (
    supplier_code,
    supplier_sku_code
 );
+
+/*==============================================================*/
+/* Table: idempotent                                            */
+/*==============================================================*/
+create table idempotent
+(
+   id                   bigint not null auto_increment,
+   serial_no            varchar(128) comment '流水号',
+   type                 varchar(32) comment '流水类型',
+   create_time          timestamp comment '创建时间',
+   update_time          timestamp comment '更新时间',
+   primary key (id)
+);
+
+alter table idempotent comment '幂等校验表';
 
 /*==============================================================*/
 /* Table: input_record                                          */
@@ -679,6 +673,7 @@ create table item_nature_propery
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   is_valid             varchar(2) comment '是否有效:0-无效,1-有效',
    primary key (id)
 );
 
@@ -708,6 +703,7 @@ create table item_sales_propery
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   is_valid             varchar(2) comment '是否有效:0-无效,1-有效',
    primary key (id)
 );
 
@@ -796,6 +792,7 @@ create table log_information
    operator             varchar(32) comment '操作者',
    params               longtext comment '请求参数:json格式',
    remark               varchar(256) comment '备注',
+   operate_type         varchar(2),
    operate_time         timestamp not null comment '操作时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
@@ -831,7 +828,7 @@ create table order_item
    platform_code        varchar(32) not null comment '来源平台编码',
    warehouse_id         bigint comment '所在仓库id',
    warehouse_name       varchar(64) comment '所在仓库名称',
-   category_id          bigint not null comment '所属类目编号',
+   category             bigint not null comment '所属类目编号',
    shop_id              bigint not null comment '订单所属的店铺id',
    shop_name            varchar(255) not null comment '店铺名称',
    user_id              varchar(64) not null comment '会员id',
@@ -843,11 +840,11 @@ create table order_item
    bar_code             varchar(64) comment '条形码',
    item_name            varchar(128) not null comment '商品名称',
    spec_nature_info     longtext comment '商品规格描述',
-   price                bigint comment '商品价格,单位/分',
-   market_price         bigint comment '市场价,单位/分',
-   promotion_price      bigint comment '促销价,单位/分',
-   customs_price        bigint comment '报关单价,单位/分',
-   transaction_price    bigint comment '成交单价,单位/分',
+   price                decimal(20,3) comment '商品价格,单位/分',
+   market_price         decimal(20,3) comment '市场价,单位/分',
+   promotion_price      decimal(20,3) comment '促销价,单位/分',
+   customs_price        decimal(20,3) comment '报关单价,单位/分',
+   transaction_price    decimal(20,3) comment '成交单价,单位/分',
    num                  int comment '购买数量',
    send_num             int comment '明细商品发货数量',
    sku_properties_name  varchar(512) comment 'SKU的值',
@@ -857,19 +854,19 @@ create table order_item
    bind_oid             varchar(32) comment '捆绑的子订单号',
    logistics_company    varchar(32) comment '子订单发货的快递公司',
    invoice_no           varchar(32) comment '子订单所在包裹的运单号',
-   post_discount        bigint comment '运费分摊,单位/分',
-   discount_promotion   bigint comment '促销优惠分摊,单位/分',
-   discount_coupon_shop bigint comment '店铺优惠卷分摊金额,单位/分',
-   discount_coupon_platform bigint comment '平台优惠卷优惠分摊,单位/分',
-   discount_fee         bigint comment '子订单级订单优惠金额,单位/分',
-   total_fee            bigint comment '应付金额,单位/分',
-   payment              bigint comment '实付金额,单位/分',
-   total_weight         bigint comment '商品重量,单位/克',
-   adjust_fee           bigint comment '手工调整金额,单位/分',
+   post_discount        decimal(20,3) comment '运费分摊,单位/分',
+   discount_promotion   decimal(20,3) comment '促销优惠分摊,单位/分',
+   discount_coupon_shop decimal(20,3) comment '店铺优惠卷分摊金额,单位/分',
+   discount_coupon_platform decimal(20,3) comment '平台优惠卷优惠分摊,单位/分',
+   discount_fee         decimal(20,3) comment '子订单级订单优惠金额,单位/分',
+   total_fee            decimal(20,3) comment '应付金额,单位/分',
+   payment              decimal(20,3) comment '实付金额,单位/分',
+   total_weight         decimal(20,3) comment '商品重量,单位/克',
+   adjust_fee           decimal(20,3) comment '手工调整金额,单位/分',
    status               varchar(32) comment '订单状态:1-待出库 2-部分出库 3-全部出库',
    after_sales_status   varchar(32) comment '售后状态',
    complaints_status    varchar(32) comment '订单投诉状态',
-   refund_fee           bigint comment '退款金额,单位/分',
+   refund_fee           decimal(20,3) comment '退款金额,单位/分',
    cat_service_rate     decimal comment '商家三级类目签约佣金比例',
    pic_path             varchar(255) comment '商品图片绝对路径',
    outer_iid            varchar(64) comment '商家外部编码',
@@ -877,18 +874,18 @@ create table order_item
    sub_stock            varchar(20) comment '是否支持下单减库存',
    dlytmpl_id           int(10) comment '配送模板id',
    supplier_name        varchar(80) comment '供应商名称',
-   price_tax            bigint comment '商品税费,单位/分',
+   price_tax            decimal(20,3) comment '商品税费,单位/分',
    promotion_tags       varchar(32) comment '订单应用促销标签',
    obj_type             varchar(32) comment '订单商品类型',
    type                 varchar(1) not null comment '订单类型 0-普通 1-零元购 2-分期购 3-团购',
-   tax_rate             decimal(20,5) comment '税率',
+   tax_rate             decimal(20,3) comment '税率',
    params               varchar(255) comment '订单冗余参数',
-   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   pay_time             timestamp null default NULL comment '支付时间',
-   consign_time         timestamp null default NULL comment '发货时间',
-   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
-   timeout_action_time  timestamp null default NULL comment '超时确认时间',
-   end_time             timestamp null default NULL comment '关闭时间',
+   create_time          timestamp NULL default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp NULL default NULL comment '支付时间',
+   consign_time         timestamp NULL default NULL comment '发货时间',
+   update_time          timestamp NULL default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
+   timeout_action_time  timestamp NULL default NULL comment '超时确认时间',
+   end_time             timestamp NULL default NULL comment '关闭时间',
    primary key (id)
 );
 
@@ -970,7 +967,7 @@ alter table output_record comment '输出记录表';
 /*==============================================================*/
 create table platform_order
 (
-   id                   bigint not null comment '主键',
+   id                   bigint not null auto_increment comment '主键',
    platform_order_code  varchar(32) not null comment '平台订单编码',
    channel_code         varchar(32) not null comment '渠道编码',
    platform_code        varchar(32) not null comment '来源平台编码',
@@ -978,13 +975,13 @@ create table platform_order
    user_name            varchar(32) not null comment '会员名称',
    item_num             int not null comment '买家购买的商品总数',
    pay_type             varchar(16) not null comment '支付类型',
-   payment              bigint not null comment '实付金额,单位/分',
-   points_fee           bigint not null default 0 comment '积分抵扣金额,单位/分',
-   total_fee            bigint not null comment '订单总金额(商品单价*数量),单位/分',
-   adjust_fee           bigint not null comment '卖家手工调整金额,子订单调整金额之和,单位/分',
-   postage_fee          bigint not null comment '邮费,单位/分',
-   total_tax            bigint not null comment '总税费,单位/分',
-   need_invoice         tinyint not null default 0 comment '是否开票 1-是 0-不是',
+   payment              decimal(20,3) not null comment '实付金额,单位/分',
+   points_fee           decimal(20,3) not null default 0 comment '积分抵扣金额,单位/分',
+   total_fee            decimal(20,3) not null comment '订单总金额(商品单价*数量),单位/分',
+   adjust_fee           decimal(20,3) not null comment '卖家手工调整金额,子订单调整金额之和,单位/分',
+   postage_fee          decimal(20,3) not null comment '邮费,单位/分',
+   total_tax            decimal(20,3) not null comment '总税费,单位/分',
+   need_invoice         varchar(10) not null default '0' comment '是否开票 1-是 0-不是',
    invoice_name         varchar(128) comment '发票抬头',
    invoice_type         varchar(32) comment '发票类型',
    invoice_main         varchar(128) comment '发票内容',
@@ -1007,7 +1004,7 @@ create table platform_order
    obtain_point_fee     int comment '买家下单送积分',
    real_point_fee       int comment '买家使用积分',
    step_trade_status    varchar(32) comment '分阶段付款状态',
-   step_paid_fee        bigint comment '分阶段已付金额,单位/分',
+   step_paid_fee        decimal(20,3) comment '分阶段已付金额,单位/分',
    is_clearing          varchar(4) comment '是否生成结算清单 0-否 1-是',
    cancel_reason        varchar(255) comment '订单取消原因',
    cancel_status        varchar(32) comment '成功：SUCCESS  待退款：WAIT_REFUND  默认：NO_APPLY_CANCEL',
@@ -1015,10 +1012,10 @@ create table platform_order
    is_virtual           varchar(4) default '0' comment '是否为虚拟订单 0-否 1-是',
    ip                   varchar(32) comment 'ip地址',
    type                 varchar(4) not null default '0' comment '订单类型：0-普通订单 1-零元购 2-分期购 3-拼团',
-   discount_promotion   bigint comment '促销优惠总金额,单位/分',
-   discount_coupon_shop bigint comment '店铺优惠卷优惠金额,单位/分',
-   discount_coupon_platform bigint comment '平台优惠卷优惠金额,单位/分',
-   discount_fee         bigint comment '订单优惠总金额,单位/分',
+   discount_promotion   decimal(20,3) comment '促销优惠总金额,单位/分',
+   discount_coupon_shop decimal(20,3) comment '店铺优惠卷优惠金额,单位/分',
+   discount_coupon_platform decimal(20,3) comment '平台优惠卷优惠金额,单位/分',
+   discount_fee         decimal(20,3) comment '订单优惠总金额,单位/分',
    shipping_type        varchar(32) comment '配送类型',
    platform_type        varchar(32) not null default 'pc' comment '订单来源平台 电脑-pc 手机网页-wap 移动端-app',
    rate_status          varchar(4) not null default '0' comment '用户评价状态 0-未评价 1-已评价',
@@ -1069,6 +1066,7 @@ create table property
    is_valid             varchar(2) not null default '1' comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
+   last_edit_operator   varchar(64) not null comment '最新更新人',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
@@ -1104,6 +1102,7 @@ create table purchase_detail
    id                   bigint unsigned not null auto_increment comment '主键',
    purchase_id          bigint not null comment '采购单id',
    purchase_order_code  varchar(32) not null comment '采购单编号',
+   spu_code             varchar(64) comment '商品SPU编号',
    item_name            varchar(32) not null comment '商品名称',
    sku_code             varchar(32) not null comment '商品sku编码',
    brand_id             varchar(32) comment '品牌id',
@@ -1113,8 +1112,10 @@ create table purchase_detail
    purchasing_quantity  bigint comment '采购数量',
    total_purchase_amount bigint comment '采购总金额,单位/分',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
-   create_time          timestamp null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   create_time          timestamp NULL default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp NULL default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   create_operator      varchar(32),
+   is_valid             varchar(2) comment '是否有效',
    primary key (id)
 );
 
@@ -1178,7 +1179,7 @@ create table purchase_order
    purchase_order_code  varchar(32) not null comment '采购单编号',
    channel_id           bigint comment '采购渠道ID',
    channel_code         varchar(32) comment '采购渠道编号',
-   supplier_id          bigint not null comment '供应商ID',
+   supplier_id          bigint comment '供应商ID',
    supplier_code        varchar(32) comment '供应商编号',
    contract_id          bigint comment '采购合同ID',
    contract_code        varchar(32) comment '采购合同编号',
@@ -1186,7 +1187,7 @@ create table purchase_order
    pay_type             varchar(32) not null comment '付款方式编号',
    payment_proportion   decimal(4,3) comment '付款比例',
    purchase_group_code  varchar(32) not null comment '归属采购组编号',
-   warehouse_id         varchar(32) not null comment '收货仓库ID',
+   warehouse_id         varchar(32) comment '收货仓库ID',
    currency_type        varchar(32) not null comment '币种编号',
    purchase_person_id   varchar(32) not null comment '归属采购人编号',
    receive_address      varchar(256) not null comment '收货地址',
@@ -1205,8 +1206,8 @@ create table purchase_order
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
    create_operator      varchar(32) comment '创建人',
-   create_time          timestamp null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
    abnormal_remark      varchar(1024) comment '入库异常说明',
    primary key (id)
 );
@@ -1239,11 +1240,38 @@ create table purchase_order_audit_log
 alter table purchase_order_audit_log comment '审核日志信息表';
 
 /*==============================================================*/
+/* Table: rder_flow                                             */
+/*==============================================================*/
+create table rder_flow
+(
+   platform_order_code  varchar(32) not null comment '平台订单编码',
+   shop_order_code      varchar(32) not null comment '店铺订单编码',
+   type                 varchar(32) not null comment '业务类型',
+   primary key (platform_order_code, shop_order_code, type)
+);
+
+alter table rder_flow comment '订单流水表';
+
+/*==============================================================*/
+/* Table: serial                                                */
+/*==============================================================*/
+create table serial
+(
+   id                   bigint not null auto_increment,
+   name                 varchar(32) comment '流水号的前缀',
+   number               int comment '流水位置',
+   update_time          timestamp comment '更新时间',
+   primary key (id)
+);
+
+alter table serial comment '序列号信息表';
+
+/*==============================================================*/
 /* Table: shop_order                                            */
 /*==============================================================*/
 create table shop_order
 (
-   id                   bigint not null comment '主键',
+   id                   bigint not null auto_increment comment '主键',
    shop_order_code      varchar(32) not null comment '店铺订单编码',
    platform_order_code  varchar(32) not null comment '平台订单编码',
    channel_code         varchar(32) not null comment '渠道编码',
@@ -1251,30 +1279,28 @@ create table shop_order
    platform_type        varchar(32) not null default 'pc' comment '订单来源平台 电脑-pc 手机网页-wap 移动端-app',
    shop_id              bigint not null comment '订单所属的店铺id',
    shop_name            varchar(255) not null comment '店铺名称',
-   supplier_code        varchar(32) not null comment '供应链编号',
-   supplier_name        varchar(64) not null comment '供应商名称',
    user_id              varchar(64) not null comment '会员id',
    dlytmpl_ids          varchar(255) comment '配送模板ids(1,2,3)',
    status               varchar(32) not null comment '子订单状态 WAIT_BUYER_PAY 已下单等待付款 WAIT_SELLER_SEND-已付款等待发货 WAIT_BUYER_CONFIRM-已发货等待确认收货 WAIT_BUYER_SIGNED-待评价 TRADE_FINISHED-已完成 TRADE_CLOSED_BY_REFUND-已关闭(退款关闭订单) TRADE_CLOSED_BY_CANCEL-已关闭(取消关闭订单)',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
-   payment              bigint comment '实付金额,订单最终总额,单位/分',
-   total_fee            bigint comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
-   postage_fee          bigint comment '邮费分摊,单位/分',
-   discount_promotion   bigint comment '促销优惠总金额,单位/分',
-   discount_coupon_shop bigint comment '店铺优惠卷分摊总金额,单位/分',
-   discount_coupon_platform bigint comment '平台优惠卷分摊总金额,单位/分',
-   discount_fee         bigint comment '促销优惠金额,单位/分',
+   payment              decimal(20,3) comment '实付金额,订单最终总额,单位/分',
+   total_fee            decimal(20,3) comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
+   postage_fee          decimal(20,3) comment '邮费分摊,单位/分',
+   discount_promotion   decimal(20,3) comment '促销优惠总金额,单位/分',
+   discount_coupon_shop decimal(20,3) comment '店铺优惠卷分摊总金额,单位/分',
+   discount_coupon_platform decimal(20,3) comment '平台优惠卷分摊总金额,单位/分',
+   discount_fee         decimal(20,3) comment '促销优惠金额,单位/分',
    title                varchar(128) comment '交易标题',
    buyer_message        varchar(255) comment '买家留言',
-   adjust_fee           bigint comment '卖家手工调整金额,子订单调整金额之和,单位/分,单位/分',
+   adjust_fee           decimal(20,3) comment '卖家手工调整金额,子订单调整金额之和,单位/分,单位/分',
    item_num             int comment '子订单商品购买数量总数',
    shop_memo            longtext comment '卖家备注',
-   total_weight         bigint comment '商品重量,单位/克',
+   total_weight         decimal(20,3) comment '商品重量,单位/克',
    trade_memo           longtext comment '交易备注',
    rate_status          varchar(4) default '0' comment '评价状态',
    is_part_consign      varchar(4) comment '是否是多次发货的订单',
    group_buy_status     varchar(32) comment '拼团状态',
-   total_tax            bigint comment '订单总税费,单位/分',
+   total_tax            decimal(20,3) comment '订单总税费,单位/分',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    consign_time         timestamp comment '发货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
@@ -1308,7 +1334,7 @@ create table sku_relation
 (
    id                   bigint(20) not null,
    spu_code             varchar(32) comment '商品编码',
-   sku_code             varbinary(32) comment '供应链sku编码',
+   sku_code             varchar(32) comment '供应链sku编码',
    supplier_sku_code    varchar(32) comment '供应商skuCode',
    supplier_code        varchar(32) comment '供应商编码',
    channel_sku_code     varchar(32) comment '渠道方skuCode',
@@ -1340,6 +1366,7 @@ create table sku_stock
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   is_valid             varchar(2) comment '是否有效:0-无效,1-有效',
    primary key (id)
 );
 
@@ -1395,6 +1422,7 @@ create table supplier
    supplier_name        varchar(64) not null comment '供应商名称',
    supplier_kind_code   varchar(32) not null comment '供应商性质编号',
    supplier_type_code   varchar(32) not null comment '供应商类型编号',
+   supplier_interface_id varchar(32) comment '供应商接口ID',
    contact              varchar(64) not null comment '供应商联系人',
    phone                varchar(16) not null comment '联系人电话',
    mobile               varchar(16) comment '联系人手机',
@@ -1465,6 +1493,7 @@ create table supplier_brand
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   is_valid             varchar(2) comment '是否有效:0-无效,1-有效',
    primary key (id)
 );
 
@@ -1492,6 +1521,7 @@ create table supplier_category
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间,格式yyyy-mm-dd hh:mi:ss',
+   is_valid             varchar(2) comment '是否有效:0-无效,1-有效',
    primary key (id)
 );
 
@@ -1547,7 +1577,6 @@ alter table supplier_financial_info comment '供应商财务信息';
 /*==============================================================*/
 create table supplier_order_info
 (
-   Column_18            char(10),
    id                   bigint unsigned not null auto_increment comment '主键',
    warehouse_order_code varchar(32) not null comment '店铺订单编码',
    supplier_order_code  varchar(64) comment '供应商订单编码',
@@ -1754,21 +1783,22 @@ create table warehouse_order
    warehouse_id         bigint comment '所在仓库id',
    warehouse_name       varchar(64) comment '所在仓库名称',
    user_id              varchar(64) not null comment '会员id',
-   status               varchar(4) not null comment '订单状态(自采):1-待发送,2-已发送,3-代发货,4-已发货,5-下单失败',
+   status               varchar(4) not null comment '订单状态(自采):1-待出库 2-部分出库 3-全部出库',
    supplier_order_status varchar(2) comment '供应商订单状态(代发):1-待发送,2-已发送,3-代发货,4-已发货,5-下单失败',
    order_type           varchar(2) comment '订单类型:0-自采订单,1-一件代发订单',
    items_num            int comment '商品总数量',
-   adjust_fee           bigint comment '卖家手工调整金额,子订单调整金额之和,单位/分,单位/分',
-   postage_fee          bigint comment '邮费分摊,单位/分',
-   discount_promotion   bigint comment '促销优惠总金额,单位/分',
-   discount_coupon_shop bigint comment '店铺优惠卷分摊总金额,单位/分',
-   discount_coupon_platform bigint comment '平台优惠卷分摊总金额,单位/分',
-   discount_fee         bigint comment '促销优惠金额,单位/分',
-   total_fee            bigint comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
-   payment              bigint comment '实付金额,订单最终总额,单位/分',
+   adjust_fee           decimal(20,3) comment '卖家手工调整金额,子订单调整金额之和,单位/分,单位/分',
+   postage_fee          decimal(20,3) comment '邮费分摊,单位/分',
+   discount_promotion   decimal(20,3) comment '促销优惠总金额,单位/分',
+   discount_coupon_shop decimal(20,3) comment '店铺优惠卷分摊总金额,单位/分',
+   discount_coupon_platform decimal(20,3) comment '平台优惠卷分摊总金额,单位/分',
+   discount_fee         decimal(20,3) comment '促销优惠金额,单位/分',
+   total_fee            decimal(20,3) comment '各子订单中商品price * num的和，不包括任何优惠信息,单位/分',
+   payment              decimal(20,3) comment '实付金额,订单最终总额,单位/分',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   consign_time         timestamp not null comment '发货时间',
    primary key (id)
 );
 
@@ -1808,32 +1838,3 @@ create index idx_warehouseOrder_warehouseOrderCode on warehouse_order
 (
    warehouse_order_code
 );
-
-
-CREATE TABLE order_flow (
-  platform_order_code varchar(32) NOT NULL COMMENT '平台订单编码',
-  shop_order_code varchar(32) NOT NULL COMMENT '店铺订单编码',
-  type varchar(32) NOT NULL COMMENT '业务类型',
-  PRIMARY KEY (platform_order_code,shop_order_code,type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-CREATE TABLE idempotent (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  serial_no varchar(128) COLLATE utf8_bin NOT NULL COMMENT '流水号',
-  type varchar(32) COLLATE utf8_bin NOT NULL COMMENT '流水类型',
-  create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  update_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='幂等校验表';
-
-
-
-CREATE TABLE `serial` (
-  `id` bigint(20) NOT NULL COMMENT '主键id',
-  `name` varchar(32) COLLATE utf8_bin DEFAULT NULL COMMENT '流水号的前缀',
-  `number` int(11) DEFAULT NULL COMMENT '流水位置',
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='流水表';
-

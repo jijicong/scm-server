@@ -10,6 +10,7 @@ import org.trc.domain.config.LogInfo;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.config.LogInfoForm;
 import org.trc.service.IUserDoService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.config.LogInfoService;
 import org.trc.service.impl.util.UserNameUtilService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
@@ -29,7 +30,7 @@ import java.util.Map;
 public class LogInfoBiz implements ILogInfoBiz {
 
     @Autowired
-    private LogInfoService logInfoService;
+    private ILogInfoService logInfoService;
     @Autowired
     private IAclUserAccreditInfoService aclUserAccreditInfoService;
     public final static String ADMIN_SIGN = "admin";

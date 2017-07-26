@@ -115,6 +115,8 @@ public class SupplyConstants {
             public static final String BRAND_STATE = "brand/state";
             //查询复数品牌资源路径
             public static final String BRAND_LIST_SEARCH = "brands/search";
+            //联想查询
+            public static final String ASSOCIATION_SEARCH = "brands/associationSearch";
         }
 
         /**

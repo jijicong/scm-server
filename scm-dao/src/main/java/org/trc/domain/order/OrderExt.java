@@ -12,6 +12,9 @@ import java.util.List;
  */
 public class OrderExt extends OrderBase{
 
+    // 订单总金额(商品单价*数量),单位/分
+    @Transient
+    private BigDecimal totalFee;
     // 实付金额,订单最终总额,单位/分
     //@JsonSerialize(using = MoneySerializer.class)
     @Transient
@@ -62,5 +65,13 @@ public class OrderExt extends OrderBase{
 
     public void setTotalTax(BigDecimal totalTax) {
         this.totalTax = totalTax;
+    }
+
+    public BigDecimal getTotalFee() {
+        return totalFee;
+    }
+
+    public void setTotalFee(BigDecimal totalFee) {
+        this.totalFee = totalFee;
     }
 }

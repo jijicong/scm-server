@@ -5,6 +5,16 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.search.MatchQuery;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +27,7 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
@@ -24,9 +35,13 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
-import org.trc.exception.SupplierException;
 import org.trc.exception.ParamValidException;
-import org.trc.form.supplier.*;
+import org.trc.exception.SupplierException;
+import org.trc.form.supplier.SupplierChannelRelationForm;
+import org.trc.form.supplier.SupplierExt;
+import org.trc.form.supplier.SupplierForm;
+import org.trc.model.SearchResult;
+import org.trc.service.IPageNationService;
 import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.config.ILogInfoService;
@@ -34,6 +49,7 @@ import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -92,6 +108,10 @@ public class SupplierBiz implements ISupplierBiz {
     private IAuditLogService auditLogService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IPageNationService pageNationService;
+    @Autowired
+    private IUserNameUtilService userNameUtilService;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
@@ -124,6 +144,80 @@ public class SupplierBiz implements ISupplierBiz {
         page = supplierService.pagination(example, page, queryModel);
         handlerSupplierPage(page);
         //分页查询
+        return page;
+    }
+
+    @Override
+    public Pagenation<Supplier> supplierPageES(SupplierForm form, Pagenation<Supplier> page) throws Exception {
+        TransportClient clientUtil = TransportClientUtil.getTransportClient();
+        HighlightBuilder hiBuilder = new HighlightBuilder();
+        hiBuilder.preTags("<b style=\"color: red\">");
+        hiBuilder.postTags("</b>");
+        //设置高亮字段
+        hiBuilder.fields().add(new HighlightBuilder.Field("supplier_name.pinyin"));
+        hiBuilder.fields().add(new HighlightBuilder.Field("contact.pinyin"));
+
+        SearchRequestBuilder srb = clientUtil.prepareSearch("supplier")//es表名
+                .highlighter(hiBuilder)
+                .setFrom(page.getStart())//第几个开始
+                .setSize(page.getPageSize());//长度
+        //查询条件
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+        if (StringUtils.isNotBlank(form.getSupplierName())) {
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("supplier_name.pinyin", form.getSupplierName());
+            queryBuilder.should(matchQuery);
+        }
+        if (StringUtils.isNotBlank(form.getContact())) {
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("contact.pinyin", form.getContact());
+            queryBuilder.should(matchQuery);
+        }
+        if (StringUtils.isNotBlank(form.getIsValid())) {
+            QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", form.getIsValid());
+            queryBuilder.must(filterBuilder);
+        }
+        if (StringUtils.isNotBlank(form.getSupplierKindCode())) {
+            QueryBuilder filterBuilder = QueryBuilders.termQuery("supplier_kind_code", form.getSupplierKindCode());
+            queryBuilder.must(filterBuilder);
+        }
+        if (StringUtils.isNotBlank(form.getSupplierCode())) {
+            QueryBuilder filterBuilder = QueryBuilders.multiMatchQuery(form.getSupplierCode(),"supplier_code" ).
+                    type(MatchQuery.Type.PHRASE_PREFIX);
+            queryBuilder.should(filterBuilder);
+        }
+        srb.setQuery(queryBuilder);
+        SearchResult searchResult;
+        try {
+            searchResult = pageNationService.resultES(srb, clientUtil);
+        } catch (Exception e) {
+            log.error("es查询失败" + e.getMessage(), e);
+            return page;
+        }
+        List<Supplier> supplierList = new ArrayList<>();
+        for (SearchHit searchHit : searchResult.getSearchHits()) {
+             Supplier supplier = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Supplier.class);
+            if (StringUtils.isBlank(form.getSupplierName()) && StringUtils.isBlank(form.getContact())) {
+                supplierList.add(supplier);
+                continue;
+            }
+            for(Map.Entry<String, HighlightField> entry : searchHit.getHighlightFields().entrySet()) {
+                if("supplier_name.pinyin".equals(entry.getKey())) {
+                    for (Text text : entry.getValue().getFragments()) {
+                        supplier.setHighLightName(text.string());
+                    }
+                } else if("contact.pinyin".equals(entry.getKey())){
+                    for (Text text : entry.getValue().getFragments()) {
+                        supplier.setHighContact(text.string());
+                    }
+                }
+            }
+            supplierList.add(supplier);
+        }
+        if (AssertUtil.collectionIsEmpty(supplierList)) {
+            return page;
+        }
+        page.setResult(supplierList);
+        handlerSupplierPage(page);
+        page.setTotalCount(searchResult.getCount());
         return page;
     }
 
@@ -278,8 +372,8 @@ public class SupplierBiz implements ISupplierBiz {
         String channels = supplier.getChannel();
         saveSupplierChannelRelation(getSupplierChannelRelations(channels, supplier));
         //记录操作日志
-        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext),
-                LogOperationEnum.ADD.getMessage(),null, null);
+        logInfoService.recordLog(supplier, supplier.getId().toString(), CommonUtil.getUserId(requestContext),
+                LogOperationEnum.ADD.getMessage(), null, null);
     }
 
     /**
@@ -329,9 +423,9 @@ public class SupplierBiz implements ISupplierBiz {
             certificate2.setSupplierId(supplier.getId());
             certificate2.setSupplierCode(supplier.getSupplierCode());
             certificate2 = certificateService.selectOne(certificate2);
-            if(null == certificate2){
+            if (null == certificate2) {
                 saveCertificate(certificate);
-            }else{
+            } else {
                 updateCertificate(certificate);
             }
         }
@@ -365,23 +459,24 @@ public class SupplierBiz implements ISupplierBiz {
         }
         //记录操作日志
         String remark = null;
-        if(isValidFlag)
+        if (isValidFlag)
             remark = String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName());
-        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(),remark, null);
+        logInfoService.recordLog(supplier, supplier.getId().toString(), CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(), remark, null);
     }
 
     /**
      * 供应商修改是否也修改了启停用
+     *
      * @param supplier
      */
-    private boolean isSupplerValid(Supplier supplier){
+    private boolean isSupplerValid(Supplier supplier) {
         Supplier supplier2 = new Supplier();
         supplier2.setId(supplier.getId());
         supplier2 = supplierService.selectOne(supplier2);
         AssertUtil.notNull(supplier2, String.format("根据供应商主键ID[%s]查询供应商信息为空", supplier.getId()));
-        if(!StringUtils.equals(supplier.getIsValid(), supplier2.getIsValid())){
+        if (!StringUtils.equals(supplier.getIsValid(), supplier2.getIsValid())) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -685,7 +780,7 @@ public class SupplierBiz implements ISupplierBiz {
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
                 deleteList.add(s.getId());
             } else {
-                if(!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的分类
+                if (!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的分类
                     //检查分类启停用状态
                     checkCategoryBrandValidStatus(s.getCategoryId(), null);
                 }
@@ -837,7 +932,7 @@ public class SupplierBiz implements ISupplierBiz {
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
                 delList.add(s);
             } else {
-                if(!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))){//不是删除状态的品牌
+                if (!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的品牌
                     //检查品牌启停用状态
                     checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
                 }
@@ -1074,8 +1169,8 @@ public class SupplierBiz implements ISupplierBiz {
             rejectSupplierApply(id, requestContext);
         }
         //记录操作日志
-        logInfoService.recordLog(supplier,supplier.getId().toString(),CommonUtil.getUserId(requestContext),
-                LogOperationEnum.UPDATE.getMessage(),String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName()), null);
+        logInfoService.recordLog(supplier, supplier.getId().toString(), CommonUtil.getUserId(requestContext),
+                LogOperationEnum.UPDATE.getMessage(), String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName()), null);
     }
 
     /**
@@ -1091,21 +1186,21 @@ public class SupplierBiz implements ISupplierBiz {
         supplierApply.setStatus(AuditStatusEnum.COMMIT.getCode());//提交审核
         List<SupplierApply> supplierApplyList = supplierApplyService.select(supplierApply);
         Date sysDate = Calendar.getInstance().getTime();
-        for(SupplierApply supplierApply2: supplierApplyList){
+        for (SupplierApply supplierApply2 : supplierApplyList) {
             supplierApply2.setStatus(AuditStatusEnum.REJECT.getCode());//审核驳回
             supplierApply2.setAuditOpinion(STOP_SUPPLIER_REJECT_APPLY_REASON);
             supplierApply2.setUpdateTime(sysDate);
             int count = supplierApplyService.updateByPrimaryKey(supplierApply2);
-            if(count == 0){
+            if (count == 0) {
                 String msg = String.format("停用ID为[%s]的供应商自动驳回供应商对应的申请%s失败", supplierId, JSONObject.toJSON(supplierApply2));
                 log.error(msg);
                 throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
-            }else{
+            } else {
                 String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
                 AssertUtil.notBlank(userId, "记录供应商停用自动驳回供应商申请审批获取登录用户ID为空");
                 //记录操作日志
-                logInfoService.recordLog(supplierApply2, supplierApply2.getId().toString(),"admin",
-                        LogOperationEnum.AUDIT_REJECT.getMessage(),"供应商停用，系统自动驳回", null);
+                logInfoService.recordLog(supplierApply2, supplierApply2.getId().toString(), "admin",
+                        LogOperationEnum.AUDIT_REJECT.getMessage(), "供应商停用，系统自动驳回", null);
             }
         }
 
@@ -1113,10 +1208,11 @@ public class SupplierBiz implements ISupplierBiz {
 
     /**
      * 写驳回供应商申请操作日起至
+     *
      * @param supplierApply
      * @param userId
      */
-    private void writeRejectSupplierApplyLog(SupplierApply supplierApply, String userId){
+    private void writeRejectSupplierApplyLog(SupplierApply supplierApply, String userId) {
         Date sysDate = Calendar.getInstance().getTime();
         AuditLog auditLog = new AuditLog();
         auditLog.setApplyCode(supplierApply.getApplyCode());

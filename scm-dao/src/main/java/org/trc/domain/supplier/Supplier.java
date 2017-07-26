@@ -88,6 +88,16 @@ public class Supplier extends BaseDO{
     private String channelName;//供应商渠道名称
     @Transient
     private String brandName;//供应商品牌名称
+    @Transient
+    private String highContact;//供应商品牌名称
+
+    public String getHighContact() {
+        return highContact;
+    }
+
+    public void setHighContact(String highContact) {
+        this.highContact = highContact;
+    }
 
     public Long getId() {
         return id;
