@@ -165,6 +165,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO);
         List<String> statusList = new ArrayList<>();
         statusList.add(ZeroToNineEnum.ZERO.getCode());
         statusList.add(ZeroToNineEnum.ONE.getCode());
@@ -219,7 +220,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext) throws Exception {
-        AssertUtil.notNull(supplierApply, "供应商申请申请信息，申请信息不能为空");
+        AssertUtil.notNull(supplierApply, "更新供应商申请申请信息，申请信息不能为空");
         AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
         Supplier validateSupplier = supplierService.selectByPrimaryKey(supplierApply.getSupplierId());
@@ -233,6 +234,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO);
         List<String> statusList = new ArrayList<>();
         statusList.add(ZeroToNineEnum.ZERO.getCode());
         statusList.add(ZeroToNineEnum.ONE.getCode());
@@ -251,6 +253,10 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         update.setUpdateTime(Calendar.getInstance().getTime());
         //提交审核时间沿用创建时间,所以每次暂存和提交审核都更新创建时间.
         update.setCreateTime(Calendar.getInstance().getTime());
+        if(supplierApply.getStatus().equals(AuditStatusEnum.COMMIT.getCode())){
+            //提交审核之后清空原先的审核意见
+            update.setAuditOpinion("");
+        }
         int count = supplierApplyService.updateByPrimaryKeySelective(update);
         if (count < 1) {
             String msg = CommonUtil.joinStr("更新供应商申请信息", JSON.toJSONString(supplierApply), "失败").toString();
