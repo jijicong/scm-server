@@ -15,7 +15,7 @@ public class SupplierApplyForm extends QueryModel {
     private String contact;//联系人
     @QueryParam("supplierCode")
     private String supplierCode;//供应商编号
-    @QueryParam("status")
+    @QueryParam("applyStatus")
     private String status;//申请状态
     @QueryParam("supplierKindCode")
     private String supplierKindCode;//供应商
