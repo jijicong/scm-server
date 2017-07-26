@@ -202,7 +202,11 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         purchaseOrderLog = iPurchaseOrderService.selectOne(purchaseOrderLog);
         AssertUtil.notNull(purchaseOrderLog.getId(),"根据采购单的编码,查询采购单失败");
         //只有审核状态为待审核，才能具有审核操作
-        if(purchaseOrderLog.getStatus() != ZeroToNineEnum.ONE.getCode()){
+        PurchaseOrderAudit compareAudit = new PurchaseOrderAudit();
+        compareAudit.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
+        compareAudit = purchaseOrderAuditService.selectOne(compareAudit);
+        AssertUtil.notNull(compareAudit.getId(),"查询审核采购单失败!");
+        if(!compareAudit.getStatus().equals(ZeroToNineEnum.ONE.getCode())){
             throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, "该审核单不具有审核操作");
         }
        //审核驳回，检验审核意见是否为空
