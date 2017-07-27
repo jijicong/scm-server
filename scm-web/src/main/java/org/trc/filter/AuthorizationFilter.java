@@ -82,8 +82,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                                     AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户无此权限", null);
                                     requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                                 }
+                            }else{
+                                log.info("url:{}不需要验证放行成功",url);
                             }
-                            log.info("url:{}不需要验证放行成功",url);
                         }
                     }
                 } catch (AuthenticateException e) {
