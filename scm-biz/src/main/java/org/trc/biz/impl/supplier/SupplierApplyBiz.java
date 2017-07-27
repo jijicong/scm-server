@@ -166,14 +166,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
         criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO);
-        List<String> statusList = new ArrayList<>();
-        statusList.add(ZeroToNineEnum.ZERO.getCode());
-        statusList.add(ZeroToNineEnum.ONE.getCode());
-        statusList.add(ZeroToNineEnum.TWO.getCode());
-        criteria.andIn("status", statusList);
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(supplierApplyList)) {
-            String msg = "该供应商已经被申请或暂存，无法继续申请";
+            String msg = "该供应商已存在，不能重复申请！";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
         }
@@ -235,14 +230,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
         criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO);
-        List<String> statusList = new ArrayList<>();
-        statusList.add(ZeroToNineEnum.ZERO.getCode());
-        statusList.add(ZeroToNineEnum.ONE.getCode());
-        statusList.add(ZeroToNineEnum.TWO.getCode());
-        criteria.andIn("status", statusList);
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(supplierApplyList)&&supplierApplyList.size()>1) {
-            String msg = "该供应商已经被申请或暂存，无法继续申请";
+            String msg = "该供应商已存在，不能重复申请！";
             log.error(msg);
             throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
         }
