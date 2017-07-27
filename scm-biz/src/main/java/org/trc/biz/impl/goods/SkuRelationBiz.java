@@ -11,6 +11,7 @@ import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Skus;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkusService;
+import org.trc.util.AssertUtil;
 
 /**
  * @author: Ding
@@ -47,4 +48,5 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         logger.info("警告，传入错误的skuCode");
         return null;
     }
+
 }

@@ -16,6 +16,7 @@
         pao.requried_receive_date AS requriedReceiveDate,
         pao.end_receive_date AS endReceiveDate,
         pao.warehouse_notice_code AS warehouseNoticeCode,
+        pao.update_time AS  updateTime,
         pao.id
     FROM
         supplier s
@@ -32,6 +33,7 @@
             ao.warehouse_code,
             ao.requried_receive_date,
             ao.end_receive_date,
+            ao.update_time,
             ao.id
         FROM
             warehouse_notice ao
@@ -64,7 +66,7 @@
     <if test="supplierName != null and supplierName != ''">
         WHERE s.supplier_name LIKE CONCAT('%', #{supplierName},'%')
     </if>
-        order BY status ASC
+        order BY status ASC ,updateTime DESC
     </select>
 
     <select id="selectCountWarehouseNotice" parameterType="java.util.Map" resultType="java.lang.Integer">
@@ -84,6 +86,7 @@
         ao.warehouse_code,
         ao.requried_receive_date,
         ao.end_receive_date,
+        ao.update_time,
         ao.id
         FROM
         warehouse_notice ao

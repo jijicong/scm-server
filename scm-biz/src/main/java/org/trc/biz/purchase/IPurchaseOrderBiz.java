@@ -1,9 +1,12 @@
 package org.trc.biz.purchase;
 
+import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AppResult;
@@ -74,4 +77,11 @@ public interface IPurchaseOrderBiz {
      *联想搜索
      */
     List<String> associationSearch(String queryString) throws Exception;
+
+    /**
+     * 根据供应商的编码，查询该供应商的品牌
+     * @param supplierCode
+     * @return
+     */
+    List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception;
 }

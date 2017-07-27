@@ -235,6 +235,8 @@ public class TaiRanResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/json;charset=utf-8")
     public AppResult<String> getSkuRelationBatch(JSONObject information) {
+        AssertUtil.isTrue(information.containsKey("action"), "参数action不能为空");
+        AssertUtil.isTrue(information.containsKey("relations"), "参数relations不能为空");
         String action = information.getString("action");
         JSONArray relations = information.getJSONArray("relations");
         try {

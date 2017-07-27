@@ -15,11 +15,13 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.category.Brand;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
@@ -32,6 +34,7 @@ import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
+import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
@@ -80,6 +83,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IWarehouseNoticeDetailsService warehouseNoticeDetailsService;
     @Resource
     private ILogInfoService logInfoService;
+    @Resource
+    private ISupplierBrandService iSupplierBrandService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -1049,5 +1054,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public   List<String> associationSearch(String queryString) throws Exception{
         List<String> brandNameList = new ArrayList<>();
         return brandNameList;
+    }
+
+    @Override
+    public List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception {
+        AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
+
+        List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrands(supplierCode);
+
+
+
+        return supplierBrandExts;
     }
 }
