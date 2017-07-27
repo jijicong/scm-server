@@ -76,6 +76,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //供应商下单接口调用失败重试次数
     public final static int SUBMIT_SUPPLIER_ORDER_FAILURE_TIMES = 3;
 
+    @Value("${channel.orderMoneyCheck}")
+    private String channelOrderMoneyCheck;
+
     @Autowired
     private IShopOrderService shopOrderService;
     @Autowired
@@ -902,7 +905,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItemList.addAll(warehouseOrder.getOrderItemList());
         }
         //校验订单金额
-        orderMoneyCheck(platformOrder, shopOrderList, orderItemList);
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
+            orderMoneyCheck(platformOrder, shopOrderList, orderItemList);
+        }
         //校验商品是否不是添加过的供应商商品
         checkItemsSource(orderItemList, platformOrder.getChannelCode());
         orderItemService.insertList(orderItemList);
