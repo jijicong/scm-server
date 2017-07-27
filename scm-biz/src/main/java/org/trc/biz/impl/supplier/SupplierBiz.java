@@ -64,7 +64,10 @@ import java.util.*;
 public class SupplierBiz implements ISupplierBiz {
 
     private Logger log = LoggerFactory.getLogger(SupplierBiz.class);
-
+    //供应商性质：采购
+    private static final String SUPPLIER_PURCHASE = "purchase";
+    //供应商性质：一件代发
+    private static final String SUPPLIER_ONE_AGENT_SELLING= "oneAgentSelling";
     //供应商类型：国内供应商
     private static final String INTERNAL_SUPPLIER = "internalSupplier";
     //供应商类型：海外供应商
@@ -489,7 +492,7 @@ public class SupplierBiz implements ISupplierBiz {
      * @param certificate
      */
     private void supplierSaveCheck(Supplier supplier, Certificate certificate) {
-        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
+        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode()) && StringUtils.equals(SUPPLIER_PURCHASE, supplier.getSupplierKindCode())) {//国内供应商
             AssertUtil.notBlank(supplier.getCertificateTypeId(), "证件类型ID不能为空");
             AssertUtil.notBlank(certificate.getLegalPersonIdCard(), "法人身份证不能为空");
             AssertUtil.notBlank(certificate.getLegalPersonIdCardPic1(), "法人身份证正面图片不能为空");
@@ -520,11 +523,12 @@ public class SupplierBiz implements ISupplierBiz {
         } else if (StringUtils.equals(OVERSEAS_SUPPLIER, supplier.getSupplierTypeCode())) {//国外供应商
             AssertUtil.notBlank(supplier.getCountry(), "所在国家不能为空");
         } else {
-            String msg = String.format("供应商类型编码[%s]错误", supplier.getSupplierTypeCode());
-            log.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            if(!StringUtils.equals(SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){
+                String msg = String.format("供应商类型编码[%s]错误", supplier.getSupplierTypeCode());
+                log.error(msg);
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            }
         }
-
     }
 
     /**

@@ -1327,48 +1327,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
-     * 获取平台订单
-     * @param orderObj
-     * @return
-     */
-    private PlatformOrder getPlatformOrder(JSONObject orderObj){
-        JSONObject platformObj = null;
-        try{
-            platformObj = orderObj.getJSONObject("platformOrder");
-        }catch (ClassCastException e){
-            String msg = String.format("平台订单信息转JSON错误");
-            log.error(msg, e);
-            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
-        }
-        AssertUtil.notNull(platformObj, "接收渠道订单参数中平台订单信息为空");
-        PlatformOrder platformOrder = platformObj.toJavaObject(PlatformOrder.class);
-        platformOrder.setPayment(platformObj.getBigDecimal("payment"));//实付金额
-        platformOrder.setPostageFee(platformObj.getBigDecimal("postageFee"));//积分抵扣金额
-        platformOrder.setTotalFee(platformObj.getBigDecimal("totalFee"));//订单总金额
-        platformOrder.setAdjustFee(platformObj.getBigDecimal("adjustFee"));//卖家手工调整金额
-        platformOrder.setPointsFee(platformObj.getBigDecimal("pointsFee"));//邮费
-        platformOrder.setTotalTax(platformObj.getBigDecimal("totalTax"));//总税费
-        platformOrder.setStepPaidFee(platformObj.getBigDecimal("stepPaidFee"));//分阶段已付金额
-        platformOrder.setDiscountPromotion(platformObj.getBigDecimal("discountPromotion"));//促销优惠总金额
-        platformOrder.setDiscountCouponShop(platformObj.getBigDecimal("discountCouponShop"));//店铺优惠卷优惠金额
-        platformOrder.setDiscountCouponPlatform(platformObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
-        platformOrder.setDiscountFee(platformObj.getBigDecimal("discountFee"));//订单优惠总金额
-
-        platformOrder.setCreateTime(DateUtils.timestampToDate(platformObj.getLong("createTime")));//创建时间
-        platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
-        platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
-        platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
-        platformOrder.setUpdateTime(DateUtils.timestampToDate(platformObj.getLong("updateTime")));//修改时间
-        platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
-        platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
-
-        //适配地址,主要是对直辖市处理
-        adapterAddress(platformOrder);
-
-        return platformOrder;
-    }
-
-    /**
      * 适配地址,主要是对直辖市处理
      * 将渠道过来的平台订单里面市、区进行匹配处理重新赋值
      * @param platformOrder
@@ -1429,6 +1387,48 @@ public class ScmOrderBiz implements IScmOrderBiz {
             map.put("jdAddressNames", jdAddressNames);
         }
         return map;
+    }
+
+    /**
+     * 获取平台订单
+     * @param orderObj
+     * @return
+     */
+    private PlatformOrder getPlatformOrder(JSONObject orderObj){
+        JSONObject platformObj = null;
+        try{
+            platformObj = orderObj.getJSONObject("platformOrder");
+        }catch (ClassCastException e){
+            String msg = String.format("平台订单信息转JSON错误");
+            log.error(msg, e);
+            throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
+        }
+        AssertUtil.notNull(platformObj, "接收渠道订单参数中平台订单信息为空");
+        PlatformOrder platformOrder = platformObj.toJavaObject(PlatformOrder.class);
+        platformOrder.setPayment(platformObj.getBigDecimal("payment"));//实付金额
+        platformOrder.setPostageFee(platformObj.getBigDecimal("postageFee"));//积分抵扣金额
+        platformOrder.setTotalFee(platformObj.getBigDecimal("totalFee"));//订单总金额
+        platformOrder.setAdjustFee(platformObj.getBigDecimal("adjustFee"));//卖家手工调整金额
+        platformOrder.setPointsFee(platformObj.getBigDecimal("pointsFee"));//邮费
+        platformOrder.setTotalTax(platformObj.getBigDecimal("totalTax"));//总税费
+        platformOrder.setStepPaidFee(platformObj.getBigDecimal("stepPaidFee"));//分阶段已付金额
+        platformOrder.setDiscountPromotion(platformObj.getBigDecimal("discountPromotion"));//促销优惠总金额
+        platformOrder.setDiscountCouponShop(platformObj.getBigDecimal("discountCouponShop"));//店铺优惠卷优惠金额
+        platformOrder.setDiscountCouponPlatform(platformObj.getBigDecimal("discountCouponPlatform"));//平台优惠卷优惠金额
+        platformOrder.setDiscountFee(platformObj.getBigDecimal("discountFee"));//订单优惠总金额
+
+        platformOrder.setCreateTime(DateUtils.timestampToDate(platformObj.getLong("createTime")));//创建时间
+        platformOrder.setPayTime(DateUtils.timestampToDate(platformObj.getLong("payTime")));//支付时间
+        platformOrder.setConsignTime(DateUtils.timestampToDate(platformObj.getLong("consignTime")));//发货时间
+        platformOrder.setReceiveTime(DateUtils.timestampToDate(platformObj.getLong("receiveTime")));//确认收货时间
+        platformOrder.setUpdateTime(DateUtils.timestampToDate(platformObj.getLong("updateTime")));//修改时间
+        platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
+        platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
+
+        //适配地址,主要是对直辖市处理
+        adapterAddress(platformOrder);
+
+        return platformOrder;
     }
 
     /**
@@ -1703,6 +1703,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderItem.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(orderItem.getPlatformOrderCode(), "平台订单编码不能为空");
         AssertUtil.notBlank(orderItem.getShopOrderCode(), "店铺订单编码不能为空");
+        AssertUtil.notNull(orderItem.getSkuCode(), "商品sku编码不能为空");
         AssertUtil.notNull(orderItem.getShopId(), "订单所属的店铺id不能为空");
         AssertUtil.notBlank(orderItem.getShopName(), "店铺名称不能为空");
         AssertUtil.notBlank(orderItem.getUserId(), "会员id不能为空");
