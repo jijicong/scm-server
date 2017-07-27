@@ -413,6 +413,8 @@ public class SupplyConstants {
         public static final String SUPPLIERS_ALL_ITEMS = "suppliersAllItems";
         //根据采购单编码查询采购单
         public static final String PURCHASE_ORDER_BY_CODE = "purchaseOrderByCode";
+        //根据供应商编码查询该对应上对应的品牌
+        public static final String  SUPPLIER_BRAND = "supplierBrand";
     }
     /**
      * 入库通知

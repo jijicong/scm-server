@@ -3,10 +3,12 @@ package org.trc.resource;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
@@ -74,6 +76,16 @@ public class PurchaseOrderResource {
         return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
 
     }
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.SUPPLIER_BRAND+"/{supplierCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<SupplierBrandExt> findSupplierBrand(@PathParam("supplierCode") String supplierCode) throws Exception {
+
+        return   ResultUtil.createSucssAppResult("根据供应商编码,查询该供应商对应的品牌成功!",purchaseOrderBiz.findSupplierBrand(supplierCode));
+
+    }
+
+
     @PUT
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")//保存修改
     @Produces(MediaType.APPLICATION_JSON)
