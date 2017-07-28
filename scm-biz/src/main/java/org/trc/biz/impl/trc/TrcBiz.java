@@ -1,5 +1,6 @@
 package org.trc.biz.impl.trc;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -487,30 +488,39 @@ public class TrcBiz implements ITrcBiz {
             throw new TrcException(ExceptionEnum.TRC_PARAM_EXCEPTION, e.getMessage());
         }
         List<SkuRelation> skuRelationList = relations.toJavaList(SkuRelation.class);
+        for (SkuRelation skuRelation : skuRelationList) {
+            String jbo = JSON.toJSONString(skuRelation);
+            AssertUtil.notBlank(skuRelation.getSkuCode(), String.format("参数%s中SKU编码skuCode为空", jbo));
+            AssertUtil.notBlank(skuRelation.getChannelCode(), String.format("参数%s中渠道编码channelCode为空", jbo));
+            AssertUtil.notBlank(skuRelation.getChannelSkuCode(), String.format("参数%s中渠道方SKU编码channelSkuCode为空", jbo));
+        }
         //删除关联关系
         if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE.getCode())) {
             for (SkuRelation skuRelation : skuRelationList) {
                 Example example = new Example(SkuRelation.class);
                 Example.Criteria criteria = example.createCriteria();
                 criteria.andEqualTo("skuCode", skuRelation.getSkuCode());
-                criteria.andEqualTo("channelSkuCode", skuRelation.getChannelSkuCode());
+                criteria.andEqualTo("channelCode", skuRelation.getChannelCode());
                 skuRelationService.deleteByExample(example);
             }
         }
+
+        List<SkuRelation> skuRelations = new ArrayList<>();
         //一件代发商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD.getCode())) {
             Iterator<SkuRelation> iter = skuRelationList.iterator();
-            List<SkuRelation> skuRelationList1 = new ArrayList<>();
             while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();
                 ExternalItemSku externalItemSku = new ExternalItemSku();
                 externalItemSku.setSkuCode(skuRelation.getSkuCode());
                 externalItemSku = externalItemSkuService.selectOne(externalItemSku);
+                AssertUtil.notNull(externalItemSku, String.format("根据sku编码%s查询代发商品为空", skuRelation.getSkuCode()));
                 skuRelation.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
                 skuRelation.setSupplierCode(externalItemSku.getSupplierCode());
-                skuRelationList1.add(skuRelation);
+                //设置渠道skuCode为空，允许渠道可以多次添加同一个sku
+                skuRelation.setChannelSkuCode(null);
+                skuRelations.add(skuRelation);
             }
-            skuRelationService.insertList(skuRelationList1);
         }
         //自采商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD.getCode())) {
@@ -518,10 +528,28 @@ public class TrcBiz implements ITrcBiz {
             while (iter.hasNext()) {
                 SkuRelation skuRelation = iter.next();
                 Skus skus = new Skus();
-                skus.setSpuCode(skuRelation.getSpuCode());
                 skus.setSkuCode(skuRelation.getSkuCode());
                 skus = skusService.selectOne(skus);
-                //TODO 自采商品表结构未完善，后续再写
+                AssertUtil.notNull(skus, String.format("根据sku编码%s查询商品sku为空", skuRelation.getSkuCode()));
+                skuRelation.setSpuCode(skus.getSpuCode());
+                //设置渠道skuCode为空，允许渠道可以多次添加同一个sku
+                skuRelation.setChannelSkuCode(null);
+                skuRelations.add(skuRelation);
+            }
+        }
+        if (skuRelations.size() > 0){
+            List<SkuRelation> skuRelations2 = new ArrayList<>();
+            for(SkuRelation skuRelation: skuRelations){
+                SkuRelation skuRelation2 = new SkuRelation();
+                skuRelation2.setSkuCode(skuRelation.getSkuCode());
+                skuRelation2.setChannelCode(skuRelation.getChannelCode());
+                skuRelation2 = skuRelationService.selectOne(skuRelation2);
+                if(null == skuRelation2){
+                    skuRelations2.add(skuRelation);
+                }
+            }
+            if(skuRelations2.size() > 0){
+                skuRelationService.insertList(skuRelations2);
             }
         }
     }

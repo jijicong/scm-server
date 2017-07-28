@@ -887,10 +887,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         JSONObject orderObj = getChannelOrder(orderInfo);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
-        //platformOrderParamCheck(platformOrder);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
-        //List<ShopOrder> shopOrderList = getShopOrderList(platformOrder, shopOrderArray);
         List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray);
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
@@ -910,6 +908,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //校验商品是否不是添加过的供应商商品
         checkItemsSource(orderItemList, platformOrder.getChannelCode());
+        //保存商品明细
         orderItemService.insertList(orderItemList);
         //保存仓库订单
         warehouseOrderService.insertList(warehouseOrderList);
@@ -927,6 +926,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return ResultUtil.createSucssAppResult("接收订单成功", "");
     }
+
+
 
     /**
      * 订单金额校验
@@ -952,7 +953,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if(StringUtils.equals(orderItem.getPlatformOrderCode(), shopOrder.getPlatformOrderCode()) &&
                         StringUtils.equals(orderItem.getShopOrderCode(), shopOrder.getShopOrderCode())){
                     orderItemsParamCheck(orderItem);
-                    itemsNum2++;
+                    itemsNum2 = itemsNum2 + orderItem.getNum();
                     payment2 = payment2.add(orderItem.getPayment());
                     totalFee2 = totalFee2.add(orderItem.getTotalFee());
                     postFee2 = postFee2.add(orderItem.getPostDiscount());
@@ -1570,45 +1571,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrderArray
      * @return
      */
-    /*private List<ShopOrder> getShopOrderList(PlatformOrder platformOrder, JSONArray shopOrderArray) {
-        List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
-        Integer totalNum = 0;
-        BigDecimal totalShop = new BigDecimal(0);
-        for (Object obj : shopOrderArray) {
-            JSONObject tmpObj = (JSONObject) obj;
-            JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
-            AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
-            ShopOrder shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
-            shopOrderParamCheck(shopOrder);
-            shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
-            shopOrder.setPayTime(DateUtils.timestampToDate(shopOrderObj.getLong("payTime")));//支付时间
-            shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
-            shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
-            //设置店铺金额
-            setShopOrderFee(shopOrder, shopOrderObj);
-            JSONArray orderItemArray = tmpObj.getJSONArray("orderItems");
-            AssertUtil.notEmpty(orderItemArray, String.format("接收渠道订单参数中平店铺订单%s相关商品订单明细信息为空为空", shopOrderObj));
-            //获取订单商品明细
-            List<OrderItem> orderItemList = getOrderItem(orderItemArray);
-            totalShop = totalShop.add(shopOrder.getPayment());
-            totalNum += shopOrder.getItemNum();
-            shopOrder.setOrderItems(orderItemList);
-            Integer totalOneShopNum = 0;
-            BigDecimal totalItem = new BigDecimal(0);
-            for (OrderItem orderItem : orderItemList) {
-                orderItemsParamCheck(orderItem);
-                totalItem = totalItem.add(orderItem.getTransactionPrice());
-                totalOneShopNum += orderItem.getNum();
-            }
-            AssertUtil.isTrue(totalItem.compareTo(shopOrder.getTotalFee()) == 0, "商品成交价格*商品数量金额与所有该店铺商品应付总金额不等值");
-            AssertUtil.isTrue(totalOneShopNum.intValue() == shopOrder.getItemNum().intValue(), "店铺订单商品总数与所有该店铺商品总数不等值");
-            shopOrderList.add(shopOrder);
-        }
-        AssertUtil.isTrue(totalShop.compareTo(platformOrder.getPayment()) == 0, "平台订单实付金额与所有店铺总实付金额不等值");
-        AssertUtil.isTrue(totalNum.intValue() == platformOrder.getItemNum().intValue(), "平台订单商品总数与所有店铺商品总数不等值");
-        return shopOrderList;
-    }*/
-
     private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         BigDecimal totalShop = new BigDecimal(0);
@@ -1617,7 +1579,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
             AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
             ShopOrder shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
-            //shopOrderParamCheck(shopOrder);
             shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
             shopOrder.setPayTime(DateUtils.timestampToDate(shopOrderObj.getLong("payTime")));//支付时间
             shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
@@ -1630,9 +1591,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<OrderItem> orderItemList = getOrderItem(orderItemArray);
             totalShop = totalShop.add(shopOrder.getPayment());
             shopOrder.setOrderItems(orderItemList);
-            /*for (OrderItem orderItem : orderItemList) {
-                orderItemsParamCheck(orderItem);
-            }*/
             shopOrderList.add(shopOrder);
         }
         return shopOrderList;
@@ -1741,20 +1699,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
-        AssertUtil.notBlank(platformOrder.getUserId(), "会员id不能为空");
-        AssertUtil.notBlank(platformOrder.getUserName(), "会员名称不能为空");
-        AssertUtil.notNull(platformOrder.getAdjustFee(), "卖家手工调整金额不能为空");
-        AssertUtil.isTrue(platformOrder.getAdjustFee().compareTo(new BigDecimal(0))==0 || platformOrder.getAdjustFee().compareTo(new BigDecimal(0))==1, "卖家手工调整金额应大于等于0");
-        AssertUtil.notNull(platformOrder.getTotalFee(), "订单总金额不能为空");
-        AssertUtil.isTrue(platformOrder.getTotalFee().compareTo(new BigDecimal(0))==0 || platformOrder.getTotalFee().compareTo(new BigDecimal(0))==1, "订单总金额应大于等于0");
-        AssertUtil.notNull(platformOrder.getPostageFee(), "邮费不能为空");
-        AssertUtil.isTrue(platformOrder.getPostageFee().compareTo(new BigDecimal(0))==0 || platformOrder.getPostageFee().compareTo(new BigDecimal(0))==1, "邮费应大于等于0");
-        AssertUtil.notNull(platformOrder.getTotalTax(), "总税费不能为空");
-        AssertUtil.isTrue(platformOrder.getTotalTax().compareTo(new BigDecimal(0))==0 || platformOrder.getTotalTax().compareTo(new BigDecimal(0))==1, "总税费应大于等于0");
-        AssertUtil.notNull(platformOrder.getPayment(), "实付金额不能为空");
-        AssertUtil.isTrue(platformOrder.getPayment().compareTo(new BigDecimal(0))==0 || platformOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"实付金额应大于等于0");
-        AssertUtil.notBlank(platformOrder.getPayType(), "支付类型不能为空");
-        AssertUtil.notNull(platformOrder.getItemNum(), "买家购买的商品总数不能为空");
+        AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
+        AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
+
+        AssertUtil.notBlank(platformOrder.getPayType(), "平台订单单支付类型不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverProvince(), "平台订单收货人所在省不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverCity(), "平台订单收货人所在城市不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverEmail(), "平台订单收货人电子邮箱不能为空");
+        AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
+        AssertUtil.notBlank(platformOrder.getType(), "平台订单订单类型不能为空");
+        AssertUtil.notNull(platformOrder.getCreateTime(), "平台订单创建时间不能为空");
+        AssertUtil.notNull(platformOrder.getPayTime(), "平台订单支付时间不能为空");
+
+        AssertUtil.isTrue(platformOrder.getItemNum() > 0, "买家购买的商品总数不能为空");
+        AssertUtil.isTrue(platformOrder.getTotalFee().compareTo(new BigDecimal(0))==0 || platformOrder.getTotalFee().compareTo(new BigDecimal(0))==1, "平台订单总金额应大于等于0");
+        AssertUtil.isTrue(platformOrder.getPayment().compareTo(new BigDecimal(0))==0 || platformOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"平台订单实付金额应大于等于0");
+
     }
 
     /**
@@ -1764,18 +1728,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrder
      */
     private void shopOrderParamCheck(ShopOrder shopOrder) {
-        AssertUtil.notBlank(shopOrder.getChannelCode(), "渠道编码不能为空");
-        AssertUtil.notBlank(shopOrder.getPlatformCode(), "来源平台编码不能为空");
-        AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "平台订单编码不能为空");
+        AssertUtil.notBlank(shopOrder.getChannelCode(), "店铺订单渠道编码不能为空");
+        AssertUtil.notBlank(shopOrder.getPlatformCode(), "店铺订单来源平台编码不能为空");
+        AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "店铺订单平台订单编码不能为空");
         AssertUtil.notBlank(shopOrder.getShopOrderCode(), "店铺订单编码不能为空");
-        AssertUtil.notBlank(shopOrder.getPlatformType(), "订单来源类型不能为空");
-        AssertUtil.notNull(shopOrder.getShopId(), "订单所属的店铺id不能为空");
-        AssertUtil.notBlank(shopOrder.getShopName(), "店铺名称不能为空");
-        AssertUtil.notBlank(shopOrder.getUserId(), "会员id不能为空");
-        AssertUtil.notBlank(shopOrder.getStatus(), "订单状态不能为空");
-        AssertUtil.notNull(shopOrder.getPayment(), "订单实付总金额不能为空");
-        AssertUtil.isTrue(shopOrder.getPayment().compareTo(new BigDecimal(0))==0 || shopOrder.getPayment().compareTo(new BigDecimal(0))==1, "订单实付总金额应大于等于0");
-        AssertUtil.notNull(shopOrder.getItemNum(), "店铺订单商品总数不能为空");
+        AssertUtil.notBlank(shopOrder.getPlatformType(), "店铺订单订单来源类型不能为空");
+        AssertUtil.notNull(shopOrder.getShopId(), "店铺订单订单所属的店铺id不能为空");
+        AssertUtil.notBlank(shopOrder.getShopName(), "店铺订单店铺名称不能为空");
+        AssertUtil.notBlank(shopOrder.getUserId(), "店铺订单会员id不能为空");
+        AssertUtil.notBlank(shopOrder.getStatus(), "店铺订单订单状态不能为空");
+        AssertUtil.notNull(shopOrder.getCreateTime(), "平台订单创建时间不能为空");
+        AssertUtil.isTrue(shopOrder.getItemNum() > 0, "店铺订单商品总数不能为空");
+
+        AssertUtil.isTrue(shopOrder.getItemNum() > 0, "店铺订单购买的商品总数不能为空");
+        AssertUtil.isTrue(shopOrder.getTotalFee().compareTo(new BigDecimal(0))==0 || shopOrder.getTotalFee().compareTo(new BigDecimal(0))==1, "店铺订单总金额应大于等于0");
+        AssertUtil.isTrue(shopOrder.getPayment().compareTo(new BigDecimal(0))==0 || shopOrder.getPayment().compareTo(new BigDecimal(0))==1 ,"店铺订单实付金额应大于等于0");
+
     }
 
     /**
@@ -1784,21 +1752,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItem
      */
     private void orderItemsParamCheck(OrderItem orderItem) {
-        AssertUtil.notBlank(orderItem.getChannelCode(), "渠道编码不能为空");
-        AssertUtil.notBlank(orderItem.getPlatformCode(), "来源平台编码不能为空");
-        AssertUtil.notBlank(orderItem.getPlatformOrderCode(), "平台订单编码不能为空");
-        AssertUtil.notBlank(orderItem.getShopOrderCode(), "店铺订单编码不能为空");
-        AssertUtil.notNull(orderItem.getSkuCode(), "商品sku编码不能为空");
-        AssertUtil.notNull(orderItem.getShopId(), "订单所属的店铺id不能为空");
-        AssertUtil.notBlank(orderItem.getShopName(), "店铺名称不能为空");
-        AssertUtil.notBlank(orderItem.getUserId(), "会员id不能为空");
-        AssertUtil.notBlank(orderItem.getItemNo(), "商品货号不能为空");
-        //AssertUtil.notBlank(orderItem.getBarCode(), "条形码不能为空");
-        AssertUtil.notBlank(orderItem.getItemName(), "商品名称不能为空");
-        AssertUtil.notNull(orderItem.getPayment(), "实付金额不能为空");
-        AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1, "实付金额应大于等于0");
-        AssertUtil.notNull(orderItem.getPrice(), "单价不能为空");
-        AssertUtil.notNull(orderItem.getNum(), "购买数量不能为空");
+        AssertUtil.notBlank(orderItem.getChannelCode(), "订单商品渠道编码不能为空");
+        AssertUtil.notBlank(orderItem.getPlatformCode(), "订单商品来源平台编码不能为空");
+        AssertUtil.notBlank(orderItem.getPlatformOrderCode(), "订单商品平台订单编码不能为空");
+        AssertUtil.notBlank(orderItem.getShopOrderCode(), "订单商品店铺订单编码不能为空");
+
+        AssertUtil.notBlank(orderItem.getSkuCode(), "订单商品商品sku编码不能为空");
+        AssertUtil.notNull(orderItem.getShopId(), "订单商品订单所属的店铺id不能为空");
+        AssertUtil.notBlank(orderItem.getShopName(), "订单商品店铺名称不能为空");
+        AssertUtil.notBlank(orderItem.getUserId(), "订单商品会员id不能为空");
+        AssertUtil.notBlank(orderItem.getItemNo(), "订单商品货号不能为空");
+        AssertUtil.notBlank(orderItem.getItemName(), "订单商品名称不能为空");
+        AssertUtil.notBlank(orderItem.getStatus(), "订单商品订单状态不能为空");
+        AssertUtil.notNull(orderItem.getCreateTime(), "平台订单创建时间不能为空");
+
+        AssertUtil.isTrue(orderItem.getNum() > 0, "订单商品购买数量不能为空");
+        AssertUtil.isTrue(orderItem.getPrice().compareTo(new BigDecimal(0))==1, "订单商品价格应大于0");
+        AssertUtil.isTrue(orderItem.getTotalFee().compareTo(new BigDecimal(0))==0 || orderItem.getTotalFee().compareTo(new BigDecimal(0))==1, "订单商品总金额应大于等于0");
+        AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1 ,"订单商品实付金额应大于等于0");
+        BigDecimal totalFee = orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum()));
+        AssertUtil.isTrue(totalFee.compareTo(orderItem.getTotalFee())==0, "订单商品价格*商品数量应等于订单应付金额totalFee");
     }
 
 

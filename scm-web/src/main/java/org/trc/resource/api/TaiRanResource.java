@@ -237,7 +237,7 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/json;charset=utf-8")
-    public AppResult<String> getSkuRelationBatch(JSONObject information) {
+    public AppResult<String> addSkuRelationBatch(JSONObject information) {
         AssertUtil.isTrue(information.containsKey("action"), "参数action不能为空");
         AssertUtil.isTrue(information.containsKey("relations"), "参数relations不能为空");
         String action = information.getString("action");
@@ -245,9 +245,9 @@ public class TaiRanResource {
         try {
             trcBiz.updateRelation(action, relations);
         } catch (Exception e) {
-            return ResultUtil.createFailAppResult("关联信息插入失败：" + e.getMessage());
+            return ResultUtil.createFailAppResult("关联信息更新失败：" + e.getMessage());
         }
-        return ResultUtil.createSucssAppResult("关联信息插入成功", "");
+        return ResultUtil.createSucssAppResult("关联信息更新成功", "");
     }
 
     //自采商品信息查询

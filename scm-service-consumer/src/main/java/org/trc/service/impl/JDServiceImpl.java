@@ -796,16 +796,14 @@ public class JDServiceImpl implements IJDService {
     public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
         AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSubmitOrderUrl();
-        int count = 0;
-        return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString(), count);
+        return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString());
     }
 
     @Override
     public ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder) {
         AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getLySubmitOrderUrl();
-        int count = 0;
-        return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString(), count);
+        return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString());
     }
 
     @Override
@@ -876,16 +874,9 @@ public class JDServiceImpl implements IJDService {
     }
 
 
-    private ReturnTypeDO invokeSubmitOrder(String url, String jsonParams, int count){
+    private ReturnTypeDO invokeSubmitOrder(String url, String jsonParams){
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
-        if(count < RETRY_TIMES){
-            count++;
-        }else{
-            returnTypeDO.setResultMessage("渠道订单提交接口服务不可用");
-            return returnTypeDO;
-        }
-        log.error(String.format("当前第%s次调用", count+1));
         log.debug("开始调用提交订单服务" + url + ", 参数：" + jsonParams + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
@@ -895,9 +886,6 @@ public class JDServiceImpl implements IJDService {
             httpPost.setHeader("Accept", "application/json");
             response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
-                if(StringUtils.equals(HttpClientUtil.SOCKET_TIMEOUT_CODE, response)){//接口服务不可用
-                    return invokeSubmitOrder(url, jsonParams, count);
-                }
                 JSONObject jbo = JSONObject.parseObject(response);
                 if(StringUtils.equals(jbo.getString("appcode"), ZeroToNineEnum.ONE.getCode())){
                     returnTypeDO.setSuccess(true);
