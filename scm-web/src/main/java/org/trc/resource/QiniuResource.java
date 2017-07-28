@@ -53,8 +53,8 @@ public class QiniuResource {
         try{
             AssertUtil.notBlank(disposition.getFileName(), "上传文件名称不能为空");
             AssertUtil.notBlank(fileName, "上传文件名称不能为空");
-            String fileExt = fileName.split("\\"+SupplyConstants.Symbol.FILE_NAME_SPLIT)[1];
-            String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, fileExt);
+            String suffix = fileName.substring(fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+            String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
             String key = qinniuBiz.upload(fileInputStream, newFileName, module);
             uploadResponse.setKey(key);
             uploadResponse.setFileName(fileName);
