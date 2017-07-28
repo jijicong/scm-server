@@ -73,6 +73,7 @@ public class TaiRanResource {
             List<Brand> list = new ArrayList<Brand>();
             for (Brand brand : page.getResult()) {
                 Brand brand1 = new Brand();
+                brand1.setId(brand.getId());
                 brand1.setName(brand.getName());
                 brand1.setBrandCode(brand.getBrandCode() == null ? "" : brand.getBrandCode());
                 brand1.setAlise(brand.getAlise() == null ? "" : brand.getAlise());
@@ -106,6 +107,7 @@ public class TaiRanResource {
             List<Property> list = new ArrayList<Property>();
             for (Property property : page.getResult()) {
                 Property property1 = new Property();
+                property1.setId(property.getId());
                 property1.setName(property.getName());
                 property1.setSort(property.getSort());
                 property1.setTypeCode(property.getTypeCode());
@@ -138,6 +140,7 @@ public class TaiRanResource {
             List<Category> list = new ArrayList<Category>();
             for (Category category : page.getResult()) {
                 Category category1 = new Category();
+                category1.setId(category.getId());
                 category1.setName(category.getName());
                 category1.setSort(category.getSort());
                 category1.setIsValid(category.getIsValid());

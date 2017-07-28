@@ -455,6 +455,7 @@ public class PropertyBiz implements IPropertyBiz {
         Example example = new Example(PropertyValue.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("propertyId", Arrays.asList(tmpIds));
+        criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         example.orderBy("sort").asc();
         List<PropertyValue> propertyValues = propertyValueService.selectByExample(example);

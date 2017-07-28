@@ -33,6 +33,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
 
     @Override
     public String getSkuInformation(String skuCode) {
+        AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
         if (skuCode.startsWith("SP0")){
             Skus skus = new Skus();
             skus.setSkuCode(skuCode);
