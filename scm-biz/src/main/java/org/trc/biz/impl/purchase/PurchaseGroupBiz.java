@@ -162,7 +162,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
         if(tmp!=null){
             if(!tmp.getId().equals(purchaseGroup.getId())){
-                throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, "其它的角色已经使用该角色名称");
+                throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, "其它的采购组已经使用该名称");
             }
         }
         purchaseGroup.setUpdateTime(Calendar.getInstance().getTime());

@@ -141,6 +141,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
             aclUserAccreditInfo.setUserId(purchaseOrder.getPurchasePersonId());
             AclUserAccreditInfo entityAclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
+
             purchaseOrder.setPurchasePerson(entityAclUserAccreditInfo.getName());
             //赋值供应商名称
             Supplier supplier = new Supplier();
