@@ -543,6 +543,21 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         return null;
     }
 
+    @Override
+    public String getNameByPhone(String phone) {
+        UserDO userDO = userDoService.getUserDo(phone);
+ /*       Example example = new Example(AclUserAccreditInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("phone", phone);*/
+        AclUserAccreditInfo userAccreditInfo = new AclUserAccreditInfo();
+        userAccreditInfo.setPhone(phone);
+        userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
+        if (userDO == null) {
+            return "此手机号尚未在泰然城注册";
+        }
+        return  userAccreditInfo.getName();
+    }
+
     /**
      * 采购组员校验
      *

@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import com.tairanchina.md.account.user.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
@@ -26,10 +27,8 @@ import java.util.List;
 @Path(SupplyConstants.UserAccreditInfo.ROOT)
 public class AclUserAccreditInfoResource {
 
-    @Resource
+    @Autowired
     private IAclUserAccreditInfoBiz userAccreditInfoBiz;
-    @Resource
-    private UserService userService;
 
     //授权信息分页查询
     @GET
@@ -150,6 +149,14 @@ public class AclUserAccreditInfoResource {
     public AppResult checkPhone(@QueryParam("phone") String phone){
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
         return ResultUtil.createSucssAppResult("查询成功", userAccreditInfoBiz.checkPhone(phone));
+    }
+
+    @GET
+    @Path(SupplyConstants.UserAccreditInfo.NAME_PHONE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult getNameByPhone(@QueryParam("phone") String phone){
+        AssertUtil.notBlank(phone, "手机号时输入参数phone为空");
+        return ResultUtil.createSucssAppResult("查询成功", userAccreditInfoBiz.getNameByPhone(phone));
     }
 
     @GET

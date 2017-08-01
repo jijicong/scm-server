@@ -117,6 +117,13 @@ public interface IAclUserAccreditInfoBiz {
     String checkPhone(String phone);
 
     /**
+     * 根据手机号查询用户名称
+     * @param phone
+     * @return
+     */
+    String getNameByPhone(String phone);
+
+    /**
      * 新增时用户姓名是否已经被使用
      */
 //    int checkName(String name) throws Exception;

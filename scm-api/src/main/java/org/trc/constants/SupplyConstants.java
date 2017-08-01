@@ -290,6 +290,9 @@ public class SupplyConstants {
         //编辑用户之前,查询是否有角色被停用
         public static final String ROLE_VALID = "rolevalid";
 
+        //根据手机号查询用户名称
+        public static final String NAME_PHONE = "getNameByPhone";
+
     }
 
     /**
