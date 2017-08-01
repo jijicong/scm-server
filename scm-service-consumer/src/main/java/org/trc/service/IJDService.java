@@ -1,6 +1,7 @@
 package org.trc.service;
 
 
+import org.springframework.data.redis.connection.ReturnType;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.liangyou.LiangYouOrder;
@@ -355,6 +356,14 @@ public interface IJDService {
      * @return
      */
     ReturnTypeDO getSellPrice(String skus);
+
+    /**
+     * 获取京东对账详情
+     * @param queryModel
+     * @param page
+     * @return
+     */
+    ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page);
 
 
 }
