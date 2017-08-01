@@ -28,6 +28,8 @@ public class ExternalSupplierConfig {
     private String orderLogisticsUrl;
     //京东下单发票抬头
     private String companyName;
+    //京东对账明细
+    private String checkOrderDetailUrl;
 
     //粮油下单接口地址
     private String lySubmitOrderUrl;
@@ -136,4 +138,11 @@ public class ExternalSupplierConfig {
         this.jdSkuPriceUrl = jdSkuPriceUrl;
     }
 
+    public String getCheckOrderDetailUrl() {
+        return checkOrderDetailUrl;
+    }
+
+    public void setCheckOrderDetailUrl(String checkOrderDetailUrl) {
+        this.checkOrderDetailUrl = checkOrderDetailUrl;
+    }
 }

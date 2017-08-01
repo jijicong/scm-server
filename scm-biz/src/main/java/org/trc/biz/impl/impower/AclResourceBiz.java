@@ -60,6 +60,23 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
+    public List<AclResource> findWholeJurisdictionModule() {
+        AclResource aclResource = new AclResource();
+        aclResource.setBelong(WHOLE_JURISDICTION_ID);
+        List<AclResource> wholeAclResourceList = jurisdictionService.select(aclResource);
+        AssertUtil.notNull(wholeAclResourceList, "查询全局权限列表,数据库操作失败");
+        Iterator<AclResource> iterator = wholeAclResourceList.iterator();
+        while (iterator.hasNext()){
+            AclResource resource= iterator.next();
+            Long code = resource.getCode();
+            if(code.toString().length() > 5){
+                iterator.remove();
+            }
+        }
+        return wholeAclResourceList;
+    }
+
+    @Override
     public List<AclResource> findChannelJurisdiction() {
 
         AclResource aclResource = new AclResource();
@@ -68,6 +85,23 @@ public class AclResourceBiz implements IAclResourceBiz {
         AssertUtil.notNull(channelAclResourceList, "查询渠道权限列表, 数据库操作失败");
         return channelAclResourceList;
 
+    }
+
+    @Override
+    public List<AclResource> findChannelJurisdictionModule() {
+        AclResource aclResource = new AclResource();
+        aclResource.setBelong(CHANNEL_JURISDICTION_ID);
+        List<AclResource> channelAclResourceList = jurisdictionService.select(aclResource);
+        AssertUtil.notNull(channelAclResourceList, "查询渠道权限列表, 数据库操作失败");
+        Iterator<AclResource> iterator = channelAclResourceList.iterator();
+        while (iterator.hasNext()){
+            AclResource resource= iterator.next();
+            Long code = resource.getCode();
+            if(code.toString().length() > 5){
+                iterator.remove();
+            }
+        }
+        return channelAclResourceList;
     }
 
     @Override

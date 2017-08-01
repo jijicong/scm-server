@@ -1,13 +1,11 @@
 package org.trc.biz.jingdong;
 
 import com.alibaba.fastjson.JSONArray;
-import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.JDModel.*;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.form.jingdong.MessageDO;
 import org.trc.form.jingdong.NewStockDO;
-import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.SellPriceDO;
-import org.trc.form.JDModel.StockDO;
+import org.trc.util.Pagenation;
 
 import java.util.List;
 
@@ -149,5 +147,6 @@ public interface IJingDongBiz {
      */
     Boolean delMessage(String id) throws Exception;
 
+    Pagenation<JdBalanceDetail> checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception;
 
 }
