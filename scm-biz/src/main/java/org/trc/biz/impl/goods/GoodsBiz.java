@@ -717,7 +717,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
             skus2.setPropertyValue(jbo.getString("propertyValue"));
             skus2.setBarCode(jbo.getString("barCode"));
-            skus2.setWeight(getLongValue(jbo.getString("weight2")));
+            skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
@@ -925,6 +925,7 @@ public class GoodsBiz implements IGoodsBiz {
         return null;
     }
 
+
     private List<Skus> updateSkus(Skus skus, String userId) throws Exception{
         AssertUtil.notBlank(skus.getSpuCode(), "更新SKU信息商品SPU编码不能为空");
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
@@ -940,7 +941,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
             skus2.setPropertyValue(jbo.getString("propertyValue"));
             skus2.setBarCode(jbo.getString("barCode"));
-            skus2.setWeight(getLongValue(jbo.getString("weight2")));
+            skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
@@ -1506,7 +1507,7 @@ public class GoodsBiz implements IGoodsBiz {
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
             if(null != s.getWeight() && s.getWeight() > 0){
-                s.setWeight2(CommonUtil.fenToYuan(s.getWeight()));
+                s.setWeight2(CommonUtil.getWeight(s.getWeight()));
             }
             if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
                 s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));

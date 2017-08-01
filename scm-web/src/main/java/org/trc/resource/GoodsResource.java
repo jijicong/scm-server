@@ -1,11 +1,14 @@
 package org.trc.resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
+import org.trc.enums.SuccessFailureEnum;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -28,6 +31,8 @@ import java.util.List;
 @Component
 @Path(SupplyConstants.Goods.ROOT)
 public class GoodsResource {
+
+    private Logger log = LoggerFactory.getLogger(GoodsResource.class);
 
     @Autowired
     private IGoodsBiz goodsBiz;
@@ -52,8 +57,15 @@ public class GoodsResource {
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
                                @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
-        return ResultUtil.createSucssAppResult("保存商品成功", "");
+        AppResult appResult = ResultUtil.createSucssAppResult("保存商品成功", "");
+        try {
+            goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
+        }catch (Exception e){
+            log.error("保存商品异常", e);
+            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
     }
 
     @PUT
@@ -61,8 +73,15 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
                                  @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, requestContext);
-        return ResultUtil.createSucssAppResult("编辑商品成功", "");
+        AppResult appResult = ResultUtil.createSucssAppResult("更新商品成功", "");
+        try {
+            goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, requestContext);
+        }catch (Exception e){
+            log.error("更新商品异常", e);
+            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
     }
 
     @POST

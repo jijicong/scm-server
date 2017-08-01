@@ -1,11 +1,14 @@
 package org.trc.resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.supplier.*;
+import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.form.supplier.SupplierChannelRelationForm;
@@ -19,7 +22,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Created by hzwdx on 2017/5/5.
@@ -27,6 +29,8 @@ import java.util.regex.Pattern;
 @Component
 @Path(SupplyConstants.Supply.ROOT)
 public class SupplierResource {
+
+    private Logger log = LoggerFactory.getLogger(SupplierResource.class);
 
     @Autowired
     private ISupplierBiz supplierBiz;
@@ -58,8 +62,15 @@ public class SupplierResource {
     public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
              @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
              @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
-        supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
-        return ResultUtil.createSucssAppResult("保存供应商成功", "");
+        AppResult appResult = ResultUtil.createSucssAppResult("保存供应商成功", "");
+        try {
+            supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
+        }catch (Exception e){
+            log.error("保存供应商异常", e);
+            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
     }
 
     @PUT
@@ -68,8 +79,15 @@ public class SupplierResource {
     public AppResult updateSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
                                   @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
                                   @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
-        supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
-        return ResultUtil.createSucssAppResult("保存供应商成功", "");
+        AppResult appResult = ResultUtil.createSucssAppResult("更新供应商成功", "");
+        try {
+            supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
+        }catch (Exception e){
+            log.error("更新供应商异常", e);
+            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
     }
 
     @POST

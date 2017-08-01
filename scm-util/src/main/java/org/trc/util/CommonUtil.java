@@ -40,8 +40,12 @@ public class CommonUtil {
 
 	//金额数字
 	public static final int MONEY_MULTI = 100;
+	//重量数字
+	public static final int WEIGHT_MULTI = 1000;
 	//金额小数位
 	public static final int DECIMAL_NUM = 2;
+	//重量小数位
+	public static final int WEIGHT_NUM = 3;
 	public final static String TIP = "0.00";
 	
 	public static Map<String, Object> getMap(String key, String Object){
@@ -350,6 +354,45 @@ public class CommonUtil {
 			BigDecimal b1 = new BigDecimal(val);
 			BigDecimal b2 = new BigDecimal(MONEY_MULTI);
 			return b1.divide(b2).setScale(DECIMAL_NUM, RoundingMode.HALF_EVEN);
+		}
+	}
+
+
+	/**
+	 * 重量千克转克
+	 * @param val
+	 * @return
+	 */
+	public static Long getWeightLong(Object val){
+		if(null != val){
+			if(val instanceof String){
+				BigDecimal b = new BigDecimal(val.toString());
+				val = b.multiply(new BigDecimal(WEIGHT_MULTI));
+				return ((BigDecimal) val).longValue();
+			}else if(val instanceof Long){
+				val = (Long)val*WEIGHT_MULTI;
+				return ((Long) val).longValue();
+			}else if(val instanceof BigDecimal){
+				BigDecimal b = (BigDecimal)val;
+				val = b.multiply(new BigDecimal(WEIGHT_MULTI));
+				return ((BigDecimal) val).longValue();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 重量克转千克
+	 * @param val
+	 * @return
+	 */
+	public static BigDecimal getWeight(Long val){
+		if(val == null){
+			return new BigDecimal(0);
+		}else{
+			BigDecimal b1 = new BigDecimal(val);
+			BigDecimal b2 = new BigDecimal(WEIGHT_MULTI);
+			return b1.divide(b2).setScale(WEIGHT_NUM, RoundingMode.HALF_EVEN);
 		}
 	}
 
