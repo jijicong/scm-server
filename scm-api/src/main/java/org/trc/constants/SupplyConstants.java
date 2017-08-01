@@ -322,8 +322,12 @@ public class SupplyConstants {
         //public static final String ACCREDIT_PAGE = "jurisdictionPage";
         //全局资源资源查询
         public static final String JURISDICTION_WHOLE = "jurisdictionWhole";
+        //全局资源资源查询(模块)
+        public static final String JURISDICTION_WHOLE_MODULE = "jurisdictionWholeModule";
         //渠道资源查询
         public static final String JURISDICTION_CHANNEL = "jurisdictionChannel";
+        //渠道资源查询(模块)
+        public static final String JURISDICTION_CHANNEL_MODULE = "jurisdictionChannelModule";
         //状态的修改--unused
 //        public static final String UPDATE_STATE = "jurisdiction/updateState";
         //查询资源加载树

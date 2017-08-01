@@ -40,12 +40,24 @@ public class AclResourceResource {
     }
 
     @GET
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE_MODULE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<AclResource> findWholeJurisdictionModule(){
+        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionModule());
+    }
+
+    @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<AclResource> findChannelJurisdiction(){
-
         return ResultUtil.createSucssAppResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdiction());
+    }
 
+    @GET
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL_MODULE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<AclResource> findChannelJurisdictionModule(){
+        return ResultUtil.createSucssAppResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdictionModule());
     }
 
     /**

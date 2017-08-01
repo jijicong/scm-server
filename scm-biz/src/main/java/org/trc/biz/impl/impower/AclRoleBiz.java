@@ -43,7 +43,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     private Logger  LOGGER = LoggerFactory.getLogger(AclRoleBiz.class);
 
-    private final static Long SYS_ROLE_ID=1L; //系统角色的id wholeJurisdiction
+   // private final static Long SYS_ROLE_ID=1L; //系统角色的id wholeJurisdiction
 
     private final static String WHOLE_TYPE ="wholeJurisdiction";//全局角色
     @Resource
@@ -77,8 +77,14 @@ public class AclRoleBiz implements IAclRoleBiz {
     public void updateRoleState(AclRole aclRole, ContainerRequestContext requestContext){
 
         AssertUtil.notNull(aclRole,"根据角色对象，修改角色的状态，角色对象为空");
+
+        AclRole _aclRole = new AclRole();
+        _aclRole.setName("采购组员");
+        _aclRole = roleService.selectOne(_aclRole);
+        AssertUtil.notNull(_aclRole,"查询系统角色,采购组员失败!");
+
         AclRole updateAclRole = new AclRole();
-        if(aclRole.getId()==SYS_ROLE_ID){ //防止恶意修改系统角色的状态
+        if(aclRole.getId()==_aclRole.getId()){ //防止恶意修改系统角色的状态
             String tip="系统角色的状态不能被修改";
             LOGGER.error(tip);
             throw  new RoleException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION,tip);
@@ -152,7 +158,13 @@ public class AclRoleBiz implements IAclRoleBiz {
                 throw new RoleException(ExceptionEnum.SYSTEM_SYS_ROLE_STATE_UPDATE_EXCEPTION, "其它的角色已经使用该角色名称");
             }
         }
-        if(aclRole.getId()==SYS_ROLE_ID){//为渠道用户
+
+        AclRole enAclRole = new AclRole();
+        enAclRole.setName("采购组员");
+        enAclRole = roleService.selectOne(enAclRole);
+        AssertUtil.notNull(enAclRole,"查询系统角色,采购组员失败!");
+
+        if(aclRole.getId() == enAclRole.getId()){//为渠道用户
             if(aclRole.getRoleType()==WHOLE_TYPE){//渠道用户,反而传的是全局的类型
                 String msg = CommonUtil.joinStr("修改渠道角色,角色类型不匹配").toString();
                 LOGGER.error(msg);
@@ -160,7 +172,7 @@ public class AclRoleBiz implements IAclRoleBiz {
             }//传的权限id不做校验
             aclRole.setName("采购组员");
             aclRole.setRoleType("channelJurisdiction");
-            aclRole.setIsValid(null);//为防止对不需要改变的值，做修改
+            aclRole.setIsValid(ValidEnum.VALID.getCode());//为防止对不需要改变的值，做修改
         }
         AclRole _aclRole = roleService.selectByPrimaryKey(aclRole.getId());
         String remark = null;
