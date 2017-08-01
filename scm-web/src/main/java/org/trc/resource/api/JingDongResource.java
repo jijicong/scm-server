@@ -5,8 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.form.JDModel.BalanceDetailDO;
+import org.trc.form.JDModel.JdBalanceDetail;
 import org.trc.form.JDModel.OrderDO;
 import org.trc.util.AppResult;
+import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
@@ -118,4 +121,19 @@ public class JingDongResource {
     public AppResult<JSONObject> orderTrack(@PathParam("jdOrderId") String jdOrderId) throws Exception {
         return ResultUtil.createSucssAppResult("订单信息查询成功", iJingDongBiz.orderTrack(jdOrderId));
     }
+
+    /**
+     * 查询余额对账明细信息接口
+     * @param queryModel
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.JingDongOrder.CHECK_BALANCE)
+    @Produces("application/json;charset=utf-8")
+    public AppResult<JSONObject> checkBalanceDetail(@BeanParam BalanceDetailDO queryModel, @BeanParam Pagenation<JdBalanceDetail> page) throws Exception {
+        return ResultUtil.createSucssAppResult("查询成功", iJingDongBiz.checkBalanceDetail(queryModel,page));
+    }
+
 }

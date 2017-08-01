@@ -687,6 +687,8 @@ public class SupplyConstants {
         public static final String DETAIL = "detail";
         //查询配送信息路径
         public static final String TRACK = "track";
+        //查询余额对账明细路径
+        public static final String CHECK_BALANCE = "check";
 
     }
 

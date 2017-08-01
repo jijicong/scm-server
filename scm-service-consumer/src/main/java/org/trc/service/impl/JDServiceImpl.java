@@ -907,37 +907,6 @@ public class JDServiceImpl implements IJDService {
     }
 
     public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){
-        /*ReturnTypeDO returnTypeDO = new ReturnTypeDO();
-        returnTypeDO.setSuccess(false);
-        String response = null;
-        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getCheckOrderDetailUrl()+"/"+queryModel+"/"+page;
-        log.debug("开始调用订单对账明细订单服务" + url + ", 参数：" + JSONObject.toJSONString(queryModel)+JSONObject.toJSONString(page) + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        try{
-            response = HttpClientUtil.httpGetRequest(url);
-            if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(appResult.getResult());
-                }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
-            }else {
-                returnTypeDO.setResultMessage("调用对账明细接口返回结果为空");
-            }
-        }catch (Exception e){
-            String msg = String.format("调用对账明细服务异常,错误信息:%s", e.getMessage());
-            log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
-        }
-        log.debug("结束调用对账明细查询" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        return returnTypeDO;*/
-
-
-
-
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
