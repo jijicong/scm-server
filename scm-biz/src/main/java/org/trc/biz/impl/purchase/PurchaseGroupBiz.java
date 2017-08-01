@@ -239,7 +239,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         purchaseGroupUserRelation.setUserId(laederUserId);
         purchaseGroupUserRelationList.add(purchaseGroupUserRelation);
         if(memberUserStrs!=null && memberUserStrs.trim()!="" && memberUserStrs.length()!=0) {
-            String[]  memberUserIds = memberUserStrs.split(",");//3,4,6,7
+            String[]  memberUserIds = memberUserStrs.split(SupplyConstants.Symbol.COMMA);//3,4,6,7
             for (String memberUserId : memberUserIds) {//遍历存储采购组员与采购组的关联关系
                 purchaseGroupUserRelation = new PurchaseGroupUserRelation();
                 purchaseGroupUserRelation.setIsValid(isValid);

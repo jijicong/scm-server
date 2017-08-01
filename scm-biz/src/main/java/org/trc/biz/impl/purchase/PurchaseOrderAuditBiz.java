@@ -201,40 +201,18 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         purchaseOrderLog.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
         purchaseOrderLog = iPurchaseOrderService.selectOne(purchaseOrderLog);
         AssertUtil.notNull(purchaseOrderLog.getId(),"根据采购单的编码,查询采购单失败");
-        //只有审核状态为待审核，才能具有审核操作
-        PurchaseOrderAudit compareAudit = new PurchaseOrderAudit();
-        compareAudit.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
-        compareAudit = purchaseOrderAuditService.selectOne(compareAudit);
-        AssertUtil.notNull(compareAudit.getId(),"查询审核采购单失败!");
-        if(!compareAudit.getStatus().equals(ZeroToNineEnum.ONE.getCode())){
-            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, "该审核单不具有审核操作");
-        }
-       //审核驳回，检验审核意见是否为空
-        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){//判断是否为驳回
-            AssertUtil.notBlank(purchaseOrderAudit.getAuditOpinion(),"审核驳回,审核意见不能为空");
-        }
-        Example exampleAudit = new Example(PurchaseOrderAudit.class);
-        Example.Criteria criteria = exampleAudit.createCriteria();
-        criteria.andEqualTo("purchaseOrderCode",purchaseOrderAudit.getPurchaseOrderCode());
-        PurchaseOrderAudit audit = new PurchaseOrderAudit();
-        audit.setStatus(purchaseOrderAudit.getStatus());
-        audit.setAuditOpinion(purchaseOrderAudit.getAuditOpinion());
-        audit.setUpdateTime(Calendar.getInstance().getTime());
-        int count = purchaseOrderAuditService.updateByExampleSelective(audit,exampleAudit);//审核采购单，更改审核单的状态
-        //采购单审核的日志记录
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){
-            logInfoService.recordLog(purchaseOrderLog,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
-        }
-        if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrderAudit.getStatus())){
-            logInfoService.recordLog(purchaseOrderLog,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
-        }
+        //审核单状态修改
+        auditPurchaseOrder(purchaseOrderAudit,purchaseOrderLog,userId);
 
-        if (count == 0) {
-            String msg = String.format("审核%s采购单数据库操作失败", JSON.toJSONString(purchaseOrderAudit));
-            logger.error(msg);
-            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, msg);
-        }
+        updatePurchaseOrderStatus(purchaseOrderAudit);
+    }
+
+    /**
+     * 更改采购单的状态，并更改操作日志
+     * @param purchaseOrderAudit
+     */
+    public void updatePurchaseOrderStatus(PurchaseOrderAudit purchaseOrderAudit){
         //审核单  2 审核通过  3.审核驳回
         //采购单  "2","审核通过" "1","审核驳回"
         //根据采购单code ， 修改采购单的状态
@@ -248,18 +226,60 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         }else {
             purchaseOrder.setStatus(purchaseOrderAudit.getStatus());
         }
-        count = iPurchaseOrderService.updateByExampleSelective(purchaseOrder,exampleOrder);
+        int count = iPurchaseOrderService.updateByExampleSelective(purchaseOrder,exampleOrder);
         //保存采购单的单据日志
-        if(ZeroToNineEnum.ONE.getCode().equals(purchaseOrder.getStatus())){//审核驳回
+        /*if(ZeroToNineEnum.ONE.getCode().equals(purchaseOrder.getStatus())){//审核驳回
             logInfoService.recordLog(purchaseOrder,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),ZeroToNineEnum.ZERO.getCode());
         }
         if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrder.getStatus())){//审核通过
             logInfoService.recordLog(purchaseOrder,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),ZeroToNineEnum.ZERO.getCode());
-        }
+        }*/
         if (count == 0) {
             String msg = String.format("修改%s采购单状态数据库操作失败", JSON.toJSONString(purchaseOrderAudit));
             logger.error(msg);
             throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, msg);
+        }
+
+    }
+
+    /**更改采购单状态，审核日志
+     * @param purchaseOrderAudit
+     * @param purchaseOrderLog
+     * @param userId
+     */
+    private void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit,PurchaseOrder purchaseOrderLog,String userId){
+
+        //只有审核状态为待审核，才能具有审核操作
+        PurchaseOrderAudit compareAudit = new PurchaseOrderAudit();
+        compareAudit.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
+        compareAudit = purchaseOrderAuditService.selectOne(compareAudit);
+        AssertUtil.notNull(compareAudit.getId(),"查询审核采购单失败!");
+        if(!compareAudit.getStatus().equals(ZeroToNineEnum.ONE.getCode())){
+            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, "该审核单不具有审核操作");
+        }
+        //审核驳回，检验审核意见是否为空
+        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){//判断是否为驳回
+            AssertUtil.notBlank(purchaseOrderAudit.getAuditOpinion(),"审核驳回,审核意见不能为空");
+        }
+        Example exampleAudit = new Example(PurchaseOrderAudit.class);
+        Example.Criteria criteria = exampleAudit.createCriteria();
+        criteria.andEqualTo("purchaseOrderCode",purchaseOrderAudit.getPurchaseOrderCode());
+        PurchaseOrderAudit audit = new PurchaseOrderAudit();
+        audit.setStatus(purchaseOrderAudit.getStatus());
+        audit.setAuditOpinion(purchaseOrderAudit.getAuditOpinion());
+        audit.setUpdateTime(Calendar.getInstance().getTime());
+        int count = purchaseOrderAuditService.updateByExampleSelective(audit,exampleAudit);//审核采购单，更改审核单的状态
+        if (count == 0) {
+            String msg = String.format("审核%s采购单数据库操作失败", JSON.toJSONString(purchaseOrderAudit));
+            logger.error(msg);
+            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, msg);
+        }
+        //采购单审核的日志记录
+        if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.REJECT.getName(),purchaseOrderAudit.getAuditOpinion(),null);
+        }
+        if(ZeroToNineEnum.TWO.getCode().equals(purchaseOrderAudit.getStatus())){
+            logInfoService.recordLog(purchaseOrderLog,purchaseOrderLog.getId().toString(),userId, AuditStatusEnum.PASS.getName(),purchaseOrderAudit.getAuditOpinion(),null);
         }
 
     }

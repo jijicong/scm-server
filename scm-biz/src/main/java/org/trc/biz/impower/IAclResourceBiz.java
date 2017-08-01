@@ -21,12 +21,23 @@ public interface IAclResourceBiz {
     List<AclResource> findWholeJurisdiction() ;
 
     /**
-     * 查询渠道的资源权限
+     *查询全局的资源权限:模块资源
+     * @return
+     */
+    List<AclResource> findWholeJurisdictionModule();
+
+    /**
+     * 查询渠道的资源权限:三级资源
      *
      * @return 资源权限集合
-     * @throws Exception
      */
     List<AclResource> findChannelJurisdiction();
+
+    /**
+     *查询渠道的资源权限:模块资源
+     * @return 模块资源集合
+     */
+    List<AclResource> findChannelJurisdictionModule();
 
     /**
      * 根据角色的id，查询被选中的全局权限
