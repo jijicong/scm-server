@@ -45,10 +45,14 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private AclResourceBiz jurisdictionBiz;
     @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
-    //放行url
+    //对外提供api路径
     private final static String PASS_API_URL = "api";
-
+    //渠道访问路径
     private final static String  PASS_TAI_RAN_URL= "tairan";
+    //根据手机号码获取登录用户姓名路径
+    private final static String  PASS_ACCRED_QUERY_NAME_BY_PHONE_URL= "accredit/getNameByPhone";
+
+
 
     //1.判断该url是用户内部url还是api接口，api接口直接放行不验证
     //2.需要拦截的url判断用户是否登录，登录token是否过期，用户是否被停用
@@ -57,7 +61,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String url = ((ContainerRequest) requestContext).getPath(true);
         //"/api"开头的给外部调用的接口直接放行
-        if (!url.startsWith(PASS_API_URL) && !url.startsWith(PASS_TAI_RAN_URL)) {
+        if (!url.startsWith(PASS_API_URL) && !url.startsWith(PASS_TAI_RAN_URL) && !url.startsWith(PASS_ACCRED_QUERY_NAME_BY_PHONE_URL)) {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
                 BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
