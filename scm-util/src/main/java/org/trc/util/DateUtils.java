@@ -504,7 +504,8 @@ public class DateUtils {
 			if(StringUtils.isBlank(tmp) || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), tmp)){
 				return null;
 			}else{
-				throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "时间戳转日期,时间戳格式不对");
+				log.error("时间戳转日期,时间戳格式不对");
+				return null;
 			}
 		}
 	}
