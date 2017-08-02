@@ -15,7 +15,7 @@
           FROM  supplier a
           <where>
               a.id NOT IN(select DISTINCT(b.supplier_id ) FROM apply_for_supplier b
-              WHERE b.`status` IN (0,1,2) AND b.is_deleted=0 AND b.channel_id=#{channelId})
+              WHERE b.`status` IN (0,1,2,3) AND b.is_deleted=0 AND b.channel_id=#{channelId})
               AND a.id IN (SELECT supplier_id FROM supplier_channel_relation WHERE channel_id=#{channelId})
               <if test="supplierName != null and supplierName != ''">
                   AND a.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>
@@ -35,7 +35,7 @@
            FROM supplier a
             <where>
                 a.id NOT IN(select DISTINCT(b.supplier_id ) FROM apply_for_supplier b
-                WHERE b.`status` IN (0,1,2) AND b.is_deleted=0 AND b.channel_id=#{channelId})
+                WHERE b.`status` IN (0,1,2,3) AND b.is_deleted=0 AND b.channel_id=#{channelId})
                 AND a.id IN (SELECT supplier_id FROM supplier_channel_relation WHERE channel_id=#{channelId})
                 <if test="supplierName != null and supplierName != ''">
                     AND a.supplier_name  <![CDATA[LIKE '%${supplierName}%']]>

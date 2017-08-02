@@ -165,7 +165,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
-        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO);
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(supplierApplyList)) {
             String msg = "该供应商已存在，不能重复申请！";
@@ -229,7 +229,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierId", supplierApply.getSupplierId());
         criteria.andEqualTo("channelId", aclUserAccreditInfo.getChannelId());
-        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO);
+        criteria.andEqualTo("isDeleted",ZeroToNineEnum.ZERO.getCode());
         List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(supplierApplyList)&&supplierApplyList.size()>1) {
             String msg = "该供应商已存在，不能重复申请！";
