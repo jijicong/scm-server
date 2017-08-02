@@ -55,6 +55,8 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -499,6 +501,14 @@ public class SupplierBiz implements ISupplierBiz {
             AssertUtil.notBlank(certificate.getLegalPersonIdCardPic2(), "法人身份证背面图片不能为空");
             AssertUtil.notBlank(certificate.getIdCardStartDate(), "法人身份证有效期开始日期不能为空");
             AssertUtil.notBlank(certificate.getIdCardEndDate(), "法人身份证有效期截止日期不能为空");
+            Date idCardStartDate = DateUtils.parseDate(certificate.getIdCardStartDate());
+            Date idCardEndDate = DateUtils.parseDate(certificate.getIdCardEndDate());
+            if(null == idCardStartDate)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "法人身份证有效期开始日期格式错误");
+            if(null == idCardEndDate)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "法人身份证有效期截止日期格式错误");
+            if(idCardStartDate.compareTo(idCardEndDate) > 0)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "法人身份证有效期开始日期不能大于截止日期");
             if (StringUtils.equals(NORMAL_THREE_CERTIFICATE, supplier.getCertificateTypeId())) {//普通三证
                 AssertUtil.notBlank(certificate.getBusinessLicence(), "营业执照不能为空");
                 AssertUtil.notBlank(certificate.getBusinessLicencePic(), "营业执照证件图片不能为空");
@@ -512,6 +522,30 @@ public class SupplierBiz implements ISupplierBiz {
                 AssertUtil.notBlank(certificate.getOrganRegistraEndDate(), "组织机构代码证有效期截止日期不能为空");
                 AssertUtil.notBlank(certificate.getTaxRegistrationStartDate(), "税务登记证有效期开始日期不能为空");
                 AssertUtil.notBlank(certificate.getTaxRegistrationEndDate(), "税务登记证有效期截止日期不能为空");
+                Date businessLicenceStartDate = DateUtils.parseDate(certificate.getBusinessLicenceStartDate());
+                Date businessLicenceEndDate = DateUtils.parseDate(certificate.getBusinessLicenceEndDate());
+                Date organRegistraStartDate = DateUtils.parseDate(certificate.getOrganRegistraStartDate());
+                Date organRegistraEndDate = DateUtils.parseDate(certificate.getOrganRegistraEndDate());
+                Date taxRegistrationStartDate = DateUtils.parseDate(certificate.getTaxRegistrationStartDate());
+                Date taxRegistrationEndDate = DateUtils.parseDate(certificate.getTaxRegistrationEndDate());
+                if(null == businessLicenceStartDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "营业执照有效期开始日期格式错误");
+                if(null == businessLicenceEndDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "营业执照有效期截止日期格式错误");
+                if(null == organRegistraStartDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "组织机构代码证有效期开始日期格式错误");
+                if(null == organRegistraEndDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "组织机构代码证有效期截止日期格式错误");
+                if(null == taxRegistrationStartDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "税务登记证有效期开始日期格式错误");
+                if(null == taxRegistrationEndDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "税务登记证有效期截止日期格式错误");
+                if(businessLicenceStartDate.compareTo(businessLicenceEndDate) > 0)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "营业执照有效期开始日期不能大于截止日期");
+                if(organRegistraStartDate.compareTo(organRegistraEndDate) > 0)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "组织机构代码证有效期开始日期不能大于截止日期");
+                if(taxRegistrationStartDate.compareTo(taxRegistrationEndDate) > 0)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "税务登记证有效期开始日期不能大于截止日期");
             } else if (StringUtils.equals(MULTI_CERTIFICATE_UNION, supplier.getCertificateTypeId())) {//多证合一
                 AssertUtil.notBlank(certificate.getMultiCertificateCombineNo(), "多证合一证号不能为空");
                 AssertUtil.notBlank(certificate.getMultiCertificateCombinePic(), "多证合一证件图片不能为空");
@@ -530,6 +564,7 @@ public class SupplierBiz implements ISupplierBiz {
             }
         }
     }
+
 
     /**
      * 供应链分类校验
