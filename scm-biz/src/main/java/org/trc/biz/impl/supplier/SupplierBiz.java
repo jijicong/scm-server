@@ -55,6 +55,8 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -499,6 +501,18 @@ public class SupplierBiz implements ISupplierBiz {
             AssertUtil.notBlank(certificate.getLegalPersonIdCardPic2(), "法人身份证背面图片不能为空");
             AssertUtil.notBlank(certificate.getIdCardStartDate(), "法人身份证有效期开始日期不能为空");
             AssertUtil.notBlank(certificate.getIdCardEndDate(), "法人身份证有效期截止日期不能为空");
+            Date idCardStartDate = DateUtils.parseDate(certificate.getIdCardStartDate());
+            Date idCardEndDate = DateUtils.parseDate(certificate.getIdCardEndDate());
+            if(null == idCardStartDate)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "法人身份证有效期开始日期格式错误");
+            if(null == idCardEndDate)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "法人身份证有效期截止日期格式错误");
+            if(idCardStartDate.compareTo(idCardEndDate) > 0)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "法人身份证有效期开始日期不能大于截止日期");
+            if(certificate.getLegalPersonIdCardPic1().split(SupplyConstants.Symbol.COMMA).length > 1)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("法人身份证正面图片最多只能上传1张"));
+            if(certificate.getLegalPersonIdCardPic2().split(SupplyConstants.Symbol.COMMA).length > 1)
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("法人身份证背面图片最多只能上传1张"));
             if (StringUtils.equals(NORMAL_THREE_CERTIFICATE, supplier.getCertificateTypeId())) {//普通三证
                 AssertUtil.notBlank(certificate.getBusinessLicence(), "营业执照不能为空");
                 AssertUtil.notBlank(certificate.getBusinessLicencePic(), "营业执照证件图片不能为空");
@@ -512,6 +526,38 @@ public class SupplierBiz implements ISupplierBiz {
                 AssertUtil.notBlank(certificate.getOrganRegistraEndDate(), "组织机构代码证有效期截止日期不能为空");
                 AssertUtil.notBlank(certificate.getTaxRegistrationStartDate(), "税务登记证有效期开始日期不能为空");
                 AssertUtil.notBlank(certificate.getTaxRegistrationEndDate(), "税务登记证有效期截止日期不能为空");
+                Date businessLicenceStartDate = DateUtils.parseDate(certificate.getBusinessLicenceStartDate());
+                Date businessLicenceEndDate = DateUtils.parseDate(certificate.getBusinessLicenceEndDate());
+                Date organRegistraStartDate = DateUtils.parseDate(certificate.getOrganRegistraStartDate());
+                Date organRegistraEndDate = DateUtils.parseDate(certificate.getOrganRegistraEndDate());
+                Date taxRegistrationStartDate = DateUtils.parseDate(certificate.getTaxRegistrationStartDate());
+                Date taxRegistrationEndDate = DateUtils.parseDate(certificate.getTaxRegistrationEndDate());
+                if(null == businessLicenceStartDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "营业执照有效期开始日期格式错误");
+                if(null == businessLicenceEndDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "营业执照有效期截止日期格式错误");
+                if(null == organRegistraStartDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "组织机构代码证有效期开始日期格式错误");
+                if(null == organRegistraEndDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "组织机构代码证有效期截止日期格式错误");
+                if(null == taxRegistrationStartDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "税务登记证有效期开始日期格式错误");
+                if(null == taxRegistrationEndDate)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "税务登记证有效期截止日期格式错误");
+                if(businessLicenceStartDate.compareTo(businessLicenceEndDate) > 0)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "营业执照有效期开始日期不能大于截止日期");
+                if(organRegistraStartDate.compareTo(organRegistraEndDate) > 0)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "组织机构代码证有效期开始日期不能大于截止日期");
+                if(taxRegistrationStartDate.compareTo(taxRegistrationEndDate) > 0)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "税务登记证有效期开始日期不能大于截止日期");
+
+                if(certificate.getBusinessLicencePic().split(SupplyConstants.Symbol.COMMA).length > 1)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("法人身份证正面图片最多只能上传1张"));
+                if(certificate.getOrganRegistraCodeCertificatePic().split(SupplyConstants.Symbol.COMMA).length > 1)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("组织机构代码证图片最多只能上传1张"));
+                if(certificate.getTaxRegistrationCertificatePic().split(SupplyConstants.Symbol.COMMA).length > 1)
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("税务登记证证件图片最多只能上传1张"));
+
             } else if (StringUtils.equals(MULTI_CERTIFICATE_UNION, supplier.getCertificateTypeId())) {//多证合一
                 AssertUtil.notBlank(certificate.getMultiCertificateCombineNo(), "多证合一证号不能为空");
                 AssertUtil.notBlank(certificate.getMultiCertificateCombinePic(), "多证合一证件图片不能为空");
@@ -530,6 +576,7 @@ public class SupplierBiz implements ISupplierBiz {
             }
         }
     }
+
 
     /**
      * 供应链分类校验
@@ -848,6 +895,7 @@ public class SupplierBiz implements ISupplierBiz {
         List<SupplierBrand> list = new ArrayList<SupplierBrand>();
         for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
+            checkSupplierBrand(jbo);
             SupplierBrand s = new SupplierBrand();
             s.setSupplierId(brand.getSupplierId());
             s.setSupplierCode(brand.getSupplierCode());
@@ -919,6 +967,7 @@ public class SupplierBiz implements ISupplierBiz {
         Date sysTime = Calendar.getInstance().getTime();
         for (Object obj : categoryArray) {
             JSONObject jbo = (JSONObject) obj;
+            checkSupplierBrand(jbo);
             SupplierBrand s = new SupplierBrand();
             s.setSupplierId(brand.getSupplierId());
             s.setSupplierCode(brand.getSupplierCode());
@@ -989,6 +1038,30 @@ public class SupplierBiz implements ISupplierBiz {
         }
     }
 
+    /**
+     * 供应商代理品牌校验
+     * @param supplierBrand
+     */
+    private void checkSupplierBrand(JSONObject supplierBrand){
+        AssertUtil.notNull(supplierBrand.getLong("categoryId"), "代理品牌所属分类ID不能为空");
+        AssertUtil.notNull(supplierBrand.getLong("brandId"), "代理品牌ID不能为空");
+        String categoryBrand = String.format("分类[%s]下品牌[%s]", supplierBrand.getString("categoryName"), supplierBrand.getString("brandName"));
+        AssertUtil.notBlank(supplierBrand.getString("proxyAptitudeId"), String.format("%s代理资质不能为空", categoryBrand));
+        AssertUtil.notBlank(supplierBrand.getString("proxyAptitudeStartDate"), String.format("%s资质有效期(开始)不能为空", categoryBrand));
+        AssertUtil.notBlank(supplierBrand.getString("proxyAptitudeEndDate"), String.format("%s资质有效期(截止)不能为空", categoryBrand));
+        AssertUtil.notBlank(supplierBrand.getString("aptitudePic"), String.format("%s资质证明不能为空", categoryBrand));
+        AssertUtil.notBlank(supplierBrand.getString("isValid"), String.format("%s启停用不能为空", categoryBrand));
+        Date proxyAptitudeStartDate = DateUtils.timestampToDate(supplierBrand.getLong("proxyAptitudeStartDate"));
+        if(null == proxyAptitudeStartDate)
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("%s资质有效期(开始)格式错误", categoryBrand));
+        Date proxyAptitudeEndDate = DateUtils.timestampToDate(supplierBrand.getLong("proxyAptitudeEndDate"));
+        if(null == proxyAptitudeEndDate)
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("%s资质有效期(截止)格式错误", categoryBrand));
+        if(proxyAptitudeStartDate.compareTo(proxyAptitudeEndDate) > 0)
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("%s资质有效期开始日期大于截止日期", categoryBrand));
+        if(supplierBrand.getString("aptitudePic").split(SupplyConstants.Symbol.COMMA).length > 3)
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("%s资质证明图片最多只能上传3张", categoryBrand));
+    }
 
     /**
      * 保存供应商财务信息
