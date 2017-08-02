@@ -1,5 +1,7 @@
 package org.trc.form.JDModel;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -24,7 +26,7 @@ public class JdBalanceDetail {
     private String tradeType;
 
     //订单创建时间
-    private Date createdDate;
+    private String createdDate;
 
     //京东PIN
     private String pin;
@@ -37,6 +39,8 @@ public class JdBalanceDetail {
 
     //备注信息
     private String notePub;
+
+    private Integer state;
 
     public Long getId() {
         return id;
@@ -70,11 +74,11 @@ public class JdBalanceDetail {
         this.tradeType = tradeType;
     }
 
-    public Date getCreatedDate() {
+    public String getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(Date createdDate) {
+    public void setCreatedDate(String createdDate) {
         this.createdDate = createdDate;
     }
 
@@ -116,5 +120,13 @@ public class JdBalanceDetail {
 
     public void setAmount(Double amount) {
         this.amount = amount;
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
     }
 }

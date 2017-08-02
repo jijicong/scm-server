@@ -14,6 +14,7 @@ import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * Created by hzwyz on 2017/6/1 0001.
@@ -132,8 +133,19 @@ public class JingDongResource {
     @GET
     @Path(SupplyConstants.JingDongOrder.CHECK_BALANCE)
     @Produces("application/json;charset=utf-8")
-    public AppResult<JSONObject> checkBalanceDetail(@BeanParam BalanceDetailDO queryModel, @BeanParam Pagenation<JdBalanceDetail> page) throws Exception {
-        return ResultUtil.createSucssAppResult("查询成功", iJingDongBiz.checkBalanceDetail(queryModel,page));
+    public Pagenation<JdBalanceDetail> checkBalanceDetail(@BeanParam BalanceDetailDO queryModel, @BeanParam Pagenation<JdBalanceDetail> page) throws Exception {
+        return iJingDongBiz.checkBalanceDetail(queryModel,page);
     }
 
+    /**
+     * 查询所有京东业务类型接口
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.JingDongOrder.GET_ALL_TREAD_TYPE)
+    @Produces("application/json;charset=utf-8")
+    public AppResult<List> getAllTreadType() throws Exception {
+        return ResultUtil.createSucssAppResult("业务类型查询成功", iJingDongBiz.getAllTreadType().getResult());
+    }
 }

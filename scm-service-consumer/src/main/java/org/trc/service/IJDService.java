@@ -365,5 +365,10 @@ public interface IJDService {
      */
     ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page);
 
+    /**
+     * 获取所有京东交易类型
+     * @return
+     */
+    ReturnTypeDO getAllTreadType();
 
 }

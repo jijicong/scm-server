@@ -10,20 +10,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.JDModel.*;
 import org.trc.form.jingdong.MessageDO;
 import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.util.JingDongUtil;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.form.JDModel.OrderDO;
-import org.trc.form.JDModel.SellPriceDO;
 import org.trc.domain.config.JingDongSku;
 import org.trc.domain.config.JingDongSkuList;
 import org.trc.mapper.jingdong.IJingDongMapper;
 import org.trc.mapper.jingdong.IJingDongTestMapper;
 import org.trc.util.BeanToMapUtil;
+import org.trc.util.Pagenation;
 import org.trc.util.RedisUtil;
 
 import javax.annotation.Resource;
@@ -567,6 +566,21 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
             a = a.replace(" ", "");
         }
         return a;
+    }
+
+    @Test
+    public void testCheckOrder(){
+        BalanceDetailDO queryModel = new BalanceDetailDO();
+        queryModel.setStartUpdateTime("2017-07-27");
+        queryModel.setEndUpdateTime("2017-08-01");
+        Pagenation<JdBalanceDetail > page = new Pagenation<>();
+        page.setPageNo(1);
+        page.setPageSize(10);
+        try {
+            iJingDongBiz.checkBalanceDetail(queryModel,page);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 
