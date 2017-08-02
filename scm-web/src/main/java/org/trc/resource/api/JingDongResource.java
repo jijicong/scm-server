@@ -1,5 +1,6 @@
 package org.trc.resource.api;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -145,7 +146,7 @@ public class JingDongResource {
     @GET
     @Path(SupplyConstants.JingDongOrder.GET_ALL_TREAD_TYPE)
     @Produces("application/json;charset=utf-8")
-    public AppResult<List> getAllTreadType() throws Exception {
+    public AppResult<JSONArray> getAllTreadType() throws Exception {
         return ResultUtil.createSucssAppResult("业务类型查询成功", iJingDongBiz.getAllTreadType().getResult());
     }
 }
