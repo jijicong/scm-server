@@ -23,6 +23,7 @@ import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.Area;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseException;
@@ -189,7 +190,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveWarehouse(Warehouse warehouse, ContainerRequestContext containerRequestContext) {
+    public void saveWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
@@ -211,7 +212,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
-        String userId = (String) containerRequestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
 
     }
@@ -227,7 +228,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public void updateWarehouseState(Warehouse warehouse, ContainerRequestContext requestContext) {
+    public void updateWarehouseState(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块修改仓库信息失败，仓库信息为空");
         Warehouse updateWarehouse = new Warehouse();
@@ -246,7 +247,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
 
     }
@@ -264,7 +265,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    public void updateWarehouse(Warehouse warehouse, ContainerRequestContext requestContext) {
+    public void updateWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse.getId(), "根据ID修改仓库参数ID为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
@@ -290,7 +291,7 @@ public class WarehouseBiz implements IWarehouseBiz {
                 remark = remarkEnum.VALID_OFF.getMessage();
             }
         }
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
 
     }
