@@ -6,7 +6,6 @@ import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**

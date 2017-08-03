@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;

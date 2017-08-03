@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.biz.impl.order.ScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.domain.config.RequestFlow;
 import org.trc.enums.RequestFlowTypeEnum;
@@ -16,6 +15,7 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.util.AppResult;
 import org.trc.util.GuidUtil;
+
 import java.util.Calendar;
 
 /**

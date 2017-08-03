@@ -3,7 +3,6 @@ package org.trc.service.impl.goods;
 import org.springframework.stereotype.Service;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
-import org.trc.domain.order.OrderItem;
 import org.trc.mapper.goods.ISkuRelationMapper;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.impl.BaseService;

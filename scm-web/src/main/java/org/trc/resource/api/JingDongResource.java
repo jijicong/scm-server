@@ -15,7 +15,6 @@ import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 /**
  * Created by hzwyz on 2017/6/1 0001.

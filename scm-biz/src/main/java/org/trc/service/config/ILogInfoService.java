@@ -1,8 +1,6 @@
 package org.trc.service.config;
 
 import org.trc.domain.config.LogInfo;
-import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.LogOperationEnum;
 import org.trc.service.IBaseService;
 
 import java.util.List;

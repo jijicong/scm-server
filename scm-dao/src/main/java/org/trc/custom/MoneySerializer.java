@@ -7,7 +7,6 @@ import org.codehaus.jackson.map.SerializerProvider;
 import org.trc.util.CommonUtil;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 /**
  * 金额分转元

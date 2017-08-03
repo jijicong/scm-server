@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
@@ -40,7 +39,6 @@ import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;

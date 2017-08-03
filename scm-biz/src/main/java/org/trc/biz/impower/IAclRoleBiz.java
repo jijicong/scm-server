@@ -5,8 +5,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
-
 /**
  * Created by sone on 2017/5/11.
  */

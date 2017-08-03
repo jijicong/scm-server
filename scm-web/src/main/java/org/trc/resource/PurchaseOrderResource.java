@@ -3,7 +3,6 @@ package org.trc.resource;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;

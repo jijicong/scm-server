@@ -1,13 +1,12 @@
 package org.trc.service.impl;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringEscapeUtils;
-import com.alibaba.dubbo.common.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.constant.LiangYouConstant;
 import org.trc.form.liangyou.*;

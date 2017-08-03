@@ -1,7 +1,5 @@
 package org.trc.domain.supplier;
 
-import org.trc.domain.util.ScmDO;
-
 public class SupplierCategoryExt extends SupplierCategory {
 
     /**

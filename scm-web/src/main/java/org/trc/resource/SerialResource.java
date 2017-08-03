@@ -1,16 +1,16 @@
 package org.trc.resource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.impl.serial.SerialBiz;
 import org.trc.biz.serial.ISerialBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**

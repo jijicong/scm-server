@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.supplier.ISupplierApplyBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.supplier.*;
+import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.supplier.SupplierApplyAudit;
+import org.trc.domain.supplier.SupplierBrand;
 import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -25,7 +27,6 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**

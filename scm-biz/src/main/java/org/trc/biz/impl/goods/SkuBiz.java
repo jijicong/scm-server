@@ -10,7 +10,6 @@ import org.trc.domain.goods.Skus;
 import org.trc.form.goods.SkusForm;
 import org.trc.service.goods.ISkusService;
 import org.trc.util.Pagenation;
-import org.trc.util.StringUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;

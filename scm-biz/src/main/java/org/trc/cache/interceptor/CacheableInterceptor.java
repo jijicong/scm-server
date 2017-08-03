@@ -1,8 +1,5 @@
 package org.trc.cache.interceptor;
 
-import java.lang.reflect.Method;
-
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,9 +9,10 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-
 import org.trc.cache.Cacheable;
 import org.trc.util.RedisUtil;
+
+import java.lang.reflect.Method;
 
 @Component
 @Aspect

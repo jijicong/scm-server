@@ -2,7 +2,6 @@ package org.trc.service.goods;
 
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
-import org.trc.domain.order.OrderItem;
 import org.trc.service.IBaseService;
 
 import java.util.List;

@@ -1,7 +1,5 @@
 package org.trc.domain.supplier;
 
-import org.trc.domain.BaseDO;
-
 import java.io.Serializable;
 import java.util.Date;
 

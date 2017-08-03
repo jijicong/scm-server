@@ -17,7 +17,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 /**
  * Created by hzqph on 2017/5/2.

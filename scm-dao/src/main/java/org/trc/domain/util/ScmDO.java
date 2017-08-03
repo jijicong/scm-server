@@ -1,11 +1,9 @@
 package org.trc.domain.util;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.Transient;
-import javax.ws.rs.FormParam;
 import java.io.Serializable;
 import java.util.Date;
 

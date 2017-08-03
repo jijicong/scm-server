@@ -3,7 +3,10 @@ package org.trc.domain.category;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 

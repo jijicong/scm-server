@@ -1,7 +1,5 @@
 package org.trc.form.JDModel;
 
-import com.alibaba.fastjson.JSONArray;
-
 import java.util.List;
 
 /**

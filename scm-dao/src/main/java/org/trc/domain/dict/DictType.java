@@ -2,7 +2,6 @@ package org.trc.domain.dict;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.domain.BaseDO;
 import org.trc.domain.util.CommonDO;
 
 import javax.persistence.GeneratedValue;

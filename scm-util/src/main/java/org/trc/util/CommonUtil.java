@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import java.lang.reflect.Modifier;
@@ -328,19 +327,6 @@ public class CommonUtil {
 	}
 
 
-	/**
-	 *获取登录用户Id
-	 * @param requestContext
-	 * @return
-	 */
-	public static String getUserId(ContainerRequestContext requestContext){
-		Object userId = requestContext.getProperty(USER_ID);
-		if(null == userId){
-			return "";
-		}else{
-			return userId.toString();
-		}
-	}
 
 	/**
 	 * 分转元

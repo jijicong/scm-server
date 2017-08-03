@@ -1,7 +1,6 @@
 package org.trc.domain.category;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -10,7 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 
 /**
  * Created by hzszy on 2017/5/5.

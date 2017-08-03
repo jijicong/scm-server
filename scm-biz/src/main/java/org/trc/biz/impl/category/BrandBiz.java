@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
@@ -38,7 +37,6 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**

@@ -15,12 +15,10 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.liangyou.LiangYouOrder;
-import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**

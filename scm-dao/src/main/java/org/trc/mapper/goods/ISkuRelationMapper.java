@@ -1,9 +1,7 @@
 package org.trc.mapper.goods;
 
-import org.apache.ibatis.annotations.Param;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
-import org.trc.domain.order.OrderItem;
 import org.trc.util.BaseMapper;
 
 import java.util.List;

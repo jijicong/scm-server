@@ -1,6 +1,5 @@
 package org.trc.mapper.supplier;
 
-import org.apache.ibatis.annotations.Param;
 import org.trc.domain.supplier.Supplier;
 import org.trc.util.BaseMapper;
 
