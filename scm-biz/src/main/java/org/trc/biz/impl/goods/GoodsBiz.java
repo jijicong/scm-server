@@ -158,10 +158,8 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, ContainerRequestContext requestContext) throws Exception {
-        Object accreditObj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
-        AssertUtil.notNull(accreditObj, "用户授权信息为空");
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) accreditObj;
+    public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtil.isNotEmpty(queryModel.getSpuCode())) {//spuCode
@@ -603,11 +601,11 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, ContainerRequestContext requestContext) throws Exception {
+    public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
-        String userId = CommonUtil.getUserId(requestContext);
+        String userId = aclUserAccreditInfo.getUserId();
         checkSkuInfo(skus);//检查sku参数
         //保存sku信息
         skus.setItemId(items.getId());
@@ -1283,7 +1281,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public AppResult updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
+    public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "商品启用/停用操作参数isValid不能为空");
         Items items2 = new Items();
@@ -1317,7 +1315,7 @@ public class GoodsBiz implements IGoodsBiz {
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, TrcActionTypeEnum.ITEMS_IS_VALID);
         //记录操作日志
-        logInfoService.recordLog(items2,items.getId().toString(),CommonUtil.getUserId(requestContext),
+        logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
     }
@@ -1370,7 +1368,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateSkusValid(Long id, String spuCode, String isValid, ContainerRequestContext requestContext) throws Exception {
+    public void updateSkusValid(Long id, String spuCode, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
         AssertUtil.notBlank(spuCode, "SKU启用/停用操作参数spuCode不能为空");
         AssertUtil.notBlank(isValid, "SKU启用/停用操作参数isValid不能为空");
@@ -1404,7 +1402,7 @@ public class GoodsBiz implements IGoodsBiz {
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
-        logInfoService.recordLog(items,items.getId().toString(),CommonUtil.getUserId(requestContext),
+        logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
     }
 
@@ -1488,11 +1486,9 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    public ItemsExt queryItemsInfo(String spuCode, String skuCode, ContainerRequestContext requestContext) throws Exception {
+    public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
-        Object accreditObj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
-        AssertUtil.notNull(accreditObj, "用户授权信息为空");
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) accreditObj;
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         //查询商品基础信息
         Items items = new Items();
         items.setSpuCode(spuCode);
@@ -1692,7 +1688,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveExternalItems(String supplySkus, ContainerRequestContext requestContext) {
+    public void saveExternalItems(String supplySkus, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(supplySkus, "新增代发商品不能为空");
         JSONArray skuArray = null;
         try{
@@ -1722,7 +1718,7 @@ public class GoodsBiz implements IGoodsBiz {
             newIds.add(externalItemSku.getId().toString());
         }
         //记录操作日志
-        logInfoService.recordLogs(new ExternalItemSku(),CommonUtil.getUserId(requestContext),
+        logInfoService.recordLogs(new ExternalItemSku(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.ADD.getMessage(), null, null, newIds);
     }
 
@@ -1755,7 +1751,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public void updateExternalItemsValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
+    public void updateExternalItemsValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "代发商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "代发商品启用/停用操作参数isValid不能为空");
         ExternalItemSku externalItemSku = externalItemSkuService.selectByPrimaryKey(id);
@@ -1782,13 +1778,13 @@ public class GoodsBiz implements IGoodsBiz {
         //代发商品启停用通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.EXTERNAL_ITEMS_IS_VALID);
         //记录操作日志
-        logInfoService.recordLog(externalItemSku3,id.toString(),CommonUtil.getUserId(requestContext),LogOperationEnum.UPDATE.getMessage(),
+        logInfoService.recordLog(externalItemSku3,id.toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(),
                 String.format("SKU[%s]状态更新为%s", externalItemSku3.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateExternalItems(ExternalItemSku externalItemSku, ContainerRequestContext requestContext) {
+    public void updateExternalItems(ExternalItemSku externalItemSku, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(externalItemSku, "更新代发商品不能为空");
         AssertUtil.notNull(externalItemSku.getId(), "更新代发商品ID不能为空");
         ExternalItemSku externalItemSku2 = externalItemSkuService.selectByPrimaryKey(externalItemSku.getId());
@@ -1808,7 +1804,7 @@ public class GoodsBiz implements IGoodsBiz {
         //代发商品编辑通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.EDIT_EXTERNAL_ITEMS);
         //记录操作日志
-        logInfoService.recordLog(externalItemSku3,externalItemSku3.getId().toString(),CommonUtil.getUserId(requestContext),LogOperationEnum.UPDATE.getMessage(), null, null);
+        logInfoService.recordLog(externalItemSku3,externalItemSku3.getId().toString(),aclUserAccreditInfo.getUserId(),LogOperationEnum.UPDATE.getMessage(), null, null);
     }
 
     @Override

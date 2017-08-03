@@ -2,6 +2,7 @@ package org.trc.biz.goods;
 
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.goods.*;
@@ -31,7 +32,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Skus> itemsSkusPage(SkusForm form, Pagenation<Skus> page, ContainerRequestContext requestContext) throws Exception;
+    Pagenation<Skus> itemsSkusPage(SkusForm form, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 查询商品列表
@@ -58,14 +59,14 @@ public interface IGoodsBiz {
      * @param itemSalesPropery
      * @throws Exception
      */
-    void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, ContainerRequestContext requestContext) throws Exception;
+    void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 商品启用/停用
      * @param isValid
      * @throws Exception
      */
-    AppResult updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
+    AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * SKU启用/停用
@@ -74,7 +75,7 @@ public interface IGoodsBiz {
      * @param isValid
      * @throws Exception
      */
-    void updateSkusValid(Long id, String spuCode, String isValid, ContainerRequestContext requestContext) throws Exception;
+    void updateSkusValid(Long id, String spuCode, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 根据supCode查询商品信息
@@ -82,7 +83,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    ItemsExt queryItemsInfo(String spuCode, String skuCode, ContainerRequestContext requestContext) throws Exception;
+    ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 查询商品分类属性
@@ -120,20 +121,20 @@ public interface IGoodsBiz {
      * 新增一件代发商品
      * @param supplySkus
      */
-    void saveExternalItems(String supplySkus, ContainerRequestContext requestContext);
+    void saveExternalItems(String supplySkus, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 一件代发商品启用/停用
      * @param isValid
      * @throws Exception
      */
-    void updateExternalItemsValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
+    void updateExternalItemsValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 更新一件代发商品
      * @param externalItemSku
      */
-    void updateExternalItems(ExternalItemSku externalItemSku, ContainerRequestContext requestContext);
+    void updateExternalItems(ExternalItemSku externalItemSku, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 供应商sku更新通知

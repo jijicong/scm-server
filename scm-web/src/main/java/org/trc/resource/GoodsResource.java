@@ -8,6 +8,7 @@ import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
@@ -48,7 +49,7 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.GOODS_SKU_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Skus> itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page, @Context ContainerRequestContext requestContext) throws Exception {
-        return goodsBiz.itemsSkusPage(form, page, requestContext);
+        return goodsBiz.itemsSkusPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @POST
@@ -75,7 +76,7 @@ public class GoodsResource {
                                  @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
         AppResult appResult = ResultUtil.createSucssAppResult("更新商品成功", "");
         try {
-            goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, requestContext);
+            goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         }catch (Exception e){
             log.error("更新商品异常", e);
             appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
@@ -88,14 +89,14 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
-        return goodsBiz.updateValid(id, isValid, requestContext);
+        return goodsBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @POST
     @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.updateSkusValid(id, spuCode, isValid, requestContext);
+        goodsBiz.updateSkusValid(id, spuCode, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("启停用SKU成功", "");
     }
 
@@ -104,7 +105,7 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode, @QueryParam("skuCode") String skuCode, @Context ContainerRequestContext requestContext) throws Exception {
-        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, requestContext));
+        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @GET
@@ -140,7 +141,7 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveExternalItems(@FormParam("supplySkus") String supplySkus, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.saveExternalItems(supplySkus, requestContext);
+        goodsBiz.saveExternalItems(supplySkus, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("新增代发商品成功", "");
     }
 
@@ -148,7 +149,7 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM__VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.updateExternalItemsValid(id, isValid, requestContext);
+        goodsBiz.updateExternalItemsValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("启停用商品成功", "");
     }
 
@@ -157,7 +158,7 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult updateExternalItems(@BeanParam ExternalItemSku externalItemSku, @Context ContainerRequestContext requestContext) throws Exception {
-        goodsBiz.updateExternalItems(externalItemSku, requestContext);
+        goodsBiz.updateExternalItems(externalItemSku, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("更新代发商品成功", "");
     }
 
