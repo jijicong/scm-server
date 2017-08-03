@@ -2,6 +2,7 @@ package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -289,37 +290,61 @@ public class AclResourceBiz implements IAclResourceBiz {
      */
     @Override
     public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, ContainerRequestContext requestContext) {
+        String code = "";
         //生成code
-        String code = jurisdictionTreeNode.getParentId().toString();
+        if (jurisdictionTreeNode.getParentId() != null) {
+            code = jurisdictionTreeNode.getParentId().toString();
+        }
         String parentMethod = code;
-        parentMethod = parentMethod + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType();
+        if (code.length() == 5) {
+            parentMethod = parentMethod + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType();
+        }
         AclResource aclResource = new AclResource();
 //        aclResource.setId(jurisdictionService.selectMaxId()+1);
         //2.查询到当前方法,当前父资源下最大的序号,如果存在加1,如果不存在,自行组合
         Example example = new Example(AclResource.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andLike("code", parentMethod + "%");
-        example.orderBy("code").desc();
+        if (parentMethod.length() == 3) {
+            criteria.andLike("parentId", parentMethod);
+            example.orderBy("code").desc();
+        } else if (StringUtils.isBlank(code)) {
+            criteria.andLessThanOrEqualTo("parentId", jurisdictionTreeNode.getBelong());
+            criteria.andEqualTo("belong", jurisdictionTreeNode.getBelong());
+//            criteria.andLessThanOrEqualTo("parentId", "2");
+            example.orderBy("code").desc();
+        } else {
+            criteria.andLike("code", parentMethod + "%");
+            example.orderBy("code").desc();
+        }
         List<AclResource> aclResourceList = jurisdictionService.selectByExample(example);
         if (aclResourceList != null && aclResourceList.size() > 0) {
             //存在的情况
             aclResource.setCode(aclResourceList.get(0).getCode() + 1);
         } else {
             //不存在,手动组合,从一开始
-            code = code + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType() + ZeroToNineEnum.ZERO.getCode() + ZeroToNineEnum.ONE.getCode();
+            if (code.length()==3){
+                code = code + ZeroToNineEnum.ZERO.getCode()   + ZeroToNineEnum.ONE.getCode();
+            }else {
+                code = code + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType() + ZeroToNineEnum.ZERO.getCode() + ZeroToNineEnum.ONE.getCode();
+            }
             aclResource.setCode(Long.parseLong(code));
         }
-        if (jurisdictionTreeNode.getParentId().toString().length() == 3) {
+        if (code.length() == 3) {
             String acl = String.valueOf(aclResource.getCode());
             if (acl.length() >= 5) {// 判断是否长度大于等于4
-                acl = acl.substring(acl.length() - 5, acl.length());
+                acl = acl.substring(0, 5);
             }
             aclResource.setCode(Long.parseLong(acl));
         }
+
         aclResource.setBelong(jurisdictionTreeNode.getBelong());
         aclResource.setMethod(jurisdictionTreeNode.getMethod());
-        aclResource.setParentId(jurisdictionTreeNode.getParentId());
         aclResource.setName(jurisdictionTreeNode.getName());
+        if (aclResource.getCode().toString().length()==3) {
+            aclResource.setParentId(Long.valueOf(jurisdictionTreeNode.getBelong()));
+        } else {
+            aclResource.setParentId(jurisdictionTreeNode.getParentId());
+        }
         aclResource.setUrl(jurisdictionTreeNode.getUrl());
 //        aclResource.setCreateOperator((String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
         aclResource.setCreateOperator("admin");
