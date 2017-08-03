@@ -115,7 +115,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseStatus(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext)  {
+    public void updatePurchaseStatus(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseGroup,"采购组信息为空，修改采购组状态失败");
         PurchaseGroup updatePurchaseGroup = new PurchaseGroup();
         updatePurchaseGroup.setId(purchaseGroup.getId());
@@ -140,7 +140,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             logger.error(msg);
             throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION, msg);
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseGroup,purchaseGroup.getId().toString(),userId, LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
@@ -157,7 +157,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext)  {
+    public void updatePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseGroup,"根据采购组信息修改采购组失败,采购信息为null");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
         if(tmp!=null){
@@ -191,14 +191,14 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         }*/
         savePurchaseGroupUserRelation(purchaseGroup.getCode(),purchaseGroup.getLeaderUserId(),purchaseGroup.getMemberUserId(),purchaseGroup.getIsValid());
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseGroup,purchaseGroup.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void savePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext)  {
+    public void savePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -223,7 +223,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         String memberUserStrs = purchaseGroup.getMemberUserId();
         savePurchaseGroupUserRelation(purchaseGroupCode,laederUserId,memberUserStrs,purchaseGroup.getIsValid());
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseGroup,purchaseGroup.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,null);
 
     }

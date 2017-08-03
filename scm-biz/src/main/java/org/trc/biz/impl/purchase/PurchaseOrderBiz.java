@@ -351,7 +351,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit//主要用于列表删除
-    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,ContainerRequestContext requestContext)  {
+    public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
@@ -399,13 +399,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         }
         //保存操作日志
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){ //保存提交审核
-            savePurchaseOrderAudit(purchaseOrder,requestContext);
+            savePurchaseOrderAudit(purchaseOrder,aclUserAccreditInfo);
         }
 
     }
@@ -413,7 +413,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * 保存提交审核的采购信息
      */
     @CacheEvit
-    private void savePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,ContainerRequestContext requestContext){
+    private void savePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
         PurchaseOrderAudit purchaseOrderAudit = new PurchaseOrderAudit();
@@ -431,7 +431,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //提交审核操作日志
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,AuditStatusEnum.COMMIT.getName(),null,ZeroToNineEnum.ZERO.getCode());
@@ -545,30 +545,30 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext)  {
+    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
 
         if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){ //暂存：的删除操作
-            handleDeleted(purchaseOrder,requestContext);
+            handleDeleted(purchaseOrder,aclUserAccreditInfo);
             return;
         }
         if(PurchaseOrderStatusEnum.REJECT.getCode().equals(status)){ //审核驳回：的删除操作
-            handleDeleted(purchaseOrder,requestContext);
+            handleDeleted(purchaseOrder,aclUserAccreditInfo);
             return;
         }
         if(PurchaseOrderStatusEnum.PASS.getCode().equals(status)){//审核通过：的作废操作
-            handleCancel(purchaseOrder,requestContext);
+            handleCancel(purchaseOrder,aclUserAccreditInfo);
             return;
         }
         if(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode().equals(status)){ //入库通知的（未通知仓储）：的作废操作
-            handleCancel(purchaseOrder,requestContext);
+            handleCancel(purchaseOrder,aclUserAccreditInfo);
             return;
         }
     }
     //采购单作废操作
-    private void handleCancel(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) {
+    private void handleCancel(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) {
 
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
@@ -580,14 +580,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
     //采购单逻辑删除
-    private void handleDeleted(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext){
+    private void handleDeleted(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo){
         PurchaseOrder tmp = new PurchaseOrder();
         tmp.setId(purchaseOrder.getId());
         tmp.setIsDeleted(ZeroToNineEnum.ONE.getCode());
@@ -611,7 +611,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.DELETE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
@@ -705,7 +705,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext)  {
+    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
@@ -720,7 +720,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
-            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            String userId= aclUserAccreditInfo.getUserId();
             PurchaseOrder purchaseOrderLog = new PurchaseOrder();
             purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
             logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.FREEZE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
@@ -737,7 +737,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
-            String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+            String userId= aclUserAccreditInfo.getUserId();
             PurchaseOrder purchaseOrderLog = new PurchaseOrder();
             purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
             logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UN_FREEZE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
@@ -747,7 +747,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext)  {
+    public void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrderAddData,"修改采购单失败,采购单为空");
         PurchaseOrder purchaseOrder = purchaseOrderAddData;//转型
@@ -771,7 +771,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
         purchaseDetailService.deletePurchaseDetailByPurchaseOrderCode(purchaseOrderAddData.getPurchaseOrderCode());
-        Object obj =requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        Object obj =aclUserAccreditInfo.getUserId();
         AssertUtil.notNull(obj,"采购单更新失败,获取授权信息失败");
         purchaseOrderAddData.setCreateOperator((String) obj);
 
@@ -783,20 +783,20 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //修改操作日志
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
 
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){ //修改提交审核
-            updatePurchaseOrderAudit(purchaseOrderAddData,requestContext);
+            updatePurchaseOrderAudit(purchaseOrderAddData,aclUserAccreditInfo);
         }
 
     }
     /**
      * 修改提交审核的采购信息
      */
-    private void updatePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,ContainerRequestContext requestContext){
+    private void updatePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
         AssertUtil.notNull(purchaseOrder.getPurchaseOrderCode(),"采购订单编码为空");
@@ -805,7 +805,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrderAudit.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
         purchaseOrderAudit = iPurchaseOrderAuditService.selectOne(purchaseOrderAudit);
         if(purchaseOrderAudit == null){
-            savePurchaseOrderAudit(purchaseOrder,requestContext);
+            savePurchaseOrderAudit(purchaseOrder,aclUserAccreditInfo);
             return;
         }
         //AssertUtil.notNull(purchaseOrderAudit.getId(),"查询采购单审核失败!");
@@ -821,7 +821,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //提交审核操作日志
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId=aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,AuditStatusEnum.COMMIT.getName(),null,ZeroToNineEnum.ZERO.getCode());
@@ -895,7 +895,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void warahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext) {
+    public void warahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(purchaseOrder,"采购单信息为空,保存入库通知单失败");
         AssertUtil.notNull(purchaseOrder.getId(),"采购单的主键为空,保存入库通知单失败");
@@ -904,7 +904,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notNull(order,"根据主键查询该采购单为空");
         WarehouseNotice warehouseNotice = new WarehouseNotice();
         //这里没有继承commDao类，因此创建人要自己的代码处理
-        Object obj = requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        Object obj = aclUserAccreditInfo.getUserId();
         AssertUtil.notNull(obj,"您的用户信息为空");
         warehouseNotice.setCreateOperator((String) obj);
         assignmentWarehouseNotice(order,warehouseNotice);
@@ -936,7 +936,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
         }
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.WAREHOUSE_NOTICE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.ADD.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         //生成入库通知商品明细
@@ -1006,7 +1006,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext) {
+    public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
         //更改采购单的状态
@@ -1050,7 +1050,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(purchaseOrder,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
     }

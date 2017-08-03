@@ -16,9 +16,9 @@ public interface IPurchaseGroupBiz {
 
     Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form , Pagenation<PurchaseGroup> page);
 
-    void updatePurchaseStatus(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext);
+    void updatePurchaseStatus(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo);
 
-    void  savePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext) ;
+    void  savePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo) ;
 
     PurchaseGroup findPurchaseByName(String name) ;
 
@@ -26,7 +26,7 @@ public interface IPurchaseGroupBiz {
 
     PurchaseGroup findPurchaseGroupByCode(String code) ;
 
-    void updatePurchaseGroup(PurchaseGroup purchaseGroup, ContainerRequestContext requestContext) ;
+    void updatePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo) ;
     /**
      * 查询该采购组，对应的无效状态的成员
      * @param id
