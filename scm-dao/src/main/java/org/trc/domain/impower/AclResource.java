@@ -29,8 +29,22 @@ public class AclResource extends CommonDO {
 
     private Integer belong;
 
+    private String type;
+
     @Transient
     private String check;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getCheck() {
+        return check;
+    }
 
     public Long getCode() {
         return code;

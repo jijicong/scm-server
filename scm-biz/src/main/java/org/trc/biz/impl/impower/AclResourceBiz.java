@@ -59,20 +59,14 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     }
 
+
     @Override
     public List<AclResource> findWholeJurisdictionModule() {
         AclResource aclResource = new AclResource();
         aclResource.setBelong(WHOLE_JURISDICTION_ID);
+        aclResource.setType(ZeroToNineEnum.ZERO.getCode());
         List<AclResource> wholeAclResourceList = jurisdictionService.select(aclResource);
         AssertUtil.notNull(wholeAclResourceList, "查询全局权限列表,数据库操作失败");
-        Iterator<AclResource> iterator = wholeAclResourceList.iterator();
-        while (iterator.hasNext()){
-            AclResource resource= iterator.next();
-            Long code = resource.getCode();
-            if(code.toString().length() > 5){
-                iterator.remove();
-            }
-        }
         return wholeAclResourceList;
     }
 
@@ -91,21 +85,32 @@ public class AclResourceBiz implements IAclResourceBiz {
     public List<AclResource> findChannelJurisdictionModule() {
         AclResource aclResource = new AclResource();
         aclResource.setBelong(CHANNEL_JURISDICTION_ID);
+        aclResource.setType(ZeroToNineEnum.ZERO.getCode());
         List<AclResource> channelAclResourceList = jurisdictionService.select(aclResource);
         AssertUtil.notNull(channelAclResourceList, "查询渠道权限列表, 数据库操作失败");
-        Iterator<AclResource> iterator = channelAclResourceList.iterator();
-        while (iterator.hasNext()){
-            AclResource resource= iterator.next();
-            Long code = resource.getCode();
-            if(code.toString().length() > 5){
-                iterator.remove();
-            }
-        }
         return channelAclResourceList;
     }
 
     @Override
-    @Transactional
+    public List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId){
+        AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
+        // 1.查询对应的权限列表
+        List<AclResource> wholeAclResourceList = findWholeJurisdictionModule();
+        //2.查询对应角色被选中权限
+        List<Long> JurisdictionIdList = roleJurisdictionRelationService.selectJurisdictionIdList(roleId);
+        AssertUtil.notNull(JurisdictionIdList, "查询全局角色对应的权限关系,数据库操作失败");
+        //3.赋值checked属性
+        for (AclResource aclResource : wholeAclResourceList) {
+            for (Long JurisdictionId : JurisdictionIdList) {
+                if (aclResource.getId().equals(JurisdictionId)) {
+                    aclResource.setCheck("true");
+                }
+            }
+        }
+        return wholeAclResourceList;
+    }
+
+    @Override
     public List<AclResource> findWholeJurisdictionAndCheckedByRoleId(Long roleId) {
 
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
@@ -127,7 +132,25 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    @Transactional
+    public List<AclResource> findChannelJurisdictionAndCheckedModuleByRoleId(Long roleId) {
+        AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
+        // 1.查询对应的权限列表
+        List<AclResource> channelAclResourceList = findChannelJurisdictionModule();
+        //2.查询对应角色被选中权限
+        List<Long> JurisdictionIdList = roleJurisdictionRelationService.selectJurisdictionIdList(roleId);
+        AssertUtil.notNull(JurisdictionIdList, "查询渠道角色对应的权限关系,数据库操作失败");
+        //3.赋值checked属性
+        for (AclResource aclResource : channelAclResourceList) {
+            for (Long JurisdictionId : JurisdictionIdList) {
+                if (aclResource.getId().equals(JurisdictionId)) {
+                    aclResource.setCheck("true");
+                }
+            }
+        }
+        return channelAclResourceList;
+    }
+
+    @Override
     public List<AclResource> findChannelJurisdictionAndCheckedByRoleId(Long roleId) {
 
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");

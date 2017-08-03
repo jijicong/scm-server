@@ -25,5 +25,12 @@ public class WarehouseForm extends QueryModel{
         this.name = name;
     }
 
-
+    @Override
+    public String toString() {
+        return "WarehouseForm{" +
+                "name='" + name + '\'' +
+                ", orderBy='" + orderBy + '\'' +
+                ", order='" + order + '\'' +
+                '}';
+    }
 }

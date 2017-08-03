@@ -50,10 +50,11 @@ public interface IAclRoleBiz {
      */
     void updateRole(AclRole aclRole, String roleJurisdiction,ContainerRequestContext requestContext);
     /**
-     * 角色保存和保存角色与权限的对应关系
+     * 角色保存和保存角色与权限资源的对应关系
      * @param aclRole 角色信息
      * @return
      */
     void saveRole(AclRole aclRole, String roleJurisdiction, ContainerRequestContext requestContext);
+
 
 }

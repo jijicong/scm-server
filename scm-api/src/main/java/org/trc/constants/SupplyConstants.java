@@ -305,6 +305,8 @@ public class SupplyConstants {
         public static final String ROLE_PAGE = "rolePage";
         //授权的用户使用名查询
         public static final String ROLE = "role";
+
+        public static final String ROLE_MODULE = "roleModule";
         //角色用户授权入口
         public static final String ROLE_ACCREDITINFO = "roleAccreditInfo";
         //状态的修改

@@ -204,6 +204,7 @@ public class AclRoleBiz implements IAclRoleBiz {
         logInfoService.recordLog(aclRole1,aclRole.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveRole(AclRole aclRole, String roleJurisdiction, ContainerRequestContext requestContext){

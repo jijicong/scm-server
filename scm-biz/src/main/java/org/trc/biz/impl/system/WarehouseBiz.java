@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
@@ -74,11 +76,10 @@ public class WarehouseBiz implements IWarehouseBiz {
     @Autowired
     private ILocationUtilService locationUtilService;
 
-    @Autowired
-    private IDictService dictService;
 
 
     @Override
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) {
 
         Example example = new Example(Warehouse.class);
@@ -188,7 +189,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveWarehouse(Warehouse warehouse, ContainerRequestContext requestContext) {
+    public void saveWarehouse(Warehouse warehouse, ContainerRequestContext containerRequestContext) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
@@ -210,7 +211,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = (String) containerRequestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
 
     }

@@ -84,6 +84,24 @@ public class AclResourceResource {
     }
 
     @GET
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE_MODULE + "/{roleId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
+
+        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedModuleByRoleId(roleId));
+
+    }
+
+    @GET
+    @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL_MODULE + "/{roleId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<AclResource> findChannelJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
+
+        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedModuleByRoleId(roleId));
+
+    }
+
+    @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_TREE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> jurisdictionTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive){

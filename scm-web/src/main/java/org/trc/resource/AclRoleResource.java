@@ -52,7 +52,7 @@ public class AclRoleResource {
 
         AclRole aclRole = roleAddPageData;
         roleBiz.saveRole(aclRole, roleAddPageData.getRoleJurisdiction(),requestContext);
-        return  ResultUtil.createSucssAppResult("保存成功","");
+        return  ResultUtil.createSucssAppResult("保存角色资源成功","");
 
     }
     //根据角色名查询角色
