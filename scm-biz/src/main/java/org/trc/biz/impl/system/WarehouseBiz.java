@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
+import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -76,7 +77,6 @@ public class WarehouseBiz implements IWarehouseBiz {
     private ILocationUtilService locationUtilService;
 
 
-
     @Override
     @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) {
@@ -100,6 +100,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         return pagenation;
 
     }
+
 
     private void handleAreaName(List<Warehouse> warehouses){
         for (Warehouse warehouse : warehouses) {
@@ -176,6 +177,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @Cacheable(isList = true)
     public List<Warehouse> findWarehouseValid() {
         Warehouse warehouse = new Warehouse();
         warehouse.setIsValid(ValidEnum.VALID.getCode());
@@ -188,6 +190,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void saveWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块保存仓库信息失败，仓库信息为空");
@@ -215,7 +218,8 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     }
 
-    @Override
+    @Override//TODO
+    //@Cacheable(key = "#name")  todo
     public Warehouse findWarehouseByName(String name) {
 
         AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
@@ -226,6 +230,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @CacheEvit(key = { "#warehouse.name","#warehouse.id"} )
     public void updateWarehouseState(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块修改仓库信息失败，仓库信息为空");
@@ -251,6 +256,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @Cacheable(key = "#id")
     public Warehouse findWarehouseById(Long id) {
 
         AssertUtil.notNull(id, "根据ID查询仓库参数ID为空");
@@ -263,6 +269,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @CacheEvit(key = { "#warehouse.id"} )
     public void updateWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse.getId(), "根据ID修改仓库参数ID为空");

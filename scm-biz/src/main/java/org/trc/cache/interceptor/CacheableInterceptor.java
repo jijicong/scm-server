@@ -1,5 +1,6 @@
 package org.trc.cache.interceptor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -59,8 +60,9 @@ public class CacheableInterceptor {
                 listKey = method.toString() + parseKey(cacheable.key(),method,pjp.getArgs());
                 result= RedisUtil.hget(key,listKey);
             }else{
+                String parseKey = parseKey(cacheable.key(),method,pjp.getArgs());
                 //类名,方法名,key值保证 key的唯一
-                key = className +method.getName()+ parseKey(cacheable.key(),method,pjp.getArgs());
+                key = className +method.getName()+ parseKey;
                 result = RedisUtil.getObject(key);
             }
             //到达这一步证明参数正确，没有exception，应该放入缓存
@@ -133,10 +135,11 @@ public class CacheableInterceptor {
         //SPEL上下文
         StandardEvaluationContext context = new StandardEvaluationContext();
         //把方法参数放入SPEL上下文中
+        context.setVariable("scm","scm");
         for(int i=0;i<paraNameArr.length;i++){
             context.setVariable(paraNameArr[i], args[i]);
         }
-        return parser.parseExpression(key).getValue(context,String.class);
+        return parser.parseExpression("#scm+" + key).getValue(context,String.class);
     }
 
 }
