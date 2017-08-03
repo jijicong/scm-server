@@ -1,7 +1,6 @@
 package org.trc.service.supplier;
 
 import org.trc.domain.supplier.SupplierApply;
-import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.service.IBaseService;
 
 import java.util.List;

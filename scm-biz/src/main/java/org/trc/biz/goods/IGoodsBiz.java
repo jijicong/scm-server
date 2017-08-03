@@ -3,14 +3,15 @@ package org.trc.biz.goods;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.form.SupplyItemsExt;
 import org.trc.form.JDModel.SupplyItemsForm;
-import org.trc.form.goods.*;
+import org.trc.form.SupplyItemsExt;
+import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.goods.ItemsExt;
+import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**

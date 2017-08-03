@@ -5,8 +5,6 @@ import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**

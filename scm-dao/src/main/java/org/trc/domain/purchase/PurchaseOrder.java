@@ -13,7 +13,6 @@ import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 采购订单信息

@@ -1,6 +1,5 @@
 package org.trc.biz.config;
 
-import org.trc.domain.System.Channel;
 import org.trc.domain.config.LogInfo;
 import org.trc.form.config.LogInfoForm;
 import org.trc.util.Pagenation;

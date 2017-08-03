@@ -13,16 +13,15 @@ import org.springframework.stereotype.Service;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.ChannelOrderResponse;
-import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.TrcConfig;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
-import org.trc.util.*;
+import org.trc.util.AssertUtil;
+import org.trc.util.DateUtils;
+import org.trc.util.HttpClientUtil;
 
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**

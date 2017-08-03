@@ -1,24 +1,18 @@
 package org.trc.cache.interceptor;
 
-import java.lang.reflect.Method;
-
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import org.trc.cache.CacheEvit;
 import org.trc.util.RedisUtil;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import java.lang.reflect.Method;
 
 @Component
 @Aspect

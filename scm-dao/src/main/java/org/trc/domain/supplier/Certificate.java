@@ -1,7 +1,6 @@
 package org.trc.domain.supplier;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;

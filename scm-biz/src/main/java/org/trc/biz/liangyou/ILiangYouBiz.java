@@ -1,8 +1,10 @@
 package org.trc.biz.liangyou;
 
-import com.alibaba.fastjson.JSONObject;
 import org.trc.domain.config.SkuListForm;
-import org.trc.form.liangyou.*;
+import org.trc.form.liangyou.CheckStockDO;
+import org.trc.form.liangyou.GoodsInfoDO;
+import org.trc.form.liangyou.LiangYouOrderDO;
+import org.trc.form.liangyou.LiangYouTorderDO;
 
 import java.util.List;
 

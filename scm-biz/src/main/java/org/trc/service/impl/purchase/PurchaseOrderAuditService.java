@@ -1,12 +1,10 @@
 package org.trc.service.impl.purchase;
 
 import org.springframework.stereotype.Service;
-import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
 import org.trc.mapper.purchase.IPurchaseOrderAuditMapper;
 import org.trc.service.impl.BaseService;
-import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderAuditService;
 
 import javax.annotation.Resource;

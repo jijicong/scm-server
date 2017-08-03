@@ -6,10 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.serial.ISerialBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ConfigException;
-import org.trc.service.impl.util.SerialUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.AssertUtil;
 

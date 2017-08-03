@@ -1,7 +1,6 @@
 package org.trc.domain.supplier;
 
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.domain.BaseDO;
 import org.trc.domain.util.CommonDO;
 
 import javax.persistence.*;

@@ -2,17 +2,14 @@ package org.trc.resource;
 
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
-import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.purchase.PurchaseDetail;
-import org.trc.domain.purchase.PurchaseOrderAddAudit;
-import org.trc.form.purchase.PurchaseOrderAuditForm;
-import org.trc.util.AppResult;
-import org.trc.util.Pagenation;
-import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 

@@ -4,7 +4,6 @@ import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.CategoryBrand;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.util.BaseMapper;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 

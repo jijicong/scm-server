@@ -3,7 +3,6 @@ package org.trc.service.impl.supplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.supplier.SupplierApply;
-import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.mapper.supplier.ISupplierApplyMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.supplier.ISupplierApplyService;

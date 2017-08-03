@@ -10,25 +10,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.trc.form.JDModel.*;
-import org.trc.form.jingdong.MessageDO;
-import org.trc.mapper.config.ITableMappingMapper;
-import org.trc.util.JingDongUtil;
-import org.trc.form.jingdong.AddressDO;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.JingDongSku;
 import org.trc.domain.config.JingDongSkuList;
+import org.trc.form.JDModel.*;
+import org.trc.form.jingdong.AddressDO;
+import org.trc.form.jingdong.MessageDO;
+import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.mapper.jingdong.IJingDongMapper;
 import org.trc.mapper.jingdong.IJingDongTestMapper;
 import org.trc.util.BeanToMapUtil;
+import org.trc.util.JingDongUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.RedisUtil;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by hzwyz on 2017/5/22 0022.

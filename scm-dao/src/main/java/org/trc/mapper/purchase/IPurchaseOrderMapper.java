@@ -5,7 +5,6 @@ import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.util.BaseMapper;
 
-import javax.ws.rs.PathParam;
 import java.util.List;
 import java.util.Map;
 

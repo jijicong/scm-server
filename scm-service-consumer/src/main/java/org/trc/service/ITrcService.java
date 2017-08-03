@@ -2,7 +2,6 @@ package org.trc.service;
 
 
 import org.trc.form.ChannelOrderResponse;
-import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.model.ToGlyResultDO;
 

@@ -4,10 +4,12 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 public class Property extends BaseDO {

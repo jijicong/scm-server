@@ -4,9 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.supplier.SupplierCategory;
 import org.trc.domain.supplier.SupplierCategoryExt;
-import org.trc.mapper.supplier.ISupplierBrandMapper;
 import org.trc.mapper.supplier.ISupplierCategoryMapper;
-import org.trc.mapper.supplier.ISupplierMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.supplier.ISupplierCategoryService;
 

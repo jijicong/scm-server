@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierApplyBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.form.supplier.SupplierApplyAuditForm;

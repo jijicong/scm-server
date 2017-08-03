@@ -1,10 +1,7 @@
 package org.trc.domain.util;
 
 import javax.persistence.Id;
-import javax.persistence.Transient;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 地区信息

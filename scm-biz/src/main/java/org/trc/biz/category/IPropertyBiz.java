@@ -6,7 +6,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**

@@ -1,8 +1,5 @@
 package org.trc.domain.order;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.trc.custom.MoneySerializer;
-
 import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.List;

@@ -3,7 +3,6 @@ package org.trc.resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.config.IConfigBiz;
-import org.trc.biz.impl.config.ConfigBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;

@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -39,7 +38,6 @@ import org.trc.service.impl.impower.AclUserAccreditInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**

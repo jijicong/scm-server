@@ -1,7 +1,6 @@
 package org.trc.form.supplier;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;

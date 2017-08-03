@@ -2,12 +2,8 @@ package org.trc.service.impl.category;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.domain.category.CategoryBrand;
-import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
-import org.trc.mapper.category.ICategoryBrandMapper;
 import org.trc.mapper.category.ICategoryPropertyMapper;
-import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.impl.BaseService;
 

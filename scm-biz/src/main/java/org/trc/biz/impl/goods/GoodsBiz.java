@@ -16,7 +16,6 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
-import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
@@ -40,7 +39,6 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
-import org.trc.service.ITrcService;
 import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IExternalItemSkuService;
@@ -56,7 +54,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.math.BigDecimal;
 import java.util.*;
 
