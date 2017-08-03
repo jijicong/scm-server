@@ -2,6 +2,7 @@ package org.trc.service;
 
 import org.springframework.stereotype.Service;
 import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import tk.mybatis.mapper.common.example.UpdateByExampleSelectiveMapper;
