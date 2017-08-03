@@ -21,6 +21,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
@@ -264,7 +265,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, ContainerRequestContext requestContext) {
+    public AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单京东订单仓库订单编码不能为空");
         AssertUtil.notBlank(jdAddressCode, "提交订单京东订单四级地址编码不能为空");
         AssertUtil.notBlank(jdAddressName, "提交订单京东订单四级地址不能为空");
@@ -296,7 +297,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(returnTypeDO.getSuccess()){
             log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
             //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), CommonUtil.getUserId(requestContext), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         }else{
             if(StringUtils.isNotBlank(returnTypeDO.getResultCode()) && StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, returnTypeDO.getResultCode())){
                 log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
