@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierApplyBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
@@ -47,7 +48,7 @@ public class SupplierApplyResource {
     @Path(SupplyConstants.Supply.SupplierApplyAudit.SUPPLIER_APPLY_AUDIT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult auditSupplierApply(@BeanParam SupplierApplyAudit SupplierApplyAudit,@Context ContainerRequestContext requestContext) throws Exception {
-        supplierApplyBiz.auditSupplierApply(SupplierApplyAudit,requestContext);
+        supplierApplyBiz.auditSupplierApply(SupplierApplyAudit,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("供应商审核成功","");
     }
 
@@ -55,21 +56,21 @@ public class SupplierApplyResource {
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page, @Context ContainerRequestContext requestContext) throws Exception {
-        return supplierApplyBiz.supplierApplyPage(page, form,requestContext);
+        return supplierApplyBiz.supplierApplyPage(page, form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @POST
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
-        supplierApplyBiz.saveSupplierApply(supplierApply,requestContext);
+        supplierApplyBiz.saveSupplierApply(supplierApply,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("供应商申请成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
     public AppResult updateSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
-        supplierApplyBiz.updateSupplierApply(supplierApply,requestContext);
+        supplierApplyBiz.updateSupplierApply(supplierApply,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("供应商申请修改成功","");
     }
 
