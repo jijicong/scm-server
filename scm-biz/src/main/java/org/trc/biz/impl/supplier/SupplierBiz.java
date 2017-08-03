@@ -27,7 +27,6 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrand;
@@ -49,14 +48,11 @@ import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -115,8 +111,6 @@ public class SupplierBiz implements ISupplierBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private IPageNationService pageNationService;
-    @Autowired
-    private IUserNameUtilService userNameUtilService;
 
     @Override
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
