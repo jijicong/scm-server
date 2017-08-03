@@ -74,10 +74,9 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
     采购单审核表 与 采购单表 左关联
      */
     @Override
-    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, ContainerRequestContext requestContext) throws Exception {
+    public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
 
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
-        AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)requestContext.getProperty("aclUserAccreditInfo");
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         Map<String, Object> map = new HashMap<>();
         map.put("supplierName", form.getSupplierName());
@@ -193,7 +192,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, ContainerRequestContext requestContext) throws Exception {
+    public void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         //根据采购订单的编码审核采购单
         AssertUtil.notNull(purchaseOrderAudit,"根据采购订单的编码审核采购单,审核信息为空");
 
@@ -201,7 +200,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         purchaseOrderLog.setPurchaseOrderCode(purchaseOrderAudit.getPurchaseOrderCode());
         purchaseOrderLog = iPurchaseOrderService.selectOne(purchaseOrderLog);
         AssertUtil.notNull(purchaseOrderLog.getId(),"根据采购单的编码,查询采购单失败");
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         //审核单状态修改
         auditPurchaseOrder(purchaseOrderAudit,purchaseOrderLog,userId);
 

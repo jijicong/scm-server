@@ -3,6 +3,7 @@ package org.trc.resource;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
@@ -38,7 +39,7 @@ public class PurchaseOrderAuditResource {
         if(form.getPurchaseOrderAuditStatus()==null){ //说明是第一次请求.查询待审核的状态
             form.setPurchaseOrderAuditStatus(ZeroToNineEnum.ONE.getCode());
         }
-        return iPurchaseOrderAuditBiz.purchaseOrderAuditPage(form,page,requestContext);
+        return iPurchaseOrderAuditBiz.purchaseOrderAuditPage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @PUT
@@ -46,7 +47,7 @@ public class PurchaseOrderAuditResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult auditPurchaseOrder(@BeanParam PurchaseOrderAudit purchaseOrderAudit,@Context ContainerRequestContext requestContext) throws Exception{
 
-        iPurchaseOrderAuditBiz.auditPurchaseOrder(purchaseOrderAudit,requestContext);
+        iPurchaseOrderAuditBiz.auditPurchaseOrder(purchaseOrderAudit,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("审核采购单信息成功","");
 
     }

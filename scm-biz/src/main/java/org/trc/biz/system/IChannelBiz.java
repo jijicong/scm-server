@@ -2,6 +2,7 @@ package org.trc.biz.system;
 
 import org.trc.domain.System.Channel;
 import org.trc.domain.dict.DictType;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.config.DictTypeForm;
 import org.trc.form.system.ChannelForm;
 import org.trc.util.Pagenation;
@@ -41,7 +42,7 @@ public interface IChannelBiz {
      *保存渠道
      * @return 整数改变
      */
-    void saveChannel(Channel channel,ContainerRequestContext requestContext);
+    void saveChannel(Channel channel,AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 更新渠道
@@ -50,7 +51,7 @@ public interface IChannelBiz {
      * @return 整数改变
      * @throws Exception
      */
-    void updateChannel(Channel channel,ContainerRequestContext requestContext) ;
+    void updateChannel(Channel channel,AclUserAccreditInfo aclUserAccreditInfo) ;
 
     /**
      * 根据id查询渠道

@@ -2,6 +2,7 @@ package org.trc.biz.purchase;
 
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
@@ -38,9 +39,9 @@ public interface IPurchaseOrderBiz {
      */
     Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode,  ItemForm form, Pagenation<PurchaseDetail> page, String skus) ;
 
-    void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,ContainerRequestContext requestContext) ;
+    void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo) ;
 
-    void updatePurchaseOrderState(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) ;
+    void updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
 
     PurchaseOrder findPurchaseOrderAddDataById(Long id) ;
 
@@ -49,7 +50,7 @@ public interface IPurchaseOrderBiz {
      * @param purchaseOrder
      * @
      */
-    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext) ;
+    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
 
     PurchaseOrder findPurchaseOrderAddDataByCode(String purchaseCode);
 
@@ -62,17 +63,17 @@ public interface IPurchaseOrderBiz {
      * @param requestContext         用于采购商品的创建人
      * @
      */
-    void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,ContainerRequestContext requestContext) ;
+    void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,AclUserAccreditInfo aclUserAccreditInfo) ;
 
     /**
      * 入库通知单的发起(信息保存,还未推送)
      * @param purchaseOrder
      */
-    void warahouseAdvice(PurchaseOrder purchaseOrder, ContainerRequestContext requestContext);
+    void warahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo);
     /**
      * 采购单入库通知状态的作废操作
      */
-    void cancelWarahouseAdvice(PurchaseOrder purchaseOrder,ContainerRequestContext requestContext);
+    void cancelWarahouseAdvice(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo);
     /**
      *联想搜索
      */

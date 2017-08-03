@@ -1,5 +1,6 @@
 package org.trc.biz.supplier;
 
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.form.supplier.*;
 import org.trc.util.Pagenation;
@@ -36,7 +37,7 @@ public interface ISupplierBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Supplier> supplierPage(Pagenation<Supplier> page,ContainerRequestContext requestContext,SupplierForm form) throws Exception;
+    Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, AclUserAccreditInfo aclUserAccreditInfo, SupplierForm form) throws Exception;
 
     /**
      * 查询供应商列表
@@ -56,7 +57,7 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception;
+                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 更新供应商
@@ -69,7 +70,7 @@ public interface ISupplierBiz {
      * @throws Exception
      */
     void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception;
+                      SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 查询供应商代理分类列表
@@ -108,7 +109,7 @@ public interface ISupplierBiz {
      * @param isValid
      * @throws Exception
      */
-    void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception;
+    void updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      *检查分类品牌启停用状态
