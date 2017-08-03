@@ -9,6 +9,7 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
@@ -65,7 +66,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveClassify(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.saveCategory(category, requestContext);
+        categoryBiz.saveCategory(category, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 
@@ -80,7 +81,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategory(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.updateCategory(category, false, requestContext);
+        categoryBiz.updateCategory(category, false, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("修改分类成功", "");
     }
 
@@ -124,7 +125,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.Classify.UPDATE_STATE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategoryState(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.updateState(category, requestContext);
+        categoryBiz.updateState(category, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("状态修改成功", "");
     }
 
@@ -163,7 +164,7 @@ public class CategoryResource {
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord, @Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.linkCategoryBrands(id, brandIds, delRecord, requestContext);
+        categoryBiz.linkCategoryBrands(id, brandIds, delRecord, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("分类品牌关联成功", "");
     }
 
@@ -189,7 +190,7 @@ public class CategoryResource {
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateCategoryProperty(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate,@Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.linkCategoryProperties(id, jsonDate,requestContext);
+        categoryBiz.linkCategoryProperties(id, jsonDate,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("分类属性保存成功", "");
     }
 

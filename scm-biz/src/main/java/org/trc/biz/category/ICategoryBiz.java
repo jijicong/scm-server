@@ -1,6 +1,7 @@
 package org.trc.biz.category;
 
 import org.trc.domain.category.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
@@ -41,12 +42,12 @@ public interface ICategoryBiz {
      * @return
      * @throws Exception
      */
-    void updateCategory(Category category, boolean isSave, ContainerRequestContext requestContext) throws Exception;
+    void updateCategory(Category category, boolean isSave, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 保存
      */
-    void saveCategory(Category category, ContainerRequestContext requestContext) throws Exception;
+    void saveCategory(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
 
     /**
@@ -68,7 +69,7 @@ public interface ICategoryBiz {
      */
     void updateSort(String sortDate) throws Exception;
 
-    void updateState(Category category, ContainerRequestContext requestContext) throws Exception;
+    void updateState(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     void updateIsLeaf(Category category) throws Exception;
 
@@ -111,7 +112,7 @@ public interface ICategoryBiz {
      * @param brandIds
      * @throws Exception
      */
-    void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, ContainerRequestContext requestContext) throws Exception;
+    void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
 
     /**
@@ -127,7 +128,7 @@ public interface ICategoryBiz {
     /**
      * 更新分类属性
      */
-    void linkCategoryProperties(Long categoryId, String jsonDate, ContainerRequestContext requestContext) throws Exception;
+    void linkCategoryProperties(Long categoryId, String jsonDate, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * @param categoryId

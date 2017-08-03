@@ -14,6 +14,7 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
 import org.trc.form.category.*;
@@ -195,7 +196,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    public void updateCategory(Category category, boolean isSave, ContainerRequestContext requestContext) throws Exception {
+    public void updateCategory(Category category, boolean isSave, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
 
         Category oldCategory = new Category();
@@ -209,7 +210,7 @@ public class CategoryBiz implements ICategoryBiz {
         }
         category.setUpdateTime(Calendar.getInstance().getTime());
 
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
 //        category.setCreateOperator(userId);
 
@@ -263,7 +264,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveCategory(Category category, ContainerRequestContext requestContext) throws Exception {
+    public void saveCategory(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         AssertUtil.notNull(category.getCategoryCode(), "分类编码生成失败");
@@ -299,7 +300,7 @@ public class CategoryBiz implements ICategoryBiz {
             category.setFullPathId(queryPathId(category.getParentId()) + SupplyConstants.Symbol.FULL_PATH_SPLIT + category.getParentId());
             categoryAction = CategoryActionEnum.ADD_THREE_LEVEL.getName();
         }
-        updateCategory(category, true, requestContext);
+        updateCategory(category, true, aclUserAccreditInfo);
         //判断叶子节点,并更新
         if (category.getLevel() != 1 && isLeaf(category.getParentId()) != 0) {
             updateIsLeaf(category);
@@ -423,7 +424,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateState(Category category, ContainerRequestContext requestContext) throws Exception {
+    public void updateState(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(category.getId(), "类目管理模块修改分类信息失败，分类信息为空");
         Category updateCategory = new Category();
         updateCategory.setId(category.getId());
@@ -459,7 +460,7 @@ public class CategoryBiz implements ICategoryBiz {
             noticeCategory(TrcActionTypeEnum.STOP_CATEGORY, oldCategory, updateCategory, null, null, System.currentTimeMillis());
 
         }
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
         //分类状态更新时需要更新分类供应商关系表的is_valid字段
         String categoryAction = getCategoryAction(updateCategory);
@@ -606,7 +607,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, ContainerRequestContext requestContext) throws Exception {
+    public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         categoryLevel(categoryId);
         //删除的BrandId
@@ -679,7 +680,7 @@ public class CategoryBiz implements ICategoryBiz {
             noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_BRAND, null, null, updateCategoryBrandList, null, System.currentTimeMillis());
         }
 
-        recordLinkLog(categoryId, requestContext, "品牌");
+        recordLinkLog(categoryId, aclUserAccreditInfo, "品牌");
 
     }
 
@@ -756,7 +757,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void linkCategoryProperties(Long categoryId, String jsonDate, ContainerRequestContext requestContext) throws Exception {
+    public void linkCategoryProperties(Long categoryId, String jsonDate, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联属性categoryId为空");
         AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
         categoryLevel(categoryId);
@@ -880,7 +881,7 @@ public class CategoryBiz implements ICategoryBiz {
             List<CategoryProperty> updateCategoryProperty = categoryPropertyService.selectByExample(example);
             noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY, null, null, null, updateCategoryProperty, System.currentTimeMillis());
         }
-        recordLinkLog(categoryId, requestContext, "属性");
+        recordLinkLog(categoryId, aclUserAccreditInfo, "属性");
 
     }
 
@@ -919,10 +920,10 @@ public class CategoryBiz implements ICategoryBiz {
      * 关联日志
      *
      * @param categoryId
-     * @param requestContext
+     * @param aclUserAccreditInfo
      */
-    private void recordLinkLog(Long categoryId, ContainerRequestContext requestContext, String type) {
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+    private void recordLinkLog(Long categoryId, AclUserAccreditInfo aclUserAccreditInfo, String type) {
+        String userId = aclUserAccreditInfo.getUserId();
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
         //分类状态更新时需要更新分类供应商关系表的is_valid字段
         Category logCategory = categoryService.selectByPrimaryKey(categoryId);
