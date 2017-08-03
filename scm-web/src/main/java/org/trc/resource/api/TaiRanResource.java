@@ -2,7 +2,6 @@ package org.trc.resource.api;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.glassfish.jersey.jaxb.internal.XmlJaxbElementProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -12,25 +11,26 @@ import org.trc.biz.goods.ISkuBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
 import org.trc.biz.order.IScmOrderBiz;
-import org.trc.biz.trc.IOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Skus;
-import org.trc.domain.order.*;
-import org.trc.exception.TrcException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
-import org.trc.util.*;
+import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 对泰然城开放接口

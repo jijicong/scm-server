@@ -1,8 +1,5 @@
 package org.trc.form.category;
 
-import javax.ws.rs.QueryParam;
-import java.util.List;
-
 /**
  * Created by hzszy on 2017/5/5.
  */

@@ -1,6 +1,5 @@
 package org.trc.service.goods;
 
-import org.apache.ibatis.annotations.Param;
 import org.trc.domain.goods.ItemNaturePropery;
 import org.trc.service.IBaseService;
 

@@ -1,6 +1,7 @@
 package org.trc.mapper.util;
 
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.trc.domain.util.Serial;
 import org.trc.util.BaseMapper;
 

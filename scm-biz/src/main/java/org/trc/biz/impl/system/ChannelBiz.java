@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
@@ -39,7 +39,6 @@ import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -160,7 +159,7 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveChannel(Channel channel, ContainerRequestContext requestContext) {
+    public void saveChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(channel, "渠道管理模块保存仓库信息失败，仓库信息为空");
         Channel tmp = findChannelByName(channel.getName());
@@ -174,14 +173,14 @@ public class ChannelBiz implements IChannelBiz {
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增渠道", null);
 
     }
 
 
     @Override
-    public void updateChannel(Channel channel, ContainerRequestContext requestContext) {
+    public void updateChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
         Channel tmp = findChannelByName(channel.getName());
@@ -200,7 +199,7 @@ public class ChannelBiz implements IChannelBiz {
         }
 
 
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
 
     }

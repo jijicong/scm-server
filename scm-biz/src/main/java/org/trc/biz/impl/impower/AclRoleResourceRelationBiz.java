@@ -4,23 +4,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.biz.impower.IAclRoleResourceRelationBiz;
-import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclRoleResourceRelation;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.RoleException;
 import org.trc.service.impower.IAclResourceService;
 import org.trc.service.impower.IAclRoleResourceRelationService;
 import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
 import org.trc.util.StringUtil;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 

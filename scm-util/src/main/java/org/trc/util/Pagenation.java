@@ -1,15 +1,10 @@
 package org.trc.util;
 
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.QueryParam;
 
 /**
  * Created by hzwdx on 2017/4/22.

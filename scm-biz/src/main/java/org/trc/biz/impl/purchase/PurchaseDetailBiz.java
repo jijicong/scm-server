@@ -1,7 +1,5 @@
 package org.trc.biz.impl.purchase;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
@@ -12,7 +10,6 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.service.category.IBrandService;
 import org.trc.service.purchase.IPurchaseDetailService;
-import org.trc.service.purchase.IPurchaseOrderAuditService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
 

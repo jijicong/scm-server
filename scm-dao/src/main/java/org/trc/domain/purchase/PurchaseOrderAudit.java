@@ -1,10 +1,12 @@
 package org.trc.domain.purchase;
 
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.domain.BaseDO;
 import org.trc.domain.util.CommonDO;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.io.Serializable;

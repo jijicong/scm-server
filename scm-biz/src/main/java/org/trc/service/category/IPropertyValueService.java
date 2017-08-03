@@ -1,6 +1,5 @@
 package org.trc.service.category;
 
-import org.apache.ibatis.annotations.Param;
 import org.trc.domain.category.PropertyValue;
 import org.trc.service.IBaseService;
 

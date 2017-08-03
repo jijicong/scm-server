@@ -10,20 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
-import org.trc.biz.purchase.IPurchaseDetailBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
-import org.trc.domain.category.Category;
 import org.trc.domain.dict.Dict;
-import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
-import org.trc.domain.util.CommonDO;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
@@ -40,7 +35,6 @@ import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
 import org.trc.service.supplier.ISupplierService;
-import org.trc.service.util.IUserNameUtilService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
@@ -48,7 +42,6 @@ import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -90,11 +83,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page,ContainerRequestContext requestContext) {
+    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page,AclUserAccreditInfo aclUserAccreditInfo) {
 
-        Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
-        AssertUtil.notNull(obj,"查询订单分页中,获得授权信息失败");
-        AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)obj;
+        AssertUtil.notNull(aclUserAccreditInfo,"查询订单分页中,获得授权信息失败");
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         AssertUtil.notBlank(channelCode,"未获得授权");
         PageHelper.startPage(page.getPageNo(), page.getPageSize());//--此设置只对如下第一个将要执行的sql起作用
@@ -215,7 +206,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void receiptAdviceInfo(WarehouseNotice warehouseNotice, ContainerRequestContext requestContext) {
+    public void receiptAdviceInfo(WarehouseNotice warehouseNotice, AclUserAccreditInfo aclUserAccreditInfo) {
         //提运单号可能会修改
         AssertUtil.notNull(warehouseNotice,"入库通知单的信息为空!");
 
@@ -237,7 +228,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
         }
         //发送入库通知
-        receiptAdvice(warehouseNotice,requestContext);
+        receiptAdvice(warehouseNotice,aclUserAccreditInfo);
     }
 
     void handleTakeGoodsNo(WarehouseNotice warehouseNotice){
@@ -257,7 +248,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void receiptAdvice(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext) {
+    public void receiptAdvice(WarehouseNotice warehouseNotice,AclUserAccreditInfo aclUserAccreditInfo) {
         /*
         执行通知收货，关联的操作
             1.更改采购单的是否通知入库 为已通知（1）
@@ -312,7 +303,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());*/
         //todo
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
         logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
 

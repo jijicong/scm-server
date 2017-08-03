@@ -4,12 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
 import org.trc.domain.config.LogInfo;
-import org.trc.form.category.BrandForm;
 import org.trc.form.config.LogInfoForm;
-import org.trc.service.impl.config.LogInfoService;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.BeanParam;

@@ -3,15 +3,12 @@ package org.trc.util;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.ParamValidException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.regex.Pattern;
 
 /**
  * 严格的日期转换setLenient(false);

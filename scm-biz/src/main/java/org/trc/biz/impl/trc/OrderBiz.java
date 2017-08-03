@@ -1,35 +1,18 @@
 package org.trc.biz.impl.trc;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.IOrderBiz;
-import org.trc.constants.SupplyConstants;
-import org.trc.domain.goods.ExternalItemSku;
-import org.trc.domain.order.*;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.OrderException;
-import org.trc.exception.TrcException;
 import org.trc.service.ITrcService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.order.*;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.util.*;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

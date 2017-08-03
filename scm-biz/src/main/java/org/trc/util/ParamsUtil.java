@@ -2,7 +2,6 @@ package org.trc.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.trc.domain.BaseDO;
-import org.trc.domain.util.CommonDO;
 import org.trc.domain.util.ScmDO;
 import org.trc.enums.ZeroToNineEnum;
 

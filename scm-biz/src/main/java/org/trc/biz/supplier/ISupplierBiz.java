@@ -2,11 +2,11 @@ package org.trc.biz.supplier;
 
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
-import org.trc.form.supplier.*;
+import org.trc.form.supplier.SupplierChannelRelationForm;
+import org.trc.form.supplier.SupplierExt;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**

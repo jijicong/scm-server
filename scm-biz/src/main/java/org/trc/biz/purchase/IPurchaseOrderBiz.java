@@ -1,7 +1,5 @@
 package org.trc.biz.purchase;
 
-import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
@@ -10,11 +8,8 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**

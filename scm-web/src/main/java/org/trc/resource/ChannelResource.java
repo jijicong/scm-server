@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.system.ChannelForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -56,7 +57,7 @@ public class ChannelResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
     public AppResult saveChannel(@BeanParam Channel channel,@Context ContainerRequestContext requestContext){
-        channelBiz.saveChannel(channel,requestContext);
+        channelBiz.saveChannel(channel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSucssAppResult("保存成功","");
     }
 
@@ -73,7 +74,7 @@ public class ChannelResource {
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateChannel(@BeanParam  Channel channel,@Context ContainerRequestContext requestContext){
-        channelBiz.updateChannel(channel,requestContext);
+        channelBiz.updateChannel(channel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSucssAppResult("修改渠道信息成功","");
     }
 

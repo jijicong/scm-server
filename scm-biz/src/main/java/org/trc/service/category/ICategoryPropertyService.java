@@ -1,8 +1,5 @@
 package org.trc.service.category;
 
-import org.apache.ibatis.annotations.Param;
-import org.trc.domain.category.CategoryBrand;
-import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.service.IBaseService;
 

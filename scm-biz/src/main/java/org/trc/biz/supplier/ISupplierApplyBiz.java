@@ -7,8 +7,6 @@ import org.trc.form.supplier.SupplierApplyAuditForm;
 import org.trc.form.supplier.SupplierApplyForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
-
 /**
  * Created by hzqph on 2017/5/12.
  */

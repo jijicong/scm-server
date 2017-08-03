@@ -5,7 +5,6 @@ import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.model.JDLogisticsResultDO;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 

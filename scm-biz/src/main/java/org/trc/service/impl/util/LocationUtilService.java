@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.domain.util.Area;
 import org.trc.domain.util.AreaTreeNode;
-import org.trc.service.util.ILocationUtilService;
 import org.trc.service.impl.BaseService;
+import org.trc.service.util.ILocationUtilService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sone on 2017/5/6.

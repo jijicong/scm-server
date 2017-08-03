@@ -1,7 +1,5 @@
 package org.trc.util;
 
-import java.util.List;
-
 /**
  * Created by sone on 2017/5/12.
  */

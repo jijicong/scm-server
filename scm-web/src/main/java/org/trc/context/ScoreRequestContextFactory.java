@@ -1,7 +1,5 @@
 package org.trc.context;
 
-import javax.ws.rs.container.ContainerRequestContext;
-
 /**
  * Created by george on 2017/4/7.
  */

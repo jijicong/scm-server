@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.goods.ExternalItemSku;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
 

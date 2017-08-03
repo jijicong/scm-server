@@ -16,7 +16,6 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
-import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
@@ -40,7 +39,6 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
-import org.trc.service.ITrcService;
 import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IExternalItemSkuService;
@@ -56,7 +54,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -1507,10 +1504,10 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> skuses = skusService.select(skus);
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
-            if(null != s.getWeight() && s.getWeight() > 0){
+            if(null != s.getWeight() && s.getWeight() >= 0){
                 s.setWeight2(CommonUtil.getWeight(s.getWeight()));
             }
-            if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
+            if(null != s.getMarketPrice() && s.getMarketPrice() >= 0){
                 s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));
             }
             if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询

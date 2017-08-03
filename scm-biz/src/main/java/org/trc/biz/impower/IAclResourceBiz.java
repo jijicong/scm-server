@@ -5,7 +5,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.JurisdictionTreeNode;
 
 import javax.ws.rs.BeanParam;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 import java.util.Map;
 

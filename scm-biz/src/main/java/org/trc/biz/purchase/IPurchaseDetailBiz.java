@@ -1,6 +1,5 @@
 package org.trc.biz.purchase;
 
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.purchase.PurchaseDetail;
 
 import java.util.List;

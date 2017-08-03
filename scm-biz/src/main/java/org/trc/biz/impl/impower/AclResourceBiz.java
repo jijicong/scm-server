@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclRoleResourceRelation;
@@ -20,13 +19,12 @@ import org.trc.exception.JurisdictionException;
 import org.trc.form.impower.JurisdictionTreeNode;
 import org.trc.service.impower.IAclResourceService;
 import org.trc.service.impower.IAclRoleResourceRelationService;
-import org.trc.service.impower.IAclUserAccreditRoleRelationService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.impower.IAclUserAccreditRoleRelationService;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 
 /**

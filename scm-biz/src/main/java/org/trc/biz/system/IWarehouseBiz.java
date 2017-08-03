@@ -1,10 +1,10 @@
 package org.trc.biz.system;
 
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -18,7 +18,7 @@ public interface IWarehouseBiz {
      * @return  int 插入的数量
      * @throws Exception
      */
-    void saveWarehouse(Warehouse warehouse,ContainerRequestContext requestContext);
+    void saveWarehouse(Warehouse warehouse,AclUserAccreditInfo aclUserAccreditInfo);
     /**
      * 根据仓库名称查找仓库（仓库名是否被使用）
      * @param name 仓库名
@@ -39,7 +39,7 @@ public interface IWarehouseBiz {
      * @return 整数改变
      * @throws Exception
      */
-    void updateWarehouse(Warehouse warehouse,ContainerRequestContext requestContext);
+    void updateWarehouse(Warehouse warehouse,AclUserAccreditInfo aclUserAccreditInfo);
     /**
      * 根据id查询仓库
      * @param id 主键
@@ -53,7 +53,7 @@ public interface IWarehouseBiz {
      * @return
      * @throws Exception
      */
-    void updateWarehouseState(Warehouse warehouse, ContainerRequestContext requestContext);
+    void updateWarehouseState(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 查询有效的仓库

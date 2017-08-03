@@ -1,10 +1,5 @@
 package org.trc.form.JDModel;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import java.math.BigDecimal;
-import java.util.Date;
-
 /**
  * 京东余额明细记录
  * Created by hzwyz on 2017/6/22 0022.

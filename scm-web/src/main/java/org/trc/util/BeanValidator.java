@@ -2,7 +2,6 @@ package org.trc.util;
 
 import org.springframework.stereotype.Component;
 import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ParamValidException;
 
 import javax.validation.ConstraintViolation;

@@ -1,6 +1,5 @@
 package org.trc.service.purchase;
 
-import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
 import org.trc.service.IBaseService;

@@ -2,7 +2,6 @@ package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
-import org.trc.custom.MoneySerializer;
 
 import javax.persistence.Transient;
 import java.util.Date;

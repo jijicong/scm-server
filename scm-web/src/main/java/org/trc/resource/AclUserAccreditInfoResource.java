@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.tairanchina.md.account.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
@@ -13,7 +12,6 @@ import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
-import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;

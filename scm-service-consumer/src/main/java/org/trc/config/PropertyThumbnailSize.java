@@ -3,9 +3,7 @@ package org.trc.config;
 import org.trc.enums.ZeroToNineEnum;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 属性相关图片缩略图尺寸

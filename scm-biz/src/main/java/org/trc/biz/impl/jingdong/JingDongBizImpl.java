@@ -6,29 +6,29 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
+import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.constant.RequestFlowConstant;
+import org.trc.domain.config.Common;
 import org.trc.domain.config.RequestFlow;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.JingDongException;
 import org.trc.form.JDModel.*;
-import org.trc.form.jingdong.MessageDO;
-import org.trc.service.config.IRequestFlowService;
-import org.trc.util.*;
 import org.trc.form.jingdong.AddressDO;
+import org.trc.form.jingdong.MessageDO;
 import org.trc.form.jingdong.NewStockDO;
-import org.trc.biz.jingdong.IJingDongBiz;
-import org.trc.domain.config.Common;
 import org.trc.service.IJDService;
+import org.trc.service.config.IRequestFlowService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.jingdong.ITableMappingService;
+import org.trc.util.*;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
 
 /**

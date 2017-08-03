@@ -1,10 +1,7 @@
 package org.trc.filter;
 
-import org.trc.constants.SupplyConstants;
-
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
 import java.io.IOException;
 
 /**

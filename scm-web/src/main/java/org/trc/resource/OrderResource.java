@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.dict.DictType;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
