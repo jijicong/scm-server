@@ -2,6 +2,7 @@ package org.trc.cache.interceptor;
 
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -42,11 +43,17 @@ public class CacheableInterceptor {
         boolean shouldSet = false;
         try{
             Method method = getMethod(pjp);
-            //org.trc.cache.Cacheable.class
             Cacheable cacheable=method.getAnnotation(Cacheable.class);
             //是否是列表
             isList = cacheable.isList();
             expireTime = cacheable.expireTime();
+            String cls = cacheable.cls();
+           /* try {
+                Class.forName(cls);
+            }catch (ClassNotFoundException e){
+                //这里不做处理，只是用
+                于拼接 key
+            }*/
             String className = pjp.getTarget().getClass().getName();
             //取对应的缓存结果
             if(isList){
@@ -58,7 +65,6 @@ public class CacheableInterceptor {
                 key = className +method.getName()+ parseKey(cacheable.key(),method,pjp.getArgs());
                 result = RedisUtil.getObject(key);
             }
-            
             //到达这一步证明参数正确，没有exception，应该放入缓存
             shouldSet = true;
         }catch(Exception e){

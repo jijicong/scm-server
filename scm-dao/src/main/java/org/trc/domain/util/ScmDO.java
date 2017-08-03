@@ -6,12 +6,13 @@ import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by hzwdx on 2017/5/9.
  */
-public class ScmDO {
+public class ScmDO implements Serializable{
 
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime; //创建时间
