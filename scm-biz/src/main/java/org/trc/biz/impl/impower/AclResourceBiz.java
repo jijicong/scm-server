@@ -176,8 +176,8 @@ public class AclResourceBiz implements IAclResourceBiz {
         /*
         * 1.查询用户授权信息表
         * 2.查询用户所拥有的角色
-        * 3.查询用户所有角色下的权限
-        * 4.查询具体的权限
+        * 3.查询用户所有角色下的父级权限
+        * 4.查询父级权限下的具体的权限
         * 5.验证权限
         * */
         //1.查询用户授权信息表
@@ -374,7 +374,6 @@ public class AclResourceBiz implements IAclResourceBiz {
         List<Long> roleIdList = new ArrayList<>();
         Collections.addAll(roleIdList, roleIds);
         criteria.andIn("roleId", roleIdList);
-        criteria.andGreaterThan("resourceCode", 100000);
         List<AclRoleResourceRelation> roleJdRelationList = roleJurisdictionRelationService.selectByExample(example);
         if (AssertUtil.collectionIsEmpty(roleJdRelationList)) {
             throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
@@ -383,7 +382,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         Set<Long> resourceCodeSet = new HashSet<>();
         for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
             //取得资源码前3位
-            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode() / 1000000);
+            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode() / 100);
         }
         for (Long resourceCode : resourceCodeSet) {
             Map<String, Object> jurisdictionMap = new HashMap<>();
@@ -391,9 +390,9 @@ public class AclResourceBiz implements IAclResourceBiz {
             Set<Long> longSet = new HashSet<>();
             for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
                 //取得资源码前3位
-                if (resourceCode.equals(aclRoleResourceRelation.getResourceCode() / 1000000)) {
+                if (resourceCode.equals(aclRoleResourceRelation.getResourceCode() / 100)) {
                     //取得资源码前5位
-                    longSet.add(aclRoleResourceRelation.getResourceCode() / 10000);
+                    longSet.add(aclRoleResourceRelation.getResourceCode());
                 }
             }
             jurisdictionMap.put("codeList", longSet);

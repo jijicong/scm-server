@@ -6,7 +6,7 @@
     <select id="selectJurisdictionListByCodes" resultType="org.trc.domain.impower.AclResource">
           SELECT  id,code,`name`,url,method FROM acl_resource
           <where>
-              code IN
+              parent_id IN
               <foreach collection="codes" index="index" item="item" close=")" open="(" separator=",">
                   #{item}
               </foreach>
