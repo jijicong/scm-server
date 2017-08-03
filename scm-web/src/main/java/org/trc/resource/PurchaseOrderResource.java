@@ -54,7 +54,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult savePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode(),requestContext);
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("保存采购订单成功","");
 
     }
@@ -62,7 +62,7 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)//因为aop只拦截了save***开始的方法，注入创建人，因此这里的提交审核，也为save开始
     public AppResult saveCommitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) {
-        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode(),requestContext);
+        purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("提交审核采购单成功","");
     }
     @GET
@@ -99,7 +99,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,requestContext);
+        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSucssAppResult("修改采购订单信息成功","");
 
     }
@@ -109,7 +109,7 @@ public class PurchaseOrderResource {
     public AppResult updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
 
         purchaseOrderAddData.setStatus(PurchaseOrderStatusEnum.AUDIT.getCode());
-        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,requestContext);
+        purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSucssAppResult("提交审核修改采购订单信息成功","");
 
     }
@@ -118,7 +118,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.cancelWarahouseAdvice(purchaseOrder,requestContext);
+        purchaseOrderBiz.cancelWarahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("入库通知作废成功","");
 
     }
@@ -153,7 +153,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,requestContext);
+        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("状态修改成功","");
 
     }
@@ -163,7 +163,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,requestContext);
+        purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("采购单冻结状态修改成功","");
 
     }
@@ -172,7 +172,7 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveWarahouseAdvice(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) {
-        purchaseOrderBiz.warahouseAdvice(purchaseOrder,requestContext);
+        purchaseOrderBiz.warahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("入库通知单添加成功","");
     }
 

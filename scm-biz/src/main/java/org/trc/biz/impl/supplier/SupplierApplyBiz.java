@@ -93,9 +93,9 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void auditSupplierApply(SupplierApplyAudit supplierApplyAudit, ContainerRequestContext requestContext) throws Exception {
+    public void auditSupplierApply(SupplierApplyAudit supplierApplyAudit, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierApplyAudit.getId(), "根据ID更新供应商审核信息,参数ID不能为空");
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId =aclUserAccreditInfo.getUserId();
         SupplierApplyAudit updateSupplierApplyAudit = new SupplierApplyAudit();
         updateSupplierApplyAudit.setId(supplierApplyAudit.getId());
         updateSupplierApplyAudit.setStatus(supplierApplyAudit.getStatus());
@@ -114,8 +114,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     }
 
     @Override
-    public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel, ContainerRequestContext requestContext) throws Exception {
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+    public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         map.put("supplierName", queryModel.getSupplierName());
@@ -150,9 +149,8 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext) throws Exception {
+    public void saveSupplierApply(SupplierApply supplierApply, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierApply, "保存供应商申请信息，申请信息不能为空");
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
         Supplier validateSupplier = supplierService.selectByPrimaryKey(supplierApply.getSupplierId());
         if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
@@ -214,9 +212,8 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateSupplierApply(SupplierApply supplierApply, ContainerRequestContext requestContext) throws Exception {
+    public void updateSupplierApply(SupplierApply supplierApply, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierApply, "更新供应商申请申请信息，申请信息不能为空");
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
         Supplier validateSupplier = supplierService.selectByPrimaryKey(supplierApply.getSupplierId());
         if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {

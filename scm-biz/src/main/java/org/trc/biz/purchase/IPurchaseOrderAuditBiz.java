@@ -1,5 +1,6 @@
 package org.trc.biz.purchase;
 
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
@@ -15,13 +16,13 @@ import javax.ws.rs.core.Context;
  */
 public interface IPurchaseOrderAuditBiz {
 
-    Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, ContainerRequestContext requestContext) throws  Exception;
+    Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, AclUserAccreditInfo aclUserAccreditInfo) throws  Exception;
 
     /**
      * 审核采购单
      * @param purchaseOrderAudit
      * @throws Exception
      */
-    void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, ContainerRequestContext requestContext) throws Exception;
+    void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
 }

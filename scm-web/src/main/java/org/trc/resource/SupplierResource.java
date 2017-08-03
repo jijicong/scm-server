@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -46,7 +47,7 @@ public class SupplierResource {
     @Path(SupplyConstants.Supply.Supplier.APPLY_SUPPLIER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext,@BeanParam SupplierForm form) throws Exception {
-        return supplierBiz.supplierPage(page,requestContext,form);
+        return supplierBiz.supplierPage(page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO),form);
     }
 
     @GET
@@ -64,7 +65,7 @@ public class SupplierResource {
              @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
         AppResult appResult = ResultUtil.createSucssAppResult("保存供应商成功", "");
         try {
-            supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
+            supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         }catch (Exception e){
             log.error("保存供应商异常", e);
             appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
@@ -81,7 +82,7 @@ public class SupplierResource {
                                   @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
         AppResult appResult = ResultUtil.createSucssAppResult("更新供应商成功", "");
         try {
-            supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, requestContext);
+            supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         }catch (Exception e){
             log.error("更新供应商异常", e);
             appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
@@ -94,7 +95,7 @@ public class SupplierResource {
     @Path(SupplyConstants.Supply.Supplier.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
-        supplierBiz.updateValid(id, isValid, requestContext);
+        supplierBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("保存供应商成功", "");
     }
 

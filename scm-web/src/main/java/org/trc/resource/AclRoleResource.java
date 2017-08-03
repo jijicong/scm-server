@@ -5,6 +5,7 @@ import org.trc.biz.impower.IAclRoleBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclRoleAddPageData;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -40,7 +41,7 @@ public class AclRoleResource {
     public AppResult updateRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
 
         AclRole aclRole = roleAddPageData;
-        roleBiz.updateRole(aclRole, roleAddPageData.getRoleJurisdiction(),requestContext);
+        roleBiz.updateRole(aclRole, roleAddPageData.getRoleJurisdiction(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSucssAppResult("修改角色信息成功","");
 
     }
@@ -51,7 +52,7 @@ public class AclRoleResource {
     public AppResult saveRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
 
         AclRole aclRole = roleAddPageData;
-        roleBiz.saveRole(aclRole, roleAddPageData.getRoleJurisdiction(),requestContext);
+        roleBiz.saveRole(aclRole, roleAddPageData.getRoleJurisdiction(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSucssAppResult("保存角色资源成功","");
 
     }
@@ -77,7 +78,7 @@ public class AclRoleResource {
     @Path(SupplyConstants.Role.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult  updateRoleState(@BeanParam AclRole aclRole, @Context ContainerRequestContext requestContext){
-        roleBiz.updateRoleState(aclRole,requestContext);
+        roleBiz.updateRoleState(aclRole,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("修改角色状态成功","");
     }
 

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.DictType;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.order.PlatformOrderForm;
@@ -71,7 +72,7 @@ public class OrderResource {
     @Consumes("application/x-www-form-urlencoded")
     public AppResult submitJingDongOrder(@FormParam("warehouseOrderCode") String warehouseOrderCode,
             @FormParam("jdAddressCode") String jdAddressCode, @FormParam("jdAddressName") String jdAddressName, @Context ContainerRequestContext requestContext) throws Exception {
-        return scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName, requestContext);
+        return scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
 }

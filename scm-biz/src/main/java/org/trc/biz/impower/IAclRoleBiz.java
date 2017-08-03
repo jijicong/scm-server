@@ -1,6 +1,7 @@
 package org.trc.biz.impower;
 
 import org.trc.domain.impower.AclRole;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.Pagenation;
 
@@ -22,7 +23,7 @@ public interface IAclRoleBiz {
      * @param aclRole  角色对象
      * @throws Exception
      */
-    void updateRoleState(AclRole aclRole, ContainerRequestContext requestContext);
+    void updateRoleState(AclRole aclRole, AclUserAccreditInfo aclUserAccreditInfo);
     /**
      * 根据角色id，查询使用者(授权用户)的数量
      * @param roleId 角色id
@@ -48,13 +49,13 @@ public interface IAclRoleBiz {
      * @param aclRole
      * @param roleJurisdiction
      */
-    void updateRole(AclRole aclRole, String roleJurisdiction,ContainerRequestContext requestContext);
+    void updateRole(AclRole aclRole, String roleJurisdiction,AclUserAccreditInfo aclUserAccreditInfo);
     /**
      * 角色保存和保存角色与权限资源的对应关系
      * @param aclRole 角色信息
      * @return
      */
-    void saveRole(AclRole aclRole, String roleJurisdiction, ContainerRequestContext requestContext);
+    void saveRole(AclRole aclRole, String roleJurisdiction, AclUserAccreditInfo aclUserAccreditInfo);
 
 
 }

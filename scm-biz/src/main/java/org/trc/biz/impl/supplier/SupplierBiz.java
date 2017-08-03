@@ -221,9 +221,8 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, ContainerRequestContext requestContext, SupplierForm form) throws Exception {
+    public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, AclUserAccreditInfo aclUserAccreditInfo, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
-        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         Map<String, Object> map = new HashMap<>();
         map.put("supplierCode", form.getSupplierCode());
         map.put("supplierName", form.getSupplierName());
@@ -337,7 +336,7 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                             SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception {
+                             SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         //参数校验
         supplierSaveCheck(supplier, certificate);
         //生成序列号
@@ -371,7 +370,7 @@ public class SupplierBiz implements ISupplierBiz {
         String channels = supplier.getChannel();
         saveSupplierChannelRelation(getSupplierChannelRelations(channels, supplier));
         //记录操作日志
-        logInfoService.recordLog(supplier, supplier.getId().toString(), CommonUtil.getUserId(requestContext),
+        logInfoService.recordLog(supplier, supplier.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.ADD.getMessage(), null, null);
     }
 
@@ -405,7 +404,7 @@ public class SupplierBiz implements ISupplierBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
-                               SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, ContainerRequestContext requestContext) throws Exception {
+                               SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplier.getId(), "更新供应商供应商ID不能为空");
         AssertUtil.notNull(supplier.getSupplierCode(), "更新供应商供应商编号不能为空");
         //参数校验
@@ -454,13 +453,13 @@ public class SupplierBiz implements ISupplierBiz {
             _supplier.setSupplierCode(supplier.getSupplierCode());
             _supplier = supplierService.selectOne(_supplier);
             AssertUtil.notNull(_supplier, String.format("根据供应商编码[%s]查询供应商信息为空", supplier.getSupplierCode()));
-            rejectSupplierApply(supplier.getId(), requestContext);
+            rejectSupplierApply(supplier.getId(), aclUserAccreditInfo);
         }
         //记录操作日志
         String remark = null;
         if (isValidFlag)
             remark = String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName());
-        logInfoService.recordLog(supplier, supplier.getId().toString(), CommonUtil.getUserId(requestContext), LogOperationEnum.UPDATE.getMessage(), remark, null);
+        logInfoService.recordLog(supplier, supplier.getId().toString(),aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), remark, null);
     }
 
     /**
@@ -1218,7 +1217,7 @@ public class SupplierBiz implements ISupplierBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateValid(Long id, String isValid, ContainerRequestContext requestContext) throws Exception {
+    public void updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "供应商启用/停用操作供应商ID不能为空");
         AssertUtil.notBlank(isValid, "供应商启用/停用操作参数isValid不能为空");
         Supplier supplier = new Supplier();
@@ -1237,10 +1236,10 @@ public class SupplierBiz implements ISupplierBiz {
         }
         //禁用供应商时将申请该供应商的审批状态为提交审批的供应商申请记录状态改为驳回
         if (StringUtils.equals(supplier.getIsValid(), ZeroToNineEnum.ZERO.getCode())) {
-            rejectSupplierApply(id, requestContext);
+            rejectSupplierApply(id, aclUserAccreditInfo);
         }
         //记录操作日志
-        logInfoService.recordLog(supplier, supplier.getId().toString(), CommonUtil.getUserId(requestContext),
+        logInfoService.recordLog(supplier, supplier.getId().toString(), aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(), String.format("状态更新为%s", ValidEnum.getValidEnumByCode(supplier.getIsValid()).getName()), null);
     }
 
@@ -1250,7 +1249,7 @@ public class SupplierBiz implements ISupplierBiz {
      * @param supplierId 供应商ID
      * @throws Exception
      */
-    private void rejectSupplierApply(Long supplierId, ContainerRequestContext requestContext) throws Exception {
+    private void rejectSupplierApply(Long supplierId, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierId, "供应商启/停用更新供应商申请审批状态参数供应商编码supplierCode不能为空");
         SupplierApply supplierApply = new SupplierApply();
         supplierApply.setSupplierId(supplierId);
@@ -1267,7 +1266,7 @@ public class SupplierBiz implements ISupplierBiz {
                 log.error(msg);
                 throw new SupplierException(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION, msg);
             } else {
-                String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+                String userId = aclUserAccreditInfo.getUserId();
                 AssertUtil.notBlank(userId, "记录供应商停用自动驳回供应商申请审批获取登录用户ID为空");
                 //记录操作日志
                 logInfoService.recordLog(supplierApply2, supplierApply2.getId().toString(), "admin",

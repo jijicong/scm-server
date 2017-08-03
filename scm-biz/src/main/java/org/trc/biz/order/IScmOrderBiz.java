@@ -1,5 +1,6 @@
 package org.trc.biz.order;
 
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
@@ -63,7 +64,7 @@ public interface IScmOrderBiz {
      * @param jdAddressName
      * @return
      */
-    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, ContainerRequestContext requestContext);
+    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      *提交粮油订单

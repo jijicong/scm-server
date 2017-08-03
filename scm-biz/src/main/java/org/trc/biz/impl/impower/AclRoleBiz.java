@@ -11,6 +11,7 @@ import org.trc.biz.impower.IAclRoleBiz;
 import org.trc.biz.impower.IAclRoleResourceRelationBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclRole;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ValidEnum;
@@ -74,7 +75,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateRoleState(AclRole aclRole, ContainerRequestContext requestContext){
+    public void updateRoleState(AclRole aclRole, AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(aclRole,"根据角色对象，修改角色的状态，角色对象为空");
 
@@ -111,7 +112,7 @@ public class AclRoleBiz implements IAclRoleBiz {
         map.put("roleId", updateAclRole.getId());
         userAccreditInfoRoleRelationService.updateStatusByRoleId(map);
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(aclRole,aclRole.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
 
     }
@@ -148,7 +149,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateRole(AclRole aclRole, String roleJurisdiction,ContainerRequestContext requestContext){
+    public void updateRole(AclRole aclRole, String roleJurisdiction,AclUserAccreditInfo aclUserAccreditInfo){
 
         //判断是否是系统用户,系统用户只能修改，系统角色类型，对应的权限,和备注信息
         AssertUtil.notNull(aclRole,"角色更新时,角色对象为空");
@@ -198,7 +199,7 @@ public class AclRoleBiz implements IAclRoleBiz {
         map.put("roleId", aclRole.getId());
         userAccreditInfoRoleRelationService.updateStatusByRoleId(map);
 
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         AclRole aclRole1 = new AclRole();
         aclRole1.setCreateTime(aclRole.getCreateTime());
         logInfoService.recordLog(aclRole1,aclRole.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
@@ -207,13 +208,13 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveRole(AclRole aclRole, String roleJurisdiction, ContainerRequestContext requestContext){
+    public void saveRole(AclRole aclRole, String roleJurisdiction, AclUserAccreditInfo aclUserAccreditInfo){
         AssertUtil.notNull(aclRole,"角色管理模块保存角色信息失败，角色信息为空");
         AclRole tmp = findRoleByName(aclRole.getName());
         AssertUtil.isNull(tmp,String.format("角色名称[name=%s]的名称已存在,请使用其他名称", aclRole.getName()));
         int count=0;
         ParamsUtil.setBaseDO(aclRole);
-        aclRole.setCreateOperator((String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
+        aclRole.setCreateOperator(aclUserAccreditInfo.getUserId());
         count=roleService.insert(aclRole);
         if(count==0){
             String msg = String.format("保存角色%s数据库操作失败", JSON.toJSONString(aclRole));
@@ -222,7 +223,7 @@ public class AclRoleBiz implements IAclRoleBiz {
         }
         //用来保存角色和授权的关联信息
         roleJurisdictionRelationBiz.saveRoleJurisdictionRelations(roleJurisdiction, aclRole.getId());
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         AclRole aclRole1 = new AclRole();
         aclRole1.setCreateTime(aclRole.getCreateTime());
         logInfoService.recordLog(aclRole1,aclRole.getId().toString(),userId, LogOperationEnum.ADD.getMessage(),null,null);
