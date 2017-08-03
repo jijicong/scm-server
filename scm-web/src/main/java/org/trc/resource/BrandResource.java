@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
 import org.trc.form.category.BrandForm;
 import org.trc.util.AppResult;
@@ -58,7 +59,7 @@ public class BrandResource {
     @Path(SupplyConstants.Category.Brand.BRAND)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveBrand(@BeanParam Brand brand , @Context ContainerRequestContext requestContext) throws Exception{
-        brandBiz.saveBrand(brand,requestContext);
+        brandBiz.saveBrand(brand,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("保存品牌成功", "");
     }
 
@@ -81,7 +82,7 @@ public class BrandResource {
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrand(@BeanParam Brand brand, @Context ContainerRequestContext requestContext) throws Exception{
-        brandBiz.updateBrand(brand,requestContext);
+        brandBiz.updateBrand(brand, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("更新品牌成功", "");
     }
 
@@ -89,7 +90,7 @@ public class BrandResource {
     @Path(SupplyConstants.Category.Brand.BRAND_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Brand brand, @Context ContainerRequestContext requestContext)throws Exception{
-        brandBiz.updateBrandStatus(brand,requestContext);
+        brandBiz.updateBrandStatus(brand,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("更新品牌状态成功", "");
     }
 }

@@ -1,6 +1,7 @@
 package org.trc.biz.category;
 
 import org.trc.domain.category.Brand;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
@@ -48,7 +49,7 @@ public interface IBrandBiz {
      * @return
      * @throws Exception
      */
-    void saveBrand(Brand brand, ContainerRequestContext requestContext) throws Exception;
+    void saveBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 根据品牌id查询单个品牌
@@ -66,7 +67,7 @@ public interface IBrandBiz {
      * @return
      * @throws Exception
      */
-    void updateBrand(Brand brand, ContainerRequestContext requestContext) throws Exception;
+    void updateBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 更新品牌状态信息
@@ -75,7 +76,7 @@ public interface IBrandBiz {
      * @return
      * @throws Exception
      */
-    void updateBrandStatus(Brand brand, ContainerRequestContext requestContext) throws Exception;
+    void updateBrandStatus(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 根据品牌名称查询品牌列表

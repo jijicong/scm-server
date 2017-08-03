@@ -177,10 +177,10 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveProperty(Property property, ContainerRequestContext requestContext) throws Exception {
+    public void saveProperty(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfo.getUserId();
         if (!StringUtils.isBlank(userId)) {
             property.setLastEditOperator(userId);
             property.setCreateOperator(userId);
@@ -235,7 +235,7 @@ public class PropertyBiz implements IPropertyBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateProperty(Property property, ContainerRequestContext requestContext) throws Exception {
+    public void updateProperty(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property.getId(), "根据ID更新属性信息参数ID为空");
         //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
         Property selectProperty = propertyService.selectOneById(property.getId());
@@ -247,7 +247,7 @@ public class PropertyBiz implements IPropertyBiz {
         criteria.andEqualTo("propertyId", property.getId());
         List<PropertyValue> selectPropertyValues = propertyValueService.selectByExample(example);
         property.setUpdateTime(Calendar.getInstance().getTime());
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId =aclUserAccreditInfo.getUserId();
         if (!StringUtils.isBlank(userId)) {
             property.setLastEditOperator(userId);
         }
@@ -397,7 +397,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updatePropertyStatus(Property property, ContainerRequestContext requestContext) throws Exception {
+    public void updatePropertyStatus(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
         //查询变更属性
         Property selectProperty = propertyService.selectOneById(property.getId());
@@ -411,7 +411,7 @@ public class PropertyBiz implements IPropertyBiz {
         String remark = null;
         Property updateProperty = new Property();
         updateProperty.setId(property.getId());
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId =aclUserAccreditInfo.getUserId();
         if (!StringUtils.isBlank(userId)) {
             property.setLastEditOperator(userId);
         }

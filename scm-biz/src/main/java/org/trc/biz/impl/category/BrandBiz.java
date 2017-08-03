@@ -232,13 +232,13 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
+    public void saveBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
         brand.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brand.getCreateTime())));
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         if(!StringUtils.isBlank(userId)){
             brand.setCreateOperator(userId);
             brand.setLastEditOperator(userId);
@@ -276,12 +276,12 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateBrand(Brand brand, ContainerRequestContext requestContext) throws Exception {
+    public void updateBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
         String remark=null;
         Brand selectBrand=brandService.selectOneById(brand.getId());
         brand.setUpdateTime(Calendar.getInstance().getTime());
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId= aclUserAccreditInfo.getUserId();
         if(!StringUtils.isBlank(userId)){
             brand.setLastEditOperator(userId);
         }
@@ -315,7 +315,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateBrandStatus(Brand brand, ContainerRequestContext requestContext) throws Exception {
+    public void updateBrandStatus(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
         Brand selectBrand=brandService.selectOneById(brand.getId());
         Brand updateBrand = new Brand();
@@ -329,8 +329,7 @@ public class BrandBiz implements IBrandBiz {
             updateBrand.setIsValid(ValidEnum.VALID.getCode());
             remark=remarkEnum.VALID_ON.getMessage();
         }
-        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        String userId= aclUserAccreditInfo.getUserId();
         if(!StringUtils.isBlank(userId)){
             updateBrand.setLastEditOperator(userId);
         }

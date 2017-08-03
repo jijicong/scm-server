@@ -7,6 +7,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -38,7 +39,7 @@ public class PropertyResource {
     @Path(SupplyConstants.Category.Property.PROPERTY)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveProperty(@BeanParam Property property, @Context ContainerRequestContext requestContext)throws Exception{
-        propertyBiz.saveProperty(property, requestContext);
+        propertyBiz.saveProperty(property, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("属性保存成功","");
     }
 
@@ -46,7 +47,7 @@ public class PropertyResource {
     @Path(SupplyConstants.Category.Property.PROPERTY +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateProperty(@BeanParam Property property, @Context ContainerRequestContext requestContext) throws Exception{
-        propertyBiz.updateProperty(property,requestContext);
+        propertyBiz.updateProperty(property,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("属性更改成功","");
     }
 
@@ -68,7 +69,7 @@ public class PropertyResource {
     @Path(SupplyConstants.Category.Property.PROPERTY_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Property Property, @Context ContainerRequestContext requestContext)throws Exception{
-        propertyBiz.updatePropertyStatus(Property,requestContext);
+        propertyBiz.updatePropertyStatus(Property,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("更新属性状态成功", "");
     }
 
