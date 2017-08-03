@@ -602,4 +602,12 @@ public class JingDongBizImpl implements IJingDongBiz {
         page = returnTypeDO.getResult();
         return page;
     }
+
+    /**
+     * 获取所有京东交易类型
+     * @return
+     */
+    public ReturnTypeDO getAllTreadType() throws Exception{
+        return ijdService.getAllTreadType();
+    }
 }

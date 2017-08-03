@@ -3,10 +3,8 @@ package org.trc.cache.interceptor;
 import java.lang.reflect.Method;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -43,20 +41,22 @@ public class CacheableInterceptor {
         //是否应该将结果放入缓存
         boolean shouldSet = false;
         try{
-        		Method method=getMethod(pjp);
-            Cacheable cacheable=method.getAnnotation(org.trc.cache.Cacheable.class);
+            Method method = getMethod(pjp);
+            //org.trc.cache.Cacheable.class
+            Cacheable cacheable=method.getAnnotation(Cacheable.class);
             //是否是列表
             isList = cacheable.isList();
             expireTime = cacheable.expireTime();
             String className = pjp.getTarget().getClass().getName();
-            	//取对应的缓存结果
+            //取对应的缓存结果
             if(isList){
-        			key = className + "LIST";
-        			listKey = method.toString() + parseKey(cacheable.key(),method,pjp.getArgs());
-        	        result= RedisUtil.hget(key,listKey);
+                key = className + "LIST";
+                listKey = method.toString() + parseKey(cacheable.key(),method,pjp.getArgs());
+                result= RedisUtil.hget(key,listKey);
             }else{
-            		key = className + parseKey(cacheable.key(),method,pjp.getArgs());
-            		result = RedisUtil.getObject(key);
+                //类名,方法名,key值保证 key的唯一
+                key = className +method.getName()+ parseKey(cacheable.key(),method,pjp.getArgs());
+                result = RedisUtil.getObject(key);
             }
             
             //到达这一步证明参数正确，没有exception，应该放入缓存
@@ -134,4 +134,5 @@ public class CacheableInterceptor {
         }
         return parser.parseExpression(key).getValue(context,String.class);
     }
+
 }

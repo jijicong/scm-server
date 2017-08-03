@@ -101,4 +101,8 @@ public interface IAclResourceBiz {
     void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode);
 
     List<Map<String,Object>> getHtmlJurisdiction(String userId);
+
+    List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId);
+
+    List<AclResource> findChannelJurisdictionAndCheckedModuleByRoleId(Long roleId);
 }

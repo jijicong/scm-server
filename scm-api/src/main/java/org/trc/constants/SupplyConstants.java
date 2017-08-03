@@ -305,6 +305,8 @@ public class SupplyConstants {
         public static final String ROLE_PAGE = "rolePage";
         //授权的用户使用名查询
         public static final String ROLE = "role";
+
+        public static final String ROLE_MODULE = "roleModule";
         //角色用户授权入口
         public static final String ROLE_ACCREDITINFO = "roleAccreditInfo";
         //状态的修改
@@ -693,6 +695,8 @@ public class SupplyConstants {
         public static final String TRACK = "track";
         //查询余额对账明细路径
         public static final String CHECK_BALANCE = "check";
+        //查询所有业务类型路径
+        public static final String GET_ALL_TREAD_TYPE = "treadType";
 
     }
 

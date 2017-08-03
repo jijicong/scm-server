@@ -18,6 +18,8 @@ import org.springframework.util.Assert;
 import org.trc.cache.CacheEvit;
 import org.trc.util.RedisUtil;
 
+import javax.ws.rs.container.ContainerRequestContext;
+
 @Component
 @Aspect
 public class CacheEvitInterceptor {
@@ -53,7 +55,8 @@ public class CacheEvitInterceptor {
 			RedisUtil.delObject(className + "LIST");
 			String[] keys = cacheevit.key();
 			for (String key : keys) {
-				key = className + parseKey(key, method, pjp.getArgs());
+				String parseKey =  parseKey(key, method, pjp.getArgs());
+				key = className + parseKey;
 				// 本体
 				RedisUtil.delObject(key);
 			}
@@ -78,11 +81,17 @@ public class CacheEvitInterceptor {
 		Object[] args = pjp.getArgs();
 		Class[] argTypes = new Class[pjp.getArgs().length];
 		for (int i = 0; i < args.length; i++) {
-			argTypes[i] = args[i].getClass();
+			if("ContainerRequest".equals(args[i].getClass().getSimpleName())){
+				argTypes[i] = ContainerRequestContext.class;
+			}else {
+				argTypes[i] = args[i].getClass();
+			}
 		}
+
 		Method method = null;
 		try {
-			method = pjp.getTarget().getClass().getMethod(pjp.getSignature().getName(), argTypes);
+			String name =  pjp.getSignature().getName();
+			method = pjp.getTarget().getClass().getMethod(name, argTypes);
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		} catch (SecurityException e) {

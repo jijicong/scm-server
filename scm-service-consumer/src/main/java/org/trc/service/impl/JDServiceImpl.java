@@ -20,6 +20,7 @@ import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -946,6 +947,31 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
-
+    public ReturnTypeDO getAllTreadType(){
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getTreadTypeUrl();
+            response = HttpClientUtil.httpGetRequest(url);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray page = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(page);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用查询业务类型接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用查询业务类型接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
 
 }

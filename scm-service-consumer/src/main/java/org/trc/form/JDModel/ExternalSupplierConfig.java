@@ -30,6 +30,8 @@ public class ExternalSupplierConfig {
     private String companyName;
     //京东对账明细
     private String checkOrderDetailUrl;
+    //京东业务类型接口
+    private String treadTypeUrl;
 
     //粮油下单接口地址
     private String lySubmitOrderUrl;
@@ -144,5 +146,13 @@ public class ExternalSupplierConfig {
 
     public void setCheckOrderDetailUrl(String checkOrderDetailUrl) {
         this.checkOrderDetailUrl = checkOrderDetailUrl;
+    }
+
+    public String getTreadTypeUrl() {
+        return treadTypeUrl;
+    }
+
+    public void setTreadTypeUrl(String treadTypeUrl) {
+        this.treadTypeUrl = treadTypeUrl;
     }
 }

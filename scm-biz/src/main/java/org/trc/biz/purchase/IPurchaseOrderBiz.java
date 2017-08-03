@@ -21,14 +21,14 @@ import java.util.List;
  */
 public interface IPurchaseOrderBiz {
 
-    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page,ContainerRequestContext requestContext) ;
+    Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form,Pagenation<PurchaseOrder> page,String channelCode) ;
     /**
      * 根据渠道用户的id查询对应的供应商
-     * @param requestContext
+     * @param userId
      * @return
      * @
      */
-    List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext) ;
+    List<Supplier> findSuppliersByUserId(String userId) ;
 
     /**
      * 根据供应商的code查询可采购的商品列表-(排除已经在采购列表出现的商品)

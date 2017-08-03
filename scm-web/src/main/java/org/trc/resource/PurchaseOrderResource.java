@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
@@ -13,6 +14,7 @@ import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -38,8 +40,12 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext){
 
+        Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        AssertUtil.notNull(obj,"查询订单分页中,获得授权信息失败");
+        AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)obj;
+        String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         //采购订单分页查询列表
-        return  purchaseOrderBiz.purchaseOrderPage(form , page,requestContext);
+        return  purchaseOrderBiz.purchaseOrderPage(form , page,channelCode);
 
     }
 
@@ -64,7 +70,9 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<List<Supplier>> findSuppliers(@Context ContainerRequestContext requestContext)  {
 
-        return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(requestContext));
+        String userId = (String)requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+
+        return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(userId));
 
     }
 

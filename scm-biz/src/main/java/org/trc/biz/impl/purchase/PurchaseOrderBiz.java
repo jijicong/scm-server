@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
+import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
@@ -101,12 +102,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,ContainerRequestContext requestContext)  {
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
+    public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
-        Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
-        AssertUtil.notNull(obj,"查询订单分页中,获得授权信息失败");
-        AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)obj;
-        String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         AssertUtil.notBlank(channelCode,"未获得授权");
         Example example = setCondition(form,channelCode);
         if(example!=null){
@@ -332,11 +330,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public List<Supplier> findSuppliersByUserId(ContainerRequestContext requestContext)  {
+    @Cacheable(key="#userId")
+    public List<Supplier> findSuppliersByUserId(String userId)  {
         //根据渠道用户查询对应的供应商
-        String userId = (String)requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        AssertUtil.notBlank(userId ,"获取用户id失败");
         if (StringUtils.isBlank(userId)) {
-            String msg = CommonUtil.joinStr("根据userId查询供应商的参数userId为空").toString();
+            String msg = "根据userId查询供应商的参数userId为空";
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
@@ -370,7 +369,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             BigDecimal bd = new BigDecimal("100");
             paymentProportion=paymentProportion.divide(bd);
             if(paymentProportion.doubleValue()>1 || paymentProportion.doubleValue()<=0){ //范围校验
-                String msg = CommonUtil.joinStr("采购单保存,付款比例超出范围").toString();
+                String msg = "采购单保存,付款比例超出范围";
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
@@ -378,7 +377,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         count = purchaseOrderService.insert(purchaseOrder);
         if (count<1){
-            String msg = CommonUtil.joinStr("采购单保存,数据库操作失败").toString();
+            String msg = "采购单保存,数据库操作失败";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }

@@ -78,4 +78,16 @@ public class PurchaseOrderForm extends QueryModel{
         this.purchaseType = purchaseType;
     }
 
+    @Override
+    public String toString() {
+        return "PurchaseOrderForm{" +
+                "purchaseOrderCode='" + purchaseOrderCode + '\'' +
+                ", supplierName='" + supplierName + '\'' +
+                ", purchaseName='" + purchaseName + '\'' +
+                ", purchaseStatus='" + purchaseStatus + '\'' +
+                ", purchaseType='" + purchaseType + '\'' +
+                ", orderBy='" + orderBy + '\'' +
+                ", order='" + order + '\'' +
+                '}';
+    }
 }

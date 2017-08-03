@@ -37,6 +37,7 @@
         <property name="jdSubmitOrderUrl" value="${jd.submitOrder.url}"/>
         <property name="lySubmitOrderUrl" value="${ly.submitOrder.url}"/>
         <property name="checkOrderDetailUrl" value="${jd.checkOrderDetail.url}"/>
+        <property name="treadTypeUrl" value="${jd.treadType.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

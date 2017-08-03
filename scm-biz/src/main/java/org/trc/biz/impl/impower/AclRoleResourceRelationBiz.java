@@ -55,46 +55,6 @@ public class AclRoleResourceRelationBiz implements IAclRoleResourceRelationBiz {
 
     }
 
-    /**
-     * 根据模块资源,查询对应的三级资源,保存关联关系
-     */
-    public void saveRoleJurisdictionRelationsModule(String roleJurisdiction, Long roleId){
-
-        AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
-        AssertUtil.notBlank(roleJurisdiction,"根据权限id,角色和权限关联保存失败,参数name[]为空");
-        Long[]  roleJurisdictions=StringUtil.splitByComma(roleJurisdiction);
-        List<Long> longList = Arrays.asList(roleJurisdictions);
-        Example example = new Example(AclRoleResourceRelation.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("parentId",longList);
-        List<AclResource> aclResources = aclResourceService.selectByExample(example);
-        if (CollectionUtils.isEmpty(aclResources)){
-            String msg = "保存角色和权限关系,数据库操作失败";
-            logger.error(msg);
-            throw new RoleException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
-        }
-        List<AclRoleResourceRelation> aclRoleResourceRelationList =new ArrayList<>();
-
-        for (AclResource aclResource : aclResources) {
-            AclRoleResourceRelation aclRoleResourceRelation =new AclRoleResourceRelation();
-            aclRoleResourceRelation.setRoleId(roleId);
-            aclRoleResourceRelation.setResourceCode(aclResource.getCode());
-            aclRoleResourceRelation.setCreateTime(Calendar.getInstance().getTime());
-            aclRoleResourceRelation.setUpdateTime(aclRoleResourceRelation.getCreateTime());
-
-            aclRoleResourceRelationList.add(aclRoleResourceRelation);
-        }
-
-        int count=0;
-        count=roleJuridictionRelationService.insertList(aclRoleResourceRelationList);
-        if(count==0){
-            String msg = "保存角色和权限关系,数据库操作失败";
-            logger.error(msg);
-            throw new RoleException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
-        }
-
-    }
-
     @Override
     public void saveRoleJurisdictionRelations(String roleJurisdiction, Long roleId){
         AssertUtil.notNull(roleId,"角色和权限关联保存失败，角色id为空");
