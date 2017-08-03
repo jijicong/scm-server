@@ -1,5 +1,6 @@
 package org.trc.biz.warehouseNotice;
 
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.warehouse.WarehouseNoticeForm;
@@ -17,13 +18,13 @@ public interface IWarehouseNoticeBiz {
      * @param page 分页查询的条件
      * @return 返回分页的内容
      */
-    Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page,ContainerRequestContext requestContext);
+    Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page,AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 执行通知收货
      * @param warehouseNotice
      */
-    void receiptAdvice(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext);
+    void receiptAdvice(WarehouseNotice warehouseNotice,AclUserAccreditInfo aclUserAccreditInfo);
 
     /** 根据入库通知单的id查询入库通知单
      * @param id
@@ -41,8 +42,8 @@ public interface IWarehouseNoticeBiz {
     /**
      * 入库通知单详情页的入库通知操作
      * @param warehouseNotice
-     * @param requestContext
+     * @param aclUserAccreditInfo
      */
-    void  receiptAdviceInfo(WarehouseNotice warehouseNotice,ContainerRequestContext requestContext);
+    void  receiptAdviceInfo(WarehouseNotice warehouseNotice,AclUserAccreditInfo aclUserAccreditInfo);
 
 }

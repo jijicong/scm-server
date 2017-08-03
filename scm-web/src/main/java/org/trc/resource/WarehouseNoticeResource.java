@@ -4,6 +4,7 @@ import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
@@ -35,7 +36,7 @@ public class WarehouseNoticeResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Pagenation<WarehouseNotice> warehouseNoticePage(@BeanParam WarehouseNoticeForm form, @BeanParam Pagenation<WarehouseNotice> page,@Context ContainerRequestContext requestContext){
 
-        return warehouseNoticeBiz.warehouseNoticePage(form,page,requestContext);
+        return warehouseNoticeBiz.warehouseNoticePage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
 
     }
 
@@ -44,7 +45,7 @@ public class WarehouseNoticeResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult receiptAdvice(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
 
-        warehouseNoticeBiz.receiptAdvice(warehouseNotice,requestContext);
+        warehouseNoticeBiz.receiptAdvice(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("通知收货成功","");
 
     }
@@ -54,7 +55,7 @@ public class WarehouseNoticeResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
         //入库通知单详情页的入库通知操作
-        warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,requestContext);
+        warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("通知收货成功","");
 
     }
