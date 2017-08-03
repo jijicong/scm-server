@@ -688,6 +688,7 @@ public class CategoryBiz implements ICategoryBiz {
         List<Brand> brands = brandService.selectBrandList(brandIdsList);
         Category category = new Category();
         category.setId(categoryId);
+        List<String> noValidName = new ArrayList<>();
         category = categoryService.selectOne(category);
         AssertUtil.notNull(category, "根据Id未查询到分类!");
         List<CategoryBrand> categoryBrands = new ArrayList<>();
@@ -696,11 +697,18 @@ public class CategoryBiz implements ICategoryBiz {
             categoryBrand.setBrandCode(brand.getBrandCode());
             categoryBrand.setBrandId(brand.getId());
             categoryBrand.setCategoryId(category.getId());
-            categoryBrand.setIsValid(brand.getIsValid());
+            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())) {
+                noValidName.add(brand.getName());
+            } else {
+                categoryBrand.setIsValid(brand.getIsValid());
+            }
             categoryBrand.setIsDeleted(brand.getIsDeleted());
             categoryBrand.setCategoryCode(category.getCategoryCode());
             categoryBrand.setCreateTime(Calendar.getInstance().getTime());
             categoryBrands.add(categoryBrand);
+        }
+        if (!AssertUtil.collectionIsEmpty(noValidName)) {
+            throw new CategoryException(ExceptionEnum.CATEGORY_LINK_LEVEL_EXCEPTION, String.format("请先删除已经停用的品牌[%s]", StringUtils.join(noValidName, SupplyConstants.Symbol.COMMA)));
         }
         return categoryBrands;
     }
@@ -752,7 +760,7 @@ public class CategoryBiz implements ICategoryBiz {
         AssertUtil.notNull(categoryId, "分类关联属性categoryId为空");
         AssertUtil.notBlank(jsonDate, "分类关联属性表格数据为空");
         categoryLevel(categoryId);
-        List<TableDate> tableDates = JSONArray.parseArray(jsonDate, TableDate.class);
+        List<TableDate> tableDates = checkPropertyValid(jsonDate);
         //需要新增的的数据
         List<CategoryProperty> insertProperties = new ArrayList<>();
         //需要排序的数据
@@ -874,6 +882,37 @@ public class CategoryBiz implements ICategoryBiz {
         }
         recordLinkLog(categoryId, requestContext, "属性");
 
+    }
+
+    /**
+     * 检验属性起停用状态
+     * @param jsonDate
+     * @return
+     */
+    private List<TableDate> checkPropertyValid(String jsonDate) {
+        List<Long> pageIds = new ArrayList<>();
+        List<String> noValidName = new ArrayList<>();
+        List<TableDate> tableDates = JSONArray.parseArray(jsonDate, TableDate.class);
+        for (TableDate tableDate : tableDates) {
+            if (!StringUtils.equals(tableDate.getStatus(), ZeroToNineEnum.THREE.getCode())) {
+                pageIds.add(tableDate.getPropertyId());
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(pageIds)) {
+            Example exampleIds = new Example(Property.class);
+            Example.Criteria criteriaIds = exampleIds.createCriteria();
+            criteriaIds.andIn("id", pageIds);
+            criteriaIds.andEqualTo("isValid", ZeroToNineEnum.ZERO.getCode());
+            List<Property> pagePropertyList = propertyService.selectByExample(exampleIds);
+            if (!AssertUtil.collectionIsEmpty(pagePropertyList)) {
+                pagePropertyList.stream().
+                        forEach(pageProperty -> {
+                            noValidName.add(pageProperty.getName());
+                        });
+                throw new CategoryException(ExceptionEnum.CATEGORY_LINK_LEVEL_EXCEPTION, String.format("请先删除已经停用的属性[%s]", StringUtils.join(noValidName, SupplyConstants.Symbol.COMMA)));
+            }
+        }
+        return tableDates;
     }
 
     /**
