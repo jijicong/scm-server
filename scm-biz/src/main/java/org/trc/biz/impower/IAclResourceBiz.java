@@ -1,6 +1,7 @@
 package org.trc.biz.impower;
 
 import org.trc.domain.impower.AclResource;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.JurisdictionTreeNode;
 
 import javax.ws.rs.BeanParam;
@@ -90,7 +91,7 @@ public interface IAclResourceBiz {
      * @param jurisdictionTreeNode
      * @throws Exception
      */
-    void saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,ContainerRequestContext requestContext);
+    void saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 编辑资源

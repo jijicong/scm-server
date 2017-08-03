@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclResource;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.JurisdictionTreeNode;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
@@ -112,7 +113,7 @@ public class AclResourceResource {
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_SAVE)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,@Context ContainerRequestContext requestContext) {
-        jurisdictionBiz.saveJurisdiction(jurisdictionTreeNode,requestContext);
+        jurisdictionBiz.saveJurisdiction(jurisdictionTreeNode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("新增权限资源成功", "");
     }
 

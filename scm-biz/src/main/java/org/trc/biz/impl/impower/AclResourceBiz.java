@@ -289,7 +289,7 @@ public class AclResourceBiz implements IAclResourceBiz {
      * @throws Exception
      */
     @Override
-    public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, ContainerRequestContext requestContext) {
+    public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, AclUserAccreditInfo aclUserAccreditInfo) {
         String code = "";
         //生成code
         if (jurisdictionTreeNode.getParentId() != null) {
