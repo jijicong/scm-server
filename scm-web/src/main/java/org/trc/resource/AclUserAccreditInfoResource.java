@@ -46,7 +46,7 @@ public class AclUserAccreditInfoResource {
         return ResultUtil.createSucssAppResult("查询采购员成功", userAccreditInfoBiz.findPurchase());
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE + "/{id}")
     public AppResult updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo,@Context ContainerRequestContext requestContext){
         userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo,requestContext);

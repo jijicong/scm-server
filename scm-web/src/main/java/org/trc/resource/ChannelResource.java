@@ -78,7 +78,7 @@ public class ChannelResource {
     }
 
     //渠道状态的修改
-    @POST
+    @PUT
     @Path(SupplyConstants.Channel.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateChannelState(@BeanParam Channel channel){

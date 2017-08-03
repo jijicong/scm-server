@@ -91,7 +91,7 @@ public class SupplierResource {
         return appResult;
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.Supply.Supplier.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {

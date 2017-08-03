@@ -34,7 +34,7 @@ public class PurchaseGroupResource {
         return purchaseGroupBiz.purchaseGroupPage(form , page);
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.PurchaseGroup.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseStatus(@BeanParam PurchaseGroup purchaseGroup,@Context ContainerRequestContext requestContext){

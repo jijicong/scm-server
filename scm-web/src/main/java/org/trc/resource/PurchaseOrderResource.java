@@ -113,7 +113,7 @@ public class PurchaseOrderResource {
         return  ResultUtil.createSucssAppResult("提交审核修改采购订单信息成功","");
 
     }
-    @POST
+    @PUT
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_UPDATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
@@ -148,7 +148,7 @@ public class PurchaseOrderResource {
 
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.PurchaseOrder.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
@@ -158,7 +158,7 @@ public class PurchaseOrderResource {
 
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.PurchaseOrder.FREEZE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
@@ -168,7 +168,7 @@ public class PurchaseOrderResource {
 
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveWarahouseAdvice(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) {
