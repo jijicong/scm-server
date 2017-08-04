@@ -820,13 +820,8 @@ public class SupplierBiz implements ISupplierBiz {
             s.setUpdateTime(sysTime);
             String isValid = jbo.getString("isValid");
             s.setIsValid(isValid);
-            if (!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的分类
-                //检查分类启停用状态
-                checkCategoryBrandValidStatus(s.getCategoryId(), null);
-            }
-            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
-                deleteList.add(s.getId());
-            }
+            //检查分类启停用状态
+            checkCategoryBrandValidStatus(s.getCategoryId(), null);
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
             tmpList.add(s);
@@ -976,9 +971,6 @@ public class SupplierBiz implements ISupplierBiz {
             if (!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的品牌
                 //检查品牌启停用状态
                 checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
-            }
-            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
-                delList.add(s);
             }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
