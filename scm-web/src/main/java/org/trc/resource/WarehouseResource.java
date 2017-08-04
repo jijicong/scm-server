@@ -59,7 +59,7 @@ public class WarehouseResource {
         return  ResultUtil.createSucssAppResult("修改仓库信息成功","");
     }
     //仓库状态的修改
-    @POST
+    @PUT
     @Path(SupplyConstants.Warehouse.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateWarehouseState(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){

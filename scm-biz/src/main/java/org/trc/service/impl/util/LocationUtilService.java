@@ -1,11 +1,16 @@
 package org.trc.service.impl.util;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.trc.cache.Cacheable;
 import org.trc.domain.util.Area;
 import org.trc.domain.util.AreaTreeNode;
+import org.trc.mapper.util.ILocationMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.util.ILocationUtilService;
+import tk.mybatis.mapper.common.Mapper;
+import tk.mybatis.mapper.common.MySqlMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +23,18 @@ import java.util.Map;
 @Service("locationUtilService")
 public class LocationUtilService extends BaseService<Area,Long> implements ILocationUtilService {
 
+
+    @Autowired
+    private ILocationMapper mapper;
+
     @Value("${areaId}")
     private Long areaId;
+
+    @Override
+    @Cacheable(key = "#record")
+    public Area selectOne(Area record) {
+        return mapper.selectOne(record);
+    }
 
     public List<AreaTreeNode> getTreeNodeFromLocation() throws Exception{
          //1.获得location

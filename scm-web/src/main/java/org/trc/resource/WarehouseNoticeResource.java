@@ -38,7 +38,7 @@ public class WarehouseNoticeResource {
 
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult receiptAdvice(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
@@ -48,7 +48,7 @@ public class WarehouseNoticeResource {
 
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){

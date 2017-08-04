@@ -141,4 +141,21 @@ public class Warehouse extends BaseDO{
     public void setAddress(String address) {
         this.address = address;
     }
+
+    @Override
+    public String toString() {
+        return "Warehouse{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", warehouseTypeCode='" + warehouseTypeCode + '\'' +
+                ", isCustomsClearance=" + isCustomsClearance +
+                ", province='" + province + '\'' +
+                ", city='" + city + '\'' +
+                ", area='" + area + '\'' +
+                ", address='" + address + '\'' +
+                ", remark='" + remark + '\'' +
+                ", allAreaName='" + allAreaName + '\'' +
+                '}';
+    }
 }

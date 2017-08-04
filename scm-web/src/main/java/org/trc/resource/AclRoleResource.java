@@ -74,7 +74,7 @@ public class AclRoleResource {
 
     }
     //修改角色的状态
-    @POST
+    @PUT
     @Path(SupplyConstants.Role.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult  updateRoleState(@BeanParam AclRole aclRole, @Context ContainerRequestContext requestContext){

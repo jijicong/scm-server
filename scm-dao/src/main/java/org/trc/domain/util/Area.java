@@ -68,4 +68,15 @@ public class Area implements Serializable {
         this.parent = parent;
     }
 
+    @Override
+    public String toString() {
+        return "Area{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", province='" + province + '\'' +
+                ", city='" + city + '\'' +
+                ", district='" + district + '\'' +
+                ", parent=" + parent +
+                '}';
+    }
 }

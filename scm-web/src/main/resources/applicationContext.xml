@@ -2,10 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
 
 <!-- 将多个配置文件读取到容器中，交给Spring管理 -->
@@ -17,6 +17,7 @@
                 <value>classpath:config/${package.environment}/trc.properties</value>
                 <value>classpath:config/${package.environment}/redis.properties</value>
                 <value>classpath:config/${package.environment}/config.properties</value>
+                <value>classpath:config/${package.environment}/cron.properties</value>
             </list>
         </property>
         <property name="fileEncoding">
@@ -42,8 +43,8 @@
     <context:component-scan base-package="org.trc"/>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
 
-   <!-- <task:scheduled-tasks>
-        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */10 * * * ?"/>
+    <!--<task:scheduled-tasks>
+        <task:scheduled ref="retryBiz" method="faileRetry" cron="${retry.init.start}"/>
     </task:scheduled-tasks>-->
 
 </beans>

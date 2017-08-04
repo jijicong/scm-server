@@ -64,7 +64,7 @@ public class PropertyResource {
         return ResultUtil.createSucssAppResult("属性查询成功",propertyBiz.findPropertyById(id));
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.Category.Property.PROPERTY_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateBrandStatus(@BeanParam Property Property, @Context ContainerRequestContext requestContext)throws Exception{

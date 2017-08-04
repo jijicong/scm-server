@@ -7,8 +7,6 @@ import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
 import java.util.List;
 
 /**
@@ -49,7 +47,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param
      * @throws Exception
      */
-    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo,ContainerRequestContext requestContext);
+    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo,AclUserAccreditInfo aclUserAccreditInfoContext);
 
     /**
      * 根据名称查询用户授权信息
@@ -88,7 +86,7 @@ public interface IAclUserAccreditInfoBiz {
     /**
      * 新增授权
      */
-    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext);
+    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext);
 
     /**
      * 根据ID查询用户
@@ -105,7 +103,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param userAddPageDate
      * @throws Exception
      */
-    void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext);
+    void updateUserAccredit(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext);
 
     /**
      * 手机号校验

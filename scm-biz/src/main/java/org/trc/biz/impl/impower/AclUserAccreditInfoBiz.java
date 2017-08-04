@@ -53,7 +53,6 @@ import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -223,7 +222,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo, ContainerRequestContext requestContext) {
+    public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo, AclUserAccreditInfo aclUserAccreditInfoContext) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         AclUserAccreditInfo updateAclUserAccreditInfo = new AclUserAccreditInfo();
@@ -243,7 +242,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
         }
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfoContext.getUserId();
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
         logInfoService.recordLog(aclUserAccreditInfo, String.valueOf(aclUserAccreditInfo.getId()), userId, "修改", "状态改为" + state, null);
 
@@ -308,7 +307,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) {
+    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate,  AclUserAccreditInfo aclUserAccreditInfoContext) {
         checkUserAddPageDate(userAddPageDate);
         if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
@@ -334,7 +333,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         aclUserAccreditInfo.setUserType(userAddPageDate.getUserType());
         aclUserAccreditInfo.setUserId(userDO.getUserId());
         aclUserAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        aclUserAccreditInfo.setCreateOperator(userAddPageDate.getCreateOperator());
+        aclUserAccreditInfo.setCreateOperator(aclUserAccreditInfoContext.getUserId());
         aclUserAccreditInfo.setIsValid(userAddPageDate.getIsValid());
         aclUserAccreditInfo.setCreateTime(Calendar.getInstance().getTime());
         aclUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
@@ -431,7 +430,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void updateUserAccredit(AclUserAddPageDate userAddPageDate, ContainerRequestContext requestContext) {
+    public void updateUserAccredit(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
@@ -469,7 +468,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         AssertUtil.notNull(userDO, "用户中心未查询到该用户");
         AclUserAccreditInfo aclUserAccreditInfo = userAddPageDate;
         aclUserAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        String userId = (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        String userId = aclUserAccreditInfoContext.getUserId();
         if (!StringUtils.isBlank(userId)) {
             aclUserAccreditInfo.setCreateOperator(userId);
         }

@@ -1,6 +1,7 @@
 package org.trc.service.impl.system;
 
 import org.springframework.stereotype.Service;
+import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.mapper.system.IWarehouseMapper;
 import org.trc.service.System.IWarehouseService;
@@ -14,8 +15,10 @@ import java.util.List;
  */
 @Service("warehouseService")
 public class WarehouseService extends BaseService<Warehouse,Long> implements IWarehouseService{
+
     @Resource
     private IWarehouseMapper warehouseMapper;
+
 
     @Override
     public List<Warehouse> selectWarehouseNames(String strs[]) {

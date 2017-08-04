@@ -99,7 +99,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
+    //@Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
     public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
         AssertUtil.notBlank(channelCode,"未获得授权");
@@ -327,7 +327,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Cacheable(key="#userId")
+    //@Cacheable(key="#userId")
     public List<Supplier> findSuppliersByUserId(String userId)  {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(userId ,"获取用户id失败");
@@ -346,7 +346,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit//主要用于列表删除
+    //@CacheEvit//主要用于列表删除
     public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         ParamsUtil.setBaseDO(purchaseOrder);
@@ -408,7 +408,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     /**
      * 保存提交审核的采购信息
      */
-    @CacheEvit
+    //@CacheEvit
     private void savePurchaseOrderAudit(PurchaseOrderAddData purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(purchaseOrder,"采购订单提交审核失败，采购订单信息为空");
@@ -481,7 +481,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Cacheable(key="#supplierCode",isList=true)
+    //@Cacheable(key="#supplierCode",isList=true)
     public List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode)  {
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询所有的可采购商品失败,供应商编码为空");
         Map<String, Object> map = new HashMap<>();

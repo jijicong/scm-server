@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.biz.jingdong.IJingDongBiz;
+import org.trc.biz.retry.IRetryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.JingDongSku;
 import org.trc.domain.config.JingDongSkuList;
@@ -48,6 +49,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     private IJingDongTestMapper jingDongTestMapper;//商品sku
     @Autowired
     ITableMappingMapper a;
+
+    @Autowired
+    IRetryBiz retryBiz;
 
     @Test
     public void testGetToken() {
@@ -578,6 +582,15 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
         page.setPageSize(10);
         try {
             iJingDongBiz.checkBalanceDetail(queryModel,page);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testRetry(){
+        try {
+            retryBiz.faileRetry();
         } catch (Exception e) {
             e.printStackTrace();
         }

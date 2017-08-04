@@ -1504,10 +1504,10 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> skuses = skusService.select(skus);
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
-            if(null != s.getWeight() && s.getWeight() > 0){
+            if(null != s.getWeight() && s.getWeight() >= 0){
                 s.setWeight2(CommonUtil.getWeight(s.getWeight()));
             }
-            if(null != s.getMarketPrice() && s.getMarketPrice() > 0){
+            if(null != s.getMarketPrice() && s.getMarketPrice() >= 0){
                 s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));
             }
             if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
