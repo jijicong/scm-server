@@ -94,7 +94,7 @@ public class PurchaseOrderResource {
 
 
     @PUT
-    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")//保存修改
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")//todo 保存修改
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
 

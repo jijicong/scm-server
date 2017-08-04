@@ -43,7 +43,6 @@ public interface IPurchaseOrderBiz {
     /**
      * 冻结，解冻采购单
      * @param purchaseOrder
-     * @
      */
     void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
 
@@ -55,7 +54,7 @@ public interface IPurchaseOrderBiz {
     /**
      * 更新采购单及采购商品
      * @param purchaseOrderAddData  更新的数据
-     * @param requestContext         用于采购商品的创建人
+     * @param  aclUserAccreditInfo    用于采购商品的创建人
      * @
      */
     void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,AclUserAccreditInfo aclUserAccreditInfo) ;

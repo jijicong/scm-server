@@ -1,5 +1,8 @@
 package org.trc.domain.util;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import javax.persistence.Id;
 import java.io.Serializable;
 
@@ -70,13 +73,7 @@ public class Area implements Serializable {
 
     @Override
     public String toString() {
-        return "Area{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", province='" + province + '\'' +
-                ", city='" + city + '\'' +
-                ", district='" + district + '\'' +
-                ", parent=" + parent +
-                '}';
+        return  ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
+
 }
