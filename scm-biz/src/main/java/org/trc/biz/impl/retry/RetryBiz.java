@@ -1,13 +1,18 @@
 package org.trc.biz.impl.retry;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.trc.biz.retry.IRetryBiz;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.TimeRecord;
 import org.trc.enums.RequestFlowTypeEnum;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.form.ChannelOrderResponse;
+import org.trc.form.LogisticNoticeForm;
 import org.trc.form.TrcConfig;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
@@ -21,6 +26,7 @@ import java.util.*;
 /**
  * Created by hzwyz on 2017/8/3 0003.
  */
+@Service("retryBiz")
 public class RetryBiz implements IRetryBiz {
     private Logger log = LoggerFactory.getLogger(RetryBiz.class);
     @Autowired
@@ -42,7 +48,7 @@ public class RetryBiz implements IRetryBiz {
         //1、查询request flow表，找出需要重试的记录
         Example example = new Example(RequestFlow.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("status","1");
+        criteria.andEqualTo("status","0");
         example.orderBy("desc");
         List<RequestFlow> requestFlowList = requestFlowService.selectByExample(example);
         //2、参数判断
@@ -52,16 +58,46 @@ public class RetryBiz implements IRetryBiz {
         List<TimeRecord> timeRecordList = timeRecordService.getLatestRecord();
         if (timeRecordList.size()==0){
             //第一次运行 不用去检测上个任务是否执行完毕，直接执行
+            //3.2对执行失败的任务进行重试
+            log.info("开始执行重试任务=======>");
+            Long startTime = Calendar.getInstance().getTimeInMillis();
+            retryJob(requestFlowList);
+            Long endTime = Calendar.getInstance().getTimeInMillis();
+            log.info("重试任务完成,耗时" + (endTime - startTime) / 1000 + "秒");
+            recordTime(startTime, endTime);
+        }else {
+            TimeRecord timeRecord = timeRecordList.get(0);
+            long dif = timeRecord.getEndTime().getTime() - Calendar.getInstance().getTimeInMillis();
+            if (RETRY_INTERVAL < dif) {
+                log.info("上一次定时任务未执行完毕");
+                throw new Exception("上一次定时任务未执行完毕");
+            }
+            //3.2对执行失败的任务进行重试
+            log.info("开始执行重试任务=======>");
+            Long startTime = Calendar.getInstance().getTimeInMillis();
+            retryJob(requestFlowList);
+            Long endTime = Calendar.getInstance().getTimeInMillis();
+            log.info("重试任务完成,耗时" + (endTime - startTime) / 1000 + "秒");
+            recordTime(startTime, endTime);
         }
-        TimeRecord timeRecord = timeRecordList.get(0);
-        long dif = timeRecord.getEndTime().getTime()- Calendar.getInstance().getTimeInMillis();
-        if (RETRY_INTERVAL < dif){
-            log.info("上一次定时任务未执行完毕");
-            throw new Exception("上一次定时任务未执行完毕");
-        }
-        //3.2对执行失败的任务进行重试
-        retryJob(requestFlowList);
+    }
 
+    /**
+     * 记录时间
+     *
+     * @param startTime
+     * @param endTime
+     */
+    private void recordTime(Long startTime, Long endTime) {
+        try {
+            TimeRecord timeRecord = new TimeRecord();
+            timeRecord.setUseTime((endTime - startTime));
+            timeRecord.setEndTime(new Date(endTime));
+            timeRecord.setStartTime(new Date(startTime));
+            timeRecordService.insert(timeRecord);
+        } catch (Exception e) {
+            log.error("时间记录失败", e);
+        }
     }
 
 
@@ -170,11 +206,10 @@ public class RetryBiz implements IRetryBiz {
     private void brandUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
-                }
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
                 ToGlyResultDO resultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
-                if ("true".equals(resultDO.getStatus())){
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
                     if (count==0){
                         log.error("品牌变更通知重试：更新状态失败！");
@@ -192,11 +227,10 @@ public class RetryBiz implements IRetryBiz {
     private void propertyUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
-                }
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
                 ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(),requestFlow.getRequestParam());
-                if ("true".equals(resultDO.getStatus())){
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
                     if (count==0){
                         log.error("属性变更通知重试：更新状态失败！");
@@ -213,11 +247,10 @@ public class RetryBiz implements IRetryBiz {
     private void categoryUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
-                }
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
                 ToGlyResultDO resultDO = trcService.sendCategoryToTrc(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
-                if ("true".equals(resultDO.getStatus())){
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
                     if (count==0){
                         log.error("分类变更通知重试：更新状态失败！");
@@ -234,11 +267,10 @@ public class RetryBiz implements IRetryBiz {
     private void categoryBrandUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
-                }
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
                 ToGlyResultDO resultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(),requestFlow.getRequestParam());
-                if ("true".equals(resultDO.getStatus())){
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
                     if (count==0){
                         log.error("分类品牌变更通知重试：更新状态失败！");
@@ -255,11 +287,10 @@ public class RetryBiz implements IRetryBiz {
     private void categoryPropertyUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
-                }
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
                 ToGlyResultDO resultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(),requestFlow.getRequestParam());
-                if ("true".equals(resultDO.getStatus())){
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
                     if (count==0){
                         log.error("分类属性变更通知重试：更新状态失败！");
@@ -276,11 +307,10 @@ public class RetryBiz implements IRetryBiz {
     private void itemUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
-                }
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
                 ToGlyResultDO resultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(),requestFlow.getRequestParam());
-                if ("true".equals(resultDO.getStatus())){
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
                     if (count==0){
                         log.error("自营商品变更通知重试：更新状态失败！");
@@ -297,10 +327,15 @@ public class RetryBiz implements IRetryBiz {
     private void externalItemUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(),requestParam);
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
+                    int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                    if (count==0){
+                        log.error("代发商品变更通知重试：更新状态失败！");
+                    }
                 }
-
             }
         }catch (Exception e){
             log.error("代发商品变更通知重试异常："+e.getMessage(),e);
@@ -312,10 +347,16 @@ public class RetryBiz implements IRetryBiz {
     private void channelReceiveOrderSubmitResultRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                ChannelOrderResponse channelOrderResponse = JSONObject.parseObject(requestParam,ChannelOrderResponse.class);
+                ToGlyResultDO resultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
+                    int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                    if (count==0){
+                        log.error("渠道接收订单提交结果重试：更新状态失败！");
+                    }
                 }
-
             }
         }catch (Exception e){
             log.error("渠道接收订单提交结果重试异常："+e.getMessage(),e);
@@ -327,14 +368,22 @@ public class RetryBiz implements IRetryBiz {
     private void sendLogisticsInfoToChannelRetry(List<RequestFlow> list) throws Exception{
         try {
             for (RequestFlow requestFlow:list){
-                if (StringUtils.isBlank(requestFlow.getRequestParam())){
-                    throw new Exception("请求参数不能为空");
+                String requestParam = requestFlow.getRequestParam();
+                AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                LogisticNoticeForm logisticNoticeForm = JSONObject.parseObject(requestParam,LogisticNoticeForm.class);
+                ToGlyResultDO resultDO = trcService.sendLogisticInfoNotice(logisticNoticeForm);
+                if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
+                    int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                    if (count==0){
+                        log.error("发送物流信息给渠道重试：更新状态失败！");
+                    }
                 }
-
             }
         }catch (Exception e){
             log.error("发送物流信息给渠道重试异常："+e.getMessage(),e);
             throw new Exception("发送物流信息给渠道重试异常："+e.getMessage());
         }
     }
+
+
 }
