@@ -344,6 +344,11 @@ public class AclResourceBiz implements IAclResourceBiz {
             aclResource.setParentId(jurisdictionTreeNode.getParentId());
         }
         aclResource.setUrl(jurisdictionTreeNode.getUrl());
+        if (StringUtils.equals(aclResource.getUrl(),ZeroToNineEnum.ONE.getCode())){
+            aclResource.setType(ZeroToNineEnum.ZERO.getCode());
+        }else {
+            aclResource.setType(ZeroToNineEnum.ONE.getCode());
+        }
 //        aclResource.setCreateOperator((String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID));
         aclResource.setCreateOperator("admin");
         aclResource.setCreateTime(Calendar.getInstance().getTime());

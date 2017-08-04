@@ -61,8 +61,8 @@ public interface IAclUserAccreditInfoService extends IBaseService<AclUserAccredi
      * 根据cookies中的token获取用户信息
      * @param requestContext
      * @return
-     */
-    AclUserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext);
+     *//*
+    AclUserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext);*/
 
     Map<String,AclUserAccreditInfo> selectByIds(String ...ids);
 
