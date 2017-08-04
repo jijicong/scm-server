@@ -56,7 +56,11 @@ public class CacheableInterceptor {
             String className = pjp.getTarget().getClass().getName();
             //取对应的缓存结果
             if(isList){
-                key = className + "LIST";
+                if (StringUtils.isNotBlank(cls)){
+                    key = cls + "LIST";
+                }else {
+                    key = className + "LIST";
+                }
                 listKey = method.toString() + parseKey(cacheable.key(),method,pjp.getArgs());
                 result= RedisUtil.hget(key,listKey);
             }else{
