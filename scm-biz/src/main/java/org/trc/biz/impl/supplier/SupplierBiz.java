@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.constants.SupplyConstants;
@@ -253,8 +254,10 @@ public class SupplierBiz implements ISupplierBiz {
             criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             criteria.andIn("supplierCode", supplierCodes);
             List<SupplierBrand> supplierBrands = supplierBrandService.selectByExample(example);
-            AssertUtil.notEmpty(supplierBrands, String.format("根据供应商编码[%s]查询供应商品牌为空",
-                    CommonUtil.converCollectionToString(supplierCodes)));
+            if(CollectionUtils.isEmpty(supplierBrands)){
+                log.error(String.format("根据供应商编码[%s]查询供应商品牌为空",
+                        CommonUtil.converCollectionToString(supplierCodes)));
+            }
             //查询供应商渠道
             Example example2 = new Example(SupplierApplyAudit.class);
             Example.Criteria criteria2 = example2.createCriteria();
