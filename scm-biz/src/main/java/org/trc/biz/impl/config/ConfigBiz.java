@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.config.IConfigBiz;
+import org.trc.cache.Cacheable;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
 import org.trc.domain.util.AreaTreeNode;
@@ -45,6 +46,7 @@ public class ConfigBiz implements IConfigBiz {
     private ILocationUtilService locationUtilService;
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<DictType> dictTypePage(DictTypeForm queryModel, Pagenation<DictType> page) throws Exception {
         Example example = new Example(DictType.class);
         Example.Criteria criteria = example.createCriteria();
@@ -61,9 +63,6 @@ public class ConfigBiz implements IConfigBiz {
     public List<DictType> queryDictTypes(DictTypeForm dictTypeForm) throws Exception {
         DictType dictType = new DictType();
         BeanUtils.copyProperties(dictTypeForm, dictType);
-        /*if(StringUtils.isEmpty(dictTypeForm.getIsValid())){
-            dictType.setIsValid(ZeroToNineEnum.ONE.getCode());
-        }*/
         dictType.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         return dictTypeService.select(dictType);
     }
@@ -150,6 +149,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Dict> dictPage(DictForm queryModel, Pagenation<Dict> page) throws Exception {
         Example example = new Example(Dict.class);
         Example.Criteria criteria = example.createCriteria();
