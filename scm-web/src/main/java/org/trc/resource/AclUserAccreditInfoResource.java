@@ -47,7 +47,7 @@ public class AclUserAccreditInfoResource {
     @PUT
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE + "/{id}")
     public AppResult updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo,@Context ContainerRequestContext requestContext){
-        userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo,requestContext);
+        userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("修改状态成功", "");
     }
 
@@ -112,7 +112,7 @@ public class AclUserAccreditInfoResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult saveUserAccredit(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext){
 
-        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate, requestContext);
+        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate,  (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("新增授权成功", "");
     }
 
@@ -137,7 +137,7 @@ public class AclUserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_ACCREDIT + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult updateUserAccreditInfo(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext){
-        userAccreditInfoBiz.updateUserAccredit(userAddPageDate,requestContext);
+        userAccreditInfoBiz.updateUserAccredit(userAddPageDate, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSucssAppResult("修改用户成功", "");
     }
 

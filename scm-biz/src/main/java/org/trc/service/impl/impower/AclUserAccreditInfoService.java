@@ -56,14 +56,14 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
         return aclUserAccreditInfoMapper.selectOneById(userId);
     }
 
-    @Override
+  /*  @Override
     public AclUserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext) {
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         if(StringUtils.isBlank(userId)){
             return null;
         }
         return aclUserAccreditInfoMapper.selectOneById(userId);
-    }
+    }*/
 
     @Override
     public Map<String,AclUserAccreditInfo> selectByIds(String... ids) {
