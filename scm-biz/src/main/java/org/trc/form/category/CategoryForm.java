@@ -1,5 +1,8 @@
 package org.trc.form.category;
 
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
@@ -49,4 +52,9 @@ public class CategoryForm extends QueryModel {
     public void setName(String name) {
         this.name = name;
     }
+    @Override
+    public String toString() {
+        return  ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }
