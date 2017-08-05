@@ -1508,6 +1508,7 @@ public class GoodsBiz implements IGoodsBiz {
         }
         skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Skus> skuses = skusService.select(skus);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
             if(null != s.getWeight() && s.getWeight() >= 0){
@@ -1535,7 +1536,6 @@ public class GoodsBiz implements IGoodsBiz {
                 }
             }
         }
-        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
         //获取自然属性和采购属性
         Object[] objs = getItemsPropertys(spuCode);
         List<ItemNaturePropery> itemNatureProperies = (List<ItemNaturePropery>)objs[0];

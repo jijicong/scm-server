@@ -27,12 +27,12 @@ public class Items extends BaseDO{
     @Length(max = 128, message = "商品名称长度不能超过128个")
     private String name;
     @FormParam("categoryId")
-    @NotNull
+    @NotNull(message = "分类不能为空")
     private Long categoryId;
     @Transient
     private String categoryName;//分类名称
     @FormParam("brandId")
-    @NotNull
+    @NotNull(message = "品牌不能为空")
     private Long brandId;
     @Transient
     private String brandName;//供应商名称
