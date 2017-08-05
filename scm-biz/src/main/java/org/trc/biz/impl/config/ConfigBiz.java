@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.config.IConfigBiz;
+import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.dict.DictType;
@@ -60,6 +61,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @Cacheable(key="#dictTypeForm.toString()",isList=true)
     public List<DictType> queryDictTypes(DictTypeForm dictTypeForm) throws Exception {
         DictType dictType = new DictType();
         BeanUtils.copyProperties(dictTypeForm, dictType);
@@ -68,6 +70,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @CacheEvit
     public void saveDictType(DictType dictType) throws Exception{
         dictTypeCheck(dictType);
         DictType tmp = findDictTypeByTypeNo(dictType.getCode());
@@ -86,6 +89,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @CacheEvit(key = { "#dictType.id"} )
     public void updateDictType(DictType dictType) throws Exception {
         AssertUtil.notNull(dictType.getId(), "字典类型ID不能为空");
         dictTypeCheck(dictType);
@@ -111,6 +115,7 @@ public class ConfigBiz implements IConfigBiz {
 
 
     @Override
+    @Cacheable(key="#id")
     public DictType findDictTypeById(Long id)throws Exception {
         AssertUtil.notNull(id, "根据ID查询字典类型参数ID为空");
         DictType dictType = new DictType();
@@ -124,6 +129,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @Cacheable(key="#typeCode")
     public DictType findDictTypeByTypeNo(String typeCode) throws Exception{
         AssertUtil.notBlank(typeCode, "根据类型编码查询字典类型参数typeNo为空");
         DictType dictType = new DictType();
@@ -134,6 +140,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @CacheEvit(key="#id")
     public void deleteDictTypeById(Long id) throws Exception {
         AssertUtil.notNull(id, "字典类型ID不能为空");
         DictType tmp = new DictType();
@@ -178,6 +185,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @Cacheable(key="#dictForm.toString()", isList = true)
     public List<Dict> queryDicts(DictForm dictForm) throws Exception{
         Dict dict = new Dict();
         BeanUtils.copyProperties(dictForm,dict);
@@ -189,6 +197,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @CacheEvit
     public void saveDict(Dict dict) throws Exception{
         dictCheck(dict);
         ParamsUtil.setBaseDO(dict);
@@ -201,6 +210,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @CacheEvit(key = { "#dict.id"} )
     public void updateDict(Dict dict) throws Exception {
         AssertUtil.notNull(dict.getId(), "字典ID不能为空");
         dictCheck(dict);
@@ -225,6 +235,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @Cacheable(key = "#id")
     public Dict findDictById(Long id) throws Exception {
         AssertUtil.notNull(id, "根据ID查询字典参数ID不能为空");
         Dict dict = new Dict();
@@ -239,6 +250,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @Cacheable(key = "#typeCode")
     public List<Dict> findDictsByTypeNo(String typeCode){
         AssertUtil.notBlank(typeCode, "根据类型编码查询字典参数typeCode为空");
         Dict dict = new Dict();
@@ -249,6 +261,7 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
+    @CacheEvit(key="#id")
     public void deleteDictById(Long id) throws Exception {
         AssertUtil.notNull(id, "字典ID不能为空");
         Dict tmp = new Dict();
@@ -264,7 +277,8 @@ public class ConfigBiz implements IConfigBiz {
     }
 
     @Override
-    public List<AreaTreeNode> findProvinceCity()  throws Exception {
+    @Cacheable(expireTime = 14400)
+    public List<AreaTreeNode> findProvinceCity() throws Exception {
         return locationUtilService.getTreeNodeFromLocation();
     }
 
