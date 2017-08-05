@@ -54,8 +54,7 @@ public interface IPurchaseOrderBiz {
     /**
      * 更新采购单及采购商品
      * @param purchaseOrderAddData  更新的数据
-     * @param  aclUserAccreditInfo    用于采购商品的创建人
-     * @
+     * @param  aclUserAccreditInfo  用于采购商品的创建人
      */
     void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,AclUserAccreditInfo aclUserAccreditInfo) ;
 

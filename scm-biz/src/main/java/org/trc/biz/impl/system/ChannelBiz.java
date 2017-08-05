@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
@@ -71,6 +73,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
+    @Cacheable(key = "#form+#page+#page.pageNo+#page.pageSize" ,isList = true)
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
@@ -148,7 +151,8 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    public List<Channel> queryChannels(ChannelForm channelForm) {
+    @Cacheable(key = "#channelForm",isList = true)
+    public List<Channel> queryChannels(ChannelForm channelForm) {//查询有效的渠道
         Channel channel = new Channel();
         if (StringUtils.isEmpty(channelForm.getIsValid())) {
             channel.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -159,6 +163,7 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void saveChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(channel, "渠道管理模块保存仓库信息失败，仓库信息为空");
@@ -180,6 +185,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
+    @CacheEvit(key = {"#channel.id"})
     public void updateChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
@@ -205,6 +211,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
+    @Cacheable(key = "#id")
     public Channel findChannelById(Long id) {
 
         AssertUtil.notNull(id, "根据ID查询渠道明细,参数ID不能为空");
@@ -217,6 +224,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
+    @CacheEvit(key = {"#channel.id"})
     public void updateChannelState(Channel channel) {
 
         AssertUtil.notNull(channel, "渠道管理模块修改渠道信息失败，仓库信息为空");
