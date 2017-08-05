@@ -66,7 +66,7 @@ public class CacheableInterceptor {
             }else{
                 String parseKey = parseKey(cacheable.key(),method,pjp.getArgs());
                 //类名,方法名,key值保证 key的唯一
-                key = className +method.getName()+ parseKey;
+                key = className + parseKey;
                 result = RedisUtil.getObject(key);
             }
             //到达这一步证明参数正确，没有exception，应该放入缓存
