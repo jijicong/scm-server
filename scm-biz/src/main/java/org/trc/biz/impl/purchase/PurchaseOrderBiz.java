@@ -401,7 +401,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
             if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){//提交审核做金额校验
                 if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
-                    String msg = CommonUtil.joinStr("采购单保存,采购商品的总价与页面的总价不相等").toString();
+                    String msg = "采购单保存,采购商品的总价与页面的总价不相等";
                     LOGGER.error(msg);
                     throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
                 }
@@ -480,7 +480,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public BigDecimal savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
 
         if(StringUtils.isBlank(purchaseOrderStrs)){
-            String msg = CommonUtil.joinStr("保存采购商品的信息为空").toString();
+            String msg = "保存采购商品的信息为空";
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
@@ -508,7 +508,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         int count = 0;
         count = purchaseDetailService.insertList(purchaseDetailList);
         if (count<1){
-            String msg = CommonUtil.joinStr("采购商品保存,数据库操作失败").toString();
+            String msg = "采购商品保存,数据库操作失败";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
@@ -1103,8 +1103,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
 
         List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrands(supplierCode);
-
-
 
         return supplierBrandExts;
     }
