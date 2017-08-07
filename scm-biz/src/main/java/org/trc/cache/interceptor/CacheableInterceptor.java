@@ -57,8 +57,14 @@ public class CacheableInterceptor {
             String cls = cacheable.cls();
             String className = pjp.getTarget().getClass().getName();
             //取对应的缓存结果
+            /*
+            这里的string 拼接不需要使用StringBuilder或者StringBuffer
+            因为jvm中对匿名的字符串常量，执行拼接的速度远远大于 string + string  or StringBuilder.append() or StringBuffer.append()
+            并且，对方法区的内存占用 (1．不会重复，2．省去计算内存消耗时间)　－－sone21
+             */
             if(isList){
                 if (StringUtils.isNotBlank(cls)){
+                    //StringBuilder sb = new StringBuilder();
                     key = cls + "LIST";
                 }else {
                     key = className + "LIST";
@@ -147,7 +153,9 @@ public class CacheableInterceptor {
         for(int i=0;i<paraNameArr.length;i++){
             context.setVariable(paraNameArr[i], args[i]);
         }
-        return parser.parseExpression("#scm+" + key).getValue(context,String.class);
+
+        return parser.parseExpression(StringUtils.isBlank(key) == true ? "#scm" : "#scm+"+ key).getValue(context,String.class);
+
     }
 
 }
