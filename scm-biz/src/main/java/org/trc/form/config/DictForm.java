@@ -1,5 +1,7 @@
 package org.trc.form.config;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
@@ -47,4 +49,10 @@ public class DictForm extends QueryModel {
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public String toString(){
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

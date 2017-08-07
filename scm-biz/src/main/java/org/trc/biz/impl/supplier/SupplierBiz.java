@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
+import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.category.Brand;
@@ -105,13 +107,12 @@ public class SupplierBiz implements ISupplierBiz {
     @Autowired
     private ICategoryBrandService categoryBrandService;
     @Autowired
-    private IAuditLogService auditLogService;
-    @Autowired
     private ILogInfoService logInfoService;
     @Autowired
     private IPageNationService pageNationService;
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
@@ -220,6 +221,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Cacheable(key="#form.toString()+#aclUserAccreditInfo.channelId+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, AclUserAccreditInfo aclUserAccreditInfo, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -253,8 +255,10 @@ public class SupplierBiz implements ISupplierBiz {
             criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             criteria.andIn("supplierCode", supplierCodes);
             List<SupplierBrand> supplierBrands = supplierBrandService.selectByExample(example);
-            AssertUtil.notEmpty(supplierBrands, String.format("根据供应商编码[%s]查询供应商品牌为空",
-                    CommonUtil.converCollectionToString(supplierCodes)));
+            if(CollectionUtils.isEmpty(supplierBrands)){
+                log.error(String.format("根据供应商编码[%s]查询供应商品牌为空",
+                        CommonUtil.converCollectionToString(supplierCodes)));
+            }
             //查询供应商渠道
             Example example2 = new Example(SupplierApplyAudit.class);
             Example.Criteria criteria2 = example2.createCriteria();
@@ -322,6 +326,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Cacheable(key="#supplierForm.toString()",isList=true)
     public List<Supplier> querySuppliers(SupplierForm supplierForm) throws Exception {
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(supplierForm, supplier);
@@ -820,13 +825,8 @@ public class SupplierBiz implements ISupplierBiz {
             s.setUpdateTime(sysTime);
             String isValid = jbo.getString("isValid");
             s.setIsValid(isValid);
-            if (!StringUtils.equals(ZeroToNineEnum.THREE.getCode(), jbo.getString("status"))) {//不是删除状态的分类
-                //检查分类启停用状态
-                checkCategoryBrandValidStatus(s.getCategoryId(), null);
-            }
-            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
-                deleteList.add(s.getId());
-            }
+            //检查分类启停用状态
+            checkCategoryBrandValidStatus(s.getCategoryId(), null);
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierCategory(s);
             tmpList.add(s);
@@ -977,9 +977,6 @@ public class SupplierBiz implements ISupplierBiz {
                 //检查品牌启停用状态
                 checkCategoryBrandValidStatus(s.getCategoryId(), s.getBrandId());
             }
-            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
-                delList.add(s);
-            }
             s.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             checkSupplierBrand(s);
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))) {//原始数据
@@ -1127,6 +1124,7 @@ public class SupplierBiz implements ISupplierBiz {
 
 
     @Override
+    @Cacheable(key="#supplierCode", isList = true)
     public List<SupplierCategoryExt> querySupplierCategory(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理分类供应商编码不能为空");
         List<SupplierCategoryExt> supplierCategoryExtList = supplierCategoryService.selectSupplierCategorys(supplierCode);
@@ -1140,6 +1138,7 @@ public class SupplierBiz implements ISupplierBiz {
 
 
     @Override
+    @Cacheable(key="#supplierCode", isList = true)
     public List<SupplierBrandExt> querySupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理品牌供应商编码不能为空");
         List<SupplierBrandExt> supplierBrandExtList = supplierBrandService.selectSupplierBrands(supplierCode);
@@ -1152,6 +1151,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Cacheable(key="#supplierCode")
     public SupplierExt querySupplierInfo(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商信息供应商编码不能为空");
         SupplierExt supplierExt = new SupplierExt();
@@ -1191,6 +1191,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Cacheable(key="#form.toString()",isList=true)
     public List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception {
         AssertUtil.notNull(form, "查询供应商渠道关系参数SupplierChannelRelationForm不能为空");
         if (null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) &&
@@ -1271,27 +1272,6 @@ public class SupplierBiz implements ISupplierBiz {
             }
         }
 
-    }
-
-    /**
-     * 写驳回供应商申请操作日起至
-     *
-     * @param supplierApply
-     * @param userId
-     */
-    private void writeRejectSupplierApplyLog(SupplierApply supplierApply, String userId) {
-        Date sysDate = Calendar.getInstance().getTime();
-        AuditLog auditLog = new AuditLog();
-        auditLog.setApplyCode(supplierApply.getApplyCode());
-        auditLog.setOperation(supplierApply.getStatus().toString());
-        auditLog.setOperator(userId);
-        auditLog.setOperateTime(sysDate);
-        int count = auditLogService.insert(auditLog);
-        if (count == 0) {
-            String msg = String.format("根据申请编号[%s]保存审核信息日志失败", supplierApply.getApplyCode());
-            log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_AUDIT_LOG_INSERT_EXCEPTION, msg);
-        }
     }
 
 }

@@ -10,7 +10,6 @@ import javax.ws.rs.FormParam;
  */
 public class PurchaseOrderAddData extends PurchaseOrder{
     @FormParam("gridValue")
-    @NotEmpty
     @Transient
     private String gridValue;
 

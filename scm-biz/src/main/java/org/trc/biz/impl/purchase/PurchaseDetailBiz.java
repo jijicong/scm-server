@@ -58,6 +58,10 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         purchaseDetailTT.setPurchaseId(purchaseId);
 
         List<PurchaseDetail> purchaseDetailList = iPurchaseDetailService.select(purchaseDetailTT);
+
+        if(CollectionUtils.isEmpty(purchaseDetailList)){
+            return new ArrayList<PurchaseDetail>();
+        }
         //品牌的名称
         List<Long> brandIds = new ArrayList<>();
         //分类的全路径

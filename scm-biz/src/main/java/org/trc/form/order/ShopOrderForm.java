@@ -1,5 +1,7 @@
 package org.trc.form.order;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -73,4 +75,10 @@ public class ShopOrderForm extends QueryModel{
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public String toString(){
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

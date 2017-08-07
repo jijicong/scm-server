@@ -42,19 +42,16 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("contractCode") //TODO "采购合同编号',
     private String contractCode;
     @FormParam("purchaseType")
-    @NotEmpty
     private String purchaseType;
     @Transient
     private String purchaseTypeName;
     @FormParam("payType")
-    @NotEmpty
     private String payType;
     @Transient
     private String payTypeName;
     @FormParam("paymentProportion")
     private BigDecimal paymentProportion; //decimal(4,3)
     @FormParam("purchaseGroupCode")
-     @NotEmpty
      private String purchaseGroupCode;//'归属采购组编号'
      @Transient
      private String purchaseGroupName;
@@ -63,39 +60,31 @@ public class PurchaseOrder extends BaseDO{
      @Transient
      private String warehouseName;
      @FormParam("currencyType")
-     @NotEmpty
      private String currencyType;
     @Transient
      private String currencyTypeName;
      @FormParam("purchasePersonId")
-     @NotEmpty
      private String purchasePersonId;
      @Transient
      private String purchasePerson;
      @FormParam("receiveAddress")
-     @NotEmpty
      private String receiveAddress;
      @FormParam("warehouseCode")
-     @NotEmpty
      private String warehouseCode;
      @FormParam("transportFeeDestId")
-     @NotEmpty
      private String transportFeeDestId;
     @Transient
      private String transportFeeDestIdName;
      @FormParam("takeGoodsNo")
      private String takeGoodsNo; //提运单号
      @FormParam("requriedReceiveDate")
-     @NotEmpty
      @Length(max = 10, message = "开始日期长度不能超过10个")
      private String requriedReceiveDate;
      @FormParam("endReceiveDate")
-     @NotEmpty
      @Length(max = 10, message = "截止日期长度不能超过10个")
      private String endReceiveDate;
      @FormParam("handlerPriority")
-     @NotEmpty
-     private String handlerPriority;//处理优先级 Integer
+     private String handlerPriority;//处理优先级
     @Transient
     private String handlerPriorityName;
      @FormParam("status")

@@ -230,6 +230,14 @@ INSERT INTO `acl_resource`  VALUES ('189', '105', '账单管理', '1', '1', '1',
 INSERT INTO `acl_resource`  VALUES ('190', '10501', '对账管理', '1', '1', '105', '1', '0', 'admin', '0', '2017-08-03 13:45:33', '2017-08-03 14:25:15');
 INSERT INTO `acl_resource`  VALUES ('191', '105010101', '对账管理分页查询', '123', 'GET', '10501', '1', '1', 'admin', '0', '2017-08-03 13:45:46', '2017-08-03 14:25:16');
 INSERT INTO `acl_resource`  VALUES ('192', '105010102', '查询业务类型', '123', 'GET', '10501', '1', '1', 'admin', '0', '2017-08-03 13:46:51', '2017-08-03 14:25:19');
+INSERT INTO `acl_resource`  VALUES ('193', '202010104', '国家查询', 'select/country', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 16:54:03', '2017-08-04 16:54:03');
+INSERT INTO `acl_resource`  VALUES ('194', '202010105', '供应商渠道关系查询', 'supplier/channels', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 16:56:57', '2017-08-04 16:56:57');
+INSERT INTO `acl_resource`  VALUES ('195', '201010104', '分类页面树结构查询', 'category/tree', 'GET', '20101', '2', '0', 'admin', '0', '2017-08-04 17:02:44', '2017-08-04 17:02:44');
+INSERT INTO `acl_resource`  VALUES ('196', '201010105', '代发商品分页查询', 'goods/externalGoodsPage', 'GET', '20101', '2', '0', 'admin', '0', '2017-08-04 17:06:03', '2017-08-04 17:06:03');
+INSERT INTO `acl_resource`  VALUES ('197', '202010106', '供应商分类查询', 'supplier/supplierCategorys', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:07:51', '2017-08-04 17:07:51');
+INSERT INTO `acl_resource`  VALUES ('198', '202010107', '供应商品牌查询', 'supplier/supplierBrands', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:09:59', '2017-08-04 17:09:59');
+INSERT INTO `acl_resource`  VALUES ('199', '202010108', '渠道列表查询', 'system/channels', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:10:32', '2017-08-04 17:10:32');
+INSERT INTO `acl_resource`  VALUES ('200', '203020104', '供应商列表查询', 'supplier/suppliers', 'GET', '20302', '2', '0', 'admin', '0', '2017-08-04 17:12:03', '2017-08-04 17:12:03');
 
 
 -- ----------------------------

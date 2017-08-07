@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
+import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.goods.ExternalItemSku;
@@ -126,6 +127,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String JD_ORDER_SUBMIT_PRICE_ERROR = "3019";
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
