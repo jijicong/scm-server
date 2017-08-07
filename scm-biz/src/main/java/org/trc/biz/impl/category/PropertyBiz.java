@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -73,6 +75,7 @@ public class PropertyBiz implements IPropertyBiz {
     private IPageNationService pageNationService;
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
@@ -175,6 +178,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void saveProperty(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
@@ -233,6 +237,7 @@ public class PropertyBiz implements IPropertyBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit(key = {"#property.id"})
     public void updateProperty(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property.getId(), "根据ID更新属性信息参数ID为空");
         //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
@@ -369,6 +374,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
+    @Cacheable(key = "#propertyId",isList = true)
     public List<PropertyValue> queryListByPropertyId(Long propertyId) throws Exception {
         AssertUtil.notNull(propertyId, "属性管理模块属性值查询失败propertyId：" + propertyId);
         Example example = new Example(PropertyValue.class);
@@ -380,6 +386,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
+    @Cacheable(key = "#id")
     public Property findPropertyById(Long id) throws Exception {
         AssertUtil.notNull(id, "根据ID查询属性明细参数ID为空");
         Property property = new Property();
@@ -395,6 +402,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit(key = {"#property.id"})
     public void updatePropertyStatus(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
         //查询变更属性

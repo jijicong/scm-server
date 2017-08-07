@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.supplier.ISupplierApplyBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
@@ -54,6 +56,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     private ILogInfoService logInfoService;
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<SupplierApplyAudit> supplierApplyAuditPage(Pagenation<SupplierApplyAudit> page, SupplierApplyAuditForm queryModel) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -94,6 +97,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void auditSupplierApply(SupplierApplyAudit supplierApplyAudit, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierApplyAudit.getId(), "根据ID更新供应商审核信息,参数ID不能为空");
         String userId =aclUserAccreditInfo.getUserId();
@@ -115,6 +119,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
     }
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize+#aclUserAccreditInfo.channelId",isList=true)
     public Pagenation<SupplierApply> supplierApplyPage(Pagenation<SupplierApply> page, SupplierApplyForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -150,6 +155,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void saveSupplierApply(SupplierApply supplierApply, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierApply, "保存供应商申请信息，申请信息不能为空");
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效
@@ -196,6 +202,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void deleteSupplierApply(Long supplierApplyId) throws Exception {
         AssertUtil.notNull(supplierApplyId, "供应商申请删除，主键不能为空");
         SupplierApply supplierApply = new SupplierApply();
@@ -213,6 +220,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void updateSupplierApply(SupplierApply supplierApply, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(supplierApply, "更新供应商申请申请信息，申请信息不能为空");
         //1.验证这个供应商是否已经经过申请2.供应商是否已经失效

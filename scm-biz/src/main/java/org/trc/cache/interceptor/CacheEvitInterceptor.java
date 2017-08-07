@@ -1,5 +1,6 @@
 package org.trc.cache.interceptor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -120,7 +121,7 @@ public class CacheEvitInterceptor {
 		for (int i = 0; i < paraNameArr.length; i++) {
 			context.setVariable(paraNameArr[i], args[i]);
 		}
-		return parser.parseExpression("#scm+"+key).getValue(context, String.class);
+		return parser.parseExpression(StringUtils.isBlank(key) == true ? "#scm" : "#scm+"+key).getValue(context, String.class);
 	}
 }
 //	Signature sig = pjp.getSignature();

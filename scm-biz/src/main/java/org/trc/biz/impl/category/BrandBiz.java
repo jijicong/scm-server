@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
@@ -69,6 +71,7 @@ public class BrandBiz implements IBrandBiz {
     private IPageNationService pageNationService;
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
@@ -188,6 +191,7 @@ public class BrandBiz implements IBrandBiz {
 
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Brand> brandList(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
@@ -219,6 +223,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    @Cacheable(key="#brandForm.toString()" ,isList = true)
     public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
         Brand brand = new Brand();
         if (StringUtils.isEmpty(brandForm.getIsValid())) {
@@ -230,6 +235,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void saveBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
@@ -259,6 +265,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    @Cacheable(key = "#id")
     public Brand findBrandById(Long id) throws Exception {
         AssertUtil.notNull(id, "根据ID查询品牌明细,参数ID不能为空");
         Brand brand = new Brand();
@@ -274,6 +281,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit(key={"#brand.id"})
     public void updateBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
         String remark=null;
@@ -313,6 +321,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit(key={"#brand.id"})
     public void updateBrandStatus(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
         Brand selectBrand=brandService.selectOneById(brand.getId());
