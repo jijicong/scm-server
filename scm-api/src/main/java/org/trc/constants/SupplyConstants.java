@@ -817,6 +817,8 @@ public class SupplyConstants {
         public final static String ADDRESS = "address";
         //京东地址
         public final static String JD_ADDRESS = "jdAddress";
+        //京东地址更新
+        public final static String JD_ADDRESS_UPDATE = "jdAddressUpdate";
 
     }
 

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.system.IMetadataBiz;
+import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
@@ -15,6 +16,8 @@ import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.service.IJDService;
 import org.trc.service.config.IDictService;
 import org.trc.service.util.ILocationUtilService;
+import org.trc.util.AppResult;
+import org.trc.util.ResultUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +38,7 @@ public class MetadataBiz implements IMetadataBiz {
     private IJDService ijdService;
 
     @Override
-    @Cacheable(expireTime = 14400)
+    @Cacheable(isList = true, expireTime = 14400)
     public List<Dict> queryDict() {
         List<Dict> dictList = null;
         try{
@@ -49,7 +52,7 @@ public class MetadataBiz implements IMetadataBiz {
     }
 
     @Override
-    @Cacheable(expireTime = 14400)
+    @Cacheable(isList = true, expireTime = 14400)
     public List<AreaTreeNode> queryAddress() {
         List<AreaTreeNode> areaTreeNodes = null;
         try {
@@ -62,7 +65,7 @@ public class MetadataBiz implements IMetadataBiz {
     }
 
     @Override
-    @Cacheable(expireTime = 14400)
+    @Cacheable(isList = true, expireTime = 14400)
     public List<AreaTreeNode> queryJDAddress() {
         List<AreaTreeNode> areaTreeNodes = null;
         try {
@@ -76,5 +79,17 @@ public class MetadataBiz implements IMetadataBiz {
             areaTreeNodes = new ArrayList<AreaTreeNode>();
         }
         return areaTreeNodes;
+    }
+
+    @Override
+    @CacheEvit
+    public AppResult jDAddressUpdate() {
+        try{
+            //调用查询京东地址方法使缓存更新最新地址
+            queryJDAddress();
+        }catch (Exception e){
+            logger.error("查询京东地址异常", e);
+        }
+        return ResultUtil.createSucssAppResult("通知更新京东地址成功", "");
     }
 }

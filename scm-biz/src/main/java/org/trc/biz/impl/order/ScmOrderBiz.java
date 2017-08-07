@@ -192,7 +192,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
-        example.orderBy("status").asc();
+        //example.orderBy("supplierrderStatus").asc();
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
         return page;
@@ -838,15 +838,27 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 platformOrders = platformOrderList;
             }
         }
-        //设置仓库订单支付时间及物流信息
+        //设置仓库订单支付时间、排序及物流信息
         for(WarehouseOrder warehouseOrder: page.getResult()){
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(warehouseOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
                     warehouseOrder.setPayTime(platformOrder.getPayTime());
+                    if(StringUtils.equals(warehouseOrder.getSupplierOrderStatus(), ZeroToNineEnum.ONE.getCode()) || //待发送
+                            StringUtils.equals(warehouseOrder.getSupplierOrderStatus(), ZeroToNineEnum.FIVE.getCode()))//下单失败
+                        warehouseOrder.setSort(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+                    else
+                        warehouseOrder.setSort(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
                 }
             }
             setLogisticsInfo(warehouseOrder);
         }
+        //按供应商订单状态排序
+        Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
+            @Override
+            public int compare(WarehouseOrder o1, WarehouseOrder o2) {
+                return o1.getSort().compareTo(o2.getSort());
+            }
+        });
         //按付款时间将序排序
         Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
             @Override

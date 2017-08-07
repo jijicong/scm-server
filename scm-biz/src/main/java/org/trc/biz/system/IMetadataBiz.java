@@ -2,6 +2,7 @@ package org.trc.biz.system;
 
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
+import org.trc.util.AppResult;
 
 import java.util.List;
 
@@ -26,5 +27,11 @@ public interface IMetadataBiz {
      * @return
      */
     List<AreaTreeNode> queryJDAddress();
+
+    /**
+     * 京东地址更新
+     * @return
+     */
+    AppResult jDAddressUpdate();
 
 }

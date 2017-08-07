@@ -1,6 +1,7 @@
 package org.trc.service.impl.purchase;
 
 import org.springframework.stereotype.Service;
+import org.trc.cache.Cacheable;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.mapper.purchase.IPurchaseGroupMapper;
@@ -18,6 +19,8 @@ public class PurchaseGroupService extends BaseService<PurchaseGroup,Long> implem
 
     @Resource
     private IPurchaseGroupMapper ipurchaseGroupMapper;
+
+
     @Override
     public List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id) {
         return ipurchaseGroupMapper.findPurchaseGroupMemberStateById(id);
