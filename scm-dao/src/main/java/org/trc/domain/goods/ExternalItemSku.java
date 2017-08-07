@@ -8,6 +8,7 @@ import org.trc.custom.MoneySerializer;
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Date;
  * @create: 2017-06-20 11:47
  */
 @Table(name = "external_item_sku")
-public class ExternalItemSku {
+public class ExternalItemSku implements Serializable{
 
     // 主键
     @PathParam("id")
