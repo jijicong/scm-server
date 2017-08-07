@@ -1,6 +1,8 @@
 package org.trc.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
@@ -171,4 +173,8 @@ public class QueryModel {
         this.endDate = endDate;
     }
 
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 }
