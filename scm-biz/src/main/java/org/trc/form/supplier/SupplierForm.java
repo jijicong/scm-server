@@ -1,5 +1,7 @@
 package org.trc.form.supplier;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -54,4 +56,10 @@ public class SupplierForm extends QueryModel{
     public void setContact(String contact) {
         this.contact = contact;
     }
+
+    @Override
+    public String toString(){
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
 }

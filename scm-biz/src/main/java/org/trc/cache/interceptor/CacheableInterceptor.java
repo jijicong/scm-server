@@ -4,12 +4,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.trc.biz.impl.purchase.PurchaseOrderBiz;
 import org.trc.cache.Cacheable;
 import org.trc.util.RedisUtil;
 
@@ -18,6 +21,11 @@ import java.lang.reflect.Method;
 @Component
 @Aspect
 public class CacheableInterceptor {
+
+    private Logger LOGGER = LoggerFactory.getLogger(CacheableInterceptor.class);
+
+    private static final String SCM_PRE = "scm";//1.标志作用 2.前面加scm 防止后面的参数，因为是数字相加，导致key 不唯一
+
     /**          
     * 定义缓存逻辑                    
      * @throws Throwable 
@@ -47,28 +55,34 @@ public class CacheableInterceptor {
             isList = cacheable.isList();
             expireTime = cacheable.expireTime();
             String cls = cacheable.cls();
-           /* try {
-                Class.forName(cls);
-            }catch (ClassNotFoundException e){
-                //这里不做处理，只是用
-                于拼接 key
-            }*/
             String className = pjp.getTarget().getClass().getName();
             //取对应的缓存结果
+            /*
+            这里的string 拼接不需要使用StringBuilder或者StringBuffer
+            因为jvm中对匿名的字符串常量，执行拼接的速度远远大于 string + string  or StringBuilder.append() or StringBuffer.append()
+            并且，对方法区的内存占用 (1．不会重复，2．省去计算内存消耗时间)　－－sone21
+             */
             if(isList){
-                key = className + "LIST";
+                if (StringUtils.isNotBlank(cls)){
+                    //StringBuilder sb = new StringBuilder();
+                    key = cls + "LIST";
+                }else {
+                    key = className + "LIST";
+                }
+                //Spring_el 利用反射获取方法上的参数，进而获取表达式中生成key的条件
                 listKey = method.toString() + parseKey(cacheable.key(),method,pjp.getArgs());
                 result= RedisUtil.hget(key,listKey);
             }else{
                 String parseKey = parseKey(cacheable.key(),method,pjp.getArgs());
                 //类名,方法名,key值保证 key的唯一
-                key = className +method.getName()+ parseKey;
+                key = className + parseKey;
                 result = RedisUtil.getObject(key);
             }
             //到达这一步证明参数正确，没有exception，应该放入缓存
             shouldSet = true;
         }catch(Exception e){
-        		//出exception了,继续即可,不需要处理
+            //出exception了,继续即可,不需要处理
+            LOGGER.error("缓存查询处理失败!",e);
         }finally{
         		//没有缓存执行结果
 	        	if(result==null){
@@ -80,7 +94,7 @@ public class CacheableInterceptor {
 		        	}else{
 		        		result = pjp.proceed();
 		        		if(shouldSet){
-		        			Assert.notNull(key);
+		        			Assert.notNull(key,"生成缓存的时,key值为空,缓存存储异常");
 		        			RedisUtil.setObject(key, result,expireTime);
 		        		}
 		        	}
@@ -109,9 +123,9 @@ public class CacheableInterceptor {
         try {
             method=pjp.getTarget().getClass().getMethod(pjp.getSignature().getName(),argTypes);
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            LOGGER.error("获取方法失败!",e);
         } catch (SecurityException e) {
-            e.printStackTrace();
+            LOGGER.error("未获得得到该方法的权限!",e);
         }
         return method;
         
@@ -135,11 +149,13 @@ public class CacheableInterceptor {
         //SPEL上下文
         StandardEvaluationContext context = new StandardEvaluationContext();
         //把方法参数放入SPEL上下文中
-        context.setVariable("scm","scm");
+        context.setVariable(SCM_PRE,SCM_PRE);
         for(int i=0;i<paraNameArr.length;i++){
             context.setVariable(paraNameArr[i], args[i]);
         }
-        return parser.parseExpression("#scm+" + key).getValue(context,String.class);
+
+        return parser.parseExpression(StringUtils.isBlank(key) == true ? "#scm" : "#scm+"+ key).getValue(context,String.class);
+
     }
 
 }

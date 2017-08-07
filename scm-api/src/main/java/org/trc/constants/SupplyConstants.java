@@ -528,9 +528,10 @@ public class SupplyConstants {
             //供应商申请分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
 
-            //供应商申请信息路径
+            //供应商修改申请信息路径
             public static final String SUPPLIER_APPLY = "supplierApply";
-
+            //
+            public static final String SUPPLIER_STATE = "supplierApply/state";
 
         }
 
@@ -802,6 +803,20 @@ public class SupplyConstants {
         public final static String CHONG_QING = "重庆";
 
         public final static String[]  DIRECT_CITY = {BEI_JING, SHANG_HAI, TIAN_JING, CHONG_QING};
+
+    }
+
+    /**
+     * 元数据
+     */
+    public static final class Metadata{
+        public final static String ROOT = "metadata";
+        //字典
+        public final static String DICT = "dict";
+        //地址
+        public final static String ADDRESS = "address";
+        //京东地址
+        public final static String JD_ADDRESS = "jdAddress";
 
     }
 

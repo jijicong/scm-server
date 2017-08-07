@@ -1,8 +1,11 @@
 package org.trc.cache.interceptor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -17,6 +20,11 @@ import java.lang.reflect.Method;
 @Component
 @Aspect
 public class CacheEvitInterceptor {
+
+	private Logger LOGGER = LoggerFactory.getLogger(CacheEvitInterceptor.class);
+
+	private static final String SCM_PRE = "scm";
+
 	/**
 	 * 定义缓存逻辑
 	 * @throws Throwable 
@@ -32,15 +40,7 @@ public class CacheEvitInterceptor {
 		// }
 		// return result;
 		try {
-//			Signature sig = pjp.getSignature();
-//			MethodSignature msig = null;
-//			if (!(sig instanceof MethodSignature)) {
-//				throw new IllegalArgumentException("该注解只能用于方法");
-//			}
-//			msig = (MethodSignature) sig;
-//			Object target = pjp.getTarget();
-//			Method method = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
-
+			//
 			Method method = getMethod(pjp);
 			CacheEvit cacheevit = method.getAnnotation(org.trc.cache.CacheEvit.class);
 			String className = pjp.getTarget().getClass().getName();
@@ -48,7 +48,7 @@ public class CacheEvitInterceptor {
 			// 列表
 			RedisUtil.delObject(className + "LIST");
 			String[] keys = cacheevit.key();
-			for (String key : keys) {
+			for (String key : keys) { //删除根据set（key，value）中的值
 				String parseKey =  parseKey(key, method, pjp.getArgs());
 				key = className + parseKey;
 				// 本体
@@ -57,6 +57,7 @@ public class CacheEvitInterceptor {
 
 		} catch (Throwable e) {
 			//出exception了,继续即可,不需要处理
+			LOGGER.error("内存删除失败!",e);
 		}finally{
 			result = pjp.proceed();
 		}
@@ -87,9 +88,9 @@ public class CacheEvitInterceptor {
 			String name =  pjp.getSignature().getName();
 			method = pjp.getTarget().getClass().getMethod(name, argTypes);
 		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+			LOGGER.error("获取方法失败!",e);
 		} catch (SecurityException e) {
-			e.printStackTrace();
+			LOGGER.error("未获得得到该方法的权限!",e);
 		}
 		return method;
 	}
@@ -116,9 +117,18 @@ public class CacheEvitInterceptor {
 		// SPEL上下文
 		StandardEvaluationContext context = new StandardEvaluationContext();
 		// 把方法参数放入SPEL上下文中
+		context.setVariable(SCM_PRE,SCM_PRE);
 		for (int i = 0; i < paraNameArr.length; i++) {
 			context.setVariable(paraNameArr[i], args[i]);
 		}
-		return parser.parseExpression(key).getValue(context, String.class);
+		return parser.parseExpression(StringUtils.isBlank(key) == true ? "#scm" : "#scm+"+key).getValue(context, String.class);
 	}
 }
+//	Signature sig = pjp.getSignature();
+//			MethodSignature msig = null;
+//			if (!(sig instanceof MethodSignature)) {
+//				throw new IllegalArgumentException("该注解只能用于方法");
+//			}
+//			msig = (MethodSignature) sig;
+//			Object target = pjp.getTarget();
+//			Method method = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());

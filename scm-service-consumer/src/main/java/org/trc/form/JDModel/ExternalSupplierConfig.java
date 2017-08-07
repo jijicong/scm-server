@@ -20,6 +20,8 @@ public class ExternalSupplierConfig {
     private String jdPictureUrl;
     //京东sku价格查询接口url地址
     private String jdSkuPriceUrl;
+    //京东地址查询接口url地址
+    private String jdAddressUrl;
     //京东下单接口地址
     private String jdSubmitOrderUrl;
     //京东订单反查接口地址
@@ -154,5 +156,13 @@ public class ExternalSupplierConfig {
 
     public void setTreadTypeUrl(String treadTypeUrl) {
         this.treadTypeUrl = treadTypeUrl;
+    }
+
+    public String getJdAddressUrl() {
+        return jdAddressUrl;
+    }
+
+    public void setJdAddressUrl(String jdAddressUrl) {
+        this.jdAddressUrl = jdAddressUrl;
     }
 }

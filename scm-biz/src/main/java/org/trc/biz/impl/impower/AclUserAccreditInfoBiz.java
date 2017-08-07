@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.AclRole;
@@ -70,10 +72,10 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * 正则表达式：验证手机号
      */
     private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
-    @Resource
+    @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
 
-    @Resource
+    @Autowired
     private IAclRoleService roleService;
 
     @Autowired
@@ -82,18 +84,21 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Autowired
     private IAclUserAccreditRoleRelationService userAccreditInfoRoleRelationService;
 
-    @Resource
+    @Autowired
     private UserDoService userDoService;
 
-    @Resource
+    @Autowired
     private IPurchaseGroupuUserRelationService purchaseGroupuUserRelationService;
 
     @Autowired
     private IPurchaseGroupService purchaseGroupService;
+
     @Autowired
     private IUserNameUtilService userNameUtilService;
+
     @Autowired
     private ILogInfoService logInfoService;
+
     @Autowired
     private IPageNationService pageNationService;
 
@@ -107,6 +112,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
+    @Cacheable(key = "#form+#page.pageNo+#page.pageSize",isList = true)
     public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -222,18 +228,18 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     }
 
     @Override
+    @CacheEvit
     public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo, AclUserAccreditInfo aclUserAccreditInfoContext) {
-
         AssertUtil.notNull(aclUserAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         AclUserAccreditInfo updateAclUserAccreditInfo = new AclUserAccreditInfo();
         updateAclUserAccreditInfo.setId(aclUserAccreditInfo.getId());
         String state;
         if (aclUserAccreditInfo.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateAclUserAccreditInfo.setIsValid(ValidEnum.NOVALID.getCode());
-            state = "停用";
+            state = ValidEnum.NOVALID.getName();
         } else {
             updateAclUserAccreditInfo.setIsValid(ValidEnum.VALID.getCode());
-            state = "启用";
+            state = ValidEnum.VALID.getName();
         }
         updateAclUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         int count = userAccreditInfoService.updateByPrimaryKeySelective(updateAclUserAccreditInfo);
@@ -307,6 +313,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate,  AclUserAccreditInfo aclUserAccreditInfoContext) {
         checkUserAddPageDate(userAddPageDate);
         if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
@@ -430,6 +437,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit
     public void updateUserAccredit(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");

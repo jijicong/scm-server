@@ -218,8 +218,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     }
 
-    @Override//TODO
-    //@Cacheable(key = "#name")  todo
+    @Override
     public Warehouse findWarehouseByName(String name) {
 
         AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
@@ -230,7 +229,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @CacheEvit(key = { "#warehouse.name","#warehouse.id"} )
+    @CacheEvit(key = { "#warehouse.id"} )
     public void updateWarehouseState(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块修改仓库信息失败，仓库信息为空");

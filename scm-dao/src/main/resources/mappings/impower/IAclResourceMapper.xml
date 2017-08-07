@@ -15,7 +15,7 @@
     </select>
     <insert id="insertOne" parameterType="org.trc.domain.impower.AclResource" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO acl_resource (
-            code,name,url,method,parent_id,create_operator,is_deleted,create_time,update_time,belong
+            code,name,url,method,parent_id,create_operator,is_deleted,create_time,update_time,belong,type
         )
         VALUES
             (
@@ -28,7 +28,8 @@
                 #{isDeleted,jdbcType=BIGINT},
                 #{createTime,jdbcType=TIMESTAMP},
                 #{updateTime,jdbcType=TIMESTAMP},
-                #{belong,jdbcType=TINYINT}
+                #{belong,jdbcType=TINYINT},
+                #{type,jdbcType=VARCHAR}
             )
     </insert>
 </mapper>

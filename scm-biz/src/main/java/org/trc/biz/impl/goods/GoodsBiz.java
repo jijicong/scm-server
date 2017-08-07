@@ -17,6 +17,8 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.trc.ITrcBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
@@ -131,6 +133,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
@@ -155,6 +158,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -900,6 +904,7 @@ public class GoodsBiz implements IGoodsBiz {
      * @param items
      * @throws Exception
      */
+    @CacheEvit(key = { "#items.id"} )
     private void updateItemsBase(Items items) throws Exception{
         AssertUtil.notNull(items.getId(), "商品ID不能为空");
         items.setUpdateTime(Calendar.getInstance().getTime());
@@ -919,7 +924,6 @@ public class GoodsBiz implements IGoodsBiz {
         }
         return null;
     }
-
 
     private List<Skus> updateSkus(Skus skus, String userId) throws Exception{
         AssertUtil.notBlank(skus.getSpuCode(), "更新SKU信息商品SPU编码不能为空");
@@ -1277,6 +1281,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
+    @CacheEvit(key = { "#id"} )
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
@@ -1483,6 +1488,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
+    @Cacheable(key="#spuCode+#skuCode+#aclUserAccreditInfo.channelCode",isList=true)
     public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
@@ -1502,6 +1508,7 @@ public class GoodsBiz implements IGoodsBiz {
         }
         skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Skus> skuses = skusService.select(skus);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
         //设置商品重量和市场价返回值
         for(Skus s : skuses){
             if(null != s.getWeight() && s.getWeight() >= 0){
@@ -1529,7 +1536,6 @@ public class GoodsBiz implements IGoodsBiz {
                 }
             }
         }
-        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询商品SKU信息为空", spuCode));
         //获取自然属性和采购属性
         Object[] objs = getItemsPropertys(spuCode);
         List<ItemNaturePropery> itemNatureProperies = (List<ItemNaturePropery>)objs[0];
@@ -1564,6 +1570,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Cacheable(key="#spuCode+#categoryId",isList=true)
     public List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品分类属性spuCode为空");
         AssertUtil.notNull(categoryId, "查询商品分类属性categoryId为空");
@@ -1586,6 +1593,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1614,6 +1622,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Cacheable(key="#form.toString()",isList=true)
     public List<ExternalItemSku> queryExternalItems(ExternalItemSkuForm form) {
         AssertUtil.notNull(form, "查询代发商品参数不能为空");
         ExternalItemSku externalItemSku = new ExternalItemSku();
