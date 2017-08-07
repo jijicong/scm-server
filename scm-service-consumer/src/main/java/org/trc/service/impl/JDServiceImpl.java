@@ -972,4 +972,35 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+    @Override
+    public ReturnTypeDO getJingDongArea() {
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdAddressUrl();
+        log.debug("开始调用京东区域查询服务" + url + ", 参数：无. 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        String response = null;
+        try{
+            response = HttpClientUtil.httpGetRequest(url);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                if(StringUtils.equals(jbo.getString("appcode"), ZeroToNineEnum.ONE.getCode())){
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(jbo.getString("result"));
+                }
+                returnTypeDO.setResultMessage(jbo.getString("databuffer"));
+                returnTypeDO.setResultCode(jbo.getString("resultCode"));
+            }else {
+                returnTypeDO.setResultMessage("调用京东区域查询服务返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用京东区域查询服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        log.debug("结束调用京东区域查询服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        return returnTypeDO;
+    }
+
 }

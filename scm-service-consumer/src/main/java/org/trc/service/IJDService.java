@@ -370,4 +370,10 @@ public interface IJDService {
      */
     ReturnTypeDO getAllTreadType();
 
+    /**
+     * 获取京东区域
+     * @return
+     */
+    ReturnTypeDO getJingDongArea();
+
 }
