@@ -28,6 +28,7 @@ public enum RequestFlowTypeEnum {
     JD_SKU_PRICE_QUERY("JD_SKU_PRICE_QUERY", "京东查询sku价格"),
     JD_SKU_PRICE_UPDATE_NOTICE("JD_SKU_PRICE_UPDATE_NOTICE", "京东sku价格更新通知"),
     JD_LOGISTIC_INFO_QUERY("JD_LOGISTIC_INFO_QUERY", "京东物流信息查询"),
+    NOTICE_UPDATE_SKU_USE_STATUS("NOTICE_UPDATE_SKU_USE_STATUS", "通知更新SKU使用状态"),
     /**
      * 粮油部分
      */
