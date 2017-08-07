@@ -528,9 +528,10 @@ public class SupplyConstants {
             //供应商申请分页
             public static final String SUPPLIER_APPLY_PAGE = "supplierApplyPage";
 
-            //供应商申请信息路径
+            //供应商修改申请信息路径
             public static final String SUPPLIER_APPLY = "supplierApply";
-
+            //
+            public static final String SUPPLIER_STATE = "supplierApply/state";
 
         }
 

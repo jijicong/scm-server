@@ -73,8 +73,8 @@ public class SupplierApplyResource {
         return ResultUtil.createSucssAppResult("供应商申请修改成功","");
     }
 
-    @POST
-    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
+    @PUT
+    @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_STATE+"/{id}")
     public AppResult deleteSupplierApply(@PathParam("id")Long supplierApplyId)throws Exception{
         supplierApplyBiz.deleteSupplierApply(supplierApplyId);
         return ResultUtil.createSucssAppResult("供应商申请删除成功","");
