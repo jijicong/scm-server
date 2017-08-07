@@ -203,9 +203,16 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_UPDATE + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateCategoryProperty(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate,@Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.linkCategoryProperties(id, jsonDate,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("分类属性保存成功", "");
+    public AppResult linkCategoryProperties(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate,@Context ContainerRequestContext requestContext) throws Exception {
+        AppResult appResult = ResultUtil.createSucssAppResult("分类属性关联成功", "");
+        try {
+            categoryBiz.linkCategoryProperties(id, jsonDate,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }catch (Exception e){
+            log.error("分类属性关联异常", e);
+            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
     }
 
     /**
