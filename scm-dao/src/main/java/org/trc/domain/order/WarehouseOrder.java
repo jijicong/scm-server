@@ -124,6 +124,12 @@ public class WarehouseOrder {
     @Transient
     private String logisticsInfo;
 
+    /**
+     * 排序
+     */
+    @Transient
+    private Integer sort;
+
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
     }
@@ -568,5 +574,13 @@ public class WarehouseOrder {
 
     public void setLogisticsInfo(String logisticsInfo) {
         this.logisticsInfo = logisticsInfo;
+    }
+
+    public Integer getSort() {
+        return sort;
+    }
+
+    public void setSort(Integer sort) {
+        this.sort = sort;
     }
 }
