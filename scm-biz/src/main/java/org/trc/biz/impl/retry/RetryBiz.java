@@ -101,7 +101,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
 
-    private Boolean retryJob(List<RequestFlow> requestFlows){
+    private void retryJob(List<RequestFlow> requestFlows) throws Exception{
         try {
             //1、对需要进行重试订单进行分类
             Map<String,List<RequestFlow>> map = retryClassify(requestFlows);
@@ -136,9 +136,8 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("重试任务异常："+e.getMessage(),e);
+            throw new Exception("重试任务异常："+e.getMessage());
         }
-
-        return true;
     }
 
     private Map<String,List<RequestFlow>> retryClassify(List<RequestFlow> requestFlows){
