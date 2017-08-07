@@ -1,6 +1,8 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
@@ -10,6 +12,7 @@ import org.trc.domain.category.Category;
 import org.trc.domain.category.CategoryBrandExt;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.SuccessFailureEnum;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
@@ -29,6 +32,9 @@ import java.util.List;
 @Component
 @Path(SupplyConstants.Category.ROOT)
 public class CategoryResource {
+    private Logger log = LoggerFactory.getLogger(CategoryResource.class);
+
+
     @Autowired
     private ICategoryBiz categoryBiz;
 
@@ -164,8 +170,16 @@ public class CategoryResource {
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord, @Context ContainerRequestContext requestContext) throws Exception {
-        categoryBiz.linkCategoryBrands(id, brandIds, delRecord, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("分类品牌关联成功", "");
+
+        AppResult appResult = ResultUtil.createSucssAppResult("分类品牌关联成功", "");
+        try {
+            categoryBiz.linkCategoryBrands(id, brandIds, delRecord, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        }catch (Exception e){
+            log.error("关联分类品牌异常", e);
+            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+            appResult.setDatabuffer(e.getMessage());
+        }
+        return appResult;
     }
 
     //分类属性
