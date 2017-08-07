@@ -806,6 +806,20 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 元数据
+     */
+    public static final class Metadata{
+        public final static String ROOT = "metadata";
+        //字典
+        public final static String DICT = "dict";
+        //地址
+        public final static String ADDRESS = "address";
+        //京东地址
+        public final static String JD_ADDRESS = "jdAddress";
+
+    }
+
 
 
 
