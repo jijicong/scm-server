@@ -396,7 +396,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         code = purchaseOrder.getPurchaseOrderCode();
 
-        if(StringUtils.isNotBlank(purchaseOrderStrs)){
+        if(StringUtils.isNotBlank(purchaseOrderStrs) && !"[]".equals(purchaseOrderStrs)){
             BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
             if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){//提交审核做金额校验
                 if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等

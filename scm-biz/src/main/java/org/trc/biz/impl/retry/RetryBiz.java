@@ -42,7 +42,7 @@ public class RetryBiz implements IRetryBiz {
     private TrcConfig trcConfig;
 
     //订单信息查询路径
-    private static final Integer RETRY_INTERVAL = 600000;
+    private static final Long RETRY_INTERVAL = 600000L;
 
     public void faileRetry() throws Exception{
         //1、查询request flow表，找出需要重试的记录
@@ -67,8 +67,8 @@ public class RetryBiz implements IRetryBiz {
             recordTime(startTime, endTime);
         }else {
             TimeRecord timeRecord = timeRecordList.get(0);
-            long dif = timeRecord.getEndTime().getTime() - Calendar.getInstance().getTimeInMillis();
-            if (RETRY_INTERVAL < dif) {
+            long dif = Calendar.getInstance().getTimeInMillis()-timeRecord.getEndTime().getTime();
+            if (RETRY_INTERVAL.compareTo(dif) < 0) {
                 log.info("上一次定时任务未执行完毕");
                 throw new Exception("上一次定时任务未执行完毕");
             }
