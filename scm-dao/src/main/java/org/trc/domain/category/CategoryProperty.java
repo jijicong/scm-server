@@ -11,12 +11,13 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by hzwdx on 2017/5/18.
  */
-public class CategoryProperty {
+public class CategoryProperty implements Serializable{
 
     @PathParam("id")
     @Id

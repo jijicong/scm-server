@@ -6,8 +6,10 @@ import org.trc.biz.system.IMetadataBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
+import org.trc.util.AppResult;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import java.util.List;
@@ -44,7 +46,12 @@ public class MetadataResource {
     }
 
 
-
+    @POST
+    @Path(SupplyConstants.Metadata.JD_ADDRESS_UPDATE)
+    @Produces("application/json;charset=utf-8")
+    public AppResult jdAddressUpdate(){
+        return metadataBiz.jDAddressUpdate();
+    }
 
 
 
