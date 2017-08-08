@@ -48,8 +48,11 @@ public class RetryBiz implements IRetryBiz {
         //1、查询request flow表，找出需要重试的记录
         Example example = new Example(RequestFlow.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("status","0");
+        criteria.andEqualTo("status","SEND_FAILED");
+        Example.Criteria criteria01 = example.createCriteria();
+        criteria01.andEqualTo("status","SOCKET_TIME_OUT");
         example.orderBy("desc");
+        example.or(criteria01);
         List<RequestFlow> requestFlowList = requestFlowService.selectByExample(example);
         //2、参数判断
         AssertUtil.isTrue(requestFlowList.size()>0,"没有需要失败重试的记录");
@@ -362,6 +365,8 @@ public class RetryBiz implements IRetryBiz {
             throw new Exception("渠道接收订单提交结果重试异常："+e.getMessage());
         }
     }
+
+    //解析requestParam
 
     //发送物流信息给渠道重试
     private void sendLogisticsInfoToChannelRetry(List<RequestFlow> list) throws Exception{

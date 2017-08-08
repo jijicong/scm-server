@@ -3,7 +3,7 @@
 <mapper namespace="org.trc.mapper.config.IRequestFlowMapper">
     <update id="changeState" parameterType="java.lang.String">
       UPDATE request_flow
-      SET state = '1'
+      SET status = 'SEND_SUCCESS'
       WHERE
       request_num = #{requestNum}
     </update>
