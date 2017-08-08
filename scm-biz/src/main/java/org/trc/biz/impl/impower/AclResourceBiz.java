@@ -8,19 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impower.IAclResourceBiz;
-import org.trc.domain.impower.AclResource;
-import org.trc.domain.impower.AclRoleResourceRelation;
-import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.impower.AclUserAccreditRoleRelation;
+import org.trc.domain.impower.*;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.JurisdictionException;
 import org.trc.form.impower.JurisdictionTreeNode;
-import org.trc.service.impower.IAclResourceService;
-import org.trc.service.impower.IAclRoleResourceRelationService;
-import org.trc.service.impower.IAclUserAccreditInfoService;
-import org.trc.service.impower.IAclUserAccreditRoleRelationService;
+import org.trc.service.impower.*;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
 
@@ -34,9 +28,11 @@ import java.util.*;
 public class AclResourceBiz implements IAclResourceBiz {
 
     private Logger logger = LoggerFactory.getLogger(AclResourceBiz.class);
-    @Resource
+    @Autowired
     private IAclResourceService jurisdictionService;
-    @Resource
+    @Autowired
+    private IAclResourceExtService aclResourceExtService;
+    @Autowired
     private IAclRoleResourceRelationService roleJurisdictionRelationService;
     @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
@@ -367,10 +363,14 @@ public class AclResourceBiz implements IAclResourceBiz {
      */
     @Override
     public void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode) {
-        AclResource aclResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode), AclResource.class);
+        AclResourceExt aclResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode), AclResourceExt.class);
+        AclResourceExt resourceExt = new AclResourceExt();
+        resourceExt.setCode(aclResource.getId());
+        resourceExt = aclResourceExtService.selectOne(resourceExt);
+        aclResource.setId(resourceExt.getId());
         aclResource.setMethod(jurisdictionTreeNode.getOperationType());
         aclResource.setUpdateTime(Calendar.getInstance().getTime());
-        int count = jurisdictionService.updateByPrimaryKeySelective(aclResource);
+        int count = aclResourceExtService.updateByPrimaryKeySelective(aclResource);
         if (count == 0) {
             String msg = "更新资源" + JSON.toJSONString(aclResource.getName()) + "操作失败";
             logger.error(msg);
