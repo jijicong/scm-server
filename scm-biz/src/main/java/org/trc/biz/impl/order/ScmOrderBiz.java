@@ -1253,34 +1253,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
                 log.error(String.format("物流信息%s同步给渠道失败,%s", JSON.toJSONString(logisticNoticeForm), toGlyResultDO.getMsg()));
                 requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
-                int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
-                if (count<=0){
-                    log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
-                }
             }
             if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
                 log.error(String.format("物流信息%s同步给渠道超时,%s", JSON.toJSONString(logisticNoticeForm), toGlyResultDO.getMsg()));
                 requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
-                int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
-                if (count<=0){
-                    log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
-                }
             }
             if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
                 log.error(String.format("物流信息%s同步给渠道成功,%s", JSON.toJSONString(logisticNoticeForm), toGlyResultDO.getMsg()));
                 requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
-                int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
-                if (count<=0){
-                    log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
-                }
             }
             if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
                 log.error(String.format("物流信息%s同步给渠道成功,%s", JSON.toJSONString(logisticNoticeForm), toGlyResultDO.getMsg()));
                 requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
-                int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
-                if (count<=0){
-                    log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
-                }
+            }
+            int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+            if (count<=0){
+                log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
             }
         }catch (Exception e){
             log.error(String.format("同步物流信息%s给渠道异常,%s", JSON.toJSONString(logisticForm), e.getMessage()), e);
