@@ -1,11 +1,14 @@
 package org.trc.util;
 
-import org.trc.enums.ResponseAckEnum;
+import org.trc.enums.ExceptionEnum;
 
 /**
  * Created by george on 2017/2/28.
  */
 public class ResponseAck<T> {
+
+    //成功状态码
+    public final static String SUCCESS_CODE = "200";
 
     private String code;
 
@@ -23,9 +26,14 @@ public class ResponseAck<T> {
         this.data = data;
     }
 
-    public ResponseAck(ResponseAckEnum responseAckEnum, T data){
-        this.code = responseAckEnum.getCode();
-        this.message = responseAckEnum.getMessage();
+    /**
+     * 构造异常返回结果
+     * @param exceptionEnum
+     * @param data
+     */
+    public ResponseAck(ExceptionEnum exceptionEnum, T data){
+        this.code = exceptionEnum.getCode();
+        this.message = exceptionEnum.getMessage();
         this.data = data;
     }
 

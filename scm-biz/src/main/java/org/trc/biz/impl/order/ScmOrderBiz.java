@@ -488,8 +488,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public void saveChannelOrderRequestFlow(String orderInfo, AppResult appResult) {
-        requestFlowBiz.saveRequestFlow(orderInfo, RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.RECEIVE_CHANNEL_ORDER, appResult, RequestFlowConstant.GYL);
+    public void saveChannelOrderRequestFlow(String orderInfo, ResponseAck responseAck) {
+        requestFlowBiz.saveRequestFlow(orderInfo, RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.RECEIVE_CHANNEL_ORDER, responseAck, RequestFlowConstant.GYL);
     }
 
     /**
@@ -898,7 +898,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public AppResult<String> reciveChannelOrder(String orderInfo) {
+    public ResponseAck<String> reciveChannelOrder(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //获取平台订单信息
@@ -940,7 +940,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }catch (Exception e){
             log.error(String.format("多线程提交供应商订单异常,%s", e));
         }
-        return ResultUtil.createSucssAppResult("接收订单成功", "");
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", "");
     }
 
 
@@ -1104,8 +1104,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public AppResult<LogisticNoticeForm> getJDLogistics(String shopOrderCode)throws Exception {
-        AppResult<LogisticNoticeForm> appResult = null;
+    public ResponseAck<LogisticNoticeForm> getJDLogistics(String shopOrderCode)throws Exception {
+        ResponseAck<LogisticNoticeForm> responseAck = null;
         try{
             AssertUtil.notBlank(shopOrderCode, "查询京东物流信息店铺订单号shopOrderCode不能为空");
             WarehouseOrder warehouseOrder = new WarehouseOrder();
@@ -1114,7 +1114,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //一个店铺订单下只有一个京东仓库订单
             warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
             if(null == warehouseOrder){
-                return ResultUtil.createFailAppResult(String.format("不存在店铺订单编码为[%s]的京东订单信息", shopOrderCode));
+                throw new OrderException(ExceptionEnum.ORDER_QUERY_EXCEPTION, String.format("不存在店铺订单编码为[%s]的京东订单信息", shopOrderCode));
             }
             LogisticForm logisticForm = invokeGetLogisticsInfo(warehouseOrder.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), SupplierLogisticsEnum.JD.getCode());
             LogisticNoticeForm logisticNoticeForm = new LogisticNoticeForm();
@@ -1130,15 +1130,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     updateSupplierOrderLogistics(supplierOrderInfo, logisticForm);
                 }
             }
-            appResult = ResultUtil.createSucssAppResult("查询订单配送信息成功", logisticNoticeForm);
+            responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "查询订单配送信息成功", logisticNoticeForm);
         }catch (Exception e){
             String msg = String.format("根据店铺订单号[%s]查询订单物流信息异常,%s", shopOrderCode, e.getMessage());
             log.error(msg,e);
-            appResult = ResultUtil.createFailAppResult(msg);
+            String code = ExceptionUtil.getErrorInfo(e);
+            responseAck = new ResponseAck(code, msg, "");
         }
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(String.format("{shopOrderCode:%s}", shopOrderCode), RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY, appResult, RequestFlowConstant.GYL);
-        return appResult;
+        requestFlowBiz.saveRequestFlow(String.format("{shopOrderCode:%s}", shopOrderCode), RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY, responseAck, RequestFlowConstant.GYL);
+        return responseAck;
     }
 
 

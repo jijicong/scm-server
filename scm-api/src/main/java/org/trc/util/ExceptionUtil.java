@@ -38,55 +38,11 @@ public class ExceptionUtil {
 		String errorDtl = "";
 		String excepCode = "";
 		try {
-			String exceptionName = e.getClass().getSimpleName();
-			/*exceptionName = exceptionName.substring(
-					exceptionName.lastIndexOf(".") + 1, exceptionName.length());*/
-			if (StringUtils.equals(exceptionName, ParamValidException.class.getSimpleName())) {
-				ParamValidException paramValidException = (ParamValidException)e;
-				commonExceptionEnum = paramValidException.getExceptionEnum();
-			} else if (StringUtils.equals(exceptionName, ConfigException.class.getSimpleName())) {
-				ConfigException configException = (ConfigException)e;
-				exceptionEnum = configException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, FileException.class.getSimpleName())) {
-				FileException fileException = (FileException)e;
-				exceptionEnum = fileException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, CategoryException.class.getSimpleName())) {
-				CategoryException categoryException = (CategoryException)e;
-				exceptionEnum = categoryException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, ChannelException.class.getSimpleName())) {
-				ChannelException channelException = (ChannelException)e;
-				exceptionEnum = channelException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, GoodsException.class.getSimpleName())) {
-				GoodsException goodsException = (GoodsException)e;
-				exceptionEnum = goodsException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, PurchaseGroupException.class.getSimpleName())) {
-				PurchaseGroupException purchaseGroupException = (PurchaseGroupException)e;
-				exceptionEnum = purchaseGroupException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, RoleException.class.getSimpleName())) {
-				RoleException roleException = (RoleException)e;
-				exceptionEnum = roleException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, SupplierException.class.getSimpleName())) {
-				SupplierException supplierException = (SupplierException)e;
-				exceptionEnum = supplierException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, UserAccreditInfoException.class.getSimpleName())) {
-				UserAccreditInfoException userAccreditInfoException = (UserAccreditInfoException)e;
-				exceptionEnum = userAccreditInfoException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, WarehouseException.class.getSimpleName())) {
-				WarehouseException warehouseException = (WarehouseException)e;
-				exceptionEnum = warehouseException.getExceptionEnum();
-			}else if (StringUtils.equals(exceptionName, DuplicateKeyException.class.getSimpleName())) {
-				exceptionEnum = ExceptionEnum.DATABASE_DUPLICATE_KEY_EXCEPTION;
-			}else if (StringUtils.equals(exceptionName, PermissionDeniedDataAccessException.class.getSimpleName())) {
-				exceptionEnum = ExceptionEnum.DATABASE_PERMISSION_DENIED_EXCEPTION;
-			}else if (StringUtils.equals(exceptionName, QueryTimeoutException.class.getSimpleName())) {
-				exceptionEnum = ExceptionEnum.DATABASE_QUERY_TIME_OUT_EXCEPTION;
-			}else if (StringUtils.equals(exceptionName, DeadlockLoserDataAccessException.class.getSimpleName())) {
-				exceptionEnum = ExceptionEnum.DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION;
-			}else if(StringUtils.equals(exceptionName, JurisdictionException.class.getSimpleName())){
-				JurisdictionException jurisdictionException= (JurisdictionException) e;
-				exceptionEnum=jurisdictionException.getExceptionEnum();
-			}else{
-				exceptionEnum = ExceptionEnum.SYSTEM_EXCEPTION;
+			Object exceptionObj = getException(e);
+			if(exceptionObj instanceof CommonExceptionEnum){
+				commonExceptionEnum = (CommonExceptionEnum)exceptionObj;
+			}else if(exceptionObj instanceof ExceptionEnum){
+				exceptionEnum = (ExceptionEnum)exceptionObj;
 			}
 		} catch (Exception e2) {
 			excepMsg = "系统未捕获未知异常";
@@ -115,6 +71,87 @@ public class ExceptionUtil {
 		StringBuilder builder2 = new StringBuilder();
 		builder2.append(excepMsg).append(",异常代码[").append(excepCode).append("],异常明细:").append(errorDtl);
 		return builder2.toString();
+	}
+
+	/**
+	 * 获取异常对象
+	 * @param e
+	 * @return
+	 */
+	public static Object getException(Exception e){
+		ExceptionEnum exceptionEnum = null;
+		CommonExceptionEnum commonExceptionEnum = null;
+		String exceptionName = e.getClass().getSimpleName();
+		if (StringUtils.equals(exceptionName, ParamValidException.class.getSimpleName())) {
+			ParamValidException paramValidException = (ParamValidException)e;
+			commonExceptionEnum = paramValidException.getExceptionEnum();
+		} else if (StringUtils.equals(exceptionName, ConfigException.class.getSimpleName())) {
+			ConfigException configException = (ConfigException)e;
+			exceptionEnum = configException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, FileException.class.getSimpleName())) {
+			FileException fileException = (FileException)e;
+			exceptionEnum = fileException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, CategoryException.class.getSimpleName())) {
+			CategoryException categoryException = (CategoryException)e;
+			exceptionEnum = categoryException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, ChannelException.class.getSimpleName())) {
+			ChannelException channelException = (ChannelException)e;
+			exceptionEnum = channelException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, GoodsException.class.getSimpleName())) {
+			GoodsException goodsException = (GoodsException)e;
+			exceptionEnum = goodsException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, PurchaseGroupException.class.getSimpleName())) {
+			PurchaseGroupException purchaseGroupException = (PurchaseGroupException)e;
+			exceptionEnum = purchaseGroupException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, RoleException.class.getSimpleName())) {
+			RoleException roleException = (RoleException)e;
+			exceptionEnum = roleException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, SupplierException.class.getSimpleName())) {
+			SupplierException supplierException = (SupplierException)e;
+			exceptionEnum = supplierException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, UserAccreditInfoException.class.getSimpleName())) {
+			UserAccreditInfoException userAccreditInfoException = (UserAccreditInfoException)e;
+			exceptionEnum = userAccreditInfoException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, WarehouseException.class.getSimpleName())) {
+			WarehouseException warehouseException = (WarehouseException)e;
+			exceptionEnum = warehouseException.getExceptionEnum();
+		}else if (StringUtils.equals(exceptionName, DuplicateKeyException.class.getSimpleName())) {
+			exceptionEnum = ExceptionEnum.DATABASE_DUPLICATE_KEY_EXCEPTION;
+		}else if (StringUtils.equals(exceptionName, PermissionDeniedDataAccessException.class.getSimpleName())) {
+			exceptionEnum = ExceptionEnum.DATABASE_PERMISSION_DENIED_EXCEPTION;
+		}else if (StringUtils.equals(exceptionName, QueryTimeoutException.class.getSimpleName())) {
+			exceptionEnum = ExceptionEnum.DATABASE_QUERY_TIME_OUT_EXCEPTION;
+		}else if (StringUtils.equals(exceptionName, DeadlockLoserDataAccessException.class.getSimpleName())) {
+			exceptionEnum = ExceptionEnum.DATABASE_DEADLOCK_DATA_ACESS_EXCEPTION;
+		}else if(StringUtils.equals(exceptionName, JurisdictionException.class.getSimpleName())){
+			JurisdictionException jurisdictionException= (JurisdictionException) e;
+			exceptionEnum=jurisdictionException.getExceptionEnum();
+		}else{
+			exceptionEnum = ExceptionEnum.SYSTEM_EXCEPTION;
+		}
+		if(null != exceptionEnum)
+			return exceptionEnum;
+		if(null != commonExceptionEnum)
+			return commonExceptionEnum;
+		return null;
+	}
+
+	/**
+	 * 获取异常错误码
+	 * @param e
+	 * @return
+	 */
+	public static String getErrorInfo(Exception e){
+		Object exceptionObj = getException(e);
+		String code = null;
+		if(exceptionObj instanceof CommonExceptionEnum){
+			CommonExceptionEnum commonExceptionEnum = (CommonExceptionEnum)exceptionObj;
+			code = commonExceptionEnum.getCode();
+		}else if(exceptionObj instanceof ExceptionEnum){
+			ExceptionEnum exceptionEnum = (ExceptionEnum)exceptionObj;
+			code = exceptionEnum.getCode();
+		}
+		return code;
 	}
 	
 }

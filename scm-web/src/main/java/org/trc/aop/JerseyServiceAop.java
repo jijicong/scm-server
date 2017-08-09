@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.util.CommonDO;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
 import org.trc.util.*;
 
@@ -76,16 +78,22 @@ public class JerseyServiceAop {
         } catch (Exception e) {
             String errorMsg = ExceptionUtil.handlerException(e, targetClass, method.getName());
             log.error(errorMsg, e);
-            if (StringUtils.equals("AppResult", returnType.getSimpleName())) {
-                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), errorMsg, "");
-                resultObj = appResult;
-            } else if (StringUtils.equals("JSONObject", returnType.getSimpleName())) {
-                JSONObject appResult = new JSONObject();
-                appResult.put("appcode", ResultEnum.FAILURE.getCode());
-                appResult.put("databuffer", errorMsg);
-                appResult.put("result", "");
-                resultObj = appResult;
+            if(StringUtils.equals(ResponseAck.class.getSimpleName(), returnType.getSimpleName())){
+                String code = ExceptionUtil.getErrorInfo(e);
+                resultObj = new ResponseAck(code, e.getMessage(), "");
+            }else{
+                if (StringUtils.equals("AppResult", returnType.getSimpleName())) {
+                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), errorMsg, "");
+                    resultObj = appResult;
+                } else if (StringUtils.equals("JSONObject", returnType.getSimpleName())) {
+                    JSONObject appResult = new JSONObject();
+                    appResult.put("appcode", ResultEnum.FAILURE.getCode());
+                    appResult.put("databuffer", errorMsg);
+                    appResult.put("result", "");
+                    resultObj = appResult;
+                }
             }
+
         }
         Date end = new Date();
         long endL = System.nanoTime();

@@ -16,15 +16,16 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Skus;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.BrandException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ResultUtil;
+import org.trc.util.*;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
@@ -67,28 +68,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.BRAND_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) {
-        try {
-            page = brandBiz.brandList(form, page);
-            /*List<Brand> list = new ArrayList<Brand>();
-            for (Brand brand : page.getResult()) {
-                Brand brand1 = new Brand();
-                brand1.setId(brand.getId());
-                brand1.setName(brand.getName());
-                brand1.setBrandCode(brand.getBrandCode() == null ? "" : brand.getBrandCode());
-                brand1.setAlise(brand.getAlise() == null ? "" : brand.getAlise());
-                brand1.setWebUrl(brand.getWebUrl() == null ? "" : brand.getWebUrl());
-                brand1.setIsValid(brand.getIsValid());
-                brand1.setUpdateTime(brand.getUpdateTime());
-                brand1.setSort(brand.getSort());
-                list.add(brand1);
-            }
-            page.setResult(list);*/
-            return ResultUtil.createSucssAppResult("查询品牌列表成功", page);
-        } catch (Exception e) {
-            logger.error("查询品牌列表报错：" + e.getMessage());
-            return ResultUtil.createFailAppResult("查询品牌列表报错：" + e.getMessage());
-        }
+    public ResponseAck<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) throws Exception{
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "品牌查询成功", brandBiz.brandList(form, page));
     }
 
     /**
@@ -101,27 +82,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<Pagenation<Property>> queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) {
-        try {
-            page = propertyBiz.propertyPage(form, page);
-            /*List<Property> list = new ArrayList<Property>();
-            for (Property property : page.getResult()) {
-                Property property1 = new Property();
-                property1.setId(property.getId());
-                property1.setName(property.getName());
-                property1.setSort(property.getSort());
-                property1.setTypeCode(property.getTypeCode());
-                property1.setValueType(property.getValueType());
-                property1.setIsValid(property.getIsValid());
-                property1.setUpdateTime(property.getUpdateTime());
-                list.add(property1);
-            }
-            page.setResult(list);*/
-            return ResultUtil.createSucssAppResult("查询属性列表成功", page);
-        } catch (Exception e) {
-            logger.error("查询属性列表报错：" + e.getMessage());
-            return ResultUtil.createFailAppResult("查询属性列表报错：" + e.getMessage());
-        }
+    public ResponseAck<Pagenation<Property>> queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) throws Exception{
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", propertyBiz.propertyPage(form, page));
     }
 
     /**
@@ -134,30 +96,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<Pagenation<Category>> queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) {
-        try {
-            page = categoryBiz.categoryPage(categoryForm, page);
-            /*List<Category> list = new ArrayList<Category>();
-            for (Category category : page.getResult()) {
-                Category category1 = new Category();
-                category1.setId(category.getId());
-                category1.setName(category.getName());
-                category1.setSort(category.getSort());
-                category1.setIsValid(category.getIsValid());
-                category1.setUpdateTime(category.getUpdateTime());
-                if (category.getParentId() != null) {
-                    category1.setParentId(category.getParentId());
-                }
-                category1.setClassifyDescribe(category.getClassifyDescribe() == null ? "" : category.getClassifyDescribe());
-                category1.setLevel(category.getLevel());
-                list.add(category1);
-            }
-            page.setResult(list);*/
-            return ResultUtil.createSucssAppResult("查询分类列表成功", page);
-        } catch (Exception e) {
-            logger.error("查询分类列表报错：" + e.getMessage());
-            return ResultUtil.createFailAppResult("查询分类列表报错：" + e.getMessage());
-        }
+    public ResponseAck<Pagenation<Category>> queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) throws Exception {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类查询成功", categoryBiz.categoryPage(categoryForm, page));
     }
 
     /**
@@ -169,13 +109,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_BRAND_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId) {
-        try {
-            return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryBrands(categoryId));
-        } catch (Exception e) {
-            logger.error("查询分类品牌列表报错：" + e.getMessage());
-            return ResultUtil.createFailAppResult("查询分类品牌列表报错：" + e.getMessage());
-        }
+    public ResponseAck<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId) throws Exception {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类品牌查询成功", categoryBiz.queryBrands(categoryId));
     }
 
     /**
@@ -187,13 +122,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId) {
-        try {
-            return ResultUtil.createSucssAppResult("查询分类属性列表成功", categoryBiz.queryProperties(categoryId));
-        } catch (Exception e) {
-            logger.error("查询分类属性列表报错：" + e.getMessage());
-            return ResultUtil.createFailAppResult("查询分类属性列表报错：" + e.getMessage());
-        }
+    public ResponseAck<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId) throws Exception {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类属性查询成功", categoryBiz.queryProperties(categoryId));
     }
 
     /**
@@ -205,30 +135,26 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKU_INFORMATION)
     @Produces("application/json;charset=utf-8")
-    public AppResult<Object> getSpuInformation(@QueryParam("skuCode") String skuCode) {
-        try {
-            return ResultUtil.createSucssAppResult("查询sku信息成功", skuRelationBiz.getSkuInformation(skuCode));
-        } catch (Exception e) {
-            logger.error("查询sku信息报错: " + e.getMessage());
-            return ResultUtil.createFailAppResult("查询sku信息报错：" + e.getMessage());
-        }
+    public ResponseAck<Object> getSpuInformation(@QueryParam("skuCode") String skuCode) {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode));
     }
 
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces("application/json;charset=utf-8")
     @Consumes(MediaType.TEXT_PLAIN)
-    public AppResult<String> getOrderList(String information) {
-        AppResult appResult = null;
+    public ResponseAck<String> getOrderList(String information) {
+        ResponseAck responseAck = null;
         try{
-            appResult = scmOrderBiz.reciveChannelOrder(information);
+            responseAck = scmOrderBiz.reciveChannelOrder(information);
         }catch (Exception e){
-            appResult = ResultUtil.createFailAppResult(String.format("接收渠道同步订单异常,%s", e.getMessage()));
+            String code = ExceptionUtil.getErrorInfo(e);
+            responseAck = new ResponseAck(code, e.getMessage(), "");
             logger.error(String.format("接收渠道同步订单%s异常,%s", information, e));
         }finally {
-            scmOrderBiz.saveChannelOrderRequestFlow(information, appResult);
+            scmOrderBiz.saveChannelOrderRequestFlow(information, responseAck);
         }
-        return appResult;
+        return responseAck;
     }
 
 
@@ -237,7 +163,7 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/json;charset=utf-8")
-    public AppResult<String> addSkuRelationBatch(JSONObject information) {
+    public ResponseAck<String> addSkuRelationBatch(JSONObject information) {
         AssertUtil.isTrue(information.containsKey("action"), "参数action不能为空");
         AssertUtil.isTrue(information.containsKey("relations"), "参数relations不能为空");
         String action = information.getString("action");
@@ -245,21 +171,23 @@ public class TaiRanResource {
         try {
             trcBiz.updateRelation(action, relations);
         } catch (Exception e) {
-            return ResultUtil.createFailAppResult("关联信息更新失败：" + e.getMessage());
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("关联信息更新失败,%s", e.getMessage()), "");
         }
-        return ResultUtil.createSucssAppResult("关联信息更新成功", "");
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "关联信息更新成功", "");
     }
 
     //自采商品信息查询
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
+    public ResponseAck<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
-            return ResultUtil.createSucssAppResult("查询列表信息成功", skuBiz.skusPage(skusForm, pagenation));
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", skuBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
             logger.error("查询sku列表信息报错: " + e.getMessage());
-            return ResultUtil.createFailAppResult("查询sku列表信息报错：" + e.getMessage());
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("查询sku列表信息报错,%s", e.getMessage()), "");
         }
     }
 
@@ -268,12 +196,13 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.EXTERNALITEMSKU_LIST)
     @Produces("application/json;charset=utf-8")
-    public AppResult<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) {
+    public ResponseAck<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) {
         try {
-            return ResultUtil.createSucssAppResult("查询列表信息成功", trcBiz.externalItemSkuPage(form, page));
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "代发sku列表信息查询成功", trcBiz.externalItemSkuPage(form, page));
         } catch (Exception e) {
             logger.error("查询externalItemSku列表信息报错: " + e.getMessage());
-            return ResultUtil.createFailAppResult("查询externalItemSku列表信息报错：" + e.getMessage());
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("代发sku列表信息查询失败,%s", e.getMessage()), "");
         }
     }
 
@@ -281,8 +210,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.JD_LOGISTICS)
     @Produces("application/json;charset=utf-8")
-    public AppResult JDLogistics(@QueryParam("shopOrderCode")String shopOrderCode) throws  Exception{
-        return scmOrderBiz.getJDLogistics(shopOrderCode);
+    public ResponseAck JDLogistics(@QueryParam("shopOrderCode")String shopOrderCode) throws Exception{
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "京东物流信息查询成功", scmOrderBiz.getJDLogistics(shopOrderCode));
     }
 
 

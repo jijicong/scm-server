@@ -15,6 +15,7 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.util.AppResult;
 import org.trc.util.GuidUtil;
+import org.trc.util.ResponseAck;
 
 import java.util.Calendar;
 
@@ -64,6 +65,14 @@ public class RequestFlowBiz implements IRequestFlowBiz {
                     requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
                 }
                 requestFlow.setRemark(toGlyResultDO.getMsg());
+            }else if(remoteInvokeResult instanceof ResponseAck){
+                ResponseAck responseAck = (ResponseAck)remoteInvokeResult;
+                if (StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)) {
+                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                } else {
+                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
+                }
+                requestFlow.setRemark(responseAck.getMessage());
             }
             requestFlowService.insert(requestFlow);
         }catch (Exception e){
