@@ -11,6 +11,8 @@ public class SupplierOrderReturn {
     private String supplyOrderCode;
     //订单状态:1-成功,0-失败
     private String state;
+    //错误信息
+    private String errorMsg;
     //skus信息列表
     private List<SkuInfo> skus;
 
@@ -36,5 +38,13 @@ public class SupplierOrderReturn {
 
     public void setSkus(List<SkuInfo> skus) {
         this.skus = skus;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
     }
 }
