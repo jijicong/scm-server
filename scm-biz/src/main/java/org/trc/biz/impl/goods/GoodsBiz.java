@@ -158,6 +158,31 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<Items> itemsPageForChannel(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        handlerSkuCondition(criteria, queryModel.getSkuCode(), queryModel.getSpuCode());
+        if (null != queryModel.getCategoryId()) {//商品所属分类ID
+            criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+        }
+        if (null != queryModel.getBrandId()) {//商品所属品牌ID
+            criteria.andEqualTo("brandId", queryModel.getBrandId());
+        }
+        if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        example.orderBy("updateTime").desc();
+        page = itemsService.pagination(example, page, queryModel);
+        handerPage(page);
+        //分页查询
+        return page;
+    }
+
+    @Override
     @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");

@@ -57,6 +57,8 @@ public class SupplyConstants {
 
         public static final String SKURELATION_UPDATE ="skurelation/update";//sku关联信息变更
 
+        public static final String ITEM_LIST = "itemList";//获取自采商品列表
+
         public static final String SKUS_LIST = "skusList";//获取自采商品sku列表
 
         public static final String EXTERNALITEMSKU_LIST = "externalItemSkuList";//获取自采商品skus列表
