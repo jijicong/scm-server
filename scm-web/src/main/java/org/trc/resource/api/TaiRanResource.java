@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
+import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.goods.ISkuBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
@@ -15,6 +16,7 @@ import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
@@ -24,6 +26,7 @@ import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.category.PropertyForm;
 import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.util.*;
 
@@ -57,6 +60,8 @@ public class TaiRanResource {
     private ISkuRelationBiz skuRelationBiz;
     @Resource
     private IScmOrderBiz scmOrderBiz;
+    @Resource
+    private IGoodsBiz goodsBiz;
 
     /**
      * 分页查询品牌
@@ -127,7 +132,7 @@ public class TaiRanResource {
     }
 
     /**
-     * 查询单个sku信息
+     * 查询自采sku信息
      *
      * @param skuCode 传递供应链skuCode
      * @return
@@ -139,12 +144,25 @@ public class TaiRanResource {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode));
     }
 
+    /**
+     * 查询代发sku信息
+     *
+     * @param skuCode 传递供应链skuCode
+     * @return
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.EXTERNAL_SKU_INFORMATION)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<Object> getExternalSkuInformations(@QueryParam("skuCode") String skuCode) {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getExternalSkuInformation(skuCode));
+    }
+
 
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces("application/json;charset=utf-8")
     @Consumes(MediaType.TEXT_PLAIN)
-    public ResponseAck<String> getOrderList(String information) {
+    public ResponseAck<String> reciveChannelOrder(String information) {
         ResponseAck responseAck = null;
         try{
             responseAck = scmOrderBiz.reciveChannelOrder(information);
@@ -180,9 +198,18 @@ public class TaiRanResource {
 
     //自采商品信息查询
     @GET
+    @Path(SupplyConstants.TaiRan.ITEM_LIST)
+    @Produces("application/json;charset=utf-8")
+    public Pagenation<Items> itemList(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
+        return goodsBiz.itemsPage(form, page);
+    }
+
+
+    //自采商品SKU信息查询
+    @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Skus>> getSkus(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
+    public ResponseAck<Pagenation<Skus>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", skuBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
@@ -197,7 +224,7 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.EXTERNALITEMSKU_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<ExternalItemSku>> getExternalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) {
+    public ResponseAck<Pagenation<ExternalItemSku>> externalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "代发sku列表信息查询成功", trcBiz.externalItemSkuPage(form, page));
         } catch (Exception e) {
