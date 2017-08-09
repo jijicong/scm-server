@@ -50,6 +50,7 @@ public interface IChannelBiz {
      */
     void updateChannel(Channel channel,AclUserAccreditInfo aclUserAccreditInfo) ;
 
+
     /**
      * 根据id查询渠道
      * @param id 主键

@@ -204,7 +204,6 @@ public class ChannelBiz implements IChannelBiz {
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
         }
 
-
         String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
 

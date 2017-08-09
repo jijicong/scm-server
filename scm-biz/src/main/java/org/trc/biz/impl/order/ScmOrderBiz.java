@@ -1163,10 +1163,21 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 else if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, supplierOrderInfo2.getSupplierCode()))
                     flag = SupplierLogisticsEnum.LY.getCode();
                 if(StringUtils.isNotBlank(flag)){
+                    //获取仓库订单编码的物流信息  -----------  一个仓库订单可能会产生多个包裹 -supplier_order_info
                     LogisticForm logisticForm = invokeGetLogisticsInfo(supplierOrderInfo2.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), flag);
                     if(null != logisticForm){
                         //更新供应商订单物流信息
                         updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
+                        //在这里剔除已经通知了的物流信息
+                        if(StringUtils.equals(supplierOrderInfo2.getStatus(),SupplierOrderStatusEnum.DELIVER.getCode())){
+                            List<Logistic> logistics = logisticForm.getLogistics();
+                            for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
+                                Logistic logistic = it.next();
+                                if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderInfo2.getSupplierOrderCode())) {
+                                    it.remove();
+                                }
+                            }
+                        }
                         //物流信息同步给渠道
                         logisticsInfoNoticeChannel(logisticForm);
                     }
@@ -1228,13 +1239,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Logistic logistic: logisticForm.getLogistics()){
             SupplierOrderLogistics supplierOrderLogistics = null;
             try{
+                //获取供应商订单物流信息
                 supplierOrderLogistics = getSupplierOrderLogistics(supplierOrderInfo, logistic, logisticForm.getType());
+                //保存的物流信息 or 更新物流信息
                 saveSupplierOrderLogistics(supplierOrderLogistics);
                 supplierOrderLogisticsList.add(supplierOrderLogistics);
             }catch (Exception e){
                 log.error(String.format("保存供应商物流信息%s异常,%s", JSONObject.toJSON(supplierOrderLogistics), e.getMessage()), e);
             }
         }
+
         if(supplierOrderLogisticsList.size() > 0){
             //更新供应商订单状态
             updateSupplierOrderStatus(supplierOrderInfo, supplierOrderLogisticsList);
