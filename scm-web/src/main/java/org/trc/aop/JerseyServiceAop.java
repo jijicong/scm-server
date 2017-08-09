@@ -81,17 +81,15 @@ public class JerseyServiceAop {
             if(StringUtils.equals(ResponseAck.class.getSimpleName(), returnType.getSimpleName())){
                 String code = ExceptionUtil.getErrorInfo(e);
                 resultObj = new ResponseAck(code, e.getMessage(), "");
-            }else{
-                if (StringUtils.equals("AppResult", returnType.getSimpleName())) {
-                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), errorMsg, "");
-                    resultObj = appResult;
-                } else if (StringUtils.equals("JSONObject", returnType.getSimpleName())) {
-                    JSONObject appResult = new JSONObject();
-                    appResult.put("appcode", ResultEnum.FAILURE.getCode());
-                    appResult.put("databuffer", errorMsg);
-                    appResult.put("result", "");
-                    resultObj = appResult;
-                }
+            }if (StringUtils.equals(AppResult.class.getSimpleName(), returnType.getSimpleName())) {
+                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
+                resultObj = appResult;
+            } else if (StringUtils.equals("JSONObject", returnType.getSimpleName())) {
+                JSONObject appResult = new JSONObject();
+                appResult.put("appcode", ResultEnum.FAILURE.getCode());
+                appResult.put("databuffer", e.getMessage());
+                appResult.put("result", "");
+                resultObj = appResult;
             }
 
         }

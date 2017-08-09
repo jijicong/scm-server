@@ -135,9 +135,10 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKU_INFORMATION)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Object> getSpuInformation(@QueryParam("skuCode") String skuCode) {
+    public ResponseAck<Object> getSpuInformations(@QueryParam("skuCode") String skuCode) {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode));
     }
+
 
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)

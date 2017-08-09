@@ -25,6 +25,7 @@ public enum RequestFlowTypeEnum {
      */
     JD_SUBMIT_ORDER("SUBMIT_JD_ORDER", "提交京东订单"),
     JD_SKU_PRICE_UPDATE_SUBMIT_ORDER("JD_SKU_PRICE_UPDATE_SUBMIT_ORDER", "京东sku价格更新重新提交订单"),
+    JD_BALANCE_NOT_ENOUGH("JD_BALANCE_NOT_ENOUGH", "京东下单余额不足"),
     JD_SKU_PRICE_QUERY("JD_SKU_PRICE_QUERY", "京东查询sku价格"),
     JD_SKU_PRICE_UPDATE_NOTICE("JD_SKU_PRICE_UPDATE_NOTICE", "京东sku价格更新通知"),
     JD_LOGISTIC_INFO_QUERY("JD_LOGISTIC_INFO_QUERY", "京东物流信息查询"),
