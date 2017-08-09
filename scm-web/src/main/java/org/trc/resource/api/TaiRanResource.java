@@ -70,7 +70,7 @@ public class TaiRanResource {
     public AppResult<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) {
         try {
             page = brandBiz.brandList(form, page);
-            List<Brand> list = new ArrayList<Brand>();
+            /*List<Brand> list = new ArrayList<Brand>();
             for (Brand brand : page.getResult()) {
                 Brand brand1 = new Brand();
                 brand1.setId(brand.getId());
@@ -83,7 +83,7 @@ public class TaiRanResource {
                 brand1.setSort(brand.getSort());
                 list.add(brand1);
             }
-            page.setResult(list);
+            page.setResult(list);*/
             return ResultUtil.createSucssAppResult("查询品牌列表成功", page);
         } catch (Exception e) {
             logger.error("查询品牌列表报错：" + e.getMessage());
@@ -104,7 +104,7 @@ public class TaiRanResource {
     public AppResult<Pagenation<Property>> queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) {
         try {
             page = propertyBiz.propertyPage(form, page);
-            List<Property> list = new ArrayList<Property>();
+            /*List<Property> list = new ArrayList<Property>();
             for (Property property : page.getResult()) {
                 Property property1 = new Property();
                 property1.setId(property.getId());
@@ -116,7 +116,7 @@ public class TaiRanResource {
                 property1.setUpdateTime(property.getUpdateTime());
                 list.add(property1);
             }
-            page.setResult(list);
+            page.setResult(list);*/
             return ResultUtil.createSucssAppResult("查询属性列表成功", page);
         } catch (Exception e) {
             logger.error("查询属性列表报错：" + e.getMessage());
@@ -137,7 +137,7 @@ public class TaiRanResource {
     public AppResult<Pagenation<Category>> queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) {
         try {
             page = categoryBiz.categoryPage(categoryForm, page);
-            List<Category> list = new ArrayList<Category>();
+            /*List<Category> list = new ArrayList<Category>();
             for (Category category : page.getResult()) {
                 Category category1 = new Category();
                 category1.setId(category.getId());
@@ -152,7 +152,7 @@ public class TaiRanResource {
                 category1.setLevel(category.getLevel());
                 list.add(category1);
             }
-            page.setResult(list);
+            page.setResult(list);*/
             return ResultUtil.createSucssAppResult("查询分类列表成功", page);
         } catch (Exception e) {
             logger.error("查询分类列表报错：" + e.getMessage());
@@ -205,7 +205,7 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKU_INFORMATION)
     @Produces("application/json;charset=utf-8")
-    public AppResult<String> getSpuInformation(@QueryParam("skuCode") String skuCode) {
+    public AppResult<Object> getSpuInformation(@QueryParam("skuCode") String skuCode) {
         try {
             return ResultUtil.createSucssAppResult("查询sku信息成功", skuRelationBiz.getSkuInformation(skuCode));
         } catch (Exception e) {

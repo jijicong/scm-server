@@ -48,11 +48,25 @@ public class MD5 {
 		return re_md5;
 	}
 
+	/**
+	 * 加密解密算法 执行一次加密，两次解密
+	 */
+	public static String convertMD5(String inStr){
+		char[] a = inStr.toCharArray();
+		for (int i = 0; i < a.length; i++){
+			a[i] = (char) (a[i] ^ 't');
+		}
+		String s = new String(a);
+		return s;
+	}
+
 	public static void main(String[] args) {
 		//String date = DateUtils.formatDateTime(new Date());
 		String date = "12345678";
 		System.out.println("date="+date);
 		System.out.println("MD5 32Bit : " + encryption(date));
+		System.out.println("加密的：" + convertMD5(date));
+		System.out.println("解密的：" + convertMD5(convertMD5(date)));
 	}
 
 }

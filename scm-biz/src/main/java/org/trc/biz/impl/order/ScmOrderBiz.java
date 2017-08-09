@@ -19,6 +19,7 @@ import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -36,6 +37,7 @@ import org.trc.form.order.WarehouseOrderForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
+import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
@@ -108,6 +110,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IRequestFlowBiz requestFlowBiz;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private ILogisticsCompanyService logisticsCompanyService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -1112,7 +1116,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(null == warehouseOrder){
                 return ResultUtil.createFailAppResult(String.format("不存在店铺订单编码为[%s]的京东订单信息", shopOrderCode));
             }
-            LogisticForm logisticForm = invokeGetLogisticsInfo(warehouseOrder.getWarehouseOrderCode(), SupplierLogisticsEnum.JD.getCode());
+            LogisticForm logisticForm = invokeGetLogisticsInfo(warehouseOrder.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), SupplierLogisticsEnum.JD.getCode());
             LogisticNoticeForm logisticNoticeForm = new LogisticNoticeForm();
             logisticNoticeForm.setShopOrderCode(shopOrderCode);
             if(null != logisticForm) {
@@ -1148,13 +1152,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             try{
+                WarehouseOrder warehouseOrder = new WarehouseOrder();
+                warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
+                warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+                AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", supplierOrderInfo2.getWarehouseOrderCode()));
                 String flag = "";
                 if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, supplierOrderInfo2.getSupplierCode()))
                     flag = SupplierLogisticsEnum.JD.getCode();
                 else if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, supplierOrderInfo2.getSupplierCode()))
                     flag = SupplierLogisticsEnum.LY.getCode();
                 if(StringUtils.isNotBlank(flag)){
-                    LogisticForm logisticForm = invokeGetLogisticsInfo(supplierOrderInfo2.getWarehouseOrderCode(), flag);
+                    LogisticForm logisticForm = invokeGetLogisticsInfo(supplierOrderInfo2.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), flag);
                     if(null != logisticForm){
                         //更新供应商订单物流信息
                         updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
@@ -1203,8 +1211,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }catch (Exception e){
             log.error(String.format("同步物流信息%s给渠道异常,%s", JSON.toJSONString(logisticForm), e.getMessage()), e);
         }
-
-
     }
 
 
@@ -1323,10 +1329,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 调用查询物流服务接口
      * @param warehouseOrderCode
+     * @param channelCode 渠道编码
      * @param flag 0-京东,1-粮油
      * @return
      */
-    private LogisticForm invokeGetLogisticsInfo(String warehouseOrderCode, String flag){
+    private LogisticForm invokeGetLogisticsInfo(String warehouseOrderCode, String channelCode, String flag){
         ReturnTypeDO returnTypeDO = ijdService.getLogisticsInfo(warehouseOrderCode, flag);
         RequestFlowTypeEnum requestFlowTypeEnum = RequestFlowTypeEnum.JD_LOGISTIC_INFO_QUERY;
         if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode()))
@@ -1361,6 +1368,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: logisticsArray){
             JSONObject jbo = (JSONObject)obj;
             Logistic logistic = jbo.toJavaObject(Logistic.class);
+            if(StringUtils.equals(SupplierLogisticsEnum.LY.getCode(), logisticForm.getType())){
+                LogisticsCompany logisticsCompany = new LogisticsCompany();
+                logisticsCompany.setType(channelCode);
+                logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
+                logisticsCompany = logisticsCompanyService.selectOne(logisticsCompany);
+                AssertUtil.notNull(logisticsCompany, String.format("根据type[%s]和companyName[%s]查询物流公司信息为空", channelCode, logistic.getLogisticsCorporation()));
+                logistic.setLogisticsCorporationCode(logisticsCompany.getCompanyCode());
+            }
             JSONArray skusArray = jbo.getJSONArray("skus");
             List<SkuInfo> skuInfoList = new ArrayList<SkuInfo>();
             for(Object skuObj: skusArray){
@@ -1573,7 +1588,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.error("重复提交订单: ",e);
             throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单");
         }
-
 
     }
 

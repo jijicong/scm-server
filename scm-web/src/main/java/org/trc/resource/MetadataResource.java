@@ -7,6 +7,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
 import org.trc.util.AppResult;
+import org.trc.util.ResultUtil;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -50,7 +51,9 @@ public class MetadataResource {
     @Path(SupplyConstants.Metadata.JD_ADDRESS_UPDATE)
     @Produces("application/json;charset=utf-8")
     public AppResult jdAddressUpdate(){
-        return metadataBiz.jDAddressUpdate();
+        metadataBiz.jDAddressUpdate();
+        metadataBiz.queryJDAddress();
+        return ResultUtil.createSucssAppResult("京东地址更新成功", "");
     }
 
 
