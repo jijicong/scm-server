@@ -4,12 +4,13 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.Transient;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by hzwdx on 2017/6/26.
  */
-public class OrderBase {
+public class OrderBase implements Serializable{
 
     // 用户id
     @Transient

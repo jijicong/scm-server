@@ -185,7 +185,7 @@ public class CategoryBiz implements ICategoryBiz {
         if (isRecursive == true) {
             for (TreeNode childNode : childNodeList) {
                 List<TreeNode> nextChildCategoryList = getNodes(Long.parseLong(childNode.getId()), isRecursive);
-                if (nextChildCategoryList.size() > 0) {
+                if (!AssertUtil.collectionIsEmpty(nextChildCategoryList)) {
                     childNode.setChildren(nextChildCategoryList);
                 }
             }
@@ -413,7 +413,7 @@ public class CategoryBiz implements ICategoryBiz {
                 categoryList.remove(i);
             }
         }
-        if (categoryList != null && categoryList.size() > 0) {
+        if (!AssertUtil.collectionIsEmpty(categoryList)) {
             int count = categoryService.updateCategorySort(categoryList);
             if (count == 0) {
                 String msg = "修改分类排序操作失败";
