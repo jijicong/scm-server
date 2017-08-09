@@ -1,42 +1,55 @@
 package org.trc.util;
 
-import com.alibaba.fastjson.JSONObject;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.trc.enums.ResponseAckEnum;
 
 /**
  * Created by george on 2017/2/28.
  */
-public class ResponseAck {
+public class ResponseAck<T> {
 
-    public static final String ENCODING = "UTF-8";
-    public static final String ERROR_CUSTOM_CODE = "99";
+    private String code;
 
-    public static Response renderFailure(String description){
-        return renderFailure(ERROR_CUSTOM_CODE,description);
+    private String message;
+
+    private T data;
+
+    public ResponseAck(){
+
     }
 
-    public static Response renderFailure(String code,String errorMsg){
-        return renderFailure(Response.Status.BAD_REQUEST, code, errorMsg);
+    public ResponseAck(String code, String message, T data){
+        this.code = code;
+        this.message = message;
+        this.data = data;
     }
 
-    public static Response renderFailure(Response.Status status, String code, String errorMsg){
-        JSONObject json = new JSONObject();
-        JSONObject error = new JSONObject();
-        error.put("code", code);
-        error.put("errorMsg", errorMsg);
-        json.put("error", error);
-        return Response.status(status).entity(json.toString()).type(MediaType.APPLICATION_JSON).encoding(ResponseAck.ENCODING).build();
+    public ResponseAck(ResponseAckEnum responseAckEnum, T data){
+        this.code = responseAckEnum.getCode();
+        this.message = responseAckEnum.getMessage();
+        this.data = data;
     }
 
-    public static void main(String[] args){
-        JSONObject json = new JSONObject();
-        JSONObject error = new JSONObject();
-        error.put("code", "12");
-        error.put("errorMsg", "123");
-        json.put("error", error);
-        System.out.println(json.toString());
+    public String getCode() {
+        return code;
     }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
 }
