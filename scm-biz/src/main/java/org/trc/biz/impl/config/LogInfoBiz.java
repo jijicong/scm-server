@@ -42,7 +42,7 @@ public class LogInfoBiz implements ILogInfoBiz {
             condition=("(operate_type is null or operate_type="+queryModel.getOperateType()+")");
         }
         criteria.andCondition(condition);
-        example.orderBy("operateTime").asc();
+        example.orderBy("operateTime").desc();
         Pagenation<LogInfo> pagenation = logInfoService.pagination(example, page, queryModel);
         List<LogInfo> logInfoList = pagenation.getResult();
         handleUserName(logInfoList);

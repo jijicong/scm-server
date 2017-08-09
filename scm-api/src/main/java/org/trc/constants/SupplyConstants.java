@@ -49,7 +49,9 @@ public class SupplyConstants {
 
         public static final String CATEGORY_PROPERTY_LIST = "categoryPrepertyList";//分类属性查询
 
-        public static final String SKU_INFORMATION ="skuInformation";//获取单个sku信息
+        public static final String SKU_INFORMATION ="skuInformation";//获取自采sku信息
+
+        public static final String EXTERNAL_SKU_INFORMATION ="externalSkuInformation";//批量获取代发sku信息
 
         public static final String ORDER_PROCESSING ="orderProcessing";//订单处理
 
@@ -563,6 +565,11 @@ public class SupplyConstants {
     public static final class Goods {
 
         public static final String ROOT = "goods";
+
+        //自采商品SKU前缀
+        public static final String SKU_PREFIX = "SP0";
+        //代发商品SKU前缀
+        public static final String EXTERNAL_SKU_PREFIX = "SP1";
 
         //商品分页查询路径
         public static final String GOODS_PAGE = "goodsPage";

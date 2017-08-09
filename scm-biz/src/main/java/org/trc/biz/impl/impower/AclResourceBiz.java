@@ -18,7 +18,6 @@ import org.trc.service.impower.*;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -87,7 +86,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId){
+    public List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId) {
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
         List<AclResource> wholeAclResourceList = findWholeJurisdictionModule();
@@ -316,9 +315,9 @@ public class AclResourceBiz implements IAclResourceBiz {
             aclResource.setCode(aclResourceList.get(0).getCode() + 1);
         } else {
             //不存在,手动组合,从一开始
-            if (code.length()==3){
-                code = code + ZeroToNineEnum.ZERO.getCode()   + ZeroToNineEnum.ONE.getCode();
-            }else {
+            if (code.length() == 3) {
+                code = code + ZeroToNineEnum.ZERO.getCode() + ZeroToNineEnum.ONE.getCode();
+            } else {
                 code = code + ZeroToNineEnum.ZERO.getCode() + jurisdictionTreeNode.getOperationType() + ZeroToNineEnum.ZERO.getCode() + ZeroToNineEnum.ONE.getCode();
             }
             aclResource.setCode(Long.parseLong(code));
@@ -334,15 +333,15 @@ public class AclResourceBiz implements IAclResourceBiz {
         aclResource.setBelong(jurisdictionTreeNode.getBelong());
         aclResource.setMethod(jurisdictionTreeNode.getMethod());
         aclResource.setName(jurisdictionTreeNode.getName());
-        if (aclResource.getCode().toString().length()==3) {
+        if (aclResource.getCode().toString().length() == 3) {
             aclResource.setParentId(Long.valueOf(jurisdictionTreeNode.getBelong()));
         } else {
             aclResource.setParentId(jurisdictionTreeNode.getParentId());
         }
         aclResource.setUrl(jurisdictionTreeNode.getUrl());
-        if (StringUtils.equals(aclResource.getUrl(),ZeroToNineEnum.ONE.getCode())){
+        if (StringUtils.equals(aclResource.getUrl(), ZeroToNineEnum.ONE.getCode())) {
             aclResource.setType(ZeroToNineEnum.ZERO.getCode());
-        }else {
+        } else {
             aclResource.setType(ZeroToNineEnum.ONE.getCode());
         }
 //        aclResource.setCreateOperator((String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID));

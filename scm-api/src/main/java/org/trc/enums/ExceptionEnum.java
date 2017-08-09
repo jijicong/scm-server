@@ -118,6 +118,7 @@ public enum ExceptionEnum{
     SUPPLIER_LOGISTICS_UPDATE_EXCEPTION("600110","供应商物流信息更新异常"),
     SUPPLIER_ORDER_NOTIFY_EXCEPTION("600111","供应商订单下单结果通知信息错误"),
     ORDER_STATUS_UPDATE_EXCEPTION("600112","更新订单状态异常"),
+    ORDER_QUERY_EXCEPTION("600113","订单查询异常"),
 
     USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),

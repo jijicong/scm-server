@@ -75,7 +75,7 @@ public class CategoryBiz implements ICategoryBiz {
     private ILogInfoService logInfoService;
 
     @Override
-    @Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize",isList = true)
+    @Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize", isList = true)
     public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
@@ -98,7 +98,7 @@ public class CategoryBiz implements ICategoryBiz {
 
 
     @Override
-   //@Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize",isList = true,cls = "Brand")
+    //@Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize",isList = true,cls = "Brand")
     public Pagenation<Brand> brandListCategory(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
@@ -127,7 +127,7 @@ public class CategoryBiz implements ICategoryBiz {
             criteria.andEqualTo("brandCode", queryModel.getBrandCode());
         }
         if (!StringUtils.isBlank(queryModel.getPageIds())) {
-            Long pageIds[] = StringUtil.splitByComma(queryModel.getPageIds());
+            Long[] pageIds = StringUtil.splitByComma(queryModel.getPageIds());
 
             if (pageIds.length > 0) {
 //                for (Long id : pageIds) {
@@ -151,7 +151,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @return
      */
     @Override
-    @Cacheable(key = "#parentId+#isRecursive",isList = true)
+    @Cacheable(key = "#parentId+#isRecursive", isList = true)
     public List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
@@ -185,7 +185,7 @@ public class CategoryBiz implements ICategoryBiz {
         if (isRecursive == true) {
             for (TreeNode childNode : childNodeList) {
                 List<TreeNode> nextChildCategoryList = getNodes(Long.parseLong(childNode.getId()), isRecursive);
-                if (nextChildCategoryList.size() > 0) {
+                if (!AssertUtil.collectionIsEmpty(nextChildCategoryList)) {
                     childNode.setChildren(nextChildCategoryList);
                 }
             }
@@ -413,7 +413,7 @@ public class CategoryBiz implements ICategoryBiz {
                 categoryList.remove(i);
             }
         }
-        if (categoryList != null && categoryList.size() > 0) {
+        if (!AssertUtil.collectionIsEmpty(categoryList)) {
             int count = categoryService.updateCategorySort(categoryList);
             if (count == 0) {
                 String msg = "修改分类排序操作失败";
@@ -896,6 +896,7 @@ public class CategoryBiz implements ICategoryBiz {
 
     /**
      * 检验属性起停用状态
+     *
      * @param jsonDate
      * @return
      */

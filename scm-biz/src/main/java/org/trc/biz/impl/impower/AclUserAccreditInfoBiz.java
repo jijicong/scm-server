@@ -54,7 +54,6 @@ import org.trc.util.StringUtil;
 import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -112,7 +111,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    @Cacheable(key = "#form+#page.pageNo+#page.pageSize",isList = true)
+    @Cacheable(key = "#form+#page.pageNo+#page.pageSize", isList = true)
     public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -150,7 +149,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
             queryBuilder.should(matchQuery);
         }
         if (StringUtils.isNotBlank(form.getPhone())) {
-            QueryBuilder filterBuilder = QueryBuilders.multiMatchQuery(form.getPhone(),"phone" ).
+            QueryBuilder filterBuilder = QueryBuilders.multiMatchQuery(form.getPhone(), "phone").
                     type(MatchQuery.Type.PHRASE_PREFIX);
             queryBuilder.should(filterBuilder);
         }
@@ -169,8 +168,8 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         List<AclUserAccreditInfo> accreditInfoList = new ArrayList<>();
         for (SearchHit searchHit : searchResult.getSearchHits()) {
             AclUserAccreditInfo aclUserAccreditInfo = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), AclUserAccreditInfo.class);
-            for(Map.Entry<String, HighlightField> entry : searchHit.getHighlightFields().entrySet()) {
-                if("name.pinyin".equals(entry.getKey())) {
+            for (Map.Entry<String, HighlightField> entry : searchHit.getHighlightFields().entrySet()) {
+                if ("name.pinyin".equals(entry.getKey())) {
                     for (Text text : entry.getValue().getFragments()) {
                         aclUserAccreditInfo.setHighLightName(text.string());
                     }
@@ -314,7 +313,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
-    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate,  AclUserAccreditInfo aclUserAccreditInfoContext) {
+    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
         checkUserAddPageDate(userAddPageDate);
         if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
@@ -560,7 +559,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         if (userDO == null) {
             return "此手机号尚未在泰然城注册";
         }
-        return  userAccreditInfo.getName();
+        return userAccreditInfo.getName();
     }
 
     /**

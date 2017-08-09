@@ -15,6 +15,7 @@ public class AppResult<T> {
 	private T result;
 	
 	public AppResult(){
+
 	}
 	
 	public AppResult(String appcode, String databuffer, T result){

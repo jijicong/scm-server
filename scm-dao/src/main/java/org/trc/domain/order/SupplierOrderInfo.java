@@ -21,6 +21,11 @@ public class SupplierOrderInfo extends ScmDO{
 
     private String status;
 
+    /**
+     * 下单结果信息
+     */
+    private String message;
+
     private String jdCityCode;
 
     private String jdDistrictCode;
@@ -161,4 +166,11 @@ public class SupplierOrderInfo extends ScmDO{
         this.logisticsStatus = logisticsStatus;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

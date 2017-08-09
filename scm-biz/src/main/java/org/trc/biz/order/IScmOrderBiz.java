@@ -10,6 +10,7 @@ import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
 
 import java.util.List;
 
@@ -76,21 +77,21 @@ public interface IScmOrderBiz {
      * @param orderInfo
      * @return
      */
-    void saveChannelOrderRequestFlow(String orderInfo, AppResult appResult);
+    void saveChannelOrderRequestFlow(String orderInfo, ResponseAck responseAck);
 
     /**
      * 接收渠道订单信息
      * @param orderInfo
      * @return
      */
-    AppResult<String> reciveChannelOrder(String orderInfo);
+    ResponseAck<String> reciveChannelOrder(String orderInfo);
 
     /**
      * 查询京东物流信息
      * @param shopOrderCode
      * @return
      */
-    AppResult<LogisticNoticeForm> getJDLogistics(String shopOrderCode) throws  Exception;
+    ResponseAck<LogisticNoticeForm> getJDLogistics(String shopOrderCode) throws  Exception;
 
     /**
      * 获取物流信息

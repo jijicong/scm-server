@@ -9,6 +9,8 @@ public class Logistic {
 
     //供应商订单编码
     private String supplierOrderCode;
+    //物流公司编码
+    private String logisticsCorporationCode;
     //物流公司
     private String logisticsCorporation;
     //运单号
@@ -66,5 +68,13 @@ public class Logistic {
 
     public void setSkus(List<SkuInfo> skus) {
         this.skus = skus;
+    }
+
+    public String getLogisticsCorporationCode() {
+        return logisticsCorporationCode;
+    }
+
+    public void setLogisticsCorporationCode(String logisticsCorporationCode) {
+        this.logisticsCorporationCode = logisticsCorporationCode;
     }
 }
