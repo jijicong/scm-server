@@ -5,7 +5,7 @@ package org.trc.enums;
  * Created by hzqph on 2017/5/16.
  */
 public enum SuccessFailureEnum {
-    FAILURE("0","失败"),SUCCESS("1","成功");
+    FAILURE("0","失败"),SUCCESS("1","成功"),SOCKET_TIME_OUT("2","网络超时"),ERROR("3","异常");
 
     public static SuccessFailureEnum queryNameByCode(String code){
         for(SuccessFailureEnum auditStatusEnum: SuccessFailureEnum.values()){

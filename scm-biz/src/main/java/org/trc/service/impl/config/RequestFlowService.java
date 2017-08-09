@@ -18,4 +18,8 @@ public class RequestFlowService extends BaseService<RequestFlow,Long> implements
     public int changeState(String requestNum) throws Exception{
         return requestFlowMapper.changeState(requestNum);
     }
+
+    public int updateRequestFlowByRequestNum(RequestFlow requestFlow) throws Exception{
+        return requestFlowMapper.updateRequestFlowByRequestNum(requestFlow);
+    }
 }

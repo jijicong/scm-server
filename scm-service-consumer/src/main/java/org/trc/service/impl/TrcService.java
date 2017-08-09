@@ -20,7 +20,9 @@ import org.trc.service.ITrcService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.HttpClientUtil;
+import org.trc.util.HttpResult;
 
+import java.net.ConnectException;
 import java.util.Calendar;
 
 
@@ -34,6 +36,8 @@ public class TrcService implements ITrcService {
     private final static Logger log = LoggerFactory.getLogger(TrcService.class);
 
     private final static int TIME_OUT = 3000;
+
+    public final static Integer statusCode = 200;
 
     //接口重试次数
     public final static Integer RETRY_TIMES = 3;
@@ -172,11 +176,24 @@ public class TrcService implements ITrcService {
             httpPost.setHeader("Accept", "application/json");
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                JSONObject json = JSONObject.parseObject(response);
+                HttpResult httpResult = json.toJavaObject(HttpResult.class);
+                if (statusCode.equals(httpResult.getStatusCode())){
+                    JSONObject jbo = JSONObject.parseObject(httpResult.getResult());
+                    toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                    //具体业务重试代码设置状态
+                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                }
+                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+                toGlyResultDO.setMsg("调用同步物流信息给渠道服务网络异常");
             }else {
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");
             }
+        }catch (ConnectException e){
+            toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
+            String msg = String.format("调用同步物流信息给渠道服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            toGlyResultDO.setMsg(msg);
         }catch (Exception e){
             String msg = String.format("调用同步物流信息给渠道服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);

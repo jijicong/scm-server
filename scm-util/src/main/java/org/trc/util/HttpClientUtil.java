@@ -127,7 +127,7 @@ public class HttpClientUtil {
         return getResult(httpPost);
     }
 
-    public static String httpPostJsonRequest(String url, String params, HttpPost httpPost, Integer timeout) throws UnsupportedEncodingException {
+    public static String httpPostJsonRequest(String url, String params, HttpPost httpPost, Integer timeout) throws UnsupportedEncodingException,IOException {
         httpPost.setEntity(new StringEntity(params, Charset.forName("UTF-8")));
         int time_out = null!=timeout?timeout:SOCKET_TIMEOUT;
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(time_out).setConnectTimeout(time_out).build();//设置请求和传输超时时间

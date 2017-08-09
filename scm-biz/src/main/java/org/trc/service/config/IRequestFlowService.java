@@ -8,4 +8,6 @@ import org.trc.service.IBaseService;
  */
 public interface IRequestFlowService extends IBaseService<RequestFlow,Long> {
     int changeState(String requestNum) throws Exception;
+
+    int updateRequestFlowByRequestNum(RequestFlow requestFlow) throws Exception;
 }

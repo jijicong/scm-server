@@ -7,4 +7,12 @@
       WHERE
       request_num = #{requestNum}
     </update>
+
+    <update id="updateRequestFlowByRequestNum" parameterType="org.trc.domain.config.RequestFlow">
+        UPDATE request_flow
+        SET status = #{status},
+        response_param = #{responseParam}
+        WHERE
+        request_num = #{requestNum}
+    </update>
 </mapper>

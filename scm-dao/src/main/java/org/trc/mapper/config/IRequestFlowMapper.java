@@ -10,4 +10,6 @@ import org.trc.util.BaseMapper;
 public interface IRequestFlowMapper extends BaseMapper<RequestFlow> {
 
     int changeState(String requestNum) throws Exception;
+
+    int updateRequestFlowByRequestNum(RequestFlow requestFlow) throws Exception;
 }

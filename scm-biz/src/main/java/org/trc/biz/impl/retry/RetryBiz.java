@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.retry.IRetryBiz;
 import org.trc.domain.config.RequestFlow;
+import org.trc.domain.config.RetryConfig;
 import org.trc.domain.config.TimeRecord;
 import org.trc.enums.RequestFlowTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -17,6 +18,7 @@ import org.trc.form.TrcConfig;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
+import org.trc.service.config.IRetryConfigService;
 import org.trc.service.config.ITimeRecordService;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
@@ -30,16 +32,19 @@ import java.util.*;
 public class RetryBiz implements IRetryBiz {
     private Logger log = LoggerFactory.getLogger(RetryBiz.class);
     @Autowired
-    IRequestFlowService requestFlowService;
+    private IRequestFlowService requestFlowService;
 
     @Autowired
-    ITimeRecordService timeRecordService;
+    private ITimeRecordService timeRecordService;
 
     @Autowired
-    ITrcService trcService;
+    private ITrcService trcService;
 
     @Autowired
     private TrcConfig trcConfig;
+
+    @Autowired
+    private IRetryConfigService retryConfigService;
 
     //订单信息查询路径
     private static final Long RETRY_INTERVAL = 600000L;
@@ -134,7 +139,10 @@ public class RetryBiz implements IRetryBiz {
                     channelReceiveOrderSubmitResultRetry(entry.getValue());
                 }
                 if ("sendLogisticsInfoToChannel".equals(entry.getKey())){
+
+
                     sendLogisticsInfoToChannelRetry(entry.getValue());
+
                 }
             }
         }catch (Exception e){
@@ -382,6 +390,11 @@ public class RetryBiz implements IRetryBiz {
                         log.error("发送物流信息给渠道重试：更新状态失败！");
                     }
                 }
+                RetryConfig retryConfig = new RetryConfig();
+                retryConfig.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
+                RetryConfig record = retryConfigService.selectOne(retryConfig);
+                record.getCount();
+                record.getPeriod();
             }
         }catch (Exception e){
             log.error("发送物流信息给渠道重试异常："+e.getMessage(),e);
