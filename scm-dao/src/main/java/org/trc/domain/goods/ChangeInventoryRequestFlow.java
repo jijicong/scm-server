@@ -8,9 +8,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.io.Serializable;
 import java.util.Date;
 
-public class ChangeInventoryRequestFlow {
+public class ChangeInventoryRequestFlow implements Serializable {
     @PathParam("id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

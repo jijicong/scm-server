@@ -10,12 +10,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by hzwdx on 2017/5/18.
  */
-public class CategoryBrand{
+public class CategoryBrand implements Serializable {
 
     @PathParam("id")
     @Id
