@@ -33,7 +33,8 @@ public interface ISupplierBiz {
     /**
      * 申请供应商时的分页查询
      * @param page
-     * @param requestContext
+     * @param aclUserAccreditInfo
+     * @param form
      * @return
      * @throws Exception
      */

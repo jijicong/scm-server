@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * Created by Ding on 2017/6/21.
  */
-public class WarehouseOrder {
+public class WarehouseOrder implements Serializable {
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -123,6 +124,12 @@ public class WarehouseOrder {
      */
     @Transient
     private String logisticsInfo;
+
+    /**
+     * 京东四级地址
+     */
+    @Transient
+    private String jdAddress;
 
     /**
      * 排序
@@ -582,5 +589,13 @@ public class WarehouseOrder {
 
     public void setSort(Integer sort) {
         this.sort = sort;
+    }
+
+    public String getJdAddress() {
+        return jdAddress;
+    }
+
+    public void setJdAddress(String jdAddress) {
+        this.jdAddress = jdAddress;
     }
 }
