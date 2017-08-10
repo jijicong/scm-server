@@ -139,7 +139,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -204,7 +204,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
-        //example.orderBy("supplierrderStatus").asc();
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
         return page;
@@ -259,10 +258,31 @@ public class ScmOrderBiz implements IScmOrderBiz {
         OrderItem orderItem = new OrderItem();
         orderItem.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
         orderItem.setShopOrderCode(warehouseOrder.getShopOrderCode());
+        orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);
         AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
                 warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode()));
         warehouseOrder.setOrderItemList(orderItemList);
+        //查询京东四级地址
+        if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
+            SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+            supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
+            supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
+            supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
+            if(null != supplierOrderInfo){
+                StringBuilder sb = new StringBuilder();
+                if(StringUtils.isNotBlank(supplierOrderInfo.getJdProvince()))
+                    sb.append(supplierOrderInfo.getJdProvince());
+                if(StringUtils.isNotBlank(supplierOrderInfo.getJdCity()))
+                    sb.append(SupplyConstants.Symbol.FILE_NAME_SPLIT).append(supplierOrderInfo.getJdCity());
+                if(StringUtils.isNotBlank(supplierOrderInfo.getJdDistrict()))
+                    sb.append(SupplyConstants.Symbol.FILE_NAME_SPLIT).append(supplierOrderInfo.getJdDistrict());
+                if(StringUtils.isNotBlank(supplierOrderInfo.getJdTown()))
+                    sb.append(SupplyConstants.Symbol.FILE_NAME_SPLIT).append(supplierOrderInfo.getJdTown());
+                if(sb.length() > 0)
+                    warehouseOrder.setJdAddress(sb.toString());
+            }
+        }
         return warehouseOrder;
     }
 
@@ -805,7 +825,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: page.getResult()){
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(shopOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
-                    BeanUtils.copyProperties(platformOrder, (OrderBase)shopOrder);
                     setShopOrderItemsDetail(shopOrder, platformOrder);
                 }
             }
@@ -830,9 +849,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<OrderItem> orderItemList = orderItemService.selectByExample(example);
         AssertUtil.notEmpty(orderItemList, String.format("根据平台订单编号[%s]和商铺订单编号[%s]查询订单商品明细为空",
                 shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
+        OrderBase orderBase = new OrderBase();
+        BeanUtils.copyProperties(platformOrder, orderBase);
+        BeanUtils.copyProperties(orderBase, shopOrder);
         OrderExt orderExt = new OrderExt();
-        BeanUtils.copyProperties(platformOrder, (OrderBase)shopOrder);
-        BeanUtils.copyProperties(platformOrder, (OrderBase)orderExt);
+        BeanUtils.copyProperties(orderBase, orderExt);
         orderExt.setPayment(shopOrder.getPayment());
         orderExt.setPostageFee(shopOrder.getPostageFee());
         orderExt.setTotalTax(shopOrder.getTotalTax());
@@ -865,8 +886,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(warehouseOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
                     warehouseOrder.setPayTime(platformOrder.getPayTime());
-                    if(StringUtils.equals(warehouseOrder.getSupplierOrderStatus(), ZeroToNineEnum.ONE.getCode()) || //待发送
-                            StringUtils.equals(warehouseOrder.getSupplierOrderStatus(), ZeroToNineEnum.FIVE.getCode()))//下单失败
+                    if(StringUtils.equals(warehouseOrder.getSupplierOrderStatus(), ZeroToNineEnum.ONE.getCode()))//待发送
+                        warehouseOrder.setSort(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+                    else if(StringUtils.equals(warehouseOrder.getSupplierOrderStatus(), ZeroToNineEnum.FIVE.getCode()))//下单失败
                         warehouseOrder.setSort(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
                     else
                         warehouseOrder.setSort(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
@@ -874,8 +896,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             setLogisticsInfo(warehouseOrder);
         }
+        List<WarehouseOrder> tmpList = page.getResult();
         //按供应商订单状态排序
-        Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
+        Collections.sort(tmpList, new Comparator<WarehouseOrder>() {
             @Override
             public int compare(WarehouseOrder o1, WarehouseOrder o2) {
                 return o1.getSort().compareTo(o2.getSort());
@@ -885,12 +908,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
             @Override
             public int compare(WarehouseOrder o1, WarehouseOrder o2) {
-                if(null == o1.getPayTime() || null == o2.getPayTime()){
-                    return 0;
+                if(o1.getSort().intValue() == o2.getSort().intValue()){
+                    if(null == o1.getPayTime() || null == o2.getPayTime()){
+                        return 0;
+                    }
                 }
                 return o1.getPayTime().compareTo(o2.getPayTime());
             }
         });
+        page.setResult(tmpList);
     }
 
     /**

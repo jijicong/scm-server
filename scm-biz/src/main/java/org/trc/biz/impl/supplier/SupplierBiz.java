@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
+import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
@@ -338,6 +339,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                              SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -406,6 +408,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                                SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -1214,6 +1217,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "供应商启用/停用操作供应商ID不能为空");
