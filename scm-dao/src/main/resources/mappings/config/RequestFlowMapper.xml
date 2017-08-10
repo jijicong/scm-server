@@ -10,9 +10,35 @@
 
     <update id="updateRequestFlowByRequestNum" parameterType="org.trc.domain.config.RequestFlow">
         UPDATE request_flow
-        SET status = #{status},
-        response_param = #{responseParam}
+        SET
+        <if test="status != null and status !=''">
+            status = #{status,jdbcType=VARCHAR}
+        </if>
+        <if test="responseParam != null and responseParam !=''">
+            response_param = #{responseParam,jdbcType=TEXT}
+        </if>
+        <if test="count != null">
+            count = #{count,jdbcType=BIGINT}
+        </if>
+        <if test="endTime != null">
+            end_time = #{endTime,jdbcType=TIMESTAMP}
+        </if>
         WHERE
-        request_num = #{requestNum}
+        request_num = #{requestNum,jdbcType=VARCHAR}
     </update>
+
+    <select id="queryBatch" parameterType="org.trc.domain.config.QureyCondition" resultType="org.trc.domain.config.RequestFlow">
+        SELECT id AS id,requester AS requester,responder AS responder, type as type , request_num AS requestNum, status AS status,request_param AS requestParam,response_param AS responseParam,count AS count,request_time AS requestTime, end_time AS endTime
+        FROM request_flow
+        WHERE
+        type = #{type,jdbcType=VARCHAR} AND
+        status IN
+        <foreach collection="list" index="index" item="item" close=")" open="(" separator=",">
+              #{item}
+        </foreach>
+        <if test="id != null">
+            id > #{id,jdbcType=LONG}
+        </if>
+        ORDER BY id ASC LIMIT 1000;
+    </select>
 </mapper>

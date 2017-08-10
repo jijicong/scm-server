@@ -6,5 +6,21 @@ package org.trc.biz.retry;
  */
 public interface IRetryBiz {
 
-    void faileRetry() throws Exception;
+    void brandUpdateNoticeRetry();
+
+    void propertyUpdateNoticeRetry();
+
+    void categoryUpdateNoticeRetry();
+
+    void categoryBrandUpdateNoticeRetry();
+
+    void categoryPropertyUpdateNoticeRetry();
+
+    void itemUpdateNoticeRetry();
+
+    void externalItemUpdateNoticeRetry();
+
+    void channelReceiveOrderSubmitResultRetry();
+
+    void sendLogisticsInfoToChannelRetry();
 }

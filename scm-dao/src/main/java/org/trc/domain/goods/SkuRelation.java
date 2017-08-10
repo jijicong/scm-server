@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.ws.rs.FormParam;
+import java.io.Serializable;
 
 /**
  * @author: Ding
@@ -12,7 +13,7 @@ import javax.ws.rs.FormParam;
  * @create: 2017-06-19 15:01
  */
 @Table(name = "sku_relation")
-public class SkuRelation {
+public class SkuRelation implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

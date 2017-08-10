@@ -1,15 +1,16 @@
 package org.trc.biz.impl.retry;
 
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.retry.IRetryBiz;
+import org.trc.domain.config.QureyCondition;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.RetryConfig;
 import org.trc.domain.config.TimeRecord;
+import org.trc.enums.NetwordStateEnum;
 import org.trc.enums.RequestFlowTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.ChannelOrderResponse;
@@ -21,9 +22,8 @@ import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.IRetryConfigService;
 import org.trc.service.config.ITimeRecordService;
 import org.trc.util.AssertUtil;
-import tk.mybatis.mapper.entity.Example;
-
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Created by hzwyz on 2017/8/3 0003.
@@ -46,47 +46,128 @@ public class RetryBiz implements IRetryBiz {
     @Autowired
     private IRetryConfigService retryConfigService;
 
-    //订单信息查询路径
-    private static final Long RETRY_INTERVAL = 600000L;
+    private static final int EXECUTOR_SIZE = 6;
 
-    public void faileRetry() throws Exception{
+
+    public void brandUpdateNoticeRetry(){
         //1、查询request flow表，找出需要重试的记录
-        Example example = new Example(RequestFlow.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("status","SEND_FAILED");
-        Example.Criteria criteria01 = example.createCriteria();
-        criteria01.andEqualTo("status","SOCKET_TIME_OUT");
-        example.orderBy("desc");
-        example.or(criteria01);
-        List<RequestFlow> requestFlowList = requestFlowService.selectByExample(example);
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void propertyUpdateNoticeRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void categoryUpdateNoticeRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void categoryBrandUpdateNoticeRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void categoryPropertyUpdateNoticeRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void itemUpdateNoticeRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void externalItemUpdateNoticeRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
+        executor(condition);
+    }
+
+    public void channelReceiveOrderSubmitResultRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+        executor(condition);
+    }
+
+    public void sendLogisticsInfoToChannelRetry(){
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.FAILED.getCode());
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
+        executor(condition);
+    }
+
+
+
+    private void executor(QureyCondition condition){
+        List<RequestFlow> requestFlowList = null;
+        requestFlowList = requestFlowService.queryBatch(condition);
         //2、参数判断
-        AssertUtil.isTrue(requestFlowList.size()>0,"没有需要失败重试的记录");
+        if(requestFlowList.size()==0){
+            log.info("没有需要重试的记录");
+        }
         //3、对请求失败的进行重试
-        //3.1重试前判断前一个任务是否结束
-        List<TimeRecord> timeRecordList = timeRecordService.getLatestRecord();
-        if (timeRecordList.size()==0){
-            //第一次运行 不用去检测上个任务是否执行完毕，直接执行
-            //3.2对执行失败的任务进行重试
-            log.info("开始执行重试任务=======>");
-            Long startTime = Calendar.getInstance().getTimeInMillis();
-            retryJob(requestFlowList);
-            Long endTime = Calendar.getInstance().getTimeInMillis();
-            log.info("重试任务完成,耗时" + (endTime - startTime) / 1000 + "秒");
-            recordTime(startTime, endTime);
-        }else {
-            TimeRecord timeRecord = timeRecordList.get(0);
-            long dif = Calendar.getInstance().getTimeInMillis()-timeRecord.getEndTime().getTime();
-            if (RETRY_INTERVAL.compareTo(dif) < 0) {
-                log.info("上一次定时任务未执行完毕");
-                throw new Exception("上一次定时任务未执行完毕");
-            }
-            //3.2对执行失败的任务进行重试
-            log.info("开始执行重试任务=======>");
-            Long startTime = Calendar.getInstance().getTimeInMillis();
-            retryJob(requestFlowList);
-            Long endTime = Calendar.getInstance().getTimeInMillis();
-            log.info("重试任务完成,耗时" + (endTime - startTime) / 1000 + "秒");
-            recordTime(startTime, endTime);
+        log.info("开始执行重试任务=======>");
+        Long startTime = Calendar.getInstance().getTimeInMillis();
+        retryJob(requestFlowList,condition.getType());
+        Long endTime = Calendar.getInstance().getTimeInMillis();
+        log.info("重试任务完成,耗时" + (endTime - startTime)/1000 + "秒");
+        recordTime(startTime, endTime);
+        if(requestFlowList.size()<1000){
+            RequestFlow lastOne = requestFlowList.get(requestFlowList.size()-1);
+            condition.setId(lastOne.getId());
+            executor(condition);
         }
     }
 
@@ -108,50 +189,69 @@ public class RetryBiz implements IRetryBiz {
         }
     }
 
-
-    private void retryJob(List<RequestFlow> requestFlows) throws Exception{
+    private void retryJob(List<RequestFlow> requestFlows,String type){
+        final ExecutorService fixedThreadPool = Executors.newFixedThreadPool(EXECUTOR_SIZE);
+        log.info("开始重试======>");
+        //2.获取单个商品池内商品sku编号
         try {
             //1、对需要进行重试订单进行分类
-            Map<String,List<RequestFlow>> map = retryClassify(requestFlows);
-            for (Map.Entry<String,List<RequestFlow>> entry:map.entrySet()){
-                if ("brandUpdateNotice".equals(entry.getKey())){
-                    brandUpdateNoticeRetry(entry.getValue());
-                }
-                if ("propertyUpdateNotice".equals(entry.getKey())){
-                    propertyUpdateNoticeRetry(entry.getValue());
-                }
-                if ("categoryUpdateNotice".equals(entry.getKey())){
-                    categoryUpdateNoticeRetry(entry.getValue());
-                }
-                if ("categoryBrandUpdateNotice".equals(entry.getKey())){
-                    categoryBrandUpdateNoticeRetry(entry.getValue());
-                }
-                if ("categoryPropertyUpdateNotice".equals(entry.getKey())){
-                    categoryPropertyUpdateNoticeRetry(entry.getValue());
-                }
-                if ("itemUpdateNotice".equals(entry.getKey())){
-                    itemUpdateNoticeRetry(entry.getValue());
-                }
-                if ("externalItemUpdateNotice".equals(entry.getKey())){
-                    externalItemUpdateNoticeRetry(entry.getValue());
-                }
-                if ("channelReceiveOrderSubmitResult".equals(entry.getKey())){
-                    channelReceiveOrderSubmitResultRetry(entry.getValue());
-                }
-                if ("sendLogisticsInfoToChannel".equals(entry.getKey())){
-
-
-                    sendLogisticsInfoToChannelRetry(entry.getValue());
-
-                }
+            //Map<String,List<RequestFlow>> map = retryClassify(requestFlows);
+            final CountDownLatch begin = new CountDownLatch(1);
+            // 结束的倒数锁
+            final CountDownLatch end = new CountDownLatch(requestFlows.size());
+            for (RequestFlow flow :requestFlows){
+                Runnable runnable = new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            switch (type){
+                                case "BRAND_UPDATE_NOTICE":
+                                    brandUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "PROPERTY_UPDATE_NOTICE":
+                                    propertyUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "CATEFORY_UPDATE_NOTICE":
+                                    categoryUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "CATEFORY_BRAND_UPDATE_NOTICE":
+                                    categoryBrandUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "CATEFORY_PROPERTY_UPDATE_NOTICE":
+                                    categoryPropertyUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "ITEM_UPDATE_NOTICE":
+                                    itemUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "EXTERNAL_ITEM_UPDATE_NOTICE":
+                                    externalItemUpdateNoticeRetry(requestFlows);
+                                    break;
+                                case "CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT":
+                                    channelReceiveOrderSubmitResultRetry(requestFlows);
+                                    break;
+                                default:
+                                    sendLogisticsInfoToChannelRetry(requestFlows);
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            log.error("重试机制异常", e);
+                        } finally {
+                            // 任务完成，end就减一
+                            end.countDown();
+                        }
+                    }
+                };
+                fixedThreadPool.submit(runnable);
             }
+            begin.countDown();
+            end.await();
+            fixedThreadPool.shutdown();
         }catch (Exception e){
             log.error("重试任务异常："+e.getMessage(),e);
-            throw new Exception("重试任务异常："+e.getMessage());
         }
     }
 
-    private Map<String,List<RequestFlow>> retryClassify(List<RequestFlow> requestFlows){
+    /*private Map<String,List<RequestFlow>> retryClassify(List<RequestFlow> requestFlows){
         Map<String,List<RequestFlow>> map = new HashMap<String,List<RequestFlow>>();
         //品牌变更通知重试
         List<RequestFlow> brandUpdateNotice = new ArrayList<RequestFlow>();
@@ -210,7 +310,7 @@ public class RetryBiz implements IRetryBiz {
         map.put("channelReceiveOrderSubmitResult",channelReceiveOrderSubmitResult);
         map.put("sendLogisticsInfoToChannel",sendLogisticsInfoToChannel);
         return map;
-    }
+    }*/
 
     //品牌变更通知重试
     private void brandUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
@@ -218,6 +318,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -239,6 +343,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -259,6 +367,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendCategoryToTrc(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -279,6 +391,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -299,6 +415,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -319,6 +439,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -339,6 +463,10 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
+                if (!result){
+                    continue;
+                }
                 ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(),requestParam);
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -359,6 +487,11 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+                if (!result){
+                    continue;
+                }
+                //执行重试
                 ChannelOrderResponse channelOrderResponse = JSONObject.parseObject(requestParam,ChannelOrderResponse.class);
                 ToGlyResultDO resultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
@@ -382,6 +515,11 @@ public class RetryBiz implements IRetryBiz {
             for (RequestFlow requestFlow:list){
                 String requestParam = requestFlow.getRequestParam();
                 AssertUtil.notBlank(requestParam,"请求参数不能为空");
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
+                if (!result){
+                    continue;
+                }
+                //执行重试
                 LogisticNoticeForm logisticNoticeForm = JSONObject.parseObject(requestParam,LogisticNoticeForm.class);
                 ToGlyResultDO resultDO = trcService.sendLogisticInfoNotice(logisticNoticeForm);
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
@@ -390,15 +528,47 @@ public class RetryBiz implements IRetryBiz {
                         log.error("发送物流信息给渠道重试：更新状态失败！");
                     }
                 }
-                RetryConfig retryConfig = new RetryConfig();
-                retryConfig.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
-                RetryConfig record = retryConfigService.selectOne(retryConfig);
-                record.getCount();
-                record.getPeriod();
             }
         }catch (Exception e){
             log.error("发送物流信息给渠道重试异常："+e.getMessage(),e);
             throw new Exception("发送物流信息给渠道重试异常："+e.getMessage());
+        }
+    }
+
+    private boolean getNextExecut(RequestFlow requestFlow,String type) throws Exception{
+        try {
+            AssertUtil.notNull(requestFlow,"输入参数requestFlow不能为空");
+            AssertUtil.notBlank(type,"输入参数type不能为空");
+            RetryConfig retryConfig = new RetryConfig();
+            retryConfig.setType(type);
+            RetryConfig record = retryConfigService.selectOne(retryConfig);
+            AssertUtil.notNull(record,"配置表中没有该配置信息");
+            //1.1计算结束启动时间
+            RequestFlow flow = new RequestFlow();
+            Long time = Calendar.getInstance().getTimeInMillis()+record.getPeriod()*10000;
+            if (null == requestFlow.getEndTime()){
+                Date endTime = new Date(time);
+                flow.setEndTime(endTime);
+            }
+            Long count = requestFlow.getCount()+1;
+            flow.setCount(count);
+            flow.setRequestNum(requestFlow.getRequestNum());
+            int i = requestFlowService.updateRequestFlowByRequestNum(flow);
+            if (i<=0){
+                log.error("流水记录表：更新状态失败！");
+            }
+            Calendar c1 = Calendar.getInstance();
+            Calendar c2 = Calendar.getInstance();
+            c1.setTime(requestFlow.getEndTime());
+            int result = c1.compareTo(c2);
+            //1.2判断是否满足重试条件
+            if (1!=record.getCount().compareTo(requestFlow.getCount()) && 1 != result){
+                return false;
+            }
+            return true;
+        }catch (Exception e){
+            log.error("重试机制更改下次执行状态异常："+e.getMessage(),e);
+            return false;
         }
     }
 
