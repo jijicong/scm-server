@@ -18,7 +18,10 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
 import org.trc.util.*;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -30,8 +33,6 @@ import java.util.Date;
 public class JerseyServiceAop {
 
     private Logger  log = LoggerFactory.getLogger(JerseyServiceAop.class);
-
-    public static final String CONTAINER_REQUEST_CONTEXT = "ContainerRequestContext";
     //jersey保存操作方法前缀
     public static final String SAVE_METHOD_PREFIX = "save";
 
@@ -50,6 +51,10 @@ public class JerseyServiceAop {
         Method method = signature.getMethod();//被执行方法
         Class<?>[] paramTypes = method.getParameterTypes();//方法参数类型
         Class<?> returnType = method.getReturnType();//方法返回类型
+
+        //对QueryModel类型参数对象的字符串字段进行空格截取
+        trimQueryModelStrField(point.getArgs());
+
         Date start = new Date();
         long startL = System.nanoTime();
         String prefix = ">>>>>";
@@ -144,6 +149,30 @@ public class JerseyServiceAop {
         }
     }
 
+
+    /**
+     * 对QueryModel类型参数对象的字符串字段进行空格截取
+     * @param args
+     */
+    private void trimQueryModelStrField(Object[] args) throws IllegalAccessException {
+        for(Object paramObj: args){
+            if(StringUtils.equals(QueryModel.class.getSimpleName(), paramObj.getClass().getSuperclass().getSimpleName())){
+                Class _cls = (Class) paramObj.getClass();
+                Field[] fs = _cls.getDeclaredFields();
+                for(int i = 0 ; i < fs.length; i++){
+                    Field f = fs[i];
+                    f.setAccessible(true); //设置些属性是可以访问的
+                    String type = f.getType().toString();//得到此属性的类型
+                    if (type instanceof String) {
+                        String val = (String)f.get(paramObj);//得到此属性的值
+                        if(StringUtils.isNotBlank(val)){
+                            f.set(paramObj,val.trim());
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
 

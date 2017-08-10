@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
+import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
@@ -338,6 +339,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                              SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -406,6 +408,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                                SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -925,20 +928,20 @@ public class SupplierBiz implements ISupplierBiz {
         Category category = categoryService.selectByPrimaryKey(categoryId);
         AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())) {
-            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已停用", category.getName()));
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类\"%s\"已停用,请删除!", category.getName()));
         } else {
             if (null != brandId) {
                 Brand brand = brandService.selectByPrimaryKey(brandId);
                 AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
                 if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())) {
-                    throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已停用", brand.getName()));
+                    throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌\"%s\"已停用,请删除!", brand.getName()));
                 }
                 CategoryBrand categoryBrand = new CategoryBrand();
                 categoryBrand.setCategoryId(categoryId);
                 categoryBrand.setBrandId(brandId);
                 categoryBrand = categoryBrandService.selectOne(categoryBrand);
                 if (null == categoryBrand || StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())) {
-                    throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]和品牌[%s]关联已停用", category.getName(), brand.getName()));
+                    throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类\"%s\"和品牌\"%s\"关联已停用,请删除!", category.getName(), brand.getName()));
                 }
             }
         }
@@ -1214,6 +1217,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "供应商启用/停用操作供应商ID不能为空");

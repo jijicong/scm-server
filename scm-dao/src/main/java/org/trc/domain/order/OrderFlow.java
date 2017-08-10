@@ -1,9 +1,11 @@
 package org.trc.domain.order;
 
+import java.io.Serializable;
+
 /**
  * Created by ding on 2017/6/22.
  */
-public class OrderFlow {
+public class OrderFlow  implements Serializable {
 
     // 平台订单编码
     private String platformOrderCode;

@@ -1,112 +1,203 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<contextName>scm-web</contextName>
+    <contextName>scm-web</contextName>
 
-	<!-- 日志文件存储路径 -->
-	<property name="LOG_HOME" value="${catalina.home}/logs" />
+    <!-- 日志文件存储路径 -->
+    <property name="LOG_HOME" value="${catalina.home}/logs"/>
 
-	<!-- 控制台输出 -->
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- encoders are assigned the type
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
-		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
-		</encoder>
-	</appender>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-	<appender name="debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/scm-web/scm-web-debug.log</file>
-		<append>true</append>
-		<charset>UTF-8</charset>
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>DEBUG</level>
-		</filter>
+    <appender name="debug" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/debug/scm-web-debug.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
 
-		<!-- 每小时生成日志文件 -->
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/scm-web/scm-web.%d{yyyy-MM-dd-HH}-debug.log.gz
-			</fileNamePattern>
-			<!-- 日志文件保留15天 -->
-			<maxHistory>360</maxHistory>
-		</rollingPolicy>
+        <!-- 每天时生成日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/debug/scm-web.%d{yyyy-MM-dd}-debug.log
+            </fileNamePattern>
+            <!-- 日志文件保留15天 -->
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
 
-		<!-- 格式化输出 -->
-		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
-		</encoder>
-	</appender>
+        <!-- 格式化输出 -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-	<appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/scm-web/scm-web.log</file>
-		<append>true</append>
-		<charset>UTF-8</charset>
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
-		</filter>
+    <appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/info/scm-web-info.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
 
-		<!-- 每小时生成日志文件 -->
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/scm-web/scm-web.%d{yyyy-MM-dd-HH}-info.log.gz
-			</fileNamePattern>
-			<!-- 日志文件保留15天 -->
-			<maxHistory>360</maxHistory>
-		</rollingPolicy>
+        <!-- 每天时生成日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/info/scm-web.%d{yyyy-MM-dd}-info.log
+            </fileNamePattern>
+            <!-- 日志文件保留15天 -->
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
 
-		<!-- 格式化输出 -->
-		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
-		</encoder>
-	</appender>
+        <!-- 格式化输出 -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-	<appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/scm-web/scm-web-error.log</file>
-		<append>true</append>
-		<charset>UTF-8</charset>
+    <appender name="warn" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/warn/scm-web-warn.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
 
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>ERROR</level>
-		</filter>
+        <!-- 每天时生成日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/warn/scm-web.%d{yyyy-MM-dd}-warn.log
+            </fileNamePattern>
+            <!-- 日志文件保留15天 -->
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
 
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${LOG_HOME}/scm-web/scm-web.%d{yyyy-MM-dd-HH}-error.log.gz
-			</fileNamePattern>
-			<maxHistory>360</maxHistory>
-		</rollingPolicy>
+        <!-- 格式化输出 -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-		<!-- encoders are assigned the type
+    <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/error/scm-web-error.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/error/scm-web.%d{yyyy-MM-dd}-error.log
+            </fileNamePattern>
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+
+        <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
-		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
-		</encoder>
-	</appender>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
 
+    <appender name="order_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/order/error/scm-web-error.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
 
-	<!-- 异步日志配置 -->
-	<appender name="info_async" class="ch.qos.logback.classic.AsyncAppender">
-		<discardingThreshold>20</discardingThreshold>
-		<queueSize>2000</queueSize>
-		<appender-ref ref="Info" />
-	</appender>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
 
-	<appender name="error_async" class="ch.qos.logback.classic.AsyncAppender">
-		<discardingThreshold>20</discardingThreshold>
-		<queueSize>2000</queueSize>
-		<appender-ref ref="Error" />
-	</appender>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/order/error/scm-web.%d{yyyy-MM-dd}-error.log
+            </fileNamePattern>
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
 
-	<!--myibatis log configure-->
-	<logger name="com.apache.ibatis" level="DEBUG"/>
-	<logger name="java.sql.Connection" level="DEBUG"/>
-	<logger name="java.sql.Statement" level="DEBUG"/>
-	<logger name="java.sql.PreparedStatement" level="DEBUG"/>
+        <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
 
+    <appender name="order_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/order/info/scm-web.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
 
-	<root level="DEBUG">
-		<appender-ref ref="STDOUT" />
-		<appender-ref ref="debug" />
-		<appender-ref ref="info" />
-		<appender-ref ref="error" />
-	</root>
+        <!-- 每天时生成日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/info/scm-web.%d{yyyy-MM-dd}-info.log
+            </fileNamePattern>
+            <!-- 日志文件保留15天 -->
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+
+        <!-- 格式化输出 -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="order_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/order/error/scm-web-error.log</file>
+        <append>true</append>
+        <charset>UTF-8</charset>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/scm-web/order/error/scm-web.%d{yyyy-MM-dd}-error.log
+            </fileNamePattern>
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+
+        <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 异步日志配置 -->
+    <appender name="info_async" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>20</discardingThreshold>
+        <queueSize>512</queueSize>
+        <appender-ref ref="info"/>
+    </appender>
+
+    <appender name="error_async" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>20</discardingThreshold>
+        <queueSize>512</queueSize>
+        <appender-ref ref="error"/>
+    </appender>
+
+    <!--myibatis log configure-->
+    <logger name="com.apache.ibatis" level="DEBUG"/>
+    <logger name="java.sql.Connection" level="DEBUG"/>
+    <logger name="java.sql.Statement" level="DEBUG"/>
+    <logger name="java.sql.PreparedStatement" level="DEBUG"/>
+    <logger name="org.trc.biz.impl.order.ScmOrderBiz" >
+        <appender-ref ref="order_info"/>
+        <appender-ref ref="order_error"/>
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="debug"/>
+        <appender-ref ref="info"/>
+        <appender-ref ref="warn"/>
+        <appender-ref ref="error"/>
+    </root>
 
 </configuration>
