@@ -34,13 +34,13 @@ public class RequestFlow implements Serializable {
 
     private String responseParam; //响应参数
 
-    private Integer count; //记录执行次数
+    private Long count; //记录执行次数
 
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date requestTime; //请求时间
 
     @JsonSerialize(using = CustomDateSerializer.class)
-    private Date nextTime;//下一次执行时间
+    private Date endTime;//下一次执行时间
 
     private String remark;
 
@@ -140,19 +140,19 @@ public class RequestFlow implements Serializable {
         this.remark = remark;
     }
 
-    public Integer getCount() {
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 
-    public Date getNextTime() {
-        return nextTime;
+    public Date getEndTime() {
+        return endTime;
     }
 
-    public void setNextTime(Date nextTime) {
-        this.nextTime = nextTime;
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 }

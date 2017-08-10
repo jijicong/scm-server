@@ -21,10 +21,9 @@ public class RetryConfig {
 
     private String type; //请求类型
 
-    private Integer count; //记录执行次数
+    private Long count; //记录执行次数
 
-    private Integer period; //重试周期
-
+    private Long period; //重试周期
 
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime; //创建时间
@@ -45,19 +44,19 @@ public class RetryConfig {
         this.type = type;
     }
 
-    public Integer getCount() {
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 
-    public Integer getPeriod() {
+    public Long getPeriod() {
         return period;
     }
 
-    public void setPeriod(Integer period) {
+    public void setPeriod(Long period) {
         this.period = period;
     }
 
