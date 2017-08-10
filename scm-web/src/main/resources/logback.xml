@@ -23,7 +23,7 @@
             <level>DEBUG</level>
         </filter>
 
-        <!-- 每小时生成日志文件 -->
+        <!-- 每天时生成日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/scm-web/debug/scm-web.%d{yyyy-MM-dd}-debug.log
             </fileNamePattern>
@@ -38,14 +38,14 @@
     </appender>
 
     <appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/scm-web/info/scm-web.log</file>
+        <file>${LOG_HOME}/scm-web/info/scm-web-info.log</file>
         <append>true</append>
         <charset>UTF-8</charset>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
 
-        <!-- 每小时生成日志文件 -->
+        <!-- 每天时生成日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/scm-web/info/scm-web.%d{yyyy-MM-dd}-info.log
             </fileNamePattern>
@@ -60,16 +60,16 @@
     </appender>
 
     <appender name="warn" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/scm-web/warn/scm-web-debug.log</file>
+        <file>${LOG_HOME}/scm-web/warn/scm-web-warn.log</file>
         <append>true</append>
         <charset>UTF-8</charset>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>WARN</level>
         </filter>
 
-        <!-- 每小时生成日志文件 -->
+        <!-- 每天时生成日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/scm-web/warn/scm-web.%d{yyyy-MM-dd}-debug.log
+            <fileNamePattern>${LOG_HOME}/scm-web/warn/scm-web.%d{yyyy-MM-dd}-warn.log
             </fileNamePattern>
             <!-- 日志文件保留15天 -->
             <maxHistory>15</maxHistory>
@@ -133,7 +133,7 @@
             <level>INFO</level>
         </filter>
 
-        <!-- 每小时生成日志文件 -->
+        <!-- 每天时生成日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/scm-web/info/scm-web.%d{yyyy-MM-dd}-info.log
             </fileNamePattern>
