@@ -8,11 +8,12 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.exception.ParamValidException;
 
 import javax.ws.rs.QueryParam;
+import java.io.Serializable;
 
 /**
  * Created by hzwdx on 2017/4/22.
  */
-public class QueryModel {
+public class QueryModel implements Serializable{
 
     @QueryParam("isValid")
     @Length(max = 2, message = "是否启用编码长度不能超过2个")

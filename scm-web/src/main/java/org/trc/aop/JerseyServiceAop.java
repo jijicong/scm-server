@@ -156,19 +156,28 @@ public class JerseyServiceAop {
      */
     private void trimQueryModelStrField(Object[] args) throws IllegalAccessException {
         for(Object paramObj: args){
-            if(StringUtils.equals(QueryModel.class.getSimpleName(), paramObj.getClass().getSuperclass().getSimpleName())){
-                Class _cls = (Class) paramObj.getClass();
-                Field[] fs = _cls.getDeclaredFields();
-                for(int i = 0 ; i < fs.length; i++){
-                    Field f = fs[i];
-                    f.setAccessible(true); //设置些属性是可以访问的
-                    String type = f.getType().toString();//得到此属性的类型
-                    if (type instanceof String) {
-                        String val = (String)f.get(paramObj);//得到此属性的值
-                        if(StringUtils.isNotBlank(val)){
-                            f.set(paramObj,val.trim());
+            if(null != paramObj){
+                Class<?> superCls = paramObj.getClass().getSuperclass();
+                if(StringUtils.equals(QueryModel.class.getSimpleName(), superCls.getSimpleName())){
+                    try{
+                        Class _cls = (Class) paramObj.getClass();
+                        Field[] fs = _cls.getDeclaredFields();
+                        for(int i = 0 ; i < fs.length; i++){
+                            Field f = fs[i];
+                            f.setAccessible(true); //设置些属性是可以访问的
+                            if (StringUtils.equals(f.getType().getSimpleName(), String.class.getSimpleName())) {
+                                if(f.get(paramObj) != null){
+                                    String val = f.get(paramObj).toString();//得到此属性的值
+                                    if(StringUtils.isNotBlank(val)){
+                                        f.set(paramObj,val.trim());
+                                    }
+                                }
+                            }
                         }
+                    }catch (Exception e){
+                        log.error("设置查询对象的字符串类型值异常", e);
                     }
+
                 }
             }
         }

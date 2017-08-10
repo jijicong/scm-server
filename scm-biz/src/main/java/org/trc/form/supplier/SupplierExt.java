@@ -2,12 +2,13 @@ package org.trc.form.supplier;
 
 import org.trc.domain.supplier.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by hzwdx on 2017/5/19.
  */
-public class SupplierExt {
+public class SupplierExt implements Serializable{
 
     /**
      * 供应商基本信息
