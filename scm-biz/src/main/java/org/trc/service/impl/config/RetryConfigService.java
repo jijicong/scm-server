@@ -8,6 +8,6 @@ import org.trc.service.impl.BaseService;
 /**
  * Created by hzdzf on 2017/6/7.
  */
-@Service("requestFlowService")
+@Service("retryConfigService")
 public class RetryConfigService extends BaseService<RetryConfig,Long> implements IRetryConfigService {
 }
