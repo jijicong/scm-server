@@ -5,6 +5,7 @@ import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.LogisticNoticeForm;
+import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
@@ -91,7 +92,7 @@ public interface IScmOrderBiz {
      * @param shopOrderCode
      * @return
      */
-    ResponseAck<LogisticNoticeForm> getJDLogistics(String shopOrderCode) throws  Exception;
+    ResponseAck<LogisticNoticeForm2> getJDLogistics(String shopOrderCode) throws  Exception;
 
     /**
      * 获取物流信息

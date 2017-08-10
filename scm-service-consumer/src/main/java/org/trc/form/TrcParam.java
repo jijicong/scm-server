@@ -27,15 +27,31 @@ public class TrcParam {
         return action;
     }
 
+    public void setAction(String action) {
+        this.action = action;
+    }
+
     public Long getOperateTime() {
         return operateTime;
+    }
+
+    public void setOperateTime(Long operateTime) {
+        this.operateTime = operateTime;
     }
 
     public String getNoticeNum() {
         return noticeNum;
     }
 
+    public void setNoticeNum(String noticeNum) {
+        this.noticeNum = noticeNum;
+    }
+
     public String getSign() {
         return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
     }
 }

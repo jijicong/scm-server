@@ -924,8 +924,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
         List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray);
-        //保存幂等流水
-        saveIdempotentFlow(shopOrderList);
         //拆分仓库订单
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         for (ShopOrder shopOrder : shopOrderList) {
@@ -942,6 +940,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //校验商品是否不是添加过的供应商商品
         checkItemsSource(orderItemList, platformOrder.getChannelCode());
+        //保存幂等流水
+        saveIdempotentFlow(shopOrderList);
         //保存商品明细
         orderItemService.insertList(orderItemList);
         //保存仓库订单
@@ -1124,8 +1124,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public ResponseAck<LogisticNoticeForm> getJDLogistics(String shopOrderCode)throws Exception {
-        ResponseAck<LogisticNoticeForm> responseAck = null;
+    public ResponseAck<LogisticNoticeForm2> getJDLogistics(String shopOrderCode)throws Exception {
+        ResponseAck<LogisticNoticeForm2> responseAck = null;
         try{
             AssertUtil.notBlank(shopOrderCode, "查询京东物流信息店铺订单号shopOrderCode不能为空");
             WarehouseOrder warehouseOrder = new WarehouseOrder();
@@ -1137,7 +1137,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 throw new OrderException(ExceptionEnum.ORDER_QUERY_EXCEPTION, String.format("不存在店铺订单编码为[%s]的京东订单信息", shopOrderCode));
             }
             LogisticForm logisticForm = invokeGetLogisticsInfo(warehouseOrder.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), SupplierLogisticsEnum.JD.getCode());
-            LogisticNoticeForm logisticNoticeForm = new LogisticNoticeForm();
+            LogisticNoticeForm2 logisticNoticeForm = new LogisticNoticeForm2();
             logisticNoticeForm.setShopOrderCode(shopOrderCode);
             if(null != logisticForm) {
                 BeanUtils.copyProperties(logisticForm, logisticNoticeForm);
