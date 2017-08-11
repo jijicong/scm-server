@@ -1513,7 +1513,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @Cacheable(key="#spuCode+#skuCode+#aclUserAccreditInfo.channelCode",isList=true)
+    //@Cacheable(key="#spuCode+#skuCode+#aclUserAccreditInfo.channelCode",isList=true)
     public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
