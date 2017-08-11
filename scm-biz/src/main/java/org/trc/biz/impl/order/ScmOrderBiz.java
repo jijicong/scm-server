@@ -1208,42 +1208,40 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(StringUtils.equals("59901523734", supplierOrderInfo2.getSupplierOrderCode())){
-                try{
-                    WarehouseOrder warehouseOrder = new WarehouseOrder();
-                    warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
-                    warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
-                    AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", supplierOrderInfo2.getWarehouseOrderCode()));
-                    String flag = "";
-                    if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, supplierOrderInfo2.getSupplierCode()))
-                        flag = SupplierLogisticsEnum.JD.getCode();
-                    else if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, supplierOrderInfo2.getSupplierCode()))
-                        flag = SupplierLogisticsEnum.LY.getCode();
-                    if(StringUtils.isNotBlank(flag)){
-                        //获取仓库订单编码的物流信息  -----------  一个仓库订单可能会产生多个包裹 -supplier_order_info
-                        LogisticForm logisticForm = invokeGetLogisticsInfo(supplierOrderInfo2.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), flag);
-                        if(null != logisticForm){
-                            //更新供应商订单物流信息
-                            updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
-                            //在这里剔除已经通知了的物流信息
-                            /*if(StringUtils.equals(supplierOrderInfo2.getStatus(),SupplierOrderStatusEnum.DELIVER.getCode())){
-                                List<Logistic> logistics = logisticForm.getLogistics();
-                                for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
-                                    Logistic logistic = it.next();
-                                    if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderInfo2.getSupplierOrderCode())) {
-                                        it.remove();
-                                    }
+            try{
+                WarehouseOrder warehouseOrder = new WarehouseOrder();
+                warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
+                warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+                AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", supplierOrderInfo2.getWarehouseOrderCode()));
+                String flag = "";
+                if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, supplierOrderInfo2.getSupplierCode()))
+                    flag = SupplierLogisticsEnum.JD.getCode();
+                else if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, supplierOrderInfo2.getSupplierCode()))
+                    flag = SupplierLogisticsEnum.LY.getCode();
+                if(StringUtils.isNotBlank(flag)){
+                    //获取仓库订单编码的物流信息  -----------  一个仓库订单可能会产生多个包裹 -supplier_order_info
+                    LogisticForm logisticForm = invokeGetLogisticsInfo(supplierOrderInfo2.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), flag);
+                    if(null != logisticForm){
+                        //更新供应商订单物流信息
+                        updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
+                        //在这里剔除已经通知了的物流信息
+                        if(StringUtils.equals(supplierOrderInfo2.getStatus(),SupplierOrderStatusEnum.DELIVER.getCode())){
+                            List<Logistic> logistics = logisticForm.getLogistics();
+                            for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
+                                Logistic logistic = it.next();
+                                if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderInfo2.getSupplierOrderCode())) {
+                                    it.remove();
                                 }
-                            }*/
-                            if(logisticForm.getLogistics().size() > 0){
-                                //物流信息同步给渠道
-                                logisticsInfoNoticeChannel(logisticForm);
                             }
                         }
+                        if(logisticForm.getLogistics().size() > 0){
+                            //物流信息同步给渠道
+                            logisticsInfoNoticeChannel(logisticForm);
+                        }
                     }
-                }catch (Exception e){
-                    log.error(String.format("更新供应商订单%s物流信息异常,%s", JSONObject.toJSON(supplierOrderInfo2), e.getMessage()));
                 }
+            }catch (Exception e){
+                log.error(String.format("更新供应商订单%s物流信息异常,%s", JSONObject.toJSON(supplierOrderInfo2), e.getMessage()));
             }
         }
     }
