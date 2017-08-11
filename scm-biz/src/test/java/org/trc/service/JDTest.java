@@ -15,12 +15,15 @@ import org.trc.biz.retry.IRetryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.JingDongSku;
 import org.trc.domain.config.JingDongSkuList;
+import org.trc.domain.config.RetryConfig;
+import org.trc.enums.RequestFlowTypeEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.form.jingdong.MessageDO;
 import org.trc.mapper.config.ITableMappingMapper;
 import org.trc.mapper.jingdong.IJingDongMapper;
 import org.trc.mapper.jingdong.IJingDongTestMapper;
+import org.trc.service.config.IRetryConfigService;
 import org.trc.util.BeanToMapUtil;
 import org.trc.util.JingDongUtil;
 import org.trc.util.Pagenation;
@@ -49,6 +52,9 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     private IJingDongTestMapper jingDongTestMapper;//商品sku
     @Autowired
     ITableMappingMapper a;
+
+    @Autowired
+    private IRetryConfigService retryConfigService;
 
     @Autowired
     IRetryBiz retryBiz;
@@ -590,7 +596,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     @Test
     public void testRetry(){
         try {
-            retryBiz.faileRetry();
+            retryBiz.brandUpdateNoticeRetry();
         } catch (Exception e) {
             e.printStackTrace();
         }
