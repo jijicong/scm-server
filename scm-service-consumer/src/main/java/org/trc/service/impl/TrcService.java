@@ -178,14 +178,18 @@ public class TrcService implements ITrcService {
             if(StringUtils.isNotBlank(response)){
                 JSONObject json = JSONObject.parseObject(response);
                 HttpResult httpResult = json.toJavaObject(HttpResult.class);
-                if (statusCode.equals(httpResult.getStatusCode())){
-                    JSONObject jbo = JSONObject.parseObject(httpResult.getResult());
-                    toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
-                    //具体业务重试代码设置状态
+                JSONObject jbo = JSONObject.parseObject(httpResult.getResult());
+                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                //具体业务重试代码设置状态
+                if (toGlyResultDO.getStatus().equals("1")){
                     toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                    toGlyResultDO.setMsg("处理成功！");
                 }
-                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                toGlyResultDO.setMsg("调用同步物流信息给渠道服务网络异常");
+                if (toGlyResultDO.getStatus().equals("2")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+                    toGlyResultDO.setMsg("异常数据！");
+                }
+
             }else {
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");
             }
