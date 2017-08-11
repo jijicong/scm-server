@@ -239,7 +239,7 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.JD_LOGISTICS)
     @Produces("application/json;charset=utf-8")
     public ResponseAck JDLogistics(@QueryParam("channelCode")String channelCode, @QueryParam("shopOrderCode")String shopOrderCode) throws Exception{
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "京东物流信息查询成功", scmOrderBiz.getJDLogistics(channelCode, shopOrderCode));
+        return scmOrderBiz.getJDLogistics(channelCode, shopOrderCode);
     }
 
 
