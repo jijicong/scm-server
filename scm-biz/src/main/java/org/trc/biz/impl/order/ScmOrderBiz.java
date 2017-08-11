@@ -114,9 +114,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private ILogisticsCompanyService logisticsCompanyService;
-
     @Autowired
     private IRequestFlowService requestFlowService;
+    @Autowired
+    private TrcConfig trcConfig;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -1124,6 +1125,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             supplierOrderReturnList.add(supplierOrderReturn);
         }
         channelOrderResponse.setOrder(supplierOrderReturnList);
+        //设置请求渠道的签名
+        TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
+        BeanUtils.copyProperties(trcParam, channelOrderResponse);
         ToGlyResultDO toGlyResultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
         //保存请求流水
         requestFlowBiz.saveRequestFlow(JSONObject.toJSON(channelOrderResponse).toString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT, toGlyResultDO, RequestFlowConstant.GYL);
@@ -1222,7 +1226,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             //更新供应商订单物流信息
                             updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
                             //在这里剔除已经通知了的物流信息
-                            if(StringUtils.equals(supplierOrderInfo2.getStatus(),SupplierOrderStatusEnum.DELIVER.getCode())){
+                            /*if(StringUtils.equals(supplierOrderInfo2.getStatus(),SupplierOrderStatusEnum.DELIVER.getCode())){
                                 List<Logistic> logistics = logisticForm.getLogistics();
                                 for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
                                     Logistic logistic = it.next();
@@ -1230,7 +1234,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                                         it.remove();
                                     }
                                 }
-                            }
+                            }*/
                             if(logisticForm.getLogistics().size() > 0){
                                 //物流信息同步给渠道
                                 logisticsInfoNoticeChannel(logisticForm);
@@ -1276,11 +1280,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             requestFlow.setRequester(RequestFlowConstant.GYL);
             requestFlow.setResponder(RequestFlowConstant.TRC);
             requestFlow.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
-            requestFlow.setRequestParam(JSONObject.toJSONString(logisticNoticeForm));
             requestFlow.setRequestTime(Calendar.getInstance().getTime());
             String requestNum = GuidUtil.getNextUid(RequestFlowConstant.TRC);
             requestFlow.setRequestNum(requestNum);
             requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+            //设置请求渠道的签名
+            TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
+            BeanUtils.copyProperties(trcParam, logisticNoticeForm);
+            requestFlow.setRequestParam(JSONObject.toJSONString(logisticNoticeForm));
             requestFlowService.insert(requestFlow);
             requestFlowUpdate.setRequestNum(requestNum);
             //物流信息同步给渠道
