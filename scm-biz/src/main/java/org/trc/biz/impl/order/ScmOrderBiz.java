@@ -1150,11 +1150,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public ResponseAck<LogisticNoticeForm2> getJDLogistics(String shopOrderCode)throws Exception {
+    public ResponseAck<LogisticNoticeForm2> getJDLogistics(String channelCode, String shopOrderCode)throws Exception {
         ResponseAck<LogisticNoticeForm2> responseAck = null;
         try{
+            AssertUtil.notBlank(channelCode, "查询京东物流信息渠道编码channelCode不能为空");
             AssertUtil.notBlank(shopOrderCode, "查询京东物流信息店铺订单号shopOrderCode不能为空");
             WarehouseOrder warehouseOrder = new WarehouseOrder();
+            warehouseOrder.setChannelCode(channelCode);
             warehouseOrder.setShopOrderCode(shopOrderCode);
             warehouseOrder.setSupplierCode(SupplyConstants.Order.SUPPLIER_JD_CODE);
             //一个店铺订单下只有一个京东仓库订单
@@ -1459,7 +1461,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: logisticsArray){
             JSONObject jbo = (JSONObject)obj;
             Logistic logistic = jbo.toJavaObject(Logistic.class);
-            if(StringUtils.equals(SupplierLogisticsEnum.LY.getCode(), logisticForm.getType())){
+            if(StringUtils.equals(LogsticsTypeEnum.WAYBILL_NUMBER.getCode(), logisticForm.getType())){//物流单号
                 LogisticsCompany logisticsCompany = new LogisticsCompany();
                 logisticsCompany.setType(channelCode);
                 logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
@@ -1740,6 +1742,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
             OrderItem orderItem = orderItemObj.toJavaObject(OrderItem.class);
+            String channelSkuCode = orderItem.getSkuCode();//渠道sku编码
+            String scmSkuCode = orderItem.getOuterSkuId();//供应链sku编码
+            //将skuCode设置成供应链sku编码,outerSkuId设置成渠道sku编码
+            orderItem.setSkuCode(scmSkuCode);
+            orderItem.setOuterSkuId(channelSkuCode);
+            //设置金额
             orderItem.setPayment(orderItemObj.getBigDecimal("payment"));//实付金额
             orderItem.setTotalFee(orderItemObj.getBigDecimal("totalFee"));//订单总金额
             orderItem.setAdjustFee(orderItemObj.getBigDecimal("adjustFee"));//卖家手工调整金额
