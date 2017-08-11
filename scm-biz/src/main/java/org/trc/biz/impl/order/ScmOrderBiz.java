@@ -1276,7 +1276,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             requestFlow.setRequester(RequestFlowConstant.GYL);
             requestFlow.setResponder(RequestFlowConstant.TRC);
             requestFlow.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
-            requestFlow.setRequestParam(JSONObject.toJSONString(logisticForm));
+            requestFlow.setRequestParam(JSONObject.toJSONString(logisticNoticeForm));
             requestFlow.setRequestTime(Calendar.getInstance().getTime());
             String requestNum = GuidUtil.getNextUid(RequestFlowConstant.TRC);
             requestFlow.setRequestNum(requestNum);
