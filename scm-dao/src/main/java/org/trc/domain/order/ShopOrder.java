@@ -1,5 +1,8 @@
 package org.trc.domain.order;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -58,37 +61,56 @@ public class ShopOrder extends OrderBase {
     private Long id;
 
     // 店铺订单编码
+    @NotEmpty
+    @Length(max = 32)
     private String shopOrderCode;
 
     // 平台订单编码
+    @NotEmpty
+    @Length(max = 32)
     private String platformOrderCode;
 
     // 渠道编码
+    @NotEmpty
+    @Length(max = 32)
     private String channelCode;
 
     // 来源平台编码
+    @NotEmpty
+    @Length(max = 32)
     private String platformCode;
 
     // 订单来源平台 电脑-pc 手机网页-wap 移动端-app
+    @NotEmpty
+    @Length(max = 32)
     private String platformType;
 
     // 订单所属的店铺id
+    @NotEmpty
     private Long shopId;
 
     // 店铺名称
+    @NotEmpty
+    @Length(max = 255)
     private String shopName;
 
-
     // 会员id
+    @NotEmpty
+    @Length(max = 64)
     private String userId;
 
     // 配送模板ids(1,2,3)
+    @Length(max = 255)
     private String dlytmplIds;
 
     // 子订单状态 WAIT_BUYER_PAY 已下单等待付款 WAIT_SELLER_SEND-已付款等待发货 WAIT_BUYER_CONFIRM-已发货等待确认收货 WAIT_BUYER_SIGNED-待评价 TRADE_FINISHED-已完成 TRADE_CLOSED_BY_REFUND-已关闭(退款关闭订单) TRADE_CLOSED_BY_CANCEL-已关闭(取消关闭订单)
+    @NotEmpty
+    @Length(max = 32)
     private String status;
 
     // 是否删除:0-否,1-是
+    @NotEmpty
+    @Length(max = 2 )
     private String isDeleted;
 
     // 实付金额,订单最终总额,单位/分
@@ -120,9 +142,11 @@ public class ShopOrder extends OrderBase {
     private BigDecimal discountFee;
 
     // 交易标题
+    @Length(max = 128)
     private String title;
 
     // 买家留言
+    @Length(max = 255)
     private String buyerMessage;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
@@ -136,12 +160,15 @@ public class ShopOrder extends OrderBase {
     private BigDecimal totalWeight;
 
     // 评价状态
+    @Length(max = 4)
     private String rateStatus;
 
     // 是否是多次发货的订单
+    @Length(max = 4)
     private String isPartConsign;
 
     // 拼团状态
+    @Length(max = 32)
     private String groupBuyStatus;
 
     // 订单总税费,单位/分
@@ -149,12 +176,15 @@ public class ShopOrder extends OrderBase {
     private BigDecimal totalTax;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
+    @NotEmpty
     private Date createTime;
 
     // 发货时间
+    @NotEmpty
     private Date consignTime;
 
     // 更新时间
+    @NotEmpty
     private Date updateTime;
 
     // 卖家备注

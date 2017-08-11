@@ -50,6 +50,9 @@ public class CacheableInterceptor {
         boolean shouldSet = false;
         try{
             Method method = getMethod(pjp);
+            if(method == null){ //直接放行
+                return pjp.proceed();
+            }
             Cacheable cacheable=method.getAnnotation(Cacheable.class);
             //是否是列表
             isList = cacheable.isList();
@@ -114,9 +117,11 @@ public class CacheableInterceptor {
     public Method getMethod(ProceedingJoinPoint pjp){
         //获取参数的类型
         Object [] args=pjp.getArgs();
-
         Class [] argTypes=new Class[pjp.getArgs().length];
         for(int i=0;i<args.length;i++){
+            if(args[i] == null){ //若果参数为null ; 直接放行
+                return null;
+            }
             argTypes[i]=args[i].getClass();
         }
         Method method=null;
