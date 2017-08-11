@@ -174,9 +174,7 @@ public class TrcService implements ITrcService {
             httpPost.setHeader("Accept", "application/json");
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
-                JSONObject json = JSONObject.parseObject(response);
-                HttpResult httpResult = json.toJavaObject(HttpResult.class);
-                JSONObject jbo = JSONObject.parseObject(httpResult.getResult());
+                JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
                 //具体业务重试代码设置状态
                 if (toGlyResultDO.getStatus().equals("1")){
