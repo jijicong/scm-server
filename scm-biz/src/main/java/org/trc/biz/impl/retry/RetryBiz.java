@@ -148,8 +148,6 @@ public class RetryBiz implements IRetryBiz {
         executor(condition);
     }
 
-
-
     private void executor(QureyCondition condition){
         List<RequestFlow> requestFlowList = null;
         requestFlowList = requestFlowService.queryBatch(condition);
@@ -159,11 +157,8 @@ public class RetryBiz implements IRetryBiz {
         }
         //3、对请求失败的进行重试
         log.info("开始执行重试任务=======>");
-        Long startTime = Calendar.getInstance().getTimeInMillis();
         retryJob(requestFlowList,condition.getType());
         Long endTime = Calendar.getInstance().getTimeInMillis();
-        log.info("重试任务完成,耗时" + (endTime - startTime)/1000 + "秒");
-        recordTime(startTime, endTime);
         if(requestFlowList.size()<1000){
             RequestFlow lastOne = requestFlowList.get(requestFlowList.size()-1);
             condition.setId(lastOne.getId());
@@ -175,14 +170,16 @@ public class RetryBiz implements IRetryBiz {
      * 记录时间
      *
      * @param startTime
-     * @param endTime
+     * @param method
      */
-    private void recordTime(Long startTime, Long endTime) {
+    private void recordTime(Long startTime, String method) {
+        Long endTime = Calendar.getInstance().getTimeInMillis();
         try {
             TimeRecord timeRecord = new TimeRecord();
             timeRecord.setUseTime((endTime - startTime));
-            timeRecord.setEndTime(new Date(endTime));
+            timeRecord.setEndTime(Calendar.getInstance().getTime());
             timeRecord.setStartTime(new Date(startTime));
+            timeRecord.setMethod(method);
             timeRecordService.insert(timeRecord);
         } catch (Exception e) {
             log.error("时间记录失败", e);
@@ -191,11 +188,11 @@ public class RetryBiz implements IRetryBiz {
 
     private void retryJob(List<RequestFlow> requestFlows,String type){
         final ExecutorService fixedThreadPool = Executors.newFixedThreadPool(EXECUTOR_SIZE);
-        log.info("开始重试======>");
+        Long startTime = Calendar.getInstance().getTimeInMillis();
+        log.info("重试任务开始======>");
         //2.获取单个商品池内商品sku编号
         try {
             //1、对需要进行重试订单进行分类
-            //Map<String,List<RequestFlow>> map = retryClassify(requestFlows);
             final CountDownLatch begin = new CountDownLatch(1);
             // 结束的倒数锁
             final CountDownLatch end = new CountDownLatch(requestFlows.size());
@@ -206,31 +203,31 @@ public class RetryBiz implements IRetryBiz {
                         try {
                             switch (type){
                                 case "BRAND_UPDATE_NOTICE":
-                                    brandUpdateNoticeRetry(requestFlows);
+                                    brandUpdateNoticeRetry(flow);
                                     break;
                                 case "PROPERTY_UPDATE_NOTICE":
-                                    propertyUpdateNoticeRetry(requestFlows);
+                                    propertyUpdateNoticeRetry(flow);
                                     break;
                                 case "CATEFORY_UPDATE_NOTICE":
-                                    categoryUpdateNoticeRetry(requestFlows);
+                                    categoryUpdateNoticeRetry(flow);
                                     break;
                                 case "CATEFORY_BRAND_UPDATE_NOTICE":
-                                    categoryBrandUpdateNoticeRetry(requestFlows);
+                                    categoryBrandUpdateNoticeRetry(flow);
                                     break;
                                 case "CATEFORY_PROPERTY_UPDATE_NOTICE":
-                                    categoryPropertyUpdateNoticeRetry(requestFlows);
+                                    categoryPropertyUpdateNoticeRetry(flow);
                                     break;
                                 case "ITEM_UPDATE_NOTICE":
-                                    itemUpdateNoticeRetry(requestFlows);
+                                    itemUpdateNoticeRetry(flow);
                                     break;
                                 case "EXTERNAL_ITEM_UPDATE_NOTICE":
-                                    externalItemUpdateNoticeRetry(requestFlows);
+                                    externalItemUpdateNoticeRetry(flow);
                                     break;
                                 case "CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT":
-                                    channelReceiveOrderSubmitResultRetry(requestFlows);
+                                    channelReceiveOrderSubmitResultRetry(flow);
                                     break;
                                 default:
-                                    sendLogisticsInfoToChannelRetry(requestFlows);
+                                    sendLogisticsInfoToChannelRetry(flow);
                                     break;
                             }
                         } catch (Exception e) {
@@ -246,82 +243,21 @@ public class RetryBiz implements IRetryBiz {
             begin.countDown();
             end.await();
             fixedThreadPool.shutdown();
+            Long endTime = Calendar.getInstance().getTimeInMillis();
+            log.info("重试任务完成,耗时" + (endTime - startTime) / 1000 + "秒");
+            recordTime(startTime, Thread.currentThread().getStackTrace()[1].getMethodName());
         }catch (Exception e){
             log.error("重试任务异常："+e.getMessage(),e);
         }
     }
 
-    /*private Map<String,List<RequestFlow>> retryClassify(List<RequestFlow> requestFlows){
-        Map<String,List<RequestFlow>> map = new HashMap<String,List<RequestFlow>>();
-        //品牌变更通知重试
-        List<RequestFlow> brandUpdateNotice = new ArrayList<RequestFlow>();
-        //属性变更通知重试
-        List<RequestFlow> propertyUpdateNotice = new ArrayList<RequestFlow>();
-        //分类变更通知重试
-        List<RequestFlow> categoryUpdateNotice = new ArrayList<RequestFlow>();
-        //分类品牌变更通知重试
-        List<RequestFlow> categoryBrandUpdateNotice = new ArrayList<RequestFlow>();
-        //分类属性变更通知重试
-        List<RequestFlow> categoryPropertyUpdateNotice = new ArrayList<RequestFlow>();
-        //自营商品变更通知重试
-        List<RequestFlow> itemUpdateNotice = new ArrayList<RequestFlow>();
-        //代发商品变更通知重试
-        List<RequestFlow> externalItemUpdateNotice = new ArrayList<RequestFlow>();
-        //渠道接收订单提交结果重试
-        List<RequestFlow> channelReceiveOrderSubmitResult = new ArrayList<RequestFlow>();
-        //发送物流信息给渠道重试
-        List<RequestFlow> sendLogisticsInfoToChannel = new ArrayList<RequestFlow>();
-        for (RequestFlow requestFlow : requestFlows){
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode())){
-                brandUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode())){
-                propertyUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode())){
-                categoryUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode())){
-                categoryBrandUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode())){
-                categoryPropertyUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode())){
-                itemUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode())){
-                externalItemUpdateNotice.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode())){
-                channelReceiveOrderSubmitResult.add(requestFlow);
-            }
-            if (StringUtils.equals(requestFlow.getType(), RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode())){
-                sendLogisticsInfoToChannel.add(requestFlow);
-            }
-        }
-        map.put("brandUpdateNotice",brandUpdateNotice);
-        map.put("propertyUpdateNotice",propertyUpdateNotice);
-        map.put("categoryUpdateNotice",categoryUpdateNotice);
-        map.put("categoryBrandUpdateNotice",categoryBrandUpdateNotice);
-        map.put("categoryPropertyUpdateNotice",categoryPropertyUpdateNotice);
-        map.put("itemUpdateNotice",itemUpdateNotice);
-        map.put("externalItemUpdateNotice",externalItemUpdateNotice);
-        map.put("channelReceiveOrderSubmitResult",channelReceiveOrderSubmitResult);
-        map.put("sendLogisticsInfoToChannel",sendLogisticsInfoToChannel);
-        return map;
-    }*/
-
     //品牌变更通知重试
-    private void brandUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void brandUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -332,21 +268,17 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("品牌变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("品牌变更通知重试异常："+e.getMessage());
         }
 
     }
 
     //属性变更通知重试
-    private void propertyUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void propertyUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -357,20 +289,16 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("属性变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("属性变更通知重试异常："+e.getMessage());
         }
     }
 
     //分类变更通知重试
-    private void categoryUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void categoryUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendCategoryToTrc(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -381,20 +309,16 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("分类变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("分类变更通知重试异常："+e.getMessage());
         }
     }
 
     //分类品牌变更通知重试
-    private void categoryBrandUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void categoryBrandUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -403,22 +327,19 @@ public class RetryBiz implements IRetryBiz {
                     }
                 }
             }
+
         }catch (Exception e){
             log.error("分类品牌变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("分类品牌变更通知重试异常："+e.getMessage());
         }
     }
 
     //分类属性变更通知重试
-    private void categoryPropertyUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void categoryPropertyUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -429,20 +350,16 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("分类属性变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("分类属性变更通知重试异常："+e.getMessage());
         }
     }
 
     //自营商品变更通知重试
-    private void itemUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void itemUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(),requestFlow.getRequestParam());
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -453,20 +370,16 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("自营商品变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("自营商品变更通知重试异常："+e.getMessage());
         }
     }
 
     //代发商品变更通知重试
-    private void externalItemUpdateNoticeRetry(List<RequestFlow> list) throws Exception{
+    private void externalItemUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
+            if (!result){
                 ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(),requestParam);
                 if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                     int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -477,20 +390,16 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("代发商品变更通知重试异常："+e.getMessage(),e);
-            throw new Exception("代发商品变更通知重试异常："+e.getMessage());
         }
     }
 
     //渠道接收订单提交结果重试
-    private void channelReceiveOrderSubmitResultRetry(List<RequestFlow> list) throws Exception{
+    private void channelReceiveOrderSubmitResultRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+            if (result){
                 //执行重试
                 ChannelOrderResponse channelOrderResponse = JSONObject.parseObject(requestParam,ChannelOrderResponse.class);
                 ToGlyResultDO resultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
@@ -503,22 +412,18 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("渠道接收订单提交结果重试异常："+e.getMessage(),e);
-            throw new Exception("渠道接收订单提交结果重试异常："+e.getMessage());
         }
     }
 
     //解析requestParam
 
     //发送物流信息给渠道重试
-    private void sendLogisticsInfoToChannelRetry(List<RequestFlow> list) throws Exception{
+    private void sendLogisticsInfoToChannelRetry(RequestFlow requestFlow) throws Exception{
         try {
-            for (RequestFlow requestFlow:list){
-                String requestParam = requestFlow.getRequestParam();
-                AssertUtil.notBlank(requestParam,"请求参数不能为空");
-                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
-                if (!result){
-                    continue;
-                }
+            String requestParam = requestFlow.getRequestParam();
+            AssertUtil.notBlank(requestParam,"请求参数不能为空");
+            boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
+            if (!result){
                 //执行重试
                 LogisticNoticeForm logisticNoticeForm = JSONObject.parseObject(requestParam,LogisticNoticeForm.class);
                 ToGlyResultDO resultDO = trcService.sendLogisticInfoNotice(logisticNoticeForm);
@@ -531,7 +436,6 @@ public class RetryBiz implements IRetryBiz {
             }
         }catch (Exception e){
             log.error("发送物流信息给渠道重试异常："+e.getMessage(),e);
-            throw new Exception("发送物流信息给渠道重试异常："+e.getMessage());
         }
     }
 

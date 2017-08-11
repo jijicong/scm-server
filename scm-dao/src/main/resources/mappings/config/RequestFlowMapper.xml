@@ -11,6 +11,7 @@
     <update id="updateRequestFlowByRequestNum" parameterType="org.trc.domain.config.RequestFlow">
         UPDATE request_flow
         SET
+        request_num = #{requestNum,jdbcType=VARCHAR},
         <if test="status != null and status !=''">
             status = #{status,jdbcType=VARCHAR}
         </if>
