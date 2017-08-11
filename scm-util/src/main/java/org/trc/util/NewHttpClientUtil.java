@@ -64,18 +64,18 @@ public class NewHttpClientUtil {
          * @param url
          * @return
          */
-        public static String httpGetRequest(String url) {
+        public static String httpGetRequest(String url)throws IOException {
             HttpGet httpGet = new HttpGet(url);
             return getResult(httpGet);
         }
 
-        public static String httpGetRequest(String url, Map<String, Object> params) throws URISyntaxException {
+        public static String httpGetRequest(String url, Map<String, Object> params) throws URISyntaxException ,IOException{
             URIBuilder ub = _createURIBuilder(url,params);
             HttpGet httpGet = new HttpGet(ub.build());
             return getResult(httpGet);
         }
 
-        public static String httpGetRequest(String url, Map<String, Object> params, Integer timeout) throws URISyntaxException {
+        public static String httpGetRequest(String url, Map<String, Object> params, Integer timeout) throws URISyntaxException,IOException {
             URIBuilder ub = _createURIBuilder(url,params);
             HttpGet httpGet = new HttpGet(ub.build());
             int time_out = null!=timeout?timeout:SOCKET_TIMEOUT;
@@ -93,7 +93,7 @@ public class NewHttpClientUtil {
         }
 
         public static String httpGetRequest(String url, Map<String, Object> headers, Map<String, Object> params)
-                throws URISyntaxException {
+                throws URISyntaxException,IOException {
             URIBuilder ub = _createURIBuilder(url,params);
             HttpGet httpGet = new HttpGet(ub.build());
             for (Map.Entry<String, Object> param : headers.entrySet()) {
@@ -102,12 +102,12 @@ public class NewHttpClientUtil {
             return getResult(httpGet);
         }
 
-        public static String httpPostRequest(String s, String url, int i) {
+        public static String httpPostRequest(String s, String url, int i)throws IOException {
             HttpPost httpPost = new HttpPost(url);
             return getResult(httpPost);
         }
 
-        public static String httpPostRequest(String url, Map<String, Object> params, Integer timeout) throws UnsupportedEncodingException {
+        public static String httpPostRequest(String url, Map<String, Object> params, Integer timeout) throws UnsupportedEncodingException,IOException {
             HttpPost httpPost = new HttpPost(url);
             int time_out = null!=timeout?timeout:SOCKET_TIMEOUT;
             RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(time_out).setConnectTimeout(time_out).build();//设置请求和传输超时时间
@@ -117,7 +117,7 @@ public class NewHttpClientUtil {
             return getResult(httpPost);
         }
 
-        public static String httpPostJsonRequest(String url, String params, Integer timeout) throws UnsupportedEncodingException {
+        public static String httpPostJsonRequest(String url, String params, Integer timeout) throws UnsupportedEncodingException,IOException {
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"application/json; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
@@ -137,7 +137,7 @@ public class NewHttpClientUtil {
         }
 
         public static String httpPostRequest(String url, Map<String, Object> headers, Map<String, Object> params)
-                throws UnsupportedEncodingException {
+                throws UnsupportedEncodingException,IOException {
             HttpPost httpPost = new HttpPost(url);
             for (Map.Entry<String, Object> param : headers.entrySet()) {
                 httpPost.addHeader(param.getKey(), String.valueOf(param.getValue()));
@@ -161,7 +161,7 @@ public class NewHttpClientUtil {
          * @param request
          * @return
          */
-        private static String getResult(HttpRequestBase request) {
+        private static String getResult(HttpRequestBase request) throws IOException {
             CloseableHttpClient httpClient = getHttpClient();
             try {
                 JSONObject json = new JSONObject();
@@ -179,7 +179,7 @@ public class NewHttpClientUtil {
                 log.error(String.format("HttpClientUtil执行接口调用客户端协议异常,%s", e.getMessage()), e);
             } catch (IOException e) {
                 log.error(String.format("HttpClientUtil执行接口调用服务不可用,%s", e.getMessage()), e);
-                return SOCKET_TIMEOUT_CODE;
+                throw e;
             }
             return EMPTY_STR;
         }
