@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.config.IRequestFlowMapper">
+
+    <resultMap id="requestFlow" type="org.trc.domain.config.RequestFlow">
+        <result property="id" column="id"/>
+        <result property="requester" column="requester"/>
+        <result property="responder" column="responder"/>
+        <result property="type" column="type"/>
+        <result property="requestNum" column="request_num"/>
+        <result property="status" column="status"/>
+        <result property="requestParam" column="request_param"/>
+        <result property="responseParam" column="response_param"/>
+        <result property="count" column="count"/>
+        <result property="requestTime" column="request_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
     <update id="changeState" parameterType="java.lang.String">
       UPDATE request_flow
       SET status = 'SEND_SUCCESS'
@@ -11,34 +26,31 @@
     <update id="updateRequestFlowByRequestNum" parameterType="org.trc.domain.config.RequestFlow">
         UPDATE request_flow
         SET
-        request_num = #{requestNum,jdbcType=VARCHAR},
         <if test="status != null and status !=''">
-            status = #{status,jdbcType=VARCHAR}
+            status = #{status},
         </if>
         <if test="responseParam != null and responseParam !=''">
-            response_param = #{responseParam,jdbcType=TEXT}
-        </if>
-        <if test="count != null">
-            count = #{count,jdbcType=BIGINT}
+            response_param = #{responseParam},
         </if>
         <if test="endTime != null">
-            end_time = #{endTime,jdbcType=TIMESTAMP}
+            end_time = #{endTime},
         </if>
+        count = #{count}
         WHERE
-        request_num = #{requestNum,jdbcType=VARCHAR}
+        request_num = #{requestNum}
     </update>
 
-    <select id="queryBatch" parameterType="org.trc.domain.config.QureyCondition" resultType="org.trc.domain.config.RequestFlow">
-        SELECT id AS id,requester AS requester,responder AS responder, type as type , request_num AS requestNum, status AS status,request_param AS requestParam,response_param AS responseParam,count AS count,request_time AS requestTime, end_time AS endTime
+    <select id="queryBatch" parameterType="org.trc.domain.config.QureyCondition" resultMap="requestFlow">
+        SELECT id,requester,responder,type,request_num,status,request_param,response_param,count,request_time,end_time
         FROM request_flow
         WHERE
-        type = #{type,jdbcType=VARCHAR} AND
+        type = #{type} AND
         status IN
         <foreach collection="list" index="index" item="item" close=")" open="(" separator=",">
               #{item}
         </foreach>
         <if test="id != null">
-            id > #{id,jdbcType=LONG}
+          AND  id > #{id}
         </if>
         ORDER BY id ASC LIMIT 1000;
     </select>

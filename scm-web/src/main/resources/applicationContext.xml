@@ -51,8 +51,8 @@
         <task:scheduled ref="retryBiz" method="categoryPropertyUpdateNoticeRetry" cron="${retry.categoryProperty.start}"/>
         <task:scheduled ref="retryBiz" method="itemUpdateNoticeRetry" cron="${retry.item.start}"/>
         <task:scheduled ref="retryBiz" method="externalItemUpdateNoticeRetry" cron="${retry.externalItem.start}"/>
-        <task:scheduled ref="retryBiz" method="channelReceiveOrderSubmitResultRetry" cron="${retry.channelReceive.start}"/>
-        <task:scheduled ref="retryBiz" method="sendLogisticsInfoToChannelRetry" cron="${retry.sendLogisticsInfo.start}"/>-->
+        <task:scheduled ref="retryBiz" method="channelReceiveOrderSubmitResultRetry" cron="${retry.channelReceive.start}"/>-->
+        <task:scheduled ref="retryBiz" method="sendLogisticsInfoToChannelRetry" cron="${retry.sendLogisticsInfo.start}"/>
         <!--<task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */2 * * * ?"/>-->
     </task:scheduled-tasks>
 
