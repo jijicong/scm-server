@@ -46,7 +46,6 @@ public class SelectListResource {
     public static final String PAY_TYPE="payType";
     //贸易类型字典类型编码
     public static final String TRADE_TYPE="tradeType";
-
     //币种
     public static final String CURRENCY_TYPE="currency";
     //运输费用承担方
@@ -54,11 +53,19 @@ public class SelectListResource {
     //处理优先级
     public static final String  HANDLER_PRIORITY = "handlerPriority";
 
+
     @GET
     @Path(SupplyConstants.SelectList.PURCHASE_ORDER_AUDIT_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<JSONArray> purchaseOrderAuditStatus(){
-        return ResultUtil.createSucssAppResult("成功", PurchaseOrderAuditEnum.toJSONArray());
+        return ResultUtil.createSucssAppResult("查询采购订单的审核状态成功", PurchaseOrderAuditEnum.toJSONArray());
+    }
+
+    @GET
+    @Path(SupplyConstants.SelectList.OUTBOUND_ORDER_STATUS)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<JSONArray> outboundOrderStatus(){
+        return ResultUtil.createSucssAppResult("查询发货通知单的状态成功", OutboundOrderStatusEnum.toJSONArray());
     }
 
     @GET

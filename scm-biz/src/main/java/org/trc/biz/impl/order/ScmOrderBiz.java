@@ -980,7 +980,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         createOrderLog(warehouseOrderList);
         //提交供应商订单
         try{
+            //这里同步推送粮油的订单
             submitSupplierOrder(warehouseOrderList);
+            /*
+             同步发送仓库的入库通知单
+             */
         }catch (Exception e){
             log.error(String.format("多线程提交供应商订单异常,%s", e));
         }
@@ -1913,6 +1917,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         if(orderItemList1.size() > 0){
             // TODO 自采的拆单暂时不做
+            /**
+             如果是一个仓库，这里就不需要继续往下拆
+             入库时多个仓库，这里就需要同一件代发，一样拆出，不同仓库的仓库级订单 --sone21
+             */
         }
         if(orderItemList2.size() > 0){
             warehouseOrderList = dealSupplier(orderItemList2, shopOrder);
