@@ -70,8 +70,16 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
             categoryIds.add(purchaseDetail.getCategoryId());
             brandIds.add(purchaseDetail.getBrandId());
-            purchaseDetail.setPurchasePriceD(new BigDecimal(purchaseDetail.getPurchasePrice()).divide(new BigDecimal(100)));
-            purchaseDetail.setTotalPurchaseAmountD(new BigDecimal(purchaseDetail.getTotalPurchaseAmount()).divide(new BigDecimal(100)));
+            if(purchaseDetail.getPurchasePrice() != null){
+                purchaseDetail.setPurchasePriceD(new BigDecimal(purchaseDetail.getPurchasePrice()).divide(new BigDecimal(100)));
+            }else {
+                purchaseDetail.setPurchasePriceD(null);
+            }
+            if(purchaseDetail.getTotalPurchaseAmount() != null){
+                purchaseDetail.setTotalPurchaseAmountD(new BigDecimal(purchaseDetail.getTotalPurchaseAmount()).divide(new BigDecimal(100)));
+            }else {
+                purchaseDetail.setTotalPurchaseAmountD(null);
+            }
         }
 
         List<Brand> brandList = iBrandService.selectBrandList(brandIds);

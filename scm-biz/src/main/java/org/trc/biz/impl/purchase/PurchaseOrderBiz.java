@@ -475,7 +475,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param createOperator 创建人
      * @return int 商品的采购总价
      */
-    public BigDecimal savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
+    private BigDecimal savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
 
         if(StringUtils.isBlank(purchaseOrderStrs)){
             String msg = "保存采购商品的信息为空";
@@ -495,9 +495,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         BigDecimal totalPrice = new BigDecimal(0);
 
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
-            totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
-            purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100)).longValue());//设置采购价格*100
-            purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());//设置单品的总采购价*100
+            if(purchaseDetail.getTotalPurchaseAmountD() != null){
+                totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
+                purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100)).longValue());//设置采购价格*100
+            }else {
+                purchaseDetail.setPurchasePrice(null);//设置采购价格*100
+            }
+            if(purchaseDetail.getTotalPurchaseAmountD()!=null){
+                purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());//设置单品的总采购价*100
+            } else{
+                purchaseDetail.setTotalPurchaseAmount(null);//设置单品的总采购价*100
+            }
+            //purchaseDetail.setTotalPurchaseAmount(purchaseDetail.getTotalPurchaseAmountD().multiply(new BigDecimal(100)).longValue());//设置单品的总采购价*100
             purchaseDetail.setPurchaseId(orderId);
             purchaseDetail.setPurchaseOrderCode(code);
             purchaseDetail.setCreateOperator(createOperator);
