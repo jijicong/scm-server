@@ -89,10 +89,12 @@ public interface IScmOrderBiz {
 
     /**
      * 查询京东物流信息
+     * @param channelCode
      * @param shopOrderCode
      * @return
+     * @throws Exception
      */
-    ResponseAck<LogisticNoticeForm2> getJDLogistics(String shopOrderCode) throws  Exception;
+    ResponseAck<LogisticNoticeForm2> getJDLogistics(String channelCode, String shopOrderCode) throws  Exception;
 
     /**
      * 获取物流信息
