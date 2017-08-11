@@ -2,6 +2,8 @@ package org.trc.domain.config;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
+import tk.mybatis.mapper.annotation.NameStyle;
+import tk.mybatis.mapper.code.Style;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

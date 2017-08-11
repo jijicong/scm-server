@@ -596,7 +596,7 @@ public class JDTest extends AbstractJUnit4SpringContextTests {
     @Test
     public void testRetry(){
         try {
-            retryBiz.brandUpdateNoticeRetry();
+            retryBiz.sendLogisticsInfoToChannelRetry();
         } catch (Exception e) {
             e.printStackTrace();
         }

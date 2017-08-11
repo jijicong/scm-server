@@ -114,9 +114,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private ILogisticsCompanyService logisticsCompanyService;
-
     @Autowired
     private IRequestFlowService requestFlowService;
+    @Autowired
+    private TrcConfig trcConfig;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -980,7 +981,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         createOrderLog(warehouseOrderList);
         //提交供应商订单
         try{
+            //这里同步推送粮油的订单
             submitSupplierOrder(warehouseOrderList);
+            /*
+             同步发送仓库的入库通知单
+             */
         }catch (Exception e){
             log.error(String.format("多线程提交供应商订单异常,%s", e));
         }
@@ -1120,6 +1125,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             supplierOrderReturnList.add(supplierOrderReturn);
         }
         channelOrderResponse.setOrder(supplierOrderReturnList);
+        //设置请求渠道的签名
+        TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
+        BeanUtils.copyProperties(trcParam, channelOrderResponse);
         ToGlyResultDO toGlyResultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
         //保存请求流水
         requestFlowBiz.saveRequestFlow(JSONObject.toJSON(channelOrderResponse).toString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT, toGlyResultDO, RequestFlowConstant.GYL);
@@ -1150,11 +1158,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public ResponseAck<LogisticNoticeForm2> getJDLogistics(String shopOrderCode)throws Exception {
+    public ResponseAck<LogisticNoticeForm2> getJDLogistics(String channelCode, String shopOrderCode)throws Exception {
         ResponseAck<LogisticNoticeForm2> responseAck = null;
         try{
+            AssertUtil.notBlank(channelCode, "查询京东物流信息渠道编码channelCode不能为空");
             AssertUtil.notBlank(shopOrderCode, "查询京东物流信息店铺订单号shopOrderCode不能为空");
             WarehouseOrder warehouseOrder = new WarehouseOrder();
+            warehouseOrder.setChannelCode(channelCode);
             warehouseOrder.setShopOrderCode(shopOrderCode);
             warehouseOrder.setSupplierCode(SupplyConstants.Order.SUPPLIER_JD_CODE);
             //一个店铺订单下只有一个京东仓库订单
@@ -1224,8 +1234,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                                 }
                             }
                         }
-                        //物流信息同步给渠道
-                        logisticsInfoNoticeChannel(logisticForm);
+                        if(logisticForm.getLogistics().size() > 0){
+                            //物流信息同步给渠道
+                            logisticsInfoNoticeChannel(logisticForm);
+                        }
                     }
                 }
             }catch (Exception e){
@@ -1266,11 +1278,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             requestFlow.setRequester(RequestFlowConstant.GYL);
             requestFlow.setResponder(RequestFlowConstant.TRC);
             requestFlow.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
-            requestFlow.setRequestParam(JSONObject.toJSONString(logisticForm));
             requestFlow.setRequestTime(Calendar.getInstance().getTime());
             String requestNum = GuidUtil.getNextUid(RequestFlowConstant.TRC);
             requestFlow.setRequestNum(requestNum);
             requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+            //设置请求渠道的签名
+            TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
+            BeanUtils.copyProperties(trcParam, logisticNoticeForm);
+            requestFlow.setRequestParam(JSONObject.toJSONString(logisticNoticeForm));
             requestFlowService.insert(requestFlow);
             requestFlowUpdate.setRequestNum(requestNum);
             //物流信息同步给渠道
@@ -1459,7 +1474,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: logisticsArray){
             JSONObject jbo = (JSONObject)obj;
             Logistic logistic = jbo.toJavaObject(Logistic.class);
-            if(StringUtils.equals(SupplierLogisticsEnum.LY.getCode(), logisticForm.getType())){
+            if(StringUtils.equals(LogsticsTypeEnum.WAYBILL_NUMBER.getCode(), logisticForm.getType())){//物流单号
                 LogisticsCompany logisticsCompany = new LogisticsCompany();
                 logisticsCompany.setType(channelCode);
                 logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
@@ -1740,6 +1755,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
             OrderItem orderItem = orderItemObj.toJavaObject(OrderItem.class);
+            String channelSkuCode = orderItem.getSkuCode();//渠道sku编码
+            String scmSkuCode = orderItem.getOuterSkuId();//供应链sku编码
+            //将skuCode设置成供应链sku编码,outerSkuId设置成渠道sku编码
+            orderItem.setSkuCode(scmSkuCode);
+            orderItem.setOuterSkuId(channelSkuCode);
+            //设置金额
             orderItem.setPayment(orderItemObj.getBigDecimal("payment"));//实付金额
             orderItem.setTotalFee(orderItemObj.getBigDecimal("totalFee"));//订单总金额
             orderItem.setAdjustFee(orderItemObj.getBigDecimal("adjustFee"));//卖家手工调整金额
@@ -1913,6 +1934,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         if(orderItemList1.size() > 0){
             // TODO 自采的拆单暂时不做
+            /**
+             如果是一个仓库，这里就不需要继续往下拆
+             入库时多个仓库，这里就需要同一件代发，一样拆出，不同仓库的仓库级订单 --sone21
+             */
         }
         if(orderItemList2.size() > 0){
             warehouseOrderList = dealSupplier(orderItemList2, shopOrder);

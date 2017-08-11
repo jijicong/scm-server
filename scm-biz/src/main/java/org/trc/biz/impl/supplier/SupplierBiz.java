@@ -1154,7 +1154,6 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @Cacheable(key="#supplierCode")
     public SupplierExt querySupplierInfo(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商信息供应商编码不能为空");
         SupplierExt supplierExt = new SupplierExt();

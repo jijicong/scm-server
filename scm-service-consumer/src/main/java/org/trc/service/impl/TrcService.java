@@ -15,12 +15,10 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.TrcConfig;
+import org.trc.form.TrcParam;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.HttpClientUtil;
-import org.trc.util.HttpResult;
+import org.trc.util.*;
 
 import java.net.ConnectException;
 import java.util.Calendar;
@@ -159,33 +157,35 @@ public class TrcService implements ITrcService {
         if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
             return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
         }
-        AssertUtil.notNull(logisticNoticeForm, "同步物理新给渠道参数logisticNoticeForm不能为空");
-        AssertUtil.notBlank(logisticNoticeForm.getShopOrderCode(), "同步物理新给渠道店铺订单编码shopOrderCode不能为空");
-        AssertUtil.notBlank(logisticNoticeForm.getType(), "同步物理新给渠道信息类型type不能为空");
-        AssertUtil.notEmpty(logisticNoticeForm.getLogistics(), "同步物理新给渠道物流信息logistics不能为空");
         String url = trcConfig.getLogisticsNotifyUrl();
-        String paramObj = JSON.toJSONString(logisticNoticeForm);
         ToGlyResultDO toGlyResultDO = new ToGlyResultDO();
-        toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
-        log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
+            AssertUtil.notNull(logisticNoticeForm, "同步物理新给渠道参数logisticNoticeForm不能为空");
+            AssertUtil.notBlank(logisticNoticeForm.getShopOrderCode(), "同步物理新给渠道店铺订单编码shopOrderCode不能为空");
+            AssertUtil.notBlank(logisticNoticeForm.getType(), "同步物理新给渠道信息类型type不能为空");
+            AssertUtil.notEmpty(logisticNoticeForm.getLogistics(), "同步物理新给渠道物流信息logistics不能为空");
+            String paramObj = JSON.toJSONString(logisticNoticeForm);
+            toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+            log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
             response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
-                JSONObject json = JSONObject.parseObject(response);
-                HttpResult httpResult = json.toJavaObject(HttpResult.class);
-                if (statusCode.equals(httpResult.getStatusCode())){
-                    JSONObject jbo = JSONObject.parseObject(httpResult.getResult());
-                    toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
-                    //具体业务重试代码设置状态
+                JSONObject jbo = JSONObject.parseObject(response);
+                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                //具体业务重试代码设置状态
+                if (toGlyResultDO.getStatus().equals("1")){
                     toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                    toGlyResultDO.setMsg("处理成功！");
                 }
-                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                toGlyResultDO.setMsg("调用同步物流信息给渠道服务网络异常");
+                if (toGlyResultDO.getStatus().equals("2")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+                    toGlyResultDO.setMsg("异常数据！");
+                }
+
             }else {
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");
             }
@@ -195,6 +195,7 @@ public class TrcService implements ITrcService {
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }catch (Exception e){
+            toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
             String msg = String.format("调用同步物流信息给渠道服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);

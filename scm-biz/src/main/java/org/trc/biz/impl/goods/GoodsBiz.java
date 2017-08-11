@@ -560,6 +560,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
@@ -626,6 +627,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
@@ -1306,7 +1308,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @CacheEvit(key = { "#id"} )
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
@@ -1394,6 +1396,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSkusValid(Long id, String spuCode, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
@@ -1513,7 +1516,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    //@Cacheable(key="#spuCode+#skuCode+#aclUserAccreditInfo.channelCode",isList=true)
+    @Cacheable(key="#spuCode+#skuCode+#aclUserAccreditInfo.channelCode",isList=true)
     public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
@@ -1718,6 +1721,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveExternalItems(String supplySkus, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(supplySkus, "新增代发商品不能为空");
@@ -1782,6 +1786,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     public void updateExternalItemsValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "代发商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "代发商品启用/停用操作参数isValid不能为空");
@@ -1814,6 +1819,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateExternalItems(ExternalItemSku externalItemSku, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(externalItemSku, "更新代发商品不能为空");
@@ -1839,6 +1845,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void supplierSkuUpdateNotice(String updateSupplierSkus) {
         AssertUtil.notBlank(updateSupplierSkus, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
