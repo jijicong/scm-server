@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
@@ -95,57 +97,82 @@ public class OrderItem implements Serializable {
     private Long id;
 
     // 仓库订单编码
+    @NotEmpty
+    @Length(max = 32)
     private String warehouseOrderCode;
 
     // 店铺订单编码
+    @NotEmpty
+    @Length(max = 32)
     private String shopOrderCode;
 
     // 平台订单编码
+    @NotEmpty
+    @Length(max = 32)
     private String platformOrderCode;
 
     // 渠道编码
+    @NotEmpty
+    @Length(max = 32)
     private String channelCode;
 
     // 来源平台编码
+    @NotEmpty
+    @Length(max = 32)
     private String platformCode;
 
     // 所在仓库id
     private Long warehouseId;
 
     // 所在仓库名称
+    @Length(max = 64)
     private String warehouseName;
 
     // 所属类目编号
+    @NotEmpty
     private String category;
 
     // 订单所属的店铺id
+    @NotEmpty
     private Long shopId;
 
     // 店铺名称
+    @NotEmpty
+    @Length(max = 255)
     private String shopName;
 
     // 会员id
+    @NotEmpty
+    @Length(max = 64)
     private String userId;
 
     // 商品SPU编号
+    @Length(max = 64)
     private String spuCode;
 
     // sku编码
+    @Length(max = 32)
     private String skuCode;
 
     //供应商sku编码
+    @Length(max = 32)
     private String supplierSkuCode;
 
     // 商品sku库存id
     private Long skuStockId;
 
     // 商品货号
+    @NotEmpty
+    @Length(max = 32)
     private String itemNo;
 
     // 条形码
+    @Length(max = 64)
     private String barCode;
 
     // 商品名称
+    @NotEmpty
+    @Length(max = 128)
     private String itemName;
 
     // 商品价格,单位/分
@@ -171,24 +198,31 @@ public class OrderItem implements Serializable {
     private Integer sendNum;
 
     // SKU的值
+    @Length(max = 512)
     private String skuPropertiesName;
 
     // 最近退款ID
+    @Length(max = 32)
     private String refundId;
 
     // 是否超卖
+    @Length(max = 20)
     private String isOversold;
 
     // 运送方式
+    @Length(max = 32)
     private String shippingType;
 
     // 捆绑的子订单号
+    @Length(max = 32)
     private String bindOid;
 
     // 子订单发货的快递公司
+    @Length(max = 32)
     private String logisticsCompany;
 
     // 子订单所在包裹的运单号
+    @Length(max = 32)
     private String invoiceNo;
 
     // 运费分摊,单位/分
@@ -227,12 +261,15 @@ public class OrderItem implements Serializable {
     private BigDecimal adjustFee;
 
     // 订单状态:1-待出库 2-部分出库 3-全部出库
+    @Length(max = 32)
     private String status;
 
     // 售后状态
+    @Length(max = 32)
     private String afterSalesStatus;
 
     // 订单投诉状态
+    @Length(max = 32)
     private String complaintsStatus;
 
     // 退款金额,单位/分
@@ -242,21 +279,26 @@ public class OrderItem implements Serializable {
     private Integer catServiceRate;
 
     // 商品图片绝对路径
+    @Length(max = 255)
     private String picPath;
 
     // 商家外部编码
+    @Length(max = 64)
     private String outerIid;
 
     // 商家外部sku码
+    @Length(max = 64)
     private String outerSkuId;
 
     // 是否支持下单减库存
+    @Length(max = 20)
     private String subStock;
 
     // 配送模板id
     private Integer dlytmplId;
 
     // 供应商名称
+    @Length(max = 80)
     private String supplierName;
 
     // 商品税费,单位/分
@@ -264,21 +306,26 @@ public class OrderItem implements Serializable {
     private BigDecimal priceTax;
 
     // 订单应用促销标签
+    @Length(max = 32)
     private String promotionTags;
 
     // 订单商品类型
+    @Length(max = 32)
     private String objType;
 
     // 订单类型 0-普通 1-零元购 2-分期购 3-团购
+    @NotEmpty
     private String type;
 
     // 税率
     private BigDecimal taxRate;
 
     // 订单冗余参数
+    @Length(max = 255)
     private String params;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
+    @NotEmpty
     private Date createTime;
 
     // 支付时间
