@@ -259,7 +259,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -283,7 +283,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -306,7 +306,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryToTrc(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -329,7 +329,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -352,7 +352,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -375,7 +375,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
@@ -398,7 +398,7 @@ public class RetryBiz implements IRetryBiz {
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
-                if (!result){
+                if (result){
                     ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(),requestParam);
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
                         int count = requestFlowService.changeState(requestFlow.getRequestNum());
