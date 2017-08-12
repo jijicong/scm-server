@@ -51,12 +51,15 @@
                 AND a.channel_id = #{channelId}
             </if>
             <choose>
-                <when test="status != null and status != '' and status == 1">
+                <when test="status ==''">
+                    AND a.status != 0
+                </when>
+                <when test="status ==1">
                     AND (a.status = 2 OR a.status=3)
                 </when>
-                <otherwise>
+                <when test="status ==null or status==0 ">
                     AND a.status=1
-                </otherwise>
+                </when>
             </choose>
             <if test="startTime != null and startTime != ''">
                 AND a.create_time > #{startTime}
@@ -86,12 +89,15 @@
                 AND a.channel_id = #{channelId}
             </if>
             <choose>
-                <when test="status != null and status != '' and status == 1">
+                <when test="status ==''">
+                    AND a.status != 0
+                </when>
+                <when test="status ==1">
                     AND (a.status = 2 OR a.status=3)
                 </when>
-                <otherwise>
+                <when test="status ==null or status==0 ">
                     AND a.status=1
-                </otherwise>
+                </when>
             </choose>
             <if test="startTime != null and startTime != ''">
                 AND a.create_time > #{startTime}
