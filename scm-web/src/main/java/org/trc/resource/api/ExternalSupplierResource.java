@@ -22,7 +22,7 @@ public class ExternalSupplierResource {
 
     @POST
     @Path(SupplyConstants.ExternalSupplier.SUPPLIER_SKU_UPDATE_NOTICE)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/json;charset=utf-8")
     @Consumes("application/x-www-form-urlencoded")
     public AppResult supplierSkuUpdateNotice(@FormParam("updateSupplierSkus") String updateSupplierSkus) throws Exception {
         goodsBiz.supplierSkuUpdateNotice(updateSupplierSkus);
