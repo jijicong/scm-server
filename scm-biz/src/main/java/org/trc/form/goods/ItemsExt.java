@@ -5,12 +5,13 @@ import org.trc.domain.goods.ItemSalesPropery;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by hzwdx on 2017/5/31.
  */
-public class ItemsExt {
+public class ItemsExt implements Serializable{
 
     /**
      * 商品基础信息

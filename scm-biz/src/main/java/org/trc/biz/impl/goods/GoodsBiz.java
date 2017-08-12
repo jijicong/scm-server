@@ -243,18 +243,25 @@ public class GoodsBiz implements IGoodsBiz {
         //spu和分类名称map
         Map<String, String> spuCategoryMap = new HashMap<String, String>();
         for(Items items: itemsList){
-            List<String> namePathList = categoryBiz.queryCategoryNamePath(items.getCategoryId());
-            AssertUtil.notEmpty(namePathList, String.format("根据分类ID[%s]查询分类名称信息为空",items.getCategoryId()));
-            StringBuilder sb = new StringBuilder();
-            for(int i=namePathList.size(); i>0; i--){
-                int j = i-1;
-                if(j == 0){
-                    sb.append(namePathList.get(j));
-                }else{
-                    sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
-                }
+            List<String> namePathList = null;
+            try{
+                namePathList = categoryBiz.queryCategoryNamePath(items.getCategoryId());
+                AssertUtil.notEmpty(namePathList, String.format("根据分类ID[%s]查询分类名称信息为空",items.getCategoryId()));
+            }catch (Exception e){
+                log.error("查询分类名称异常", e);
             }
-            spuCategoryMap.put(items.getSpuCode(), sb.toString());
+            if(null != namePathList){
+                StringBuilder sb = new StringBuilder();
+                for(int i=namePathList.size(); i>0; i--){
+                    int j = i-1;
+                    if(j == 0){
+                        sb.append(namePathList.get(j));
+                    }else{
+                        sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
+                    }
+                }
+                spuCategoryMap.put(items.getSpuCode(), sb.toString());
+            }
         }
         //查询相关品牌
         Example example3 = new Example(Brand.class);
