@@ -131,12 +131,6 @@ public class WarehouseOrder implements Serializable {
     @Transient
     private String jdAddress;
 
-    /**
-     * 排序
-     */
-    @Transient
-    private Integer sort;
-
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
     }
@@ -581,14 +575,6 @@ public class WarehouseOrder implements Serializable {
 
     public void setLogisticsInfo(String logisticsInfo) {
         this.logisticsInfo = logisticsInfo;
-    }
-
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
     }
 
     public String getJdAddress() {
