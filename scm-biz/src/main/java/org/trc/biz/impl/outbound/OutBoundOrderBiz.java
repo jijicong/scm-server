@@ -13,6 +13,7 @@ import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +32,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         if (AssertUtil.collectionIsEmpty(outBoundOrderList)) {
             return pagenation;
         }
-        pagenation.setResult(outBoundOrderList);
+        List<OutboundOrder> outboundOrders = new ArrayList<>();
+        pagenation.setResult(outboundOrders);
         return pagenation;
     }
 
