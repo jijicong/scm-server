@@ -12,9 +12,9 @@ import java.util.List;
  */
 public interface IRequestFlowMapper extends BaseMapper<RequestFlow> {
 
-    int changeState(String requestNum) throws Exception;
+    int changeState(RequestFlow requestFlow) throws Exception;
 
-    int updateRequestFlowByRequestNum(RequestFlow requestFlow) throws Exception;
+    int updateRequestFlowByRequestNum(RequestFlow requestFlow);
 
     List<RequestFlow> queryBatch(QureyCondition condition);
 }

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,9 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
 import org.trc.util.*;
 
+import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.Calendar;
 
 
@@ -34,11 +37,6 @@ public class TrcService implements ITrcService {
     private final static Logger log = LoggerFactory.getLogger(TrcService.class);
 
     private final static int TIME_OUT = 3000;
-
-    public final static Integer statusCode = 200;
-
-    //接口重试次数
-    public final static Integer RETRY_TIMES = 3;
 
     @Autowired
     private TrcConfig trcConfig;
@@ -105,10 +103,26 @@ public class TrcService implements ITrcService {
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                //具体业务重试代码设置状态
+                if (toGlyResultDO.getStatus().equals("1")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                    toGlyResultDO.setMsg("处理成功！");
+                }
+                if (toGlyResultDO.getStatus().equals("2")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+                    toGlyResultDO.setMsg("异常数据！");
+                }
             }else {
+                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
                 toGlyResultDO.setMsg("调用泰然城信息更新同步服务返回结果为空");
             }
+        }catch (IOException e){
+            toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
+            String msg = String.format("调用泰然城信息更新同步服务%s超时,错误信息:%s", url, e.getMessage());
+            log.error(msg, e);
+            toGlyResultDO.setMsg(msg);
         }catch (Exception e){
+            toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
             String msg = String.format("调用泰然城信息更新同步服务%s异常,错误信息:%s", url, e.getMessage());
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
@@ -139,11 +153,31 @@ public class TrcService implements ITrcService {
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                //具体业务重试代码设置状态
+                if (toGlyResultDO.getStatus().equals("0")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
+                    toGlyResultDO.setMsg("处理失败！");
+                }
+                if (toGlyResultDO.getStatus().equals("1")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                    toGlyResultDO.setMsg("处理成功！");
+                }
+                if (toGlyResultDO.getStatus().equals("2")){
+                    toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+                    toGlyResultDO.setMsg("异常数据！");
+                }
             }else {
+                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
                 toGlyResultDO.setMsg("调用同步订单提交结果给渠服务返回结果为空");
             }
+        }catch (IOException e){ //服务器响应超时
+            toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
+            String msg = String.format("调用同步订单信息给渠道服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            toGlyResultDO.setMsg(msg);
         }catch (Exception e){
-            String msg = String.format("调用同步订单提交结果给渠服务异常,错误信息:%s", e.getMessage());
+            toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+            String msg = String.format("调用同步订单信息给渠道服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }
@@ -187,15 +221,16 @@ public class TrcService implements ITrcService {
                 }
 
             }else {
+                toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
                 toGlyResultDO.setMsg("调用同步物流信息给渠道服务返回结果为空");
             }
-        }catch (ConnectException e){
+        }catch (IOException e){
             toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
             String msg = String.format("调用同步物流信息给渠道服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);
         }catch (Exception e){
-            toGlyResultDO.setStatus(SuccessFailureEnum.SOCKET_TIME_OUT.getCode());
+            toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
             String msg = String.format("调用同步物流信息给渠道服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             toGlyResultDO.setMsg(msg);

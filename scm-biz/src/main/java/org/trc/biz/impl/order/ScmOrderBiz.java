@@ -1130,13 +1130,41 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //设置请求渠道的签名
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
         BeanUtils.copyProperties(trcParam, channelOrderResponse);
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(JSONObject.toJSONString(channelOrderResponse));
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(channelOrderResponse).toString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            log.error(String.format("仓库级订单订单%s提交结果通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(warehouseOrder), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            log.error(String.format("仓库级订单订单%s提交结果通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(warehouseOrder), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
         if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
             log.error(String.format("仓库级订单订单%s提交结果通知渠道成功", JSON.toJSONString(warehouseOrder)));
-        }else {
-            log.error(String.format("仓库级订单订单%s提交结果通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(warehouseOrder), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            log.error(String.format("仓库级订单订单%s提交结果通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(warehouseOrder), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            log.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
         }
     }
 
@@ -1306,7 +1334,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
             }
             if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
-                log.error(String.format("物流信息%s同步给渠道成功,%s", JSON.toJSONString(logisticNoticeForm), toGlyResultDO.getMsg()));
+                log.error(String.format("物流信息%s同步给渠道异常,%s", JSON.toJSONString(logisticNoticeForm), toGlyResultDO.getMsg()));
                 requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
             }
             int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);

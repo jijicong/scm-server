@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.retry.IRetryBiz;
 import org.trc.domain.config.QureyCondition;
 import org.trc.domain.config.RequestFlow;
@@ -157,7 +158,6 @@ public class RetryBiz implements IRetryBiz {
             //3、对请求失败的进行重试
             log.info("开始执行重试任务=======>");
             retryJob(requestFlowList,condition.getType());
-            Long endTime = Calendar.getInstance().getTimeInMillis();
             if(requestFlowList.size()<1000){
                 return;
             }else {
@@ -262,7 +262,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("品牌变更通知重试：更新状态失败！");
                         }
@@ -286,7 +289,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("属性变更通知重试：更新状态失败！");
                         }
@@ -309,7 +315,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryToTrc(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("分类变更通知重试：更新状态失败！");
                         }
@@ -332,7 +341,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("分类品牌变更通知重试：更新状态失败！");
                         }
@@ -355,7 +367,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("分类属性变更通知重试：更新状态失败！");
                         }
@@ -378,7 +393,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(),requestFlow.getRequestParam());
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("自营商品变更通知重试：更新状态失败！");
                         }
@@ -401,7 +419,10 @@ public class RetryBiz implements IRetryBiz {
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(),requestParam);
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("代发商品变更通知重试：更新状态失败！");
                         }
@@ -426,7 +447,10 @@ public class RetryBiz implements IRetryBiz {
                     ChannelOrderResponse channelOrderResponse = JSONObject.parseObject(requestParam,ChannelOrderResponse.class);
                     ToGlyResultDO resultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("渠道接收订单提交结果重试：更新状态失败！");
                         }
@@ -453,7 +477,10 @@ public class RetryBiz implements IRetryBiz {
                     LogisticNoticeForm logisticNoticeForm = JSONObject.parseObject(requestParam,LogisticNoticeForm.class);
                     ToGlyResultDO resultDO = trcService.sendLogisticInfoNotice(logisticNoticeForm);
                     if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        int count = requestFlowService.changeState(requestFlow.getRequestNum());
+                        RequestFlow tem = new RequestFlow();
+                        tem.setRequestNum(requestFlow.getRequestNum());
+                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
+                        int count = requestFlowService.changeState(tem);
                         if (count==0){
                             log.error("发送物流信息给渠道重试：更新状态失败！");
                         }
@@ -473,30 +500,37 @@ public class RetryBiz implements IRetryBiz {
                 requestFlow.setCount(0L);
             }
             if (null != requestFlow && StringUtils.isNotBlank(type)){
-
                 RetryConfig retryConfig = new RetryConfig();
                 retryConfig.setType(type);
                 RetryConfig record = retryConfigService.selectOne(retryConfig);
                 //1.1计算结束启动时间
                 RequestFlow flow = new RequestFlow();
                 Long time = Calendar.getInstance().getTimeInMillis()+record.getPeriod()*hours;
+                Date endTime = new Date(time);
                 if (null == requestFlow.getEndTime()){
-                    Date endTime = new Date(time);
                     flow.setEndTime(endTime);
                 }
                 Long count = requestFlow.getCount()+1;
                 flow.setCount(count);
                 flow.setRequestNum(requestFlow.getRequestNum());
+
                 int i = requestFlowService.updateRequestFlowByRequestNum(flow);
                 if (i<=0){
                     log.error("流水记录表：更新状态失败！");
                 }
                 Calendar c1 = Calendar.getInstance();
                 Calendar c2 = Calendar.getInstance();
-                c1.setTime(requestFlow.getEndTime());
+                c1.setTime(null != requestFlow.getEndTime()? requestFlow.getEndTime():endTime);
                 int result = c1.compareTo(c2);
                 //1.2判断是否满足重试条件
-                if (1!=record.getCount().compareTo(requestFlow.getCount()) && 1 != result){
+                if (1!=record.getCount().compareTo(requestFlow.getCount()) || 1 != result){
+                    RequestFlow tem = new RequestFlow();
+                    tem.setRequestNum(requestFlow.getRequestNum());
+                    tem.setStatus(NetwordStateEnum.ERROR.getCode());
+                    int j = requestFlowService.changeState(tem);
+                    if (j<=0){
+                        log.error("流水记录表：不满足重试条件，更新状态失败！");
+                    }
                     return false;
                 }
                 return true;

@@ -18,7 +18,7 @@
     </resultMap>
     <update id="changeState" parameterType="java.lang.String">
       UPDATE request_flow
-      SET status = 'SEND_SUCCESS'
+      SET status = #{status}
       WHERE
       request_num = #{requestNum}
     </update>

@@ -32,9 +32,7 @@ import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkusService;
-import org.trc.util.AssertUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -217,9 +215,42 @@ public class TrcBiz implements ITrcBiz {
         params.put("itemSalesPropery", itemSalesPropery);
         params.put("skus", skus);
         logger.info("请求数据: " + params.toJSONString());
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.ITEM_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("自采商品%s更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(items), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("自采商品%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(items), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("自采商品%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(items), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("自采商品%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(items), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 
@@ -292,9 +323,42 @@ public class TrcBiz implements ITrcBiz {
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), action);
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
         params.put("externalItemSkuList", sendList);
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("代发商品更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("代发商品%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("代发商品%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("代发商品%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 

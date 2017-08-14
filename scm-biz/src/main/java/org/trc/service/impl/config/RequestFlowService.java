@@ -18,11 +18,11 @@ public class RequestFlowService extends BaseService<RequestFlow,Long> implements
     @Autowired
     IRequestFlowMapper requestFlowMapper;
 
-    public int changeState(String requestNum) throws Exception{
-        return requestFlowMapper.changeState(requestNum);
+    public int changeState(RequestFlow requestFlow) throws Exception{
+        return requestFlowMapper.changeState(requestFlow);
     }
 
-    public int updateRequestFlowByRequestNum(RequestFlow requestFlow) throws Exception{
+    public int updateRequestFlowByRequestNum(RequestFlow requestFlow){
         return requestFlowMapper.updateRequestFlowByRequestNum(requestFlow);
     }
     public List<RequestFlow> queryBatch(QureyCondition condition){
