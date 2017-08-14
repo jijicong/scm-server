@@ -50,6 +50,15 @@ public class RetryBiz implements IRetryBiz {
     private static final int EXECUTOR_SIZE = 6;
     private static final Long hours = 3600000L;
 
+    private static final String BRAND_UPDATE_NOTICE = "BRAND_UPDATE_NOTICE";
+    private static final String PROPERTY_UPDATE_NOTICE = "PROPERTY_UPDATE_NOTICE";
+    private static final String CATEFORY_UPDATE_NOTICE = "CATEFORY_UPDATE_NOTICE";
+    private static final String CATEFORY_BRAND_UPDATE_NOTICE = "CATEFORY_BRAND_UPDATE_NOTICE";
+    private static final String CATEFORY_PROPERTY_UPDATE_NOTICE = "CATEFORY_PROPERTY_UPDATE_NOTICE";
+    private static final String ITEM_UPDATE_NOTICE = "ITEM_UPDATE_NOTICE";
+    private static final String EXTERNAL_ITEM_UPDATE_NOTICE = "EXTERNAL_ITEM_UPDATE_NOTICE";
+    private static final String CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT = "CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT";
+
 
     public void brandUpdateNoticeRetry(){
         //1、查询request flow表，找出需要重试的记录
@@ -204,28 +213,28 @@ public class RetryBiz implements IRetryBiz {
                     public void run() {
                         try {
                             switch (type){
-                                case "BRAND_UPDATE_NOTICE":
+                                case BRAND_UPDATE_NOTICE:
                                     brandUpdateNoticeRetry(flow);
                                     break;
-                                case "PROPERTY_UPDATE_NOTICE":
+                                case PROPERTY_UPDATE_NOTICE:
                                     propertyUpdateNoticeRetry(flow);
                                     break;
-                                case "CATEFORY_UPDATE_NOTICE":
+                                case CATEFORY_UPDATE_NOTICE:
                                     categoryUpdateNoticeRetry(flow);
                                     break;
-                                case "CATEFORY_BRAND_UPDATE_NOTICE":
+                                case CATEFORY_BRAND_UPDATE_NOTICE:
                                     categoryBrandUpdateNoticeRetry(flow);
                                     break;
-                                case "CATEFORY_PROPERTY_UPDATE_NOTICE":
+                                case CATEFORY_PROPERTY_UPDATE_NOTICE:
                                     categoryPropertyUpdateNoticeRetry(flow);
                                     break;
-                                case "ITEM_UPDATE_NOTICE":
+                                case ITEM_UPDATE_NOTICE:
                                     itemUpdateNoticeRetry(flow);
                                     break;
-                                case "EXTERNAL_ITEM_UPDATE_NOTICE":
+                                case EXTERNAL_ITEM_UPDATE_NOTICE:
                                     externalItemUpdateNoticeRetry(flow);
                                     break;
-                                case "CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT":
+                                case CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT:
                                     channelReceiveOrderSubmitResultRetry(flow);
                                     break;
                                 default:
