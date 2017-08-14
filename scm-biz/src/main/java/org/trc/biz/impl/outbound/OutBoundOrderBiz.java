@@ -26,12 +26,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm queryModel, Pagenation<OutboundOrder> page) throws Exception {
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
-        setQueryParam(example, criteria, queryModel);
+//        setQueryParam(example, criteria, queryModel);
         Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, queryModel);
         List<OutboundOrder> outBoundOrderList = pagenation.getResult();
         if (AssertUtil.collectionIsEmpty(outBoundOrderList)) {
             return pagenation;
         }
+
         List<OutboundOrder> outboundOrders = new ArrayList<>();
         pagenation.setResult(outboundOrders);
         return pagenation;
