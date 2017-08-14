@@ -16,6 +16,7 @@ public class SupplyConstants {
         public static final String MINUS = "-";//减号
         public static final String FILE_NAME_SPLIT = ".";//文件名称分隔符
         public static final String FULL_PATH_SPLIT = "|";//分类路径ID分隔符
+        public static final String SEMICOLON = ";";//分号
     }
 
 

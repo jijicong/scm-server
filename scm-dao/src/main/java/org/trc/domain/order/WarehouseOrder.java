@@ -131,6 +131,12 @@ public class WarehouseOrder implements Serializable {
     @Transient
     private String jdAddress;
 
+    /**
+     * 下单失败信息
+     */
+    @Transient
+    private String message;
+
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
     }
@@ -583,5 +589,13 @@ public class WarehouseOrder implements Serializable {
 
     public void setJdAddress(String jdAddress) {
         this.jdAddress = jdAddress;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

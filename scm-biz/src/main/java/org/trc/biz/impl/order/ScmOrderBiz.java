@@ -883,7 +883,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 platformOrders = platformOrderList;
             }
         }
-        //设置仓库订单支付时间及物流信息
+        //设置仓库订单支付时间、物流信息、下单失败原因
         for(WarehouseOrder warehouseOrder: page.getResult()){
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(warehouseOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
@@ -891,6 +891,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
             setLogisticsInfo(warehouseOrder);
+            setOrderSubmitFialureMsg(warehouseOrder);
         }
         List<WarehouseOrder> tmpList = page.getResult();
         //按付款时间将序排序
@@ -922,6 +923,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else{
             warehouseOrder.setLogisticsInfo(sb.toString());
         }
+    }
+
+    /**
+     * 设置供应商订单下单失败原因
+     * @param warehouseOrder
+     */
+    private void setOrderSubmitFialureMsg(WarehouseOrder warehouseOrder){
+        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+        supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
+        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+        StringBuilder sb = new StringBuilder();
+        for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
+            if(StringUtils.isNotBlank(supplierOrderInfo2.getMessage())){
+                sb.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON);
+            }
+        }
+        if(sb.length() > 0)
+            warehouseOrder.setMessage(sb.toString());
     }
 
     @Override
