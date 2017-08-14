@@ -398,7 +398,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         if(StringUtils.isNotBlank(purchaseOrderStrs) && !"[]".equals(purchaseOrderStrs)){
             BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
-            if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){//提交审核做金额校验
+            if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){//提交审核做金额校验
                 if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
                     String msg = "采购单保存,采购商品的总价与页面的总价不相等";
                     LOGGER.error(msg);
@@ -497,7 +497,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
             if(purchaseDetail.getTotalPurchaseAmountD() != null){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
-                purchaseDetail.setPurchasePrice(purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100)).longValue());//设置采购价格*100
+                BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
+                purchaseDetail.setPurchasePrice(bd.longValue());//设置采购价格*100
             }else {
                 purchaseDetail.setPurchasePrice(null);//设置采购价格*100
             }

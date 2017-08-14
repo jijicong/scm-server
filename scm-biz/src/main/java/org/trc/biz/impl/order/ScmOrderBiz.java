@@ -205,7 +205,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
-        example.setOrderByClause("instr('1,5,1,2,3,4',`supplier_order_status`)");
+        example.setOrderByClause("instr('1,5,2,3,4',`supplier_order_status`)");
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
         return page;
@@ -898,7 +898,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
             @Override
             public int compare(WarehouseOrder o1, WarehouseOrder o2) {
-                return o2.getPayTime().compareTo(o1.getPayTime());
+                if(o1.getSupplierOrderStatus().compareTo(o2.getSupplierOrderStatus()) == 0){
+                    return o2.getPayTime().compareTo(o1.getPayTime());
+                }else {
+                    return 0;
+                }
             }
         });
         page.setResult(tmpList);
@@ -941,6 +945,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(sb.length() > 0)
             warehouseOrder.setMessage(sb.toString());
+        else{
+            warehouseOrder.setMessage(StringUtils.EMPTY);
+        }
     }
 
     @Override
