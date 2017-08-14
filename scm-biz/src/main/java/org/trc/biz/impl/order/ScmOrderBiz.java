@@ -206,6 +206,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         example.setOrderByClause("instr('1,5,2,3,4',`supplier_order_status`)");
+        example.orderBy("updateTime").desc();
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
         return page;
@@ -668,13 +669,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }else{
             log.error(String.format("调用下单服务接口失败,错误信息: %s", returnTypeDO.getResultMessage()));
-            SupplierOrderInfo supplierOrderInfo = getSupplierOrderFailureInfo(warehouseOrder, orderItemList);
+            SupplierOrderInfo supplierOrderInfo = getSupplierOrderFailureInfo(warehouseOrder, orderItemList, jdAddressCodes, jdAddressNames);
             if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
+                SupplierOrderInfo supplierOrderInfo2 = new SupplierOrderInfo();
+                supplierOrderInfo2.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
+                supplierOrderInfo2 = supplierOrderInfoService.selectOne(supplierOrderInfo2);
                 supplierOrderInfo.setMessage(returnTypeDO.getResultMessage());//京东订单的错误信息包含在返回结果错误信息里面
+                if(null != supplierOrderInfo2){
+                    BeanUtils.copyProperties(supplierOrderInfo, supplierOrderInfo2, "id");
+                    supplierOrderInfoService.updateByPrimaryKey(supplierOrderInfo2);
+                }else {
+                    supplierOrderInfoList.add(supplierOrderInfo);
+                }
             }
-            supplierOrderInfoList.add(supplierOrderInfo);
         }
-        supplierOrderInfoService.insertList(supplierOrderInfoList);
+        if(supplierOrderInfoList.size() > 0)
+            supplierOrderInfoService.insertList(supplierOrderInfoList);
     }
 
     /**
@@ -703,22 +713,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         supplierOrderInfo.setSkus(skusArray.toJSONString());
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//京东订单
-            if(jdAddressCodes.length > 0){
-                supplierOrderInfo.setJdProvinceCode(jdAddressCodes[0]);
-                supplierOrderInfo.setJdProvince(jdAddressNames[0]);
-            }
-            if(jdAddressCodes.length > 1){
-                supplierOrderInfo.setJdCityCode(jdAddressCodes[1]);
-                supplierOrderInfo.setJdCity(jdAddressNames[1]);
-            }
-            if(jdAddressCodes.length > 2){
-                supplierOrderInfo.setJdDistrictCode(jdAddressCodes[2]);
-                supplierOrderInfo.setJdDistrict(jdAddressNames[2]);
-            }
-            if(jdAddressCodes.length > 3){
-                supplierOrderInfo.setJdTownCode(jdAddressCodes[3]);
-                supplierOrderInfo.setJdTown(jdAddressNames[3]);
-            }
+            setSupplierOrderInfoJdAddress(supplierOrderInfo, jdAddressCodes, jdAddressNames);
         }
         ParamsUtil.setBaseDO(supplierOrderInfo);
         return supplierOrderInfo;
@@ -730,7 +725,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItemList
      * @return
      */
-    private SupplierOrderInfo getSupplierOrderFailureInfo(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList){
+    private SupplierOrderInfo getSupplierOrderFailureInfo(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList, String[] jdAddressCodes, String[] jdAddressNames){
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
@@ -745,8 +740,34 @@ public class ScmOrderBiz implements IScmOrderBiz {
             skuInfoList.add(skuInfo);
         }
         supplierOrderInfo.setSkus(JSON.toJSONString(skuInfoList));
+        setSupplierOrderInfoJdAddress(supplierOrderInfo, jdAddressCodes, jdAddressNames);
         ParamsUtil.setBaseDO(supplierOrderInfo);
         return supplierOrderInfo;
+    }
+
+    /**
+     * 设置供应商订单京东地址
+     * @param supplierOrderInfo
+     * @param jdAddressCodes
+     * @param jdAddressNames
+     */
+    private void setSupplierOrderInfoJdAddress(SupplierOrderInfo supplierOrderInfo, String[] jdAddressCodes, String[] jdAddressNames){
+        if(jdAddressCodes.length > 0){
+            supplierOrderInfo.setJdProvinceCode(jdAddressCodes[0]);
+            supplierOrderInfo.setJdProvince(jdAddressNames[0]);
+        }
+        if(jdAddressCodes.length > 1){
+            supplierOrderInfo.setJdCityCode(jdAddressCodes[1]);
+            supplierOrderInfo.setJdCity(jdAddressNames[1]);
+        }
+        if(jdAddressCodes.length > 2){
+            supplierOrderInfo.setJdDistrictCode(jdAddressCodes[2]);
+            supplierOrderInfo.setJdDistrict(jdAddressNames[2]);
+        }
+        if(jdAddressCodes.length > 3){
+            supplierOrderInfo.setJdTownCode(jdAddressCodes[3]);
+            supplierOrderInfo.setJdTown(jdAddressNames[3]);
+        }
     }
 
 

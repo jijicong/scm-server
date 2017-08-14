@@ -1605,7 +1605,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#spuCode+#categoryId",isList=true)
+    //@Cacheable(key="#spuCode+#categoryId",isList=true)
     public List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品分类属性spuCode为空");
         AssertUtil.notNull(categoryId, "查询商品分类属性categoryId为空");
