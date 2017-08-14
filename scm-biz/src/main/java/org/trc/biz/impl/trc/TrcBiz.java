@@ -88,14 +88,46 @@ public class TrcBiz implements ITrcBiz {
         brandToTrc.setLogo(brand.getLogo());
         brandToTrc.setName(brand.getName());
         brandToTrc.setWebUrl(brand.getWebUrl());
-
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), action);
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
         params.put("brandToTrc", brandToTrc);
         logger.info("请求数据: " + params.toJSONString());
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.BRAND_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("品牌%s更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldBrand), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("品牌%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(oldBrand), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("品牌%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(oldBrand), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("品牌%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(oldBrand), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 
@@ -120,15 +152,47 @@ public class TrcBiz implements ITrcBiz {
         propertyToTrc.setDescription(property.getDescription());
         propertyToTrc.setTypeCode(property.getTypeCode());
         propertyToTrc.setValueType(property.getValueType());
-
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), action);
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
         params.put("propertyToTrc", propertyToTrc);
         params.put("valueList", valueList);
         logger.info("请求数据: " + params.toJSONString());
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("属性%s更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldProperty), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("属性%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(oldProperty), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("属性%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(oldProperty), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("属性%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(oldProperty), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 
@@ -219,7 +283,7 @@ public class TrcBiz implements ITrcBiz {
         RequestFlow requestFlow = new RequestFlow();
         requestFlow.setRequester(RequestFlowConstant.GYL);
         requestFlow.setResponder(RequestFlowConstant.TRC);
-        requestFlow.setType(RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+        requestFlow.setType(RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
         requestFlow.setRequestTime(Calendar.getInstance().getTime());
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
         requestFlow.setRequestNum(requestNum);
@@ -327,7 +391,7 @@ public class TrcBiz implements ITrcBiz {
         RequestFlow requestFlow = new RequestFlow();
         requestFlow.setRequester(RequestFlowConstant.GYL);
         requestFlow.setResponder(RequestFlowConstant.TRC);
-        requestFlow.setType(RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
+        requestFlow.setType(RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
         requestFlow.setRequestTime(Calendar.getInstance().getTime());
         String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
         requestFlow.setRequestNum(requestNum);
@@ -340,7 +404,7 @@ public class TrcBiz implements ITrcBiz {
         //保存请求流水
         requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
         if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
@@ -513,9 +577,42 @@ public class TrcBiz implements ITrcBiz {
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
         params.put("categoryPropertyList", categoryPropertyList);
         logger.info("请求数据: " + params.toJSONString());
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类属性更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(categoryPropertyList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类属性%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(categoryPropertyList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类属性%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(categoryPropertyList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类属性%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(categoryPropertyList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 
@@ -526,9 +623,42 @@ public class TrcBiz implements ITrcBiz {
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
         params.put("categoryBrandList", categoryBrandList);
         logger.info("请求数据: " + params.toJSONString());
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类品牌%s更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(categoryBrandList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类品牌%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(categoryBrandList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类品牌%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(categoryBrandList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类品牌%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(categoryBrandList), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 
@@ -555,9 +685,42 @@ public class TrcBiz implements ITrcBiz {
         JSONObject params = (JSONObject)JSONObject.toJSON(trcParam);
         params.put("categoryToTrc", categoryToTrc);
         logger.info("请求数据: " + params.toJSONString());
+        //记录流水
+        RequestFlow requestFlow = new RequestFlow();
+        requestFlow.setRequester(RequestFlowConstant.GYL);
+        requestFlow.setResponder(RequestFlowConstant.TRC);
+        requestFlow.setType(RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
+        requestFlow.setRequestTime(Calendar.getInstance().getTime());
+        String requestNum = GuidUtil.getNextUid(RequestFlowConstant.GYL);
+        requestFlow.setRequestNum(requestNum);
+        requestFlow.setStatus(RequestFlowStatusEnum.SEND_INITIAL.getCode());
+        requestFlow.setRequestParam(params.toJSONString());
+        requestFlowService.insert(requestFlow);
+        RequestFlow requestFlowUpdate = new RequestFlow();
+        requestFlowUpdate.setRequestNum(requestNum);
         ToGlyResultDO toGlyResultDO = trcService.sendCategoryToTrc(trcConfig.getCategoryUrl(), params.toJSONString());
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(params.toJSONString(), RequestFlowConstant.GYL, RequestFlowConstant.TRC, RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE, toGlyResultDO, RequestFlowConstant.GYL);
+        requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+        if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类%s变更通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldCategory), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(oldCategory), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(oldCategory), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+        }
+        if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
+            logger.error(String.format("分类%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(oldCategory), toGlyResultDO.getMsg()));
+            requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
+        }
+        int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+        if (count<=0){
+            logger.error("时间："+ DateUtils.formatDateTime(Calendar.getInstance().getTime())+",失败原因：更新流水表状态失败！");
+        }
         return toGlyResultDO;
     }
 
