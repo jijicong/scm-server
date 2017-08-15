@@ -1938,12 +1938,15 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setCategory(items.getCategory());
             externalItemSku.setCategoryName(items.getCategoryName());
             externalItemSku.setBarCode(items.getUpc());
-            externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(items.getSupplyPrice()));
+            /*externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(items.getSupplyPrice()));
             externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(items.getSupplierPrice()));
-            externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(items.getMarketPrice()));
-            /*externalItemSku.setSupplyPrice(items.getSupplyPrice().longValue());
-            externalItemSku.setSupplierPrice(items.getSupplierPrice().longValue());
-            externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());*/
+            externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(items.getMarketPrice()));*/
+            if(null != items.getSupplyPrice())
+                externalItemSku.setSupplyPrice(items.getSupplyPrice().longValue());
+            if(null != items.getSupplierPrice())
+                externalItemSku.setSupplierPrice(items.getSupplierPrice().longValue());
+            if(null != items.getMarketPrice())
+                externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());
