@@ -133,7 +133,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
@@ -395,7 +395,6 @@ public class GoodsBiz implements IGoodsBiz {
             Example example = new Example(Skus.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andIn("spuCode", spuCodes);
-            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             example.orderBy("isValid").desc();
             example.orderBy("skuCode").asc();
             List<Skus> skusList = skusService.selectByExample(example);
@@ -408,7 +407,6 @@ public class GoodsBiz implements IGoodsBiz {
             Example example2 = new Example(ItemSalesPropery.class);
             Example.Criteria criteria2 = example2.createCriteria();
             criteria2.andIn("skuCode", skuCodes);
-            criteria2.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
             List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.selectByExample(example2);
             AssertUtil.notEmpty(skusList, String.format("批量查询商品SKU编码为[%s]的SKU对应的采购属性信息为空", CommonUtil.converCollectionToString(skuCodes)));
             //查询所有采购属性详细信息
@@ -452,7 +450,7 @@ public class GoodsBiz implements IGoodsBiz {
         for(int i=0; i<propertyValueIdArray.length; i++){
             Long propertyValueId = Long.parseLong(propertyValueIdArray[i]);
             for(ItemSalesPropery itemSalesPropery : itemSalesProperies){
-                if(propertyValueId == itemSalesPropery.getPropertyValueId()){
+                if(propertyValueId.longValue() == itemSalesPropery.getPropertyValueId().longValue()){
                     for(Property property : properties){
                         if(itemSalesPropery.getPropertyId().equals(property.getId())){
                         sb.append(SKU_PROPERTY_COMBINE_NAME_EMPTY).append(property.getName()).append(SKU_PROPERTY_COMBINE_NAME_SPLIT_SYMBOL).append(propertyValueArray[i]);
@@ -1612,7 +1610,7 @@ public class GoodsBiz implements IGoodsBiz {
         Example example = new Example(CategoryProperty.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("categoryId", categoryId);
-        criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
+        //criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         example.orderBy("propertySort").asc();
         List<CategoryProperty> categoryProperties = categoryPropertyService.selectByExample(example);
         AssertUtil.notEmpty(categoryProperties, String.format("根据分类ID[%s]查询分类属性为空", categoryId));

@@ -77,8 +77,14 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     @Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize", isList = true)
     public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
-        Example example = new Example(Property.class);
+        Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
+        if(null != queryModel.getCategoryId()){
+            criteria.andEqualTo("id", queryModel.getCategoryId());
+        }
+        if (!StringUtils.isBlank(queryModel.getCategoryCode())) {
+            criteria.andLike("categoryCode", queryModel.getCategoryCode());
+        }
         if (!StringUtils.isBlank(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }

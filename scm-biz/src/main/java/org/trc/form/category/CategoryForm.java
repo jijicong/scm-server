@@ -19,7 +19,18 @@ public class CategoryForm extends QueryModel {
     private String sort;
     @QueryParam("id")
     private Long id;
+    @QueryParam("categoryId")
+    private Long categoryId;
+    @QueryParam("categoryCode")
+    private String categoryCode;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getSort() {
         return sort;
@@ -37,14 +48,6 @@ public class CategoryForm extends QueryModel {
         this.level = level;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
@@ -52,6 +55,23 @@ public class CategoryForm extends QueryModel {
     public void setName(String name) {
         this.name = name;
     }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
+    }
+
     @Override
     public String toString() {
         return  ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);

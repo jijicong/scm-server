@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
@@ -792,14 +793,14 @@ public class JDServiceImpl implements IJDService {
     }
 
     @Override
-    public ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder) {
+    public ResponseAck submitJingDongOrder(JingDongOrder jingDongOrder) {
         AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSubmitOrderUrl();
         return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString());
     }
 
     @Override
-    public ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder) {
+    public ResponseAck submitLiangYouOrder(LiangYouOrder liangYouOrder) {
         AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getLySubmitOrderUrl();
         return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString());
@@ -873,9 +874,8 @@ public class JDServiceImpl implements IJDService {
     }
 
 
-    private ReturnTypeDO invokeSubmitOrder(String url, String jsonParams){
-        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
-        returnTypeDO.setSuccess(false);
+    private ResponseAck invokeSubmitOrder(String url, String jsonParams){
+        ResponseAck responseAck = null;
         log.debug("开始调用提交订单服务" + url + ", 参数：" + jsonParams + ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
@@ -886,23 +886,18 @@ public class JDServiceImpl implements IJDService {
             response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                if(StringUtils.equals(jbo.getString("appcode"), ZeroToNineEnum.ONE.getCode())){
-                    returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(jbo.getString("result"));
-                }
-                returnTypeDO.setResultMessage(jbo.getString("databuffer"));
-                returnTypeDO.setResultCode(jbo.getString("resultCode"));
+                responseAck = jbo.toJavaObject(ResponseAck.class);
             }else {
-                returnTypeDO.setResultMessage("调用提交订单服务返回结果为空");
+                responseAck = new ResponseAck(ExceptionEnum.SYSTEM_BUSY, "");
             }
         }catch (Exception e){
             String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
+            responseAck = new ResponseAck(ExceptionEnum.SYSTEM_EXCEPTION, "");
         }
-        log.debug("结束调用提交订单服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+        log.debug("结束调用提交订单服务" + url + ", 返回结果：" + JSONObject.toJSON(responseAck) + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        return returnTypeDO;
+        return responseAck;
     }
 
     public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){

@@ -19,7 +19,15 @@ public class SupplierOrderInfo extends ScmDO{
 
     private String supplierCode;
 
+    /**
+     * 订单状态
+     */
     private String status;
+
+    /**
+     * 供应商订单状态
+     */
+    private String supplierOrderStatus;
 
     /**
      * 下单结果信息
@@ -172,5 +180,13 @@ public class SupplierOrderInfo extends ScmDO{
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
     }
 }

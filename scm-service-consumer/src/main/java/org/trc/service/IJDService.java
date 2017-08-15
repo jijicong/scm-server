@@ -5,7 +5,9 @@ import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.liangyou.LiangYouOrder;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
 
+import javax.xml.ws.Response;
 import java.util.List;
 
 /**
@@ -330,7 +332,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    ReturnTypeDO submitJingDongOrder(JingDongOrder jingDongOrder);
+    ResponseAck submitJingDongOrder(JingDongOrder jingDongOrder);
 
     /**
      * 提交粮油订单
@@ -338,7 +340,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    ReturnTypeDO submitLiangYouOrder(LiangYouOrder liangYouOrder);
+    ResponseAck submitLiangYouOrder(LiangYouOrder liangYouOrder);
 
 
     /**

@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
-import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.RequestFlow;
@@ -325,50 +324,71 @@ public class ScmOrderBiz implements IScmOrderBiz {
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), SupplierOrderStatusEnum.SUBMIT.getCode());
         String supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
         //调用京东下单服务接口
-        ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(jingDongOrder);
+        ResponseAck responseAck = invokeSubmitSuuplierOrder(jingDongOrder);
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
-        if(returnTypeDO.getSuccess()){
+        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SUBMIT_ORDER, responseAck, RequestFlowConstant.GYL);
+        if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
+            AssertUtil.notNull(responseAck.getData(), "调用京东下单服务返回下单结果为空");
+            OrderSubmitResult orderSubmitResult = getOrderSubmitResult(responseAck.getData().toString());
+            List<SupplierOrderReturn> supplierOrderReturnList = orderSubmitResult.getOrder();
+            AssertUtil.notEmpty(supplierOrderReturnList, "调用京东下单服务返回下单明细信息为空");
+            SupplierOrderReturn supplierOrderReturn = supplierOrderReturnList.get(0);//每次京东下单只会有一个订单
+            RequestFlowTypeEnum requestFlowTypeEnum = null;
+            if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, supplierOrderReturn.getState())){//京东商品价格不匹配
+                log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
+                responseAck = reSubmitJingDongOrder(jingDongOrder);
+                if(!StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
+                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                }
+                requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
+                //记录操作日志
+                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
+            }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, responseAck.getCode())){//京东下单余额不足
+                requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
+            }
+            //保存请求流水
+            requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
             log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         }else{
-            if(StringUtils.isNotBlank(returnTypeDO.getResultCode())){
-                RequestFlowTypeEnum requestFlowTypeEnum = null;
-                if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, returnTypeDO.getResultCode())){//京东商品价格不匹配
-                    log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
-                    returnTypeDO = reSubmitJingDongOrder(jingDongOrder);
-                    if(!returnTypeDO.getSuccess()){
-                        supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-                    }
-                    requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
-                    //记录操作日志
-                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
-                }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, returnTypeDO.getResultCode())){//京东下单余额不足
-                    requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
+            RequestFlowTypeEnum requestFlowTypeEnum = null;
+            if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, responseAck.getCode())){//京东商品价格不匹配
+                log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
+                responseAck = reSubmitJingDongOrder(jingDongOrder);
+                if(!StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
+                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
                 }
-                //保存请求流水
-                requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, returnTypeDO, RequestFlowConstant.GYL);
-            }else{
+                requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
+                //记录操作日志
+                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
+            }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, responseAck.getCode())){//京东下单余额不足
+                requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
+            }else {
                 supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-                log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
+                log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));
+            }
+            if(null != requestFlowTypeEnum){
+                //保存请求流水
+                requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
             }
         }
         //根据仓库订单下单结果更新供应商订单状态
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderStatus);
         //保存京东订单信息
-        saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, jdAddressCodes, jdAddressNames, ZeroToNineEnum.ZERO.getCode());
-        if(returnTypeDO.getSuccess()){
+        saveSupplierOrderInfo(warehouseOrder, responseAck, orderItemList, jdAddressCodes, jdAddressNames, ZeroToNineEnum.ZERO.getCode());
+        if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
             String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单成功", warehouseOrderCode);
             log.info(msg);
             appResult = ResultUtil.createSucssAppResult(msg,"");
         }else{
             String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单失败。京东下单接口返回错误信息:%s",
-                    warehouseOrderCode, returnTypeDO.getResultMessage());
+                    warehouseOrderCode, responseAck.getMessage());
             log.error(msg);
             appResult = ResultUtil.createFailAppResult(msg);
             //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER_FIALURE.getMessage(), returnTypeDO.getResultMessage(),null);
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(),
+                    LogOperationEnum.SUBMIT_ORDER_FIALURE.getMessage(), responseAck.getMessage(),null);
         }
         //下单结果通知渠道
         try{
@@ -387,9 +407,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param jingDongOrder
      * @return
      */
-    private ReturnTypeDO reSubmitJingDongOrder(JingDongOrder jingDongOrder){
-        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
-        returnTypeDO.setSuccess(false);
+    private ResponseAck reSubmitJingDongOrder(JingDongOrder jingDongOrder){
         StringBuilder sku = new StringBuilder();
         for(OrderPriceSnap orderPriceSnap: jingDongOrder.getOrderPriceSnap()){
             sku.append(orderPriceSnap.getSkuId()).append(SupplyConstants.Symbol.COMMA);
@@ -400,16 +418,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         else{
             String msg = String.format("京东订单提交数据中%s订单价格快照为空", JSON.toJSONString(jingDongOrder));
             log.error(msg);
-            returnTypeDO.setResultMessage(msg);
-            return returnTypeDO;
+            return new ResponseAck(ExceptionEnum.ORDER_PARAM_DATA_ERROR, "");
         }
         //调用京东sku价格查询接口
         ReturnTypeDO returnPrice = ijdService.getSellPrice(skus);
         if(!returnPrice.getSuccess()){
             String msg = String.format("调用京东sku价格查询服务失败,错误信息:%s", returnPrice.getResultMessage());
             log.error(msg);
-            returnTypeDO.setResultMessage(msg);
-            return returnTypeDO;
+            return new ResponseAck(ExceptionEnum.INVOKE_JD_QUERY_INTERFACE_FAIL, "");
         }
         List<SupplyItemsUpdate> supplyItemsUpdates = JSONArray.parseArray(returnPrice.getResult().toString(), SupplyItemsUpdate.class);
         //更新京东订单数据中的订单价格快照里面的sku价格
@@ -421,13 +437,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         //提交京东订单
-        returnTypeDO = invokeSubmitSuuplierOrder(jingDongOrder);
-        if(returnTypeDO.getSuccess()){
+        ResponseAck responseAck = invokeSubmitSuuplierOrder(jingDongOrder);
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
             log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
         }else{
-            log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), returnTypeDO.getResultMessage()));
+            log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));
         }
-        return returnTypeDO;
+        return responseAck;
     }
 
 
@@ -491,34 +507,34 @@ public class ScmOrderBiz implements IScmOrderBiz {
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), SupplierOrderStatusEnum.SUBMIT.getCode());
         String supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
         //调用粮油下单服务接口
-        ReturnTypeDO returnTypeDO = invokeSubmitSuuplierOrder(liangYouOrder);
+        ResponseAck responseAck = invokeSubmitSuuplierOrder(liangYouOrder);
         //保存请求流水
-        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, returnTypeDO, RequestFlowConstant.GYL);
-        if(returnTypeDO.getSuccess()){
-            log.info(returnTypeDO.getResultMessage());
+        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, responseAck, RequestFlowConstant.GYL);
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+            log.info(responseAck.getMessage());
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
         }else{
             supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-            log.error(returnTypeDO.getResultMessage());
+            log.error(responseAck.getMessage());
             //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER_FIALURE.getMessage(), returnTypeDO.getResultMessage(),null);
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER_FIALURE.getMessage(), responseAck.getMessage(),null);
         }
-        if(returnTypeDO.getSuccess()){
-            log.info(String.format("调用京东下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+            log.info(String.format("调用粮油下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
         }else{
             supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-            log.error(String.format("调用京东下单接口提交仓库订单%s失败,错误信息:%s", JSONObject.toJSON(warehouseOrder), returnTypeDO.getResultMessage()));
+            log.error(String.format("调用粮油下单接口提交仓库订单%s失败,错误信息:%s", JSONObject.toJSON(warehouseOrder), responseAck.getMessage()));
         }
         //根据仓库订单下单结果更新供应商订单状态
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderStatus);
         //保存粮油订单信息
-        saveSupplierOrderInfo(warehouseOrder, returnTypeDO, orderItemList, new String[0], new String[0], ZeroToNineEnum.ZERO.getCode());
-        if(returnTypeDO.getSuccess()){
+        saveSupplierOrderInfo(warehouseOrder, responseAck, orderItemList, new String[0], new String[0], ZeroToNineEnum.ZERO.getCode());
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
             return ResultUtil.createSucssAppResult(String.format("提交仓库级订单编码为[%s]的粮油订单下单成功", warehouseOrderCode),"");
         }else{
             String msg = String.format("提交仓库级订单编码为[%s]的粮油订单下单失败。粮油下单接口返回错误信息:%s",
-                    warehouseOrderCode, returnTypeDO.getResultMessage());
+                    warehouseOrderCode, responseAck.getMessage());
             log.error(msg);
             return ResultUtil.createFailAppResult(msg);
         }
@@ -643,38 +659,29 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      *保存供应商订单信息
      * @param warehouseOrder
-     * @param returnTypeDO
+     * @param responseAck
      * @param jdAddressCodes
      * @param jdAddressNames
      * @param flag : 0-京东订单,1-粮油订单
      */
     private void saveSupplierOrderInfo(WarehouseOrder warehouseOrder,
-        ReturnTypeDO returnTypeDO, List<OrderItem> orderItemList, String[] jdAddressCodes, String[] jdAddressNames, String flag){
+        ResponseAck responseAck, List<OrderItem> orderItemList, String[] jdAddressCodes, String[] jdAddressNames, String flag){
         List<SupplierOrderInfo> supplierOrderInfoList = new ArrayList<SupplierOrderInfo>();
-        if(returnTypeDO.getSuccess()){
-            JSONObject orderObj = null;
-            try {
-                orderObj = JSONObject.parseObject(returnTypeDO.getResult().toString());
-            } catch (ClassCastException e) {
-                String msg = String.format("调用下单服务返回结果不是JSON格式");
-                log.error(msg, e);
-                throw new OrderException(ExceptionEnum.SUBMIT_JING_DONG_ORDER, msg);
-            }
-            AssertUtil.notNull(orderObj, "调用下单服务返回结为空");
-            JSONArray orders = orderObj.getJSONArray("order");
-            for(Object order: orders){
-                JSONObject orderInfo = (JSONObject)order;
-                SupplierOrderInfo supplierOrderInfo = getSupplierOrderInfo(warehouseOrder, orderInfo, jdAddressCodes, jdAddressNames, flag);
+        if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
+            AssertUtil.notNull(responseAck.getData(), "供应商订单下单成功返回结果为空");
+            OrderSubmitResult orderSubmitResult = getOrderSubmitResult(responseAck.getData().toString());
+            List<SupplierOrderReturn> orders = orderSubmitResult.getOrder();
+            for(SupplierOrderReturn order: orders){
+                SupplierOrderInfo supplierOrderInfo = getSupplierOrderInfo(warehouseOrder, order, jdAddressCodes, jdAddressNames, flag);
                 supplierOrderInfoList.add(supplierOrderInfo);
             }
         }else{
-            log.error(String.format("调用下单服务接口失败,错误信息: %s", returnTypeDO.getResultMessage()));
-            SupplierOrderInfo supplierOrderInfo = getSupplierOrderFailureInfo(warehouseOrder, orderItemList, jdAddressCodes, jdAddressNames);
+            log.error(String.format("调用下单服务接口失败,错误信息: %s", responseAck.getMessage()));
+            SupplierOrderInfo supplierOrderInfo = getSupplierOrderFailureInfo(warehouseOrder, orderItemList, jdAddressCodes, jdAddressNames, responseAck);
             if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
                 SupplierOrderInfo supplierOrderInfo2 = new SupplierOrderInfo();
                 supplierOrderInfo2.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
                 supplierOrderInfo2 = supplierOrderInfoService.selectOne(supplierOrderInfo2);
-                supplierOrderInfo.setMessage(returnTypeDO.getResultMessage());//京东订单的错误信息包含在返回结果错误信息里面
                 if(null != supplierOrderInfo2){
                     BeanUtils.copyProperties(supplierOrderInfo, supplierOrderInfo2, "id");
                     supplierOrderInfoService.updateByPrimaryKey(supplierOrderInfo2);
@@ -688,30 +695,49 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
+     * 获取供应商下单结果
+     * @param orderResult
+     * @return
+     */
+    private OrderSubmitResult getOrderSubmitResult(String orderResult){
+        OrderSubmitResult orderSubmitResult = null;
+        try {
+            JSONObject orderObj = JSONObject.parseObject(orderResult);
+            orderSubmitResult = orderObj.toJavaObject(OrderSubmitResult.class);
+        } catch (ClassCastException e) {
+            String msg = String.format("供应商订单下单返回结果格式错误");
+            log.error(msg, e);
+            throw new OrderException(ExceptionEnum.ORDER_PARAM_DATA_ERROR, msg);
+        }
+        return orderSubmitResult;
+    }
+
+    /**
      * 获取供应商订单
      * @param warehouseOrder
-     * @param orderInfo
+     * @param supplierOrderReturn
      * @param jdAddressCodes
      * @param jdAddressNames
      * @param flag
      * @return
      */
-    private SupplierOrderInfo getSupplierOrderInfo(WarehouseOrder warehouseOrder, JSONObject orderInfo, String[] jdAddressCodes, String[] jdAddressNames, String flag){
+    private SupplierOrderInfo getSupplierOrderInfo(WarehouseOrder warehouseOrder, SupplierOrderReturn  supplierOrderReturn, String[] jdAddressCodes, String[] jdAddressNames, String flag){
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
-        String supplyOrderCode = orderInfo.getString("supplyOrderCode");//供应商订单号
-        String state = orderInfo.getString("state");//下单状态
-        JSONArray skusArray = orderInfo.getJSONArray("skus");//订单相关sku
+        String supplyOrderCode = supplierOrderReturn.getSupplyOrderCode();//供应商订单号
+        String state = supplierOrderReturn.getState();//下单状态
+        List<SkuInfo> skuInfos = supplierOrderReturn.getSkus();//订单相关sku
         supplierOrderInfo.setSupplierOrderCode(supplyOrderCode);
         supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
         if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), state)){//供应商下单接口下单成功
-            supplierOrderInfo.setStatus(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());//待发货
+            supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());//待发货
         }else{
-            supplierOrderInfo.setStatus(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode());//下单失败
-            supplierOrderInfo.setMessage(orderInfo.getString("message"));
+            supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode());//下单失败
         }
-        supplierOrderInfo.setSkus(skusArray.toJSONString());
+        supplierOrderInfo.setStatus(supplierOrderReturn.getState());
+        supplierOrderInfo.setMessage(supplierOrderReturn.getMessage());
+        supplierOrderInfo.setSkus(JSON.toJSONString(skuInfos));
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//京东订单
             setSupplierOrderInfoJdAddress(supplierOrderInfo, jdAddressCodes, jdAddressNames);
         }
@@ -725,11 +751,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItemList
      * @return
      */
-    private SupplierOrderInfo getSupplierOrderFailureInfo(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList, String[] jdAddressCodes, String[] jdAddressNames){
+    private SupplierOrderInfo getSupplierOrderFailureInfo(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList, String[] jdAddressCodes, String[] jdAddressNames, ResponseAck responseAck){
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
-        supplierOrderInfo.setStatus(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode());//下单失败
+        supplierOrderInfo.setStatus(responseAck.getCode());
+        supplierOrderInfo.setMessage(responseAck.getMessage());
+        supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode());//下单失败
         supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
         List<SkuInfo> skuInfoList = new ArrayList<SkuInfo>();
         for(OrderItem orderItem: orderItemList){
@@ -776,16 +804,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderInfo
      * @return
      */
-    private ReturnTypeDO invokeSubmitSuuplierOrder(Object orderInfo){
-        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+    private ResponseAck invokeSubmitSuuplierOrder(Object orderInfo){
+        ResponseAck responseAck = null;
         if(orderInfo instanceof JingDongOrder){
-            returnTypeDO = ijdService.submitJingDongOrder((JingDongOrder)orderInfo);
+            responseAck = ijdService.submitJingDongOrder((JingDongOrder)orderInfo);
         }else if(orderInfo instanceof LiangYouOrder){
-            returnTypeDO = ijdService.submitLiangYouOrder((LiangYouOrder)orderInfo);
-        }else{
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交订单到供应商商接口参数类型错误");
+            responseAck = ijdService.submitLiangYouOrder((LiangYouOrder)orderInfo);
         }
-        return returnTypeDO;
+        return responseAck;
     }
 
     /**
@@ -1144,13 +1170,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             SupplierOrderReturn supplierOrderReturn = new SupplierOrderReturn();
             supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo2.getSupplierOrderCode());
-            if(StringUtils.equals(SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode(), supplierOrderInfo2.getStatus())){
-                supplierOrderReturn.setState(SuccessFailureEnum.FAILURE.getCode());//失败
-                supplierOrderReturn.setErrorMsg(supplierOrderInfo2.getMessage());
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo2.getStatus())||
-                    StringUtils.equals(SupplierOrderStatusEnum.DELIVER.getCode(), supplierOrderInfo2.getStatus())){
-                supplierOrderReturn.setState(SuccessFailureEnum.SUCCESS.getCode());//成功
-            }
+            supplierOrderReturn.setState(supplierOrderInfo2.getStatus());
+            supplierOrderReturn.setMessage(supplierOrderInfo2.getMessage());
             supplierOrderReturn.setSkus(getSupplierOrderReturnSkuInfo(supplierOrderInfo2, orderItemList));
             supplierOrderReturnList.add(supplierOrderReturn);
         }
@@ -1449,7 +1470,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.COMPLETE.getCode());//未完成);//已完成
         }
         if(supplierOrderLogisticsList.size() > 0){
-            supplierOrderInfo.setStatus(SupplierOrderStatusEnum.DELIVER.getCode());//已发货
+            supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.DELIVER.getCode());//已发货
         }
         if(StringUtils.isNotBlank(supplierOrderInfo.getStatus()) || StringUtils.isNotBlank(supplierOrderInfo.getLogisticsStatus())){
             supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
