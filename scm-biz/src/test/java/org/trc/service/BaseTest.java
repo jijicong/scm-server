@@ -121,7 +121,7 @@ public abstract class BaseTest extends AbstractTransactionalJUnit4SpringContextT
         //比较查询结果集字段长度
         junit.framework.Assert.assertEquals(expData.getRowCount(), actData.getRowCount());
         DefaultColumnFilter.includedColumnsTable(actData, expData.getTableMetaData().getColumns());
-        Assertion.assertEquals(actData, expData);
+        Assertion.assertEquals(expData, actData);
     }
 
 

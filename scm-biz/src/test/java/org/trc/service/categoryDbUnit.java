@@ -10,11 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.domain.category.Category;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.TestException;
 
+import java.security.acl.Acl;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,13 +60,14 @@ public class categoryDbUnit extends BaseTest {
      */
     @Test
     public void testInsert() throws Exception {
+        AclUserAccreditInfo aclUserAccreditInfo=createAclUserAccreditInfo();
         //删除原数据
         execSql(conn,"delete from category");
         execSql(conn,"delete from serial");
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "category/preInsertCategoryData.xml");
         Category category=createCategory();
-        iCategoryBiz.saveCategory(category,null);
+        iCategoryBiz.saveCategory(category,aclUserAccreditInfo);
         // 从xml文件读取期望结果
         ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("category/expInsertCategoryData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
@@ -90,8 +93,9 @@ public class categoryDbUnit extends BaseTest {
         Category category=new Category();
         category.setId(1l);
         category.setIsValid(ValidEnum.VALID.getCode());
+        AclUserAccreditInfo aclUserAccreditInfo =createAclUserAccreditInfo();
         try{
-//            iCategoryBiz.updateState(category);
+            iCategoryBiz.updateState(category,aclUserAccreditInfo);
             throw new TestException("测试异常");
         }catch (CategoryException e){
             if(e.getExceptionEnum().equals(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION)){
@@ -101,7 +105,7 @@ public class categoryDbUnit extends BaseTest {
         //正常流程测试
         category.setId(2l);
         category.setIsValid(ValidEnum.VALID.getCode());
-//        iCategoryBiz.updateState(category,);
+        iCategoryBiz.updateState(category,aclUserAccreditInfo);
         IDataSet expDataSet=getXmlDataSet("category/expUpdateStatusData.xml");
         assertItable(TABLE_CATEGORY,"select * from category where id=2",  expDataSet.getTable("category"),conn);
         assertItable("supplier_category","select * from supplier_category where id=2", expDataSet.getTable("supplier_category"),conn);
@@ -109,7 +113,7 @@ public class categoryDbUnit extends BaseTest {
         //测试3级启用2级是否会启用
                 category.setId(3l);
         category.setIsValid(ValidEnum.NOVALID.getCode());
-//        iCategoryBiz.updateState(category);
+        iCategoryBiz.updateState(category,aclUserAccreditInfo);
         ReplacementDataSet expResult2 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("category/expUpdateStatusData2.xml"));
         expResult2.addReplacementObject("[null]", null);
         assertDataSet(TABLE_CATEGORY,"select * from category",expResult2,conn);
@@ -121,13 +125,14 @@ public class categoryDbUnit extends BaseTest {
      */
     @Test
     public void testLinkBrand()throws Exception{
+        AclUserAccreditInfo aclUserAccreditInfo=createAclUserAccreditInfo();
         //删除原数据
         execSql(conn,"delete from category");
         execSql(conn,"delete from brand");
         execSql(conn,"delete from category_brand");
         prepareData(conn, "category/preLinkBrandData.xml");
         //测试正常流程
-//        iCategoryBiz.linkCategoryBrands(3l,"2",null);
+        iCategoryBiz.linkCategoryBrands(3l,"2",null,aclUserAccreditInfo);
         // 从xml文件读取期望结果
         ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("category/expLinkBrandData.xml"));
         //测试异常流程假如id为1的brand 停用，这个时候关联会失败
@@ -135,7 +140,7 @@ public class categoryDbUnit extends BaseTest {
         assertDataSet("category_brand","select * from category_brand",expResult,conn);
         log.info("----------分类关联品牌正常流程测试通过---------");
         try{
-//            iCategoryBiz.linkCategoryBrands(3l,"1",null);
+            iCategoryBiz.linkCategoryBrands(3l,"1",null,aclUserAccreditInfo);
             throw new TestException("测试异常");
         }catch (CategoryException e){
             if(e.getExceptionEnum().equals(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION)){
@@ -170,5 +175,20 @@ public class categoryDbUnit extends BaseTest {
         category.setIsValid("1");
         category.setCreateOperator("michael");
         return category;
+    }
+
+    private AclUserAccreditInfo createAclUserAccreditInfo(){
+        AclUserAccreditInfo aclUserAccreditInfo=new AclUserAccreditInfo();
+        aclUserAccreditInfo.setChannelCode("QD001");
+        aclUserAccreditInfo.setChannelId(1L);
+        aclUserAccreditInfo.setChannelName("aaa");
+        aclUserAccreditInfo.setId(1L);
+        aclUserAccreditInfo.setName("admin");
+        aclUserAccreditInfo.setPhone("15757195796");
+        aclUserAccreditInfo.setUserId("E2E4BDAD80354EFAB6E70120C271968C");
+        aclUserAccreditInfo.setUserType("mixtureUser");
+        aclUserAccreditInfo.setIsValid("1");
+        aclUserAccreditInfo.setIsDeleted("0");
+        return aclUserAccreditInfo;
     }
 }
