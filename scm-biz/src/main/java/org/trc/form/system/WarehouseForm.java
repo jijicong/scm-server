@@ -6,7 +6,7 @@ import org.trc.util.QueryModel;
 import javax.ws.rs.QueryParam;
 
 /**
- * Query form
+ * Query trc
  * Created by sone on 2017/5/4.
  */
 public class WarehouseForm extends QueryModel{

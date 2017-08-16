@@ -182,7 +182,7 @@ public class HttpClientUtil {
         return EMPTY_STR;
     }
 
-    public static void main(String [] args){
+    public static void main(String [] args) {
 
         /*String tbUrl = "http://101.71.241.100:48080/trcloanweb/tb/";
         String userId = "6075C1290FF04488A15D4858E7CEDDE9";
@@ -190,55 +190,24 @@ public class HttpClientUtil {
         Map<String, Object> params = new HashMap();
         params.put("userId",userId);*/
 
-        String tbUrl = "http://127.0.0.1/scm-external/items/itemsUpdatePrice";
+        String tbUrl = "http://hhh.www.trc.com/trcapi/v1/noticeLogistics";
         Map<String, Object> params = new HashMap();
-        params.put("skus","231407");
+        params.put("skus", "{}");
         try {
-            System.out.println(HttpClientUtil.httpPostRequest(tbUrl,params, 10000));
+            System.out.println(HttpClientUtil.httpPostRequest(tbUrl, params, 10000));
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//        String key = "xfjghd9i9583k";
-//        String action = "JF2T";
-//        int amount = 300;
-//        String platform = "JF";
-//        String requestNo = GuidUtil.getNextUid("tb");
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("action=").append(action)
-//                .append("&amount=").append(amount)
-//                .append("&platform=").append(platform)
-//                .append("&requestNo=").append(requestNo)
-//                .append("&userId=").append(userId)
-//                .append("&key=").append(key);
-//        String sign = org.apache.commons.codec.digest.DigestUtils.md5Hex(sb.toString());
-//        String requestTime = DateUtils.formatDate(Calendar.getInstance().getTime(),"yyyy-MM-dd HH:mm:ss");
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("amount",amount);
-//        jsonObject.put("action",action);
-//        jsonObject.put("remarks","积分兑换T币");
-//        jsonObject.put("platform",platform);
-//        jsonObject.put("sign",sign);
-//        jsonObject.put("requestNo",requestNo);
-//        jsonObject.put("requestTime",requestTime);
-//        jsonObject.put("userId",userId);
-//
-//        try {
-//            System.out.println(HttpClientUtil.httpPostJsonRequest(tbUrl+userId,jsonObject.toJSONString()));
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-//        String couponsUrl = "http://172.30.248.230:8080/couponToB/api/biz/event/{eid}/checkEvent";
-//        String eid = "E001";
-//        String reqUrl = couponsUrl.replaceAll("\\{eid\\}",eid);
-//        Map<String, Object> params = new HashMap();
-//        params.put("eid",eid);
-//        try {
-//            System.out.println(HttpClientUtil.httpGetRequest(reqUrl,params));
-//        } catch (URISyntaxException e) {
-//            e.printStackTrace();
-//        }
+        /*String url = "http://hhh.www.trc.com/trcapi/v1/noticeLogistics";
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+        httpPost.setHeader("Accept", "application/json");
+        try {
+            String response = HttpClientUtil.httpPostJsonRequest(url, "{\"test\":123}", httpPost, 3000);
+            System.out.println(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
 
     }
-
 }

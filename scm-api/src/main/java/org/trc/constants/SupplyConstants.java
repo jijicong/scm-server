@@ -65,6 +65,8 @@ public class SupplyConstants {
         public static final String EXTERNALITEMSKU_LIST = "externalItemSkuList";//获取自采商品skus列表
 
         public static final String JD_LOGISTICS = "jdLogistics";//获取京东物流信息
+
+        public static final String SUPPLIER_LIST = "supplierList";//供应商分页查询
     }
 
     /**
