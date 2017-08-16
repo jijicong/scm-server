@@ -3,6 +3,7 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,14 +16,21 @@ import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Channel;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.goods.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.supplier.SupplierApplyAudit;
+import org.trc.domain.supplier.SupplierBrand;
 import org.trc.enums.*;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
 import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
@@ -32,8 +40,14 @@ import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.category.BrandService;
+import org.trc.service.impl.system.ChannelService;
+import org.trc.service.supplier.ISupplierApplyService;
+import org.trc.service.supplier.ISupplierBrandService;
+import org.trc.service.supplier.ISupplierService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -61,6 +75,16 @@ public class TrcBiz implements ITrcBiz {
     private TrcConfig trcConfig;
     @Autowired
     private IRequestFlowBiz requestFlowBiz;
+    @Autowired
+    private ISupplierService supplierService;
+    @Autowired
+    private ISupplierBrandService supplierBrandService;
+    @Autowired
+    private ISupplierApplyService supplierApplyService;
+    @Autowired
+    private ChannelService channelService;
+    @Autowired
+    private BrandService brandService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -322,7 +346,7 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendExternalItemSkuUpdation(TrcActionTypeEnum action, List<ExternalItemSku> oldExternalItemSkuList,
-               List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
+                                                     List<ExternalItemSku> externalItemSkuList, Long operateTime) throws Exception {
         AssertUtil.notEmpty(oldExternalItemSkuList, "代发商品旧更新列表不能为空");
         AssertUtil.notEmpty(externalItemSkuList, "代发商品更新列表不能为空");
         ToGlyResultDO toGlyResult = new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "同步成功");
@@ -569,6 +593,126 @@ public class TrcBiz implements ITrcBiz {
         }
     }
 
+    @Override
+    public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getSupplierName())) {//供应商名称
+            criteria.andLike("supplierName", "%" + queryModel.getSupplierName() + "%");
+        }
+        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getSupplierCode())) {//供应商编码
+            criteria.andLike("supplierCode", "%" + queryModel.getSupplierCode() + "%");
+        }
+        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getContact())) {//联系人
+            criteria.andLike("contact", "%" + queryModel.getContact() + "%");
+        }
+        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getSupplierKindCode())) {//供应商性质
+            criteria.andEqualTo("supplierKindCode", queryModel.getSupplierKindCode());
+        }
+        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getStartDate())) {//开始日期
+            criteria.andGreaterThanOrEqualTo("updateTime", DateUtils.parseDate(queryModel.getStartDate()));
+        }
+        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getEndDate())) {//截止日期
+            Date endDate = DateUtils.parseDate(queryModel.getEndDate());
+            criteria.andLessThan("updateTime", DateUtils.addDays(endDate, 1));
+        }
+        if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        example.orderBy("isValid").desc();
+        example.orderBy("updateTime").desc();
+        page = supplierService.pagination(example, page, queryModel);
+        handlerSupplierPage(page);
+        //分页查询
+        return page;
+    }
+
+
+    /**
+     * 处理供应商分页结果
+     *
+     * @param page
+     */
+    private void handlerSupplierPage(Pagenation<Supplier> page) {
+        List<String> supplierCodes = new ArrayList<String>();
+        for (Supplier s : page.getResult()) {
+            supplierCodes.add(s.getSupplierCode());
+        }
+        if (supplierCodes.size() > 0) {
+            //查询供应商品牌
+            Example example = new Example(SupplierBrand.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            criteria.andIn("supplierCode", supplierCodes);
+            List<SupplierBrand> supplierBrands = supplierBrandService.selectByExample(example);
+            if(CollectionUtils.isEmpty(supplierBrands)){
+                logger.error(String.format("根据供应商编码[%s]查询供应商品牌为空",
+                        CommonUtil.converCollectionToString(supplierCodes)));
+            }
+            //查询供应商渠道
+            Example example2 = new Example(SupplierApplyAudit.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+            criteria2.andIn("supplierCode", supplierCodes);
+            criteria2.andEqualTo("status", AuditStatusEnum.PASS.getCode());//审核通过
+            List<SupplierApply> supplierChannels = supplierApplyService.selectByExample(example2);
+            for (Supplier s : page.getResult()) {
+                if (supplierChannels.size() > 0) {
+                    //设置渠道名称
+                    setChannelName(s, supplierChannels);
+                }
+                //设置品牌名称
+                setBrandName(s, supplierBrands);
+            }
+        }
+    }
+    /**
+     * 设置渠道名称
+     *
+     * @param supplier
+     * @param supplierChannels
+     */
+    private void setChannelName(Supplier supplier, List<SupplierApply> supplierChannels) {
+        String _channels = "";
+        for (SupplierApply supplierApplyAudit : supplierChannels) {
+            if (StringUtils.equals(supplier.getSupplierCode(), supplierApplyAudit.getSupplierCode())) {
+                Channel channel = new Channel();
+                channel.setCode(supplierApplyAudit.getChannelCode());
+                channel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                channel = channelService.selectOne(channel);
+                AssertUtil.notNull(channel, String.format("根据渠道编码[%s]查询渠道信息为空", supplierApplyAudit.getChannelCode()));
+                _channels = _channels + channel.getName() + ",";
+            }
+        }
+        if (_channels.length() > 0) {
+            _channels = _channels.substring(0, _channels.length() - 1);
+            supplier.setChannelName(_channels);
+        }
+    }
+
+    /**
+     * 设置代理品牌名称
+     *
+     * @param supplier
+     * @param supplierBrands
+     */
+    private void setBrandName(Supplier supplier, List<SupplierBrand> supplierBrands) {
+        String _brands = "";
+        for (SupplierBrand supplierBrand : supplierBrands) {
+            if (StringUtils.equals(supplier.getSupplierCode(), supplierBrand.getSupplierCode())) {
+                Brand brand = new Brand();
+                brand.setBrandCode(supplierBrand.getBrandCode());
+                brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                brand = brandService.selectOne(brand);
+                AssertUtil.notNull(brand, String.format("根据品牌编码[%s]查询品牌信息为空", supplierBrand.getSupplierCode()));
+                _brands = _brands + brand.getName() + ",";
+            }
+        }
+        if (_brands.length() > 0) {
+            _brands = _brands.substring(0, _brands.length() - 1);
+            supplier.setBrandName(_brands);
+        }
+    }
 
     //发送分类属性改动
     public ToGlyResultDO sendCategoryPropertyList(TrcActionTypeEnum action, List<CategoryProperty> categoryPropertyList, long operateTime) throws Exception {

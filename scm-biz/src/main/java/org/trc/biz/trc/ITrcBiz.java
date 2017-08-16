@@ -3,8 +3,11 @@ package org.trc.biz.trc;
 import com.alibaba.fastjson.JSONArray;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.supplier.Supplier;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 
@@ -102,4 +105,14 @@ public interface ITrcBiz {
     Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception;
 
     void updateRelation(String action, JSONArray relations) throws Exception;
+
+    /**
+     * 供应商分页查询
+     * @param page
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception;
+
 }

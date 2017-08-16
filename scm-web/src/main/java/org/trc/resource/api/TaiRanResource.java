@@ -18,6 +18,8 @@ import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
+import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.BrandException;
@@ -28,10 +30,13 @@ import org.trc.form.category.PropertyForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.util.*;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +68,7 @@ public class TaiRanResource {
     @Resource
     private IGoodsBiz goodsBiz;
 
+
     /**
      * 分页查询品牌
      *
@@ -77,6 +83,20 @@ public class TaiRanResource {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "品牌查询成功", brandBiz.brandList(form, page));
     }
 
+    /**
+     * 供应商分页查询
+     * @param page
+     * @param requestContext
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.TaiRan.SUPPLIER_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page, @Context ContainerRequestContext requestContext, @BeanParam SupplierForm form) throws Exception {
+        return trcBiz.supplierPage(form,page);
+    }
     /**
      * 分页查询属性
      *
