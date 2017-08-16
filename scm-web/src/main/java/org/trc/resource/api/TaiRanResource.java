@@ -61,13 +61,9 @@ public class TaiRanResource {
     @Resource
     private ITrcBiz trcBiz;
     @Resource
-    private ISkuBiz skuBiz;
-    @Resource
     private ISkuRelationBiz skuRelationBiz;
     @Resource
     private IScmOrderBiz scmOrderBiz;
-    @Resource
-    private IGoodsBiz goodsBiz;
 
 
     /**
@@ -95,8 +91,14 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SUPPLIER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page, @Context ContainerRequestContext requestContext, @BeanParam SupplierForm form) throws Exception {
-        return trcBiz.supplierPage(form,page);
+    public ResponseAck<Pagenation<Supplier>> supplierPage(@BeanParam Pagenation<Supplier> page, @Context ContainerRequestContext requestContext, @BeanParam SupplierForm form) throws Exception {
+        try {
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "供应商分页查询成功", trcBiz.supplierPage(form,page));
+        } catch (Exception e) {
+            logger.error("供应商分页查询报错: " + e.getMessage());
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("供应商分页查询报错,%s", e.getMessage()), "");
+        }
     }
     /**
      * 分页查询属性
@@ -221,8 +223,14 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.ITEM_LIST)
     @Produces("application/json;charset=utf-8")
-    public Pagenation<Items> itemList(@BeanParam ItemsForm2 form, @BeanParam Pagenation<Items> page) throws Exception {
-        return trcBiz.itemsPage(form, page);
+    public ResponseAck<Pagenation<Items>> itemList(@BeanParam ItemsForm2 form, @BeanParam Pagenation<Items> page) throws Exception {
+        try {
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page));
+        } catch (Exception e) {
+            logger.error("自采商品查询报错: " + e.getMessage());
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("自采商品查询报错,%s", e.getMessage()), "");
+        }
     }
 
 
