@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.JingDongEnum;
+import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
@@ -19,6 +20,7 @@ import org.trc.form.liangyou.LiangYouOrder;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -890,6 +892,10 @@ public class JDServiceImpl implements IJDService {
             }else {
                 responseAck = new ResponseAck(ExceptionEnum.SYSTEM_BUSY, "");
             }
+        }catch (IOException e){
+            String msg = String.format("调用提交订单服务网络超时,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            responseAck = new ResponseAck(ExceptionEnum.REMOTE_INVOKE_TIMEOUT_EXCEPTION, "");
         }catch (Exception e){
             String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);

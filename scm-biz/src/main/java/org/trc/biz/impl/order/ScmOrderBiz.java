@@ -3,7 +3,6 @@ package org.trc.biz.impl.order;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +20,7 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.System.LogisticsCompany;
+import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -41,6 +41,7 @@ import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
+import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.order.*;
@@ -118,6 +119,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IRequestFlowService requestFlowService;
     @Autowired
     private TrcConfig trcConfig;
+    @Autowired
+    private ISystemConfigService systemConfigService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -690,9 +693,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else{
             log.error(String.format("调用下单服务接口失败,错误信息: %s", responseAck.getMessage()));
             SupplierOrderInfo supplierOrderInfo = getSupplierOrderFailureInfo(warehouseOrder, orderItemList, jdAddressCodes, jdAddressNames, responseAck);
-            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
-                newSupplierOrderInfoList.add(supplierOrderInfo);
-            }
+            newSupplierOrderInfoList.add(supplierOrderInfo);
         }
         if(newSupplierOrderInfoList.size() > 0)
             supplierOrderInfoService.insertList(newSupplierOrderInfoList);
@@ -1912,12 +1913,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
+     * 校验渠道
+     * @param channelCode
+     */
+    private void checkChannel(String channelCode){
+        SystemConfig systemConfig = new SystemConfig();
+        systemConfig.setType(SupplyConstants.SystemConfigType.CHANNEL);
+        systemConfig.setCode(channelCode);
+        List<SystemConfig> systemConfigList = systemConfigService.select(systemConfig);
+        AssertUtil.notEmpty(systemConfigList, "不是供应链授权访问的渠道，非法访问");
+    }
+
+    /**
      * 平台订单校验
      *
      * @param platformOrder
      */
     private void platformOrderParamCheck(PlatformOrder platformOrder) {
         AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
+        checkChannel(platformOrder.getChannelCode());
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
         AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
