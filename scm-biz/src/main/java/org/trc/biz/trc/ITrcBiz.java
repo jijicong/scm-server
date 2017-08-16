@@ -11,9 +11,11 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.ItemsForm2;
+import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.BeanParam;
 import java.util.Date;
 import java.util.List;
 
@@ -103,7 +105,6 @@ public interface ITrcBiz {
     //添加流水
     void addRequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime, String remark) throws Exception;
 
-
     /**
      *
      */
@@ -140,5 +141,14 @@ public interface ITrcBiz {
 
 
 
+
+    /**
+     * for channel's propertyPage
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Property> propertyPage(PropertyFormForTrc form,  Pagenation<Property> page) throws Exception;
 
 }

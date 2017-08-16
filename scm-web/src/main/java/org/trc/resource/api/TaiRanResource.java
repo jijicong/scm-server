@@ -32,6 +32,7 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.ItemsForm2;
+import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.util.*;
 
 import javax.annotation.Resource;
@@ -108,8 +109,15 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Property>> queryProperty(@BeanParam PropertyForm form, @BeanParam Pagenation<Property> page) throws Exception{
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", propertyBiz.propertyPage(form, page));
+    public ResponseAck<Pagenation<Property>> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page){
+        try {
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
+        } catch (Exception e) {
+            logger.error("查询查询列表信息报错: " + e.getMessage());
+            String code = ExceptionUtil.getErrorInfo(e);
+            return new ResponseAck(code, String.format("查询查询列表信息报错,%s", e.getMessage()), "");
+        }
+
     }
 
     /**
