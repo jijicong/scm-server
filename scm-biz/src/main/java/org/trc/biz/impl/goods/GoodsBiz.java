@@ -140,7 +140,14 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        handlerSkuCondition(criteria, queryModel.getSkuCode(), queryModel.getSpuCode());
+        List<String> spuCodes = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode());
+        if(null != spuCodes){//根据SPU或者SKU来查询
+            if(spuCodes.size() == 0){
+                return page;
+            }else{
+                criteria.andIn("spuCode", spuCodes);
+            }
+        }
         if (null != queryModel.getCategoryId()) {//商品所属分类ID
             criteria.andEqualTo("categoryId", queryModel.getCategoryId());
         }
@@ -312,9 +319,10 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
 
-    private void handlerSkuCondition(Example.Criteria criteria, String skuCode, String spuCode){
-        List<String> spuCodes = new ArrayList<String>();
+    private List<String> handlerSkuCondition(String skuCode, String spuCode){
+        List<String> spuCodes = null;
         if(StringUtils.isNotBlank(spuCode)){
+            spuCodes = new ArrayList<String>();
             Example example = new Example(Items.class);
             Example.Criteria criteria2 = example.createCriteria();
             criteria2.andLike("spuCode", "%" + spuCode + "%");
@@ -324,6 +332,8 @@ public class GoodsBiz implements IGoodsBiz {
             }
         }
         if(StringUtils.isNotBlank(skuCode)){
+            if(null == spuCodes)
+                spuCodes = new ArrayList<String>();
             Example example = new Example(Skus.class);
             Example.Criteria criteria2 = example.createCriteria();
             criteria2.andLike("skuCode", "%" + skuCode + "%");
@@ -334,9 +344,7 @@ public class GoodsBiz implements IGoodsBiz {
                 }
             }
         }
-        if(spuCodes.size() > 0){
-            criteria.andIn("spuCode", spuCodes);
-        }
+        return spuCodes;
     }
 
     private void handerPage(Pagenation<Items> page){
@@ -1665,7 +1673,7 @@ public class GoodsBiz implements IGoodsBiz {
         ReturnTypeDO<Pagenation<SupplyItemsExt>> returnTypeDO = jdService.skuPage(supplyItems2, page);
         if(!returnTypeDO.getSuccess()){
             log.error(returnTypeDO.getResultMessage());
-            throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_QUERY_EXCEPTION, returnTypeDO.getResultMessage());
+            return page;
         }
         page = returnTypeDO.getResult();
         setOutSupplierName(page.getResult());
