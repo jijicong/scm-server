@@ -6,7 +6,6 @@ import java.io.Serializable;
 /**
  *用户封装属性值的信息
  */
-@Table(name = "property_value")
 public class PropertyValueForTrc implements Serializable {
 
     private Long propertyId;

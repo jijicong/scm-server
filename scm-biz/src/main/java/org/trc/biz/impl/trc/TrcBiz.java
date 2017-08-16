@@ -20,6 +20,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
+import org.trc.domain.forTrc.PropertyValueForTrc;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
@@ -43,6 +44,7 @@ import org.trc.model.PropertyToTrcDO;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
 import org.trc.service.category.IPropertyService;
+import org.trc.service.category.IPropertyValueService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.IItemsService;
@@ -83,6 +85,8 @@ public class TrcBiz implements ITrcBiz {
     private TrcConfig trcConfig;
     @Autowired
     private IPropertyService propertyService;
+    @Autowired
+    private IPropertyValueService propertyValueService;
     @Autowired
     private IRequestFlowBiz requestFlowBiz;
     @Autowired
@@ -938,12 +942,35 @@ public class TrcBiz implements ITrcBiz {
         page = propertyService.pagination(example, page, queryModel);
         List<Property> list = page.getResult();
         for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
-            property.setCreateOperator(null);
-            Long propertyId = property.getId();
+            endowPropertyValue(property);
         }
         page.setResult(list);
         return page;
     }
+
+    //为属性赋予属性值
+    private void endowPropertyValue(Property property ){
+
+        property.setCreateOperator(null);
+        List<PropertyValueForTrc> propertyValueForTrcs = new ArrayList<PropertyValueForTrc>();
+        PropertyValue propertyValue = new PropertyValue();
+        propertyValue.setPropertyId(property.getId());
+        List<PropertyValue> propertyValueList = propertyValueService.select(propertyValue);
+        for (PropertyValue pv : propertyValueList) {
+            PropertyValueForTrc propertyValueForTrc = new PropertyValueForTrc();
+            propertyValueForTrc.setIsDeleted(pv.getIsDeleted());
+            propertyValueForTrc.setIsValid(pv.getIsValid());
+            propertyValueForTrc.setPicture(pv.getPicture());
+            propertyValueForTrc.setPropertyId(pv.getPropertyId());
+            propertyValueForTrc.setSort(pv.getSort());
+            propertyValueForTrc.setValue(pv.getValue());
+            propertyValueForTrcs.add(propertyValueForTrc);
+        }
+        property.setPropertyValueList(propertyValueForTrcs);
+
+    }
+
+
     //校验属性id
     private void verifyPropertyId(Example.Criteria criteria,String propertyIds) throws ParamValidException{
         String propertyIdStr = propertyIds;

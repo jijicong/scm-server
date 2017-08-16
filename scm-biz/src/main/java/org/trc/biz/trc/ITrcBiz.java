@@ -138,10 +138,6 @@ public interface ITrcBiz {
      */
     Pagenation<Items> itemsPage(ItemsForm2 form, Pagenation<Items> page);
 
-
-
-
-
     /**
      * for channel's propertyPage
      * @param form
