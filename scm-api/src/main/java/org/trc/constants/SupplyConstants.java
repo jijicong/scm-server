@@ -846,6 +846,14 @@ public class SupplyConstants {
 
     }
 
+    /**
+     * 系统配置类型
+     */
+    public static final class SystemConfigType{
+        //对接供应链渠道类型编码
+        public final static String CHANNEL = "channel";
+    }
+
 
 
 
