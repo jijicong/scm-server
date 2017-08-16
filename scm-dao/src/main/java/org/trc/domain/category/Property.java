@@ -3,6 +3,7 @@ package org.trc.domain.category;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.BaseDO;
+import org.trc.domain.forTrc.PropertyValueForTrc;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,6 +12,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.util.List;
 
 public class Property extends BaseDO {
 
@@ -38,6 +40,16 @@ public class Property extends BaseDO {
     @FormParam("gridValue")
     private String gridValue;
     private String lastEditOperator;//最新更新人
+    @Transient
+    private List<PropertyValueForTrc> propertyValueList;
+
+    public List<PropertyValueForTrc> getPropertyValueList() {
+        return propertyValueList;
+    }
+
+    public void setPropertyValueList(List<PropertyValueForTrc> propertyValueList) {
+        this.propertyValueList = propertyValueList;
+    }
 
     public Long getId() {
         return id;
