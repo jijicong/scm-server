@@ -154,25 +154,25 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     }
     //设置查询条件
-    /*private Example setCriterias(WarehouseNoticeForm form){
+    /*private Example setCriterias(WarehouseNoticeForm trc){
         Example example  = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
-        if(StringUtils.isNotBlank(form.getWarehouseNoticeCode())){
-            criteria.andLike("warehouseNoticeCode",form.getWarehouseNoticeCode());
+        if(StringUtils.isNotBlank(trc.getWarehouseNoticeCode())){
+            criteria.andLike("warehouseNoticeCode",trc.getWarehouseNoticeCode());
         }
-        if(StringUtils.isNotBlank(form.getPurchaseOrderCode())){
-            criteria.andLike("purchaseOrderCode",form.getPurchaseOrderCode());
+        if(StringUtils.isNotBlank(trc.getPurchaseOrderCode())){
+            criteria.andLike("purchaseOrderCode",trc.getPurchaseOrderCode());
         }
-        if(StringUtils.isNotBlank(form.getPurchaseType())){
-            criteria.andEqualTo("purchaseType",form.getPurchaseType());
+        if(StringUtils.isNotBlank(trc.getPurchaseType())){
+            criteria.andEqualTo("purchaseType",trc.getPurchaseType());
         }
-        if(StringUtils.isNotBlank(form.getWarehouseNoticeStatus())){
-            criteria.andEqualTo("status",form.getWarehouseNoticeStatus());
+        if(StringUtils.isNotBlank(trc.getWarehouseNoticeStatus())){
+            criteria.andEqualTo("status",trc.getWarehouseNoticeStatus());
         }
-        if(StringUtils.isNotBlank(form.getSupplierName())){
+        if(StringUtils.isNotBlank(trc.getSupplierName())){
             Example example2  = new Example(WarehouseNotice.class);
             Example.Criteria criteria2 = example2.createCriteria();
-            criteria2.andLike("supplierName",form.getSupplierName());
+            criteria2.andLike("supplierName",trc.getSupplierName());
             List<Supplier> suppliers = iSupplierService.selectByExample(example);
             if(!CollectionUtils.isEmpty(suppliers)){
                 List<String> supplierCodes = new ArrayList<String>();
@@ -184,22 +184,22 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 return null;
             }
         }
-        if (!StringUtils.isBlank(form.getStartDate())) {
-            criteria.andGreaterThan("updateTime", form.getStartDate());
+        if (!StringUtils.isBlank(trc.getStartDate())) {
+            criteria.andGreaterThan("updateTime", trc.getStartDate());
         }
-        if (!StringUtils.isBlank(form.getEndDate())) {
+        if (!StringUtils.isBlank(trc.getEndDate())) {
             SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.NORMAL_DATE_FORMAT);
             Date date = null;
             try {
-                date = sdf.parse(form.getEndDate());
+                date = sdf.parse(trc.getEndDate());
             }catch (ParseException e){
                 String msg = "采购订单列表查询,截止日期的格式不正确";
                 logger.error(msg);
                 throw  new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_QUERY_EXCEPTION,msg);
             }
             date =DateUtils.addDays(date,2);
-            form.setEndDate(sdf.format(date));
-            criteria.andLessThan("updateTime", form.getEndDate());
+            trc.setEndDate(sdf.format(date));
+            criteria.andLessThan("updateTime", trc.getEndDate());
         }
         return example;
     }*/

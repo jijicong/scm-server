@@ -28,15 +28,6 @@ public interface IGoodsBiz {
     Pagenation<Items> itemsPage(ItemsForm form, Pagenation<Items> page) throws Exception;
 
     /**
-     * 商品分页查询(供渠道调用)
-     * @param form
-     * @param page
-     * @return
-     * @throws Exception
-     */
-    Pagenation<Items> itemsPageForChannel(ItemsForm form, Pagenation<Items> page) throws Exception;
-
-    /**
      * 商品SKU分页查询
      * @param form
      * @return

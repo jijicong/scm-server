@@ -99,7 +99,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
+    @Cacheable(key="#trc.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
     public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
         AssertUtil.notBlank(channelCode,"未获得授权");

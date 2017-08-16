@@ -31,6 +31,7 @@ import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.trc.ItemsForm2;
 import org.trc.util.*;
 
 import javax.annotation.Resource;
@@ -220,8 +221,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.ITEM_LIST)
     @Produces("application/json;charset=utf-8")
-    public Pagenation<Items> itemList(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
-        return goodsBiz.itemsPage(form, page);
+    public Pagenation<Items> itemList(@BeanParam ItemsForm2 form, @BeanParam Pagenation<Items> page) throws Exception {
+        return trcBiz.itemsPage(form, page);
     }
 
 
@@ -231,7 +232,7 @@ public class TaiRanResource {
     @Produces("application/json;charset=utf-8")
     public ResponseAck<Pagenation<Skus>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
-            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", skuBiz.skusPage(skusForm, pagenation));
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
             logger.error("查询sku列表信息报错: " + e.getMessage());
             String code = ExceptionUtil.getErrorInfo(e);

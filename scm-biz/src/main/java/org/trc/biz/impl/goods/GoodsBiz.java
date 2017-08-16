@@ -158,31 +158,6 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<Items> itemsPageForChannel(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
-        Example example = new Example(Items.class);
-        Example.Criteria criteria = example.createCriteria();
-        if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
-            criteria.andLike("name", "%" + queryModel.getName() + "%");
-        }
-        handlerSkuCondition(criteria, queryModel.getSkuCode(), queryModel.getSpuCode());
-        if (null != queryModel.getCategoryId()) {//商品所属分类ID
-            criteria.andEqualTo("categoryId", queryModel.getCategoryId());
-        }
-        if (null != queryModel.getBrandId()) {//商品所属品牌ID
-            criteria.andEqualTo("brandId", queryModel.getBrandId());
-        }
-        if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
-            criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
-        example.orderBy("updateTime").desc();
-        page = itemsService.pagination(example, page, queryModel);
-        handerPage(page);
-        //分页查询
-        return page;
-    }
-
-    @Override
     @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
@@ -1655,7 +1630,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()",isList=true)
+    @Cacheable(key="#trc.toString()",isList=true)
     public List<ExternalItemSku> queryExternalItems(ExternalItemSkuForm form) {
         AssertUtil.notNull(form, "查询代发商品参数不能为空");
         ExternalItemSku externalItemSku = new ExternalItemSku();
@@ -1928,6 +1903,16 @@ public class GoodsBiz implements IGoodsBiz {
                 }else if(StringUtils.equals(externalItemSku.getSupplierCode(), LY_SUPPLIER_CODE)){
                     externalItemSku.setWarehouse(externalSupplierConfig.getLyWarehouse());//粮油仓库
                 }
+                externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(items.getSupplyPrice()));
+                externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(items.getSupplierPrice()));
+                externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(items.getMarketPrice()));
+            }else{
+                if(null != items.getSupplyPrice())
+                    externalItemSku.setSupplyPrice(items.getSupplyPrice().longValue());
+                if(null != items.getSupplierPrice())
+                    externalItemSku.setSupplierPrice(items.getSupplierPrice().longValue());
+                if(null != items.getMarketPrice())
+                    externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());
             }
             externalItemSku.setSupplierCode(items.getSupplierCode());
             externalItemSku.setSupplierName(items.getSupplyName());
@@ -1936,15 +1921,6 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setCategory(items.getCategory());
             externalItemSku.setCategoryName(items.getCategoryName());
             externalItemSku.setBarCode(items.getUpc());
-            /*externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(items.getSupplyPrice()));
-            externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(items.getSupplierPrice()));
-            externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(items.getMarketPrice()));*/
-            if(null != items.getSupplyPrice())
-                externalItemSku.setSupplyPrice(items.getSupplyPrice().longValue());
-            if(null != items.getSupplierPrice())
-                externalItemSku.setSupplierPrice(items.getSupplierPrice().longValue());
-            if(null != items.getMarketPrice())
-                externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());
