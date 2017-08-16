@@ -238,6 +238,11 @@ INSERT INTO `acl_resource`  VALUES ('197', '202010106', '供应商分类查询',
 INSERT INTO `acl_resource`  VALUES ('198', '202010107', '供应商品牌查询', 'supplier/supplierBrands', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:09:59', '2017-08-04 17:09:59');
 INSERT INTO `acl_resource`  VALUES ('199', '202010108', '渠道列表查询', 'system/channels', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:10:32', '2017-08-04 17:10:32');
 INSERT INTO `acl_resource`  VALUES ('200', '203020104', '供应商列表查询', 'supplier/suppliers', 'GET', '20302', '2', '0', 'admin', '0', '2017-08-04 17:12:03', '2017-08-04 17:12:03');
+INSERT INTO `acl_resource`  VALUES ('201', '202020107', '采购人员查询', 'accredit/purchase', 'GET', '20202', '2', '1', 'admin', '0', '2017-08-05 15:44:12', '2017-08-05 15:43:34');
+INSERT INTO `acl_resource`  VALUES ('202', '201010106', '分类查询', 'category/categorys', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:35:21', '2017-08-11 20:35:21');
+INSERT INTO `acl_resource`  VALUES ('203', '201010107', '查询指定分类品牌', 'category/brand/[1-9]\\d*$', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:36:54', '2017-08-11 20:37:10');
+INSERT INTO `acl_resource`  VALUES ('204', '201010108', '分类品牌查询2', 'category/categoryBrands', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:43:09', '2017-08-11 20:43:09');
+INSERT INTO `acl_resource`  VALUES ('205', '201010109', '代发商品列表查询', 'goods/externalItemSkus', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-12 12:16:46', '2017-08-12 12:16:46');
 
 
 -- ----------------------------
