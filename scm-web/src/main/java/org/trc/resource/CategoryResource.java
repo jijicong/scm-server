@@ -208,7 +208,7 @@ public class CategoryResource {
 
   /*  @POST
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_LINK + "/{id}")
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes("application/x-www-trc-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult linkCategoryProperty(@PathParam("id") Long id, @FormParam("propertyId") Long propertyId) throws Exception {
         categoryBiz.linkCategoryProperty(id, propertyId);

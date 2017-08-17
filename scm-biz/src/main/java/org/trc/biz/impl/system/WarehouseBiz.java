@@ -78,7 +78,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
 
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#trc.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) {
 
         Example example = new Example(Warehouse.class);

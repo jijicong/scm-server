@@ -7,10 +7,15 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.TrcActionTypeEnum;
 import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.trc.ItemsForm2;
+import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.model.ToGlyResultDO;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.BeanParam;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +24,8 @@ import java.util.List;
  * Created by hzdzf on 2017/6/7.
  */
 public interface ITrcBiz {
+
+
 
     /**
      * @param action      行为
@@ -98,7 +105,6 @@ public interface ITrcBiz {
     //添加流水
     void addRequestFlow(String requester, String responder, String type, String requestNum, String status, String requestParam, String responseParam, Date requestTime, String remark) throws Exception;
 
-
     /**
      *
      */
@@ -109,10 +115,40 @@ public interface ITrcBiz {
     /**
      * 供应商分页查询
      * @param page
-     * @param form
+     * @param queryModel
      * @return
      * @throws Exception
      */
     Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception;
+
+    /**
+     * 自采商品SKU查询
+     * @param form
+     * @param page
+     * @return
+     */
+    Pagenation<Skus> skusPage(SkusForm form, Pagenation<Skus> page);
+
+    /**
+     * 自采商品分页查询
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Items> itemsPage(ItemsForm2 form, Pagenation<Items> page);
+
+
+
+
+
+    /**
+     * for channel's propertyPage
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Property> propertyPage(PropertyFormForTrc form,  Pagenation<Property> page) throws Exception;
 
 }

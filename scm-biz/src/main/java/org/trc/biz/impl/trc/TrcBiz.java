@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
+import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
@@ -26,18 +27,25 @@ import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
 import org.trc.enums.*;
+import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
 import org.trc.form.goods.ExternalItemSkuForm;
+import org.trc.form.goods.ItemsForm;
+import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.trcForm.PropertyFormForTrc;
+import org.trc.form.trc.ItemsForm2;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
+import org.trc.service.category.IPropertyService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.category.BrandService;
@@ -74,6 +82,8 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private TrcConfig trcConfig;
     @Autowired
+    private IPropertyService propertyService;
+    @Autowired
     private IRequestFlowBiz requestFlowBiz;
     @Autowired
     private ISupplierService supplierService;
@@ -85,6 +95,8 @@ public class TrcBiz implements ITrcBiz {
     private ChannelService channelService;
     @Autowired
     private BrandService brandService;
+    @Autowired
+    private IItemsService itemsService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -627,6 +639,40 @@ public class TrcBiz implements ITrcBiz {
         return page;
     }
 
+    @Override
+    public Pagenation<Skus> skusPage(SkusForm form, Pagenation<Skus> page) {
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSpuCode())){
+            criteria.andEqualTo("spuCode",form.getSpuCode());
+        }
+        if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSkuCode())){
+            criteria.andEqualTo("skuCode",form.getSkuCode());
+        }
+        example.orderBy("spuCode").desc();
+        return skusService.pagination(example,page,form);
+    }
+
+    @Override
+    public Pagenation<Items> itemsPage(ItemsForm2 queryModel, Pagenation<Items> page){
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (null != queryModel.getCategoryId()) {//商品所属分类ID
+            criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+        }
+        if (null != queryModel.getBrandId()) {//商品所属品牌ID
+            criteria.andEqualTo("brandId", queryModel.getBrandId());
+        }
+        if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        example.orderBy("updateTime").desc();
+        return itemsService.pagination(example, page, queryModel);
+    }
+
 
     /**
      * 处理供应商分页结果
@@ -867,5 +913,55 @@ public class TrcBiz implements ITrcBiz {
         }
         return toGlyResultDO;
     }
+
+    @Override
+    public Pagenation<Property> propertyPage(PropertyFormForTrc queryModel, Pagenation<Property> page) throws Exception {
+        Example example = new Example(Property.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(!StringUtils.isBlank(queryModel.getPropertyId())){
+            verifyPropertyId(criteria,queryModel.getPropertyId());
+        }
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (!StringUtils.isBlank(queryModel.getTypeCode())) {
+            criteria.andEqualTo("typeCode", queryModel.getTypeCode());
+        }
+        if (!StringUtils.isBlank(queryModel.getSort())) {
+            criteria.andEqualTo("sort", queryModel.getSort());
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        example.orderBy("sort").asc();
+        example.orderBy("updateTime").desc();
+        page = propertyService.pagination(example, page, queryModel);
+        List<Property> list = page.getResult();
+        for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
+            property.setCreateOperator(null);
+            Long propertyId = property.getId();
+        }
+        page.setResult(list);
+        return page;
+    }
+    //校验属性id
+    private void verifyPropertyId(Example.Criteria criteria,String propertyIds) throws ParamValidException{
+        String propertyIdStr = propertyIds;
+        String[] propertyIdStrs = StringUtils.split(propertyIdStr,",");
+        if(propertyIdStrs.length > 0){
+            //校验传入的值是否能转化成Long类型
+            try {
+                for (String propertyId : propertyIdStrs) {
+                    Long.parseLong(propertyId);
+                }
+            }catch (NumberFormatException e){ //捕获到这个异常，说明调用方传入数据不合理
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "属性id:参数格式错误!");
+            }
+            criteria.andIn("id",Arrays.asList(propertyIdStrs));
+        }
+    }
+
+
+
 
 }
