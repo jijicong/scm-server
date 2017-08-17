@@ -1378,6 +1378,7 @@ create table shop_order
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    consign_time         timestamp null default NULL comment '发货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   pay_time             timestamp not null COMMENT '付款时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 

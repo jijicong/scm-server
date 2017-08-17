@@ -1,7 +1,9 @@
 package org.trc.domain.order;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -174,6 +176,11 @@ public class ShopOrder extends OrderBase {
     // 订单总税费,单位/分
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal totalTax;
+
+    // 支付时间
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @NotEmpty
+    private Date payTime;
 
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
     @NotEmpty
@@ -745,5 +752,15 @@ public class ShopOrder extends OrderBase {
      */
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    @Override
+    public Date getPayTime() {
+        return payTime;
+    }
+
+    @Override
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
     }
 }
