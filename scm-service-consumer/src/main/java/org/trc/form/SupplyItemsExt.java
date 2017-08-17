@@ -24,6 +24,7 @@ public class SupplyItemsExt {
     private String state;//上下架状态
     private String introduction;//商品详情文本
     private String imagePath;//商品主图地址
+    private String detailImagePath;//商品详情图
     private String skuName;//商品名称
     private String isUsed;//是否已经使用
     private String isValid; //是否有效:0-否,1-是
@@ -239,5 +240,13 @@ public class SupplyItemsExt {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public String getDetailImagePath() {
+        return detailImagePath;
+    }
+
+    public void setDetailImagePath(String detailImagePath) {
+        this.detailImagePath = detailImagePath;
     }
 }

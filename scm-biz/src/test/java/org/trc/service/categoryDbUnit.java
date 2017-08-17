@@ -159,7 +159,7 @@ public class categoryDbUnit extends BaseTest {
     public void exportData() throws Exception {
         List<String> tableNameList = new ArrayList<>();
         tableNameList.add("supplier_category");
-        exportData(tableNameList, "supplier_category");
+        exportData(tableNameList, "expInsertSupplierCategoryData.xml");
     }
 
     /**，

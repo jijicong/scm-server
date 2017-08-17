@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.config.IConfigBiz;
@@ -10,12 +11,14 @@ import org.trc.form.config.DictForm;
 import org.trc.form.config.DictTypeForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -38,17 +41,17 @@ public class ConfigResource {
     @GET
     @Path(SupplyConstants.Config.DictType.DICT_TYPE_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<DictType>> queryDictTypes(@BeanParam DictTypeForm dictTypeForm) throws Exception {
-        return ResultUtil.createSucssAppResult("查询字典类型列表成功", configBiz.queryDictTypes(dictTypeForm));
+    public ResponseAck<List<DictType>> queryDictTypes(@BeanParam DictTypeForm dictTypeForm) throws Exception {
+        return new ResponseAck<List<DictType>>(ResponseAck.SUCCESS_CODE,"查询字典类型列表成功", configBiz.queryDictTypes(dictTypeForm));
     }
 
     @POST
     @Path(SupplyConstants.Config.DictType.DICT_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveDictType(@BeanParam DictType dictType, @Context ContainerRequestContext requestContext) throws Exception {
+    public ResponseAck saveDictType(@BeanParam DictType dictType, @Context ContainerRequestContext requestContext) throws Exception {
         configBiz.saveDictType(dictType);
-        return ResultUtil.createSucssAppResult("保存字典类型成功", "");
+        return new ResponseAck(ResponseAck.SUCCESS_CODE,"保存字典类型成功", "");
     }
 
     @PUT
@@ -133,5 +136,9 @@ public class ConfigResource {
         return ResultUtil.createSucssAppResult("删除字典成功", "");
     }
 
+    public static void main(String[] args){
+        Response response = Response.status(Response.Status.OK).entity(new ResponseAck(ResponseAck.SUCCESS_CODE, "删除字典成功","")).build();
+        System.out.println(JSON.toJSON(response));
+    }
 
 }

@@ -4,6 +4,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
+import org.trc.custom.WeightSerializer;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
@@ -98,6 +99,7 @@ public class ExternalItemSku implements Serializable{
 
     // 重量,单位/克
     @FormParam("weight")
+    @JsonSerialize(using = WeightSerializer.class)
     private Long weight;
 
     // 产地

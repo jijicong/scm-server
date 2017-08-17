@@ -1932,7 +1932,7 @@ public class GoodsBiz implements IGoodsBiz {
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());
-            externalItemSku.setWeight(CommonUtil.getMoneyLong(items.getWeight()));
+            externalItemSku.setWeight(CommonUtil.getWeightLong(items.getWeight()));
             externalItemSku.setProducingArea(items.getProductArea());
             //externalItemSku.setPlaceOfDelivery();//发货地址 TODO
             externalItemSku.setItemType(items.getSkuType());
