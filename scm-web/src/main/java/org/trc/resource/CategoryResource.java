@@ -24,7 +24,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -48,10 +47,9 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_TREE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response classifyTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) throws Exception {
+    public AppResult<JSONArray> classifyTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) throws Exception {
 
-        AppResult appResult = ResultUtil.createSucssAppResult("分类查询成功", categoryBiz.getNodes(parentId, isRecursive));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+        return ResultUtil.createSucssAppResult("成功", categoryBiz.getNodes(parentId, isRecursive));
 
     }
 
@@ -73,12 +71,9 @@ public class CategoryResource {
     @POST
     @Path(SupplyConstants.Category.Classify.CATEGORY)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveClassify(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
+    public AppResult saveClassify(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
         categoryBiz.saveCategory(category, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        AppResult appResult =  ResultUtil.createSucssAppResult("增加分类成功", "");
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
-
-//        return ResultUtil.createSucssAppResult("增加分类成功", "");
+        return ResultUtil.createSucssAppResult("增加分类成功", "");
     }
 
     /**
@@ -91,11 +86,9 @@ public class CategoryResource {
     @PUT
     @Path(SupplyConstants.Category.Classify.CATEGORY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateCategory(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
-        AppResult appResult =  ResultUtil.createSucssAppResult("修改分类成功", "");
+    public AppResult updateCategory(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
         categoryBiz.updateCategory(category, false, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
-// return ResultUtil.createSucssAppResult("修改分类成功", "");
+        return ResultUtil.createSucssAppResult("修改分类成功", "");
     }
 
     /**
@@ -108,18 +101,14 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_CHECK + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkCategoryCode(@QueryParam("id") Long id, @QueryParam("categoryCode") String categoryCode) throws Exception {
+    public AppResult checkCategoryCode(@QueryParam("id") Long id, @QueryParam("categoryCode") String categoryCode) throws Exception {
 
-        AppResult appResult;
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
         if (categoryBiz.checkCategoryCode(id, categoryCode) > 0) {
-            appResult =  ResultUtil.createSucssAppResult("查询分类编码已存在", "");
-//            return ResultUtil.createSucssAppResult("查询分类编码已存在", "");
+            return ResultUtil.createSucssAppResult("查询分类编码已存在", "");
         } else {
-            appResult =  ResultUtil.createSucssAppResult("查询分类编码可用", "");
-//            return ResultUtil.createSucssAppResult("查询分类编码可用", "");
+            return ResultUtil.createSucssAppResult("查询分类编码可用", "");
         }
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
 
     }
 
@@ -133,28 +122,25 @@ public class CategoryResource {
     @PUT
     @Path(SupplyConstants.Category.Classify.CATEGORY_SORT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateSort(String sortDate) throws Exception {
+    public AppResult updateSort(String sortDate) throws Exception {
         categoryBiz.updateSort(sortDate);
-        AppResult appResult =  ResultUtil.createSucssAppResult("更新排序成功", "");
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+        return ResultUtil.createSucssAppResult("更新排序成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Category.Classify.UPDATE_STATE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateCategoryState(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
-        AppResult appResult =  ResultUtil.createSucssAppResult("状态修改成功", "");
+    public AppResult updateCategoryState(@BeanParam Category category, @Context ContainerRequestContext requestContext) throws Exception {
         categoryBiz.updateState(category, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+        return ResultUtil.createSucssAppResult("状态修改成功", "");
     }
 
     //分类品牌
     @GET
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BAAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryCategoryBrands(@BeanParam CategoryBrandForm categoryBrandForm) throws Exception {
-        AppResult<List<CategoryBrandExt>> appResult =  ResultUtil.createSucssAppResult("查询分类品牌列表成功",categoryBiz.queryCategoryBrands(categoryBrandForm));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+    public AppResult<List<CategoryBrandExt>> queryCategoryBrands(@BeanParam CategoryBrandForm categoryBrandForm) throws Exception {
+        return ResultUtil.createSucssAppResult("查询分类品牌列表成功", categoryBiz.queryCategoryBrands(categoryBrandForm));
     }
 
     /**
@@ -163,9 +149,9 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_QUERY + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryCategoryPathName(@PathParam("id") Long id) throws Exception {
-        AppResult<List<String>> appResult =  ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.getCategoryName(id));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+    public AppResult<List<String>> queryCategoryPathName(@PathParam("id") Long id) throws Exception {
+
+        return ResultUtil.createSucssAppResult("查询分类路径名称成功", categoryBiz.getCategoryName(id));
     }
 
     /**
@@ -174,9 +160,8 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception {
-        AppResult<List<Category>> appResult = ResultUtil.createSucssAppResult("查询分类列表成功", categoryBiz.queryCategorys(categoryForm));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+    public AppResult<List<Category>> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception {
+        return ResultUtil.createSucssAppResult("查询分类列表成功", categoryBiz.queryCategorys(categoryForm));
     }
 
 
@@ -184,7 +169,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryBrands.CATEGORY_BRAND_LINK + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord, @Context ContainerRequestContext requestContext) throws Exception {
+    public AppResult linkCategoryBrands(@PathParam("id") Long id, @FormParam("brandIds") String brandIds, @FormParam("delRecord") String delRecord, @Context ContainerRequestContext requestContext) throws Exception {
 
         AppResult appResult = ResultUtil.createSucssAppResult("分类品牌关联成功", "");
         try {
@@ -194,16 +179,15 @@ public class CategoryResource {
             appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
             appResult.setDatabuffer(e.getMessage());
         }
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+        return appResult;
     }
 
     //分类属性
     @GET
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_PAGE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryCategoryProperty(@PathParam("id") Long id) throws Exception {
-        AppResult<List<CategoryProperty>> appResult= ResultUtil.createSucssAppResult("查询分类关联属性", categoryBiz.queryCategoryProperty(id));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+    public AppResult<List<CategoryProperty>> queryCategoryProperty(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("查询分类关联属性", categoryBiz.queryCategoryProperty(id));
     }
 
   /*  @POST
@@ -219,7 +203,7 @@ public class CategoryResource {
     @Path(SupplyConstants.Category.CategoryProperty.CATEGORY_PROPERTY_UPDATE + "/{id}")
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response linkCategoryProperties(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate,@Context ContainerRequestContext requestContext) throws Exception {
+    public AppResult linkCategoryProperties(@PathParam("id") Long id, @FormParam("jsonDate") String jsonDate,@Context ContainerRequestContext requestContext) throws Exception {
         AppResult appResult = ResultUtil.createSucssAppResult("分类属性关联成功", "");
         try {
             categoryBiz.linkCategoryProperties(id, jsonDate,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
@@ -228,7 +212,7 @@ public class CategoryResource {
             appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
             appResult.setDatabuffer(e.getMessage());
         }
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+        return appResult;
     }
 
     /**
@@ -237,8 +221,7 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.Classify.CATEGORY_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkCategoryIsValid(@PathParam("id") Long id) throws Exception {
-        AppResult appResult = ResultUtil.createSucssAppResult("状态查询成功", categoryBiz.checkCategoryIsValid(id));
-        return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+    public AppResult checkCategoryIsValid(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSucssAppResult("状态查询成功", categoryBiz.checkCategoryIsValid(id));
     }
 }
