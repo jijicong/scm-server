@@ -189,17 +189,6 @@ public class BrandBiz implements IBrandBiz {
         return  brandNameList;
     }
 
-
-    @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<Brand> brandList(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
-        Example example = new Example(Brand.class);
-        Example.Criteria criteria = example.createCriteria();
-        setQueryParam(example,criteria,queryModel);
-        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
-        return pagenation;
-    }
-
     public void setQueryParam(Example example,Example.Criteria criteria,BrandForm queryModel){
         if (!StringUtils.isBlank(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");

@@ -7,8 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
-import org.trc.biz.goods.IGoodsBiz;
-import org.trc.biz.goods.ISkuBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
 import org.trc.biz.order.IScmOrderBiz;
@@ -18,29 +16,25 @@ import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
-import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.exception.BrandException;
-import org.trc.exception.ParamValidException;
-import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryForm;
-import org.trc.form.category.PropertyForm;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.trc.BrandForm2;
+import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
-import org.trc.util.*;
+import org.trc.util.AssertUtil;
+import org.trc.util.ExceptionUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
 
 import javax.annotation.Resource;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -77,8 +71,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.BRAND_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Brand>> queryBrand(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) throws Exception{
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "品牌查询成功", brandBiz.brandList(form, page));
+    public ResponseAck<Pagenation<Brand>> queryBrand(@BeanParam BrandForm2 form, @BeanParam Pagenation<Brand> page) throws Exception{
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "品牌查询成功", trcBiz.brandList(form, page));
     }
 
     /**
@@ -132,8 +126,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Category>> queryCategory(@BeanParam CategoryForm categoryForm, @BeanParam Pagenation<Category> page) throws Exception {
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类查询成功", categoryBiz.categoryPage(categoryForm, page));
+    public ResponseAck<Pagenation<Category>> queryCategory(@BeanParam CategoryForm2 categoryForm, @BeanParam Pagenation<Category> page) throws Exception {
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类查询成功", trcBiz.categoryPage(categoryForm, page));
     }
 
     /**

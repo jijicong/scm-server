@@ -6,10 +6,14 @@ import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.TrcActionTypeEnum;
+import org.trc.form.category.BrandForm;
+import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.trc.BrandForm2;
+import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.model.ToGlyResultDO;
@@ -146,5 +150,25 @@ public interface ITrcBiz {
      * @throws Exception
      */
     Pagenation<Property> propertyPage(PropertyFormForTrc form,  Pagenation<Property> page) throws Exception;
+
+    /**
+     * 对泰然城提供分页
+     *
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Brand> brandList(BrandForm2 form, Pagenation<Brand> page) throws Exception;
+
+    /**
+     * 分类分页查询
+     *
+     * @param queryModel
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception;
 
 }

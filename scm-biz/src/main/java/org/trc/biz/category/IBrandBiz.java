@@ -23,16 +23,6 @@ public interface IBrandBiz {
     Pagenation<Brand> brandPage(BrandForm form, Pagenation<Brand> page) throws Exception;
 
     /**
-     * 对泰然城提供分页
-     *
-     * @param form
-     * @param page
-     * @return
-     * @throws Exception
-     */
-    Pagenation<Brand> brandList(BrandForm form, Pagenation<Brand> page) throws Exception;
-
-    /**
      * 查询品牌列表
      *
      * @return

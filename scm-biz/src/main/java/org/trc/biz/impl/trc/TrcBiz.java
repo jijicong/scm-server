@@ -32,10 +32,13 @@ import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
+import org.trc.form.category.BrandForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.trc.BrandForm2;
+import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.model.BrandToTrcDO;
@@ -43,6 +46,7 @@ import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
+import org.trc.service.category.ICategoryService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.service.config.IRequestFlowService;
@@ -101,6 +105,8 @@ public class TrcBiz implements ITrcBiz {
     private BrandService brandService;
     @Autowired
     private IItemsService itemsService;
+    @Autowired
+    private ICategoryService categoryService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -946,6 +952,85 @@ public class TrcBiz implements ITrcBiz {
         }
         page.setResult(list);
         return page;
+    }
+
+    @Override
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<Brand> brandList(BrandForm2 queryModel, Pagenation<Brand> page) throws Exception {
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
+        setQueryParam(example,criteria,queryModel);
+        Pagenation<Brand> pagenation = brandService.pagination(example, page, queryModel);
+        return pagenation;
+    }
+
+    @Override
+    public Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception {
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (!StringUtils.isBlank(queryModel.getCategoryId())) {
+            String[] ids = queryModel.getCategoryId().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("id", Arrays.asList(ids));
+        }
+        if (!StringUtils.isBlank(queryModel.getCategoryCode())) {
+            criteria.andLike("categoryCode", queryModel.getCategoryCode());
+        }
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (!StringUtils.isBlank(queryModel.getLevel())) {
+            criteria.andEqualTo("level", queryModel.getLevel());
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        example.orderBy("isValid").desc();
+        example.orderBy("updateTime").desc();
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
+            return categoryService.pagination(example, page, queryModel);
+        }else {//查询分类子类信息
+            List<Category> categoryList = categoryService.selectByExample(example);
+            StringBuilder sb = new StringBuilder();
+            for(Category category: categoryList){
+                sb.append(category.getId()).append(SupplyConstants.Symbol.COMMA);
+            }
+            if (sb.length() > 0){
+                example.clear();
+                criteria = example.createCriteria();
+                String ids = sb.substring(0, sb.length()-1);
+                String condition = String.format("parent_id in (%s)", ids);
+                criteria.andCondition(condition);
+                return categoryService.pagination(example, page, new CategoryForm2());
+            }else {
+                return page;
+            }
+        }
+    }
+
+    public void setQueryParam(Example example,Example.Criteria criteria,BrandForm2 queryModel){
+        if (!StringUtils.isBlank(queryModel.getName())) {
+            criteria.andLike("name", "%" + queryModel.getName() + "%");
+        }
+        if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            criteria.andEqualTo("isValid", queryModel.getIsValid());
+        }
+        if (!StringUtils.isBlank(queryModel.getStartUpdateTime())) {
+            criteria.andGreaterThan("updateTime", queryModel.getStartUpdateTime());
+        }
+        if (!StringUtils.isBlank(queryModel.getEndUpdateTime())) {
+            criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndUpdateTime(),DateUtils.NORMAL_DATE_FORMAT,1)));
+        }
+        if (!StringUtils.isBlank(queryModel.getAlise())) {
+            criteria.andEqualTo("alise", queryModel.getAlise());
+        }
+        if (!StringUtils.isBlank(queryModel.getBrandCode())) {
+            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
+        }
+        if (!StringUtils.isBlank(queryModel.getBrandId())) {
+            String[] ids = queryModel.getBrandId().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("id", Arrays.asList(ids));
+        }
+        example.orderBy("updateTime").desc();
     }
 
     //为属性赋予属性值
