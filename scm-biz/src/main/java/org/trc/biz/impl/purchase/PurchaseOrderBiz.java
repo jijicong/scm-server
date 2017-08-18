@@ -829,6 +829,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 }
             }
         }
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){//后台检验提交审核：商品不能为空
+            if(StringUtils.isBlank(purchaseOrderAddData.getGridValue()) && "[]".equals(purchaseOrderAddData.getGridValue())){
+                String msg = "采购单修改,提交审核.采购商品不能为空!";
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
+            }
+        }
 
         //修改操作日志
         String userId= aclUserAccreditInfo.getUserId();
