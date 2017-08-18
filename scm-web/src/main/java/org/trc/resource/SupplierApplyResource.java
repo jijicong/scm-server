@@ -9,7 +9,6 @@ import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.form.supplier.SupplierApplyAuditForm;
 import org.trc.form.supplier.SupplierApplyForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -17,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by hzqph on 2017/5/12.
@@ -39,16 +39,16 @@ public class SupplierApplyResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierApplyAudit.SUPPLIER_APPLY_AUDIT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult selectOneById(@PathParam("id") Long id) throws Exception {
-        return ResultUtil.createSucssAppResult("供应商审核信息查询成功", supplierApplyBiz.selectOneById(id));
+    public Response selectOneById(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSuccessResult("供应商审核信息查询成功", supplierApplyBiz.selectOneById(id));
     }
 
     @PUT
     @Path(SupplyConstants.Supply.SupplierApplyAudit.SUPPLIER_APPLY_AUDIT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult auditSupplierApply(@BeanParam SupplierApplyAudit SupplierApplyAudit,@Context ContainerRequestContext requestContext) throws Exception {
+    public Response auditSupplierApply(@BeanParam SupplierApplyAudit SupplierApplyAudit,@Context ContainerRequestContext requestContext) throws Exception {
         supplierApplyBiz.auditSupplierApply(SupplierApplyAudit,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("供应商审核成功","");
+        return ResultUtil.createSuccessResult("供应商审核成功","");
     }
 
     @GET
@@ -61,29 +61,29 @@ public class SupplierApplyResource {
     @POST
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
+    public Response saveSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
         supplierApplyBiz.saveSupplierApply(supplierApply,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("供应商申请成功","");
+        return ResultUtil.createSuccessResult("供应商申请成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
-    public AppResult updateSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
+    public Response updateSupplierApply(@BeanParam SupplierApply supplierApply,@Context ContainerRequestContext requestContext)throws Exception{
         supplierApplyBiz.updateSupplierApply(supplierApply,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("供应商申请修改成功","");
+        return ResultUtil.createSuccessResult("供应商申请修改成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_STATE+"/{id}")
-    public AppResult deleteSupplierApply(@PathParam("id")Long supplierApplyId)throws Exception{
+    public Response deleteSupplierApply(@PathParam("id")Long supplierApplyId)throws Exception{
         supplierApplyBiz.deleteSupplierApply(supplierApplyId);
-        return ResultUtil.createSucssAppResult("供应商申请删除成功","");
+        return ResultUtil.createSuccessResult("供应商申请删除成功","");
     }
 
     @GET
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult selectSupplierById(@PathParam("id") Long id) throws Exception {
-        return ResultUtil.createSucssAppResult("供应商审核信息查询成功", supplierApplyBiz.selectSupplierApplyById(id));
+    public Response selectSupplierById(@PathParam("id") Long id) throws Exception {
+        return ResultUtil.createSuccessResult("供应商审核信息查询成功", supplierApplyBiz.selectSupplierApplyById(id));
     }
 }
