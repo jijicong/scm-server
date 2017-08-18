@@ -142,7 +142,8 @@ public class ResultUtil {
 		return JSON.parseObject(result);
 	}
 
-	public static Response createSuccessResult(AppResult appResult){
+	public static Response createSuccessResult(String databuffer, Object result){
+		AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), databuffer, result);
 		return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
 	}
 }
