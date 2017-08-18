@@ -1043,6 +1043,7 @@ public class TrcBiz implements ITrcBiz {
         List<PropertyValue> propertyValueList = propertyValueService.select(propertyValue);
         for (PropertyValue pv : propertyValueList) {
             PropertyValueForTrc propertyValueForTrc = new PropertyValueForTrc();
+            propertyValueForTrc.setPropertyValueId(pv.getId());
             propertyValueForTrc.setIsDeleted(pv.getIsDeleted());
             propertyValueForTrc.setIsValid(pv.getIsValid());
             propertyValueForTrc.setPicture(pv.getPicture());
