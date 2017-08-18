@@ -1647,9 +1647,31 @@ public class GoodsBiz implements IGoodsBiz {
         for(ExternalItemSku externalItems : externalItemSkuList){
             if(StringUtils.equals(externalItems.getSupplierCode(), JD_SUPPLIER_CODE)){
                 externalItems.setJdPictureUrl(externalSupplierConfig.getJdPictureUrl());
+                externalItems.setCategory(getExternalItemCategory(externalItems.getCategory()));
             }
         }
         return externalItemSkuList;
+    }
+
+    /**
+     * 获取代发商品分类名称
+     * @param category
+     * @return
+     */
+    private String getExternalItemCategory(String category){
+        if(StringUtils.isNotBlank(category)){
+            String[] _categorys = category.split(SupplyConstants.Symbol.SEMICOLON);
+            StringBuilder sb = new StringBuilder();
+            for(String _cate: _categorys){
+                sb.append(_cate).append(SupplyConstants.Symbol.XIE_GANG);
+            }
+            String categoryName = "";
+            if(sb.length() > 0){
+                categoryName = sb.substring(0, sb.length()-1);
+            }
+            return categoryName;
+        }
+        return "";
     }
 
     /**
@@ -1927,12 +1949,12 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setSupplierSkuCode(items.getSupplySku());
             externalItemSku.setItemName(items.getSkuName());
             externalItemSku.setCategory(items.getCategory());
-            externalItemSku.setCategoryName(items.getCategoryName());
+            externalItemSku.setCategoryCode(items.getCategoryCode());
             externalItemSku.setBarCode(items.getUpc());
             //externalItemSku.setSubtitle();//商品副标题 TODO
             externalItemSku.setBrand(items.getBrand());
             externalItemSku.setCategory(items.getCategory());
-            externalItemSku.setWeight(CommonUtil.getMoneyLong(items.getWeight()));
+            externalItemSku.setWeight(CommonUtil.getWeightLong(items.getWeight()));
             externalItemSku.setProducingArea(items.getProductArea());
             //externalItemSku.setPlaceOfDelivery();//发货地址 TODO
             externalItemSku.setItemType(items.getSkuType());

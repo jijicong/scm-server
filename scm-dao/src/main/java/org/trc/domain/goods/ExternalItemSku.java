@@ -4,6 +4,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
+import org.trc.custom.WeightSerializer;
 
 import javax.persistence.*;
 import javax.ws.rs.FormParam;
@@ -88,16 +89,17 @@ public class ExternalItemSku implements Serializable{
 
     // 分类
     @FormParam("category")
-    @Length(max = 32, message = "分类长度不能超过32个")
+    @Length(max = 32, message = "分类名称长度不能超过32个")
     private String category;
 
     // 分类名称
-    @FormParam("categoryName")
-    @Length(max = 64, message = "分类长度不能超过64个")
-    private String categoryName;
+    @FormParam("categoryCode")
+    @Length(max = 64, message = "分类编码长度不能超过64个")
+    private String categoryCode;
 
     // 重量,单位/克
     @FormParam("weight")
+    @JsonSerialize(using = WeightSerializer.class)
     private Long weight;
 
     // 产地
@@ -396,12 +398,12 @@ public class ExternalItemSku implements Serializable{
         this.updateTime = updateTime;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getJdPictureUrl() {

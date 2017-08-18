@@ -351,18 +351,9 @@ public class CommonUtil {
 	 */
 	public static Long getWeightLong(Object val){
 		if(null != val){
-			if(val instanceof String){
-				BigDecimal b = new BigDecimal(val.toString());
-				val = b.multiply(new BigDecimal(WEIGHT_MULTI));
-				return ((BigDecimal) val).longValue();
-			}else if(val instanceof Long){
-				val = (Long)val*WEIGHT_MULTI;
-				return ((Long) val).longValue();
-			}else if(val instanceof BigDecimal){
-				BigDecimal b = (BigDecimal)val;
-				val = b.multiply(new BigDecimal(WEIGHT_MULTI));
-				return ((BigDecimal) val).longValue();
-			}
+			BigDecimal b = new BigDecimal(val.toString());
+			val = b.multiply(new BigDecimal(WEIGHT_MULTI));
+			return ((BigDecimal) val).longValue();
 		}
 		return null;
 	}

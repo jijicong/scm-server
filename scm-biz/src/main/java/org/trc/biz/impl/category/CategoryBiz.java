@@ -630,7 +630,7 @@ public class CategoryBiz implements ICategoryBiz {
         List<CategoryBrand> delCategoryBrands = new ArrayList<>();
         if (StringUtils.isNotBlank(delRecord)) {
             delBrandIdsList.addAll(filterId(delRecord));
-            delCategoryBrands = assembleList(delBrandIdsList, categoryId);
+            delCategoryBrands = assembleList(delBrandIdsList, categoryId,false);
         }
 
         //页面上的BrandId
@@ -639,7 +639,7 @@ public class CategoryBiz implements ICategoryBiz {
             brandIdsList.addAll(filterId(brandIds));
         }
         //组装出页面上CategoryBrand
-        List<CategoryBrand> saveCategoryBrands = assembleList(brandIdsList, categoryId);
+        List<CategoryBrand> saveCategoryBrands = assembleList(brandIdsList, categoryId,true);
 
         List<Brand> noValidBrands = new ArrayList<>();
         //页面上的数据
@@ -700,7 +700,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     //根据id组装出List<CategoryBrand
-    private List<CategoryBrand> assembleList(List<Long> brandIdsList, Long categoryId) throws Exception {
+    private List<CategoryBrand> assembleList(List<Long> brandIdsList, Long categoryId,boolean check) throws Exception {
         List<Brand> brands = brandService.selectBrandList(brandIdsList);
         Category category = new Category();
         category.setId(categoryId);
@@ -723,7 +723,7 @@ public class CategoryBiz implements ICategoryBiz {
             categoryBrand.setCreateTime(Calendar.getInstance().getTime());
             categoryBrands.add(categoryBrand);
         }
-        if (!AssertUtil.collectionIsEmpty(noValidName)) {
+        if (!AssertUtil.collectionIsEmpty(noValidName)&&check) {
             throw new CategoryException(ExceptionEnum.CATEGORY_LINK_LEVEL_EXCEPTION, String.format("请先删除已经停用的品牌[%s]", StringUtils.join(noValidName, SupplyConstants.Symbol.COMMA)));
         }
         return categoryBrands;

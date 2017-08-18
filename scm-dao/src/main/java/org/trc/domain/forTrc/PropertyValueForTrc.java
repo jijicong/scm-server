@@ -8,6 +8,8 @@ import java.io.Serializable;
  */
 public class PropertyValueForTrc implements Serializable {
 
+    private Long propertyValueId;
+
     private Long propertyId;
 
     private String value;
@@ -19,6 +21,14 @@ public class PropertyValueForTrc implements Serializable {
     private String isValid; //是否有效:0-否,1-是
 
     private String isDeleted; //是否删除:0-否,1-是
+
+    public Long getPropertyValueId() {
+        return propertyValueId;
+    }
+
+    public void setPropertyValueId(Long propertyValueId) {
+        this.propertyValueId = propertyValueId;
+    }
 
     public String getIsValid() {
         return isValid;

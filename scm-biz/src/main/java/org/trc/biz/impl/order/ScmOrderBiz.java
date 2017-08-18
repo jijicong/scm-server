@@ -167,6 +167,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
+        example.orderBy("payTime").desc();
         page = shopOrderService.pagination(example, page, new QueryModel());
         if(page.getResult().size() > 0){
             handlerOrderInfo(page, platformOrderList);
@@ -858,7 +859,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else {
             return null;
         }
-
     }
 
     private void handlerOrderInfo(Pagenation<ShopOrder> page, List<PlatformOrder> platformOrderList){
@@ -883,16 +883,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
-        //按付款时间将序排序
-        Collections.sort(page.getResult(), new Comparator<ShopOrder>() {
-            @Override
-            public int compare(ShopOrder o1, ShopOrder o2) {
-                if(null == o1.getPayTime() || null == o2.getPayTime()){
-                    return 0;
-                }
-                return o1.getPayTime().compareTo(o2.getPayTime());
-            }
-        });
     }
 
     private void setShopOrderItemsDetail(ShopOrder shopOrder, PlatformOrder platformOrder){
@@ -1011,7 +1001,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
-        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray);
+        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPayTime());
         //拆分仓库订单
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         for (ShopOrder shopOrder : shopOrderList) {
@@ -1783,11 +1773,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     /**
      * 获取店铺订单
-     *
      * @param shopOrderArray
+     * @param payTime 支付时间
      * @return
      */
-    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray) {
+    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, Date payTime) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         BigDecimal totalShop = new BigDecimal(0);
         for (Object obj : shopOrderArray) {
@@ -1796,7 +1786,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
             ShopOrder shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
             shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
-            shopOrder.setPayTime(DateUtils.timestampToDate(shopOrderObj.getLong("payTime")));//支付时间
+            shopOrder.setPayTime(payTime);//支付时间
             shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
             shopOrder.setUpdateTime(DateUtils.timestampToDate(shopOrderObj.getLong("updateTime")));//修改时间
             //设置店铺金额

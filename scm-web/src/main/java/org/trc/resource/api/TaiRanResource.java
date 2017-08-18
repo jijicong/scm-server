@@ -186,17 +186,16 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces("application/json;charset=utf-8")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public ResponseAck<String> reciveChannelOrder(String information) {
+    public ResponseAck<String> reciveChannelOrder(@FormParam("orderInfo") String orderInfo) {
         ResponseAck responseAck = null;
         try{
-            responseAck = scmOrderBiz.reciveChannelOrder(information);
+            responseAck = scmOrderBiz.reciveChannelOrder(orderInfo);
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
             responseAck = new ResponseAck(code, e.getMessage(), "");
-            logger.error(String.format("接收渠道同步订单%s异常,%s", information, e));
+            logger.error(String.format("接收渠道同步订单%s异常,%s", orderInfo, e));
         }finally {
-            scmOrderBiz.saveChannelOrderRequestFlow(information, responseAck);
+            scmOrderBiz.saveChannelOrderRequestFlow(orderInfo, responseAck);
         }
         return responseAck;
     }

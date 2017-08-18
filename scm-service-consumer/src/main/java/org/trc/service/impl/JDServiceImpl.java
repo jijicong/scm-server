@@ -747,6 +747,7 @@ public class JDServiceImpl implements IJDService {
                         supplyItemsExt.setMarketPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getMarketPrice())));
                         supplyItemsExt.setSkuName(bo.getString("name"));
                         supplyItemsExt.setBrand(bo.getString("brandName"));
+
                         supplyItemsExtList.add(supplyItemsExt);
                     }
                     page.setResult(supplyItemsExtList);

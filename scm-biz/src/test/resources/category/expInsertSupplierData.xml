@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<dataset>
+    <supplier
+            id="22"
+            supplier_code="GYS000001"
+            supplier_name="sss"
+            supplier_kind_code="purchase"
+            supplier_type_code="internalSupplier"
+            supplier_interface_id=""
+            contact="sss"
+            phone="15068839416"
+            province="120000"
+            city="120102"
+            address="ssss"
+            certificate_type_id="normalThreeCertificate"
+            remark="sss"
+            is_valid="1"
+            is_deleted="0"
+            create_operator="E2E4BDAD80354EFAB6E70120C271968C"
+            create_time="2017-07-24 15:45:31.0"
+            update_time="2017-07-24 15:45:31.0"
+    />
+</dataset>
