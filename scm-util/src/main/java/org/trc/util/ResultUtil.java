@@ -14,6 +14,8 @@ import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ResultEnum;
 import org.trc.exception.ParamValidException;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -138,5 +140,9 @@ public class ResultUtil {
 		map.put("databuffer", databuffer);
 		map.put("result", result);
 		return JSON.parseObject(result);
+	}
+
+	public static Response createSuccessResult(AppResult appResult){
+		return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
 	}
 }
