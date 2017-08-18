@@ -22,6 +22,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -53,57 +54,43 @@ public class SupplierResource {
     @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Supplier>> querySuppliers(@BeanParam SupplierForm form) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商列表成功", supplierBiz.querySuppliers(form));
+    public Response querySuppliers(@BeanParam SupplierForm form) throws Exception {
+        return ResultUtil.createSuccessResult("查询供应商列表成功", supplierBiz.querySuppliers(form));
     }
 
     @POST
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
+    public Response saveSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
              @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
              @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
-        AppResult appResult = ResultUtil.createSucssAppResult("保存供应商成功", "");
-        try {
-            supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        }catch (Exception e){
-            log.error("保存供应商异常", e);
-            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
-            appResult.setDatabuffer(e.getMessage());
-        }
-        return appResult;
+        supplierBiz.saveSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("保存供应商成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
+    public Response updateSupplier(@BeanParam Supplier supplier, @BeanParam Certificate certificate, @BeanParam SupplierCategory supplierCategory,
                                   @BeanParam SupplierBrand supplierBrand, @BeanParam SupplierFinancialInfo supplierFinancialInfo,
                                   @BeanParam SupplierAfterSaleInfo supplierAfterSaleInfo, @Context ContainerRequestContext requestContext) throws Exception {
-        AppResult appResult = ResultUtil.createSucssAppResult("更新供应商成功", "");
-        try {
-            supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        }catch (Exception e){
-            log.error("更新供应商异常", e);
-            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
-            appResult.setDatabuffer(e.getMessage());
-        }
-        return appResult;
+        supplierBiz.updateSupplier(supplier, certificate, supplierCategory, supplierBrand, supplierFinancialInfo, supplierAfterSaleInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("更新供应商成功","");
     }
 
     @PUT
     @Path(SupplyConstants.Supply.Supplier.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         supplierBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("保存供应商成功", "");
+        return ResultUtil.createSuccessResult("启停用供应商成功", "");
     }
 
     @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER + "/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> findSupplierByCode(@PathParam("supplierCode") String supplierCode) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商成功", supplierBiz.querySupplierInfo(supplierCode));
+    public Response findSupplierByCode(@PathParam("supplierCode") String supplierCode) throws Exception {
+        return ResultUtil.createSuccessResult("查询供应商成功", supplierBiz.querySupplierInfo(supplierCode));
     }
 
     @GET
@@ -116,29 +103,23 @@ public class SupplierResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierBrand.SUPPLIER_BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<SupplierBrandExt>> querySupplierBrand(@QueryParam("supplierCode") String supplierCode) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商品牌成功", supplierBiz.querySupplierBrand(supplierCode));
+    public Response querySupplierBrand(@QueryParam("supplierCode") String supplierCode) throws Exception {
+        return ResultUtil.createSuccessResult("查询供应商品牌成功", supplierBiz.querySupplierBrand(supplierCode));
     }
 
     @GET
     @Path(SupplyConstants.Supply.SupplierChannel.CHANNELS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<SupplierChannelRelationExt> queryChannelRelation(@BeanParam SupplierChannelRelationForm form) throws Exception {
-        return ResultUtil.createSucssAppResult("查询供应商渠道关系成功", supplierBiz.queryChannelRelation(form));
+    public Response queryChannelRelation(@BeanParam SupplierChannelRelationForm form) throws Exception {
+        return ResultUtil.createSuccessResult("查询供应商渠道关系成功", supplierBiz.queryChannelRelation(form));
     }
 
     @GET
     @Path(SupplyConstants.Supply.SupplierBrand.CHECK_CATEGORY_BRAND_VALID_STATUS+"/{categoryId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult checkCategoryBrandValidStatus(@PathParam("categoryId") Long categoryId, @QueryParam("brandId") Long brandId) throws Exception {
-        AppResult appResult = ResultUtil.createSucssAppResult("检查分类品牌启停用状态查询成功", "");
-        try{
-            supplierBiz.checkCategoryBrandValidStatus(categoryId, brandId);
-        }catch (GoodsException e){
-            appResult.setAppcode(ZeroToNineEnum.ZERO.getCode());
-            appResult.setDatabuffer(e.getMessage());
-        }
-        return appResult;
+    public Response checkCategoryBrandValidStatus(@PathParam("categoryId") Long categoryId, @QueryParam("brandId") Long brandId) throws Exception {
+        supplierBiz.checkCategoryBrandValidStatus(categoryId, brandId);
+        return ResultUtil.createSuccessResult("检查分类品牌启停用状态成功","");
     }
 
 

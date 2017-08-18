@@ -24,6 +24,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -56,63 +57,49 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.GOODS)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
-                               @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
-        AppResult appResult = ResultUtil.createSucssAppResult("保存商品成功", "");
-        try {
-            goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
-        }catch (Exception e){
-            log.error("保存商品异常", e);
-            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
-            appResult.setDatabuffer(e.getMessage());
-        }
-        return appResult;
+    public Response saveGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
+                              @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.saveItems(items, skus, itemNaturePropery, itemSalesPropery);
+        return ResultUtil.createSuccessResult("保存商品成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Goods.GOODS + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
+    public Response updateGoods(@BeanParam Items items, @BeanParam Skus skus, @BeanParam ItemNaturePropery itemNaturePropery,
                                  @BeanParam ItemSalesPropery itemSalesPropery, @Context ContainerRequestContext requestContext) throws Exception {
-        AppResult appResult = ResultUtil.createSucssAppResult("更新商品成功", "");
-        try {
-            goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        }catch (Exception e){
-            log.error("更新商品异常", e);
-            appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
-            appResult.setDatabuffer(e.getMessage());
-        }
-        return appResult;
+        goodsBiz.updateItems(items, skus, itemNaturePropery, itemSalesPropery, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("更新商品成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Goods.IS_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
-        return goodsBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+        goodsBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("商品启停用操作成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Goods.SKU_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.updateSkusValid(id, spuCode, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("启停用SKU成功", "");
+        return ResultUtil.createSuccessResult("启停用SKU成功", "");
     }
-
 
     @GET
     @Path(SupplyConstants.Goods.GOODS_SPU_CODE+"/{spuCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<ItemsExt> queryItemsInfo(@PathParam("spuCode") String spuCode, @QueryParam("skuCode") String skuCode, @Context ContainerRequestContext requestContext) throws Exception {
-        return ResultUtil.createSucssAppResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    public Response queryItemsInfo(@PathParam("spuCode") String spuCode, @QueryParam("skuCode") String skuCode, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult("查询商品信息成功", goodsBiz.queryItemsInfo(spuCode, skuCode, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @GET
     @Path(SupplyConstants.Goods.ITEMS_CATEGORY_PROPERTY+"/{spuCode}/{categoryId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<CategoryProperty>> queryItemsCategoryProperty(@PathParam("spuCode") String spuCode, @PathParam("categoryId") Long categoryId) throws Exception {
-        return ResultUtil.createSucssAppResult("查询商品分类属性成功", goodsBiz.queryItemsCategoryProperty(spuCode, categoryId));
+    public Response queryItemsCategoryProperty(@PathParam("spuCode") String spuCode, @PathParam("categoryId") Long categoryId) throws Exception {
+        return ResultUtil.createSuccessResult("查询商品分类属性成功", goodsBiz.queryItemsCategoryProperty(spuCode, categoryId));
     }
 
     @GET
@@ -132,34 +119,34 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<ExternalItemSku>> queryExternalItems(@BeanParam ExternalItemSkuForm form) throws Exception {
-        return ResultUtil.createSucssAppResult("查询代发商品列表",goodsBiz.queryExternalItems(form));
+    public Response queryExternalItems(@BeanParam ExternalItemSkuForm form) throws Exception {
+        return ResultUtil.createSuccessResult("查询代发商品列表",goodsBiz.queryExternalItems(form));
     }
 
     @POST
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult saveExternalItems(@FormParam("supplySkus") String supplySkus, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response saveExternalItems(@FormParam("supplySkus") String supplySkus, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.saveExternalItems(supplySkus, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("新增代发商品成功", "");
+        return ResultUtil.createSuccessResult("新增代发商品成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM__VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.updateExternalItemsValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("启停用商品成功", "");
+        return ResultUtil.createSuccessResult("启停用商品成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Goods.EXTERNAL_ITEM_SKU + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public AppResult updateExternalItems(@BeanParam ExternalItemSku externalItemSku, @Context ContainerRequestContext requestContext) throws Exception {
+    public Response updateExternalItems(@BeanParam ExternalItemSku externalItemSku, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.updateExternalItems(externalItemSku, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("更新代发商品成功", "");
+        return ResultUtil.createSuccessResult("更新代发商品成功", "");
     }
 
 }

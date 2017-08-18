@@ -13,6 +13,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -46,14 +47,13 @@ public class MetadataResource {
         return metadataBiz.queryJDAddress();
     }
 
-
     @POST
     @Path(SupplyConstants.Metadata.JD_ADDRESS_UPDATE)
     @Produces("application/json;charset=utf-8")
-    public AppResult jdAddressUpdate(){
+    public Response jdAddressUpdate(){
         metadataBiz.jDAddressUpdate();
         metadataBiz.queryJDAddress();
-        return ResultUtil.createSucssAppResult("京东地址更新成功", "");
+        return ResultUtil.createSuccessResult("京东地址更新成功", "");
     }
 
 
