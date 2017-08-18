@@ -41,17 +41,17 @@ public class ConfigResource {
     @GET
     @Path(SupplyConstants.Config.DictType.DICT_TYPE_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public ResponseAck<List<DictType>> queryDictTypes(@BeanParam DictTypeForm dictTypeForm) throws Exception {
-        return new ResponseAck<List<DictType>>(ResponseAck.SUCCESS_CODE,"查询字典类型列表成功", configBiz.queryDictTypes(dictTypeForm));
+    public AppResult<List<DictType>> queryDictTypes(@BeanParam DictTypeForm dictTypeForm) throws Exception {
+        return ResultUtil.createSucssAppResult("查询字典类型成功", configBiz.queryDictTypes(dictTypeForm));
     }
 
     @POST
     @Path(SupplyConstants.Config.DictType.DICT_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public ResponseAck saveDictType(@BeanParam DictType dictType, @Context ContainerRequestContext requestContext) throws Exception {
+    public AppResult saveDictType(@BeanParam DictType dictType, @Context ContainerRequestContext requestContext) throws Exception {
         configBiz.saveDictType(dictType);
-        return new ResponseAck(ResponseAck.SUCCESS_CODE,"保存字典类型成功", "");
+        return ResultUtil.createSucssAppResult("保存字典类型成功", "");
     }
 
     @PUT
