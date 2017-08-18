@@ -15,7 +15,7 @@ public class SupplyItemsExt {
     private Double supplyPrice; //供货价
     private Double marketPrice;//市场价
     private String category;//分类
-    private String categoryName;//分类名称
+    private String categoryCode;//分类名称
     private String brand;//品牌
     private String skuType;//商品类型
     private Double weight;//重量
@@ -234,12 +234,12 @@ public class SupplyItemsExt {
         this.isDeleted = isDeleted;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getDetailImagePath() {
