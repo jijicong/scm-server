@@ -89,13 +89,13 @@ public class ExternalItemSku implements Serializable{
 
     // 分类
     @FormParam("category")
-    @Length(max = 32, message = "分类长度不能超过32个")
+    @Length(max = 32, message = "分类名称长度不能超过32个")
     private String category;
 
     // 分类名称
-    @FormParam("categoryName")
-    @Length(max = 64, message = "分类长度不能超过64个")
-    private String categoryName;
+    @FormParam("categoryCode")
+    @Length(max = 64, message = "分类编码长度不能超过64个")
+    private String categoryCode;
 
     // 重量,单位/克
     @FormParam("weight")
@@ -398,12 +398,12 @@ public class ExternalItemSku implements Serializable{
         this.updateTime = updateTime;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getJdPictureUrl() {
