@@ -47,7 +47,8 @@
                     from
                 items i inner join supplier_brand s
                     ON
-                s.brand_id = i.brand_id
+                s.brand_id = i.brand_id AND
+                s.category_id = i.category_id
                     WHERE
                 s.supplier_code=#{supplierCode}
                 AND s.is_valid='1'
@@ -92,7 +93,8 @@
                     from
                 items i inner join supplier_brand s
                     ON
-                s.brand_id = i.brand_id
+                s.brand_id = i.brand_id AND
+                s.category_id = i.category_id
                     WHERE
                 s.supplier_code=#{supplierCode}
                 AND s.is_valid='1'
