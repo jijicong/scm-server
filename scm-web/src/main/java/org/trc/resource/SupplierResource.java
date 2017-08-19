@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.trc.domain.dict.Dict;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.SuccessFailureEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.GoodsException;
 import org.trc.form.supplier.SupplierChannelRelationForm;
@@ -83,7 +85,11 @@ public class SupplierResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         supplierBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("启停用供应商成功", "");
+        String _valid = ZeroToNineEnum.ZERO.getCode();
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
+            _valid = ZeroToNineEnum.ONE.getCode();
+        }
+        return ResultUtil.createSuccessResult(String.format("%s供应商成功", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @GET

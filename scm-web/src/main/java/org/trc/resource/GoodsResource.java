@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.SuccessFailureEnum;
+import org.trc.enums.ValidEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.goods.ExternalItemSkuForm;
@@ -77,7 +80,11 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.updateValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("商品启停用操作成功", "");
+        String _valid = ZeroToNineEnum.ZERO.getCode();
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
+            _valid = ZeroToNineEnum.ONE.getCode();
+        }
+        return ResultUtil.createSuccessResult(String.format("%s商品成功", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @PUT
@@ -85,7 +92,11 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateSkusValid(@PathParam("id") Long id, @FormParam("spuCode") String spuCode, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.updateSkusValid(id, spuCode, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("启停用SKU成功", "");
+        String _valid = ZeroToNineEnum.ZERO.getCode();
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
+            _valid = ZeroToNineEnum.ONE.getCode();
+        }
+        return ResultUtil.createSuccessResult(String.format("%s商品SKU成功", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @GET

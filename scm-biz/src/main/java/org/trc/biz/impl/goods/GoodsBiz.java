@@ -1305,15 +1305,16 @@ public class GoodsBiz implements IGoodsBiz {
         items2.setId(id);
         items2 = itemsService.selectOne(items2);
         AssertUtil.notNull(items2, String.format("根据主键ID[%s]查询商品基础信息为空", id.toString()));
-        if(stopItemsSkusCheck(items2.getSpuCode())){
-            return ResultUtil.createFailAppResult("当前SPU下还存在启用的商品,无法停用!");
-        }
         Items items = new Items();
         items.setId(id);
         items.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         String _isValid = ZeroToNineEnum.ZERO.getCode();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)){
             _isValid = ZeroToNineEnum.ONE.getCode();
+        }else {
+            if(stopItemsSkusCheck(items2.getSpuCode())){
+                throw new GoodsException(ExceptionEnum.GOODS_SKU_VALID_CON_NOT_STOP, "当前SPU下还存在启用的商品,无法停用");
+            }
         }
         items.setIsValid(_isValid);
         items2.setIsValid(_isValid);

@@ -36,6 +36,7 @@ public enum ExceptionEnum{
     GOODS_SAVE_EXCEPTION("400101","商品保存异常"),
     GOODS_UPDATE_EXCEPTION("400102","商品更新异常"),
     GOODS_DEPEND_DATA_INVALID("400103","商品依赖数据被禁用"),
+    GOODS_SKU_VALID_CON_NOT_STOP("400104","当前SPU下还存在启用的商品,无法停用"),
 
     EXTERNAL_GOODS_QUERY_EXCEPTION("400104","代发商品查询异常"),
     EXTERNAL_GOODS_UPDATE_EXCEPTION("400105","代发商品查询异常"),
