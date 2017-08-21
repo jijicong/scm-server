@@ -208,9 +208,6 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
-    @CacheEvict
-    @org.springframework.cache.annotation.Cacheable
-    @Cacheable
     public void savePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
