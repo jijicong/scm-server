@@ -45,13 +45,13 @@ public class categoryDbUnit extends BaseTest {
      * @param fileName
      * @throws Exception
      */
-    @Override
+    /*@Override
     protected void prepareData(IDatabaseConnection conn, String fileName) throws Exception {
         //读取xml文件中的数据信息
         ReplacementDataSet createDataSet = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName));
         //INSERT TEST DATA
         DatabaseOperation.INSERT.execute(conn, createDataSet);
-    }
+    }*/
 
 
     /**

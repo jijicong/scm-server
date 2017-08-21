@@ -78,7 +78,12 @@ public abstract class BaseTest extends AbstractTransactionalJUnit4SpringContextT
      * @param fileName
      * @throws Exception
      */
-    protected abstract void prepareData(IDatabaseConnection conn,String fileName) throws Exception;
+    protected void prepareData(IDatabaseConnection conn, String fileName) throws Exception {
+        //读取xml文件中的数据信息
+        ReplacementDataSet createDataSet = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName));
+        //INSERT TEST DATA
+        DatabaseOperation.INSERT.execute(conn, createDataSet);
+    }
 
     /**
      * 执行指定sql
