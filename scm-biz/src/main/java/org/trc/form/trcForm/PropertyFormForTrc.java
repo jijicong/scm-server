@@ -20,6 +20,36 @@ public class PropertyFormForTrc extends QueryModel {
     //属性的ids查询
     @QueryParam("propertyId")
     private String propertyId;
+    @QueryParam("flag")
+    private String flag; //0-属性查询(包括属性值数据) 1-属性值查询
+    @QueryParam("propertyValueId")
+    private String propertyValueId;//属性值的id，多个id用逗号隔开,当flag=1时作为查询条件
+    @QueryParam("propertyValue")
+    private String propertyValue; //属性值,模糊匹配,当flag=1时作为查询条件
+
+    public String getPropertyValueId() {
+        return propertyValueId;
+    }
+
+    public void setPropertyValueId(String propertyValueId) {
+        this.propertyValueId = propertyValueId;
+    }
+
+    public String getPropertyValue() {
+        return propertyValue;
+    }
+
+    public void setPropertyValue(String propertyValue) {
+        this.propertyValue = propertyValue;
+    }
+
+    public String getFlag() {
+        return flag;
+    }
+
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
 
     public String getPropertyId() {
         return propertyId;

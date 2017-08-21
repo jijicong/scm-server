@@ -105,8 +105,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Property>> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page){
-        try {
+    public ResponseAck<Object> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page){
+        try {//Pagenation<Property>
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
             logger.error("查询查询列表信息报错: " + e.getMessage());

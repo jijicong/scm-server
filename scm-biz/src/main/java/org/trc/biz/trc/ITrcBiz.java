@@ -143,13 +143,13 @@ public interface ITrcBiz {
     Pagenation<Items> itemsPage(ItemsForm2 form, Pagenation<Items> page);
 
     /**
-     * for channel's propertyPage
+     * for channel's propertyPage  //Pagenation<Property>
      * @param form
      * @param page
      * @return
      * @throws Exception
      */
-    Pagenation<Property> propertyPage(PropertyFormForTrc form,  Pagenation<Property> page) throws Exception;
+     Object propertyPage(PropertyFormForTrc form,  Pagenation<Property> page) throws Exception;
 
     /**
      * 对泰然城提供分页

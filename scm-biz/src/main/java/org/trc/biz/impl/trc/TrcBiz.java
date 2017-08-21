@@ -3,6 +3,7 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -925,7 +926,15 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Property> propertyPage(PropertyFormForTrc queryModel, Pagenation<Property> page) throws Exception {
+    public Object propertyPage(PropertyFormForTrc queryModel, Pagenation<Property> page) throws Exception {
+
+        String flag = queryModel.getFlag();
+        //为字符串‘1’or '0'
+        Boolean flagParam = StringUtils.equals(flag,ZeroToNineEnum.ZERO.getCode()) || StringUtils.equals(flag,ZeroToNineEnum.ONE.getCode());
+        if(!flagParam){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "flag不符合规定!");
+        }
+
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
         if(!StringUtils.isBlank(queryModel.getPropertyId())){
@@ -945,13 +954,54 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
-        page = propertyService.pagination(example, page, queryModel);
-        List<Property> list = page.getResult();
-        for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
-            endowPropertyValue(property);
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
+            page = propertyService.pagination(example, page, queryModel);
+            List<Property> list = page.getResult();
+            for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
+                endowPropertyValue(property);
+            }
+            page.setResult(list);
+            return page;
+        }else {//查询分类子类信息
+            /*
+            步骤
+            1.先查询所有的属性的id
+            3.根据属性id ，属性值id，属性值的value 作为条件，分页查询
+             */
+            List<Property> propertyList = propertyService.selectByExample(example);
+            if(CollectionUtils.isEmpty(propertyList)){
+                return page;
+            }
+            List<Long> propertyIdList = new ArrayList<Long>();
+            for (Property property : propertyList){
+                propertyIdList.add(property.getId());
+            }
+            Example example1 = new  Example(PropertyValue.class);
+            Example.Criteria criteria1 = example.createCriteria();
+            criteria1.andIn("propertyId",propertyIdList);
+            if(!StringUtils.isBlank(queryModel.getPropertyValueId())){
+                String[] ids = queryModel.getPropertyValueId().split(SupplyConstants.Symbol.COMMA);
+                criteria.andIn("id", Arrays.asList(ids));
+            }
+            if(!StringUtils.isBlank(queryModel.getPropertyValue())){
+                criteria.andLike("value",queryModel.getPropertyValue());
+            }
+            Page<PropertyValue> page1 = PageHelper.startPage(page.getPageNo(), page.getPageSize());
+            List<PropertyValue> propertyValueList = propertyValueService.selectByExample(example1);
+            if(CollectionUtils.isEmpty(propertyValueList)){
+                return page;
+            }
+            Long total = page1.getTotal();
+            Pagenation<PropertyValue> pagePropertyValue = new Pagenation<PropertyValue>();
+            //TODO 这里 要和东哥 商议 ，是返回属性值分页，还是属性值列表，目前是属性值分页
+            pagePropertyValue.setResult(propertyValueList);
+            pagePropertyValue.setTotalCount(total);
+            pagePropertyValue.setPageNo(page.getPageNo());
+            pagePropertyValue.setPageSize(page.getPageSize());
+            pagePropertyValue.setStart(page.getStart());
+            return pagePropertyValue;
         }
-        page.setResult(list);
-        return page;
+
     }
 
     @Override
@@ -966,6 +1016,11 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     public Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception {
+        //为字符串‘1’or '0'
+        Boolean flagParam = StringUtils.equals(queryModel.getFlag(),ZeroToNineEnum.ZERO.getCode()) || StringUtils.equals(queryModel.getFlag(),ZeroToNineEnum.ONE.getCode());
+        if(!flagParam){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "flag不符合规定!");
+        }
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(queryModel.getCategoryId())) {
@@ -989,7 +1044,7 @@ public class TrcBiz implements ITrcBiz {
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
             return categoryService.pagination(example, page, queryModel);
         }else {//查询分类子类信息
-            List<Category> categoryList = categoryService.selectByExample(example);
+            List<Category> categoryList = categoryService.selectByExample(example); //查询当前的类
             StringBuilder sb = new StringBuilder();
             for(Category category: categoryList){
                 sb.append(category.getId()).append(SupplyConstants.Symbol.COMMA);
@@ -1068,6 +1123,7 @@ public class TrcBiz implements ITrcBiz {
                     Long.parseLong(propertyId);
                 }
             }catch (NumberFormatException e){ //捕获到这个异常，说明调用方传入数据不合理
+                logger.error("属性id:参数格式错误!",e);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "属性id:参数格式错误!");
             }
             criteria.andIn("id",Arrays.asList(propertyIdStrs));
