@@ -146,4 +146,9 @@ public class ResultUtil {
 		AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), databuffer, result);
 		return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
 	}
+
+	public static Response createfailureResult(int code, String databuffer){
+		AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), databuffer, "");
+		return Response.status(code).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+	}
 }

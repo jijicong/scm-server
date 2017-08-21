@@ -1027,7 +1027,8 @@ public class TrcBiz implements ITrcBiz {
             criteria.andIn("id", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getCategoryCode())) {
-            criteria.andLike("categoryCode", queryModel.getCategoryCode());
+            String[] ids = queryModel.getCategoryCode().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("categoryCode", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
@@ -1078,7 +1079,8 @@ public class TrcBiz implements ITrcBiz {
             criteria.andEqualTo("alise", queryModel.getAlise());
         }
         if (!StringUtils.isBlank(queryModel.getBrandCode())) {
-            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
+            String[] ids = queryModel.getBrandCode().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("brandCode", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getBrandId())) {
             String[] ids = queryModel.getBrandId().split(SupplyConstants.Symbol.COMMA);

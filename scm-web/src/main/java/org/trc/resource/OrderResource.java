@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
@@ -12,6 +13,7 @@ import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
@@ -72,8 +74,12 @@ public class OrderResource {
     @Consumes("application/x-www-form-urlencoded")
     public Response submitJingDongOrder(@FormParam("warehouseOrderCode") String warehouseOrderCode,
             @FormParam("jdAddressCode") String jdAddressCode, @FormParam("jdAddressName") String jdAddressName, @Context ContainerRequestContext requestContext) throws Exception {
-        scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("提交京东订单成功","");
+        ResponseAck responseAck = scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+            return ResultUtil.createSuccessResult("提交京东订单成功", "");
+        }else{
+            return ResultUtil.createfailureResult(Integer.parseInt(responseAck.getCode()), responseAck.getMessage());
+        }
     }
 
 }
