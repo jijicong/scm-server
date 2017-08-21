@@ -977,7 +977,7 @@ public class TrcBiz implements ITrcBiz {
                 propertyIdList.add(property.getId());
             }
             Example example1 = new  Example(PropertyValue.class);
-            Example.Criteria criteria1 = example.createCriteria();
+            Example.Criteria criteria1 = example1.createCriteria();
             criteria1.andIn("propertyId",propertyIdList);
             if(!StringUtils.isBlank(queryModel.getPropertyValueId())){
                 String[] ids = queryModel.getPropertyValueId().split(SupplyConstants.Symbol.COMMA);
