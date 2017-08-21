@@ -1011,7 +1011,23 @@ public class TrcBiz implements ITrcBiz {
             return pagePropertyValue;*/
             Pagenation<PropertyValue> page2 = new Pagenation<PropertyValue>();
             BeanUtils.copyProperties(page, page2);
-            return propertyValueService.pagination(example1, page2, new QueryModel());
+            page2 = propertyValueService.pagination(example1, page2, new QueryModel());
+            List<PropertyValueForTrc> propertyValueForTrcs = new ArrayList<PropertyValueForTrc>();
+            for (PropertyValue pv : page2.getResult()) {
+                PropertyValueForTrc propertyValueForTrc = new PropertyValueForTrc();
+                propertyValueForTrc.setPropertyValueId(pv.getId());
+                propertyValueForTrc.setIsDeleted(pv.getIsDeleted());
+                propertyValueForTrc.setIsValid(pv.getIsValid());
+                propertyValueForTrc.setPicture(pv.getPicture());
+                propertyValueForTrc.setPropertyId(pv.getPropertyId());
+                propertyValueForTrc.setSort(pv.getSort());
+                propertyValueForTrc.setValue(pv.getValue());
+                propertyValueForTrcs.add(propertyValueForTrc);
+            }
+            Pagenation<PropertyValueForTrc> page3 = new Pagenation<PropertyValueForTrc>();
+            BeanUtils.copyProperties(page2, page3);
+            page3.setResult(propertyValueForTrcs);
+            return page3;
         }
 
     }
