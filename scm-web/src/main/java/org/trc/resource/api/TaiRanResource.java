@@ -186,7 +186,7 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> reciveChannelOrder(@FormParam("orderInfo") String orderInfo) {
+    public ResponseAck<String> reciveChannelOrder(String orderInfo) {
         ResponseAck responseAck = null;
         try{
             responseAck = scmOrderBiz.reciveChannelOrder(orderInfo);

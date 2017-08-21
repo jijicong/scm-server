@@ -7,10 +7,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
 
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -25,6 +22,7 @@ public class ScmApiResource {
     @POST
     @Path(SupplyConstants.Api.EXTERNAL_ITEM_UPDATE)
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded;charset=utf-8")
     public AppResult supplierSkuUpdateNotice(@FormParam("updateSupplierSkus") String updateSupplierSkus) throws Exception {
         goodsBiz.supplierSkuUpdateNotice(updateSupplierSkus);
         return ResultUtil.createSucssAppResult("供应商sku更新通知成功", "");
