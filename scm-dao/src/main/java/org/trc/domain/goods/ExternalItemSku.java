@@ -162,6 +162,10 @@ public class ExternalItemSku implements Serializable{
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
+    // 上下架状态
+    @FormParam("state")
+    private String state;
+
     //京东图片url
     @Transient
     private String jdPictureUrl;
@@ -412,5 +416,13 @@ public class ExternalItemSku implements Serializable{
 
     public void setJdPictureUrl(String jdPictureUrl) {
         this.jdPictureUrl = jdPictureUrl;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

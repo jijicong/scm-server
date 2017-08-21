@@ -1964,7 +1964,8 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setDetailPictrues(items.getDetailImagePath());//详图
             externalItemSku.setDetail(items.getIntroduction());
             //externalItemSku.setProperties();// 属性 TODO
-            //externalItemSku.setStock();//库存 ,调用京东接口实时设置 TODO
+            externalItemSku.setState(items.getState());//上下架状态
+            externalItemSku.setStock(items.getStock());//库存
             externalItemSku.setUpdateTime(sysDate);
             externalItemSkus.add(externalItemSku);
         }

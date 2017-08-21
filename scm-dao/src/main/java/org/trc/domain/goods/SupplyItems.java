@@ -30,6 +30,7 @@ public class SupplyItems extends BaseDO {
     private String detailImagePath;//商品明细图片地址
     private String isUsed;//是否已经使用
     private String warehouse;//仓库名称
+    private Long stock;//库存
 
     public Long getId() {
         return id;
@@ -205,5 +206,13 @@ public class SupplyItems extends BaseDO {
 
     public void setMarketPrice(BigDecimal marketPrice) {
         this.marketPrice = marketPrice;
+    }
+
+    public Long getStock() {
+        return stock;
+    }
+
+    public void setStock(Long stock) {
+        this.stock = stock;
     }
 }
