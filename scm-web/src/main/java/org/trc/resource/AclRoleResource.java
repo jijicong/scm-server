@@ -16,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by sone on 2017/5/11.
@@ -38,55 +39,55 @@ public class AclRoleResource {
     @PUT
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
+    public Response updateRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
 
         AclRole aclRole = roleAddPageData;
         roleBiz.updateRole(aclRole, roleAddPageData.getRoleJurisdiction(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return  ResultUtil.createSucssAppResult("修改角色信息成功","");
+        return  ResultUtil.createSuccessResult("修改角色信息成功","");
 
     }
     //保存角色信息以及与之对应的角色权限关联表信息的保存
     @POST
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
+    public Response saveRole(@BeanParam AclRoleAddPageData roleAddPageData, @Context ContainerRequestContext requestContext){
 
         AclRole aclRole = roleAddPageData;
         roleBiz.saveRole(aclRole, roleAddPageData.getRoleJurisdiction(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return  ResultUtil.createSucssAppResult("保存角色资源成功","");
+        return  ResultUtil.createSuccessResult("保存角色资源成功","");
 
     }
     //根据角色名查询角色
     @GET
     @Path(SupplyConstants.Role.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findRoleByName(@QueryParam("name") String name ){
+    public Response findRoleByName(@QueryParam("name") String name ){
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
-        return  ResultUtil.createSucssAppResult("查询角色成功", roleBiz.findRoleByName(name)==null ? null :"1");
+        return  ResultUtil.createSuccessResult("查询角色成功", roleBiz.findRoleByName(name)==null ? null :"1");
     }
     //根据角色的id 查询使用该角色的用户数量，以及启用状态
     @GET
     @Path(SupplyConstants.Role.ROLE_ACCREDITINFO)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult findNumFromRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId){
+    public Response findNumFromRoleAndAccreditInfoByRoleId(@QueryParam("roleId") Long roleId){
 
-        return  ResultUtil.createSucssAppResult("查询角色数量成功",roleBiz.findNumFromRoleAndAccreditInfoByRoleId(roleId));
+        return  ResultUtil.createSuccessResult("查询角色数量成功",roleBiz.findNumFromRoleAndAccreditInfoByRoleId(roleId));
 
     }
     //修改角色的状态
     @PUT
     @Path(SupplyConstants.Role.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult  updateRoleState(@BeanParam AclRole aclRole, @Context ContainerRequestContext requestContext){
+    public Response  updateRoleState(@BeanParam AclRole aclRole, @Context ContainerRequestContext requestContext){
         roleBiz.updateRoleState(aclRole,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("修改角色状态成功","");
+        return ResultUtil.createSuccessResult("修改角色状态成功","");
     }
 
     @GET
     @Path(SupplyConstants.Role.ROLE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclRole> findRoleById(@PathParam("id") Long id){
-        return ResultUtil.createSucssAppResult("查询角色成功",roleBiz.findRoleById(id));
+    public Response findRoleById(@PathParam("id") Long id){
+        return ResultUtil.createSuccessResult("查询角色成功",roleBiz.findRoleById(id));
     }
 
 }

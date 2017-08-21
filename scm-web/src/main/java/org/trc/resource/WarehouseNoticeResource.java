@@ -16,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -41,29 +42,29 @@ public class WarehouseNoticeResource {
     @PUT
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult receiptAdvice(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
+    public Response receiptAdvice(@BeanParam WarehouseNotice warehouseNotice, @Context ContainerRequestContext requestContext){
 
         warehouseNoticeBiz.receiptAdvice(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("通知收货成功","");
+        return ResultUtil.createSuccessResult("通知收货成功","");
 
     }
 
     @PUT
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
+    public Response receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
         //入库通知单详情页的入库通知操作
         warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("通知收货成功","");
+        return ResultUtil.createSuccessResult("通知收货成功","");
 
     }
 
     @GET
     @Path(SupplyConstants.WarehouseNotice.WAERHOUSE_NOTICE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<WarehouseNotice> findWarehouseNoticeInfoById(@PathParam("id") Long id){
+    public Response findWarehouseNoticeInfoById(@PathParam("id") Long id){
 
-        return ResultUtil.createSucssAppResult("查询入库通知单信息成功",warehouseNoticeBiz.findfindWarehouseNoticeById(id));
+        return ResultUtil.createSuccessResult("查询入库通知单信息成功",warehouseNoticeBiz.findfindWarehouseNoticeById(id));
 
     }
 
@@ -73,8 +74,6 @@ public class WarehouseNoticeResource {
     public List<WarehouseNoticeDetails> warehouseNoticeDetailList(@QueryParam("warehouseNotice") Long warehouseNotice)throws Exception{
         //"根据入库通知单的id，查询入库明细成功",
         return warehouseNoticeBiz.warehouseNoticeDetailList(warehouseNotice);
-
     }
-
 
 }

@@ -993,7 +993,6 @@ public class TrcBiz implements ITrcBiz {
             }
             Long total = page1.getTotal();
             Pagenation<PropertyValue> pagePropertyValue = new Pagenation<PropertyValue>();
-            //TODO 这里 要和东哥 商议 ，是返回属性值分页，还是属性值列表，目前是属性值分页
             pagePropertyValue.setResult(propertyValueList);
             pagePropertyValue.setTotalCount(total);
             pagePropertyValue.setPageNo(page.getPageNo());

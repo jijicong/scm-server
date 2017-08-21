@@ -17,6 +17,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * 采购订单审核
@@ -42,10 +43,10 @@ public class PurchaseOrderAuditResource {
     @PUT
     @Path(SupplyConstants.PurchaseOrderAudit.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult auditPurchaseOrder(@BeanParam PurchaseOrderAudit purchaseOrderAudit,@Context ContainerRequestContext requestContext) throws Exception{
+    public Response auditPurchaseOrder(@BeanParam PurchaseOrderAudit purchaseOrderAudit, @Context ContainerRequestContext requestContext) throws Exception{
 
         iPurchaseOrderAuditBiz.auditPurchaseOrder(purchaseOrderAudit,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("审核采购单信息成功","");
+        return ResultUtil.createSuccessResult("审核采购单信息成功","");
 
     }
 
