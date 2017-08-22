@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <category_brand id="7" category_id="17" category_code="FL017" brand_id="9" brand_code="PP2017072400009" is_valid="0" is_deleted="0" update_time="2017-08-10 19:56:47.0" create_time="2017-07-24 15:02:21.0"/>
+  <category_brand id="8" category_id="17" category_code="FL017" brand_id="10" brand_code="PP2017072400010" is_valid="1" is_deleted="0" update_time="2017-08-21 09:55:59.0" create_time="2017-07-24 15:02:21.0"/>
+  <category_brand id="9" category_id="20" category_code="FL020" brand_id="9" brand_code="PP2017072400009" is_valid="0" is_deleted="0" update_time="2017-08-10 19:56:47.0" create_time="2017-07-25 17:16:19.0"/>
+  <category_brand id="12" category_id="20" category_code="FL020" brand_id="3" brand_code="PP2017072300003" is_valid="0" is_deleted="0" update_time="2017-08-02 11:11:51.0" create_time="2017-07-26 20:23:58.0"/>
+  <category_brand id="13" category_id="8" category_code="FL008" brand_id="3" brand_code="PP2017072300003" is_valid="0" is_deleted="0" update_time="2017-08-02 11:11:51.0" create_time="2017-07-27 14:06:19.0"/>
+  <category_brand id="14" category_id="10" category_code="FL010" brand_id="3" brand_code="PP2017072300003" is_valid="0" is_deleted="0" update_time="2017-08-02 11:11:51.0" create_time="2017-07-27 14:07:56.0"/>
+  <category_brand id="16" category_id="19" category_code="FL019" brand_id="9" brand_code="PP2017072400009" is_valid="0" is_deleted="0" update_time="2017-08-10 19:56:47.0" create_time="2017-07-27 16:48:49.0"/>
+  <category_brand id="19" category_id="5" category_code="FL005" brand_id="14" brand_code="PP2017073100014" is_valid="1" is_deleted="0" update_time="2017-08-22 10:55:30.0" create_time="2017-07-31 18:02:39.0"/>
+  <category_brand id="26" category_id="28" category_code="FL028" brand_id="21" brand_code="PP2017080400021" is_valid="1" is_deleted="0" update_time="2017-08-08 14:23:17.0" create_time="2017-08-04 14:23:14.0"/>
+  <category_brand id="27" category_id="54" category_code="FL054" brand_id="28" brand_code="PP2017081100028" is_valid="1" is_deleted="0" update_time="2017-08-11 11:04:07.0" create_time="2017-08-11 11:05:27.0"/>
+  <category_brand id="28" category_id="53" category_code="FL053" brand_id="28" brand_code="PP2017081100028" is_valid="1" is_deleted="0" update_time="2017-08-11 16:06:30.0" create_time="2017-08-11 16:07:50.0"/>
+  <category_brand id="29" category_id="59" category_code="FL059" brand_id="30" brand_code="PP2017081100030" is_valid="1" is_deleted="0" update_time="2017-08-11 17:00:36.0" create_time="2017-08-11 16:34:54.0"/>
+  <category_brand id="35" category_id="93" category_code="FL093" brand_id="35" brand_code="PP2017081400035" is_valid="1" is_deleted="0" update_time="2017-08-14 11:48:38.0" create_time="2017-08-14 11:50:23.0"/>
+  <category_brand id="37" category_id="93" category_code="FL093" brand_id="32" brand_code="PP2017081200032" is_valid="1" is_deleted="0" update_time="2017-08-14 11:49:33.0" create_time="2017-08-14 11:50:53.0"/>
+  <category_brand id="42" category_id="96" category_code="FL096" brand_id="39" brand_code="PP2017081400039" is_valid="1" is_deleted="0" update_time="2017-08-14 16:46:29.0" create_time="2017-08-14 16:47:48.0"/>
+  <category_brand id="43" category_id="97" category_code="FL097" brand_id="39" brand_code="PP2017081400039" is_valid="1" is_deleted="0" update_time="2017-08-14 17:39:33.0" create_time="2017-08-14 17:40:53.0"/>
+  <category_brand id="45" category_id="112" category_code="FL112" brand_id="39" brand_code="PP2017081400039" is_valid="1" is_deleted="0" update_time="2017-08-14 17:59:50.0" create_time="2017-08-14 18:01:10.0"/>
+  <category_brand id="49" category_id="101" category_code="FL101" brand_id="39" brand_code="PP2017081400039" is_valid="1" is_deleted="0" update_time="2017-08-15 11:27:21.0" create_time="2017-08-15 11:28:41.0"/>
+  <category_brand id="51" category_id="100" category_code="FL100" brand_id="39" brand_code="PP2017081400039" is_valid="1" is_deleted="0" update_time="2017-08-15 11:30:30.0" create_time="2017-08-15 11:31:50.0"/>
+  <category_brand id="52" category_id="123" category_code="FL120" brand_id="40" brand_code="PP2017081500040" is_valid="1" is_deleted="0" update_time="2017-08-15 17:20:18.0" create_time="2017-08-15 17:21:38.0"/>
+  <category_brand id="53" category_id="93" category_code="FL093" brand_id="33" brand_code="PP2017081200033" is_valid="1" is_deleted="0" update_time="2017-08-17 10:12:41.0" create_time="2017-08-17 10:14:26.0"/>
+  <category_brand id="59" category_id="21" category_code="FL021" brand_id="33" brand_code="PP2017081200033" is_valid="1" is_deleted="0" update_time="2017-08-18 18:48:57.0" create_time="2017-08-18 18:50:40.0"/>
+  <category_brand id="61" category_id="90" category_code="FL090" brand_id="14" brand_code="PP2017073100014" is_valid="1" is_deleted="0" update_time="2017-08-22 10:55:30.0" create_time="2017-08-19 14:12:05.0"/>
+  <category_brand id="64" category_id="33" category_code="FL033" brand_id="18" brand_code="PP2017080200018" is_valid="1" is_deleted="0" update_time="2017-08-21 09:43:29.0" create_time="2017-08-19 15:09:17.0"/>
+  <category_brand id="65" category_id="90" category_code="FL090" brand_id="39" brand_code="PP2017081400039" is_valid="1" is_deleted="0" update_time="2017-08-21 09:16:33.0" create_time="2017-08-21 09:17:53.0"/>
+  <category_brand id="66" category_id="21" category_code="FL021" brand_id="18" brand_code="PP2017080200018" is_valid="1" is_deleted="0" update_time="2017-08-21 09:43:32.0" create_time="2017-08-21 09:44:52.0"/>
+  <category_brand id="67" category_id="101" category_code="FL101" brand_id="38" brand_code="PP2017081400038" is_valid="1" is_deleted="0" update_time="2017-08-21 14:35:39.0" create_time="2017-08-21 14:36:59.0"/>
+  <category_brand id="69" category_id="134" category_code="FL130" brand_id="43" brand_code="PP2017082200043" is_valid="1" is_deleted="0" update_time="2017-08-22 10:22:24.0" create_time="2017-08-22 10:23:44.0"/>
+  <category_brand id="70" category_id="90" category_code="FL090" brand_id="34" brand_code="PP2017081400034" is_valid="1" is_deleted="0" update_time="2017-08-22 14:00:11.0" create_time="2017-08-22 14:01:31.0"/>
+  <category_brand id="71" category_id="5" category_code="FL005" brand_id="34" brand_code="PP2017081400034" is_valid="1" is_deleted="0" update_time="2017-08-22 14:00:40.0" create_time="2017-08-22 14:02:00.0"/>
+</dataset>

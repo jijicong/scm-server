@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <supplier_after_sale_info id="1" supplier_id="22" supplier_code="GYS000001" goods_return_address="111" goods_return_contact_person="111" goods_return_phone="15068839416" goods_return_strategy="11111" is_deleted="0" create_time="2017-07-24 15:45:31.0" update_time="2017-07-24 15:45:31.0"/>
+  <supplier_after_sale_info id="65" supplier_id="125" supplier_code="GYS000065" goods_return_address="&#27993;&#27743;&#30465;&#26477;&#24030;&#24066;&#28392;&#27743;&#21306;&#19978;&#23792;&#30005;&#21830;&#22253;" goods_return_contact_person="&#22885;&#39532;&#39532;" goods_return_phone="17765487544" goods_return_strategy="&#19971;&#22825;&#26080;&#29702;&#30001;&#36864;&#25442;" is_deleted="0" create_time="2017-08-22 11:32:37.0" update_time="2017-08-22 11:33:57.0"/>
+</dataset>

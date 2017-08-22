@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <category id="88" full_path_id="1|2" category_code="FL088" source="scm" parent_id="2" level="3" name="&#32654;&#30002;" sort="0" classify_describe="[null]" is_leaf="1" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-08-12 16:47:49.0" update_time="2017-08-21 11:00:30.0"/>
+  <category id="89" full_path_id="1|2" category_code="FL089" source="scm" parent_id="2" level="3" name="&#30007;&#22763;&#25252;&#32932;" sort="0" classify_describe="[null]" is_leaf="1" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-08-12 16:47:56.0" update_time="2017-08-21 11:00:30.0"/>
+  <category id="90" full_path_id="1|2" category_code="FL090" source="scm" parent_id="2" level="3" name="&#30473;&#31508;/&#31881;&#12289;&#33167;" sort="0" classify_describe="[null]" is_leaf="1" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-08-12 16:48:15.0" update_time="2017-08-21 11:00:30.0"/>
+</dataset>
