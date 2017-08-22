@@ -123,7 +123,7 @@ public enum ExceptionEnum{
     ORDER_PARAM_DATA_ERROR("600114","订单参数数据错误"),
     INVOKE_JD_QUERY_INTERFACE_FAIL("600115","调用京东查询接口失败"),
 
-    USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
+    USER_BE_FORBIDDEN("900001","该用户已被停用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),
     USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),
 

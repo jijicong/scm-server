@@ -163,7 +163,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
             String msg = "该供应商已经被禁用无法申请，supplierId：" + supplierApply.getSupplierId();
             log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, "该供应商已经被禁用无法申请");
         }
         //2.验证供应商是否已经经过申请
         Example example = new Example(SupplierApply.class);
@@ -228,7 +228,7 @@ public class SupplierApplyBiz implements ISupplierApplyBiz {
         if (validateSupplier.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())) {
             String msg = "该供应商已经被禁用无法申请，supplierId：" + supplierApply.getSupplierId();
             log.error(msg);
-            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, msg);
+            throw new SupplierException(ExceptionEnum.SUPPLIER_APPLY_SAVE_EXCEPTION, "该供应商已经被禁用无法申请");
         }
         //2.验证供应商是否已经经过申请
         Example example = new Example(SupplierApply.class);
