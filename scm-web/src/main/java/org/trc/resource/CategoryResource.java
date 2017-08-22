@@ -56,8 +56,8 @@ public class CategoryResource {
     @GET
     @Path(SupplyConstants.Category.CategoryBrands.BAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Brand> brandPage(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) throws Exception {
-        return categoryBiz.brandListCategory(form, page);
+    public Response brandPage(@BeanParam BrandForm form, @BeanParam Pagenation<Brand> page) throws Exception {
+        return  ResultUtil.createSuccessPageResult(categoryBiz.brandListCategory(form, page));
     }
 
 
