@@ -1007,7 +1007,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderMoneyCheck(platformOrder, shopOrderList, orderItemList);
         }
         //校验商品是否不是添加过的供应商商品
-        checkItemsSource(orderItemList, platformOrder.getChannelCode());
+        checkItems(orderItemList, platformOrder.getChannelCode());
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
         //保存商品明细
@@ -1856,11 +1856,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     /**
-     * 检查商品来源
+     * 商品参数校验
      * @param orderItemList
      * @param channelCode 渠道编码
      */
-    private void checkItemsSource(List<OrderItem> orderItemList, String channelCode){
+    private void checkItems(List<OrderItem> orderItemList, String channelCode){
         Set<String> skuCodes = new HashSet<String>();
         for(OrderItem orderItem: orderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -1889,6 +1889,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String msg = "商品[" + sb.toString()+"]在供应链系统无法识别";
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        //校验商品上下架状态
+        Example example2 = new Example(ExternalItemSku.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("skuCode", skuCodes);
+        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example2);
+        AssertUtil.notEmpty(skuRelations, String.format("根据多个skuCode[%s]查询代发商品列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
+        List<String> _tmpSkuCodes = new ArrayList<String>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), externalItemSku.getState()))
+                _tmpSkuCodes.add(externalItemSku.getSkuCode());
+        }
+        if(_tmpSkuCodes.size() > 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("代发商品[%s]的供应商商品状态为下架!", CommonUtil.converCollectionToString(_tmpSkuCodes)));
         }
     }
 
