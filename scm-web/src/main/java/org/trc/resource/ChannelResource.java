@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.alibaba.fastjson.JSON;
 import org.springframework.stereotype.Component;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
@@ -31,8 +32,8 @@ public class ChannelResource {
     @GET
     @Path(SupplyConstants.Channel.CHANNEL_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Channel> channelPage(@BeanParam ChannelForm form, @BeanParam Pagenation<Channel> page){
-        return channelBiz.channelPage(form,page);
+    public Response channelPage(@BeanParam ChannelForm form, @BeanParam Pagenation<Channel> page){
+        return ResultUtil.createSuccessPageResult(channelBiz.channelPage(form,page));
     }
 
     //根据渠道名查询渠道

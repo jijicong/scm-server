@@ -33,9 +33,9 @@ public class WarehouseNoticeResource {
     @GET
     @Path(SupplyConstants.WarehouseNotice.WAREHOUSE_NOTICE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<WarehouseNotice> warehouseNoticePage(@BeanParam WarehouseNoticeForm form, @BeanParam Pagenation<WarehouseNotice> page,@Context ContainerRequestContext requestContext){
+    public Response warehouseNoticePage(@BeanParam WarehouseNoticeForm form, @BeanParam Pagenation<WarehouseNotice> page,@Context ContainerRequestContext requestContext){
 
-        return warehouseNoticeBiz.warehouseNoticePage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessPageResult(warehouseNoticeBiz.warehouseNoticePage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 
     }
 
@@ -71,9 +71,9 @@ public class WarehouseNoticeResource {
     @GET
     @Path(SupplyConstants.WarehouseNotice.WAREHOUSE_NOTICE_DETAIL)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<WarehouseNoticeDetails> warehouseNoticeDetailList(@QueryParam("warehouseNotice") Long warehouseNotice)throws Exception{
+    public Response warehouseNoticeDetailList(@QueryParam("warehouseNotice") Long warehouseNotice)throws Exception{
         //"根据入库通知单的id，查询入库明细成功",
-        return warehouseNoticeBiz.warehouseNoticeDetailList(warehouseNotice);
+        return ResultUtil.createSuccessPageResult(warehouseNoticeBiz.warehouseNoticeDetailList(warehouseNotice));
     }
 
 }
