@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <dataset>
-  <supplier_channel_relation id="459" supplier_id="125" channel_id="1" supplier_code="GYS000065" channel_code="QD001" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="460" supplier_id="125" channel_id="2" supplier_code="GYS000065" channel_code="QD002" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="461" supplier_id="125" channel_id="3" supplier_code="GYS000065" channel_code="QD003" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="462" supplier_id="125" channel_id="5" supplier_code="GYS000065" channel_code="QD005" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="463" supplier_id="125" channel_id="7" supplier_code="GYS000065" channel_code="QD007" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="464" supplier_id="125" channel_id="8" supplier_code="GYS000065" channel_code="QD008" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="465" supplier_id="125" channel_id="11" supplier_code="GYS000065" channel_code="QD011" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="466" supplier_id="125" channel_id="12" supplier_code="GYS000065" channel_code="QD012" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="467" supplier_id="125" channel_id="13" supplier_code="GYS000065" channel_code="QD013" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
-  <supplier_channel_relation id="468" supplier_id="125" channel_id="14" supplier_code="GYS000065" channel_code="QD014" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="459" supplier_id="1" channel_id="1" supplier_code="GYS000065" channel_code="QD001" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="460" supplier_id="1" channel_id="2" supplier_code="GYS000065" channel_code="QD002" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="461" supplier_id="1" channel_id="3" supplier_code="GYS000065" channel_code="QD003" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="462" supplier_id="1" channel_id="5" supplier_code="GYS000065" channel_code="QD005" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="463" supplier_id="1" channel_id="7" supplier_code="GYS000065" channel_code="QD007" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="464" supplier_id="1" channel_id="8" supplier_code="GYS000065" channel_code="QD008" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="465" supplier_id="1" channel_id="11" supplier_code="GYS000065" channel_code="QD011" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="466" supplier_id="1" channel_id="12" supplier_code="GYS000065" channel_code="QD012" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="467" supplier_id="1" channel_id="13" supplier_code="GYS000065" channel_code="QD013" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
+  <supplier_channel_relation id="468" supplier_id="1" channel_id="14" supplier_code="GYS000065" channel_code="QD014" is_deleted="0" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:06:25.0"/>
 </dataset>

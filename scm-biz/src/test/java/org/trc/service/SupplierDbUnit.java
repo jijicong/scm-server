@@ -73,21 +73,21 @@ public class SupplierDbUnit extends BaseTest {
     @Test
     public void testSaveSupplier() throws Exception {
         //删除原数据
-        execSql(conn,"delete from platform_order");
-        execSql(conn,"delete from supplier_category");
-        execSql(conn,"delete from supplier_brand");
-        execSql(conn,"delete from supplier_financial_info");
-        execSql(conn,"delete from supplier_after_sale_info");
-        execSql(conn,"delete from supplier_channel_relation");
-        //execSql(conn,"delete from log_information");
-        execSql(conn,"delete from supplier");
-        execSql(conn,"delete from certificate");
-        execSql(conn,"delete from acl_user_accredit_info");
-        execSql(conn,"delete from serial");
-        execSql(conn,"delete from channel");
-        execSql(conn,"delete from category");
-        execSql(conn,"delete from brand");
-        execSql(conn,"delete from category_brand");
+        execSql(conn,"delete from platform_order; alter table platform_order auto_increment=1;");
+        execSql(conn,"delete from supplier_category; alter table supplier_category auto_increment=1;");
+        execSql(conn,"delete from supplier_brand; alter table supplier_brand auto_increment=1;");
+        execSql(conn,"delete from supplier_financial_info; alter table supplier_financial_info auto_increment=1;");
+        execSql(conn,"delete from supplier_after_sale_info; alter table supplier_after_sale_info auto_increment=1;");
+        execSql(conn,"delete from supplier_channel_relation; alter table supplier_channel_relation auto_increment=1;");
+        execSql(conn,"delete from log_information; alter table log_information auto_increment=1;");
+        execSql(conn,"delete from supplier; alter table supplier auto_increment=1;");
+        execSql(conn,"delete from certificate; alter table certificate auto_increment=1;");
+        execSql(conn,"delete from acl_user_accredit_info; alter table acl_user_accredit_info auto_increment=1;");
+        execSql(conn,"delete from serial; alter table serial auto_increment=1;");
+        execSql(conn,"delete from channel; alter table channel auto_increment=1;");
+        execSql(conn,"delete from category; alter table category auto_increment=1;");
+        execSql(conn,"delete from brand; alter table brand auto_increment=1;");
+        execSql(conn,"delete from category_brand; alter table category_brand auto_increment=1;");
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "supplier/preInsertSerialData.xml");
         prepareData(conn, "supplier/preInsertBrandData.xml");
@@ -103,46 +103,41 @@ public class SupplierDbUnit extends BaseTest {
         AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
         supplierBiz.saveSupplier(supplier,certificate,supplierCategory,supplierBrand,supplierFinancialInfo,supplierAfterSaleInfo,aclUserAccreditInfo);
         // 从xml文件读取期望结果
-        ReplacementDataSet expResult01 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertPlatformOrderData.xml"));
-        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
-        expResult01.addReplacementObject("[null]", null);
-        // 从xml文件读取期望结果
-        ReplacementDataSet expResult02 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertSupplierCategoryData.xml"));
+        ReplacementDataSet expResult02 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierCategoryData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult02.addReplacementObject("[null]", null);
         // 从xml文件读取期望结果
-        ReplacementDataSet expResult03 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertSupplierBrandData.xml"));
+        ReplacementDataSet expResult03 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierBrandData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult03.addReplacementObject("[null]", null);
         // 从xml文件读取期望结果
-        ReplacementDataSet expResult04 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertSupplierFinancialInfoData.xml"));
+        ReplacementDataSet expResult04 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierFinancialInfoData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult04.addReplacementObject("[null]", null);
         // 从xml文件读取期望结果
-        ReplacementDataSet expResult05 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertSupplierAfterSaleInfoData.xml"));
+        ReplacementDataSet expResult05 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierAfterSaleInfoData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult05.addReplacementObject("[null]", null);
         // 从xml文件读取期望结果
-        ReplacementDataSet expResult06 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertSupplierChannelRelationData.xml"));
+        ReplacementDataSet expResult06 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierChannelRelationData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult06.addReplacementObject("[null]", null);
         // 从xml文件读取期望结果
-        //ReplacementDataSet expResult07 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertLogInformationData.xml"));
+        //ReplacementDataSet expResult07 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertLogInformationData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         //expResult07.addReplacementObject("[null]", null);
         // 从xml文件读取期望结果
-        ReplacementDataSet expResult08 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertSupplierData.xml"));
+        ReplacementDataSet expResult08 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult08.addReplacementObject("[null]", null);
-        ReplacementDataSet expResult09 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertCertificateData.xml"));
+        ReplacementDataSet expResult09 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertCertificateData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult09.addReplacementObject("[null]", null);
-        ReplacementDataSet expResult10 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertAclUserAccreditInfoData.xml"));
+        ReplacementDataSet expResult10 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertAclUserAccreditInfoData.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult10.addReplacementObject("[null]", null);
 
         //从数据库中查出数据与期望结果作比较
-        assertDataSet(TABLE_PLATFORM_ORDER,"select * from platform_order",expResult01,conn);
         assertDataSet(TABLE_SUPPLIER_CATEGORY,"select * from supplier_category",expResult02,conn);
         assertDataSet(TABLE_SUPPLIER_BRAND,"select * from supplier_brand",expResult03,conn);
         assertDataSet(TABLE_SUPPLIER_FINANCIAL_INFO,"select * from supplier_financial_info",expResult04,conn);
@@ -151,7 +146,6 @@ public class SupplierDbUnit extends BaseTest {
         //assertDataSet(TABLE_LOG_INFORMATION,"select * from log_information",expResult07,conn);
         assertDataSet(TABLE_SUPPLIER,"select * from supplier",expResult08,conn);
         assertDataSet(TABLE_CERTIFICATE,"select * from certificate",expResult09,conn);
-        assertDataSet(TABLE_USER_ACCREDIT_INFO,"select * from acl_user_accredit_info",expResult10,conn);
     }
 
     private Supplier createSupplier(){
