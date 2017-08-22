@@ -45,15 +45,17 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Items> goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
-        return goodsBiz.itemsPage(form, page);
+    public Response goodsPage(@BeanParam ItemsForm form, @BeanParam Pagenation<Items> page) throws Exception {
+        //return goodsBiz.itemsPage(form, page);
+        return ResultUtil.createSuccessPageResult(goodsBiz.itemsPage(form, page));
     }
 
     @GET
     @Path(SupplyConstants.Goods.GOODS_SKU_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Skus> itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page, @Context ContainerRequestContext requestContext) throws Exception {
-        return goodsBiz.itemsSkusPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response itemsSkusPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page, @Context ContainerRequestContext requestContext) throws Exception {
+        //return goodsBiz.itemsSkusPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessPageResult(goodsBiz.itemsSkusPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @POST
@@ -116,15 +118,17 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<ExternalItemSku> externalGoodsPage(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) throws Exception {
-        return goodsBiz.externalGoodsPage(form, page);
+    public Response externalGoodsPage(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) throws Exception {
+        //return goodsBiz.externalGoodsPage(form, page);
+        return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage(form, page));
     }
 
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE_2)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<SupplyItemsExt> externalGoodsPage2(@BeanParam SupplyItemsForm form, @BeanParam Pagenation<SupplyItemsExt> page) throws Exception {
-        return goodsBiz.externalGoodsPage2(form, page);
+    public Response externalGoodsPage2(@BeanParam SupplyItemsForm form, @BeanParam Pagenation<SupplyItemsExt> page) throws Exception {
+        //return goodsBiz.externalGoodsPage2(form, page);
+        return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage2(form, page));
     }
 
     @GET

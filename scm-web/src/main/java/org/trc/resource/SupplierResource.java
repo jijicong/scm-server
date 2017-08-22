@@ -42,15 +42,17 @@ public class SupplierResource {
     @GET
     @Path(SupplyConstants.Supply.Supplier.SUPPLIER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Supplier> supplierPage(@BeanParam SupplierForm form, @BeanParam Pagenation<Supplier> page) throws Exception {
-        return supplierBiz.supplierPage(form, page);
+    public Response supplierPage(@BeanParam SupplierForm form, @BeanParam Pagenation<Supplier> page) throws Exception {
+        //return supplierBiz.supplierPage(form, page);
+        return ResultUtil.createSuccessPageResult(supplierBiz.supplierPage(form, page));
     }
 
     @GET
     @Path(SupplyConstants.Supply.Supplier.APPLY_SUPPLIER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Supplier> supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext,@BeanParam SupplierForm form) throws Exception {
-        return supplierBiz.supplierPage(page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO),form);
+    public Response supplierPage(@BeanParam Pagenation<Supplier> page,@Context ContainerRequestContext requestContext,@BeanParam SupplierForm form) throws Exception {
+        //return supplierBiz.supplierPage(page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO),form);
+        return ResultUtil.createSuccessPageResult(supplierBiz.supplierPage(page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO),form));
     }
 
     @GET
