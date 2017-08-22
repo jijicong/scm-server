@@ -30,7 +30,7 @@ import java.util.Date;
 @Aspect
 public class JerseyResourceAop {
 
-    private Logger  log = LoggerFactory.getLogger(JerseyResourceAop.class);
+    private Logger log = LoggerFactory.getLogger(JerseyResourceAop.class);
     //jersey保存操作方法前缀
     public static final String SAVE_METHOD_PREFIX = "save";
 
@@ -68,12 +68,12 @@ public class JerseyResourceAop {
             //执行方法校验
             validate(point.getArgs());
             //新增操作方法拦截
-            if(method.getName().startsWith(SAVE_METHOD_PREFIX)){
+            if (method.getName().startsWith(SAVE_METHOD_PREFIX)) {
                 //获取ContainerRequestContext
                 ContainerRequestContext requestContext = hasContainerRequestContext(point.getArgs());
-                if(null != requestContext){
+                if (null != requestContext) {
                     //设置创建人
-                    setOperater(requestContext,point.getArgs());
+                    setOperater(requestContext, point.getArgs());
                 }
             }
             //执行方法
@@ -81,10 +81,8 @@ public class JerseyResourceAop {
         } catch (Exception e) {
             String errorMsg = ExceptionUtil.handlerException(e, targetClass, method.getName());
             log.error(errorMsg, e);
-           if (StringUtils.equals(AppResult.class.getSimpleName(), returnType.getSimpleName())) {
-                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
-                resultObj =Response.status(Response.Status.BAD_REQUEST).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
-            }
+            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
+            resultObj = Response.status(Response.Status.BAD_REQUEST).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
         }
         Date end = new Date();
         long endL = System.nanoTime();
@@ -108,14 +106,15 @@ public class JerseyResourceAop {
 
     /**
      * 判断参数里面是否包含ContainerRequestContext
+     *
      * @param parameterValues
      * @return
      */
-    private ContainerRequestContext hasContainerRequestContext(Object[] parameterValues){
+    private ContainerRequestContext hasContainerRequestContext(Object[] parameterValues) {
         ContainerRequestContext requestContext = null;
-        for(Object obj : parameterValues){
-            if(obj instanceof  ContainerRequestContext){
-                requestContext = (ContainerRequestContext)obj;
+        for (Object obj : parameterValues) {
+            if (obj instanceof ContainerRequestContext) {
+                requestContext = (ContainerRequestContext) obj;
             }
         }
         return requestContext;
@@ -123,16 +122,17 @@ public class JerseyResourceAop {
 
     /**
      * 设置当前操作人
+     *
      * @param requestContext
      * @param parameterValues
      */
-    private void setOperater(ContainerRequestContext requestContext, Object[] parameterValues){
+    private void setOperater(ContainerRequestContext requestContext, Object[] parameterValues) {
         Object _obj = requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         AssertUtil.notNull(_obj, "AOP获取登录用户ID为空");
         String userId = _obj.toString();
-        for(Object obj : parameterValues){
-            if(obj instanceof CommonDO){
-                ((CommonDO)obj).setCreateOperator(userId);
+        for (Object obj : parameterValues) {
+            if (obj instanceof CommonDO) {
+                ((CommonDO) obj).setCreateOperator(userId);
             }
         }
     }
@@ -140,29 +140,30 @@ public class JerseyResourceAop {
 
     /**
      * 对QueryModel类型参数对象的字符串字段进行空格截取
+     *
      * @param args
      */
     private void trimQueryModelStrField(Object[] args) throws IllegalAccessException {
-        for(Object paramObj: args){
-            if(null != paramObj){
+        for (Object paramObj : args) {
+            if (null != paramObj) {
                 Class<?> superCls = paramObj.getClass().getSuperclass();
-                if(StringUtils.equals(QueryModel.class.getSimpleName(), superCls.getSimpleName())){
-                    try{
+                if (StringUtils.equals(QueryModel.class.getSimpleName(), superCls.getSimpleName())) {
+                    try {
                         Class _cls = (Class) paramObj.getClass();
                         Field[] fs = _cls.getDeclaredFields();
-                        for(int i = 0 ; i < fs.length; i++){
+                        for (int i = 0; i < fs.length; i++) {
                             Field f = fs[i];
                             f.setAccessible(true); //设置些属性是可以访问的
                             if (StringUtils.equals(f.getType().getSimpleName(), String.class.getSimpleName())) {
-                                if(f.get(paramObj) != null){
+                                if (f.get(paramObj) != null) {
                                     String val = f.get(paramObj).toString();//得到此属性的值
-                                    if(StringUtils.isNotBlank(val)){
-                                        f.set(paramObj,val.trim());
+                                    if (StringUtils.isNotBlank(val)) {
+                                        f.set(paramObj, val.trim());
                                     }
                                 }
                             }
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         log.error("设置查询对象的字符串类型值异常", e);
                     }
 
@@ -170,9 +171,6 @@ public class JerseyResourceAop {
             }
         }
     }
-
-
-
 
 
 }

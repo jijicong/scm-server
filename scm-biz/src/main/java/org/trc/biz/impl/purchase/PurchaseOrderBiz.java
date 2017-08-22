@@ -99,7 +99,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    @Cacheable(key="#trc.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
     public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
         AssertUtil.notBlank(channelCode,"未获得授权");
@@ -584,27 +584,27 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
-    public void updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
+    public String updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
         String status = purchaseOrder.getStatus();
 
         if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){ //暂存：的删除操作
             handleDeleted(purchaseOrder,aclUserAccreditInfo);
-            return;
+            return "删除成功!";
         }
         if(PurchaseOrderStatusEnum.REJECT.getCode().equals(status)){ //审核驳回：的删除操作
             handleDeleted(purchaseOrder,aclUserAccreditInfo);
-            return;
+            return "删除成功!";
         }
         if(PurchaseOrderStatusEnum.PASS.getCode().equals(status)){//审核通过：的作废操作
             handleCancel(purchaseOrder,aclUserAccreditInfo);
-            return;
+            return "作废成功!";
         }
         if(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode().equals(status)){ //入库通知的（未通知仓储）：的作废操作
             handleCancel(purchaseOrder,aclUserAccreditInfo);
-            return;
         }
+        return "作废成功!";
     }
     //采购单作废操作
     private void handleCancel(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) {
@@ -827,6 +827,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                     LOGGER.error(msg);
                     throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
                 }
+            }
+        }
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){//后台检验提交审核：商品不能为空
+            if(StringUtils.isBlank(purchaseOrderAddData.getGridValue()) && "[]".equals(purchaseOrderAddData.getGridValue())){
+                String msg = "采购单修改,提交审核.采购商品不能为空!";
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_UPDATE_EXCEPTION, msg);
             }
         }
 

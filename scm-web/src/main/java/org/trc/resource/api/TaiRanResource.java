@@ -105,8 +105,8 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Property>> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page){
-        try {
+    public ResponseAck<Object> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page){
+        try {//Pagenation<Property>
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
             logger.error("查询查询列表信息报错: " + e.getMessage());
@@ -186,17 +186,16 @@ public class TaiRanResource {
     @POST
     @Path(SupplyConstants.TaiRan.ORDER_PROCESSING)
     @Produces("application/json;charset=utf-8")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public ResponseAck<String> reciveChannelOrder(String information) {
+    public ResponseAck<String> reciveChannelOrder(String orderInfo) {
         ResponseAck responseAck = null;
         try{
-            responseAck = scmOrderBiz.reciveChannelOrder(information);
+            responseAck = scmOrderBiz.reciveChannelOrder(orderInfo);
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
             responseAck = new ResponseAck(code, e.getMessage(), "");
-            logger.error(String.format("接收渠道同步订单%s异常,%s", information, e));
+            logger.error(String.format("接收渠道同步订单%s异常,%s", orderInfo, e));
         }finally {
-            scmOrderBiz.saveChannelOrderRequestFlow(information, responseAck);
+            scmOrderBiz.saveChannelOrderRequestFlow(orderInfo, responseAck);
         }
         return responseAck;
     }

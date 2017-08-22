@@ -36,6 +36,7 @@ public enum ExceptionEnum{
     GOODS_SAVE_EXCEPTION("400101","商品保存异常"),
     GOODS_UPDATE_EXCEPTION("400102","商品更新异常"),
     GOODS_DEPEND_DATA_INVALID("400103","商品依赖数据被禁用"),
+    GOODS_SKU_VALID_CON_NOT_STOP("400104","当前SPU下还存在启用的商品,无法停用"),
 
     EXTERNAL_GOODS_QUERY_EXCEPTION("400104","代发商品查询异常"),
     EXTERNAL_GOODS_UPDATE_EXCEPTION("400105","代发商品查询异常"),
@@ -122,7 +123,7 @@ public enum ExceptionEnum{
     ORDER_PARAM_DATA_ERROR("600114","订单参数数据错误"),
     INVOKE_JD_QUERY_INTERFACE_FAIL("600115","调用京东查询接口失败"),
 
-    USER_BE_FORBIDDEN("900001","用户被禁用，请联系管理员"),
+    USER_BE_FORBIDDEN("900001","该用户已被停用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),
     USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),
 

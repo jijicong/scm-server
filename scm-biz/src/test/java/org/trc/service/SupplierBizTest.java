@@ -9,6 +9,7 @@ import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.util.DateUtils;
 
 /**
  * Created by hzwdx on 2017/8/17.
@@ -55,19 +56,23 @@ public class SupplierBizTest extends BaseTest{
     public Supplier createSupplier(){
         Supplier supplier = new Supplier();
         supplier.setSupplierCode("GYS000001");
-        supplier.setSupplierName("测试供应商");
-        supplier.setSupplierCode("purchase");
+        supplier.setSupplierName("sss");
+        supplier.setSupplierKindCode("purchase");
         supplier.setSupplierTypeCode("internalSupplier");
-        supplier.setContact("wdx");
-        supplier.setPhone("0571-8745214x");
-        supplier.setMobile("13568495789");
-        supplier.setProvince("浙江省");
-        supplier.setCity("杭州市");
-        supplier.setArea("滨江区");
-        supplier.setAddress("垃圾街");
+        supplier.setContact("sss");
+        supplier.setPhone("15068839416");
+        //supplier.setMobile("13568495789");
+        supplier.setProvince("120000");
+        supplier.setCity("120102");
+        //supplier.setArea("滨江区");
+        supplier.setAddress("ssss");
         supplier.setCertificateTypeId("normalThreeCertificate");//普通三证
         supplier.setIsValid(ValidEnum.VALID.getCode());
         supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        supplier.setRemark("sss");
+        supplier.setCreateOperator("E2E4BDAD80354EFAB6E70120C271968C");
+        supplier.setCreateTime(DateUtils.parseDateTime("2017-07-24 15:45:31"));
+        supplier.setUpdateTime(DateUtils.parseDateTime("2017-07-24 15:45:31"));
         return supplier;
     }
 

@@ -3,10 +3,13 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import javafx.scene.control.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,6 +20,7 @@ import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.BaseDO;
 import org.trc.domain.System.Channel;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
@@ -925,33 +929,107 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Property> propertyPage(PropertyFormForTrc queryModel, Pagenation<Property> page) throws Exception {
+    public Object propertyPage(PropertyFormForTrc queryModel, Pagenation<Property> page) throws Exception {
+        boolean bool = false;
+        String flag = queryModel.getFlag();
+        //为字符串‘1’or '0'
+        Boolean flagParam = StringUtils.equals(flag,ZeroToNineEnum.ZERO.getCode()) || StringUtils.equals(flag,ZeroToNineEnum.ONE.getCode());
+        if(!flagParam){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "flag不符合规定!");
+        }
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
         if(!StringUtils.isBlank(queryModel.getPropertyId())){
+            bool = true;
             verifyPropertyId(criteria,queryModel.getPropertyId());
         }
         if (!StringUtils.isBlank(queryModel.getName())) {
+            bool = true;
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
         if (!StringUtils.isBlank(queryModel.getTypeCode())) {
+            bool = true;
             criteria.andEqualTo("typeCode", queryModel.getTypeCode());
         }
         if (!StringUtils.isBlank(queryModel.getSort())) {
+            bool = true;
             criteria.andEqualTo("sort", queryModel.getSort());
         }
         if (!StringUtils.isBlank(queryModel.getIsValid())) {
+            bool = true;
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
         example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
-        page = propertyService.pagination(example, page, queryModel);
-        List<Property> list = page.getResult();
-        for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
-            endowPropertyValue(property);
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
+            page = propertyService.pagination(example, page, queryModel);
+            List<Property> list = page.getResult();
+            for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
+                endowPropertyValue(property);
+            }
+            page.setResult(list);
+            return page;
+        }else {//查询分类子类信息
+            /*
+            步骤
+            1.先查询所有的属性的id
+            3.根据属性id ，属性值id，属性值的value 作为条件，分页查询
+             */
+            List<Long> propertyIdList = new ArrayList<Long>();
+            if(bool){
+                List<Property> propertyList = propertyService.selectByExample(example);
+                if(CollectionUtils.isEmpty(propertyList)){
+                    return page;
+                }
+                for (Property property : propertyList){
+                    propertyIdList.add(property.getId());
+                }
+            }
+            Example example1 = new  Example(PropertyValue.class);
+            Example.Criteria criteria1 = example1.createCriteria();
+            if(!CollectionUtils.isEmpty(propertyIdList))
+                criteria1.andIn("propertyId",propertyIdList);
+            if(!StringUtils.isBlank(queryModel.getPropertyValueId())){
+                String[] ids = queryModel.getPropertyValueId().split(SupplyConstants.Symbol.COMMA);
+                criteria1.andIn("id", Arrays.asList(ids));
+            }
+            if(!StringUtils.isBlank(queryModel.getPropertyValue())){
+                criteria1.andLike("value",queryModel.getPropertyValue());
+            }
+            /*Page<PropertyValue> page1 = PageHelper.startPage(page.getPageNo(), page.getPageSize());
+            List<PropertyValue> propertyValueList = propertyValueService.selectByExample(example1);
+            if(CollectionUtils.isEmpty(propertyValueList)){
+                return page;
+            }
+            Long total = page1.getTotal();
+            Pagenation<PropertyValue> pagePropertyValue = new Pagenation<PropertyValue>();
+            pagePropertyValue.setResult(propertyValueList);
+            pagePropertyValue.setTotalCount(total);
+            pagePropertyValue.setPageNo(page.getPageNo());
+            pagePropertyValue.setPageSize(page.getPageSize());
+            pagePropertyValue.setStart(page.getStart());
+            return pagePropertyValue;*/
+            Pagenation<PropertyValue> page2 = new Pagenation<PropertyValue>();
+            BeanUtils.copyProperties(page, page2);
+            page2 = propertyValueService.pagination(example1, page2, new QueryModel());
+            List<PropertyValueForTrc> propertyValueForTrcs = new ArrayList<PropertyValueForTrc>();
+            for (PropertyValue pv : page2.getResult()) {
+                PropertyValueForTrc propertyValueForTrc = new PropertyValueForTrc();
+                propertyValueForTrc.setPropertyValueId(pv.getId());
+                propertyValueForTrc.setIsDeleted(pv.getIsDeleted());
+                propertyValueForTrc.setIsValid(pv.getIsValid());
+                propertyValueForTrc.setPicture(pv.getPicture());
+                propertyValueForTrc.setPropertyId(pv.getPropertyId());
+                propertyValueForTrc.setSort(pv.getSort());
+                propertyValueForTrc.setValue(pv.getValue());
+                propertyValueForTrcs.add(propertyValueForTrc);
+            }
+            Pagenation<PropertyValueForTrc> page3 = new Pagenation<PropertyValueForTrc>();
+            BeanUtils.copyProperties(page2, page3);
+            page3.setResult(propertyValueForTrcs);
+            return page3;
         }
-        page.setResult(list);
-        return page;
+
     }
 
     @Override
@@ -966,6 +1044,11 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     public Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception {
+        //为字符串‘1’or '0'
+        Boolean flagParam = StringUtils.equals(queryModel.getFlag(),ZeroToNineEnum.ZERO.getCode()) || StringUtils.equals(queryModel.getFlag(),ZeroToNineEnum.ONE.getCode());
+        if(!flagParam){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "flag不符合规定!");
+        }
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(queryModel.getCategoryId())) {
@@ -973,7 +1056,8 @@ public class TrcBiz implements ITrcBiz {
             criteria.andIn("id", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getCategoryCode())) {
-            criteria.andLike("categoryCode", queryModel.getCategoryCode());
+            String[] ids = queryModel.getCategoryCode().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("categoryCode", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
@@ -989,7 +1073,7 @@ public class TrcBiz implements ITrcBiz {
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
             return categoryService.pagination(example, page, queryModel);
         }else {//查询分类子类信息
-            List<Category> categoryList = categoryService.selectByExample(example);
+            List<Category> categoryList = categoryService.selectByExample(example); //查询当前的类
             StringBuilder sb = new StringBuilder();
             for(Category category: categoryList){
                 sb.append(category.getId()).append(SupplyConstants.Symbol.COMMA);
@@ -1024,7 +1108,8 @@ public class TrcBiz implements ITrcBiz {
             criteria.andEqualTo("alise", queryModel.getAlise());
         }
         if (!StringUtils.isBlank(queryModel.getBrandCode())) {
-            criteria.andEqualTo("brandCode", queryModel.getBrandCode());
+            String[] ids = queryModel.getBrandCode().split(SupplyConstants.Symbol.COMMA);
+            criteria.andIn("brandCode", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getBrandId())) {
             String[] ids = queryModel.getBrandId().split(SupplyConstants.Symbol.COMMA);
@@ -1068,6 +1153,7 @@ public class TrcBiz implements ITrcBiz {
                     Long.parseLong(propertyId);
                 }
             }catch (NumberFormatException e){ //捕获到这个异常，说明调用方传入数据不合理
+                logger.error("属性id:参数格式错误!",e);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "属性id:参数格式错误!");
             }
             criteria.andIn("id",Arrays.asList(propertyIdStrs));

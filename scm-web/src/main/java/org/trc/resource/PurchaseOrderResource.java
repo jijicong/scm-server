@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
@@ -22,7 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by sone on 2017/5/25.
@@ -37,142 +38,142 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext){
+    public Response purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext){
 
         Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         AssertUtil.notNull(obj,"查询订单分页中,获得授权信息失败");
         AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)obj;
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         //采购订单分页查询列表
-        return  purchaseOrderBiz.purchaseOrderPage(form , page,channelCode);
+        return  ResultUtil.createSuccessPageResult(purchaseOrderBiz.purchaseOrderPage(form , page,channelCode));
 
     }
 
     @POST
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult savePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder, @Context ContainerRequestContext requestContext) {
+    public Response savePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder, @Context ContainerRequestContext requestContext) {
 
         purchaseOrderBiz.savePurchaseOrder(purchaseOrder, PurchaseOrderStatusEnum.HOLD.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("保存采购订单成功","");
+        return ResultUtil.createSuccessResult("保存采购订单成功","");
 
     }
     @POST
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT)
     @Produces(MediaType.APPLICATION_JSON)//因为aop只拦截了save***开始的方法，注入创建人，因此这里的提交审核，也为save开始
-    public AppResult saveCommitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) {
+    public Response saveCommitAuditPurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrder,@Context ContainerRequestContext requestContext) {
         purchaseOrderBiz.savePurchaseOrder(purchaseOrder,PurchaseOrderStatusEnum.AUDIT.getCode(),(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("提交审核采购单成功","");
+        return ResultUtil.createSuccessResult("提交审核采购单成功","");
     }
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<List<Supplier>> findSuppliers(@Context ContainerRequestContext requestContext)  {
+    public Response findSuppliers(@Context ContainerRequestContext requestContext)  {
 
         String userId = (String)requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
 
-        return ResultUtil.createSucssAppResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(userId));
+        return ResultUtil.createSuccessResult("根据用户id查询对应的供应商",purchaseOrderBiz.findSuppliersByUserId(userId));
 
     }
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ITEMS+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
+    public Response findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
 
-        return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
+        return  ResultUtil.createSuccessPageResult(purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus));
 
     }
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIER_BRAND+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<SupplierBrandExt> findSupplierBrand(@PathParam("supplierCode") String supplierCode) throws Exception {
+    public Response findSupplierBrand(@PathParam("supplierCode") String supplierCode) throws Exception {
 
-        return   ResultUtil.createSucssAppResult("根据供应商编码,查询该供应商对应的品牌成功!",purchaseOrderBiz.findSupplierBrand(supplierCode));
+        return   ResultUtil.createSuccessResult("根据供应商编码,查询该供应商对应的品牌成功!",purchaseOrderBiz.findSupplierBrand(supplierCode));
 
     }
 
 
     @PUT
-    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")//todo 保存修改
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")// 保存修改
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
+    public Response updatePurchaseOrder(@BeanParam PurchaseOrderAddData purchaseOrderAddData, @Context ContainerRequestContext requestContext) {
 
         purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return  ResultUtil.createSucssAppResult("修改采购订单信息成功","");
+        return  ResultUtil.createSuccessResult("修改采购订单信息成功","");
 
     }
     @PUT
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_AUDIT+"/{id}")//提交审核修改
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
+    public Response updatePurchaseOrderAudit(@BeanParam PurchaseOrderAddData purchaseOrderAddData,@Context ContainerRequestContext requestContext) {
 
         purchaseOrderAddData.setStatus(PurchaseOrderStatusEnum.AUDIT.getCode());
         purchaseOrderBiz.updatePurchaseOrder(purchaseOrderAddData,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return  ResultUtil.createSucssAppResult("提交审核修改采购订单信息成功","");
+        return  ResultUtil.createSuccessResult("提交审核修改采购订单信息成功","");
 
     }
     @PUT
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_UPDATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
+    public Response updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
         purchaseOrderBiz.cancelWarahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("入库通知作废成功","");
+        return ResultUtil.createSuccessResult("入库通知作废成功！","");
 
     }
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ALL_ITEMS+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<PurchaseDetail> findAllPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode) {
-        return ResultUtil.createSucssAppResult("根据供应商编码查询所有的有效商品成功",purchaseOrderBiz.findAllPurchaseDetailBysupplierCode(supplierCode));
+    public Response findAllPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode) {
+        return ResultUtil.createSuccessResult("根据供应商编码查询所有的有效商品成功",purchaseOrderBiz.findAllPurchaseDetailBysupplierCode(supplierCode));
     }
 
 
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<PurchaseOrder> findPurchaseOrderAddDataById(@PathParam("id") Long id) {
+    public Response findPurchaseOrderAddDataById(@PathParam("id") Long id) {
 
-        return ResultUtil.createSucssAppResult("根据采购单Id查询采购单信息成功",purchaseOrderBiz.findPurchaseOrderAddDataById(id));
+        return ResultUtil.createSuccessResult("根据采购单Id查询采购单信息成功",purchaseOrderBiz.findPurchaseOrderAddDataById(id));
 
     }
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_BY_CODE+"/{purchaseOrderCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<PurchaseOrder> findPurchaseOrderAddDataById(@PathParam("purchaseOrderCode") String purchaseOrderCode) {
+    public Response findPurchaseOrderAddDataById(@PathParam("purchaseOrderCode") String purchaseOrderCode) {
 
-        return ResultUtil.createSucssAppResult("根据采购单编码查询采购单信息成功",purchaseOrderBiz.findPurchaseOrderAddDataByCode(purchaseOrderCode));
+        return ResultUtil.createSuccessResult("根据采购单编码查询采购单信息成功",purchaseOrderBiz.findPurchaseOrderAddDataByCode(purchaseOrderCode));
 
     }
 
     @PUT
     @Path(SupplyConstants.PurchaseOrder.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
+    public Response updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("状态修改成功","");
+       String msg = purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(msg,"");
 
     }
 
     @PUT
     @Path(SupplyConstants.PurchaseOrder.FREEZE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
+    public Response updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
         purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("采购单冻结状态修改成功","");
+        return ResultUtil.createSuccessResult("采购单冻结成功!","");
 
     }
 
     @PUT
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveWarahouseAdvice(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) {
+    public Response saveWarahouseAdvice(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) {
         purchaseOrderBiz.warahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("入库通知单添加成功","");
+        return ResultUtil.createSuccessResult("入库通知单添加成功!","");
     }
 
 }

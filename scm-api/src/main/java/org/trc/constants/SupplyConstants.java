@@ -17,6 +17,7 @@ public class SupplyConstants {
         public static final String FILE_NAME_SPLIT = ".";//文件名称分隔符
         public static final String FULL_PATH_SPLIT = "|";//分类路径ID分隔符
         public static final String SEMICOLON = ";";//分号
+        public static final String XIE_GANG = "/";//斜杠
     }
 
 

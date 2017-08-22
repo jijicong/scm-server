@@ -1,13 +1,10 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSONArray;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.JurisdictionTreeNode;
-import org.trc.util.AppResult;
 import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
@@ -15,6 +12,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * 资源控制
@@ -34,31 +32,31 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findWholeJurisdiction(){
+    public Response findWholeJurisdiction(){
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdiction());
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdiction());
 
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE_MODULE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findWholeJurisdictionModule(){
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionModule());
+    public Response findWholeJurisdictionModule(){
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionModule());
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findChannelJurisdiction(){
-        return ResultUtil.createSucssAppResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdiction());
+    public Response findChannelJurisdiction(){
+        return ResultUtil.createSuccessResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdiction());
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL_MODULE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findChannelJurisdictionModule(){
-        return ResultUtil.createSucssAppResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdictionModule());
+    public Response findChannelJurisdictionModule(){
+        return ResultUtil.createSuccessResult("查询渠道角色成功", jurisdictionBiz.findChannelJurisdictionModule());
     }
 
     /**
@@ -69,68 +67,68 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findWholeJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId){
+    public Response findWholeJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId){
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(roleId));
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedByRoleId(roleId));
 
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findChannelJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId){
+    public Response  findChannelJurisdictionAndCheckedByRoleId(@PathParam("roleId") Long roleId){
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedByRoleId(roleId));
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedByRoleId(roleId));
 
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE_MODULE + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
+    public Response findWholeJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedModuleByRoleId(roleId));
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedModuleByRoleId(roleId));
 
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL_MODULE + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<AclResource> findChannelJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
+    public Response findChannelJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
 
-        return ResultUtil.createSucssAppResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedModuleByRoleId(roleId));
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedModuleByRoleId(roleId));
 
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_TREE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> jurisdictionTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive){
-        return ResultUtil.createSucssAppResult("查询权限资源成功", jurisdictionBiz.getNodes(parentId, isRecursive));
+    public Response jurisdictionTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive){
+        return ResultUtil.createSuccessResult("查询权限资源成功", jurisdictionBiz.getNodes(parentId, isRecursive));
     }
 
     @POST
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_SAVE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,@Context ContainerRequestContext requestContext) {
+    public Response saveJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode,@Context ContainerRequestContext requestContext) {
         jurisdictionBiz.saveJurisdiction(jurisdictionTreeNode,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("新增权限资源成功", "");
+        return ResultUtil.createSuccessResult("新增权限资源成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_EDIT+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> updateJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode){
+    public Response updateJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode){
         jurisdictionBiz.updateJurisdiction(jurisdictionTreeNode);
-        return ResultUtil.createSucssAppResult("更新权限资源成功", "");
+        return ResultUtil.createSuccessResult("更新权限资源成功", "");
     }
 
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_HTML)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> updateJurisdiction(@Context ContainerRequestContext requestContext){
+    public Response updateJurisdiction(@Context ContainerRequestContext requestContext){
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
-        return ResultUtil.createSucssAppResult("查询用户html页面权限成功", jurisdictionBiz.getHtmlJurisdiction(userId));
+        return ResultUtil.createSuccessResult("查询用户html页面权限成功", jurisdictionBiz.getHtmlJurisdiction(userId));
     }
 }

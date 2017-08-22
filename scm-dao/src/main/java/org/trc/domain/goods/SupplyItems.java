@@ -17,7 +17,7 @@ public class SupplyItems extends BaseDO {
     private BigDecimal supplyPrice; //供货价
     private BigDecimal marketPrice;//市场价
     private String category;//分类
-    private String categoryName;//分类名称
+    private String categoryCode;//分类名称
     private String brand;//品牌
     private String skuType;//商品类型
     private Double weight;//重量
@@ -30,6 +30,7 @@ public class SupplyItems extends BaseDO {
     private String detailImagePath;//商品明细图片地址
     private String isUsed;//是否已经使用
     private String warehouse;//仓库名称
+    private Long stock;//库存
 
     public Long getId() {
         return id;
@@ -167,12 +168,12 @@ public class SupplyItems extends BaseDO {
         this.detailImagePath = detailImagePath;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getWarehouse() {
@@ -205,5 +206,13 @@ public class SupplyItems extends BaseDO {
 
     public void setMarketPrice(BigDecimal marketPrice) {
         this.marketPrice = marketPrice;
+    }
+
+    public Long getStock() {
+        return stock;
+    }
+
+    public void setStock(Long stock) {
+        this.stock = stock;
     }
 }

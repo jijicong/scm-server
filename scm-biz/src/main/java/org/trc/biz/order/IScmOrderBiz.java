@@ -13,6 +13,7 @@ import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -64,14 +65,14 @@ public interface IScmOrderBiz {
      * @param jdAddressName
      * @return
      */
-    AppResult submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, AclUserAccreditInfo aclUserAccreditInfo);
+    ResponseAck submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      *提交粮油订单
      * @param warehouseOrderCode
      * @return
      */
-    AppResult submitLiangYouOrder(String warehouseOrderCode);
+    ResponseAck submitLiangYouOrder(String warehouseOrderCode);
 
     /**
      * 渠道订单请求流水

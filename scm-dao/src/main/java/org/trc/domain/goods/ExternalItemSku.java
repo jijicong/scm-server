@@ -89,13 +89,13 @@ public class ExternalItemSku implements Serializable{
 
     // 分类
     @FormParam("category")
-    @Length(max = 32, message = "分类长度不能超过32个")
+    @Length(max = 32, message = "分类名称长度不能超过32个")
     private String category;
 
     // 分类名称
-    @FormParam("categoryName")
-    @Length(max = 64, message = "分类长度不能超过64个")
-    private String categoryName;
+    @FormParam("categoryCode")
+    @Length(max = 64, message = "分类编码长度不能超过64个")
+    private String categoryCode;
 
     // 重量,单位/克
     @FormParam("weight")
@@ -161,6 +161,10 @@ public class ExternalItemSku implements Serializable{
     // 最后更新时间,格式yyyy-mm-dd hh:mi:ss
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
+
+    // 上下架状态
+    @FormParam("state")
+    private String state;
 
     //京东图片url
     @Transient
@@ -398,12 +402,12 @@ public class ExternalItemSku implements Serializable{
         this.updateTime = updateTime;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getJdPictureUrl() {
@@ -412,5 +416,13 @@ public class ExternalItemSku implements Serializable{
 
     public void setJdPictureUrl(String jdPictureUrl) {
         this.jdPictureUrl = jdPictureUrl;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

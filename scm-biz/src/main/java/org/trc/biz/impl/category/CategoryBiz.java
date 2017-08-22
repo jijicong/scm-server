@@ -282,7 +282,7 @@ public class CategoryBiz implements ICategoryBiz {
         AssertUtil.notNull(category.getCategoryCode(), "分类编码生成失败");
         String categoryAction;
 
-        category.setSource(SourceEnum.TRC.getCode());
+        category.setSource(SourceEnum.SCM.getCode());
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
         category.setCreateTime(Calendar.getInstance().getTime());
         category.setUpdateTime(Calendar.getInstance().getTime());

@@ -14,6 +14,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.JingDongEnum;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.GoodsException;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.liangyou.LiangYouOrder;
@@ -21,6 +22,8 @@ import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -757,7 +760,11 @@ public class JDServiceImpl implements IJDService {
             }else {
                 returnTypeDO.setResultMessage("调用外部供应商商品查询接口返回结果为空");
             }
-        }catch (Exception e){
+        }catch (IOException e){
+            String msg = String.format("调用京东商品查询服务网络超时,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage("调用京东商品查询服务网络超时");
+        } catch (Exception e){
             String msg = String.format("调用外部供应商商品查询接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);

@@ -17,6 +17,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -57,99 +58,99 @@ public class SelectListResource {
     @GET
     @Path(SupplyConstants.SelectList.PURCHASE_ORDER_AUDIT_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> purchaseOrderAuditStatus(){
-        return ResultUtil.createSucssAppResult("查询采购订单的审核状态成功", PurchaseOrderAuditEnum.toJSONArray());
+    public Response purchaseOrderAuditStatus(){
+        return ResultUtil.createSuccessResult("查询采购订单的审核状态成功", PurchaseOrderAuditEnum.toJSONArray());
     }
 
     @GET
     @Path(SupplyConstants.SelectList.OUTBOUND_ORDER_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> outboundOrderStatus(){
-        return ResultUtil.createSucssAppResult("查询发货通知单的状态成功", OutboundOrderStatusEnum.toJSONArray());
+    public Response outboundOrderStatus(){
+        return ResultUtil.createSuccessResult("查询发货通知单的状态成功", OutboundOrderStatusEnum.toJSONArray());
     }
 
     @GET
     @Path(SupplyConstants.SelectList.WAREHOSUE_NOTICE_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryWarehouseNoticeStatus(){
-        return ResultUtil.createSucssAppResult("查询入库通知的状态成功", WarehouseNoticeStatusEnum.toJSONArray());
+    public Response queryWarehouseNoticeStatus(){
+        return ResultUtil.createSuccessResult("查询入库通知的状态成功", WarehouseNoticeStatusEnum.toJSONArray());
     }
 
     @GET
     @Path(SupplyConstants.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryValidList(){
-        return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
+    public Response queryValidList(){
+        return ResultUtil.createSuccessResult("成功", ValidEnum.toJSONArray());
     }
 
     @GET
     @Path(SupplyConstants.SelectList.PURCHASE_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> purchaseType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询采购类型成功", configBiz.findDictsByTypeNo(PURCHASE_TYPE));
+    public Response purchaseType() throws Exception{
+        return ResultUtil.createSuccessResult("查询采购类型成功", configBiz.findDictsByTypeNo(PURCHASE_TYPE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.HANDLER_PRIORITY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> handlerPriority() throws Exception{
-        return ResultUtil.createSucssAppResult("查询处理优先级成功", configBiz.findDictsByTypeNo(HANDLER_PRIORITY));
+    public Response handlerPriority() throws Exception{
+        return ResultUtil.createSuccessResult("查询处理优先级成功", configBiz.findDictsByTypeNo(HANDLER_PRIORITY));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.TRANSORT_COSTS_TAKE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> transportCostsTake() throws Exception{
-        return ResultUtil.createSucssAppResult("查询运费承担方成功", configBiz.findDictsByTypeNo(TRANSORT_COSTS_TAKE));
+    public Response transportCostsTake() throws Exception{
+        return ResultUtil.createSuccessResult("查询运费承担方成功", configBiz.findDictsByTypeNo(TRANSORT_COSTS_TAKE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.CURRENCY_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> currencyType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询币种类型成功", configBiz.findDictsByTypeNo(CURRENCY_TYPE));
+    public Response currencyType() throws Exception{
+        return ResultUtil.createSuccessResult("查询币种类型成功", configBiz.findDictsByTypeNo(CURRENCY_TYPE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.PAY_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> payType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询付款方式成功", configBiz.findDictsByTypeNo(PAY_TYPE));
+    public Response payType() throws Exception{
+        return ResultUtil.createSuccessResult("查询付款方式成功", configBiz.findDictsByTypeNo(PAY_TYPE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.SUPPLIER_NATURE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> supplierNature() throws Exception{
-        return ResultUtil.createSucssAppResult("查询供应商性质成功", configBiz.findDictsByTypeNo(SUPPLIER_NATURE));
+    public Response supplierNature() throws Exception{
+        return ResultUtil.createSuccessResult("查询供应商性质成功", configBiz.findDictsByTypeNo(SUPPLIER_NATURE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.SUPPLIER_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> supplierType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询供应商性质成功", configBiz.findDictsByTypeNo(SUPPLIER_TYPE));
+    public Response supplierType() throws Exception{
+        return ResultUtil.createSuccessResult("查询供应商性质成功", configBiz.findDictsByTypeNo(SUPPLIER_TYPE));
     }
     //清关
     @GET
     @Path(SupplyConstants.SelectList.IS_CUSTOM_CLEARANCE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryisClearanceList(){
-        return ResultUtil.createSucssAppResult("查询是否支持清关成功", ClearanceEnum.toJSONArray());
+    public Response queryisClearanceList(){
+        return ResultUtil.createSuccessResult("查询是否支持清关成功", ClearanceEnum.toJSONArray());
     }
 
     @GET
     @Path(SupplyConstants.SelectList.PURCHASE_ORDER_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> querypurchaseOrderStatus(){
-        return ResultUtil.createSucssAppResult("查询采购订单状态成功", PurchaseOrderStatusEnum.toJSONArray());
+    public Response querypurchaseOrderStatus(){
+        return ResultUtil.createSuccessResult("查询采购订单状态成功", PurchaseOrderStatusEnum.toJSONArray());
     }
 
     @GET
     @Path(SupplyConstants.SelectList.WAREHOUSE_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> warehouseType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询仓库类型成功", configBiz.findDictsByTypeNo(WAREHOUSE_TYPE));
+    public Response warehouseType() throws Exception{
+        return ResultUtil.createSuccessResult("查询仓库类型成功", configBiz.findDictsByTypeNo(WAREHOUSE_TYPE));
     }
     @GET
     @Path(SupplyConstants.SelectList.PROVINCE_CITY)
@@ -162,43 +163,43 @@ public class SelectListResource {
     @GET
     @Path(SupplyConstants.SelectList.ROLE_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> roleType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询角色类型成功", configBiz.findDictsByTypeNo(ROLE_TYPE));
+    public Response roleType() throws Exception{
+        return ResultUtil.createSuccessResult("查询角色类型成功", configBiz.findDictsByTypeNo(ROLE_TYPE));
     }
     @GET
     @Path(SupplyConstants.SelectList.USER_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> userType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询用户类型成功", configBiz.findDictsByTypeNo(USER_TYPE));
+    public Response userType() throws Exception{
+        return ResultUtil.createSuccessResult("查询用户类型成功", configBiz.findDictsByTypeNo(USER_TYPE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.TRADE_TYPE)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> tradeType() throws Exception{
-        return ResultUtil.createSucssAppResult("查询贸易类型成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.TRADE_TYPE));
+    public Response tradeType() throws Exception{
+        return ResultUtil.createSuccessResult("查询贸易类型成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.TRADE_TYPE));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.COUNTRY)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> country() throws Exception{
-        return ResultUtil.createSucssAppResult("查询国家成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.COUNTRY));
+    public Response country() throws Exception{
+        return ResultUtil.createSuccessResult("查询国家成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.COUNTRY));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.SUPPLIER)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> supplier() throws Exception{
-        return ResultUtil.createSucssAppResult("查询一件代发供应商成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.SUPPLIER));
+    public Response supplier() throws Exception{
+        return ResultUtil.createSuccessResult("查询一件代发供应商成功", configBiz.findDictsByTypeNo(SupplyConstants.SelectList.SUPPLIER));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.SELECT_BY_TYPE_CODE+"/{typeCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Dict> selectByTypeCode(@PathParam("typeCode") String typeCode) throws Exception{
+    public Response selectByTypeCode(@PathParam("typeCode") String typeCode) throws Exception{
         AssertUtil.notBlank(typeCode, "根据字典类型查询字典字典类型编码不能为空");
-        return ResultUtil.createSucssAppResult("查询字典成功", configBiz.findDictsByTypeNo(typeCode));
+        return ResultUtil.createSuccessResult("查询字典成功", configBiz.findDictsByTypeNo(typeCode));
     }
 
 

@@ -9,7 +9,6 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
 import org.trc.form.category.BrandForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -17,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by hzqph on 2017/5/2.
@@ -31,21 +31,22 @@ public class BrandResource {
     @GET
     @Path(SupplyConstants.Category.Brand.BRAND_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Brand> brandPage(@BeanParam BrandForm form,@BeanParam Pagenation<Brand> page) throws Exception {
-        return brandBiz.brandPage(form,page);
+    public Response brandPage(@BeanParam BrandForm form,@BeanParam Pagenation<Brand> page) throws Exception {
+        return ResultUtil.createSuccessPageResult(brandBiz.brandPage(form,page));
     }
 
     @GET
     @Path(SupplyConstants.SelectList.VALID_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> queryValidList(){
-        return ResultUtil.createSucssAppResult("成功", ValidEnum.toJSONArray());
+    public Response queryValidList(){
+        return ResultUtil.createSuccessResult("成功", ValidEnum.toJSONArray());
     }
+
     @GET
     @Path(SupplyConstants.Category.Brand.ASSOCIATION_SEARCH)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<JSONArray> associationSearch(@QueryParam("queryString") String queryString) throws Exception{
-        return ResultUtil.createSucssAppResult("成功", brandBiz.associationSearch(queryString));
+    public Response associationSearch(@QueryParam("queryString") String queryString) throws Exception{
+        return ResultUtil.createSuccessResult("成功", brandBiz.associationSearch(queryString));
     }
 
     /**
@@ -57,39 +58,39 @@ public class BrandResource {
     @POST
     @Path(SupplyConstants.Category.Brand.BRAND)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult saveBrand(@BeanParam Brand brand , @Context ContainerRequestContext requestContext) throws Exception{
+    public Response saveBrand(@BeanParam Brand brand , @Context ContainerRequestContext requestContext) throws Exception{
         brandBiz.saveBrand(brand,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("保存品牌成功", "");
+        return ResultUtil.createSuccessResult("保存品牌成功", "");
     }
 
     @GET
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Brand> findBrandById(@PathParam("id") Long id) throws Exception{
-        return ResultUtil.createSucssAppResult("查询品牌成功", brandBiz.findBrandById(id));
+    public Response findBrandById(@PathParam("id") Long id) throws Exception{
+        return ResultUtil.createSuccessResult("查询品牌成功", brandBiz.findBrandById(id));
     }
 
     @GET
     @Path(SupplyConstants.Category.Brand.BRAND_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult queryBrands(@BeanParam BrandForm form) throws Exception{
-        return ResultUtil.createSucssAppResult("查询品牌列表成功", brandBiz.queryBrands(form));
+    public Response queryBrands(@BeanParam BrandForm form) throws Exception{
+        return ResultUtil.createSuccessResult("查询品牌列表成功", brandBiz.queryBrands(form));
     }
 
 
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateBrand(@BeanParam Brand brand, @Context ContainerRequestContext requestContext) throws Exception{
+    public Response updateBrand(@BeanParam Brand brand, @Context ContainerRequestContext requestContext) throws Exception{
         brandBiz.updateBrand(brand, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("更新品牌成功", "");
+        return ResultUtil.createSuccessResult("更新品牌成功", "");
     }
 
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult updateBrandStatus(@BeanParam Brand brand, @Context ContainerRequestContext requestContext)throws Exception{
+    public Response updateBrandStatus(@BeanParam Brand brand, @Context ContainerRequestContext requestContext)throws Exception{
         brandBiz.updateBrandStatus(brand,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSucssAppResult("更新品牌状态成功", "");
+        return ResultUtil.createSuccessResult("更新品牌状态成功", "");
     }
 }
