@@ -36,15 +36,17 @@ public class OrderResource {
     @GET
     @Path(SupplyConstants.Order.SHOP_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<ShopOrder> shopOrderPage(@BeanParam ShopOrderForm form, @BeanParam Pagenation<ShopOrder> page){
-        return scmOrderBiz.shopOrderPage(form, page);
+    public Response shopOrderPage(@BeanParam ShopOrderForm form, @BeanParam Pagenation<ShopOrder> page){
+        //return scmOrderBiz.shopOrderPage(form, page);
+        return ResultUtil.createSuccessPageResult(scmOrderBiz.shopOrderPage(form, page));
     }
 
     @GET
     @Path(SupplyConstants.Order.WAREHOUSE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<WarehouseOrder> warehouseOrderPage(@BeanParam WarehouseOrderForm form, @BeanParam Pagenation<WarehouseOrder> page){
-        return scmOrderBiz.warehouseOrderPage(form, page);
+    public Response warehouseOrderPage(@BeanParam WarehouseOrderForm form, @BeanParam Pagenation<WarehouseOrder> page){
+        //return scmOrderBiz.warehouseOrderPage(form, page);
+        return ResultUtil.createSuccessPageResult(scmOrderBiz.warehouseOrderPage(form, page));
     }
 
     @GET
