@@ -84,7 +84,7 @@ public class GoodsResource {
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
             _valid = ZeroToNineEnum.ONE.getCode();
         }
-        return ResultUtil.createSuccessResult(String.format("%s商品成功", ValidEnum.getValidEnumByCode(_valid).getName()), "");
+        return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @PUT
@@ -96,7 +96,7 @@ public class GoodsResource {
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
             _valid = ZeroToNineEnum.ONE.getCode();
         }
-        return ResultUtil.createSuccessResult(String.format("%s商品SKU成功", ValidEnum.getValidEnumByCode(_valid).getName()), "");
+        return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @GET
@@ -148,7 +148,11 @@ public class GoodsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateExternalItemsValid(@PathParam("id") Long id, @FormParam("isValid") String isValid, @Context ContainerRequestContext requestContext) throws Exception {
         goodsBiz.updateExternalItemsValid(id, isValid, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("启停用商品成功", "");
+        String _valid = ZeroToNineEnum.ZERO.getCode();
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
+            _valid = ZeroToNineEnum.ONE.getCode();
+        }
+        return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @PUT

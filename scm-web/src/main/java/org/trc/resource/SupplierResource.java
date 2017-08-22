@@ -89,7 +89,7 @@ public class SupplierResource {
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), isValid)) {
             _valid = ZeroToNineEnum.ONE.getCode();
         }
-        return ResultUtil.createSuccessResult(String.format("%s供应商成功", ValidEnum.getValidEnumByCode(_valid).getName()), "");
+        return ResultUtil.createSuccessResult(String.format("%s成功!", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
     @GET
