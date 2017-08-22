@@ -31,8 +31,8 @@ public class BrandResource {
     @GET
     @Path(SupplyConstants.Category.Brand.BRAND_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Brand> brandPage(@BeanParam BrandForm form,@BeanParam Pagenation<Brand> page) throws Exception {
-        return brandBiz.brandPage(form,page);
+    public Response brandPage(@BeanParam BrandForm form,@BeanParam Pagenation<Brand> page) throws Exception {
+        return ResultUtil.createSuccessPageResult(brandBiz.brandPage(form,page));
     }
 
     @GET

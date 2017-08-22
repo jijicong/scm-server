@@ -32,8 +32,8 @@ public class SupplierApplyResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierApplyAudit.SUPPLIER_APPLY_AUDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<SupplierApplyAudit> supplierApplyAuditPage(@BeanParam SupplierApplyAuditForm form, @BeanParam Pagenation<SupplierApplyAudit> page) throws Exception {
-        return supplierApplyBiz.supplierApplyAuditPage(page, form);
+    public Response supplierApplyAuditPage(@BeanParam SupplierApplyAuditForm form, @BeanParam Pagenation<SupplierApplyAudit> page) throws Exception {
+        return ResultUtil.createSuccessPageResult(supplierApplyBiz.supplierApplyAuditPage(page, form));
     }
 
     @GET
@@ -54,8 +54,8 @@ public class SupplierApplyResource {
     @GET
     @Path(SupplyConstants.Supply.SupplierApply.SUPPLIER_APPLY_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<SupplierApply> supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page, @Context ContainerRequestContext requestContext) throws Exception {
-        return supplierApplyBiz.supplierApplyPage(page, form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response supplierApplyPage(@BeanParam SupplierApplyForm form, @BeanParam Pagenation<SupplierApply> page, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessPageResult(supplierApplyBiz.supplierApplyPage(page, form,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @POST
