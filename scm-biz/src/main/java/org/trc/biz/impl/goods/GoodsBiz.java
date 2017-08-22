@@ -632,11 +632,14 @@ public class GoodsBiz implements IGoodsBiz {
         //保存商品基础信息
         updateItemsBase(items);
         //保存自然属性信息
-        if(StringUtils.isNotBlank(itemNaturePropery.getNaturePropertys())){
+        /*if(StringUtils.isNotBlank(itemNaturePropery.getNaturePropertys())){
             itemNaturePropery.setItemId(items.getId());
             itemNaturePropery.setSpuCode(items.getSpuCode());
             updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
-        }
+        }*/
+        itemNaturePropery.setItemId(items.getId());
+        itemNaturePropery.setSpuCode(items.getSpuCode());
+        updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
         //保存采购属性信息
         updateItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
         //商品编辑通知渠道
@@ -1039,8 +1042,8 @@ public class GoodsBiz implements IGoodsBiz {
      */
     private void updateItemNatureProperty(ItemNaturePropery itemNaturePropery, Long categoryId)throws Exception{
         JSONArray categoryArray = JSONArray.parseArray(itemNaturePropery.getNaturePropertys());
-        checkItemNatureProperty(categoryArray);
-        if(categoryArray.size() > 0){
+        if(null != categoryArray && categoryArray.size() > 0){
+            checkItemNatureProperty(categoryArray);
             List<ItemNaturePropery> addList = new ArrayList<ItemNaturePropery>();
             List<ItemNaturePropery> updateList = new ArrayList<ItemNaturePropery>();
             List<Long> delList = new ArrayList<Long>();
@@ -1124,6 +1127,12 @@ public class GoodsBiz implements IGoodsBiz {
                     throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
                 }
             }
+        }else {
+            //删除所有自然属性
+            Example example = new Example(ItemNaturePropery.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("spuCode", itemNaturePropery.getSpuCode());
+            itemNatureProperyService.deleteByExample(example);
         }
     }
 
