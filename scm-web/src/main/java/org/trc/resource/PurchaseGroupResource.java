@@ -6,6 +6,7 @@ import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
+import org.trc.enums.ValidEnum;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -41,7 +42,7 @@ public class PurchaseGroupResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseStatus(@BeanParam PurchaseGroup purchaseGroup, @Context ContainerRequestContext requestContext){
         purchaseGroupBiz.updatePurchaseStatus(purchaseGroup,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("修改采购组状态成功","");
+        return ResultUtil.createSuccessResult(ValidEnum.VALID.getCode().equals(purchaseGroup.getIsValid()) ? "停用成功!":"启用成功!","");
     }
 
     @GET

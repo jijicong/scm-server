@@ -119,7 +119,7 @@ public class PurchaseOrderResource {
     public Response updateWarahouseAdviceUpdate(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
         purchaseOrderBiz.cancelWarahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("入库通知作废成功","");
+        return ResultUtil.createSuccessResult("入库通知作废成功！","");
 
     }
 
@@ -153,8 +153,8 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("状态修改成功","");
+       String msg = purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult(msg,"");
 
     }
 
@@ -164,7 +164,7 @@ public class PurchaseOrderResource {
     public Response updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
         purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("采购单冻结状态修改成功","");
+        return ResultUtil.createSuccessResult("采购单冻结成功!","");
 
     }
 
@@ -173,7 +173,7 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response saveWarahouseAdvice(@BeanParam PurchaseOrder purchaseOrder,@Context ContainerRequestContext requestContext) {
         purchaseOrderBiz.warahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("入库通知单添加成功","");
+        return ResultUtil.createSuccessResult("入库通知单添加成功!","");
     }
 
 }

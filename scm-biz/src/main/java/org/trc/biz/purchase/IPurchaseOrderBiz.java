@@ -36,7 +36,7 @@ public interface IPurchaseOrderBiz {
 
     void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo) ;
 
-    void updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
+    String updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
 
     PurchaseOrder findPurchaseOrderAddDataById(Long id) ;
 
