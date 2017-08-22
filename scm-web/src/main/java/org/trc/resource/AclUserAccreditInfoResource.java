@@ -34,22 +34,22 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<AclUserAddPageDate> UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<AclUserAddPageDate> page){
-        return userAccreditInfoBiz.userAccreditInfoPage(form, page);
+    public Response UserAccreditInfoPage(@BeanParam UserAccreditInfoForm form, @BeanParam Pagenation<AclUserAddPageDate> page) {
+        return ResultUtil.createSuccessPageResult(userAccreditInfoBiz.userAccreditInfoPage(form, page));
     }
 
     //授权里面的采购员列表
     @GET
     @Path(SupplyConstants.UserAccreditInfo.PURCHASE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findPurchase(){
+    public Response findPurchase() {
         return ResultUtil.createSuccessResult("查询采购员成功", userAccreditInfoBiz.findPurchase());
     }
 
     @PUT
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE + "/{id}")
-    public Response updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo,@Context ContainerRequestContext requestContext){
-        userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo, @Context ContainerRequestContext requestContext) {
+        userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         String _valid = ZeroToNineEnum.ZERO.getCode();
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), aclUserAccreditInfo.getIsValid())) {
             _valid = ZeroToNineEnum.ONE.getCode();
@@ -93,7 +93,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findChannel(){
+    public Response findChannel() {
         return ResultUtil.createSuccessResult("查询已启用的渠道成功", userAccreditInfoBiz.findChannel());
 
     }
@@ -104,7 +104,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findChaAndWhole(@QueryParam("roleType") String roleType){
+    public Response findChaAndWhole(@QueryParam("roleType") String roleType) {
 
         return ResultUtil.createSuccessResult("查询对应角色成功", userAccreditInfoBiz.findChannelOrWholeJur(roleType));
 
@@ -116,9 +116,9 @@ public class AclUserAccreditInfoResource {
     @POST
     @Path(SupplyConstants.UserAccreditInfo.SAVE_ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveUserAccredit(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext){
+    public Response saveUserAccredit(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext) {
 
-        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate,  (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("新增授权成功", "");
     }
 
@@ -128,7 +128,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findUserAccreditInfoById(@QueryParam("id") Long id){
+    public Response findUserAccreditInfoById(@QueryParam("id") Long id) {
         return ResultUtil.createSuccessResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoById(id));
     }
 
@@ -142,7 +142,7 @@ public class AclUserAccreditInfoResource {
     @PUT
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_ACCREDIT + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateUserAccreditInfo(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext){
+    public Response updateUserAccreditInfo(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext) {
         userAccreditInfoBiz.updateUserAccredit(userAddPageDate, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("修改用户成功", "");
     }
@@ -150,7 +150,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.CHECK_PHONE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkPhone(@QueryParam("phone") String phone){
+    public Response checkPhone(@QueryParam("phone") String phone) {
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
         return ResultUtil.createSuccessResult("查询成功", userAccreditInfoBiz.checkPhone(phone));
     }
@@ -158,7 +158,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.NAME_PHONE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getNameByPhone(@QueryParam("phone") String phone){
+    public Response getNameByPhone(@QueryParam("phone") String phone) {
         AssertUtil.notBlank(phone, "手机号时输入参数phone为空");
         return ResultUtil.createSuccessResult("查询成功", userAccreditInfoBiz.getNameByPhone(phone));
     }
@@ -166,7 +166,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.CHECK_PURCHASE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkPurchase(@PathParam("id") Long id){
+    public Response checkPurchase(@PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("查询成功", userAccreditInfoBiz.purchaseRole(id));
     }
 
@@ -176,7 +176,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ROLE_VALID + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkRoleValid(@PathParam("id") Long id){
+    public Response checkRoleValid(@PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("查询成功", userAccreditInfoBiz.checkRoleValid(id));
     }
 }
