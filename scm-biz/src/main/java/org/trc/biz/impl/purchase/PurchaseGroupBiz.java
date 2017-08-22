@@ -58,7 +58,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private ILogInfoService logInfoService;
 
     @Override
-    @Cacheable(key="#trc.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page)  {
 
         Example example = new Example(PurchaseGroup.class);
