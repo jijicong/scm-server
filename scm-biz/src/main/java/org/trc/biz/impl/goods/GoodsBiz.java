@@ -794,17 +794,20 @@ public class GoodsBiz implements IGoodsBiz {
         Category category = categoryService.selectByPrimaryKey(categoryId);
         AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空", categoryId));
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), category.getIsValid())){
-            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已被禁用", category.getName()));
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]已被禁用,请选择其他分类!", category.getName()));
+        }
+        Brand brand = brandService.selectByPrimaryKey(brandId);
+        AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), brand.getIsValid())){
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("品牌[%s]已被禁用,请选择其他品牌!", brand.getName()));
         }
         CategoryBrand categoryBrand = new CategoryBrand();
         categoryBrand.setCategoryId(categoryId);
         categoryBrand.setBrandId(brandId);
         categoryBrand = categoryBrandService.selectOne(categoryBrand);
-        AssertUtil.notNull(categoryBrand, String.format("根据分类ID[%s]和品牌ID[%s]查询分类品牌信息为空", categoryId, brandId));
+        AssertUtil.notNull(categoryBrand, String.format("分类[%s]和品牌[%s]关联关系已解除,请选择其他品牌!", category.getName(), brand.getName()));
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
-            Brand brand = brandService.selectByPrimaryKey(brandId);
-            AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空", brandId));
-            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]关联品牌[%s]已被禁用", category.getName(), brand.getName()));
+            throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]关联品牌[%s]已被禁用,请选择其他品牌!", category.getName(), brand.getName()));
         }
     }
 
@@ -1699,8 +1702,7 @@ public class GoodsBiz implements IGoodsBiz {
         BeanUtils.copyProperties(queryModel, supplyItems2);
         ReturnTypeDO<Pagenation<SupplyItemsExt>> returnTypeDO = jdService.skuPage(supplyItems2, page);
         if(!returnTypeDO.getSuccess()){
-            log.error(returnTypeDO.getResultMessage());
-            return page;
+            throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_QUERY_EXCEPTION, returnTypeDO.getResultMessage());
         }
         page = returnTypeDO.getResult();
         setOutSupplierName(page.getResult());

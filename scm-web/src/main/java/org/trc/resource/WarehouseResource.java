@@ -5,6 +5,8 @@ import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.ValidEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.system.WarehouseForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -65,7 +67,7 @@ public class WarehouseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateWarehouseState(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
         warehouseBiz.updateWarehouseState(warehouse,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("状态修改成功","");
+        return ResultUtil.createSuccessResult(ValidEnum.VALID.getCode().equals(warehouse.getIsValid()) ? "停用成功!":"启用成功!","");
     }
     //根据id查询
     @GET

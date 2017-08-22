@@ -6,6 +6,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclRoleAddPageData;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.ValidEnum;
 import org.trc.form.impower.RoleForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -80,7 +81,7 @@ public class AclRoleResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response  updateRoleState(@BeanParam AclRole aclRole, @Context ContainerRequestContext requestContext){
         roleBiz.updateRoleState(aclRole,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("修改角色状态成功","");
+        return ResultUtil.createSuccessResult(ValidEnum.VALID.getCode().equals(aclRole.getIsValid()) ? "停用成功!":"启用成功!","");
     }
 
     @GET
