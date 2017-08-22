@@ -1,11 +1,14 @@
 package org.trc.resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserAddPageDate;
+import org.trc.enums.ValidEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
@@ -47,7 +50,11 @@ public class AclUserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.UPDATE_STATE + "/{id}")
     public Response updateUserAccreditInfoStatus(@BeanParam AclUserAccreditInfo aclUserAccreditInfo,@Context ContainerRequestContext requestContext){
         userAccreditInfoBiz.updateUserAccreditInfoStatus(aclUserAccreditInfo,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("修改状态成功", "");
+        String _valid = ZeroToNineEnum.ZERO.getCode();
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), aclUserAccreditInfo.getIsValid())) {
+            _valid = ZeroToNineEnum.ONE.getCode();
+        }
+        return ResultUtil.createSuccessResult(String.format("%s成功！", ValidEnum.getValidEnumByCode(_valid).getName()), "");
     }
 
    /* *//**
