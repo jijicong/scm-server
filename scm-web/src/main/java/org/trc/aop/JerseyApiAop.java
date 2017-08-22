@@ -34,6 +34,15 @@ public class JerseyApiAop {
     public void jerseyApi() {
     }
 
+   /* @Around("jerseyApi()")
+    public Object recordTime(ProceedingJoinPoint point) throws Throwable {
+        *//**
+         * 统计调用时间 和 次数  ，调用频率
+         *//*
+        Object resultObj = point.proceed();
+        return resultObj;
+    }*/
+
     @Around("jerseyApi()")
     public Object invoke(ProceedingJoinPoint point) throws Throwable {
         Class<?> targetClass = point.getTarget().getClass();//被代理的类
