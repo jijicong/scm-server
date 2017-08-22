@@ -33,6 +33,7 @@ public class SupplyItemsExt {
     private Date updateTime; //更新时间
     private String isDeleted; //是否删除:0-否,1-是
     private String highLightName;
+    private Long stock;//库存
 
     public Long getId() {
         return id;
@@ -248,5 +249,13 @@ public class SupplyItemsExt {
 
     public void setDetailImagePath(String detailImagePath) {
         this.detailImagePath = detailImagePath;
+    }
+
+    public Long getStock() {
+        return stock;
+    }
+
+    public void setStock(Long stock) {
+        this.stock = stock;
     }
 }
