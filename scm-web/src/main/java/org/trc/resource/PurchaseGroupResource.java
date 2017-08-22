@@ -32,8 +32,8 @@ public class PurchaseGroupResource {
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseGroup> purchaseGroupPage(@BeanParam PurchaseGroupForm form, @BeanParam Pagenation<PurchaseGroup> page){
-        return purchaseGroupBiz.purchaseGroupPage(form , page);
+    public Response purchaseGroupPage(@BeanParam PurchaseGroupForm form, @BeanParam Pagenation<PurchaseGroup> page){
+        return ResultUtil.createSuccessPageResult(purchaseGroupBiz.purchaseGroupPage(form , page));
     }
 
     @PUT

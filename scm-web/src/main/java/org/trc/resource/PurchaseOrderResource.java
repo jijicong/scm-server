@@ -38,14 +38,14 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseOrder> purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext){
+    public Response purchaseOrderPagenation(@BeanParam PurchaseOrderForm form, @BeanParam Pagenation<PurchaseOrder> page,@Context ContainerRequestContext requestContext){
 
         Object obj = requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         AssertUtil.notNull(obj,"查询订单分页中,获得授权信息失败");
         AclUserAccreditInfo aclUserAccreditInfo=(AclUserAccreditInfo)obj;
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
         //采购订单分页查询列表
-        return  purchaseOrderBiz.purchaseOrderPage(form , page,channelCode);
+        return  ResultUtil.createSuccessPageResult(purchaseOrderBiz.purchaseOrderPage(form , page,channelCode));
 
     }
 
@@ -79,9 +79,9 @@ public class PurchaseOrderResource {
     @GET
     @Path(SupplyConstants.PurchaseOrder.SUPPLIERS_ITEMS+"/{supplierCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<PurchaseDetail> findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
+    public Response findPurchaseDetailBysupplierCode(@PathParam("supplierCode") String supplierCode, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
 
-        return  purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus);
+        return  ResultUtil.createSuccessPageResult(purchaseOrderBiz.findPurchaseDetailBySupplierCode(supplierCode,form,page,skus));
 
     }
     @GET
