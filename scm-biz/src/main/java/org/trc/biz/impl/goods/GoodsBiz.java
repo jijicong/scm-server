@@ -632,11 +632,6 @@ public class GoodsBiz implements IGoodsBiz {
         //保存商品基础信息
         updateItemsBase(items);
         //保存自然属性信息
-        /*if(StringUtils.isNotBlank(itemNaturePropery.getNaturePropertys())){
-            itemNaturePropery.setItemId(items.getId());
-            itemNaturePropery.setSpuCode(items.getSpuCode());
-            updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
-        }*/
         itemNaturePropery.setItemId(items.getId());
         itemNaturePropery.setSpuCode(items.getSpuCode());
         updateItemNatureProperty(itemNaturePropery, items.getCategoryId());

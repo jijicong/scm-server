@@ -34,8 +34,9 @@ public class ConfigResource {
     @GET
     @Path(SupplyConstants.Config.DictType.DICT_TYPE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<DictType> dictTypePage(@BeanParam DictTypeForm form, @BeanParam Pagenation<DictType> page) throws Exception {
-        return configBiz.dictTypePage(form, page);
+    public Response dictTypePage(@BeanParam DictTypeForm form, @BeanParam Pagenation<DictType> page) throws Exception {
+        //return configBiz.dictTypePage(form, page);
+        return ResultUtil.createSuccessPageResult(configBiz.dictTypePage(form, page));
     }
 
     @GET
@@ -87,8 +88,9 @@ public class ConfigResource {
     @GET
     @Path(SupplyConstants.Config.Dict.DICT_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<Dict> dictPage(@BeanParam DictForm form, @BeanParam Pagenation<Dict> page) throws Exception {
-        return configBiz.dictPage(form, page);
+    public Response dictPage(@BeanParam DictForm form, @BeanParam Pagenation<Dict> page) throws Exception {
+        //return configBiz.dictPage(form, page);
+        return ResultUtil.createSuccessPageResult(configBiz.dictPage(form, page));
     }
 
     @GET
