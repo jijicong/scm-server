@@ -1646,7 +1646,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#trc.toString()",isList=true)
+    @Cacheable(key="#form.toString()",isList=true)
     public List<ExternalItemSku> queryExternalItems(ExternalItemSkuForm form) {
         AssertUtil.notNull(form, "查询代发商品参数不能为空");
         ExternalItemSku externalItemSku = new ExternalItemSku();
@@ -1702,6 +1702,7 @@ public class GoodsBiz implements IGoodsBiz {
         BeanUtils.copyProperties(queryModel, supplyItems2);
         ReturnTypeDO<Pagenation<SupplyItemsExt>> returnTypeDO = jdService.skuPage(supplyItems2, page);
         if(!returnTypeDO.getSuccess()){
+            log.error(returnTypeDO.getResultMessage());
             throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_QUERY_EXCEPTION, returnTypeDO.getResultMessage());
         }
         page = returnTypeDO.getResult();

@@ -222,7 +222,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @Cacheable(key="#trc.toString()+#aclUserAccreditInfo.channelId+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#form.toString()+#aclUserAccreditInfo.channelId+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, AclUserAccreditInfo aclUserAccreditInfo, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -1195,7 +1195,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @Cacheable(key="#trc.toString()",isList=true)
+    @Cacheable(key="#form.toString()",isList=true)
     public List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception {
         AssertUtil.notNull(form, "查询供应商渠道关系参数SupplierChannelRelationForm不能为空");
         if (null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) &&
