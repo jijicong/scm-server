@@ -1,9 +1,10 @@
-package org.trc.service;
+package org.trc.dbUnit;
 
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.service.BaseTest;
 
 /**
  * Created by sone21 on 2017/8/18.
