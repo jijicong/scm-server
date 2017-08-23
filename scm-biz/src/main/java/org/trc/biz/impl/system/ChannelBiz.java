@@ -73,7 +73,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
-    @Cacheable(key = "#form+#page+#page.pageNo+#page.pageSize" ,isList = true)
+    @Cacheable(key = "#form+#page.pageNo+#page.pageSize" ,isList = true)
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
