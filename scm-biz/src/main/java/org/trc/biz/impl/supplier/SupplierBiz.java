@@ -835,8 +835,9 @@ public class SupplierBiz implements ISupplierBiz {
             tmpList.add(s);
             Boolean flag = false;
             for (SupplierCategory sp : currentCategorys) {
-                if (s.getCategoryId() == sp.getCategoryId()) {
+                if (s.getCategoryId().longValue() == sp.getCategoryId().longValue()) {
                     flag = true;
+                    break;
                 }
             }
             if (!flag) {
@@ -849,6 +850,7 @@ public class SupplierBiz implements ISupplierBiz {
             for (SupplierCategory s2 : tmpList) {
                 if (s.getCategoryId() == s2.getCategoryId()) {
                     flag = true;
+                    break;
                 }
             }
             if (!flag) {
