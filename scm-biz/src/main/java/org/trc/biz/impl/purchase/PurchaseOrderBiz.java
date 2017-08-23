@@ -1021,7 +1021,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setSkuName(purchaseDetail.getItemName());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
-            details.setCreateTime(Calendar.getInstance().getTime());
+            //details.setCreateTime(Calendar.getInstance().getTime());
             details.setPurchasePrice(purchaseDetail.getPurchasePrice());//采购价格
             //details.setStorageTime(details.getCreateTime());
             warehouseNoticeDetails.add(details);
