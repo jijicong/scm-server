@@ -158,6 +158,7 @@ public class JerseyResourceAop {
             try{
                 methodInfoService.insert(methodInfo);
             }catch (Exception e){
+                log.error("接口信息统计异常",e);
                 //这里捕捉唯一索引抛出的异常
                 //正常逻辑，这里还需要查询更新一下记录方法
             }
@@ -191,7 +192,8 @@ public class JerseyResourceAop {
         //final:单次记录这次接口调用的总时长；汇总里面存在误差（并发场景下的，忽视录入）
         // 如果想要人工计算，使用该表可以得到精确的信息
         MethodLongTime methodLongTime = new MethodLongTime();
-        methodLongTime.setMethodId(info != null ? info.getId():methodInfo.getId());
+        //methodLongTime.setMethodId(info != null ? info.getId():methodInfo.getId());
+        methodLongTime.setMethodId(info != null ? info.getId():111L);
         methodLongTime.setCreate_time(Calendar.getInstance().getTime());
         methodLongTime.setDuration(useTime);
         methodLongTimeService.insert(methodLongTime);
