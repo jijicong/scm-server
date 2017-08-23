@@ -13,10 +13,10 @@ public class SupplyItemsForm extends QueryModel{
     @QueryParam("supplierCode")
     private String supplierCode; //供应商编号
     @QueryParam("supplySku")
-    @Length(max = 32, message = "商品SKU编号长度不能超过32个")
+    @Length(max = 64, message = "商品SKU编号长度不能超过64个")
     private String supplySku;//供应商商品Sku
     @QueryParam("skuName")
-    @Length(max = 32, message = "商品名称长度不能超过32个")
+    @Length(max = 255, message = "商品名称长度不能超过255个")
     private String skuName;//商品名称
 
     public String getSupplierCode() {

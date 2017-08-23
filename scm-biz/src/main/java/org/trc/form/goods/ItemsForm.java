@@ -1,5 +1,6 @@
 package org.trc.form.goods;
 
+import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
@@ -11,12 +12,15 @@ public class ItemsForm extends QueryModel {
 
     //商品SPU编号
     @QueryParam("spuCode")
+    @Length(max = 32, message = "商品SPU编号长度不能超过32个")
     private String spuCode;
     //商品SKU编号
     @QueryParam("skuCode")
+    @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
     //商品名称
     @QueryParam("name")
+    @Length(max = 32, message = "商品名称长度不能超过64个")
     private String name;
     //商品所属分类ID
     @QueryParam("categoryId")

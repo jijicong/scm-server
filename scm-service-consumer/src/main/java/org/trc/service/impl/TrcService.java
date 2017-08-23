@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -146,10 +148,13 @@ public class TrcService implements ITrcService {
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         String response = null;
         try{
-            HttpPost httpPost = new HttpPost(url);
+            /*HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);*/
+            Map<String, Object> params = new HashMap();
+            params.put("param", paramObj);
+            response = HttpClientUtil.httpPostRequest(url, params, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
