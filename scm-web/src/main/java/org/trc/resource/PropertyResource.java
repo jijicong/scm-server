@@ -7,6 +7,8 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.ValidEnum;
+import org.trc.enums.remarkEnum;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -69,7 +71,12 @@ public class PropertyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateBrandStatus(@BeanParam Property Property, @Context ContainerRequestContext requestContext)throws Exception{
         propertyBiz.updatePropertyStatus(Property,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("更新属性状态成功", "");
+        ValidEnum validEnum=ValidEnum.VALID;
+        if (Property.getIsValid().equals(ValidEnum.VALID.getCode())) {
+            validEnum=ValidEnum.NOVALID;
+        }
+        String msg=validEnum.getName()+"成功!";
+        return ResultUtil.createSuccessResult(msg, "");
     }
 
     @GET
