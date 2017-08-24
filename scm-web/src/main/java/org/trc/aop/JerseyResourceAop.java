@@ -179,21 +179,12 @@ public class JerseyResourceAop {
             Example.Criteria criteria = example.createCriteria();
             criteria.andEqualTo("id",info.getId());
             criteria.andEqualTo("useNumber",info.getUseNumber());
-
             int number = methodInfoService.updateByExampleSelective(udpateInfo,example);
-
-           /* info.getAverageTime();// = (TotalTime+useTime) / (UseNumber+1)
-            info.getCreateTime();
-            info.getFrequency();//(UseNumber+1)/(today-createTime)
-            info.getUseNumber();//UseNumber+1
-            info.getTotalTime();//TotalTime+useTime*/
-
         }
         //final:单次记录这次接口调用的总时长；汇总里面存在误差（并发场景下的，忽视录入）
         // 如果想要人工计算，使用该表可以得到精确的信息
         MethodLongTime methodLongTime = new MethodLongTime();
-        //methodLongTime.setMethodId(info != null ? info.getId():methodInfo.getId());
-        methodLongTime.setMethodId(info != null ? info.getId():111L);
+        methodLongTime.setMethodId(info != null ? info.getId():methodInfo.getId());
         methodLongTime.setCreate_time(Calendar.getInstance().getTime());
         methodLongTime.setDuration(useTime);
         methodLongTimeService.insert(methodLongTime);

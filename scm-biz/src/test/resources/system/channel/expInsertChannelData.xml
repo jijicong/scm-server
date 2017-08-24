@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding='UTF-8'?>
 <dataset>
-    <category id="1" category_code="FL001" source="trc" level="1" name="描述" sort="1" classify_describe="描述" is_leaf="1" is_valid="1" is_deleted="0" full_path_id="[null]" parent_id="[null]"/>
+    <channel id="1" code="QD001" name="H" is_valid="1" is_deleted="0" remark="L" create_operator="sone21"/>
 </dataset>
