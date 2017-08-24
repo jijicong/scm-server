@@ -148,10 +148,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
+    @Cacheable(key="#queryModel.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
+            criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
         if (StringUtil.isNotEmpty(queryModel.getPlatformOrderCode())) {//平台订单编码
             criteria.andLike("platformOrderCode", "%" + queryModel.getPlatformOrderCode() + "%");
         }
@@ -181,11 +185,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page) {
+    @Cacheable(key="#form.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         AssertUtil.notNull(form, "查询供应商订单分页参数不能为空");
         Example example = new Example(WarehouseOrder.class);
         Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
+            criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
         if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
             criteria.andEqualTo("orderType", form.getOrderType());
         }
@@ -895,7 +903,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
         OrderBase orderBase = new OrderBase();
         BeanUtils.copyProperties(platformOrder, orderBase);
-        BeanUtils.copyProperties(orderBase, shopOrder);
+        BeanUtils.copyProperties(orderBase, shopOrder, "buyerMessage", "shopMemo");
+        orderBase.setBuyerMessage(shopOrder.getBuyerMessage());
+        orderBase.setShopMemo(shopOrder.getShopMemo());
         OrderExt orderExt = new OrderExt();
         BeanUtils.copyProperties(orderBase, orderExt);
         orderExt.setPayment(shopOrder.getPayment());

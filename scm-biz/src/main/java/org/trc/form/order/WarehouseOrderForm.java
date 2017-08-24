@@ -1,5 +1,7 @@
 package org.trc.form.order;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -84,5 +86,10 @@ public class WarehouseOrderForm extends QueryModel{
 
     public void setSupplierOrderStatus(String supplierOrderStatus) {
         this.supplierOrderStatus = supplierOrderStatus;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

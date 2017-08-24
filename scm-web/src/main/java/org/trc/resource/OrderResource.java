@@ -36,17 +36,17 @@ public class OrderResource {
     @GET
     @Path(SupplyConstants.Order.SHOP_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response shopOrderPage(@BeanParam ShopOrderForm form, @BeanParam Pagenation<ShopOrder> page){
+    public Response shopOrderPage(@BeanParam ShopOrderForm form, @BeanParam Pagenation<ShopOrder> page, @Context ContainerRequestContext requestContext){
         //return scmOrderBiz.shopOrderPage(form, page);
-        return ResultUtil.createSuccessPageResult(scmOrderBiz.shopOrderPage(form, page));
+        return ResultUtil.createSuccessPageResult(scmOrderBiz.shopOrderPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @GET
     @Path(SupplyConstants.Order.WAREHOUSE_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response warehouseOrderPage(@BeanParam WarehouseOrderForm form, @BeanParam Pagenation<WarehouseOrder> page){
+    public Response warehouseOrderPage(@BeanParam WarehouseOrderForm form, @BeanParam Pagenation<WarehouseOrder> page, @Context ContainerRequestContext requestContext){
         //return scmOrderBiz.warehouseOrderPage(form, page);
-        return ResultUtil.createSuccessPageResult(scmOrderBiz.warehouseOrderPage(form, page));
+        return ResultUtil.createSuccessPageResult(scmOrderBiz.warehouseOrderPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @GET

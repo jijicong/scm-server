@@ -18,6 +18,7 @@ public class SupplyConstants {
         public static final String FULL_PATH_SPLIT = "|";//分类路径ID分隔符
         public static final String SEMICOLON = ";";//分号
         public static final String XIE_GANG = "/";//斜杠
+        public static final String AND = "&";//与
     }
 
 
@@ -604,6 +605,8 @@ public class SupplyConstants {
         public static final String EXTERNAL_ITEM_SKU_LIST = "externalItemSkus";
         //代发商品启用/停用
         public static final String EXTERNAL_ITEM__VALID = "externalItemsValid";
+        //检查属性启停用状态
+        public static final String CHECK_PROPERTY_STATUS = "checkPropetyStatus";
 
     }
 

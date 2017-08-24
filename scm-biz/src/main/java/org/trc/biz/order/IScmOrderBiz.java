@@ -27,7 +27,7 @@ public interface IScmOrderBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<ShopOrder> shopOrderPage(ShopOrderForm form, Pagenation<ShopOrder> page);
+    Pagenation<ShopOrder> shopOrderPage(ShopOrderForm form, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 仓库订单分页查询
@@ -35,7 +35,7 @@ public interface IScmOrderBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page);
+    Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      *查询商铺订单列表

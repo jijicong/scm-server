@@ -83,10 +83,17 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String NATURE_PROPERTY = "natureProperty";
     //采购属性
     public static final String PURCHASE_PROPERTY = "purchaseProperty";
+    //自然属性名称
+    private static final String NATURE_PROPERTY_NAME = "自然属性";
+    //采购属性名称
+    private static final String PURCHASE_PROPERTY_NAME = "采购属性";
     //供应商京东编码
     public static final String JD_SUPPLIER_CODE = "JD";
     //供应商粮油编码
     public static final String LY_SUPPLIER_CODE = "LY";
+    //代发商品名称中替换&符号的字符串
+    private static final String AND_QUOT_REPLACE = "__111__222__";
+
 
     @Autowired
     private IItemsService itemsService;
@@ -1881,6 +1888,8 @@ public class GoodsBiz implements IGoodsBiz {
         for(Object obj : skusArray){
             JSONObject jbo = (JSONObject)obj;
             SupplyItems supplyItems2 = jbo.toJavaObject(SupplyItems.class);
+            supplyItems2.setSkuName(jbo.getString("name"));
+            supplyItems2.setBrand(jbo.getString("brandName"));
             supplyItems.add(supplyItems2);
             supplySkuList.add(supplyItems2.getSupplySku());
         }
@@ -1914,6 +1923,74 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
         //代发商品更新通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.DAILY_EXTERNAL_ITEMS_UPDATE);
+    }
+
+    @Override
+    public void checkPropetyStatus(String propertyInfo) {
+        AssertUtil.notBlank(propertyInfo, "属性信息不能为空");
+        JSONObject propertyObj = JSONObject.parseObject(propertyInfo);
+        JSONArray naturePropertys = propertyObj.getJSONArray("naturePropertys");
+        JSONArray purchasPropertys = propertyObj.getJSONArray("purchasPropertys");
+        //检查自然属性
+        if(naturePropertys.size() > 0)
+            checkPropetyStatus(naturePropertys, ZeroToNineEnum.ZERO.getCode());
+        //检查采购属性
+        if(purchasPropertys.size() > 0)
+            checkPropetyStatus(purchasPropertys, ZeroToNineEnum.ONE.getCode());
+    }
+
+    /**
+     *
+     * @param propertyArrays
+     * @param flag:0-自然属性,1-采购属性
+     */
+    private void checkPropetyStatus(JSONArray propertyArrays, String flag){
+        String propertyType = "";
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){
+            propertyType = NATURE_PROPERTY_NAME;
+        }else {
+            propertyType = PURCHASE_PROPERTY_NAME;
+        }
+        JSONObject object = propertyArrays.getJSONObject(0);
+        Long categoryId = object.getLong("categoryId");
+        List<Long> propertyIds = new ArrayList<Long>();
+        for(Object obj: propertyArrays){
+            JSONObject job = (JSONObject)obj;
+            propertyIds.add(job.getLong("propertyId"));
+        }
+        Example example = new Example(CategoryProperty.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("categoryId", categoryId);
+        criteria.andIn("propertyId", propertyIds);
+        List<CategoryProperty> categoryPropertyList = categoryPropertyService.selectByExample(example);
+        for(CategoryProperty categoryProperty : categoryPropertyList){
+            if(StringUtils.equals(ValidEnum.NOVALID.getCode(), categoryProperty.getIsValid())){
+                String propertyName = "";
+                for(Object obj: propertyArrays){
+                    JSONObject job = (JSONObject)obj;
+                    if(categoryProperty.getPropertyId().longValue() == job.getLong("propertyId")){
+                        propertyName = job.getString("name");
+                    }
+                }
+                throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("%s[%s]已被停用！如需继续编辑请点击\"确认\"按钮重新加载页面。", propertyType, propertyName));
+            }
+        }
+        for(Object obj: propertyArrays){
+            JSONObject job = (JSONObject)obj;
+            propertyIds.add(job.getLong("propertyId"));
+            boolean bool = false;
+            String propertyName = job.getString("name");
+            for(CategoryProperty categoryProperty : categoryPropertyList){
+                if(categoryProperty.getCategoryId().longValue() == job.getLong("categoryId") &&
+                        categoryProperty.getPropertyId().longValue() == job.getLong("propertyId")){
+                    bool = true;
+                    break;
+                }
+            }
+            if(!bool){
+                throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("%s[%s]已被停用！如需继续编辑请点击\"确认\"按钮重新加载页面。", propertyType, propertyName));
+            }
+        }
     }
 
 
@@ -1955,7 +2032,8 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setSupplierCode(items.getSupplierCode());
             externalItemSku.setSupplierName(items.getSupplyName());
             externalItemSku.setSupplierSkuCode(items.getSupplySku());
-            externalItemSku.setItemName(items.getSkuName());
+            String skuName = items.getSkuName().replaceAll(AND_QUOT_REPLACE, SupplyConstants.Symbol.AND);
+            externalItemSku.setItemName(skuName);
             externalItemSku.setCategory(items.getCategory());
             externalItemSku.setCategoryCode(items.getCategoryCode());
             externalItemSku.setBarCode(items.getUpc());
