@@ -37,6 +37,8 @@ public class ChannelDbUnit extends BaseTestContext {
         //删除原数据
         execSql(conn,"delete from channel");
         execSql(conn,"delete from serial");
+        execSql(conn,"delete from log_information");
+
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "system/channel/preInsertChannelData.xml");
         Channel channel = createChannel();
@@ -46,7 +48,19 @@ public class ChannelDbUnit extends BaseTestContext {
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult.addReplacementObject("[null]", null);
         //从数据库中查出数据与期望结果作比较
-        assertDataSet(TABLE_CHANNEL,"select * from category",expResult,conn);
+        assertDataSet(TABLE_CHANNEL,"select * from channel",expResult,conn);
+
+    }
+
+    public void testUpDate() throws Exception{
+
+        AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
+
+
+
+
+        //channelBiz.updateChannel();
+
     }
 
     /**
@@ -56,7 +70,6 @@ public class ChannelDbUnit extends BaseTestContext {
     private Channel createChannel(){
 
         Channel channel = new Channel();
-        channel.setId(1L);
         channel.setCreateOperator("sone21");
         channel.setIsValid("1");
         channel.setIsDeleted("0");

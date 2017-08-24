@@ -172,7 +172,7 @@ public class JerseyResourceAop {
             Long averageTime = (info.getTotalTime()+useTime)/(info.getUseNumber()+1L);
             udpateInfo.setAverageTime(averageTime);
             Date createTime = info.getCreateTime();
-            Long day = (createTime.getTime()-new Date().getTime())/(86400000L)+1L;
+            Long day = (new Date().getTime()-createTime.getTime())/(86400000L)+1L;
             Long frequency = (info.getUseNumber()+1L)/(day);
             udpateInfo.setFrequency(frequency);
             Example example = new Example(MethodInfo.class);

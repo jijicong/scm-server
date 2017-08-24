@@ -58,8 +58,8 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private ILogInfoService logInfoService;
 
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page)  {
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#aclUserAccreditInfo.userId",isList=true)
+    public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page, AclUserAccreditInfo aclUserAccreditInfo)  {
 
         Example example = new Example(PurchaseGroup.class);
         Example.Criteria criteria = example.createCriteria();

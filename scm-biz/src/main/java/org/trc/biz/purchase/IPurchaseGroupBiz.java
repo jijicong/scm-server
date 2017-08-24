@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface IPurchaseGroupBiz {
 
-    Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form , Pagenation<PurchaseGroup> page);
+    Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form , Pagenation<PurchaseGroup> page, AclUserAccreditInfo aclUserAccreditInfo);
 
     void updatePurchaseStatus(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo);
 

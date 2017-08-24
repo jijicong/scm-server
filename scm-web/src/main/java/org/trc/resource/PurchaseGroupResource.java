@@ -33,8 +33,8 @@ public class PurchaseGroupResource {
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response purchaseGroupPage(@BeanParam PurchaseGroupForm form, @BeanParam Pagenation<PurchaseGroup> page){
-        return ResultUtil.createSuccessPageResult(purchaseGroupBiz.purchaseGroupPage(form , page));
+    public Response purchaseGroupPage(@BeanParam PurchaseGroupForm form, @BeanParam Pagenation<PurchaseGroup> page, @Context ContainerRequestContext requestContext){
+        return ResultUtil.createSuccessPageResult(purchaseGroupBiz.purchaseGroupPage(form , page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @PUT
