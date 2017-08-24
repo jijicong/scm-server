@@ -24,7 +24,8 @@ public  interface AclUserAccreditInfoMapper extends BaseMapper<AclUserAccreditIn
      * 查询据有采购组角色的用户
      * @return
      */
-    List<AclUserAccreditInfo> findPurchase();
+    List<AclUserAccreditInfo> findPurchase(@Param("channelCode")String channelCode);
+
     /**
      * 查询分页条件查询的总数量
      * @param map

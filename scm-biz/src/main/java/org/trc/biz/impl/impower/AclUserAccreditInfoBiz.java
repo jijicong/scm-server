@@ -191,8 +191,12 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    public List<AclUserAccreditInfo> findPurchase() {
-        return userAccreditInfoService.findPurchase();
+    public List<AclUserAccreditInfo> findPurchase(AclUserAccreditInfo aclUserAccreditInfo) {
+
+        String channelCode = aclUserAccreditInfo.getChannelCode();
+
+        return userAccreditInfoService.findPurchase(channelCode);
+
     }
 
     @Override
