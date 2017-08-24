@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface IPurchaseGroupBiz {
 
-    Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form , Pagenation<PurchaseGroup> page);
+    Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form , Pagenation<PurchaseGroup> page, AclUserAccreditInfo aclUserAccreditInfo);
 
     void updatePurchaseStatus(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo);
 
@@ -38,7 +38,7 @@ public interface IPurchaseGroupBiz {
      * @return
      * @
      */
-    List<PurchaseGroup> findPurchaseGroupList() ;
+    List<PurchaseGroup> findPurchaseGroupList(AclUserAccreditInfo aclUserAccreditInfo) ;
 
     /**
      * 根据采购组的code查询改组的采购人员

@@ -25,7 +25,7 @@ public interface IAclUserAccreditInfoService extends IBaseService<AclUserAccredi
      * @return
      * @throws Exception
      */
-    List<AclUserAccreditInfo> findPurchase();
+    List<AclUserAccreditInfo> findPurchase(String channelCode);
 
     /**
      * 查询需要查询的数量

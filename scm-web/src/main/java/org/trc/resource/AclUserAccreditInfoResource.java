@@ -42,8 +42,8 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.PURCHASE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findPurchase() {
-        return ResultUtil.createSuccessResult("查询采购员成功", userAccreditInfoBiz.findPurchase());
+    public Response findPurchase(@Context ContainerRequestContext requestContext) {
+        return ResultUtil.createSuccessResult("查询采购员成功", userAccreditInfoBiz.findPurchase((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @PUT

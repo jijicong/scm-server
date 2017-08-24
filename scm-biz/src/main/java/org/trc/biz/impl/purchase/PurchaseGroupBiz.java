@@ -58,8 +58,8 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private ILogInfoService logInfoService;
 
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page)  {
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#aclUserAccreditInfo.channelCode",isList=true)
+    public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page, AclUserAccreditInfo aclUserAccreditInfo)  {
 
         Example example = new Example(PurchaseGroup.class);
         Example.Criteria criteria = example.createCriteria();
@@ -69,6 +69,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         if (!StringUtils.isBlank(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
+        criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
         example.orderBy("updateTime").desc();
         Pagenation<PurchaseGroup> pagenation =  purchaseGroupService.pagination(example,page,form);
         userNameUtilService.handleUserName(pagenation.getResult());
@@ -87,10 +88,11 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Cacheable(isList = true)
-    public List<PurchaseGroup> findPurchaseGroupList()  {
+    public List<PurchaseGroup> findPurchaseGroupList(AclUserAccreditInfo aclUserAccreditInfo)  {
 
         PurchaseGroup purchaseGroup = new PurchaseGroup();
         purchaseGroup.setIsValid(ValidEnum.VALID.getCode());
+        purchaseGroup.setChannelCode(aclUserAccreditInfo.getChannelCode());
         List<PurchaseGroup> purchaseGroupList = purchaseGroupService.select(purchaseGroup);
         if(purchaseGroupList==null){
             purchaseGroupList=new ArrayList<PurchaseGroup>();
@@ -217,6 +219,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
             logger.error(msg);
             throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
         }
+        purchaseGroup.setChannelCode(aclUserAccreditInfo.getChannelCode());
         ParamsUtil.setBaseDO(purchaseGroup);
         int count = 0;
         String code = serialUtilService.generateCode(LENGTH,SERIALNAME);

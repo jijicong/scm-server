@@ -32,8 +32,8 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
     }
 
     @Override
-    public List<AclUserAccreditInfo> findPurchase(){
-        return aclUserAccreditInfoMapper.findPurchase();
+    public List<AclUserAccreditInfo> findPurchase(String channelCode){
+        return aclUserAccreditInfoMapper.findPurchase(channelCode);
     }
 
     @Override

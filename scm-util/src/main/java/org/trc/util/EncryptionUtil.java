@@ -17,7 +17,7 @@ public class EncryptionUtil {
 
     public static final String MD5 = "MD5";
 
-    public static final String SHA1 = "SHA-1";
+    public static final String SHA1 = "SHAEncrypt-1";
 
     public static String encryption(String str, String encryptionMethod, String charset) throws Exception {
         if (StringUtils.isBlank(encryptionMethod)) {

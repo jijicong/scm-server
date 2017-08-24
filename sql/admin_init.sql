@@ -308,9 +308,8 @@ INSERT INTO `acl_role_resource_relation` VALUES ('19', '2', '10403', null, '2017
 INSERT INTO `acl_role_resource_relation` VALUES ('20', '2', '10404', null, '2017-07-27 18:00:27', '2017-07-27 18:00:27');
 INSERT INTO `acl_role_resource_relation` VALUES ('21', '2', '10405', null, '2017-07-27 18:00:27', '2017-07-27 18:00:27');
 INSERT INTO `acl_role_resource_relation` VALUES ('22', '2', '10406', null, '2017-07-27 18:00:27', '2017-07-27 18:00:27');
-INSERT INTO `acl_role_resource_relation` VALUES ('23', '1', '20202', null, '2017-07-27 18:02:09', '2017-07-27 18:06:27');
-INSERT INTO `acl_role_resource_relation` VALUES ('24', '2', '10501', null, '2017-07-27 18:02:09', '2017-07-27 18:06:27');
--- ----------------------------
+INSERT INTO `acl_role_resource_relation` VALUES ('23', '2', '10501', null, '2017-07-27 18:02:09', '2017-07-27 18:06:27');
+-- ---------------------------- INSERT INTO `acl_role_resource_relation` VALUES ('23', '1', '20202', null, '2017-07-27 18:02:09', '2017-07-27 18:06:27');
 -- Table structure for acl_user_accredit_info
 -- ----------------------------
 DROP TABLE IF EXISTS `acl_user_accredit_info`;

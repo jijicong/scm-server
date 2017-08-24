@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
+import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
@@ -28,6 +30,7 @@ import org.trc.domain.order.*;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.SignException;
 import org.trc.form.*;
 import org.trc.form.JDModel.*;
 import org.trc.form.liangyou.LiangYouOrder;
@@ -76,6 +79,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String F = "F";
 
     public final static String DISTRICT = "区";
+    //订单接收时间间隔
+    public final static String ORDER_RECEIVE_INTERVAL = "orderReceiveInterval";
 
     //供应商下单接口调用失败重试次数
     public final static int SUBMIT_SUPPLIER_ORDER_FAILURE_TIMES = 3;
@@ -143,7 +148,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
 
     @Override
-    //@Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -176,6 +181,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page) {
         AssertUtil.notNull(form, "查询供应商订单分页参数不能为空");
         Example example = new Example(WarehouseOrder.class);
@@ -217,6 +223,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @Cacheable(key="#form.toString()",isList=true)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
@@ -294,6 +301,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @Cacheable(key="#form.toString()",isList=true)
     public List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form) {
         AssertUtil.notNull(form, "查询平台订单列表参数对象不能为空");
         PlatformOrder platformOrder = new PlatformOrder();
@@ -302,6 +310,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单京东订单仓库订单编码不能为空");
@@ -492,6 +501,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResponseAck submitLiangYouOrder(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单粮油订单仓库订单编码不能为空");
@@ -983,10 +993,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck<String> reciveChannelOrder(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
+        //订单检查
+        orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -1033,6 +1046,42 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", "");
     }
 
+    /**
+     * 订单检查
+     * @param orderObj
+     */
+    private void orderCheck(JSONObject orderObj){
+        Long operateTime = orderObj.getLong("operateTime");
+        String sign = orderObj.getString("sign");
+        StringBuilder sb = new StringBuilder();
+        sb.append(orderObj.getString("noticeNum")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        sb.append(operateTime).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        sb.append(orderObj.getJSONObject("platformOrder").getString("channelCode")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        sb.append(orderObj.getJSONObject("platformOrder").getString("platformOrderCode")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        JSONArray shopOrders = orderObj.getJSONArray("shopOrders");
+        for(Object obj: shopOrders){
+            ShopOrder shopOrder = ((JSONObject)obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
+            sb.append(shopOrder.getShopOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        }
+        String encryptStr = sb.toString();
+        if(encryptStr.endsWith(SupplyConstants.Symbol.FULL_PATH_SPLIT)){
+            encryptStr = encryptStr.substring(0, encryptStr.length()-1);
+        }
+        String _sign = SHAEncrypt.SHA256(encryptStr);
+        if(!StringUtils.equals(sign, _sign)){
+            throw new SignException(ExceptionEnum.SIGN_ERROR, "签名错误");
+        }
+        Date operateDate = DateUtils.timestampToDate(operateTime);
+        Long secondDiff = (System.currentTimeMillis() - operateDate.getTime())/1000;
+        SystemConfig systemConfig = new SystemConfig();
+        systemConfig.setCode(ORDER_RECEIVE_INTERVAL);
+        systemConfig = systemConfigService.selectOne(systemConfig);
+        AssertUtil.notNull(systemConfig, "订单接收时间间隔参数未配置");
+        Long orderReceiveInterval = Long.parseLong(systemConfig.getContent());
+        if(secondDiff.longValue() >= orderReceiveInterval){
+            throw new OrderException(ExceptionEnum.ORDER_NOTIFY_TIME_OUT, String.format("渠道发送订单到供应链超过%s秒,不予接收", orderReceiveInterval));
+        }
+    }
 
 
     /**

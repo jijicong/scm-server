@@ -1,5 +1,6 @@
 package org.trc.form.supplier;
 
+import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
@@ -10,8 +11,10 @@ import javax.ws.rs.QueryParam;
 public class SupplierApplyForm extends QueryModel {
 
     @QueryParam("supplierName")
+    @Length(max = 50, message = "属性名称不能超过50个字符")
     private String supplierName;//供应商名称
     @QueryParam("contact")
+    @Length(max = 64, message = "属性名称不能超过64个字符")
     private String contact;//联系人
     @QueryParam("supplierCode")
     private String supplierCode;//供应商编号

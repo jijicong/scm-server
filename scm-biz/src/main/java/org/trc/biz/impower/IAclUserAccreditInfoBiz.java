@@ -7,6 +7,7 @@ import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return 采购员列表
      * @throws Exception
      */
-    List<AclUserAccreditInfo> findPurchase();
+    List<AclUserAccreditInfo> findPurchase(AclUserAccreditInfo aclUserAccreditInfoContext);
 
     /**
      * 修改授权用户的状态

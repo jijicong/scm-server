@@ -8,6 +8,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
+import org.trc.enums.remarkEnum;
 import org.trc.form.category.BrandForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -91,6 +92,11 @@ public class BrandResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateBrandStatus(@BeanParam Brand brand, @Context ContainerRequestContext requestContext)throws Exception{
         brandBiz.updateBrandStatus(brand,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("更新品牌状态成功", "");
+        ValidEnum validEnum=ValidEnum.VALID;
+        if (brand.getIsValid().equals(ValidEnum.VALID.getCode())) {
+            validEnum=ValidEnum.NOVALID;
+        }
+        String msg=validEnum.getName()+"成功!";
+        return ResultUtil.createSuccessResult(msg, "");
     }
 }

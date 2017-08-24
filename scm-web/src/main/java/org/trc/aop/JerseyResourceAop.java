@@ -158,6 +158,7 @@ public class JerseyResourceAop {
             try{
                 methodInfoService.insert(methodInfo);
             }catch (Exception e){
+                log.error("接口信息统计异常",e);
                 //这里捕捉唯一索引抛出的异常
                 //正常逻辑，这里还需要查询更新一下记录方法
             }
@@ -171,22 +172,14 @@ public class JerseyResourceAop {
             Long averageTime = (info.getTotalTime()+useTime)/(info.getUseNumber()+1L);
             udpateInfo.setAverageTime(averageTime);
             Date createTime = info.getCreateTime();
-            Long day = (createTime.getTime()-new Date().getTime())/(86400000L)+1L;
+            Long day = (new Date().getTime()-createTime.getTime())/(86400000L)+1L;
             Long frequency = (info.getUseNumber()+1L)/(day);
             udpateInfo.setFrequency(frequency);
             Example example = new Example(MethodInfo.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andEqualTo("id",info.getId());
             criteria.andEqualTo("useNumber",info.getUseNumber());
-
             int number = methodInfoService.updateByExampleSelective(udpateInfo,example);
-
-           /* info.getAverageTime();// = (TotalTime+useTime) / (UseNumber+1)
-            info.getCreateTime();
-            info.getFrequency();//(UseNumber+1)/(today-createTime)
-            info.getUseNumber();//UseNumber+1
-            info.getTotalTime();//TotalTime+useTime*/
-
         }
         //final:单次记录这次接口调用的总时长；汇总里面存在误差（并发场景下的，忽视录入）
         // 如果想要人工计算，使用该表可以得到精确的信息
