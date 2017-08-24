@@ -1,9 +1,6 @@
-package org.trc.service;
+package org.trc.dbUnit.supplier;
 
-import com.alibaba.fastjson.JSONObject;
 import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.DataSetException;
-import org.dbunit.dataset.ITableMetaData;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.Test;
@@ -18,6 +15,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.SupplierException;
 import org.trc.exception.TestException;
+import org.trc.service.BaseTest;
 
 import java.util.ArrayList;
 import java.util.List;
