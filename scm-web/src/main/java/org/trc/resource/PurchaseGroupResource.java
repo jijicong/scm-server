@@ -69,8 +69,9 @@ public class PurchaseGroupResource {
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findPurchaseGroups(){
-        return ResultUtil.createSuccessResult("查询采购组列表",purchaseGroupBiz.findPurchaseGroupList());
+    public Response findPurchaseGroups(@Context ContainerRequestContext requestContext){
+        //查询当前渠道下的采购组成功
+        return ResultUtil.createSuccessResult("查询采购组列表",purchaseGroupBiz.findPurchaseGroupList((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
 

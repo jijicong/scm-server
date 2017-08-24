@@ -22,6 +22,9 @@ public class PurchaseGroup extends BaseDO{
     @FormParam("code")
     @Length(max = 32, message = "采购组编码字母和数字不能超过32个,汉字不能超过16个")
     private String code;
+    @FormParam("channelCode")
+    @Length(max = 32, message = "渠道编码字母和数字不能超过32个,汉字不能超过16个")
+    private String channelCode;
     @FormParam("name")
     @NotEmpty
     @Length(max = 64, message = "采购组名称字母和数字不能超过64个,汉字不能超过32个")
@@ -50,6 +53,14 @@ public class PurchaseGroup extends BaseDO{
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 
     public Long getId() {

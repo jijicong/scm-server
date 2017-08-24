@@ -38,7 +38,7 @@ public interface IPurchaseGroupBiz {
      * @return
      * @
      */
-    List<PurchaseGroup> findPurchaseGroupList() ;
+    List<PurchaseGroup> findPurchaseGroupList(AclUserAccreditInfo aclUserAccreditInfo) ;
 
     /**
      * 根据采购组的code查询改组的采购人员
