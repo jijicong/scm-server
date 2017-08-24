@@ -2,6 +2,8 @@ package org.trc.service;
 
 import com.alibaba.fastjson.JSONObject;
 import org.dbunit.database.IDatabaseConnection;
+import org.dbunit.dataset.DataSetException;
+import org.dbunit.dataset.ITableMetaData;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.Test;
@@ -11,6 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.supplier.ISupplierBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.ParamValidException;
+import org.trc.exception.SupplierException;
+import org.trc.exception.TestException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +101,28 @@ public class SupplierDbUnit extends BaseTest {
         prepareData(conn, "supplier/preInsertCategoryData.xml");
         prepareData(conn, "supplier/preInsertChannelData.xml");
         prepareData(conn, "supplier/preInsertCategoryBrandData.xml");
+        //异常情况
+        Supplier supplier01 = createSupplier();
+        Supplier supplier02 = createSupplier();
+        Certificate certificate01 = createCertificate();
+        SupplierCategory supplierCategory01 = createSupplierCategory();
+        SupplierBrand supplierBrand01 = createSupplierBrand();
+        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
+        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+        //测试异常流程 参数校验异常
+        try{
+            supplier02.setCertificateTypeId("");
+            supplierBiz.saveSupplier(supplier02,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (ParamValidException e){
+            if(e.getExceptionEnum().equals(CommonExceptionEnum.PARAM_CHECK_EXCEPTION)){
+                log.info("----------保存供应商参数校验异常流程测试通过---------");
+            }
+        }catch (IllegalArgumentException e){
+            log.info("----------保存供应商参数校验异常流程测试通过---------");
+        }
+
         Supplier supplier = createSupplier();
         Certificate certificate = createCertificate();
         SupplierCategory supplierCategory = createSupplierCategory();
@@ -146,6 +175,248 @@ public class SupplierDbUnit extends BaseTest {
         //assertDataSet(TABLE_LOG_INFORMATION,"select * from log_information",expResult07,conn);
         assertDataSet(TABLE_SUPPLIER,"select * from supplier",expResult08,conn);
         assertDataSet(TABLE_CERTIFICATE,"select * from certificate",expResult09,conn);
+    }
+
+    /**
+     * 测试保存供应商订单操作
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateSupplier() throws Exception {
+        //删除原数据
+        execSql(conn,"delete from platform_order; alter table platform_order auto_increment=1;");
+        execSql(conn,"delete from supplier_category; alter table supplier_category auto_increment=1;");
+        execSql(conn,"delete from supplier_brand; alter table supplier_brand auto_increment=1;");
+        execSql(conn,"delete from supplier_financial_info; alter table supplier_financial_info auto_increment=1;");
+        execSql(conn,"delete from supplier_after_sale_info; alter table supplier_after_sale_info auto_increment=1;");
+        execSql(conn,"delete from supplier_channel_relation; alter table supplier_channel_relation auto_increment=1;");
+        execSql(conn,"delete from log_information; alter table log_information auto_increment=1;");
+        execSql(conn,"delete from supplier; alter table supplier auto_increment=1;");
+        execSql(conn,"delete from certificate; alter table certificate auto_increment=1;");
+        execSql(conn,"delete from acl_user_accredit_info; alter table acl_user_accredit_info auto_increment=1;");
+        execSql(conn,"delete from serial; alter table serial auto_increment=1;");
+        execSql(conn,"delete from channel; alter table channel auto_increment=1;");
+        execSql(conn,"delete from category; alter table category auto_increment=1;");
+        execSql(conn,"delete from brand; alter table brand auto_increment=1;");
+        execSql(conn,"delete from category_brand; alter table category_brand auto_increment=1;");
+        //从xml文件读取数据并插入数据库中
+        prepareData(conn, "supplier/preInsertSerialData.xml");
+        prepareData(conn, "supplier/preInsertBrandData.xml");
+        prepareData(conn, "supplier/preInsertCategoryData.xml");
+        prepareData(conn, "supplier/preInsertChannelData.xml");
+        prepareData(conn, "supplier/preInsertCategoryBrandData.xml");
+
+        prepareData(conn, "supplier/preUpdateCertificateData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierAfterSaleInfoData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierBrandData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierCategoryData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierChannelRelationData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierFinancialInfoData.xml");
+        //异常情况
+        Supplier supplier01 = createSupplier();
+        supplier01.setId(1L);
+        supplier01.setSupplierCode("GYS000065");
+        Certificate certificate01 = createCertificate();
+        certificate01.setId(109L);
+        Certificate certificate02 = createCertificate();
+        certificate02.setId(109L);
+        SupplierCategory supplierCategory01 = createSupplierCategory();
+        SupplierBrand supplierBrand01 = createSupplierBrand();
+        supplierBrand01.setId(116L);
+        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
+        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
+        supplierAfterSaleInfo01.setId(65L);
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+        //测试异常流程 参数校验异常
+        try{
+            certificate02.setIdCardStartDate("");
+            supplierBiz.updateSupplier(supplier01,certificate02,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (ParamValidException e){
+            if(e.getExceptionEnum().equals(CommonExceptionEnum.PARAM_CHECK_EXCEPTION)){
+                log.info("----------更新供应商参数校验异常流程测试通过---------");
+            }
+        }catch (IllegalArgumentException e){
+            log.info("----------更新供应商参数校验异常流程测试通过---------");
+        }
+
+
+//        //测试异常流程 保存供应商异常
+//        try{
+//            supplier01.setId(1L);
+//            supplier01.setSupplierName(null);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新供应商异常流程测试通过---------");
+//            }
+//        }
+//        //测试异常流程 保存证件信息异常
+//        try{
+//            certificate01.setId(21L);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新证件信息异常流程测试通过---------");
+//            }
+//        }
+//
+//        //测试异常流程 保存供应商代理类目异常
+//        try{
+//            supplierCategory01.setId(22L);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新供应商代理类目异常流程测试通过---------");
+//            }
+//        }
+//
+//        //测试异常流程 保存供应商代理品牌异常
+//        try{
+//            supplierBrand01.setId(2111L);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新供应商代理品牌异常流程测试通过---------");
+//            }
+//        }
+//
+//        //测试异常流程 保存供应商财务信息异常
+//        try{
+//            supplierFinancialInfo01.setId(22L);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新供应商财务信息异常流程测试通过---------");
+//            }
+//        }
+//
+//        //测试异常流程 保存供应商售后信息异常
+//        try{
+//            supplierAfterSaleInfo01.setId(33L);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新供应商售后信息异常流程测试通过---------");
+//            }
+//        }
+//
+//        //测试异常流程 保存供应商渠道关系异常
+//        try{
+//            aclUserAccreditInfo01.setId(22L);
+//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+//            throw new TestException("测试异常");
+//        }catch (SupplierException e) {
+//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
+//                log.info("----------更新供应商渠道关系异常流程测试通过---------");
+//            }
+//        }
+
+        Supplier supplier = createSupplier();
+        supplier.setIsValid("1");
+        supplier.setId(1L);
+        supplier.setSupplierCode("GYS000065");
+        Certificate certificate = createCertificate();
+        certificate.setIdCardStartDate("2017-08-07");
+        certificate.setId(109L);
+        SupplierCategory supplierCategory = createSupplierCategory();
+        supplierCategory.setIsValid("1");
+        supplierCategory.setSupplierCetegory("[{\"id\":\"267\",\"categoryId\":\"90\",\"categoryCode\":\"FL090\",\"categoryName\":\"美妆个护/面部护肤/眉笔/粉、膏\"},{\"id\":\"268\",\"categoryId\":\"89\",\"categoryCode\":\"FL089\",\"categoryName\":\"美妆个护/面部护肤/男士护肤\"},{\"id\":\"269\",\"categoryId\":\"88\",\"categoryCode\":\"FL088\",\"categoryName\":\"美妆个护/面部护肤/美甲\"}]");
+        SupplierBrand supplierBrand = createSupplierBrand();
+        supplierBrand.setId(116L);
+        supplierBrand.setSupplierBrand("[{\"id\":\"116\",\"brandId\":39,\"brandCode\":\"PP2017081400039\",\"brandName\":\"love\",\"categoryCode\":\"FL090\",\"isValid\":\"1\",\"categoryId\":90,\"categoryName\":\"美妆个护/面部护肤/眉笔/粉、膏\",\"source\":0,\"status\":2,\"sortStatus\":0,\"proxyAptitudeId\":\"firstAgent\",\"proxyAptitudeStartDate\":1501516800000,\"proxyAptitudeEndDate\":1511366400000,\"aptitudePic\":\"supply/437773324715137.png\"}]");
+        SupplierFinancialInfo supplierFinancialInfo = createSupplierFinancialInfo();
+        supplierFinancialInfo.setBankAccount("3245879874544112454");
+        SupplierAfterSaleInfo supplierAfterSaleInfo = createSupplierAfterSaleInfo();
+        supplierAfterSaleInfo.setGoodsReturnPhone("17765487544");
+        supplierAfterSaleInfo.setId(65L);
+        AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
+        supplierBiz.updateSupplier(supplier,certificate,supplierCategory,supplierBrand,supplierFinancialInfo,supplierAfterSaleInfo,aclUserAccreditInfo);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult01 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierCategoryData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult01.addReplacementObject("[null]", null);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult02 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierBrandData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult02.addReplacementObject("[null]", null);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult03 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierFinancialInfoData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult03.addReplacementObject("[null]", null);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult04 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierAfterSaleInfoData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult04.addReplacementObject("[null]", null);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult05 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierChannelRelationData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult05.addReplacementObject("[null]", null);
+        // 从xml文件读取期望结果
+        //ReplacementDataSet expResult06 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertLogInformationData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult06.addReplacementObject("[null]", null);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult07 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertSupplierData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult07.addReplacementObject("[null]", null);
+        ReplacementDataSet expResult08 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expInsertCertificateData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult08.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SUPPLIER_CATEGORY,"select * from supplier_category",expResult01,conn);
+        assertDataSet(TABLE_SUPPLIER_BRAND,"select * from supplier_brand",expResult02,conn);
+        assertDataSet(TABLE_SUPPLIER_FINANCIAL_INFO,"select * from supplier_financial_info",expResult03,conn);
+        assertDataSet(TABLE_SUPPLIER_AFTER_SALE_INFO,"select * from supplier_after_sale_info",expResult04,conn);
+        assertDataSet(TABLE_SUPPLIER_CHANNEL_RELATION,"select * from supplier_channel_relation",expResult05,conn);
+        //assertDataSet(TABLE_LOG_INFORMATION,"select * from log_information",expResult06,conn);
+        assertDataSet(TABLE_SUPPLIER,"select * from supplier",expResult07,conn);
+        assertDataSet(TABLE_CERTIFICATE,"select * from certificate",expResult08,conn);
+
+    }
+
+    /**
+     * 测试启用/停用操作
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateValid() throws Exception {
+        //删除原数据
+        execSql(conn,"delete from supplier; alter table supplier auto_increment=1;");
+        //从xml文件读取数据并插入数据库中
+        prepareData(conn, "supplier/preInsertAclUserAccreditInfoData.xml");
+        prepareData(conn, "supplier/preInsertBrandData.xml");
+        prepareData(conn, "supplier/preInsertCategoryData.xml");
+        prepareData(conn, "supplier/preInsertChannelData.xml");
+        prepareData(conn, "supplier/preInsertCategoryBrandData.xml");
+        prepareData(conn, "supplier/preUpdateSupplierData.xml");
+        prepareData(conn, "supplier/preInsertSupplierCategoryData01.xml");
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+        //测试异常流程
+        try{
+            supplierBiz.updateValid(121L,"1",aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (SupplierException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_UPDATE_EXCEPTION)){
+                log.info("----------分类启停用异常流程测试通过---------");
+            }
+        }
+
+        AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
+        supplierBiz.updateValid(1L,"0",aclUserAccreditInfo);
+        // 从xml文件读取期望结果
+        ReplacementDataSet expResult01 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("supplier/expUpdateSupplierData.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+      //  expResult01.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SUPPLIER,"select * from supplier",expResult01,conn);
     }
 
     private Supplier createSupplier(){
@@ -250,5 +521,21 @@ public class SupplierDbUnit extends BaseTest {
         tableNameList.add("category_brand");
         exportData(tableNameList, "preInsertCategoryBrandData.xml");
     }
+
+//    private <T> T converDateSet(ReplacementDataSet dataSet, Class<T> clazz){
+//        try {
+//            String[] tableNames = dataSet.getTableNames();
+//            for (String tableName :tableNames) {
+//                ITableMetaData date = dataSet.getTableMetaData(tableName);
+//                System.out.print("");
+//
+//            }
+//
+//        } catch (DataSetException e) {
+//            e.printStackTrace();
+//        }
+//        T a = (T) "";
+//        return a;
+//    }
 
 }

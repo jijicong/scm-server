@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <supplier_category id="267" supplier_id="1" supplier_code="GYS000065" category_id="90" is_deleted="0" create_time="2017-08-22 11:06:44.0" update_time="2017-08-22 11:06:44.0" is_valid="0"/>
+  <supplier_category id="268" supplier_id="1" supplier_code="GYS000065" category_id="89" is_deleted="0" create_time="2017-08-22 11:06:44.0" update_time="2017-08-22 11:06:44.0" is_valid="0"/>
+  <supplier_category id="269" supplier_id="1" supplier_code="GYS000065" category_id="88" is_deleted="0" create_time="2017-08-22 11:06:44.0" update_time="2017-08-22 11:06:44.0" is_valid="0"/>
+</dataset>

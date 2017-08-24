@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <supplier id="1" supplier_code="GYS000065" supplier_name="&#20122;&#39532;&#36874;&#19987;&#20379;" supplier_kind_code="purchase" supplier_type_code="internalSupplier" supplier_interface_id="[null]" country="[null]" dingding="[null]" mobile="[null]" qq="[null]" weixin="[null]" contact="&#26480;&#22827;&#183;&#36125;&#20304;&#26031;" phone="0012145784" province="330000" city="330100" area="330106" address="&#27993;&#27743;&#30465;&#26477;&#24030;&#24066;&#35199;&#28246;&#21306;&#39321;&#26684;&#37324;&#25289;&#21035;&#22661;&#21306;5&#26635;" certificate_type_id="normalThreeCertificate" remark="&#27979;&#35797;&#20379;&#24212;&#21830;" is_valid="0" is_deleted="0" create_operator="E2E4BDAD80354EFAB6E70120C271968C" create_time="2017-08-22 11:06:25.0" update_time="2017-08-22 11:33:57.0"/>
+</dataset>

@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <supplier_brand id="116" supplier_id="1" supplier_code="GYS000065" brand_id="39" brand_code="PP2017081400039" category_id="90" category_code="FL090" proxy_aptitude_id="aa" proxy_aptitude_start_date="1501516800000" proxy_aptitude_end_date="1511366400000" aptitude_pic="supply/437773324715137.png" is_deleted="0" create_time="2017-08-22 11:06:44.0" update_time="2017-08-22 11:33:57.0" is_valid="1"/>
+</dataset>

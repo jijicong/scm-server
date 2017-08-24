@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <dataset>
   <brand id="39" name="love" brand_code="PP2017081400039" source="scm" alise="love&#23478;&#32442;" web_url="https://www.lovo.cn/" logo="brand/1609437722517134.jpg" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" last_edit_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-08-14 16:47:21.0" update_time="2017-08-14 16:47:21.0"/>
+  <brand id="40" name="love" brand_code="PP2017081400040" source="scm" alise="love&#23478;&#32442;" web_url="https://www.lovo.cn/" logo="brand/1609437722517134.jpg" is_valid="1" create_operator="E2E4BDAD80354EFAB6E70120C271968C" last_edit_operator="E2E4BDAD80354EFAB6E70120C271968C" is_deleted="0" create_time="2017-08-14 16:47:21.0" update_time="2017-08-14 16:47:21.0"/>
 </dataset>
