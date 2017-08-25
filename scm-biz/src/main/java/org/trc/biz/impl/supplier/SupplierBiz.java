@@ -65,9 +65,9 @@ public class SupplierBiz implements ISupplierBiz {
 
     private Logger log = LoggerFactory.getLogger(SupplierBiz.class);
     //供应商性质：采购
-    private static final String SUPPLIER_PURCHASE = "purchase";
+    public static final String SUPPLIER_PURCHASE = "purchase";
     //供应商性质：一件代发
-    private static final String SUPPLIER_ONE_AGENT_SELLING= "oneAgentSelling";
+    public static final String SUPPLIER_ONE_AGENT_SELLING= "oneAgentSelling";
     //供应商类型：国内供应商
     private static final String INTERNAL_SUPPLIER = "internalSupplier";
     //供应商类型：海外供应商

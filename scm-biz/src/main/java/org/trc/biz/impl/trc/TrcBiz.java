@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.Cacheable;
@@ -526,11 +527,15 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception {
-
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
         if (queryModel.getSupplierCode() != null) {
-            criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+            Supplier supplier = getSupplier(queryModel.getSupplierCode());
+            if(StringUtils.equals(SupplierBiz.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){//一件代发供应商
+                criteria.andEqualTo("supplierCode", supplier.getSupplierInterfaceId());
+            }else{
+                criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+            }
         }
         if (!StringUtils.isEmpty(queryModel.getSkuCode())) {
             criteria.andEqualTo("skuCode", queryModel.getSkuCode());
@@ -540,6 +545,19 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("supplierCode").desc();
         return externalItemSkuService.pagination(example, page, queryModel);
+    }
+
+    /**
+     * 根据供应商编码查询供应商
+     * @param supplierCode
+     * @return
+     */
+    private Supplier getSupplier(String supplierCode){
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(supplierCode);
+        supplier = supplierService.selectOne(supplier);
+        AssertUtil.notNull(supplier, String.format("根据供应商编码[%s]查询不到对应的供应商信息", supplierCode));
+        return supplier;
     }
 
 
