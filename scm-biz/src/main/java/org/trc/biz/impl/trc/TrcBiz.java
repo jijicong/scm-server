@@ -701,6 +701,9 @@ public class TrcBiz implements ITrcBiz {
     public Pagenation<Items> itemsPage(ItemsForm2 queryModel, Pagenation<Items> page){
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(queryModel.getSpuCode())){
+            criteria.andLike("spuCode","%" + queryModel.getSpuCode() + "%");
+        }
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
@@ -714,8 +717,42 @@ public class TrcBiz implements ITrcBiz {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
         example.orderBy("updateTime").desc();
-        return itemsService.pagination(example, page, queryModel);
+        page = itemsService.pagination(example, page, queryModel);
+        setItemsSkus(page.getResult());
+        return page;
     }
+
+    /**
+     * 设置商品相关SKU信息
+     * @param itemsList
+     */
+    private void setItemsSkus(List<Items> itemsList){
+        StringBuilder sb = new StringBuilder();
+        for(Items items: itemsList){
+            sb.append("\"").append(items.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<Skus> skusList = skusService.selectByExample(example);
+            if(skusList.size() > 0){
+                setSkuStock(skusList);
+            }
+            for(Items items: itemsList){
+                List<Skus> records = new ArrayList<Skus>();
+                for(Skus skus: skusList){
+                    if(StringUtils.equals(items.getSpuCode(), skus.getSpuCode())){
+                        records.add(skus);
+                    }
+                }
+                items.setRecords(records);
+            }
+        }
+    }
+
 
 
     /**
