@@ -129,6 +129,33 @@ public abstract class BaseTest extends AbstractTransactionalJUnit4SpringContextT
         Assertion.assertEquals(expData, actData);
     }
 
+    /**
+     * This is used to assert the data from table and the expected data set. If all of the them has the same records, then the assert is true.
+     * 对比结果
+     * @param tableName
+     * @param sql
+     * @param expectedDataSet
+     * @throws Exception
+     */
+    protected void assertDataSet(String tableName, String sql, IDataSet expectedDataSet, IDatabaseConnection conn,String[] str) throws Exception {
+        printDataAsXml(conn, tableName, sql);
+        //建立连接查询实例
+        QueryDataSet actDataSet = new QueryDataSet(conn);
+        //查询实际结果
+        actDataSet.addTable(tableName, sql);
+        //获取查询结果数据
+        ITable actData = actDataSet.getTable(tableName);
+        //获取期望结果数据
+        ITable expData= expectedDataSet.getTable(tableName);
+        //排除那些你不想要比较的对象
+        actData= DefaultColumnFilter.excludedColumnsTable(actData, str);
+        expData = DefaultColumnFilter.excludedColumnsTable(expData, str);
+        //比较查询结果集字段长度
+        junit.framework.Assert.assertEquals(expData.getRowCount(), actData.getRowCount());
+        DefaultColumnFilter.includedColumnsTable(actData, expData.getTableMetaData().getColumns());
+        Assertion.assertEquals(expData, actData);
+    }
+
 
     /**
      * Export data for the table names by the given IDatabaseConnection into the resultFile.<br>
