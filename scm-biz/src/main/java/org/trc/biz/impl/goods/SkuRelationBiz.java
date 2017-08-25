@@ -1,6 +1,7 @@
 package org.trc.biz.impl.goods;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +9,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Category;
 import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
 import org.trc.enums.ValidEnum;
 import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.util.AssertUtil;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,6 +41,8 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     @Autowired
     @Qualifier("externalItemSkuService")
     private IExternalItemSkuService externalItemSkuService;
+    @Autowired
+    private ISkuStockService skuStockService;
 
     @Override
     public List<Skus> getSkuInformation(String skuCode) {
@@ -47,8 +54,32 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", Arrays.asList(skuCodes));
-        criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
-        return skusService.selectByExample(example);
+        List<Skus> skusList = skusService.selectByExample(example);
+        setSkuStock(skusList);
+        return skusList;
+    }
+
+
+    private void setSkuStock(List<Skus> skusList){
+        StringBuilder sb = new StringBuilder();
+        for(Skus skus: skusList){
+            sb.append("\"").append(skus.getSkuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(SkuStock.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("sku_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<SkuStock> skuStockList = skuStockService.selectByExample(example);
+            for(Skus skus: skusList){
+                for(SkuStock skuStock: skuStockList){
+                    if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
+                        skus.setStock(skuStock.getAvailableInventory());
+                    }
+                }
+            }
+        }
     }
 
     @Override

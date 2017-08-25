@@ -118,6 +118,12 @@ public class Skus extends ScmDO {
     @Transient
     private String warehouse;
 
+    /**
+     * 库存
+     */
+    @Transient
+    private Long stock;
+
     public String getSkuCode() {
         return skuCode;
     }
@@ -358,5 +364,11 @@ public class Skus extends ScmDO {
         this.warehouse = warehouse;
     }
 
+    public Long getStock() {
+        return stock;
+    }
 
+    public void setStock(Long stock) {
+        this.stock = stock;
+    }
 }

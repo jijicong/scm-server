@@ -54,10 +54,7 @@ import org.trc.service.category.ICategoryService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.service.config.IRequestFlowService;
-import org.trc.service.goods.IExternalItemSkuService;
-import org.trc.service.goods.IItemsService;
-import org.trc.service.goods.ISkuRelationService;
-import org.trc.service.goods.ISkusService;
+import org.trc.service.goods.*;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.ISupplierApplyService;
@@ -111,6 +108,8 @@ public class TrcBiz implements ITrcBiz {
     private IItemsService itemsService;
     @Autowired
     private ICategoryService categoryService;
+    @Autowired
+    private ISkuStockService skuStockService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -303,12 +302,15 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery, List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception {
+    public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery,
+                                  List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception {
         AssertUtil.notNull(items, "自采商品修改通知渠道商品信息参数items不能为空");
         AssertUtil.notEmpty(itemNaturePropery, "自采商品修改通知渠道商品自然属性参数itemNaturePropery不能为空");
         AssertUtil.notEmpty(itemSalesPropery, "自采商品修改通知渠道商品采购属性参数itemNaturePropery不能为空");
         AssertUtil.notEmpty(skus, "自采商品修改通知渠道商品sku参数skus不能为空");
         List<SkuRelation> skuRelationList = new ArrayList<SkuRelation>();
+        //设置sku库存
+        setSkuStock(skus);
         for(Skus skus2: skus){
             SkuRelation skuRelation = new SkuRelation();
             skuRelation.setSpuCode(skus2.getSpuCode());
@@ -664,7 +666,35 @@ public class TrcBiz implements ITrcBiz {
             criteria.andEqualTo("skuCode",form.getSkuCode());
         }
         example.orderBy("spuCode").desc();
-        return skusService.pagination(example,page,form);
+        page = skusService.pagination(example,page,form);
+        setSkuStock(page.getResult());
+        return page;
+    }
+
+    /**
+     * 设置自采商品SKU库存
+     * @param skusList
+     */
+    private void setSkuStock(List<Skus> skusList){
+        StringBuilder sb = new StringBuilder();
+        for(Skus skus: skusList){
+            sb.append("\"").append(skus.getSkuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(SkuStock.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("sku_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<SkuStock> skuStockList = skuStockService.selectByExample(example);
+            for(Skus skus: skusList){
+                for(SkuStock skuStock: skuStockList){
+                    if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
+                        skus.setStock(skuStock.getAvailableInventory());
+                    }
+                }
+            }
+        }
     }
 
     @Override
