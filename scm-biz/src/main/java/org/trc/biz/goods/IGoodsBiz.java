@@ -142,4 +142,10 @@ public interface IGoodsBiz {
      * @param updateSupplierSkus 更新的供应商sku信息，json数组格式字符串
      */
     void supplierSkuUpdateNotice(String updateSupplierSkus);
+
+    /**
+     * 检查属性状态
+     * @param propertyInfo
+     */
+    void checkPropetyStatus(String propertyInfo);
 }

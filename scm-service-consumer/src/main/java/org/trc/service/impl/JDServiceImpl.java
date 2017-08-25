@@ -22,6 +22,7 @@ import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
@@ -745,9 +746,9 @@ public class JDServiceImpl implements IJDService {
                     for(Object obj: page.getResult()){
                         JSONObject bo = (JSONObject)obj;
                         SupplyItemsExt supplyItemsExt = (SupplyItemsExt)bo.toJavaObject(SupplyItemsExt.class);
-                        supplyItemsExt.setSupplierPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplierPrice())));
-                        supplyItemsExt.setSupplyPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplyPrice())));
-                        supplyItemsExt.setMarketPrice(new Double(CommonUtil.getMoneyYuan(supplyItemsExt.getMarketPrice())));
+                        supplyItemsExt.setSupplierPrice(new BigDecimal(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplierPrice())));
+                        supplyItemsExt.setSupplyPrice(new BigDecimal(CommonUtil.getMoneyYuan(supplyItemsExt.getSupplyPrice())));
+                        supplyItemsExt.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(supplyItemsExt.getMarketPrice())));
                         supplyItemsExt.setSkuName(bo.getString("name"));
                         supplyItemsExt.setBrand(bo.getString("brandName"));
                         supplyItemsExtList.add(supplyItemsExt);

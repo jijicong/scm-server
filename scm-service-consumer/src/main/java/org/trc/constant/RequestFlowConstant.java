@@ -10,7 +10,7 @@ public class RequestFlowConstant {
 
     public final static String JINGDONG = "JINGDONG";//京东
 
-    public final static String TRC = "TRC";//泰然城
+    public final static String TRC = "QD001";//泰然城
 
     public final static String LY = "LY";//粮油
 

@@ -148,15 +148,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page) {
+    @Cacheable(key="#queryModel.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
+            criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
         if (StringUtil.isNotEmpty(queryModel.getPlatformOrderCode())) {//平台订单编码
             criteria.andLike("platformOrderCode", "%" + queryModel.getPlatformOrderCode() + "%");
         }
         if (StringUtil.isNotEmpty(queryModel.getShopOrderCode())) {//店铺订单编码
             criteria.andLike("shopOrderCode", "%" + queryModel.getShopOrderCode() + "%");
+        }
+        if (StringUtil.isNotEmpty(queryModel.getStatus())) {//订单状态
+            criteria.andEqualTo("status", queryModel.getStatus());
         }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel, ZeroToNineEnum.ZERO.getCode());
         if(null != platformOrderList){
@@ -181,11 +188,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page) {
+    @Cacheable(key="#form.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         AssertUtil.notNull(form, "查询供应商订单分页参数不能为空");
         Example example = new Example(WarehouseOrder.class);
         Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
+            criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
         if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
             criteria.andEqualTo("orderType", form.getOrderType());
         }
@@ -841,10 +852,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            if (StringUtil.isNotEmpty(shopOrderForm.getStatus())) {//订单状态
-                criteria.andGreaterThanOrEqualTo("status", shopOrderForm.getStatus());
-                isQuery = true;
-            }
             if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//
                 criteria.andEqualTo("type", shopOrderForm.getType());
                 isQuery = true;
@@ -895,7 +902,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode()));
         OrderBase orderBase = new OrderBase();
         BeanUtils.copyProperties(platformOrder, orderBase);
-        BeanUtils.copyProperties(orderBase, shopOrder);
+        BeanUtils.copyProperties(orderBase, shopOrder, "buyerMessage", "shopMemo");
+        orderBase.setBuyerMessage(shopOrder.getBuyerMessage());
+        orderBase.setShopMemo(shopOrder.getShopMemo());
         OrderExt orderExt = new OrderExt();
         BeanUtils.copyProperties(orderBase, orderExt);
         orderExt.setPayment(shopOrder.getPayment());
@@ -1071,7 +1080,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(!StringUtils.equals(sign, _sign)){
             throw new SignException(ExceptionEnum.SIGN_ERROR, "签名错误");
         }
-        Date operateDate = DateUtils.timestampToDate(operateTime);
+        /*Date operateDate = DateUtils.timestampToDate(operateTime);
         Long secondDiff = (System.currentTimeMillis() - operateDate.getTime())/1000;
         SystemConfig systemConfig = new SystemConfig();
         systemConfig.setCode(ORDER_RECEIVE_INTERVAL);
@@ -1080,7 +1089,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Long orderReceiveInterval = Long.parseLong(systemConfig.getContent());
         if(secondDiff.longValue() >= orderReceiveInterval){
             throw new OrderException(ExceptionEnum.ORDER_NOTIFY_TIME_OUT, String.format("渠道发送订单到供应链超过%s秒,不予接收", orderReceiveInterval));
-        }
+        }*/
     }
 
 
@@ -1990,7 +1999,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(platformOrder.getReceiverEmail(), "平台订单收货人电子邮箱不能为空");
         AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
         AssertUtil.notBlank(platformOrder.getType(), "平台订单订单类型不能为空");
-        AssertUtil.notNull(platformOrder.getCreateTime(), "平台订单创建时间不能为空");
+        //AssertUtil.notNull(platformOrder.getCreateTime(), "平台订单创建时间不能为空");
         AssertUtil.notNull(platformOrder.getPayTime(), "平台订单支付时间不能为空");
 
         AssertUtil.isTrue(platformOrder.getItemNum() > 0, "买家购买的商品总数不能为空");
@@ -2000,9 +2009,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
-     * &
      * 店铺订单校验
-     *
      * @param shopOrder
      */
     private void shopOrderParamCheck(ShopOrder shopOrder) {
@@ -2010,7 +2017,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(shopOrder.getPlatformCode(), "店铺订单来源平台编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "店铺订单平台订单编码不能为空");
         AssertUtil.notBlank(shopOrder.getShopOrderCode(), "店铺订单编码不能为空");
-        AssertUtil.notBlank(shopOrder.getPlatformType(), "店铺订单订单来源类型不能为空");
+        //AssertUtil.notBlank(shopOrder.getPlatformType(), "店铺订单订单来源类型不能为空");
         AssertUtil.notNull(shopOrder.getShopId(), "店铺订单订单所属的店铺id不能为空");
         AssertUtil.notBlank(shopOrder.getShopName(), "店铺订单店铺名称不能为空");
         AssertUtil.notBlank(shopOrder.getUserId(), "店铺订单会员id不能为空");

@@ -11,6 +11,9 @@ public class ItemsForm2 extends QueryModel {
     //商品SPU编号
     @QueryParam("spuCode")
     private String spuCode;
+    //商品SPU编号
+    @QueryParam("skuCode")
+    private String skuCode;
     //商品名称
     @QueryParam("name")
     private String name;
@@ -51,5 +54,13 @@ public class ItemsForm2 extends QueryModel {
 
     public void setBrandId(Long brandId) {
         this.brandId = brandId;
+    }
+
+    public String getSkuCode() {
+        return skuCode;
+    }
+
+    public void setSkuCode(String skuCode) {
+        this.skuCode = skuCode;
     }
 }

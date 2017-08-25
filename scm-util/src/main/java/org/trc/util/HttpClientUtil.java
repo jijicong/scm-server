@@ -190,9 +190,9 @@ public class HttpClientUtil {
         Map<String, Object> params = new HashMap();
         params.put("userId",userId);*/
 
-        String tbUrl = "http://hhh.www.trc.com/trcapi/v1/noticeLogistics";
+        String tbUrl = "http://wb.bbc.com/trcapi/v1/notifyOrder";
         Map<String, Object> params = new HashMap();
-        params.put("skus", "{}");
+        params.put("param", "{\"aaa\":123}");
         try {
             System.out.println(HttpClientUtil.httpPostRequest(tbUrl, params, 10000));
         } catch (Exception e) {

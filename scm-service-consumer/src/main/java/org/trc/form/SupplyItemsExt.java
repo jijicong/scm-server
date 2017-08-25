@@ -1,5 +1,6 @@
 package org.trc.form;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -11,14 +12,14 @@ public class SupplyItemsExt {
     private String supplyName; //供应商名称
     private String supplySku;//供应商商品Sku
     private String upc; //商品名称
-    private Double supplierPrice; //供应商售价
-    private Double supplyPrice; //供货价
-    private Double marketPrice;//市场价
+    private BigDecimal supplierPrice; //供应商售价
+    private BigDecimal supplyPrice; //供货价
+    private BigDecimal marketPrice;//市场价
     private String category;//分类
     private String categoryCode;//分类名称
     private String brand;//品牌
     private String skuType;//商品类型
-    private Double weight;//重量
+    private BigDecimal weight;//重量
     private String productArea;//产地
     private String saleUnit;//销售单位
     private String state;//上下架状态
@@ -75,30 +76,6 @@ public class SupplyItemsExt {
         this.upc = upc;
     }
 
-    public Double getSupplierPrice() {
-        return supplierPrice;
-    }
-
-    public void setSupplierPrice(Double supplierPrice) {
-        this.supplierPrice = supplierPrice;
-    }
-
-    public Double getSupplyPrice() {
-        return supplyPrice;
-    }
-
-    public void setSupplyPrice(Double supplyPrice) {
-        this.supplyPrice = supplyPrice;
-    }
-
-    public Double getMarketPrice() {
-        return marketPrice;
-    }
-
-    public void setMarketPrice(Double marketPrice) {
-        this.marketPrice = marketPrice;
-    }
-
     public String getCategory() {
         return category;
     }
@@ -129,14 +106,6 @@ public class SupplyItemsExt {
 
     public void setSkuType(String skuType) {
         this.skuType = skuType;
-    }
-
-    public Double getWeight() {
-        return weight;
-    }
-
-    public void setWeight(Double weight) {
-        this.weight = weight;
     }
 
     public String getProductArea() {
@@ -257,5 +226,37 @@ public class SupplyItemsExt {
 
     public void setStock(Long stock) {
         this.stock = stock;
+    }
+
+    public BigDecimal getSupplierPrice() {
+        return supplierPrice;
+    }
+
+    public void setSupplierPrice(BigDecimal supplierPrice) {
+        this.supplierPrice = supplierPrice;
+    }
+
+    public BigDecimal getSupplyPrice() {
+        return supplyPrice;
+    }
+
+    public void setSupplyPrice(BigDecimal supplyPrice) {
+        this.supplyPrice = supplyPrice;
+    }
+
+    public BigDecimal getMarketPrice() {
+        return marketPrice;
+    }
+
+    public void setMarketPrice(BigDecimal marketPrice) {
+        this.marketPrice = marketPrice;
+    }
+
+    public BigDecimal getWeight() {
+        return weight;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
     }
 }
