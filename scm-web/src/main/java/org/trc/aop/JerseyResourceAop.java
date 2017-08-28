@@ -147,7 +147,7 @@ public class JerseyResourceAop {
 
     //时间处理 :{这里为了}
     private void handleMethodTime(MethodInfo methodInfo,Long useTime){
-
+       Boolean flag = true; //这里做开关,防止方法信息执行异常的时候,执行时长的信心数据库操作失败
         MethodInfo info = methodInfoService.selectOne(methodInfo);
         if(info == null){ //数据初始化
             methodInfo.setAverageTime(useTime); //平均耗时
@@ -158,6 +158,7 @@ public class JerseyResourceAop {
             try{
                 methodInfoService.insert(methodInfo);
             }catch (Exception e){
+                flag = false;
                 log.error("接口信息统计异常",e);
                 //这里捕捉唯一索引抛出的异常
                 //正常逻辑，这里还需要查询更新一下记录方法
@@ -187,7 +188,10 @@ public class JerseyResourceAop {
         methodLongTime.setMethodId(info != null ? info.getId():methodInfo.getId());
         methodLongTime.setCreate_time(Calendar.getInstance().getTime());
         methodLongTime.setDuration(useTime);
-        methodLongTimeService.insert(methodLongTime);
+        if(flag){
+            methodLongTimeService.insert(methodLongTime);
+        }
+
     }
 
 
