@@ -7,11 +7,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.category.IBrandBiz;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
+import org.trc.domain.category.Brand;
+import org.trc.domain.category.Category;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.*;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.SupplierException;
 import org.trc.exception.TestException;
@@ -19,6 +25,8 @@ import org.trc.service.BaseTest;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
 
 /**
  * Created by wangyz on 2017/8/18.
@@ -33,6 +41,12 @@ public class SupplierDbUnit extends BaseTest {
 
     @Autowired
     private ISupplierBiz supplierBiz;
+
+    @Autowired
+    private ICategoryBiz categoryBiz;
+
+    @Autowired
+    private IBrandBiz brandBiz;
 
     private static final String TABLE_PLATFORM_ORDER = "platform_order";
 
@@ -78,49 +92,7 @@ public class SupplierDbUnit extends BaseTest {
     @Test
     public void testSaveSupplier() throws Exception {
         //删除原数据
-        execSql(conn,"delete from platform_order");
-        execSql(conn,"delete from supplier_category");
-        execSql(conn,"delete from supplier_brand");
-        execSql(conn,"delete from supplier_financial_info");
-        execSql(conn,"delete from supplier_after_sale_info");
-        execSql(conn,"delete from supplier_channel_relation");
-        execSql(conn,"delete from log_information");
-        execSql(conn,"delete from supplier");
-        execSql(conn,"delete from certificate");
-        execSql(conn,"delete from acl_user_accredit_info");
-        execSql(conn,"delete from serial");
-        execSql(conn,"delete from channel");
-        execSql(conn,"delete from category");
-        execSql(conn,"delete from brand");
-        execSql(conn,"delete from category_brand");
-        //从xml文件读取数据并插入数据库中
-        prepareData(conn, "supplier/preInsertSerialData.xml");
-        prepareData(conn, "supplier/preInsertBrandData.xml");
-        prepareData(conn, "supplier/preInsertCategoryData.xml");
-        prepareData(conn, "supplier/preInsertChannelData.xml");
-        prepareData(conn, "supplier/preInsertCategoryBrandData.xml");
-        //异常情况
-        Supplier supplier01 = createSupplier();
-        Supplier supplier02 = createSupplier();
-        Certificate certificate01 = createCertificate();
-        SupplierCategory supplierCategory01 = createSupplierCategory();
-        SupplierBrand supplierBrand01 = createSupplierBrand();
-        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
-        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
-        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
-        //测试异常流程 参数校验异常
-        try{
-            supplier02.setCertificateTypeId("");
-            supplierBiz.saveSupplier(supplier02,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-            throw new TestException("测试异常");
-        }catch (ParamValidException e){
-            if(e.getExceptionEnum().equals(CommonExceptionEnum.PARAM_CHECK_EXCEPTION)){
-                log.info("----------保存供应商参数校验异常流程测试通过---------");
-            }
-        }catch (IllegalArgumentException e){
-            log.info("----------保存供应商参数校验异常流程测试通过---------");
-        }
-
+        handleData();
         Supplier supplier = createSupplier();
         Certificate certificate = createCertificate();
         SupplierCategory supplierCategory = createSupplierCategory();
@@ -174,14 +146,92 @@ public class SupplierDbUnit extends BaseTest {
         //assertDataSet(TABLE_LOG_INFORMATION,"select * from log_information",expResult07,conn,str);
         assertDataSet(TABLE_SUPPLIER,"select * from supplier",expResult08,conn,str);
         assertDataSet(TABLE_CERTIFICATE,"select * from certificate",expResult09,conn,str);
+        //分类停用异常
+        testSaveSupplierCategoryError();
+        //品牌停用异常
+        testSaveSupplierBrandError();
+
     }
 
     /**
-     * 测试保存供应商订单操作
+     * 测试保存供应商订单操作(异常情况)
      * @throws Exception
      */
-    @Test
-    public void testUpdateSupplier() throws Exception {
+    @Transactional(propagation = REQUIRES_NEW)
+    private void testSaveSupplierCategoryError() throws Exception {
+        //删除原数据
+        //handleData();
+        //异常情况
+        Supplier supplier01 = createSupplier();
+        Supplier supplier02 = createSupplier();
+        Certificate certificate01 = createCertificate();
+        SupplierCategory supplierCategory01 = createSupplierCategory();
+        SupplierBrand supplierBrand01 = createSupplierBrand();
+        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
+        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+        //测试异常流程 参数校验异常
+        try{
+            supplier02.setCertificateTypeId("");
+            supplierBiz.saveSupplier(supplier02,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (ParamValidException e){
+            if(e.getExceptionEnum().equals(CommonExceptionEnum.PARAM_CHECK_EXCEPTION)){
+                log.info("----------保存供应商参数校验异常流程测试通过---------");
+            }
+        }catch (IllegalArgumentException e){
+            log.info("----------保存供应商参数校验异常流程测试通过---------");
+        }
+
+        //测试异常流程 分类停用异常
+        try{
+            Category category = new Category();
+            category.setId(88L);
+            category.setIsValid("1");
+            categoryBiz.updateState(category,aclUserAccreditInfo01);
+            supplierBiz.saveSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (GoodsException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.GOODS_DEPEND_DATA_INVALID)){
+                log.info("----------保存供应商分类停用异常流程测试通过---------");
+            }
+        }
+
+    }
+
+    /**
+     * 测试保存供应商订单操作(异常情况)
+     * @throws Exception
+     */
+    @Transactional(propagation = REQUIRES_NEW)
+    private void testSaveSupplierBrandError() throws Exception {
+        //handleData();
+        //异常情况
+        Supplier supplier01 = createSupplier();
+        Supplier supplier02 = createSupplier();
+        Certificate certificate01 = createCertificate();
+        SupplierCategory supplierCategory01 = createSupplierCategory();
+        SupplierBrand supplierBrand01 = createSupplierBrand();
+        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
+        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+
+        //测试异常流程 品牌停用异常
+        try{
+            Brand brand = new Brand();
+            brand.setId(39L);
+            brand.setIsValid("1");
+            brandBiz.updateBrandStatus(brand,aclUserAccreditInfo01);
+            supplierBiz.saveSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (GoodsException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.GOODS_DEPEND_DATA_INVALID)){
+                log.info("----------保存供应商品牌停用异常流程测试通过---------");
+            }
+        }
+    }
+
+    private void handleData() throws Exception {
         //删除原数据
         execSql(conn,"delete from platform_order");
         execSql(conn,"delete from supplier_category");
@@ -204,7 +254,17 @@ public class SupplierDbUnit extends BaseTest {
         prepareData(conn, "supplier/preInsertCategoryData.xml");
         prepareData(conn, "supplier/preInsertChannelData.xml");
         prepareData(conn, "supplier/preInsertCategoryBrandData.xml");
+        //prepareData(conn, "supplier/preUpdateSupplierData.xml");
+    }
 
+    /**
+     * 测试保存供应商订单操作
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateSupplier() throws Exception {
+        //删除原数据
+        handleData();
         prepareData(conn, "supplier/preUpdateCertificateData.xml");
         prepareData(conn, "supplier/preUpdateSupplierAfterSaleInfoData.xml");
         prepareData(conn, "supplier/preUpdateSupplierBrandData.xml");
@@ -239,84 +299,6 @@ public class SupplierDbUnit extends BaseTest {
         }catch (IllegalArgumentException e){
             log.info("----------更新供应商参数校验异常流程测试通过---------");
         }
-
-
-//        //测试异常流程 保存供应商异常
-//        try{
-//            supplier01.setId(1L);
-//            supplier01.setSupplierName(null);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新供应商异常流程测试通过---------");
-//            }
-//        }
-//        //测试异常流程 保存证件信息异常
-//        try{
-//            certificate01.setId(21L);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新证件信息异常流程测试通过---------");
-//            }
-//        }
-//
-//        //测试异常流程 保存供应商代理类目异常
-//        try{
-//            supplierCategory01.setId(22L);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新供应商代理类目异常流程测试通过---------");
-//            }
-//        }
-//
-//        //测试异常流程 保存供应商代理品牌异常
-//        try{
-//            supplierBrand01.setId(2111L);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新供应商代理品牌异常流程测试通过---------");
-//            }
-//        }
-//
-//        //测试异常流程 保存供应商财务信息异常
-//        try{
-//            supplierFinancialInfo01.setId(22L);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新供应商财务信息异常流程测试通过---------");
-//            }
-//        }
-//
-//        //测试异常流程 保存供应商售后信息异常
-//        try{
-//            supplierAfterSaleInfo01.setId(33L);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新供应商售后信息异常流程测试通过---------");
-//            }
-//        }
-//
-//        //测试异常流程 保存供应商渠道关系异常
-//        try{
-//            aclUserAccreditInfo01.setId(22L);
-//            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
-//            throw new TestException("测试异常");
-//        }catch (SupplierException e) {
-//            if (e.getExceptionEnum().equals(ExceptionEnum.SUPPLIER_SAVE_EXCEPTION)) {
-//                log.info("----------更新供应商渠道关系异常流程测试通过---------");
-//            }
-//        }
 
         Supplier supplier = createSupplier();
         supplier.setIsValid("1");
@@ -378,7 +360,77 @@ public class SupplierDbUnit extends BaseTest {
         //assertDataSet(TABLE_LOG_INFORMATION,"select * from log_information",expResult06,conn);
         assertDataSet(TABLE_SUPPLIER,"select * from supplier",expResult07,conn);
         assertDataSet(TABLE_CERTIFICATE,"select * from certificate",expResult08,conn);
+    }
 
+
+    /**
+     * 测试保存供应商订单操作(异常情况)
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateSupplierCategoryError() throws Exception {
+        //删除原数据
+        handleData();
+        prepareData(conn, "supplier/preUpdateSupplierData.xml");
+        //异常情况
+        Supplier supplier01 = createSupplier();
+        supplier01.setId(1L);
+        supplier01.setSupplierCode("GYS000065");
+        Certificate certificate01 = createCertificate();
+        SupplierCategory supplierCategory01 = createSupplierCategory();
+        SupplierBrand supplierBrand01 = createSupplierBrand();
+        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
+        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+
+        //测试异常流程 分类停用异常
+        try{
+            Category category = new Category();
+            category.setId(88L);
+            category.setIsValid("1");
+            categoryBiz.updateState(category,aclUserAccreditInfo01);
+            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (GoodsException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.GOODS_DEPEND_DATA_INVALID)){
+                log.info("----------保存供应商分类停用异常流程测试通过---------");
+            }
+        }
+
+    }
+
+    /**
+     * 测试保存供应商订单操作(异常情况)
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateSupplierBrandError() throws Exception {
+        handleData();
+        prepareData(conn, "supplier/preUpdateSupplierData.xml");
+        //异常情况
+        Supplier supplier01 = createSupplier();
+        supplier01.setId(1L);
+        supplier01.setSupplierCode("GYS000065");
+        Certificate certificate01 = createCertificate();
+        SupplierCategory supplierCategory01 = createSupplierCategory();
+        SupplierBrand supplierBrand01 = createSupplierBrand();
+        SupplierFinancialInfo supplierFinancialInfo01 = createSupplierFinancialInfo();
+        SupplierAfterSaleInfo supplierAfterSaleInfo01 = createSupplierAfterSaleInfo();
+        AclUserAccreditInfo aclUserAccreditInfo01 = createAclUserAccreditInfo();
+
+        //测试异常流程 品牌停用异常
+        try{
+            Brand brand = new Brand();
+            brand.setId(39L);
+            brand.setIsValid("1");
+            brandBiz.updateBrandStatus(brand,aclUserAccreditInfo01);
+            supplierBiz.updateSupplier(supplier01,certificate01,supplierCategory01,supplierBrand01,supplierFinancialInfo01,supplierAfterSaleInfo01,aclUserAccreditInfo01);
+            throw new TestException("测试异常");
+        }catch (GoodsException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.GOODS_DEPEND_DATA_INVALID)){
+                log.info("----------保存供应商品牌停用异常流程测试通过---------");
+            }
+        }
     }
 
     /**
