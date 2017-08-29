@@ -3,11 +3,10 @@ package org.trc.service;
 
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
-import org.trc.form.liangyou.LiangYouOrder;
+import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
-import javax.xml.ws.Response;
 import java.util.List;
 
 /**
@@ -332,7 +331,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    ResponseAck submitJingDongOrder(JingDongOrder jingDongOrder);
+    ResponseAck submitJingDongOrder(JingDongSupplierOrder jingDongOrder);
 
     /**
      * 提交粮油订单
@@ -340,7 +339,7 @@ public interface IJDService {
      * @return
      * @throws Exception
      */
-    ResponseAck submitLiangYouOrder(LiangYouOrder liangYouOrder);
+    ResponseAck submitLiangYouOrder(LiangYouSupplierOrder liangYouOrder);
 
 
     /**

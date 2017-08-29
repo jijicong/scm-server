@@ -1,11 +1,13 @@
 package org.trc.form.JDModel;
 
+import org.trc.form.SupplierOrderBase;
+
 import java.util.List;
 
 /**
  * Created by hzwdx on 2017/7/1.
  */
-public class JingDongOrder {
+public class JingDongSupplierOrder extends SupplierOrderBase {
 
     //仓库订单编码
     private String warehouseOrderCode;

@@ -33,7 +33,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.exception.SignException;
 import org.trc.form.*;
 import org.trc.form.JDModel.*;
-import org.trc.form.liangyou.LiangYouOrder;
+import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
@@ -85,8 +85,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //供应商下单接口调用失败重试次数
     public final static int SUBMIT_SUPPLIER_ORDER_FAILURE_TIMES = 3;
 
+    //渠道订单金额校验:1-是,0-否
     @Value("${channel.orderMoneyCheck}")
     private String channelOrderMoneyCheck;
+    //是否正式提交订单:1-是,0-否
+    @Value("${submit.order.status}")
+    private String submitOrderStatus;
+
 
     @Autowired
     private IShopOrderService shopOrderService;
@@ -344,7 +349,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         WarehouseOrder warehouseOrder = (WarehouseOrder)scmOrderMap.get("warehouseOrder");
         List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
         //获取京东订单对象
-        JingDongOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, orderItemList, jdAddressCodes);
+        JingDongSupplierOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, orderItemList, jdAddressCodes);
         //更新仓库订单供应商订单状态为已发送
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), SupplierOrderStatusEnum.SUBMIT.getCode());
         String supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
@@ -426,7 +431,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param jingDongOrder
      * @return
      */
-    private ResponseAck reSubmitJingDongOrder(JingDongOrder jingDongOrder){
+    private ResponseAck reSubmitJingDongOrder(JingDongSupplierOrder jingDongOrder){
         StringBuilder sku = new StringBuilder();
         for(OrderPriceSnap orderPriceSnap: jingDongOrder.getOrderPriceSnap()){
             sku.append(orderPriceSnap.getSkuId()).append(SupplyConstants.Symbol.COMMA);
@@ -522,7 +527,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         WarehouseOrder warehouseOrder = (WarehouseOrder)scmOrderMap.get("warehouseOrder");
         List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
         //获取粮油订单对象
-        LiangYouOrder liangYouOrder = getLiangYouOrder(warehouseOrder, platformOrder, orderItemList);
+        LiangYouSupplierOrder liangYouOrder = getLiangYouOrder(warehouseOrder, platformOrder, orderItemList);
         //更新仓库订单供应商订单状态为已发送
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), SupplierOrderStatusEnum.SUBMIT.getCode());
         String supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
@@ -571,8 +576,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param jdAddressCodes
      * @return
      */
-    private JingDongOrder getJingDongOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, List<OrderItem> orderItemList, String[] jdAddressCodes){
-        JingDongOrder jingDongOrder = new JingDongOrder();
+    private JingDongSupplierOrder getJingDongOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, List<OrderItem> orderItemList, String[] jdAddressCodes){
+        JingDongSupplierOrder jingDongOrder = new JingDongSupplierOrder();
         jingDongOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         jingDongOrder.setThirdOrder(warehouseOrder.getWarehouseOrderCode());
         jingDongOrder.setName(platformOrder.getReceiverName());
@@ -613,6 +618,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         // TODO 大家电、中小件配送安装参数设置
         //设置京东订单SKU信息
         setJdOrderSkuInfo(jingDongOrder, orderItemList);
+        jingDongOrder.setSubmitOrderStatus(submitOrderStatus);
         return jingDongOrder;
     }
 
@@ -624,8 +630,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItemList
      * @return
      */
-    private LiangYouOrder getLiangYouOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, List<OrderItem> orderItemList){
-        LiangYouOrder liangYouOrder = new LiangYouOrder();
+    private LiangYouSupplierOrder getLiangYouOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, List<OrderItem> orderItemList){
+        LiangYouSupplierOrder liangYouOrder = new LiangYouSupplierOrder();
         liangYouOrder.setShopOrderCode(warehouseOrder.getShopOrderCode());
         liangYouOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         liangYouOrder.setConsignee(platformOrder.getReceiverName());
@@ -646,6 +652,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outOrderGoodsList.add(outOrderGoods);
         }
         liangYouOrder.setOutOrderGoods(outOrderGoodsList);
+        liangYouOrder.setSubmitOrderStatus(submitOrderStatus);
         return liangYouOrder;
     }
 
@@ -654,7 +661,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param jingDongOrder
      * @param orderItemList
      */
-    private void setJdOrderSkuInfo(JingDongOrder jingDongOrder, List<OrderItem> orderItemList){
+    private void setJdOrderSkuInfo(JingDongSupplierOrder jingDongOrder, List<OrderItem> orderItemList){
         List<JdSku> jdSkuList = new ArrayList<JdSku>();
         List<OrderPriceSnap> orderPriceSnapList = new ArrayList<OrderPriceSnap>();
         for(OrderItem orderItem2: orderItemList){
@@ -823,10 +830,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private ResponseAck invokeSubmitSuuplierOrder(Object orderInfo){
         ResponseAck responseAck = null;
-        if(orderInfo instanceof JingDongOrder){
-            responseAck = ijdService.submitJingDongOrder((JingDongOrder)orderInfo);
-        }else if(orderInfo instanceof LiangYouOrder){
-            responseAck = ijdService.submitLiangYouOrder((LiangYouOrder)orderInfo);
+        if(orderInfo instanceof JingDongSupplierOrder){
+            responseAck = ijdService.submitJingDongOrder((JingDongSupplierOrder)orderInfo);
+        }else if(orderInfo instanceof LiangYouSupplierOrder){
+            responseAck = ijdService.submitLiangYouOrder((LiangYouSupplierOrder)orderInfo);
         }
         return responseAck;
     }
@@ -1075,15 +1082,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         sb.append(StringUtils.isNotBlank(platformOrder.getUserId())? platformOrder.getUserId():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//用户id
         sb.append(StringUtils.isNotBlank(platformOrder.getUserName())? platformOrder.getUserName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//会员名称
-        sb.append(null == platformOrder.getItemNum()? platformOrder.getItemNum():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//商品总数
-        sb.append(null == platformOrder.getPayment()? platformOrder.getPayment():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//实付金额
-        sb.append(null == platformOrder.getTotalFee()? platformOrder.getTotalFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单总金额
-        sb.append(null == platformOrder.getPostageFee()? platformOrder.getPostageFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//邮费
-        sb.append(null == platformOrder.getTotalTax()? platformOrder.getUserId():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//总税费
+        sb.append(null != platformOrder.getItemNum()? platformOrder.getItemNum():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//商品总数
+        sb.append(null != platformOrder.getPayment()? platformOrder.getPayment():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//实付金额
+        sb.append(null != platformOrder.getTotalFee()? platformOrder.getTotalFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单总金额
+        sb.append(null != platformOrder.getPostageFee()? platformOrder.getPostageFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//邮费
+        sb.append(null != platformOrder.getTotalTax()? platformOrder.getTotalTax():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//总税费
         sb.append(StringUtils.isNotBlank(platformOrder.getStatus())? platformOrder.getStatus():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单状态
-        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人姓名
-        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人身份证
+        //sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人姓名
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverIdCard())? platformOrder.getReceiverIdCard():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人身份证
         sb.append(StringUtils.isNotBlank(platformOrder.getReceiverMobile())? platformOrder.getReceiverMobile():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人手机号码
+
         String encryptStr = sb.toString();
         if(encryptStr.endsWith(SupplyConstants.Symbol.FULL_PATH_SPLIT)){
             encryptStr = encryptStr.substring(0, encryptStr.length()-1);
@@ -1337,11 +1345,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public void fetchLogisticsInfo() {
         Example example = new Example(SupplierOrderInfo.class);
         Example.Criteria criteria = example.createCriteria();
-        String[] statusArray = new String[]{SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), SupplierOrderStatusEnum.DELIVER.getCode()};
-        criteria.andIn("status", Arrays.asList(statusArray));
+        /*String[] statusArray = new String[]{SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), SupplierOrderStatusEnum.DELIVER.getCode()};
+        criteria.andIn("status", Arrays.asList(statusArray));*/
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
+            if(StringUtils.equals(supplierOrderInfo2.getSupplierOrderCode(), "59901523734")){
+                System.out.println("@@@@");
+            }
             try{
                 WarehouseOrder warehouseOrder = new WarehouseOrder();
                 warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
@@ -1356,10 +1367,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     //获取仓库订单编码的物流信息  -----------  一个仓库订单可能会产生多个包裹 -supplier_order_info
                     LogisticForm logisticForm = invokeGetLogisticsInfo(supplierOrderInfo2.getWarehouseOrderCode(), warehouseOrder.getChannelCode(), flag);
                     if(null != logisticForm){
+                        String supplierOrderStatus = supplierOrderInfo2.getSupplierOrderStatus();
                         //更新供应商订单物流信息
                         updateSupplierOrderLogistics(supplierOrderInfo2, logisticForm);
                         //在这里剔除已经通知了的物流信息
-                        if(StringUtils.equals(supplierOrderInfo2.getStatus(),SupplierOrderStatusEnum.DELIVER.getCode())){
+                        if(StringUtils.equals(supplierOrderStatus,SupplierOrderStatusEnum.DELIVER.getCode())){
                             List<Logistic> logistics = logisticForm.getLogistics();
                             for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
                                 Logistic logistic = it.next();

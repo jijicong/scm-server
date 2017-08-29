@@ -1,11 +1,13 @@
 package org.trc.form.liangyou;
 
+import org.trc.form.SupplierOrderBase;
+
 import java.util.List;
 
 /**
  * Created by hzwdx on 2017/7/6.
  */
-public class LiangYouOrder {
+public class LiangYouSupplierOrder extends SupplierOrderBase {
 
     //店铺订单编码
     private String shopOrderCode;

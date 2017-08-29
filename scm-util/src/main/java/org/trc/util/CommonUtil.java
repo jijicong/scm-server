@@ -16,9 +16,11 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -371,6 +373,25 @@ public class CommonUtil {
 			BigDecimal b2 = new BigDecimal(WEIGHT_MULTI);
 			return b1.divide(b2).setScale(WEIGHT_NUM, RoundingMode.HALF_EVEN);
 		}
+	}
+
+	/**
+	 * 获取字符串utf-8编码
+	 * @param string
+	 * @return
+	 */
+	public static String getUTF8String(String string) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(string);
+		String xmString = "";
+		String xmlUTF8="";
+		try {
+			xmString = new String(sb.toString().getBytes("UTF-8"));
+			xmlUTF8 = URLEncoder.encode(xmString, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return xmlUTF8;
 	}
 
 }

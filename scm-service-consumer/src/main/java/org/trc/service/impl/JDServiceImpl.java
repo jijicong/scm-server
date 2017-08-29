@@ -12,19 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.JingDongEnum;
-import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.GoodsException;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
-import org.trc.form.liangyou.LiangYouOrder;
+import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -803,14 +799,14 @@ public class JDServiceImpl implements IJDService {
     }
 
     @Override
-    public ResponseAck submitJingDongOrder(JingDongOrder jingDongOrder) {
+    public ResponseAck submitJingDongOrder(JingDongSupplierOrder jingDongOrder) {
         AssertUtil.notNull(jingDongOrder, "提交京东订单参数不能为空");
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdSubmitOrderUrl();
         return invokeSubmitOrder(url, JSON.toJSON(jingDongOrder).toString());
     }
 
     @Override
-    public ResponseAck submitLiangYouOrder(LiangYouOrder liangYouOrder) {
+    public ResponseAck submitLiangYouOrder(LiangYouSupplierOrder liangYouOrder) {
         AssertUtil.notNull(liangYouOrder, "提交粮油订单参数不能为空");
         String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getLySubmitOrderUrl();
         return invokeSubmitOrder(url, JSON.toJSON(liangYouOrder).toString());
