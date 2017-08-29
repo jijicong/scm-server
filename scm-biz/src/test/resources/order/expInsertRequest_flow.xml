@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<dataset>
+    <request_flow
+            id="54988"
+            requester="GYL"
+            responder="LY"
+            type="SUBMIT_LY_ORDER"
+            request_num="GYLac85f51503998008714102"
+            status="1"
+            request_param='{"phoneMob":"13872072544","shopOrderCode":"000xxxxxxxxx000042","outOrderGoods":[{"onlySku":"1203030101","quantity":2,"goodsName":"浙粮定制高级葡萄酒礼品皮盒（不带酒具）"}],"address":"余杭区","consignee":"熊大","city":"杭州市","county":"余杭区","imId":"420281198602197693","warehouseOrderCode":"LY1201708290000306","disType":"F","realName":"熊大","province":"浙江省","submitOrderStatus":"1"}'
+            response_param='{"code":"200","data":{"orderType":"1","warehouseOrderCode":"LY1201708290000306","order":[{"supplyOrderCode":"000xxxxxxxxx000042","skus":[{"skuName":"浙粮定制高级葡萄酒礼品皮盒（不带酒具）","num":2,"skuCode":"1203030101"}],"state":"200","message":"子订单下单成功"}]},"message":"仓库级订单:LY1201708290000306,粮油下单完成"}'
+            count=""
+            request_time="2017/8/29 17:13"
+            end_time=""
+            remark="仓库级订单:LY1201708290000306,粮油下单完成"
+    />
+
+    <request_flow
+            id="55097"
+            requester="GYL"
+            responder="JINGDONG"
+            type="SUBMIT_JD_ORDER"
+            request_num="GYLac85f515039985106760"
+            status="1"
+            request_param='{"invoiceName":"熊大","city":"2768","companyName":"浙江小泰科技有限公司","county":"53499","invoiceState":2,"invoiceAddress":"余杭区","remark":"","isUseBalance":1,"thirdOrder":"JD1201708290000305","warehouseOrderCode":"JD1201708290000305","paymentType":4,"orderPriceSnap":[{"price":19.940,"skuId":10549938139}],"province":"32","invoiceType":2,"sku":[{"bNeedAnnex":true,"num":2,"bNeedGift":false,"skuId":"10549938139"}],"submitOrderStatus":"1","email":"471869639@qq.com","invoiceProvice":32,"submitState":0,"invoiceContent":1,"address":"余杭区","selectedInvoiceTitle":5,"town":"0","mobile":"13872072544","invoiceCity":2768,"invoiceCounty":53499,"phone":"13872072544","name":"熊大","doOrderPriceMode":1}'
+            response_param='{"code":"200","data":{"orderType":0,"warehouseOrderCode":"JD1201708290000305","order":[{"supplyOrderCode":"","skus":[{"skuName":"京东","num":2,"skuCode":"10549938139"}],"state":"3019","message":"orderPriceSnap中skuId=10549938139的价格与京东价格不一致[京东价格=RTPriceVO{contractPrice=-1, skuId=10549938139, price=13.80, pclPrice=-1, jdPrice=13.80, readPrice=13.80, promotion=null, marketPrice=null, nakedPrice=null, taxRate=null, rebateType=promotion, rebateSign=5290591743}]."}]},"message":"下单成功"}'
+            count=""
+            request_time="2017/8/29 17:21"
+            end_time=""
+            remark="下单成功"
+    />
+</dataset>

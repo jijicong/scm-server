@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<dataset>
+    <sku_relation
+            id="16"
+            warehouse_order_code="JD1201708290000305"
+            supplier_order_code="59901523734"
+            type="1"
+            supplier_parent_order_code="59901523734"
+            supplier_code="JD"
+            logistics_corporation=""
+            waybill_number=""
+            logistics_info='[{"content":"您提交了订单，请等待系统确认","msgTime":1500455178000,"operator":"客户"},{"content":"您的订单已经进入京东27号库准备出库","msgTime":1500455762000,"operator":"系统"},{"content":"您的订单预计7月20日送达您手中","msgTime":1500455779000,"operator":"系统"},{"content":"您的订单已经打印完毕","msgTime":1500456001000,"operator":"futianjun"},{"content":"您的订单已经拣货完成","msgTime":1500456613000,"operator":"杨轶"},{"content":"扫描员已经扫描","msgTime":1500457217000,"operator":"赵来叶"},{"content":"打包成功","msgTime":1500458373000,"operator":"京东打包员"},{"content":"【杭州市】 您的订单在京东【杭州分拣中心】分拣完成","msgTime":1500458975000,"operator":"马淑艳"},{"content":"【杭州市】 您的订单在京东【杭州分拣中心】发货完成，准备送往京东【宁波分拨中心】","msgTime":1500459005000,"operator":"马淑艳"},{"content":"【宁波市】 您的订单在京东【宁波分拨中心】分拣完成","msgTime":1500477161000,"operator":"胡新沂"},{"content":"【宁波市】 您的订单在京东【宁波分拨中心】发货完成，准备送往京东【宁波招宝站】","msgTime":1500477191000,"operator":"胡新沂"},{"content":"【宁波市】 您的订单已到达【宁波招宝站】","msgTime":1500509859000,"operator":"张飞"},{"content":"【宁波市】 您的订单正在配送途中，请您准备签收（配送员：薛彬彬 ，联系电话：18668587752或86596630），感谢您的耐心等待。京东扫码付，单单享立减。","msgTime":1500516073000,"operator":"薛彬彬"},{"content":"【宁波市】 您的订单已签收。感谢您在京东购物，欢迎再次光临。参加评价还能赢取京豆哟。","msgTime":1500520882000,"operator":"薛彬彬"}]'
+            logistics_status="1"
+            is_deleted="0"
+            create_time="2017/8/29 15:13"
+            update_time="2017/8/29 15:13"
+    />
+</dataset>
