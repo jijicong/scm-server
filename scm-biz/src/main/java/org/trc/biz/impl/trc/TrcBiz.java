@@ -1118,7 +1118,6 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Brand> brandList(BrandForm2 queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();

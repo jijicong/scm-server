@@ -33,7 +33,8 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
         AssertUtil.notNull(pagenation.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(pagenation.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(pagenation.getStart(), "分页查询参数start不能为空");
-        AssertUtil.isTrue(pagenation.getPageNo() < Pagenation.MAX_PAGE_SIZE, String.format("分页每页记录条数参数pageSize值不能大于%s", Pagenation.MAX_PAGE_SIZE));
+        AssertUtil.isTrue(pagenation.getPageNo() > 0, "分页每页记录条数参数pageNo值必须大于等于1");
+        AssertUtil.isTrue(pagenation.getPageSize() < Pagenation.MAX_PAGE_SIZE, String.format("分页每页记录条数参数pageSize值不能大于%s", Pagenation.MAX_PAGE_SIZE));
         if(StringUtil.isNotEmpty(queryModel.getOrderBy())) {
             for(int i=0; i<queryModel.getOrderBys().length; i++){
                 setPageOrder(example, queryModel.getOrderBys()[i], queryModel.getOrders()[i]);

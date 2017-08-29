@@ -1065,13 +1065,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
         StringBuilder sb = new StringBuilder();
         sb.append(orderObj.getString("noticeNum")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         sb.append(operateTime).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
-        sb.append(orderObj.getJSONObject("platformOrder").getString("channelCode")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
-        sb.append(orderObj.getJSONObject("platformOrder").getString("platformOrderCode")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        PlatformOrder platformOrder = orderObj.getJSONObject("platformOrder").toJavaObject(PlatformOrder.class);
+        sb.append(platformOrder.getChannelCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        sb.append(platformOrder.getPlatformOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         JSONArray shopOrders = orderObj.getJSONArray("shopOrders");
         for(Object obj: shopOrders){
             ShopOrder shopOrder = ((JSONObject)obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
             sb.append(shopOrder.getShopOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         }
+        sb.append(StringUtils.isNotBlank(platformOrder.getUserId())? platformOrder.getUserId():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//用户id
+        sb.append(StringUtils.isNotBlank(platformOrder.getUserName())? platformOrder.getUserName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//会员名称
+        sb.append(null == platformOrder.getItemNum()? platformOrder.getItemNum():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//商品总数
+        sb.append(null == platformOrder.getPayment()? platformOrder.getPayment():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//实付金额
+        sb.append(null == platformOrder.getTotalFee()? platformOrder.getTotalFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单总金额
+        sb.append(null == platformOrder.getPostageFee()? platformOrder.getPostageFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//邮费
+        sb.append(null == platformOrder.getTotalTax()? platformOrder.getUserId():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//总税费
+        sb.append(StringUtils.isNotBlank(platformOrder.getStatus())? platformOrder.getStatus():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单状态
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人姓名
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人身份证
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverMobile())? platformOrder.getReceiverMobile():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人手机号码
         String encryptStr = sb.toString();
         if(encryptStr.endsWith(SupplyConstants.Symbol.FULL_PATH_SPLIT)){
             encryptStr = encryptStr.substring(0, encryptStr.length()-1);
@@ -1080,7 +1092,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(!StringUtils.equals(sign, _sign)){
             throw new SignException(ExceptionEnum.SIGN_ERROR, "签名错误");
         }
-        /*Date operateDate = DateUtils.timestampToDate(operateTime);
+        Date operateDate = DateUtils.timestampToDate(operateTime);
         Long secondDiff = (System.currentTimeMillis() - operateDate.getTime())/1000;
         SystemConfig systemConfig = new SystemConfig();
         systemConfig.setCode(ORDER_RECEIVE_INTERVAL);
@@ -1089,7 +1101,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Long orderReceiveInterval = Long.parseLong(systemConfig.getContent());
         if(secondDiff.longValue() >= orderReceiveInterval){
             throw new OrderException(ExceptionEnum.ORDER_NOTIFY_TIME_OUT, String.format("渠道发送订单到供应链超过%s秒,不予接收", orderReceiveInterval));
-        }*/
+        }
     }
 
 
