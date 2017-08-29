@@ -1,5 +1,6 @@
 package org.trc.dbUnit.system;
 
+import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -11,7 +12,11 @@ import org.trc.dbUnit.BaseTestContext;
 import org.trc.domain.System.Channel;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.ChannelException;
+import org.trc.exception.TestException;
+import org.trc.exception.WarehouseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,12 +60,83 @@ public class WarehouseDbUnit extends BaseTestContext {
     }
 
     /**
+     * 测试状态更改
+     */
+    @Test
+    public void testUpdateWarehouseStatus() throws Exception {
+
+        AclUserAccreditInfo aclUserAccreditInfo=createAclUserAccreditInfo();
+        //删除原数据
+        execSql(conn,"delete from warehouse");
+
+        prepareData(conn,"system/warehouse/preUpdateWarehouseStatusDate.xml");
+
+        Warehouse warehouse = createWarehouse();
+
+        warehouseBiz.updateWarehouseState(warehouse,aclUserAccreditInfo);
+
+        ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("system/warehouse/preUpdateWarehouseStatusDate.xml"));
+
+        expResult.addReplacementObject("[null]",null);
+
+        assertDataSet(TABLE_WAREHOUSE,"select * from warehouse",expResult,conn);
+
+    }
+
+    @Test
+    public void  testUpdateWarehouse() throws Exception{
+
+        AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
+
+        execSql(conn,"delete from warehouse");
+
+        prepareData(conn, "system/warehouse/preUpdateWarehouseDate.xml");
+
+        Warehouse warehouse = createUpdateWarehouse();
+
+        try{
+            warehouseBiz.updateWarehouse(warehouse,aclUserAccreditInfo);
+            throw new TestException("测试异常");
+        }catch (WarehouseException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION)){
+                log.info("----------仓库的更新正常---------");
+            }
+        }
+       /*测试正常流程*/
+        warehouse.setName("heiba");
+        warehouseBiz.updateWarehouse(warehouse,aclUserAccreditInfo);
+
+        IDataSet expDataSet=getXmlDataSet("system/warehouse/expUpdateWarehouseDate.xml");
+
+        assertItable(TABLE_WAREHOUSE,"select * from warehouse where id=1",  expDataSet.getTable("warehouse"),conn);
+
+    }
+
+    private Warehouse createUpdateWarehouse(){
+        Warehouse warehouse = new Warehouse();
+        warehouse.setId(1L);
+        warehouse.setCreateOperator("lisi");
+        warehouse.setIsValid("1");
+        warehouse.setIsDeleted("0");
+        warehouse.setAddress("111");
+        warehouse.setCity("210300");
+        warehouse.setProvince("210000");
+        warehouse.setArea("210301");
+        warehouse.setName("wangwu");
+        warehouse.setWarehouseTypeCode("bondedWarehouse");
+        warehouse.setIsCustomsClearance(1);
+        warehouse.setRemark("11");
+        return warehouse;
+    };
+
+    /**
      * 创建仓库
      * @return
      */
     private Warehouse createWarehouse(){
 
         Warehouse warehouse = new Warehouse();
+        warehouse.setId(1L);
         warehouse.setCreateOperator("E2E4BDAD80354EFAB6E70120C271968C");
         warehouse.setIsValid("1");
         warehouse.setIsDeleted("0");

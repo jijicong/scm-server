@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<dataset>
+    <warehouse id="1" code="CK00001" name="heiba" warehouse_type_code="bondedWarehouse" is_customs_clearance="1" province="210000" city="210300" area="210301" address="111" is_valid="1" is_deleted="0" create_operator="lisi" remark="11"/>
+</dataset>

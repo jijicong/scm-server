@@ -63,7 +63,7 @@ public class ChannelDbUnit extends BaseTestContext {
      * @throws Exception
      */
     @Test
-    public void testUpDate() throws Exception{
+    public void testUpdateDate() throws Exception{
 
         AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
 
