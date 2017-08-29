@@ -208,10 +208,13 @@ public class TrcService implements ITrcService {
             toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
             log.debug("开始调用同步物流信息给渠道服务" + url + ", 参数：" + paramObj + ". 开始时间" +
                     DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-            HttpPost httpPost = new HttpPost(url);
+            /*HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, paramObj, httpPost, TIME_OUT);*/
+            Map<String, Object> params = new HashMap();
+            params.put("param", paramObj);
+            response = HttpClientUtil.httpPostRequest(url, params, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);

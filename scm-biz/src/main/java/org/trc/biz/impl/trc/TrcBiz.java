@@ -731,6 +731,9 @@ public class TrcBiz implements ITrcBiz {
         if (null != queryModel.getBrandId()) {//商品所属品牌ID
             criteria.andEqualTo("brandId", queryModel.getBrandId());
         }
+        if (StringUtil.isNotEmpty(queryModel.getTradeType())) {//贸易类型
+            criteria.andEqualTo("tradeType", queryModel.getTradeType());
+        }
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }

@@ -23,6 +23,9 @@ public class ItemsForm2 extends QueryModel {
     //商品所属品牌ID
     @QueryParam("brandId")
     private Long brandId;
+    //贸易类型
+    @QueryParam("tradeType")
+    private String tradeType;
 
     public String getSpuCode() {
         return spuCode;
@@ -62,5 +65,13 @@ public class ItemsForm2 extends QueryModel {
 
     public void setSkuCode(String skuCode) {
         this.skuCode = skuCode;
+    }
+
+    public String getTradeType() {
+        return tradeType;
+    }
+
+    public void setTradeType(String tradeType) {
+        this.tradeType = tradeType;
     }
 }
