@@ -162,6 +162,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getShopOrderCode())) {//店铺订单编码
             criteria.andLike("shopOrderCode", "%" + queryModel.getShopOrderCode() + "%");
         }
+        if (StringUtil.isNotEmpty(queryModel.getStatus())) {//订单状态
+            criteria.andEqualTo("status", queryModel.getStatus());
+        }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel, ZeroToNineEnum.ZERO.getCode());
         if(null != platformOrderList){
             if(platformOrderList.size() > 0){
@@ -849,10 +852,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
-            if (StringUtil.isNotEmpty(shopOrderForm.getStatus())) {//订单状态
-                criteria.andGreaterThanOrEqualTo("status", shopOrderForm.getStatus());
-                isQuery = true;
-            }
             if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//
                 criteria.andEqualTo("type", shopOrderForm.getType());
                 isQuery = true;
@@ -1066,13 +1065,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
         StringBuilder sb = new StringBuilder();
         sb.append(orderObj.getString("noticeNum")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         sb.append(operateTime).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
-        sb.append(orderObj.getJSONObject("platformOrder").getString("channelCode")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
-        sb.append(orderObj.getJSONObject("platformOrder").getString("platformOrderCode")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        PlatformOrder platformOrder = orderObj.getJSONObject("platformOrder").toJavaObject(PlatformOrder.class);
+        sb.append(platformOrder.getChannelCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        sb.append(platformOrder.getPlatformOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         JSONArray shopOrders = orderObj.getJSONArray("shopOrders");
         for(Object obj: shopOrders){
             ShopOrder shopOrder = ((JSONObject)obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
             sb.append(shopOrder.getShopOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         }
+        sb.append(StringUtils.isNotBlank(platformOrder.getUserId())? platformOrder.getUserId():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//用户id
+        sb.append(StringUtils.isNotBlank(platformOrder.getUserName())? platformOrder.getUserName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//会员名称
+        sb.append(null == platformOrder.getItemNum()? platformOrder.getItemNum():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//商品总数
+        sb.append(null == platformOrder.getPayment()? platformOrder.getPayment():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//实付金额
+        sb.append(null == platformOrder.getTotalFee()? platformOrder.getTotalFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单总金额
+        sb.append(null == platformOrder.getPostageFee()? platformOrder.getPostageFee():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//邮费
+        sb.append(null == platformOrder.getTotalTax()? platformOrder.getUserId():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//总税费
+        sb.append(StringUtils.isNotBlank(platformOrder.getStatus())? platformOrder.getStatus():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//订单状态
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人姓名
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverName())? platformOrder.getReceiverName():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人身份证
+        sb.append(StringUtils.isNotBlank(platformOrder.getReceiverMobile())? platformOrder.getReceiverMobile():StringUtils.EMPTY).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);//收货人手机号码
         String encryptStr = sb.toString();
         if(encryptStr.endsWith(SupplyConstants.Symbol.FULL_PATH_SPLIT)){
             encryptStr = encryptStr.substring(0, encryptStr.length()-1);
@@ -2000,7 +2011,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(platformOrder.getReceiverEmail(), "平台订单收货人电子邮箱不能为空");
         AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
         AssertUtil.notBlank(platformOrder.getType(), "平台订单订单类型不能为空");
-        AssertUtil.notNull(platformOrder.getCreateTime(), "平台订单创建时间不能为空");
+        //AssertUtil.notNull(platformOrder.getCreateTime(), "平台订单创建时间不能为空");
         AssertUtil.notNull(platformOrder.getPayTime(), "平台订单支付时间不能为空");
 
         AssertUtil.isTrue(platformOrder.getItemNum() > 0, "买家购买的商品总数不能为空");
@@ -2010,9 +2021,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
-     * &
      * 店铺订单校验
-     *
      * @param shopOrder
      */
     private void shopOrderParamCheck(ShopOrder shopOrder) {
@@ -2020,7 +2029,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(shopOrder.getPlatformCode(), "店铺订单来源平台编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "店铺订单平台订单编码不能为空");
         AssertUtil.notBlank(shopOrder.getShopOrderCode(), "店铺订单编码不能为空");
-        AssertUtil.notBlank(shopOrder.getPlatformType(), "店铺订单订单来源类型不能为空");
+        //AssertUtil.notBlank(shopOrder.getPlatformType(), "店铺订单订单来源类型不能为空");
         AssertUtil.notNull(shopOrder.getShopId(), "店铺订单订单所属的店铺id不能为空");
         AssertUtil.notBlank(shopOrder.getShopName(), "店铺订单店铺名称不能为空");
         AssertUtil.notBlank(shopOrder.getUserId(), "店铺订单会员id不能为空");

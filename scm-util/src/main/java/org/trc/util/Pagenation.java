@@ -1,5 +1,6 @@
 package org.trc.util;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.QueryParam;
 import java.io.Serializable;

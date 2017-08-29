@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.Cacheable;
@@ -526,11 +527,15 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception {
-
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
         if (queryModel.getSupplierCode() != null) {
-            criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+            Supplier supplier = getSupplier(queryModel.getSupplierCode());
+            if(StringUtils.equals(SupplierBiz.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){//一件代发供应商
+                criteria.andEqualTo("supplierCode", supplier.getSupplierInterfaceId());
+            }else{
+                criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+            }
         }
         if (!StringUtils.isEmpty(queryModel.getSkuCode())) {
             criteria.andEqualTo("skuCode", queryModel.getSkuCode());
@@ -540,6 +545,19 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("supplierCode").desc();
         return externalItemSkuService.pagination(example, page, queryModel);
+    }
+
+    /**
+     * 根据供应商编码查询供应商
+     * @param supplierCode
+     * @return
+     */
+    private Supplier getSupplier(String supplierCode){
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(supplierCode);
+        supplier = supplierService.selectOne(supplier);
+        AssertUtil.notNull(supplier, String.format("根据供应商编码[%s]查询不到对应的供应商信息", supplierCode));
+        return supplier;
     }
 
 
@@ -701,6 +719,9 @@ public class TrcBiz implements ITrcBiz {
     public Pagenation<Items> itemsPage(ItemsForm2 queryModel, Pagenation<Items> page){
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(queryModel.getSpuCode())){
+            criteria.andLike("spuCode","%" + queryModel.getSpuCode() + "%");
+        }
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
@@ -710,12 +731,49 @@ public class TrcBiz implements ITrcBiz {
         if (null != queryModel.getBrandId()) {//商品所属品牌ID
             criteria.andEqualTo("brandId", queryModel.getBrandId());
         }
+        if (StringUtil.isNotEmpty(queryModel.getTradeType())) {//贸易类型
+            criteria.andEqualTo("tradeType", queryModel.getTradeType());
+        }
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
         example.orderBy("updateTime").desc();
-        return itemsService.pagination(example, page, queryModel);
+        page = itemsService.pagination(example, page, queryModel);
+        setItemsSkus(page.getResult());
+        return page;
     }
+
+    /**
+     * 设置商品相关SKU信息
+     * @param itemsList
+     */
+    private void setItemsSkus(List<Items> itemsList){
+        StringBuilder sb = new StringBuilder();
+        for(Items items: itemsList){
+            sb.append("\"").append(items.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<Skus> skusList = skusService.selectByExample(example);
+            if(skusList.size() > 0){
+                setSkuStock(skusList);
+            }
+            for(Items items: itemsList){
+                List<Skus> records = new ArrayList<Skus>();
+                for(Skus skus: skusList){
+                    if(StringUtils.equals(items.getSpuCode(), skus.getSpuCode())){
+                        records.add(skus);
+                    }
+                }
+                items.setRecords(records);
+            }
+        }
+    }
+
 
 
     /**
@@ -1063,7 +1121,6 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Brand> brandList(BrandForm2 queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();

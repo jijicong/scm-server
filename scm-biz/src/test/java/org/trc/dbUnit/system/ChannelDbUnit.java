@@ -1,5 +1,6 @@
 package org.trc.dbUnit.system;
 
+import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -9,6 +10,9 @@ import org.trc.biz.system.IChannelBiz;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.dbUnit.BaseTestContext;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.ChannelException;
+import org.trc.exception.TestException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +41,6 @@ public class ChannelDbUnit extends BaseTestContext {
         //删除原数据
         execSql(conn,"delete from channel");
         execSql(conn,"delete from serial");
-        execSql(conn,"delete from log_information");
 
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "system/channel/preInsertChannelData.xml");
@@ -50,17 +53,55 @@ public class ChannelDbUnit extends BaseTestContext {
         //从数据库中查出数据与期望结果作比较
         assertDataSet(TABLE_CHANNEL,"select * from channel",expResult,conn);
 
+
+
     }
 
-    public void testUpDate() throws Exception{
+    /**
+     * 测试更新渠道数据
+     * 异常场景，渠道名称重复
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateDate() throws Exception{
 
         AclUserAccreditInfo aclUserAccreditInfo = createAclUserAccreditInfo();
 
+        execSql(conn,"delete from channel");
+
+        prepareData(conn, "system/channel/preUpdateChannelData.xml");
+
+        Channel channel = createUpdateChannel();
+
+       try{
+           channelBiz.updateChannel(channel,aclUserAccreditInfo);
+           throw new TestException("测试异常");
+       }catch (ChannelException e){
+           if(e.getExceptionEnum().equals(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION)){
+               log.info("----------渠道的更新正常---------");
+           }
+       }
+       /*测试正常流程*/
+        channel.setName("LZ");
+        channelBiz.updateChannel(channel,aclUserAccreditInfo);
+
+        IDataSet expDataSet=getXmlDataSet("system/channel/expUpdateChannelData.xml");
+
+        assertItable(TABLE_CHANNEL,"select * from channel where id=1",  expDataSet.getTable("channel"),conn);
 
 
+    }
 
-        //channelBiz.updateChannel();
-
+    /**
+     * 创建用于测试更新渠道的对象
+     * @return
+     */
+    private Channel createUpdateChannel(){
+        Channel channel = new Channel();
+        channel.setId(1L);
+        channel.setName("Y");
+        channel.setRemark("hello test");
+        return channel;
     }
 
     /**

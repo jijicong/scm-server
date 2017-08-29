@@ -1584,12 +1584,12 @@ public class GoodsBiz implements IGoodsBiz {
         //查询商品自然属性信息
         ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
         itemNaturePropery.setSpuCode(spuCode);
-        itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        //itemNaturePropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
         //查询商品采购属性信息
         ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
         itemSalesPropery.setSpuCode(spuCode);
-        itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        //itemSalesPropery.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
         AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码[%s]查询商品采购属性信息为空", spuCode));
         //设置自然属性和采购属性中文名词

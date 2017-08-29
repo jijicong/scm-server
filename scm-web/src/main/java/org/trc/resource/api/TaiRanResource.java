@@ -1,6 +1,7 @@
 package org.trc.resource.api;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,10 @@ import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.supplier.Supplier;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.OrderException;
+import org.trc.form.OrderSubmitResult;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
@@ -204,13 +209,20 @@ public class TaiRanResource {
     //批量新增关联关系（单个也调用此方法），待修改
     @POST
     @Path(SupplyConstants.TaiRan.SKURELATION_UPDATE)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<String> addSkuRelationBatch(JSONObject information) {
-        AssertUtil.isTrue(information.containsKey("action"), "参数action不能为空");
-        AssertUtil.isTrue(information.containsKey("relations"), "参数relations不能为空");
-        String action = information.getString("action");
-        JSONArray relations = information.getJSONArray("relations");
+    public ResponseAck<String> addSkuRelationBatch(String information) {
+        AssertUtil.notBlank(information, "请求参数不能为空");
+        JSONObject orderObj = null;
+        try {
+            orderObj = JSONObject.parseObject(information);
+        } catch (JSONException e) {
+            logger.error("参数转json格式错误", e);
+            return new ResponseAck(CommonExceptionEnum.PARAM_CHECK_EXCEPTION.getCode(), String.format("请求参数%s不是json格式", information), "");
+        }
+        AssertUtil.isTrue(orderObj.containsKey("action"), "参数action不能为空");
+        AssertUtil.isTrue(orderObj.containsKey("relations"), "参数relations不能为空");
+        String action = orderObj.getString("action");
+        JSONArray relations = orderObj.getJSONArray("relations");
         try {
             trcBiz.updateRelation(action, relations);
         } catch (Exception e) {
