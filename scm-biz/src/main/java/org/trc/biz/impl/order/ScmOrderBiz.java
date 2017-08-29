@@ -1350,9 +1350,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(StringUtils.equals(supplierOrderInfo2.getSupplierOrderCode(), "59901523734")){
-                System.out.println("@@@@");
-            }
             try{
                 WarehouseOrder warehouseOrder = new WarehouseOrder();
                 warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
