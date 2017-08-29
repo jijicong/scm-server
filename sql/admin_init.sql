@@ -243,7 +243,7 @@ INSERT INTO `acl_resource`  VALUES ('202', '201010106', '分类查询', 'categor
 INSERT INTO `acl_resource`  VALUES ('203', '201010107', '查询指定分类品牌', 'category/brand/[1-9]\\d*$', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:36:54', '2017-08-11 20:37:10');
 INSERT INTO `acl_resource`  VALUES ('204', '201010108', '分类品牌查询2', 'category/categoryBrands', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:43:09', '2017-08-11 20:43:09');
 INSERT INTO `acl_resource`  VALUES ('205', '201010109', '代发商品列表查询', 'goods/externalItemSkus', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-12 12:16:46', '2017-08-12 12:16:46');
-
+INSERT INTO `acl_resource`  VALUES ('206', '103010110', '检查属性启停用状态', 'goods/checkPropetyStatus', 'GET', '10301', '1', '1', 'admin', '0', '2017-08-24 16:07:02', '2017-08-24 16:07:02');
 
 -- ----------------------------
 -- Table structure for acl_role
