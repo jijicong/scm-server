@@ -434,6 +434,8 @@ public class TrcBiz implements ITrcBiz {
                             getLongVal(externalItemSku.getStock()) != getLongVal(externalItemSku2.getStock()) ||
                             !StringUtils.equals(externalItemSku.getBarCode(), externalItemSku2.getBarCode()) ||
                             !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid())){
+                        if(null == externalItemSku.getStock())
+                            externalItemSku.setStock(0L);
                         sendList.add(externalItemSku);
                     }
                 }

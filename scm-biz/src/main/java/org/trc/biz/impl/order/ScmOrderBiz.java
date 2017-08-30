@@ -1100,7 +1100,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(!StringUtils.equals(sign, _sign)){
             throw new SignException(ExceptionEnum.SIGN_ERROR, "签名错误");
         }
-        Date operateDate = DateUtils.timestampToDate(operateTime);
+        /*Date operateDate = DateUtils.timestampToDate(operateTime);
         Long secondDiff = (System.currentTimeMillis() - operateDate.getTime())/1000;
         SystemConfig systemConfig = new SystemConfig();
         systemConfig.setCode(ORDER_RECEIVE_INTERVAL);
@@ -1109,7 +1109,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Long orderReceiveInterval = Long.parseLong(systemConfig.getContent());
         if(secondDiff.longValue() >= orderReceiveInterval){
             throw new OrderException(ExceptionEnum.ORDER_NOTIFY_TIME_OUT, String.format("渠道发送订单到供应链超过%s秒,不予接收", orderReceiveInterval));
-        }
+        }*/
     }
 
 
