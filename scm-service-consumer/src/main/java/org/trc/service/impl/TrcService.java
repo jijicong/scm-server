@@ -107,16 +107,16 @@ public class TrcService implements ITrcService {
             response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
-                toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
+                toGlyResultDO.setStatus(jbo.getString("status"));
+                toGlyResultDO.setMsg(jbo.getString("msg"));
+                //toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
                 //具体业务重试代码设置状态
-                if (toGlyResultDO.getStatus().equals("1")){
-                    toGlyResultDO.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                /*if (toGlyResultDO.getStatus().equals(SuccessFailureEnum.SUCCESS.getCode())){
                     toGlyResultDO.setMsg("处理成功！");
                 }
-                if (toGlyResultDO.getStatus().equals("2")){
-                    toGlyResultDO.setStatus(SuccessFailureEnum.ERROR.getCode());
+                if (toGlyResultDO.getStatus().equals(SuccessFailureEnum.ERROR.getCode())){
                     toGlyResultDO.setMsg("异常数据！");
-                }
+                }*/
             }else {
                 toGlyResultDO.setStatus(SuccessFailureEnum.FAILURE.getCode());
                 toGlyResultDO.setMsg("调用泰然城信息更新同步服务返回结果为空");

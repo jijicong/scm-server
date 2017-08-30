@@ -957,7 +957,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
             @Override
             public int compare(WarehouseOrder o1, WarehouseOrder o2) {
                 if(o1.getSupplierOrderStatus().compareTo(o2.getSupplierOrderStatus()) == 0){
-                    return o2.getPayTime().compareTo(o1.getPayTime());
+                    if(null != o2.getPayTime() && null != o1.getPayTime()){
+                        return o2.getPayTime().compareTo(o1.getPayTime());
+                    }else{
+                        return 0;
+                    }
                 }else {
                     return 0;
                 }
@@ -1020,7 +1024,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
-        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPayTime());
+        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPlatformType(), platformOrder.getPayTime());
         //拆分仓库订单
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         for (ShopOrder shopOrder : shopOrderList) {
@@ -1137,29 +1141,45 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if(StringUtils.equals(orderItem.getPlatformOrderCode(), shopOrder.getPlatformOrderCode()) &&
                         StringUtils.equals(orderItem.getShopOrderCode(), shopOrder.getShopOrderCode())){
                     orderItemsParamCheck(orderItem);
-                    itemsNum2 = itemsNum2 + orderItem.getNum();
-                    payment2 = payment2.add(orderItem.getPayment());
-                    totalFee2 = totalFee2.add(orderItem.getTotalFee());
-                    postFee2 = postFee2.add(orderItem.getPostDiscount());
-                    totalTax2 = totalTax2.add(orderItem.getPriceTax());
+                    if(null != orderItem.getNum())
+                        itemsNum2 = itemsNum2 + orderItem.getNum();
+                    if(null != orderItem.getPayment())
+                        payment2 = payment2.add(orderItem.getPayment());
+                    if(null != orderItem.getTotalFee())
+                        totalFee2 = totalFee2.add(orderItem.getTotalFee());
+                    if(null != orderItem.getPostDiscount())
+                        postFee2 = postFee2.add(orderItem.getPostDiscount());
+                    if(null != orderItem.getPriceTax())
+                        totalTax2 = totalTax2.add(orderItem.getPriceTax());
                 }
             }
-            itemsNum = itemsNum + shopOrder.getItemNum();
-            payment = payment.add(shopOrder.getPayment());
-            totalFee = totalFee.add(shopOrder.getTotalFee());
-            postFee = postFee.add(shopOrder.getPostageFee());
-            totalTax = totalTax.add(shopOrder.getTotalTax());
-            AssertUtil.isTrue(shopOrder.getItemNum().compareTo(itemsNum2) == 0, "店铺订单商品数量与该店铺所有商品总数量不相等");
+            if(null != shopOrder.getItemNum())
+                itemsNum = itemsNum + shopOrder.getItemNum();
+            if(null != shopOrder.getPayment())
+                payment = payment.add(shopOrder.getPayment());
+            if(null != shopOrder.getTotalFee())
+                totalFee = totalFee.add(shopOrder.getTotalFee());
+            if(null != shopOrder.getPostageFee())
+                postFee = postFee.add(shopOrder.getPostageFee());
+            if(null != shopOrder.getTotalTax())
+                totalTax = totalTax.add(shopOrder.getTotalTax());
+            if(null != shopOrder.getItemNum())
+                AssertUtil.isTrue(shopOrder.getItemNum().compareTo(itemsNum2) == 0, "店铺订单商品数量与该店铺所有商品总数量不相等");
             AssertUtil.isTrue(shopOrder.getPayment().compareTo(payment2) == 0, "店铺订单实付金额与该店铺所有商品实付总金额不相等");
             AssertUtil.isTrue(shopOrder.getTotalFee().compareTo(totalFee2) == 0, "店铺订单应付总金额与该店铺所有商品应付总金额不相等");
-            AssertUtil.isTrue(shopOrder.getPostageFee().compareTo(postFee2) == 0, "店铺订单邮费金额与该店铺所有商品邮费总金额不相等");
-            AssertUtil.isTrue(shopOrder.getTotalTax().compareTo(totalTax2) == 0, "店铺订单税费金额与该店铺所有商品税费总金额不相等");
+            if(null != shopOrder.getPostageFee())
+                AssertUtil.isTrue(shopOrder.getPostageFee().compareTo(postFee2) == 0, "店铺订单邮费金额与该店铺所有商品邮费总金额不相等");
+            if(null != shopOrder.getTotalTax())
+                AssertUtil.isTrue(shopOrder.getTotalTax().compareTo(totalTax2) == 0, "店铺订单税费金额与该店铺所有商品税费总金额不相等");
         }
-        AssertUtil.isTrue(platformOrder.getItemNum().compareTo(itemsNum) == 0, "平台订单商品数量与所有店铺商品总数量不相等");
+        if(null != platformOrder.getItemNum())
+            AssertUtil.isTrue(platformOrder.getItemNum().compareTo(itemsNum) == 0, "平台订单商品数量与所有店铺商品总数量不相等");
         AssertUtil.isTrue(platformOrder.getPayment().compareTo(payment) == 0, "平台订单实付金额与所有店铺实付总金额不相等");
         AssertUtil.isTrue(platformOrder.getTotalFee().compareTo(totalFee) == 0, "平台订单应付总金额与所有店铺应付总金额不相等");
-        AssertUtil.isTrue(platformOrder.getPostageFee().compareTo(postFee) == 0, "平台订单邮费金额与所有店铺邮费总金额不相等");
-        AssertUtil.isTrue(platformOrder.getTotalTax().compareTo(totalTax) == 0, "平台订单税费金额与所有店铺税费总金额不相等");
+        if(null != platformOrder.getPostageFee())
+            AssertUtil.isTrue(platformOrder.getPostageFee().compareTo(postFee) == 0, "平台订单邮费金额与所有店铺邮费总金额不相等");
+        if(null != platformOrder.getTotalTax())
+            AssertUtil.isTrue(platformOrder.getTotalTax().compareTo(totalTax) == 0, "平台订单税费金额与所有店铺税费总金额不相等");
     }
 
     /**
@@ -1738,7 +1758,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             throw new OrderException(ExceptionEnum.CHANNEL_ORDER_DATA_NOT_JSON_EXCEPTION, msg);
         }
         AssertUtil.notNull(platformObj, "接收渠道订单参数中平台订单信息为空");
-        PlatformOrder platformOrder = platformObj.toJavaObject(PlatformOrder.class);
+        PlatformOrder platformOrder = JSONObject.parseObject(platformObj.toJSONString(),PlatformOrder.class);
         platformOrder.setPayment(platformObj.getBigDecimal("payment"));//实付金额
         platformOrder.setPostageFee(platformObj.getBigDecimal("postageFee"));//积分抵扣金额
         platformOrder.setTotalFee(platformObj.getBigDecimal("totalFee"));//订单总金额
@@ -1758,6 +1778,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setUpdateTime(DateUtils.timestampToDate(platformObj.getLong("updateTime")));//修改时间
         platformOrder.setTimeoutActionTime(DateUtils.timestampToDate(platformObj.getLong("timeoutActionTime")));//超时确认时间
         platformOrder.setEndTime(DateUtils.timestampToDate(platformObj.getLong("endTime")));//订单结束时间
+        platformOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 
         //适配地址,主要是对直辖市处理
         adapterAddress(platformOrder);
@@ -1846,14 +1867,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param payTime 支付时间
      * @return
      */
-    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, Date payTime) {
+    private List<ShopOrder> getShopOrderList(JSONArray shopOrderArray, String platformType, Date payTime) {
         List<ShopOrder> shopOrderList = new ArrayList<ShopOrder>();
         BigDecimal totalShop = new BigDecimal(0);
         for (Object obj : shopOrderArray) {
             JSONObject tmpObj = (JSONObject) obj;
             JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
             AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
-            ShopOrder shopOrder = shopOrderObj.toJavaObject(ShopOrder.class);
+            ShopOrder shopOrder = JSONObject.parseObject(tmpObj.getString("shopOrder"),ShopOrder.class);
+            shopOrder.setPlatformType(platformType);
             shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
             shopOrder.setPayTime(payTime);//支付时间
             shopOrder.setConsignTime(DateUtils.timestampToDate(shopOrderObj.getLong("consignTime")));//发货时间
@@ -1866,6 +1888,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<OrderItem> orderItemList = getOrderItem(orderItemArray);
             totalShop = totalShop.add(shopOrder.getPayment());
             shopOrder.setOrderItems(orderItemList);
+            shopOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             shopOrderList.add(shopOrder);
         }
         return shopOrderList;
@@ -1897,7 +1920,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<OrderItem> orderItemList = new ArrayList<OrderItem>();
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
-            OrderItem orderItem = orderItemObj.toJavaObject(OrderItem.class);
+            OrderItem orderItem = JSONObject.parseObject(orderItemObj.toJSONString(),OrderItem.class);
             String channelSkuCode = orderItem.getSkuCode();//渠道sku编码
             String scmSkuCode = orderItem.getOuterSkuId();//供应链sku编码
             //将skuCode设置成供应链sku编码,outerSkuId设置成渠道sku编码
@@ -2101,6 +2124,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         if(orderItemList1.size() > 0){
+            throw new OrderException(ExceptionEnum.ORDER_ITEMS_ERROR, "自采商品订单暂不受理");
             // TODO 自采的拆单暂时不做
             /**
              如果是一个仓库，这里就不需要继续往下拆
@@ -2109,6 +2133,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(orderItemList2.size() > 0){
             warehouseOrderList = dealSupplier(orderItemList2, shopOrder);
+        }else {
+            throw new OrderException(ExceptionEnum.ORDER_ITEMS_ERROR, "订单相关代发商品不能为空");
         }
         return warehouseOrderList;
     }
@@ -2227,5 +2253,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return null;
     }
+
 
 }
