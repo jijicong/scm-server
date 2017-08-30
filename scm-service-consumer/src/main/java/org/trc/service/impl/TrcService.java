@@ -99,7 +99,7 @@ public class TrcService implements ITrcService {
         String response = null;
         try{
             HttpPost httpPost = new HttpPost(url);
-            httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
+            httpPost.addHeader(HTTP.CONTENT_TYPE,"application/json; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
             response = HttpClientUtil.httpPostJsonRequest(url, params, httpPost, TIME_OUT);
             if(StringUtils.isNotBlank(response)){

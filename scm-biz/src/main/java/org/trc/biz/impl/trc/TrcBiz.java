@@ -307,24 +307,27 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery,
-                                  List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception {
+                                  List<ItemSalesPropery> itemSalesPropery, List<Skus> updateSkus, Long operateTime) throws Exception {
         AssertUtil.notNull(items, "自采商品修改通知渠道商品信息参数items不能为空");
-        AssertUtil.notEmpty(itemNaturePropery, "自采商品修改通知渠道商品自然属性参数itemNaturePropery不能为空");
+        //AssertUtil.notEmpty(itemNaturePropery, "自采商品修改通知渠道商品自然属性参数itemNaturePropery不能为空");
         AssertUtil.notEmpty(itemSalesPropery, "自采商品修改通知渠道商品采购属性参数itemNaturePropery不能为空");
-        AssertUtil.notEmpty(skus, "自采商品修改通知渠道商品sku参数skus不能为空");
         List<SkuRelation> skuRelationList = new ArrayList<SkuRelation>();
-        //设置sku库存
-        setSkuStock(skus);
-        for(Skus skus2: skus){
+        if(updateSkus.size() > 0){
+            //设置sku库存
+            setSkuStock(updateSkus);
+        }
+        List<Skus> noticeSkus = new ArrayList<Skus>();
+        for(Skus skus2: updateSkus){
             SkuRelation skuRelation = new SkuRelation();
+            skuRelation.setChannelCode(RequestFlowConstant.TRC);
             skuRelation.setSpuCode(skus2.getSpuCode());
             skuRelation.setSkuCode(skus2.getSkuCode());
             skuRelation = skuRelationService.selectOne(skuRelation);
             if(null != skuRelation){
-                skuRelationList.add(skuRelation);
+                noticeSkus.add(skus2);
             }
         }
-        if(skuRelationList.size() == 0){
+        if(noticeSkus.size() == 0){
             return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "商品修改无需同步");
         }
         //MD5加密
@@ -333,7 +336,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("items", items);
         params.put("itemNaturePropery", itemNaturePropery);
         params.put("itemSalesPropery", itemSalesPropery);
-        params.put("skus", skus);
+        params.put("skus", updateSkus);
         logger.info("请求数据: " + params.toJSONString());
         //记录流水
         RequestFlow requestFlow = new RequestFlow();
@@ -580,7 +583,7 @@ public class TrcBiz implements ITrcBiz {
             String jbo = JSON.toJSONString(skuRelation);
             AssertUtil.notBlank(skuRelation.getSkuCode(), String.format("参数%s中SKU编码skuCode为空", jbo));
             AssertUtil.notBlank(skuRelation.getChannelCode(), String.format("参数%s中渠道编码channelCode为空", jbo));
-            AssertUtil.notBlank(skuRelation.getChannelSkuCode(), String.format("参数%s中渠道方SKU编码channelSkuCode为空", jbo));
+            //AssertUtil.notBlank(skuRelation.getChannelSkuCode(), String.format("参数%s中渠道方SKU编码channelSkuCode为空", jbo));
         }
         //删除关联关系
         if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE.getCode())) {
@@ -596,9 +599,7 @@ public class TrcBiz implements ITrcBiz {
         List<SkuRelation> skuRelations = new ArrayList<>();
         //一件代发商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD.getCode())) {
-            Iterator<SkuRelation> iter = skuRelationList.iterator();
-            while (iter.hasNext()) {
-                SkuRelation skuRelation = iter.next();
+            for(SkuRelation skuRelation: skuRelationList){
                 ExternalItemSku externalItemSku = new ExternalItemSku();
                 externalItemSku.setSkuCode(skuRelation.getSkuCode());
                 externalItemSku = externalItemSkuService.selectOne(externalItemSku);
@@ -612,9 +613,7 @@ public class TrcBiz implements ITrcBiz {
         }
         //自采商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD.getCode())) {
-            Iterator<SkuRelation> iter = skuRelationList.iterator();
-            while (iter.hasNext()) {
-                SkuRelation skuRelation = iter.next();
+            for(SkuRelation skuRelation: skuRelationList){
                 Skus skus = new Skus();
                 skus.setSkuCode(skuRelation.getSkuCode());
                 skus = skusService.selectOne(skus);
