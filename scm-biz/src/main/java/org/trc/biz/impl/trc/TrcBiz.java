@@ -545,11 +545,23 @@ public class TrcBiz implements ITrcBiz {
                 criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
             }
         }
-        if (!StringUtils.isEmpty(queryModel.getSkuCode())) {
-            criteria.andEqualTo("skuCode", queryModel.getSkuCode());
+        if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
+            criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
         }
-        if (!StringUtils.isEmpty(queryModel.getItemName())) {
-            criteria.andEqualTo("itemName", queryModel.getItemName());
+        if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商SKU编号
+            criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
+            criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+            criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
+            criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
+            criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
         example.orderBy("supplierCode").desc();
         return externalItemSkuService.pagination(example, page, queryModel);
@@ -687,10 +699,47 @@ public class TrcBiz implements ITrcBiz {
         if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSkuCode())){
             criteria.andEqualTo("skuCode",form.getSkuCode());
         }
+        Set<String> spus = getSkusQueryConditonRelateSpus(form);
+        if(null != spus){
+            if(spus.size() > 0){
+                criteria.andIn("spuCode", spus);
+            }else{
+                return page;
+            }
+        }
         example.orderBy("spuCode").desc();
         page = skusService.pagination(example,page,form);
         setSkuStock(page.getResult());
         return page;
+    }
+
+    /**
+     * 获取SKU查询条件相关的SPU
+     * @param queryModel
+     * @return
+     */
+    private Set<String> getSkusQueryConditonRelateSpus(SkusForm queryModel){
+        if(StringUtil.isNotEmpty(queryModel.getItemName()) || null != queryModel.getCategoryId() || null != queryModel.getBrandId()){
+            Example example = new Example(Items.class);
+            Example.Criteria criteria = example.createCriteria();
+            if(StringUtils.isNotBlank(queryModel.getItemName())){
+                criteria.andLike("name", "%" + queryModel.getItemName() + "%");
+            }
+            if(null != queryModel.getCategoryId()){
+                criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+            }
+            if(null != queryModel.getBrandId()){
+                criteria.andEqualTo("brandId", queryModel.getBrandId());
+            }
+            List<Items> items = itemsService.selectByExample(example);
+            Set<String> spus = new HashSet<String>();
+            for(Items item: items){
+                spus.add(item.getSpuCode());
+            }
+            return spus;
+        }else{
+            return null;
+        }
     }
 
     /**
