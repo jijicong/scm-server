@@ -99,9 +99,12 @@ public class TrcService implements ITrcService {
         String response = null;
         try{
             HttpPost httpPost = new HttpPost(url);
-            httpPost.addHeader(HTTP.CONTENT_TYPE,"application/json; charset=utf-8");
+            /*httpPost.addHeader(HTTP.CONTENT_TYPE,"application/json; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest(url, params, httpPost, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, params, httpPost, TIME_OUT);*/
+            Map<String, Object> map = new HashMap();
+            map.put("param", params);
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 toGlyResultDO = jbo.toJavaObject(ToGlyResultDO.class);
