@@ -46,7 +46,8 @@ public class BeanValidator {
                 break;
         }
         if(null != constraintViolation)
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,CommonUtil.joinStr("参数",constraintViolation.getPropertyPath().toString(),constraintViolation.getMessage()).toString());
+            //throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,CommonUtil.joinStr("参数",constraintViolation.getPropertyPath().toString(),constraintViolation.getMessage()).toString());
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,constraintViolation.getMessage());
     }
 
 }

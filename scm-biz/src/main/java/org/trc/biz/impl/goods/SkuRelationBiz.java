@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.trc.biz.goods.ISkuRelationBiz;
+import org.trc.biz.impl.trc.TrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.goods.ExternalItemSku;
@@ -47,6 +48,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     @Override
     public List<Skus> getSkuInformation(String skuCode) {
         AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
+        AssertUtil.isTrue(skuCode.indexOf(TrcBiz.COMMA_ZH) == -1, "分隔多个sku编码必须是英文逗号");
         String[] skuCodes = skuCode.split(SupplyConstants.Symbol.COMMA);
         for(String _skuCode: skuCodes) {
             AssertUtil.isTrue(_skuCode.startsWith(SupplyConstants.Goods.SKU_PREFIX), String.format("skuCode[%s]不是自采商品", _skuCode));
@@ -85,6 +87,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     @Override
     public List<ExternalItemSku> getExternalSkuInformation(String skuCode) {
         AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
+        AssertUtil.isTrue(skuCode.indexOf(TrcBiz.COMMA_ZH) == -1, "分隔多个sku编码必须是英文逗号");
         String[] skuCodes = skuCode.split(SupplyConstants.Symbol.COMMA);
         for(String _skuCode: skuCodes){
             AssertUtil.isTrue(_skuCode.startsWith(SupplyConstants.Goods.EXTERNAL_SKU_PREFIX), String.format("skuCode[%s]不是代发商品", _skuCode));

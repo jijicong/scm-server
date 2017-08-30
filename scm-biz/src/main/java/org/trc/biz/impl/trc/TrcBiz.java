@@ -77,6 +77,9 @@ public class TrcBiz implements ITrcBiz {
 
     private Logger logger = LoggerFactory.getLogger(TrcBiz.class);
 
+    //中文逗号
+    public final static String COMMA_ZH = "，";
+
     @Autowired
     private ITrcService trcService;
     @Autowired
@@ -1028,6 +1031,7 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
         if(!StringUtils.isBlank(queryModel.getPropertyId())){
+            AssertUtil.isTrue(queryModel.getPropertyId().indexOf(COMMA_ZH) == -1, "分隔多个属性ID必须是英文逗号");
             bool = true;
             verifyPropertyId(criteria,queryModel.getPropertyId());
         }
@@ -1139,10 +1143,12 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(queryModel.getCategoryId())) {
+            AssertUtil.isTrue(queryModel.getCategoryId().indexOf(COMMA_ZH) == -1, "分隔多个分类ID必须是英文逗号");
             String[] ids = queryModel.getCategoryId().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("id", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getCategoryCode())) {
+            AssertUtil.isTrue(queryModel.getCategoryCode().indexOf(COMMA_ZH) == -1, "分隔多个分类编码必须是英文逗号");
             String[] ids = queryModel.getCategoryCode().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("categoryCode", Arrays.asList(ids));
         }
@@ -1192,9 +1198,10 @@ public class TrcBiz implements ITrcBiz {
             criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndUpdateTime(),DateUtils.NORMAL_DATE_FORMAT,1)));
         }
         if (!StringUtils.isBlank(queryModel.getAlise())) {
-            criteria.andEqualTo("alise", queryModel.getAlise());
+            criteria.andLike("alise", "%" + queryModel.getAlise() + "%");
         }
         if (!StringUtils.isBlank(queryModel.getBrandCode())) {
+            AssertUtil.isTrue(queryModel.getBrandCode().indexOf(COMMA_ZH) == -1, "分隔多个品牌编码必须是英文逗号");
             String[] ids = queryModel.getBrandCode().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("brandCode", Arrays.asList(ids));
         }
