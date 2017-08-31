@@ -113,7 +113,7 @@
 
         <!-- 每天时生成日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/scm-web/info/scm-web.%d{yyyy-MM-dd}-info.log
+            <fileNamePattern>${LOG_HOME}/scm-web/order/info/scm-web.%d{yyyy-MM-dd}-info.log
             </fileNamePattern>
             <!-- 日志文件保留15天 -->
             <maxHistory>15</maxHistory>
