@@ -587,7 +587,7 @@ public class GoodsBiz implements IGoodsBiz {
      * 商品更新通知渠道
      * @param items
      */
-    private void itemsUpdateNoticeChannel(Items items, TrcActionTypeEnum trcActionTypeEnum){
+    private void itemsUpdateNoticeChannel(Items items, List<Skus> updateSkus, TrcActionTypeEnum trcActionTypeEnum){
         new Thread(
             new Runnable() {
                 @Override
@@ -596,16 +596,16 @@ public class GoodsBiz implements IGoodsBiz {
                         ItemNaturePropery itemNaturePropery = new ItemNaturePropery();
                         itemNaturePropery.setSpuCode(items.getSpuCode());
                         List<ItemNaturePropery> itemNatureProperies = itemNatureProperyService.select(itemNaturePropery);
-                        AssertUtil.notEmpty(itemNatureProperies, String.format("根据商品SPU编码%s查询相关自然属性为空", items.getSpuCode()));
+                        //AssertUtil.notEmpty(itemNatureProperies, String.format("根据商品SPU编码%s查询相关自然属性为空", items.getSpuCode()));
                         ItemSalesPropery itemSalesPropery = new ItemSalesPropery();
                         itemSalesPropery.setSpuCode(items.getSpuCode());
                         List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.select(itemSalesPropery);
                         AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码%s查询相关采购属性为空", items.getSpuCode()));
-                        Skus skus = new Skus();
+                        /*Skus skus = new Skus();
                         skus.setSpuCode(items.getSpuCode());
                         List<Skus> skusList = skusService.select(skus);
-                        AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码%s查询相关SKU信息为空", items.getSpuCode()));
-                        ToGlyResultDO toGlyResultDO = trcBiz.sendItem(trcActionTypeEnum, items, itemNatureProperies, itemSalesProperies, skusList, System.currentTimeMillis());
+                        AssertUtil.notEmpty(itemSalesProperies, String.format("根据商品SPU编码%s查询相关SKU信息为空", items.getSpuCode()));*/
+                        ToGlyResultDO toGlyResultDO = trcBiz.sendItem(trcActionTypeEnum, items, itemNatureProperies, itemSalesProperies, updateSkus, System.currentTimeMillis());
                         if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
                             if(log.isInfoEnabled())
                                 log.info(String.format("更新商品%s通知渠道成功", JSON.toJSONString(items)));
@@ -633,7 +633,7 @@ public class GoodsBiz implements IGoodsBiz {
         //保存sku信息
         skus.setItemId(items.getId());
         skus.setSpuCode(items.getSpuCode());
-        List<Skus> skuss = updateSkus(skus, userId);
+        List<Skus> updateSkus = updateSkus(skus, userId);
         //根据sku启停用状态设置商品启停用状态
         boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
         //保存商品基础信息
@@ -643,9 +643,9 @@ public class GoodsBiz implements IGoodsBiz {
         itemNaturePropery.setSpuCode(items.getSpuCode());
         updateItemNatureProperty(itemNaturePropery, items.getCategoryId());
         //保存采购属性信息
-        updateItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
+        updateItemSalesPropery(itemSalesPropery, items.getCategoryId());
         //商品编辑通知渠道
-        itemsUpdateNoticeChannel(items, TrcActionTypeEnum.EDIT_ITEMS);
+        itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.EDIT_ITEMS);
         //记录操作日志
         String remark = null;
         if(isValidUpdate)
@@ -999,12 +999,14 @@ public class GoodsBiz implements IGoodsBiz {
                 throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
             }
         }
-        Skus _tmp = new Skus();
+        /*Skus _tmp = new Skus();
         _tmp.setSpuCode(skus.getSpuCode());
         _tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Skus> _skus = skusService.select(_tmp);
         AssertUtil.notEmpty(_skus, String.format("根据商品SPU编码[%s]查询相关SKU为空", skus.getSpuCode()));
-        return _skus;
+        return _skus;*/
+        updatelist.addAll(addlist);
+        return updatelist;
     }
 
     /**
@@ -1144,10 +1146,10 @@ public class GoodsBiz implements IGoodsBiz {
     /**
      * 更新商品采购属性
      * @param itemSalesPropery
-     * @param skuses
+     * @param categoryId
      * @throws Exception
      */
-    private void updateItemSalesPropery(ItemSalesPropery itemSalesPropery, List<Skus> skuses, Long categoryId) throws Exception{
+    private void updateItemSalesPropery(ItemSalesPropery itemSalesPropery, Long categoryId) throws Exception{
         JSONArray itemSalesArray = JSONArray.parseArray(itemSalesPropery.getSalesPropertys());
         AssertUtil.notEmpty(itemSalesArray, "保存商品采购属性不能为空");
         List<ItemSalesPropery> addList = new ArrayList<ItemSalesPropery>();
@@ -1156,6 +1158,11 @@ public class GoodsBiz implements IGoodsBiz {
         Set<String> stopSkusList = new HashSet<String>();
         Date sysTime = Calendar.getInstance().getTime();
         List<ItemSalesPropery> list = new ArrayList<ItemSalesPropery>();
+        Skus _tmp = new Skus();
+        _tmp.setSpuCode(itemSalesPropery.getSpuCode());
+        _tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<Skus> skuses = skusService.select(_tmp);
+        AssertUtil.notEmpty(skuses, String.format("根据商品SPU编码[%s]查询相关SKU为空", itemSalesPropery.getSpuCode()));
         for(Skus skus : skuses){
             String[] propertyValueIdsArray = skus.getPropertyValueId().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
             String[] propertyValuesArray = skus.getPropertyValue().split(SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL);
@@ -1344,8 +1351,13 @@ public class GoodsBiz implements IGoodsBiz {
         //updateSkuStockIsValid(items2.getSpuCode(), null, _isValid);
         //更新采购单明细启停用状态
         //updatePurchaseDetailIsValid(items2.getSpuCode(), null, _isValid);
+        Skus _tmp = new Skus();
+        _tmp.setSpuCode(items2.getSpuCode());
+        _tmp.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<Skus> updateSkus = skusService.select(_tmp);
+        AssertUtil.notEmpty(updateSkus, String.format("根据商品SPU编码[%s]查询相关SKU为空", items2.getSpuCode()));
         //商品启停用通知渠道
-        itemsUpdateNoticeChannel(items2, TrcActionTypeEnum.ITEMS_IS_VALID);
+        itemsUpdateNoticeChannel(items2, updateSkus, TrcActionTypeEnum.ITEMS_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
@@ -1432,8 +1444,11 @@ public class GoodsBiz implements IGoodsBiz {
         items.setSpuCode(spuCode);
         items = itemsService.selectOne(items);
         AssertUtil.notNull(items, String.format("根据商品spuCode编码[%s]查询商品信息为空", spuCode));
+        List<Skus> updateSkus = skusService.select(skus2);
+        AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
+        updateSkus.add(skus2);
         //商品SKU启停用通知渠道
-        itemsUpdateNoticeChannel(items, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
+        itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
@@ -1873,7 +1888,7 @@ public class GoodsBiz implements IGoodsBiz {
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void supplierSkuUpdateNotice(String updateSupplierSkus) {
-        AssertUtil.notBlank(updateSupplierSkus, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
+         AssertUtil.notBlank(updateSupplierSkus, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
         JSONArray skusArray = null;
         try{
             skusArray = JSONArray.parseArray(updateSupplierSkus);

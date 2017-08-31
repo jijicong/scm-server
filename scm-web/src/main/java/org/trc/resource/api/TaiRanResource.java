@@ -114,9 +114,9 @@ public class TaiRanResource {
         try {//Pagenation<Property>
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
-            logger.error("查询查询列表信息报错: " + e.getMessage());
+            logger.error("查询列表信息报错: " + e.getMessage());
             String code = ExceptionUtil.getErrorInfo(e);
-            return new ResponseAck(code, String.format("查询查询列表信息报错,%s", e.getMessage()), "");
+            return new ResponseAck(code, String.format("查询列表信息报错,%s", e.getMessage()), "");
         }
 
     }
@@ -198,7 +198,7 @@ public class TaiRanResource {
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
             responseAck = new ResponseAck(code, e.getMessage(), "");
-            logger.error(String.format("接收渠道同步订单%s异常,%s", orderInfo, e));
+            logger.error(String.format("接收渠道同步订单%s异常", orderInfo), e);
         }finally {
             scmOrderBiz.saveChannelOrderRequestFlow(orderInfo, responseAck);
         }
@@ -226,6 +226,7 @@ public class TaiRanResource {
         try {
             trcBiz.updateRelation(action, relations);
         } catch (Exception e) {
+            logger.error("关联信息更新失败", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("关联信息更新失败,%s", e.getMessage()), "");
         }

@@ -265,6 +265,7 @@ public class RetryBiz implements IRetryBiz {
     //品牌变更通知重试
     private void brandUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
@@ -292,6 +293,7 @@ public class RetryBiz implements IRetryBiz {
     //属性变更通知重试
     private void propertyUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
@@ -318,6 +320,7 @@ public class RetryBiz implements IRetryBiz {
     //分类变更通知重试
     private void categoryUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
@@ -344,6 +347,7 @@ public class RetryBiz implements IRetryBiz {
     //分类品牌变更通知重试
     private void categoryBrandUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
@@ -370,6 +374,7 @@ public class RetryBiz implements IRetryBiz {
     //分类属性变更通知重试
     private void categoryPropertyUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
@@ -396,6 +401,7 @@ public class RetryBiz implements IRetryBiz {
     //自营商品变更通知重试
     private void itemUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
@@ -422,6 +428,7 @@ public class RetryBiz implements IRetryBiz {
     //代发商品变更通知重试
     private void externalItemUpdateNoticeRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
@@ -448,6 +455,7 @@ public class RetryBiz implements IRetryBiz {
     //渠道接收订单提交结果重试
     private void channelReceiveOrderSubmitResultRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT.getCode());
@@ -478,6 +486,7 @@ public class RetryBiz implements IRetryBiz {
     //发送物流信息给渠道重试
     private void sendLogisticsInfoToChannelRetry(RequestFlow requestFlow) throws Exception{
         try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
             String requestParam = requestFlow.getRequestParam();
             if (StringUtils.isNotBlank(requestParam)){
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
