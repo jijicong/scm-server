@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <purchase_group id="1" code="CGZ00001" name="hb" leader_user_id="42168B235B3C44A8AFF154B6F37DA989" leader_name="9117" member_user_id="11" member_name="11" is_deleted="0" is_valid="0" channel_code="QD001" create_operator="42168B235B3C44A8AFF154B6F37DA989" remark="chilema"/>
+  <purchase_group id="2" code="CGZ00002" name="sone" leader_user_id="42168B235B3C44A8AFF154B6F37DA989" leader_name="9117" member_user_id="11" member_name="11" is_deleted="0" is_valid="0" channel_code="QD001" create_operator="42168B235B3C44A8AFF154B6F37DA989" remark="chilema"/>
+</dataset>
