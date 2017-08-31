@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
+import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
@@ -80,6 +81,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private ICategoryService categoryService;
     @Resource
     private IConfigBiz configBiz;
+    @Resource
+    private IPurchaseOrderBiz purchaseOrderBiz;
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
@@ -306,6 +309,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
         logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
+        purchaseOrderBiz.cacheEvitForPurchaseOrder();
 
     }
 

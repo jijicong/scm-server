@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
+import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -60,6 +62,9 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
     @Resource
     private ILogInfoService logInfoService;
+
+    @Resource
+    private IPurchaseOrderBiz purchaseOrderBiz;
 
 
     /*
@@ -197,6 +202,9 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         auditPurchaseOrder(purchaseOrderAudit,purchaseOrderLog,userId);
 
         updatePurchaseOrderStatus(purchaseOrderAudit);
+
+        purchaseOrderBiz.cacheEvitForPurchaseOrder();
+
     }
 
     /**

@@ -1125,4 +1125,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         return supplierBrandExts;
     }
+
+    @Override
+    @CacheEvit
+    public void cacheEvitForPurchaseOrder() {}
+
 }

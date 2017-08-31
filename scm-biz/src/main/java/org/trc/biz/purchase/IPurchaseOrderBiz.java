@@ -78,4 +78,10 @@ public interface IPurchaseOrderBiz {
      * @return
      */
     List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception;
+
+    /**
+     * 删除缓存
+     */
+    public void cacheEvitForPurchaseOrder();
+
 }
