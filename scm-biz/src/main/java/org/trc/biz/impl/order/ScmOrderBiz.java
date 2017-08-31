@@ -1973,7 +1973,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andIn("skuCode", skuCodes);
         criteria.andEqualTo("channelCode", channelCode);
         List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
-        AssertUtil.notEmpty(skuRelations, String.format("根据多个skuCode[%s]查询skuRelation列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
+        AssertUtil.notEmpty(skuRelations, String.format("skuCode为[%s]的订单商品在供应链系统无法识别", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         StringBuilder sb = new StringBuilder();
         for(OrderItem orderItem: orderItemList){
             Boolean flag = false;
@@ -2039,6 +2039,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
         AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不能为空");
         AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverIdCard(), "平台订单收货人身份证不能为空");
         AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
         AssertUtil.notBlank(platformOrder.getReceiverEmail(), "平台订单收货人电子邮箱不能为空");
         AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
