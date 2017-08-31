@@ -139,9 +139,6 @@ public class TrcService implements ITrcService {
 
     @Override
     public ToGlyResultDO sendOrderSubmitResultNotice(ChannelOrderResponse channelOrderResponse) {
-        if(StringUtils.equals(trcConfig.getNoticeChannal(), ZeroToNineEnum.ZERO.getCode())){//不通知
-            return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "通知渠道开关关闭");
-        }
         AssertUtil.notNull(channelOrderResponse, "同步订单提交结果给渠道参数不能为空");
         String url = trcConfig.getOrderSubmitNotifyUrl();
         String paramObj = JSON.toJSON(channelOrderResponse).toString();
