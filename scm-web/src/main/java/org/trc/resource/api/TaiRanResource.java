@@ -226,6 +226,7 @@ public class TaiRanResource {
         try {
             trcBiz.updateRelation(action, relations);
         } catch (Exception e) {
+            logger.error("关联信息更新失败", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("关联信息更新失败,%s", e.getMessage()), "");
         }

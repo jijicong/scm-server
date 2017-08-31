@@ -21,7 +21,7 @@ public class ScmApiResource {
 
     @POST
     @Path(SupplyConstants.Api.EXTERNAL_ITEM_UPDATE)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON+";charset=utf-8")
     @Consumes("application/x-www-form-urlencoded;charset=utf-8")
     public AppResult supplierSkuUpdateNotice(@FormParam("updateSupplierSkus") String updateSupplierSkus) throws Exception {
         goodsBiz.supplierSkuUpdateNotice(updateSupplierSkus);

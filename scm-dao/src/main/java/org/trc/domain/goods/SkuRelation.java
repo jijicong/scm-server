@@ -37,6 +37,8 @@ public class SkuRelation implements Serializable {
     @FormParam("channelCode")
     private String channelCode;//渠道方编码
 
+    private String isValid;//是否启用
+
     public Long getId() {
         return id;
     }
@@ -93,4 +95,11 @@ public class SkuRelation implements Serializable {
         this.channelCode = channelCode;
     }
 
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
 }

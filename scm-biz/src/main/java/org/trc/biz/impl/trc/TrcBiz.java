@@ -646,6 +646,7 @@ public class TrcBiz implements ITrcBiz {
                 skuRelation2.setChannelCode(skuRelation.getChannelCode());
                 skuRelation2 = skuRelationService.selectOne(skuRelation2);
                 if(null == skuRelation2){
+                    skuRelation.setIsValid(ValidEnum.VALID.getCode());
                     skuRelations2.add(skuRelation);
                 }
             }
