@@ -1132,25 +1132,13 @@ public class TrcBiz implements ITrcBiz {
             if(!CollectionUtils.isEmpty(propertyIdList))
                 criteria1.andIn("propertyId",propertyIdList);
             if(!StringUtils.isBlank(queryModel.getPropertyValueId())){
+                AssertUtil.isTrue(queryModel.getPropertyValueId().indexOf(COMMA_ZH) == -1, "分隔多个属性值ID必须是英文逗号");
                 String[] ids = queryModel.getPropertyValueId().split(SupplyConstants.Symbol.COMMA);
                 criteria1.andIn("id", Arrays.asList(ids));
             }
             if(!StringUtils.isBlank(queryModel.getPropertyValue())){
-                criteria1.andLike("value",queryModel.getPropertyValue());
+                criteria1.andLike("value","%"+queryModel.getPropertyValue()+"%");
             }
-            /*Page<PropertyValue> page1 = PageHelper.startPage(page.getPageNo(), page.getPageSize());
-            List<PropertyValue> propertyValueList = propertyValueService.selectByExample(example1);
-            if(CollectionUtils.isEmpty(propertyValueList)){
-                return page;
-            }
-            Long total = page1.getTotal();
-            Pagenation<PropertyValue> pagePropertyValue = new Pagenation<PropertyValue>();
-            pagePropertyValue.setResult(propertyValueList);
-            pagePropertyValue.setTotalCount(total);
-            pagePropertyValue.setPageNo(page.getPageNo());
-            pagePropertyValue.setPageSize(page.getPageSize());
-            pagePropertyValue.setStart(page.getStart());
-            return pagePropertyValue;*/
             Pagenation<PropertyValue> page2 = new Pagenation<PropertyValue>();
             BeanUtils.copyProperties(page, page2);
             page2 = propertyValueService.pagination(example1, page2, new QueryModel());
@@ -1265,7 +1253,6 @@ public class TrcBiz implements ITrcBiz {
     //为属性赋予属性值
     private void endowPropertyValue(Property property ){
 
-        property.setCreateOperator(null);
         List<PropertyValueForTrc> propertyValueForTrcs = new ArrayList<PropertyValueForTrc>();
         PropertyValue propertyValue = new PropertyValue();
         propertyValue.setPropertyId(property.getId());
