@@ -16,13 +16,13 @@ public class DictTypeForm extends QueryModel {
      * 字典类型名称
      */
     @QueryParam("name")
-    @Length(max = 64)
+    @Length(max = 64, message = "字典类型名称长度不能超过64个")
     private String name;
     @QueryParam("code")
-    @Length(max = 64)
+    @Length(max = 32, message = "字典类型编码长度不能超过32个")
     private String code;
     @QueryParam("description")
-    @Length(max = 64)
+    @Length(max = 512, message = "字典类型说明长度不能超过512个")
     private String description;
 
     public String getName() {

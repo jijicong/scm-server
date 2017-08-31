@@ -23,7 +23,7 @@ public class Supplier extends BaseDO{
     private String supplierCode;
     @FormParam("supplierName")
     @NotEmpty
-    @Length(max = 64, message = "供应商名称长度不能超过64个")
+    @Length(max = 50, message = "供应商名称长度不能超过50个")
     private String supplierName;
     @FormParam("supplierKindCode")
     @NotEmpty
@@ -63,7 +63,7 @@ public class Supplier extends BaseDO{
     private String area;
     @FormParam("address")
     @NotEmpty
-    @Length(max = 256, message = "详细地址长度不能超过32个")
+    @Length(max = 150, message = "详细地址长度不能超过150个")
     private String address;
     @FormParam("certificateTypeId")
     //@NotEmpty
