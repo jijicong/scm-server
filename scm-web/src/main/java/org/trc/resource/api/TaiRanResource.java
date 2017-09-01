@@ -96,7 +96,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "供应商分页查询成功", trcBiz.supplierPage(form,page));
         } catch (Exception e) {
-            logger.error("供应商分页查询报错: " + e.getMessage());
+            logger.error("供应商分页查询报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("供应商分页查询报错,%s", e.getMessage()), "");
         }
@@ -115,7 +115,7 @@ public class TaiRanResource {
         try {//Pagenation<Property>
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
-            logger.error("查询列表信息报错: " + e.getMessage());
+            logger.error("查询列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("查询列表信息报错,%s", e.getMessage()), "");
         }
@@ -242,7 +242,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page));
         } catch (Exception e) {
-            logger.error("自采商品查询报错: " + e.getMessage());
+            logger.error("自采商品查询报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("自采商品查询报错,%s", e.getMessage()), "");
         }
@@ -257,7 +257,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
-            logger.error("查询sku列表信息报错: " + e.getMessage());
+            logger.error("查询sku列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("查询sku列表信息报错,%s", e.getMessage()), "");
         }
@@ -272,7 +272,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "代发sku列表信息查询成功", trcBiz.externalItemSkuPage(form, page));
         } catch (Exception e) {
-            logger.error("查询externalItemSku列表信息报错: " + e.getMessage());
+            logger.error("查询externalItemSku列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("代发sku列表信息查询失败,%s", e.getMessage()), "");
         }
