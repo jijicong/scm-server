@@ -4,6 +4,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.goods.Skus;
 
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import java.util.List;
@@ -33,6 +34,10 @@ public class Skus2 extends Skus{
     @FormParam("producer")
     @Length(max = 128, message = "生产商长度不能超过32个")
     private String producer;
+    @Transient
+    private String categoryName;//分类名称
+    @Transient
+    private String brandName;//供应商名称
     /**
      * SKU相关属性
      */
@@ -93,5 +98,25 @@ public class Skus2 extends Skus{
 
     public void setPropertys(List<SkusProperty> propertys) {
         this.propertys = propertys;
+    }
+
+    @Override
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    @Override
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    @Override
+    public String getBrandName() {
+        return brandName;
+    }
+
+    @Override
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 }

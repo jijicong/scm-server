@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.impl.goods.GoodsBiz;
 import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.impl.trc.model.SkusProperty;
@@ -735,6 +736,100 @@ public class TrcBiz implements ITrcBiz {
     }
 
     /**
+     *设置品牌名称
+     * @param items
+     */
+    private void setBrandName(List<Items> items){
+        List<Long> brandIds = new ArrayList<Long>();
+        for(Items items2: items){
+            brandIds.add(items2.getBrandId());
+        }
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", brandIds);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        List<Brand> brands = brandService.selectByExample(example);
+        AssertUtil.notEmpty(brands,String.format("查询商品品牌ID为[%s]的品牌信息为空", CommonUtil.converCollectionToString(brandIds)));
+        for(Items items2 : items){
+            for(Brand c : brands){
+                if(items2.getBrandId().longValue() == c.getId().longValue()){
+                    items2.setBrandName(c.getName());
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     *设置分类名称
+     * @param items
+     */
+    private void setCategoryName(List<Items> items){
+        List<Long> categoryIds = new ArrayList<Long>();
+        for(Items items2: items){
+            categoryIds.add(items2.getCategoryId());
+        }
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", categoryIds);
+        List<Category> thridCategories = categoryService.selectByExample(example);
+        AssertUtil.notEmpty(thridCategories,String.format("查询商品所属分类ID为[%s]的分类信息为空", CommonUtil.converCollectionToString(categoryIds)));
+        /**
+         * 将分类的全路径ID(full_path_id)取出来，然后从中取到从第一级到第三季的所有分类ID
+         * 放到分类ID列表categoryIds中
+         */
+        for(Category c : thridCategories){
+            String[] tmps = c.getFullPathId().split("\\"+GoodsBiz.CATEGORY_ID_SPLIT_SYMBOL);
+            for(String s : tmps){
+                categoryIds.add(Long.parseLong(s));
+            }
+        }
+        List<Category> categories = categoryService.selectByExample(example);
+        //获取三级分类对应的全路径名称
+        Map<Long, String> map = getThirdCategoryFullPathName(thridCategories, categories);
+        for(Items items2 : items){
+            items2.setCategoryName(map.get(items2.getCategoryId()));
+        }
+    }
+
+    /**
+     * 获取第三级分类全路径名称
+     * @param thirdCategories 第三级分类列表
+     * @param categories 当前相关所有分类列表
+     * @return
+     */
+    private Map<Long, String> getThirdCategoryFullPathName(List<Category> thirdCategories, List<Category> categories){
+        Map<Long, String> map = new HashMap<Long, String>();
+        for(Category c : thirdCategories){
+            String[] tmps = c.getFullPathId().split("\\"+GoodsBiz.CATEGORY_ID_SPLIT_SYMBOL);
+            StringBuilder sb = new StringBuilder();
+            //第一级分类名称
+            for(Category c2 : categories){
+                if(Long.parseLong(tmps[0]) == c2.getId()){
+                    sb.append(c2.getName());
+                    break;
+                }
+            }
+            //第二级分类名称
+            for(Category c2 : categories){
+                if(Long.parseLong(tmps[1]) == c2.getId()){
+                    sb.append(GoodsBiz.CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                    break;
+                }
+            }
+            //第三级分类名称
+            for(Category c2 : categories){
+                if(c.getId() == c2.getId()){
+                    sb.append(GoodsBiz.CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                    break;
+                }
+            }
+            map.put(c.getId(), sb.toString());
+        }
+        return map;
+    }
+
+    /**
      * 获取SKU查询条件相关的SPU
      * @param queryModel
      * @return
@@ -783,15 +878,23 @@ public class TrcBiz implements ITrcBiz {
             String condition = String.format("spu_code in (%s)", ids);
             criteria.andCondition(condition);
             List<Items> itemsList = itemsService.selectByExample(example);
-            for(Skus2 skus: skusList){
-                for(Items items: itemsList){
-                    if(StringUtils.equals(skus.getSpuCode(), items.getSpuCode())){
-                        skus.setName(items.getName());
-                        skus.setBrandId(items.getBrandId());
-                        skus.setCategoryId(items.getCategoryId());
-                        skus.setItemNo(items.getItemNo());
-                        skus.setProducer(items.getProducer());
-                        skus.setTradeType(items.getTradeType());
+            if(itemsList.size() > 0){
+                //设置品牌名称
+                setBrandName(itemsList);
+                //设置分类名称
+                setCategoryName(itemsList);
+                for(Skus2 skus: skusList){
+                    for(Items items: itemsList){
+                        if(StringUtils.equals(skus.getSpuCode(), items.getSpuCode())){
+                            skus.setName(items.getName());
+                            skus.setBrandId(items.getBrandId());
+                            skus.setBrandName(items.getBrandName());
+                            skus.setCategoryId(items.getCategoryId());
+                            skus.setCategoryName(items.getCategoryName());
+                            skus.setItemNo(items.getItemNo());
+                            skus.setProducer(items.getProducer());
+                            skus.setTradeType(items.getTradeType());
+                        }
                     }
                 }
             }
