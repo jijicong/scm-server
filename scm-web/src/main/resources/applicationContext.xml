@@ -56,8 +56,8 @@
         <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */2 * * * ?"/>
     </task:scheduled-tasks>-->
 
-    <task:scheduled-tasks>
-        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */15 * * * ?"/>
-    </task:scheduled-tasks>
+    <!--<task:scheduled-tasks>
+        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */3 * * * ?"/>
+    </task:scheduled-tasks>-->
 
 </beans>
