@@ -1,6 +1,7 @@
 package org.trc.biz.trc;
 
 import com.alibaba.fastjson.JSONArray;
+import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -131,7 +132,7 @@ public interface ITrcBiz {
      * @param page
      * @return
      */
-    Pagenation<Skus> skusPage(SkusForm form, Pagenation<Skus> page);
+    Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page);
 
     /**
      * 自采商品分页查询

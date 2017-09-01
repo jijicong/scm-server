@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.impl.supplier.SupplierBiz;
+import org.trc.biz.impl.trc.model.Skus2;
+import org.trc.biz.impl.trc.model.SkusProperty;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.Cacheable;
@@ -97,8 +99,6 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private IPropertyValueService propertyValueService;
     @Autowired
-    private IRequestFlowBiz requestFlowBiz;
-    @Autowired
     private ISupplierService supplierService;
     @Autowired
     private ISupplierBrandService supplierBrandService;
@@ -114,6 +114,8 @@ public class TrcBiz implements ITrcBiz {
     private ICategoryService categoryService;
     @Autowired
     private ISkuStockService skuStockService;
+    @Autowired
+    private IItemSalesProperyService itemSalesProperyService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -691,27 +693,45 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Skus> skusPage(SkusForm form, Pagenation<Skus> page) {
+    public Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page) {
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
-        if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSpuCode())){
+        if (StringUtils.isNotBlank(form.getSpuCode())){
             criteria.andEqualTo("spuCode",form.getSpuCode());
         }
-        if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSkuCode())){
+        if (StringUtils.isNotBlank(form.getSkuCode())){
             criteria.andEqualTo("skuCode",form.getSkuCode());
+        }
+        if (StringUtils.isNotBlank(form.getIsValid())){
+            criteria.andEqualTo("isValid",form.getIsValid());
         }
         Set<String> spus = getSkusQueryConditonRelateSpus(form);
         if(null != spus){
             if(spus.size() > 0){
                 criteria.andIn("spuCode", spus);
             }else{
-                return page;
+                return new Pagenation<Skus2>();
             }
         }
         example.orderBy("spuCode").desc();
         page = skusService.pagination(example,page,form);
+        //设置库存
         setSkuStock(page.getResult());
-        return page;
+        Pagenation<Skus2> page2 = new Pagenation<Skus2>();
+        BeanUtils.copyProperties(page, page2,"result");
+        List<Skus2> skus2List = new ArrayList<>();
+        for(Skus skus: page.getResult()){
+            Skus2 skus2 = new Skus2();
+            BeanUtils.copyProperties(skus, skus2);
+            skus2List.add(skus2);
+        }
+        //设置SPU商品信息
+        setSpuInfo(skus2List);
+        //设置SKU属性信息
+        setSkuPropertyInfo(skus2List);
+        page2.setResult(skus2List);
+        return page2;
+
     }
 
     /**
@@ -720,7 +740,8 @@ public class TrcBiz implements ITrcBiz {
      * @return
      */
     private Set<String> getSkusQueryConditonRelateSpus(SkusForm queryModel){
-        if(StringUtil.isNotEmpty(queryModel.getItemName()) || null != queryModel.getCategoryId() || null != queryModel.getBrandId()){
+        if(StringUtil.isNotEmpty(queryModel.getItemName()) || null != queryModel.getCategoryId() ||
+                null != queryModel.getBrandId() || StringUtil.isNotEmpty(queryModel.getTradeType()) ){
             Example example = new Example(Items.class);
             Example.Criteria criteria = example.createCriteria();
             if(StringUtils.isNotBlank(queryModel.getItemName())){
@@ -732,6 +753,9 @@ public class TrcBiz implements ITrcBiz {
             if(null != queryModel.getBrandId()){
                 criteria.andEqualTo("brandId", queryModel.getBrandId());
             }
+            if (StringUtil.isNotEmpty(queryModel.getTradeType())) {//贸易类型
+                criteria.andEqualTo("tradeType", queryModel.getTradeType());
+            }
             List<Items> items = itemsService.selectByExample(example);
             Set<String> spus = new HashSet<String>();
             for(Items item: items){
@@ -740,6 +764,37 @@ public class TrcBiz implements ITrcBiz {
             return spus;
         }else{
             return null;
+        }
+    }
+
+    /**
+     * 设置SPU信息
+     * @param skusList
+     */
+    private void setSpuInfo(List<Skus2> skusList){
+        StringBuilder sb = new StringBuilder();
+        for(Skus2 skus: skusList){
+            sb.append("\"").append(skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(Items.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<Items> itemsList = itemsService.selectByExample(example);
+            for(Skus2 skus: skusList){
+                for(Items items: itemsList){
+                    if(StringUtils.equals(skus.getSpuCode(), items.getSpuCode())){
+                        skus.setName(items.getName());
+                        skus.setBrandId(items.getBrandId());
+                        skus.setCategoryId(items.getCategoryId());
+                        skus.setItemNo(items.getItemNo());
+                        skus.setProducer(items.getProducer());
+                        skus.setTradeType(items.getTradeType());
+                    }
+                }
+            }
         }
     }
 
@@ -767,6 +822,72 @@ public class TrcBiz implements ITrcBiz {
                 }
             }
         }
+    }
+
+    /**
+     * 设置SKU属性信息
+     * @param skusList
+     */
+    private void setSkuPropertyInfo(List<Skus2> skusList){
+        StringBuilder sb = new StringBuilder();
+        for(Skus2 skus: skusList){
+            sb.append("\"").append(skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(ItemSalesPropery.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<ItemSalesPropery> itemSalesProperyList = itemSalesProperyService.selectByExample(example);
+            if(itemSalesProperyList.size() > 0){
+                List<Property> propertyList = getSpuPropertys(itemSalesProperyList);
+                for(Skus2 skus: skusList){
+                    List<SkusProperty> skusPropertyList = new ArrayList<>();
+                    for(ItemSalesPropery itemSalesPropery: itemSalesProperyList){
+                        if(StringUtils.equals(skus.getSpuCode(), itemSalesPropery.getSpuCode()) &&
+                                StringUtils.equals(skus.getSkuCode(), itemSalesPropery.getSkuCode())){
+                            SkusProperty skusProperty = new SkusProperty();
+                            skusProperty.setPropertyId(itemSalesPropery.getPropertyId());
+                            for(Property property: propertyList){
+                                if(itemSalesPropery.getPropertyId().longValue() == property.getId().longValue()){
+                                    skusProperty.setPropertyName(property.getName());
+                                    break;
+                                }
+                            }
+                            skusProperty.setPropertyValueId(itemSalesPropery.getPropertyValueId());
+                            skusProperty.setPropertyValue(itemSalesPropery.getPropertyActualValue());
+                            skusPropertyList.add(skusProperty);
+                        }
+                    }
+                    skus.setPropertys(skusPropertyList);
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 获取SPU相关所有属性
+     * @param itemSalesProperyList
+     * @return
+     */
+    private List<Property> getSpuPropertys(List<ItemSalesPropery> itemSalesProperyList){
+        StringBuilder sb = new StringBuilder();
+        for(ItemSalesPropery itemSalesPropery: itemSalesProperyList){
+            if(sb.indexOf(itemSalesPropery.getPropertyId().toString()) < 0){
+                sb.append(itemSalesPropery.getPropertyId()).append(SupplyConstants.Symbol.COMMA);
+            }
+        }
+        if(sb.length() > 0){
+            Example example = new Example(Property.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("id in (%s)", ids);
+            criteria.andCondition(condition);
+            return propertyService.selectByExample(example);
+        }
+        return null;
     }
 
     @Override

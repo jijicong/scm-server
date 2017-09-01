@@ -10,6 +10,7 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
+import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
@@ -252,7 +253,7 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Skus>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
+    public ResponseAck<Pagenation<Skus2>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
