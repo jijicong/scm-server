@@ -1,0 +1,9 @@
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('SEND_LOGISTICS_INFO_TO_CHANNEL', '800', '24', '2017-09-04 09:54:13');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('BRAND_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:17');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('PROPERTY_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:21');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('CATEFORY_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:24');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('CATEFORY_BRAND_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:28');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('CATEFORY_PROPERTY_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:32');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('ITEM_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:36');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('EXTERNAL_ITEM_UPDATE_NOTICE', '800', '24', '2017-09-04 09:54:40');
+INSERT INTO `retry_config` (`type`, `count`, `period`, `create_time`) VALUES ('CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT', '800', '24', '2017-09-04 09:54:45');

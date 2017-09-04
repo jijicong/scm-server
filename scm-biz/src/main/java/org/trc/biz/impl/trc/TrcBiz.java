@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.impl.goods.GoodsBiz;
 import org.trc.biz.impl.supplier.SupplierBiz;
+import org.trc.biz.impl.trc.model.Skus2;
+import org.trc.biz.impl.trc.model.SkusProperty;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.Cacheable;
@@ -77,6 +80,9 @@ public class TrcBiz implements ITrcBiz {
 
     private Logger logger = LoggerFactory.getLogger(TrcBiz.class);
 
+    //中文逗号
+    public final static String COMMA_ZH = "，";
+
     @Autowired
     private ITrcService trcService;
     @Autowired
@@ -94,8 +100,6 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private IPropertyValueService propertyValueService;
     @Autowired
-    private IRequestFlowBiz requestFlowBiz;
-    @Autowired
     private ISupplierService supplierService;
     @Autowired
     private ISupplierBrandService supplierBrandService;
@@ -111,6 +115,8 @@ public class TrcBiz implements ITrcBiz {
     private ICategoryService categoryService;
     @Autowired
     private ISkuStockService skuStockService;
+    @Autowired
+    private IItemSalesProperyService itemSalesProperyService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -304,24 +310,27 @@ public class TrcBiz implements ITrcBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ToGlyResultDO sendItem(TrcActionTypeEnum action, Items items, List<ItemNaturePropery> itemNaturePropery,
-                                  List<ItemSalesPropery> itemSalesPropery, List<Skus> skus, Long operateTime) throws Exception {
+                                  List<ItemSalesPropery> itemSalesPropery, List<Skus> updateSkus, Long operateTime) throws Exception {
         AssertUtil.notNull(items, "自采商品修改通知渠道商品信息参数items不能为空");
-        AssertUtil.notEmpty(itemNaturePropery, "自采商品修改通知渠道商品自然属性参数itemNaturePropery不能为空");
+        //AssertUtil.notEmpty(itemNaturePropery, "自采商品修改通知渠道商品自然属性参数itemNaturePropery不能为空");
         AssertUtil.notEmpty(itemSalesPropery, "自采商品修改通知渠道商品采购属性参数itemNaturePropery不能为空");
-        AssertUtil.notEmpty(skus, "自采商品修改通知渠道商品sku参数skus不能为空");
         List<SkuRelation> skuRelationList = new ArrayList<SkuRelation>();
-        //设置sku库存
-        setSkuStock(skus);
-        for(Skus skus2: skus){
+        if(updateSkus.size() > 0){
+            //设置sku库存
+            setSkuStock(updateSkus);
+        }
+        List<Skus> noticeSkus = new ArrayList<Skus>();
+        for(Skus skus2: updateSkus){
             SkuRelation skuRelation = new SkuRelation();
+            skuRelation.setChannelCode(RequestFlowConstant.TRC);
             skuRelation.setSpuCode(skus2.getSpuCode());
             skuRelation.setSkuCode(skus2.getSkuCode());
             skuRelation = skuRelationService.selectOne(skuRelation);
             if(null != skuRelation){
-                skuRelationList.add(skuRelation);
+                noticeSkus.add(skus2);
             }
         }
-        if(skuRelationList.size() == 0){
+        if(noticeSkus.size() == 0){
             return new ToGlyResultDO(SuccessFailureEnum.SUCCESS.getCode(), "商品修改无需同步");
         }
         //MD5加密
@@ -330,7 +339,7 @@ public class TrcBiz implements ITrcBiz {
         params.put("items", items);
         params.put("itemNaturePropery", itemNaturePropery);
         params.put("itemSalesPropery", itemSalesPropery);
-        params.put("skus", skus);
+        params.put("skus", updateSkus);
         logger.info("请求数据: " + params.toJSONString());
         //记录流水
         RequestFlow requestFlow = new RequestFlow();
@@ -428,6 +437,8 @@ public class TrcBiz implements ITrcBiz {
                             getLongVal(externalItemSku.getStock()) != getLongVal(externalItemSku2.getStock()) ||
                             !StringUtils.equals(externalItemSku.getBarCode(), externalItemSku2.getBarCode()) ||
                             !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid())){
+                        if(null == externalItemSku.getStock())
+                            externalItemSku.setStock(0L);
                         sendList.add(externalItemSku);
                     }
                 }
@@ -537,11 +548,23 @@ public class TrcBiz implements ITrcBiz {
                 criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
             }
         }
-        if (!StringUtils.isEmpty(queryModel.getSkuCode())) {
-            criteria.andEqualTo("skuCode", queryModel.getSkuCode());
+        if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
+            criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
         }
-        if (!StringUtils.isEmpty(queryModel.getItemName())) {
-            criteria.andEqualTo("itemName", queryModel.getItemName());
+        if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商SKU编号
+            criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
+            criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+            criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
+            criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
+            criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
         example.orderBy("supplierCode").desc();
         return externalItemSkuService.pagination(example, page, queryModel);
@@ -577,7 +600,7 @@ public class TrcBiz implements ITrcBiz {
             String jbo = JSON.toJSONString(skuRelation);
             AssertUtil.notBlank(skuRelation.getSkuCode(), String.format("参数%s中SKU编码skuCode为空", jbo));
             AssertUtil.notBlank(skuRelation.getChannelCode(), String.format("参数%s中渠道编码channelCode为空", jbo));
-            AssertUtil.notBlank(skuRelation.getChannelSkuCode(), String.format("参数%s中渠道方SKU编码channelSkuCode为空", jbo));
+            //AssertUtil.notBlank(skuRelation.getChannelSkuCode(), String.format("参数%s中渠道方SKU编码channelSkuCode为空", jbo));
         }
         //删除关联关系
         if (action.equals(TrcActionTypeEnum.SKURELATION_REMOVE.getCode())) {
@@ -593,9 +616,7 @@ public class TrcBiz implements ITrcBiz {
         List<SkuRelation> skuRelations = new ArrayList<>();
         //一件代发商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_EXTERNALSKU_ADD.getCode())) {
-            Iterator<SkuRelation> iter = skuRelationList.iterator();
-            while (iter.hasNext()) {
-                SkuRelation skuRelation = iter.next();
+            for(SkuRelation skuRelation: skuRelationList){
                 ExternalItemSku externalItemSku = new ExternalItemSku();
                 externalItemSku.setSkuCode(skuRelation.getSkuCode());
                 externalItemSku = externalItemSkuService.selectOne(externalItemSku);
@@ -609,9 +630,7 @@ public class TrcBiz implements ITrcBiz {
         }
         //自采商品批量关联
         if (action.equals(TrcActionTypeEnum.SKURELATION_SKU_ADD.getCode())) {
-            Iterator<SkuRelation> iter = skuRelationList.iterator();
-            while (iter.hasNext()) {
-                SkuRelation skuRelation = iter.next();
+            for(SkuRelation skuRelation: skuRelationList){
                 Skus skus = new Skus();
                 skus.setSkuCode(skuRelation.getSkuCode());
                 skus = skusService.selectOne(skus);
@@ -630,6 +649,7 @@ public class TrcBiz implements ITrcBiz {
                 skuRelation2.setChannelCode(skuRelation.getChannelCode());
                 skuRelation2 = skuRelationService.selectOne(skuRelation2);
                 if(null == skuRelation2){
+                    skuRelation.setIsValid(ValidEnum.VALID.getCode());
                     skuRelations2.add(skuRelation);
                 }
             }
@@ -674,19 +694,211 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Skus> skusPage(SkusForm form, Pagenation<Skus> page) {
+    public Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page) {
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
-        if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSpuCode())){
+        if (StringUtils.isNotBlank(form.getSpuCode())){
             criteria.andEqualTo("spuCode",form.getSpuCode());
         }
-        if (org.apache.commons.lang.StringUtils.isNotBlank(form.getSkuCode())){
+        if (StringUtils.isNotBlank(form.getSkuCode())){
             criteria.andEqualTo("skuCode",form.getSkuCode());
+        }
+        if (StringUtils.isNotBlank(form.getIsValid())){
+            criteria.andEqualTo("isValid",form.getIsValid());
+        }
+        Set<String> spus = getSkusQueryConditonRelateSpus(form);
+        if(null != spus){
+            if(spus.size() > 0){
+                criteria.andIn("spuCode", spus);
+            }else{
+                return new Pagenation<Skus2>();
+            }
         }
         example.orderBy("spuCode").desc();
         page = skusService.pagination(example,page,form);
+        //设置库存
         setSkuStock(page.getResult());
-        return page;
+        Pagenation<Skus2> page2 = new Pagenation<Skus2>();
+        BeanUtils.copyProperties(page, page2,"result");
+        List<Skus2> skus2List = new ArrayList<>();
+        for(Skus skus: page.getResult()){
+            Skus2 skus2 = new Skus2();
+            BeanUtils.copyProperties(skus, skus2);
+            skus2List.add(skus2);
+        }
+        //设置SPU商品信息
+        setSpuInfo(skus2List);
+        //设置SKU属性信息
+        setSkuPropertyInfo(skus2List);
+        page2.setResult(skus2List);
+        return page2;
+
+    }
+
+    /**
+     *设置品牌名称
+     * @param items
+     */
+    private void setBrandName(List<Items> items){
+        List<Long> brandIds = new ArrayList<Long>();
+        for(Items items2: items){
+            brandIds.add(items2.getBrandId());
+        }
+        Example example = new Example(Brand.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", brandIds);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        List<Brand> brands = brandService.selectByExample(example);
+        AssertUtil.notEmpty(brands,String.format("查询商品品牌ID为[%s]的品牌信息为空", CommonUtil.converCollectionToString(brandIds)));
+        for(Items items2 : items){
+            for(Brand c : brands){
+                if(items2.getBrandId().longValue() == c.getId().longValue()){
+                    items2.setBrandName(c.getName());
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     *设置分类名称
+     * @param items
+     */
+    private void setCategoryName(List<Items> items){
+        List<Long> categoryIds = new ArrayList<Long>();
+        for(Items items2: items){
+            categoryIds.add(items2.getCategoryId());
+        }
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", categoryIds);
+        List<Category> thridCategories = categoryService.selectByExample(example);
+        AssertUtil.notEmpty(thridCategories,String.format("查询商品所属分类ID为[%s]的分类信息为空", CommonUtil.converCollectionToString(categoryIds)));
+        /**
+         * 将分类的全路径ID(full_path_id)取出来，然后从中取到从第一级到第三季的所有分类ID
+         * 放到分类ID列表categoryIds中
+         */
+        for(Category c : thridCategories){
+            String[] tmps = c.getFullPathId().split("\\"+GoodsBiz.CATEGORY_ID_SPLIT_SYMBOL);
+            for(String s : tmps){
+                categoryIds.add(Long.parseLong(s));
+            }
+        }
+        List<Category> categories = categoryService.selectByExample(example);
+        //获取三级分类对应的全路径名称
+        Map<Long, String> map = getThirdCategoryFullPathName(thridCategories, categories);
+        for(Items items2 : items){
+            items2.setCategoryName(map.get(items2.getCategoryId()));
+        }
+    }
+
+    /**
+     * 获取第三级分类全路径名称
+     * @param thirdCategories 第三级分类列表
+     * @param categories 当前相关所有分类列表
+     * @return
+     */
+    private Map<Long, String> getThirdCategoryFullPathName(List<Category> thirdCategories, List<Category> categories){
+        Map<Long, String> map = new HashMap<Long, String>();
+        for(Category c : thirdCategories){
+            String[] tmps = c.getFullPathId().split("\\"+GoodsBiz.CATEGORY_ID_SPLIT_SYMBOL);
+            StringBuilder sb = new StringBuilder();
+            //第一级分类名称
+            for(Category c2 : categories){
+                if(Long.parseLong(tmps[0]) == c2.getId()){
+                    sb.append(c2.getName());
+                    break;
+                }
+            }
+            //第二级分类名称
+            for(Category c2 : categories){
+                if(Long.parseLong(tmps[1]) == c2.getId()){
+                    sb.append(GoodsBiz.CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                    break;
+                }
+            }
+            //第三级分类名称
+            for(Category c2 : categories){
+                if(c.getId() == c2.getId()){
+                    sb.append(GoodsBiz.CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                    break;
+                }
+            }
+            map.put(c.getId(), sb.toString());
+        }
+        return map;
+    }
+
+    /**
+     * 获取SKU查询条件相关的SPU
+     * @param queryModel
+     * @return
+     */
+    private Set<String> getSkusQueryConditonRelateSpus(SkusForm queryModel){
+        if(StringUtil.isNotEmpty(queryModel.getItemName()) || null != queryModel.getCategoryId() ||
+                null != queryModel.getBrandId() || StringUtil.isNotEmpty(queryModel.getTradeType()) ){
+            Example example = new Example(Items.class);
+            Example.Criteria criteria = example.createCriteria();
+            if(StringUtils.isNotBlank(queryModel.getItemName())){
+                criteria.andLike("name", "%" + queryModel.getItemName() + "%");
+            }
+            if(null != queryModel.getCategoryId()){
+                criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+            }
+            if(null != queryModel.getBrandId()){
+                criteria.andEqualTo("brandId", queryModel.getBrandId());
+            }
+            if (StringUtil.isNotEmpty(queryModel.getTradeType())) {//贸易类型
+                criteria.andEqualTo("tradeType", queryModel.getTradeType());
+            }
+            List<Items> items = itemsService.selectByExample(example);
+            Set<String> spus = new HashSet<String>();
+            for(Items item: items){
+                spus.add(item.getSpuCode());
+            }
+            return spus;
+        }else{
+            return null;
+        }
+    }
+
+    /**
+     * 设置SPU信息
+     * @param skusList
+     */
+    private void setSpuInfo(List<Skus2> skusList){
+        StringBuilder sb = new StringBuilder();
+        for(Skus2 skus: skusList){
+            sb.append("\"").append(skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(Items.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<Items> itemsList = itemsService.selectByExample(example);
+            if(itemsList.size() > 0){
+                //设置品牌名称
+                setBrandName(itemsList);
+                //设置分类名称
+                setCategoryName(itemsList);
+                for(Skus2 skus: skusList){
+                    for(Items items: itemsList){
+                        if(StringUtils.equals(skus.getSpuCode(), items.getSpuCode())){
+                            skus.setName(items.getName());
+                            skus.setBrandId(items.getBrandId());
+                            skus.setBrandName(items.getBrandName());
+                            skus.setCategoryId(items.getCategoryId());
+                            skus.setCategoryName(items.getCategoryName());
+                            skus.setItemNo(items.getItemNo());
+                            skus.setProducer(items.getProducer());
+                            skus.setTradeType(items.getTradeType());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -713,6 +925,72 @@ public class TrcBiz implements ITrcBiz {
                 }
             }
         }
+    }
+
+    /**
+     * 设置SKU属性信息
+     * @param skusList
+     */
+    private void setSkuPropertyInfo(List<Skus2> skusList){
+        StringBuilder sb = new StringBuilder();
+        for(Skus2 skus: skusList){
+            sb.append("\"").append(skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if(sb.length() > 0){
+            Example example = new Example(ItemSalesPropery.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<ItemSalesPropery> itemSalesProperyList = itemSalesProperyService.selectByExample(example);
+            if(itemSalesProperyList.size() > 0){
+                List<Property> propertyList = getSpuPropertys(itemSalesProperyList);
+                for(Skus2 skus: skusList){
+                    List<SkusProperty> skusPropertyList = new ArrayList<>();
+                    for(ItemSalesPropery itemSalesPropery: itemSalesProperyList){
+                        if(StringUtils.equals(skus.getSpuCode(), itemSalesPropery.getSpuCode()) &&
+                                StringUtils.equals(skus.getSkuCode(), itemSalesPropery.getSkuCode())){
+                            SkusProperty skusProperty = new SkusProperty();
+                            skusProperty.setPropertyId(itemSalesPropery.getPropertyId());
+                            for(Property property: propertyList){
+                                if(itemSalesPropery.getPropertyId().longValue() == property.getId().longValue()){
+                                    skusProperty.setPropertyName(property.getName());
+                                    break;
+                                }
+                            }
+                            skusProperty.setPropertyValueId(itemSalesPropery.getPropertyValueId());
+                            skusProperty.setPropertyValue(itemSalesPropery.getPropertyActualValue());
+                            skusPropertyList.add(skusProperty);
+                        }
+                    }
+                    skus.setPropertys(skusPropertyList);
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 获取SPU相关所有属性
+     * @param itemSalesProperyList
+     * @return
+     */
+    private List<Property> getSpuPropertys(List<ItemSalesPropery> itemSalesProperyList){
+        StringBuilder sb = new StringBuilder();
+        for(ItemSalesPropery itemSalesPropery: itemSalesProperyList){
+            if(sb.indexOf(itemSalesPropery.getPropertyId().toString()) < 0){
+                sb.append(itemSalesPropery.getPropertyId()).append(SupplyConstants.Symbol.COMMA);
+            }
+        }
+        if(sb.length() > 0){
+            Example example = new Example(Property.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("id in (%s)", ids);
+            criteria.andCondition(condition);
+            return propertyService.selectByExample(example);
+        }
+        return null;
     }
 
     @Override
@@ -1028,6 +1306,7 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
         if(!StringUtils.isBlank(queryModel.getPropertyId())){
+            AssertUtil.isTrue(queryModel.getPropertyId().indexOf(COMMA_ZH) == -1, "分隔多个属性ID必须是英文逗号");
             bool = true;
             verifyPropertyId(criteria,queryModel.getPropertyId());
         }
@@ -1078,25 +1357,13 @@ public class TrcBiz implements ITrcBiz {
             if(!CollectionUtils.isEmpty(propertyIdList))
                 criteria1.andIn("propertyId",propertyIdList);
             if(!StringUtils.isBlank(queryModel.getPropertyValueId())){
+                AssertUtil.isTrue(queryModel.getPropertyValueId().indexOf(COMMA_ZH) == -1, "分隔多个属性值ID必须是英文逗号");
                 String[] ids = queryModel.getPropertyValueId().split(SupplyConstants.Symbol.COMMA);
                 criteria1.andIn("id", Arrays.asList(ids));
             }
             if(!StringUtils.isBlank(queryModel.getPropertyValue())){
-                criteria1.andLike("value",queryModel.getPropertyValue());
+                criteria1.andLike("value","%"+queryModel.getPropertyValue()+"%");
             }
-            /*Page<PropertyValue> page1 = PageHelper.startPage(page.getPageNo(), page.getPageSize());
-            List<PropertyValue> propertyValueList = propertyValueService.selectByExample(example1);
-            if(CollectionUtils.isEmpty(propertyValueList)){
-                return page;
-            }
-            Long total = page1.getTotal();
-            Pagenation<PropertyValue> pagePropertyValue = new Pagenation<PropertyValue>();
-            pagePropertyValue.setResult(propertyValueList);
-            pagePropertyValue.setTotalCount(total);
-            pagePropertyValue.setPageNo(page.getPageNo());
-            pagePropertyValue.setPageSize(page.getPageSize());
-            pagePropertyValue.setStart(page.getStart());
-            return pagePropertyValue;*/
             Pagenation<PropertyValue> page2 = new Pagenation<PropertyValue>();
             BeanUtils.copyProperties(page, page2);
             page2 = propertyValueService.pagination(example1, page2, new QueryModel());
@@ -1139,10 +1406,12 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(queryModel.getCategoryId())) {
+            AssertUtil.isTrue(queryModel.getCategoryId().indexOf(COMMA_ZH) == -1, "分隔多个分类ID必须是英文逗号");
             String[] ids = queryModel.getCategoryId().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("id", Arrays.asList(ids));
         }
         if (!StringUtils.isBlank(queryModel.getCategoryCode())) {
+            AssertUtil.isTrue(queryModel.getCategoryCode().indexOf(COMMA_ZH) == -1, "分隔多个分类编码必须是英文逗号");
             String[] ids = queryModel.getCategoryCode().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("categoryCode", Arrays.asList(ids));
         }
@@ -1192,9 +1461,10 @@ public class TrcBiz implements ITrcBiz {
             criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndUpdateTime(),DateUtils.NORMAL_DATE_FORMAT,1)));
         }
         if (!StringUtils.isBlank(queryModel.getAlise())) {
-            criteria.andEqualTo("alise", queryModel.getAlise());
+            criteria.andLike("alise", "%" + queryModel.getAlise() + "%");
         }
         if (!StringUtils.isBlank(queryModel.getBrandCode())) {
+            AssertUtil.isTrue(queryModel.getBrandCode().indexOf(COMMA_ZH) == -1, "分隔多个品牌编码必须是英文逗号");
             String[] ids = queryModel.getBrandCode().split(SupplyConstants.Symbol.COMMA);
             criteria.andIn("brandCode", Arrays.asList(ids));
         }
@@ -1208,7 +1478,6 @@ public class TrcBiz implements ITrcBiz {
     //为属性赋予属性值
     private void endowPropertyValue(Property property ){
 
-        property.setCreateOperator(null);
         List<PropertyValueForTrc> propertyValueForTrcs = new ArrayList<PropertyValueForTrc>();
         PropertyValue propertyValue = new PropertyValue();
         propertyValue.setPropertyId(property.getId());

@@ -23,7 +23,7 @@ public class OrderItem implements Serializable {
 
     }
 
-    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, String category, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, BigDecimal price, BigDecimal marketPrice, BigDecimal promotionPrice, BigDecimal customsPrice, BigDecimal transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, String  isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, BigDecimal postDiscount, BigDecimal discountPromotion, BigDecimal discountCouponShop, BigDecimal discountCouponPlatform, BigDecimal discountFee, BigDecimal totalFee, BigDecimal payment, BigDecimal totalWeight, BigDecimal adjustFee, String status, String afterSalesStatus, String complaintsStatus, BigDecimal refundFee, Integer catServiceRate, String picPath, String outerIid, String outerSkuId, String subStock, Integer dlytmplId, String supplierName, BigDecimal priceTax, String promotionTags, String objType, String type, BigDecimal taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
+    public OrderItem(String warehouseOrderCode, String shopOrderCode, String platformOrderCode, String channelCode, String platformCode, Long warehouseId, String warehouseName, String category, Long shopId, String shopName, String userId, String spuCode, String skuCode, String supplierSkuCode, Long skuStockId, String itemNo, String barCode, String itemName, BigDecimal price, BigDecimal marketPrice, BigDecimal promotionPrice, BigDecimal customsPrice, BigDecimal transactionPrice, Integer num, Integer sendNum, String skuPropertiesName, String refundId, String  isOversold, String shippingType, String bindOid, String logisticsCompany, String invoiceNo, BigDecimal postDiscount, BigDecimal discountPromotion, BigDecimal discountCouponShop, BigDecimal discountCouponPlatform, BigDecimal discountFee, BigDecimal totalFee, BigDecimal payment, BigDecimal totalWeight, BigDecimal adjustFee, String status, String afterSalesStatus, String complaintsStatus, BigDecimal refundFee, BigDecimal catServiceRate, String picPath, String outerIid, String outerSkuId, String subStock, Integer dlytmplId, String supplierName, BigDecimal priceTax, String promotionTags, String objType, String type, BigDecimal taxRate, String params, Date createTime, Date payTime, Date consignTime, Date updateTime, Date timeoutActionTime, Date endTime, String specNatureInfo) {
         this.warehouseOrderCode = warehouseOrderCode;
         this.shopOrderCode = shopOrderCode;
         this.platformOrderCode = platformOrderCode;
@@ -276,7 +276,7 @@ public class OrderItem implements Serializable {
     private BigDecimal refundFee;
 
     // 商家三级类目签约佣金比例
-    private Integer catServiceRate;
+    private BigDecimal catServiceRate;
 
     // 商品图片绝对路径
     @Length(max = 255)
@@ -1027,14 +1027,14 @@ public class OrderItem implements Serializable {
      * 返回商家三级类目签约佣金比例
      * @return 商家三级类目签约佣金比例
      */
-    public Integer getCatServiceRate() {
+    public BigDecimal getCatServiceRate() {
         return catServiceRate;
     }
 
     /**
      * 设置商家三级类目签约佣金比例
      */
-    public void setCatServiceRate(Integer catServiceRate) {
+    public void setCatServiceRate(BigDecimal catServiceRate) {
         this.catServiceRate = catServiceRate;
     }
 

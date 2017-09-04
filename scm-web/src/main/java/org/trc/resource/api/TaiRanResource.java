@@ -10,6 +10,7 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.category.BrandBiz;
+import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
@@ -95,7 +96,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "供应商分页查询成功", trcBiz.supplierPage(form,page));
         } catch (Exception e) {
-            logger.error("供应商分页查询报错: " + e.getMessage());
+            logger.error("供应商分页查询报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("供应商分页查询报错,%s", e.getMessage()), "");
         }
@@ -114,9 +115,9 @@ public class TaiRanResource {
         try {//Pagenation<Property>
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
-            logger.error("查询查询列表信息报错: " + e.getMessage());
+            logger.error("查询列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
-            return new ResponseAck(code, String.format("查询查询列表信息报错,%s", e.getMessage()), "");
+            return new ResponseAck(code, String.format("查询列表信息报错,%s", e.getMessage()), "");
         }
 
     }
@@ -198,7 +199,7 @@ public class TaiRanResource {
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
             responseAck = new ResponseAck(code, e.getMessage(), "");
-            logger.error(String.format("接收渠道同步订单%s异常,%s", orderInfo, e));
+            logger.error(String.format("接收渠道同步订单%s异常", orderInfo), e);
         }finally {
             scmOrderBiz.saveChannelOrderRequestFlow(orderInfo, responseAck);
         }
@@ -226,6 +227,7 @@ public class TaiRanResource {
         try {
             trcBiz.updateRelation(action, relations);
         } catch (Exception e) {
+            logger.error("关联信息更新失败", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("关联信息更新失败,%s", e.getMessage()), "");
         }
@@ -240,7 +242,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page));
         } catch (Exception e) {
-            logger.error("自采商品查询报错: " + e.getMessage());
+            logger.error("自采商品查询报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("自采商品查询报错,%s", e.getMessage()), "");
         }
@@ -251,11 +253,11 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Skus>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
+    public ResponseAck<Pagenation<Skus2>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation) {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation));
         } catch (Exception e) {
-            logger.error("查询sku列表信息报错: " + e.getMessage());
+            logger.error("查询sku列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("查询sku列表信息报错,%s", e.getMessage()), "");
         }
@@ -270,7 +272,7 @@ public class TaiRanResource {
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "代发sku列表信息查询成功", trcBiz.externalItemSkuPage(form, page));
         } catch (Exception e) {
-            logger.error("查询externalItemSku列表信息报错: " + e.getMessage());
+            logger.error("查询externalItemSku列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
             return new ResponseAck(code, String.format("代发sku列表信息查询失败,%s", e.getMessage()), "");
         }

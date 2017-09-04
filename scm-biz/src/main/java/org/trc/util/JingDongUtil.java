@@ -3,7 +3,6 @@ package org.trc.util;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.domain.config.Common;
 import org.trc.enums.JingDongEnum;
 import org.trc.form.JDModel.JingDongConstant;
@@ -23,9 +22,9 @@ public class JingDongUtil {
     @Autowired
     IJDService ijdService;
 
-    @Autowired
+    /*@Autowired
     IJingDongBiz iJingDongBiz;
-
+*/
     /**
      * 验证AccessToken是否失效
      *

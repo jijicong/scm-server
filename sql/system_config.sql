@@ -1,1 +1,1 @@
-INSERT INTO `system_config` (`id`, `code`, `name`, `type`, `content`, `description`, `create_operator`, `create_time`, `update_time`) VALUES (1, 'trc', '泰然城', 'channel', NULL, NULL, 'sss', '2017-8-16 09:21:03', '2017-8-16 09:23:54');
+INSERT INTO `system_config` (`id`, `code`, `name`, `type`, `content`, `description`, `create_operator`, `create_time`, `update_time`) VALUES (1, 'trc', '泰然城', 'channel', NULL, NULL, 'E2E4BDAD80354EFAB6E70120C271968C', '2017-8-16 09:21:03', '2017-8-16 09:23:54');

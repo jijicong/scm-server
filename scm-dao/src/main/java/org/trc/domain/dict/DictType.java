@@ -19,14 +19,14 @@ public class DictType extends CommonDO {
     private Long id;
     @FormParam("code")
     @NotEmpty
-    @Length(max = 32, message = "字典类型编码字母和数字不能超过32个,汉字不能超过16个")
+    @Length(max = 32, message = "字典类型编码长度不能超过16个")
     private String code;
     @FormParam("name")
     @NotEmpty
-    @Length(max = 64, message = "字典类型名称字母和数字不能超过32个,汉字不能超过32个")
+    @Length(max = 64, message = "字典类型名称长度不能超过64个")
     private String name;
     @FormParam("description")
-    @Length(max = 512, message = "字典类型说明字母和数字不能超过512个,汉字不能超过256个")
+    @Length(max = 512, message = "字典类型说明长度不能超过512个")
     private String description;
 
     public Long getId() {

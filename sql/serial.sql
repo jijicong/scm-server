@@ -4,7 +4,7 @@ INSERT INTO `serial` VALUES ('7', 'PP', '0', '2017-07-20 17:12:10');
 INSERT INTO `serial` VALUES ('8', 'SPU', '0', '2017-07-20 11:39:11');
 INSERT INTO `serial` VALUES ('9', 'SP', '0', '2017-07-20 18:22:53');
 INSERT INTO `serial` VALUES ('10', 'CK', '0', '2017-07-19 20:37:27');
-INSERT INTO `serial` VALUES ('11', 'QD', '0', '2017-07-18 19:55:25');
+INSERT INTO `serial` VALUES ('11', 'QD', '1', '2017-07-18 19:55:25');
 INSERT INTO `serial` VALUES ('12', 'CGZ', '0', '2017-07-18 19:55:29');
 INSERT INTO `serial` VALUES ('13', 'CGD', '0', '2017-07-20 18:51:50');
 INSERT INTO `serial` VALUES ('14', 'RKTD', '0', '2017-07-18 19:55:32');

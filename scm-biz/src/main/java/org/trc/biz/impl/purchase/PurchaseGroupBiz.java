@@ -241,7 +241,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class) //保存采购组与用户的对应关系
+    //保存采购组与用户的对应关系
     private void savePurchaseGroupUserRelation(String purchaseGroupCode,String laederUserId,String memberUserStrs,String isValid) {
 
         List<PurchaseGroupUserRelation> purchaseGroupUserRelationList = new ArrayList<>();
@@ -286,7 +286,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         if(num < size){
             throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION,"部分采购员被取消采购角色,请重新添加");
         }
-        return  purchaseGroupList;//TODO 返回的集合是页面显示信息的时候使用
+        return  purchaseGroupList;// 返回的集合是页面显示信息的时候使用
 
     }
 

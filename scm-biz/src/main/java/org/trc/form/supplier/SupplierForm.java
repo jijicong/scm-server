@@ -16,7 +16,7 @@ public class SupplierForm extends QueryModel{
     @Length(max = 32, message = "供应商编码长度不能超过32个")
     private String supplierCode;
     @QueryParam("supplierName")
-    @Length(max = 64, message = "供应商名称长度不能超过64个")
+    @Length(max = 50, message = "供应商名称长度不能超过50个")
     private String supplierName;
     @QueryParam("supplierKindCode")
     @Length(max = 32, message = "供应商性质编码长度不能超过32个")

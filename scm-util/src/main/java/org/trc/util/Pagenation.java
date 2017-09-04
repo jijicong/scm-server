@@ -67,7 +67,7 @@ public class Pagenation<T> implements Serializable {
     /**
      * 获得当前页的页号,序号从1开始,默认为1.
      */
-    public int getPageNo() {
+    public Integer getPageNo() {
         return pageNo;
     }
 

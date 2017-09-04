@@ -30,8 +30,8 @@ import java.util.*;
 @Service("jDService")
 public class JDServiceImpl implements IJDService {
     private final static Logger log = LoggerFactory.getLogger(JDServiceImpl.class);
-    @Autowired
-    private JdBaseDO jdBaseDO;
+    /*@Autowired
+    private JdBaseDO jdBaseDO;*/
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
     //接口调用超时时间
@@ -39,7 +39,7 @@ public class JDServiceImpl implements IJDService {
     //接口重试次数
     public final static Integer RETRY_TIMES = 3;
 
-    @Override
+    /*@Override
     public ReturnTypeDO createToken() throws Exception {
         try {
             String timestamp = DateUtils.formatDateTime(Calendar.getInstance().getTime());
@@ -65,7 +65,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_TOKEN.getCode(), JingDongEnum.ERROR_TOKEN.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 使用Refresh Token刷新Access Token
@@ -74,7 +74,7 @@ public class JDServiceImpl implements IJDService {
      * @return
      * @throws Exception
      */
-    @Override
+   /* @Override
     public ReturnTypeDO freshAccessTokenByRefreshToken(String refreshToken) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.REFRESH_TOKEN;
@@ -92,7 +92,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_REFRESH_TOKEN.getCode(), JingDongEnum.ERROR_REFRESH_TOKEN.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 获取商品池编号
@@ -100,7 +100,7 @@ public class JDServiceImpl implements IJDService {
      * @param token 授权时的access token
      * @return
      */
-    public ReturnTypeDO getPageNum(String token) throws Exception {
+    /*public ReturnTypeDO getPageNum(String token) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_PAGE_NUM;
             String data = "token=" + token;
@@ -115,7 +115,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_GET_PAGE_NUM.getCode(), JingDongEnum.ERROR_GET_PAGE_NUM.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 获取商品编号
@@ -124,7 +124,7 @@ public class JDServiceImpl implements IJDService {
      * @param pageNum 池子编号
      * @return
      */
-    public ReturnTypeDO getSku(String token, String pageNum) throws Exception {
+    /*public ReturnTypeDO getSku(String token, String pageNum) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU;
             String data = "token=" + token + "&pageNum=" + pageNum;
@@ -148,7 +148,7 @@ public class JDServiceImpl implements IJDService {
         returnTypeDO.setResult(result);
         returnTypeDO.setResultMessage(resultMessage);
         return returnTypeDO;
-    }
+    }*/
 
 
     /**
@@ -159,7 +159,7 @@ public class JDServiceImpl implements IJDService {
      * @param isShow 查询商品基本信息
      * @return
      */
-    public ReturnTypeDO getDetail(String token, String sku, Boolean isShow) throws Exception {
+    /*public ReturnTypeDO getDetail(String token, String sku, Boolean isShow) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_DETAIL;
             String data = "token=" + token + "&sku=" + sku + "&isShow=" + isShow;
@@ -174,7 +174,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_GET_DETAIL.getCode(), JingDongEnum.ERROR_GET_DETAIL.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 获取池内商品编号接口-品类商品池
@@ -185,7 +185,7 @@ public class JDServiceImpl implements IJDService {
      * @return
      * @throws Exception
      */
-    @Override
+    /*@Override
     public ReturnTypeDO getSkuByPage(String token, String pageNum, String pageNo) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SKU_BY_PAGE;
@@ -221,7 +221,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_CHECK_SKU.getCode(), JingDongEnum.ERROR_CHECK_SKU.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 获取商品上下架状态
@@ -230,7 +230,7 @@ public class JDServiceImpl implements IJDService {
      * @param sku   商品编号 支持批量（最高100个）
      * @return
      */
-    public ReturnTypeDO skuState(String token, String sku) throws Exception {
+    /*public ReturnTypeDO skuState(String token, String sku) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_STATE;
             String data = "token=" + token + "&sku=" + sku;
@@ -245,7 +245,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_SKU_STATE.getCode(), JingDongEnum.ERROR_SKU_STATE.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 获取商品图片信息
@@ -254,7 +254,7 @@ public class JDServiceImpl implements IJDService {
      * @param sku   商品编号 支持批量（最高100个）
      * @return
      */
-    @Override
+    /*@Override
     public ReturnTypeDO skuImage(String token, String sku) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SKU_IMAGE;
@@ -270,7 +270,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_SKU_IMAGE.getCode(), JingDongEnum.ERROR_SKU_IMAGE.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 商品区域购买限制查询
@@ -284,7 +284,7 @@ public class JDServiceImpl implements IJDService {
      * @return
      * @throws Exception
      */
-    @Override
+   /* @Override
     public ReturnTypeDO checkAreaLimit(String token, String skuIds, String province, String city, String county, String town) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.CHECK_AREA_LIMIT;
@@ -300,7 +300,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_CHECK_LIMIT.getCode(), JingDongEnum.ERROR_CHECK_LIMIT.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 商品搜索
@@ -309,7 +309,7 @@ public class JDServiceImpl implements IJDService {
      * @param searchDO
      * @return
      */
-    public ReturnTypeDO search(SearchDO searchDO) throws Exception {
+    /*public ReturnTypeDO search(SearchDO searchDO) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.SEARCH;
             String data = "token=" + searchDO.getToken();
@@ -454,7 +454,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_CHECK_AREA.getCode(), JingDongEnum.ERROR_CHECK_AREA.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 批量查询商品价格
@@ -464,7 +464,7 @@ public class JDServiceImpl implements IJDService {
      * @return
      * @throws Exception
      */
-    @Override
+    /*@Override
     public ReturnTypeDO getSellPrice(String token, String sku) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_SELL_PRICE;
@@ -480,7 +480,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_GET_SELL_PRICE.getCode(), JingDongEnum.ERROR_GET_SELL_PRICE.getMessage(), null);
         }
-    }
+    }*/
 
     /**
      * 批量获取库存接口
@@ -491,7 +491,7 @@ public class JDServiceImpl implements IJDService {
      * @return
      * @throws Exception
      */
-    @Override
+    /*@Override
     public ReturnTypeDO getNewStockById(String token, String skuNums, String area) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_NEW_STOCK_BY_ID;
@@ -507,7 +507,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_GET_NEW_STOCK_BY_ID.getCode(), JingDongEnum.ERROR_GET_NEW_STOCK_BY_ID.getMessage(), null);
         }
-    }
+    }*/
 
 
     /**
@@ -519,7 +519,7 @@ public class JDServiceImpl implements IJDService {
      * @return
      * @throws Exception
      */
-    @Override
+    /*@Override
     public ReturnTypeDO getStockById(String token, String sku, String area) throws Exception {
         try {
             String url = jdBaseDO.getJdurl() + JingDongConstant.GET_STOCK_BY_ID;
@@ -717,7 +717,7 @@ public class JDServiceImpl implements IJDService {
             log.error(e.getMessage());
             return returnValue(false, JingDongEnum.ERROR_MESSAGE_DEL.getCode(), JingDongEnum.ERROR_MESSAGE_DEL.getMessage(), null);
         }
-    }
+    }*/
 
 
     @Override
@@ -768,6 +768,7 @@ public class JDServiceImpl implements IJDService {
         }
         return returnTypeDO;
     }
+
 
     @Override
     public ReturnTypeDO noticeUpdateSkuUsedStatus(List<SkuDO> skuDOList) {
@@ -910,7 +911,7 @@ public class JDServiceImpl implements IJDService {
         return responseAck;
     }
 
-    public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){
+    /*public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -975,7 +976,7 @@ public class JDServiceImpl implements IJDService {
             returnTypeDO.setResultMessage(msg);
         }
         return returnTypeDO;
-    }
+    }*/
 
     @Override
     public ReturnTypeDO getJingDongArea() {

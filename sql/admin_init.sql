@@ -230,14 +230,14 @@ INSERT INTO `acl_resource`  VALUES ('189', '105', '账单管理', '1', '1', '1',
 INSERT INTO `acl_resource`  VALUES ('190', '10501', '对账管理', '1', '1', '105', '1', '0', 'admin', '0', '2017-08-03 13:45:33', '2017-08-03 14:25:15');
 INSERT INTO `acl_resource`  VALUES ('191', '105010101', '对账管理分页查询', '123', 'GET', '10501', '1', '1', 'admin', '0', '2017-08-03 13:45:46', '2017-08-03 14:25:16');
 INSERT INTO `acl_resource`  VALUES ('192', '105010102', '查询业务类型', '123', 'GET', '10501', '1', '1', 'admin', '0', '2017-08-03 13:46:51', '2017-08-03 14:25:19');
-INSERT INTO `acl_resource`  VALUES ('193', '202010104', '国家查询', 'select/country', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 16:54:03', '2017-08-04 16:54:03');
-INSERT INTO `acl_resource`  VALUES ('194', '202010105', '供应商渠道关系查询', 'supplier/channels', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 16:56:57', '2017-08-04 16:56:57');
-INSERT INTO `acl_resource`  VALUES ('195', '201010104', '分类页面树结构查询', 'category/tree', 'GET', '20101', '2', '0', 'admin', '0', '2017-08-04 17:02:44', '2017-08-04 17:02:44');
-INSERT INTO `acl_resource`  VALUES ('196', '201010105', '代发商品分页查询', 'goods/externalGoodsPage', 'GET', '20101', '2', '0', 'admin', '0', '2017-08-04 17:06:03', '2017-08-04 17:06:03');
-INSERT INTO `acl_resource`  VALUES ('197', '202010106', '供应商分类查询', 'supplier/supplierCategorys', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:07:51', '2017-08-04 17:07:51');
-INSERT INTO `acl_resource`  VALUES ('198', '202010107', '供应商品牌查询', 'supplier/supplierBrands', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:09:59', '2017-08-04 17:09:59');
-INSERT INTO `acl_resource`  VALUES ('199', '202010108', '渠道列表查询', 'system/channels', 'GET', '20201', '2', '0', 'admin', '0', '2017-08-04 17:10:32', '2017-08-04 17:10:32');
-INSERT INTO `acl_resource`  VALUES ('200', '203020104', '供应商列表查询', 'supplier/suppliers', 'GET', '20302', '2', '0', 'admin', '0', '2017-08-04 17:12:03', '2017-08-04 17:12:03');
+INSERT INTO `acl_resource`  VALUES ('193', '202010104', '国家查询', 'select/country', 'GET', '20201', '2', '1', 'admin', '0', '2017-08-04 16:54:03', '2017-08-04 16:54:03');
+INSERT INTO `acl_resource`  VALUES ('194', '202010105', '供应商渠道关系查询', 'supplier/channels', 'GET', '20201', '2', '1', 'admin', '0', '2017-08-04 16:56:57', '2017-08-04 16:56:57');
+INSERT INTO `acl_resource`  VALUES ('195', '201010104', '分类页面树结构查询', 'category/tree', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-04 17:02:44', '2017-08-04 17:02:44');
+INSERT INTO `acl_resource`  VALUES ('196', '201010105', '代发商品分页查询', 'goods/externalGoodsPage', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-04 17:06:03', '2017-08-04 17:06:03');
+INSERT INTO `acl_resource`  VALUES ('197', '202010106', '供应商分类查询', 'supplier/supplierCategorys', 'GET', '20201', '2', '1', 'admin', '0', '2017-08-04 17:07:51', '2017-08-04 17:07:51');
+INSERT INTO `acl_resource`  VALUES ('198', '202010107', '供应商品牌查询', 'supplier/supplierBrands', 'GET', '20201', '2', '1', 'admin', '0', '2017-08-04 17:09:59', '2017-08-04 17:09:59');
+INSERT INTO `acl_resource`  VALUES ('199', '202010108', '渠道列表查询', 'system/channels', 'GET', '20201', '2', '1', 'admin', '0', '2017-08-04 17:10:32', '2017-08-04 17:10:32');
+INSERT INTO `acl_resource`  VALUES ('200', '203020104', '供应商列表查询', 'supplier/suppliers', 'GET', '20302', '2', '1', 'admin', '0', '2017-08-04 17:12:03', '2017-08-04 17:12:03');
 INSERT INTO `acl_resource`  VALUES ('201', '202020107', '采购人员查询', 'accredit/purchase', 'GET', '20202', '2', '1', 'admin', '0', '2017-08-05 15:44:12', '2017-08-05 15:43:34');
 INSERT INTO `acl_resource`  VALUES ('202', '201010106', '分类查询', 'category/categorys', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:35:21', '2017-08-11 20:35:21');
 INSERT INTO `acl_resource`  VALUES ('203', '201010107', '查询指定分类品牌', 'category/brand/[1-9]\\d*$', 'GET', '20101', '2', '1', 'admin', '0', '2017-08-11 20:36:54', '2017-08-11 20:37:10');
@@ -265,9 +265,9 @@ CREATE TABLE `acl_role` (
 -- ----------------------------
 -- Records of acl_role
 -- ----------------------------
-INSERT INTO `acl_role` VALUES ('1', '采购组员', 'channelJurisdiction', '1', 'B571346F625E44DB8FCBA8116E72593D', '0', '2017-07-27 18:02:09', '2017-07-27 18:03:23', '');
-INSERT INTO `acl_role` VALUES ('2', '全局角色', 'wholeJurisdiction', '1', 'B571346F625E44DB8FCBA8116E72593D', '0', '2017-07-27 18:00:27', '2017-07-27 18:00:27', '');
-INSERT INTO `acl_role` VALUES ('3', '渠道角色', 'channelJurisdiction', '1', 'B571346F625E44DB8FCBA8116E72593D', '0', '2017-07-27 17:59:50', '2017-07-27 18:03:31', '');
+INSERT INTO `acl_role` VALUES ('1', '采购组员', 'channelJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-07-27 18:02:09', '2017-07-27 18:03:23', '');
+INSERT INTO `acl_role` VALUES ('2', '全局角色', 'wholeJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-07-27 18:00:27', '2017-07-27 18:00:27', '');
+INSERT INTO `acl_role` VALUES ('3', '渠道角色', 'channelJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-07-27 17:59:50', '2017-07-27 18:03:31', '');
 
 -- ----------------------------
 -- Table structure for acl_role_resource_relation
@@ -309,7 +309,7 @@ INSERT INTO `acl_role_resource_relation` VALUES ('20', '2', '10404', null, '2017
 INSERT INTO `acl_role_resource_relation` VALUES ('21', '2', '10405', null, '2017-07-27 18:00:27', '2017-07-27 18:00:27');
 INSERT INTO `acl_role_resource_relation` VALUES ('22', '2', '10406', null, '2017-07-27 18:00:27', '2017-07-27 18:00:27');
 INSERT INTO `acl_role_resource_relation` VALUES ('23', '2', '10501', null, '2017-07-27 18:02:09', '2017-07-27 18:06:27');
--- ---------------------------- INSERT INTO `acl_role_resource_relation` VALUES ('23', '1', '20202', null, '2017-07-27 18:02:09', '2017-07-27 18:06:27');
+-- ----------------------------
 -- Table structure for acl_user_accredit_info
 -- ----------------------------
 DROP TABLE IF EXISTS `acl_user_accredit_info`;
@@ -334,7 +334,7 @@ CREATE TABLE `acl_user_accredit_info` (
 -- ----------------------------
 -- Records of acl_user_accredit_info
 -- ----------------------------
-INSERT INTO `acl_user_accredit_info` VALUES ('1', 'B571346F625E44DB8FCBA8116E72593D', '18012345678', 'admin', 'mixtureUser', 'QD002', 'admin', '1', '0', 'B571346F625E44DB8FCBA8116E72593D', '2017-07-27 17:40:18', '2017-07-27 17:40:18');
+INSERT INTO `acl_user_accredit_info` VALUES ('1', 'E2E4BDAD80354EFAB6E70120C271968C', '15757195796', 'admin', 'mixtureUser', 'QD001', 'admin', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-07-27 17:40:18', '2017-07-27 17:40:18');
 
 -- ----------------------------
 -- Table structure for acl_user_accredit_role_relation
@@ -356,6 +356,6 @@ CREATE TABLE `acl_user_accredit_role_relation` (
 -- ----------------------------
 -- Records of acl_user_accredit_role_relation
 -- ----------------------------
-INSERT INTO `acl_user_accredit_role_relation` VALUES ('1', '1', 'B571346F625E44DB8FCBA8116E72593D', '2', '1', null, 'B571346F625E44DB8FCBA8116E72593D', '2017-07-27 18:10:34', '2017-07-27 18:11:30');
-INSERT INTO `acl_user_accredit_role_relation` VALUES ('2', '1', 'B571346F625E44DB8FCBA8116E72593D', '3', '1', null, 'B571346F625E44DB8FCBA8116E72593D', '2017-07-27 18:10:44', '2017-07-27 18:11:31');
+INSERT INTO `acl_user_accredit_role_relation` VALUES ('1', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '2', '1', null, 'E2E4BDAD80354EFAB6E70120C271968C', '2017-07-27 18:10:34', '2017-07-27 18:11:30');
+INSERT INTO `acl_user_accredit_role_relation` VALUES ('2', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '3', '1', null, 'E2E4BDAD80354EFAB6E70120C271968C', '2017-07-27 18:10:44', '2017-07-27 18:11:31');
 

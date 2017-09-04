@@ -1,128 +1,7 @@
-drop table if exists acl_resource;
-
-drop table if exists acl_role;
-
-drop table if exists acl_role_resource_relation;
-
-drop table if exists acl_user_accredit_info;
-
-drop table if exists acl_user_accredit_role_relation;
-
-drop table if exists apply_for_purchase_order;
-
-drop table if exists apply_for_supplier;
-
-drop table if exists area;
-
-drop table if exists audit_log;
-
-drop table if exists brand;
-
-drop table if exists category;
-
-drop table if exists category_brand;
-
-drop table if exists category_property;
-
-drop table if exists certificate;
-
-drop table if exists change_inventory_flow;
-
-drop table if exists change_inventory_request_flow;
-
-drop table if exists channel;
-
-drop table if exists common_config;
-
-drop table if exists dict;
-
-drop table if exists dict_type;
-
-drop table if exists external_item_sku;
-
-drop table if exists idempotent;
-
-drop table if exists item_nature_propery;
-
-drop table if exists item_sales_propery;
-
-drop table if exists items;
-
-drop table if exists jing_dong_area;
-
-drop table if exists log_information;
-
-drop table if exists logistics_company;
-
-drop table if exists mapping_table;
-
-drop table if exists order_flow;
-
-drop table if exists order_item;
-
-drop table if exists outbound_order;
-
-drop table if exists platform_order;
-
-drop table if exists property;
-
-drop table if exists property_value;
-
-drop table if exists purchase_detail;
-
-drop table if exists purchase_group;
-
-drop table if exists purchase_group_user_relation;
-
-drop table if exists purchase_order;
-
-drop table if exists purchase_order_audit_log;
-
-drop table if exists request_flow;
-
-drop table if exists retry_config;
-
-drop table if exists serial;
-
-drop table if exists shop_order;
-
-drop table if exists sku_relation;
-
-drop table if exists sku_stock;
-
-drop table if exists skus;
-
-drop table if exists supplier;
-
-drop table if exists supplier_after_sale_info;
-
-drop table if exists supplier_brand;
-
-drop table if exists supplier_category;
-
-drop table if exists supplier_channel_relation;
-
-drop table if exists supplier_financial_info;
-
-drop table if exists supplier_order_info;
-
-drop table if exists supplier_order_logistics;
-
-drop table if exists system_config;
-
-drop table if exists time_record;
-
-drop table if exists warehouse;
-
-drop table if exists warehouse_item;
-
-drop table if exists warehouse_notice;
-
-drop table if exists warehouse_notice_callback;
-
-drop table if exists warehouse_notice_details;
-
-drop table if exists warehouse_order;
+/*==============================================================*/
+/* DBMS name:      MySQL 5.0                                    */
+/* Created on:     2017/8/31 11:22:23                           */
+/*==============================================================*/
 
 /*==============================================================*/
 /* Table: acl_resource                                          */
@@ -611,15 +490,15 @@ create table external_item_sku
    warehouse            varchar(32) comment '仓库',
    subtitle             varchar(64) comment '商品副标题',
    brand                varchar(32) comment '品牌',
-   category             varchar(32) comment '分类',
-   category_name        varchar(64) comment '分类名称',
+   category             varchar(512) comment '分类名称,多个用分号;分隔',
+   category_code        varchar(512) comment '分类编码,多个用分号;分隔',
    weight               bigint comment '重量,单位/克',
    producing_area       varchar(32) comment '产地',
    place_of_delivery    varchar(64) comment '发货地',
    item_type            varchar(16) comment '商品类型',
    tariff               decimal(4,3) comment '商品关税税率',
-   main_pictrue         varchar(256) comment '商品主图',
-   detail_pictrues      varchar(1024) comment '详情图',
+   main_pictrue         varchar(1024) comment '商品主图',
+   detail_pictrues      longtext comment '详情图',
    detail               varchar(1024) comment '详情',
    properties           varchar(512) comment '属性',
    stock                bigint comment '库存',
@@ -627,6 +506,7 @@ create table external_item_sku
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '最后更新时间,格式yyyy-mm-dd hh:mi:ss',
+   state                varchar(2) comment '上下架状态 ,1上架，0下架',
    primary key (id)
 );
 
@@ -650,7 +530,7 @@ create table idempotent
    serial_no            varchar(128) not null comment '流水号',
    type                 varchar(32) not null comment '流水类型',
    create_time          timestamp comment '创建时间',
-   update_time          timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
    primary key (id)
 );
 
@@ -930,10 +810,10 @@ create table order_item
    type                 varchar(1) not null comment '订单类型 0-普通 1-零元购 2-分期购 3-团购',
    tax_rate             decimal(20,3) comment '税率',
    params               varchar(255) comment '订单冗余参数',
-   create_time          timestamp null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
    pay_time             timestamp null default NULL comment '支付时间',
    consign_time         timestamp null default NULL comment '发货时间',
-   update_time          timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '修改时间',
    timeout_action_time  timestamp null default NULL comment '超时确认时间',
    end_time             timestamp null default NULL comment '关闭时间',
    primary key (id)
@@ -1010,10 +890,10 @@ create table platform_order
    item_num             int not null comment '买家购买的商品总数',
    pay_type             varchar(16) not null comment '支付类型',
    payment              decimal(20,3) not null comment '实付金额,单位/分',
-   points_fee           decimal(20,3) not null default 0 comment '积分抵扣金额,单位/分',
+   points_fee           decimal(20,3) default 0 comment '积分抵扣金额,单位/分',
    total_fee            decimal(20,3) not null comment '订单总金额(商品单价*数量),单位/分',
-   adjust_fee           decimal(20,3) not null comment '卖家手工调整金额,子订单调整金额之和,单位/分',
-   postage_fee          decimal(20,3) not null comment '邮费,单位/分',
+   adjust_fee           decimal(20,3) comment '卖家手工调整金额,子订单调整金额之和,单位/分',
+   postage_fee          decimal(20,3) comment '邮费,单位/分',
    total_tax            decimal(20,3) not null comment '总税费,单位/分',
    need_invoice         varchar(10) not null default '0' comment '是否开票 1-是 0-不是',
    invoice_name         varchar(128) comment '发票抬头',
@@ -1146,8 +1026,8 @@ create table purchase_detail
    purchasing_quantity  bigint comment '采购数量',
    total_purchase_amount bigint comment '采购总金额,单位/分',
    is_deleted           varchar(2) comment '是否删除:0-否,1-是',
-   create_time          timestamp null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
    create_operator      varchar(32),
    is_valid             varchar(2) comment '是否有效',
    primary key (id)
@@ -1223,14 +1103,14 @@ create table purchase_order
    purchase_group_code  varchar(32) comment '归属采购组编号',
    warehouse_id         varchar(32) comment '收货仓库ID',
    currency_type        varchar(32) comment '币种编号',
-   purchase_person_id   varchar(32) comment '归属采购人编号',
+   purchase_person_id   varchar(64) comment '归属采购人编号',
    receive_address      varchar(256) comment '收货地址',
    warehouse_code       varchar(32) comment '收货仓库编号',
    transport_fee_dest_id varchar(32) comment '运输费用承担方编号',
    take_goods_no        varchar(32) comment '提运单号',
    requried_receive_date varchar(32) comment '要求到货日期,格式:yyyy-mm-dd',
    end_receive_date     varchar(32) comment '截止到货日期,格式:yyyy-mm-dd',
-   handler_priority     int comment '处理优先级',
+   handler_priority     varchar(2) comment '处理优先级',
    status               varchar(32) comment '状态:0-暂存,1-提交审核
             ,2-审核通过,3-审核驳回,4-全部收货,5-收货异常,6-冻结,7-作废',
    enter_warehouse_notice varchar(2) comment '入库通知:0-待通知,1-已通知',
@@ -1312,7 +1192,7 @@ create table retry_config
    type                 varbinary(64) default NULL comment '类型',
    count                bigint(20) default 0 comment '重试次数',
    period               bigint(20) default 0 comment '重试时间 单位/小时',
-   create_time          timestamp null default CURRENT_TIMESTAMP comment '创建时间',
+   create_time          timestamp default CURRENT_TIMESTAMP comment '创建时间',
    primary key (id)
 );
 
@@ -1376,9 +1256,9 @@ create table shop_order
    group_buy_status     varchar(32) comment '拼团状态',
    total_tax            decimal(20,3) comment '订单总税费,单位/分',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
+   pay_time             timestamp null default NULL comment '支付时间',
    consign_time         timestamp null default NULL comment '发货时间',
    update_time          timestamp not null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '更新时间',
-   pay_time             timestamp not null COMMENT '付款时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1737,8 +1617,8 @@ create table time_record
    id                   bigint not null auto_increment comment '主键',
    method               varchar(64) default NULL comment '方法名',
    use_time             varchar(32) comment '耗时(ms)',
-   start_time           timestamp null default CURRENT_TIMESTAMP comment '结束时间,格式yyyy-mm-dd hh:mi:ss',
-   end_time             timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '结束时间,格式yyyy-mm-dd hh:mi:ss',
+   start_time           timestamp default CURRENT_TIMESTAMP comment '结束时间,格式yyyy-mm-dd hh:mi:ss',
+   end_time             timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '结束时间,格式yyyy-mm-dd hh:mi:ss',
    primary key (id)
 );
 
@@ -1832,7 +1712,7 @@ create table warehouse_notice
    remark               varchar(1024) comment '备注',
    create_operator      varchar(32) comment '创建人',
    create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间,格式yyyy-mm-dd hh:mi:ss',
-   update_time          timestamp null default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   update_time          timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
    primary key (id)
 );
 
@@ -1961,3 +1841,22 @@ create index idx_warehouseOrder_warehouseOrderCode on warehouse_order
 (
    warehouse_order_code
 );
+
+/*==============================================================*/
+/* Table: method_info                                           */
+/*==============================================================*/
+create table method_info
+(
+   id                   bigint(20) not null auto_increment comment '主键id',
+   class_name           varchar(64) not null,
+   method_name          varchar(64) not null,
+   args                 varchar(512) default NULL comment '调用参数',
+   total_time           bigint(20) unsigned default 0,
+   use_number           bigint(20) not null,
+   frequency            bigint(20) default 0 comment '调用的频率单位(次/天)\r\n计算方法：总的次数/总的天数\r\n公式：use_number/(now_time-create_time)\r\n',
+   average_time         bigint(20) default 0 comment '平均时长（毫秒/次）\r\n计算方法: 总的时长/总的次\r\n公式：total_name/use_number',
+   create_time          timestamp not null default CURRENT_TIMESTAMP comment '创建时间',
+   primary key (id),
+   unique key method (class_name, method_name)
+)
+ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='方法的信息以及方法的调用信息统计';
