@@ -33,7 +33,7 @@ import java.util.concurrent.*;
 /**
  * Created by hzwyz on 2017/8/3 0003.
  */
-@Service("retryBiz")
+//@Service("retryBiz")
 public class RetryBiz implements IRetryBiz {
     private Logger log = LoggerFactory.getLogger(RetryBiz.class);
     @Autowired
