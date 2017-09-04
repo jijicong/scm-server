@@ -18,15 +18,6 @@ public final class DESUtil {
 
     private final static String DES = "DES";
 
-    public static void main(String[] args) throws Exception {
-        String data="Red2017Si";
-        String key = "86ea48faaf224965300d249835ff7ff8";
-        String s = encrypt(data, key);
-        System.out.println(s);
-        String a=decrypt(s,key);
-        System.out.println(a);
-        System.out.println(data.equals(a));
-    }
     /**
      * Description 根据键值进行加密
      *

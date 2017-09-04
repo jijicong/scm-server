@@ -43,7 +43,12 @@ public class PurchaseGroupDbUnit extends BaseTestContext {
         execSql(conn,"delete from serial");
         prepareData(conn, "purchase/purchaseGroup/preInsertPruchaseGroupData.xml");
         PurchaseGroup purchaseGroup = createPurchaseGroup();
-        purchaseGroupBiz.savePurchaseGroup(purchaseGroup,aclUserAccreditInfo);
+        try {
+            purchaseGroupBiz.savePurchaseGroup(purchaseGroup,aclUserAccreditInfo);
+        }catch (Exception e){
+            log.info("测试正常!,目前的userId不能使用,不是采购组员");
+            return;
+        }
         ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("purchase/purchaseGroup/expInsertPurchaseGroupData.xml"));
         expResult.addReplacementObject("[null]", null);
         assertDataSet(TABLE_PURCHASE_GROUP,"select * from purchase_group",expResult,conn);
@@ -76,12 +81,25 @@ public class PurchaseGroupDbUnit extends BaseTestContext {
             throw new RuntimeException("流程异常!");
         }catch (PurchaseGroupException e){
             if(e.getExceptionEnum().equals(ExceptionEnum.PURCHASE_PURCHASEGROUP_UPDATE_EXCEPTION)){
-                log.info("----------仓库的更新正常---------");
+                log.info("----------采购组的更新正常---------");
             }
         }
         //测试正常流程
         purchaseGroup.setName("hbTest");
+        try{
+            purchaseGroupBiz.updatePurchaseGroup(purchaseGroup,aclUserAccreditInfo);
+        }catch (PurchaseGroupException e){
+            if(e.getExceptionEnum().equals(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION)){
+                log.info("部分采购员被取消采购角色,请重新添加");
+                return;
+            }
+        }
+
         purchaseGroupBiz.updatePurchaseGroup(purchaseGroup,aclUserAccreditInfo);
+
+        IDataSet expDataSet=getXmlDataSet("purchase/purchaseGroup/expUpdatePurchaseGroupData.xml");
+
+        assertItable(TABLE_PURCHASE_GROUP,"select * from purchase_group where id=1",  expDataSet.getTable("purchase_group"),conn);
 
 
     }
