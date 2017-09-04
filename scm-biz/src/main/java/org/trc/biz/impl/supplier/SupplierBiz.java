@@ -222,7 +222,6 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()+#aclUserAccreditInfo.channelId+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, AclUserAccreditInfo aclUserAccreditInfo, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
