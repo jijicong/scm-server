@@ -20,7 +20,7 @@ public class ItemsForm extends QueryModel {
     private String skuCode;
     //商品名称
     @QueryParam("name")
-    @Length(max = 32, message = "商品名称长度不能超过64个")
+    @Length(max = 200, message = "商品名称长度不能超过200个")
     private String name;
     //商品所属分类ID
     @QueryParam("categoryId")

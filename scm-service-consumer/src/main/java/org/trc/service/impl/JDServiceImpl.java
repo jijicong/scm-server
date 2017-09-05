@@ -897,11 +897,11 @@ public class JDServiceImpl implements IJDService {
             }else {
                 responseAck = new ResponseAck(ExceptionEnum.SYSTEM_BUSY, "");
             }
-        }catch (IOException e){
+        }/*catch (IOException e){
             String msg = String.format("调用提交订单服务网络超时,错误信息:%s", e.getMessage());
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.REMOTE_INVOKE_TIMEOUT_EXCEPTION, "");
-        }catch (Exception e){
+        }*/catch (Exception e){
             String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.SYSTEM_EXCEPTION, "");

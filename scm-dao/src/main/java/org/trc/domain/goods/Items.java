@@ -24,7 +24,7 @@ public class Items extends BaseDO{
     private String spuCode;
     @FormParam("name")
     @NotEmpty
-    @Length(max = 128, message = "商品名称长度不能超过128个")
+    @Length(max = 200, message = "商品名称长度不能超过200个")
     private String name;
     @FormParam("categoryId")
     @NotNull(message = "分类不能为空")
