@@ -49,7 +49,7 @@ public class ParamsUtil {
         String sign = MD5.encryption(stringBuilder.toString()).toLowerCase();
         TrcParam trcParam = new TrcParam();
         trcParam.setAction(action.getCode());
-        trcParam.setOperateTime(currentTime);
+        trcParam.setOperateTime(currentTime/1000);
         trcParam.setNoticeNum(noticeNum);
         trcParam.setSign(sign);
         return trcParam;
