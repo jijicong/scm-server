@@ -48,6 +48,7 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.order.*;
+import org.trc.service.util.IRealIpService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
@@ -94,6 +95,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private String submitOrderStatus;
 
 
+
     @Autowired
     private IShopOrderService shopOrderService;
     @Autowired
@@ -132,6 +134,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private TrcConfig trcConfig;
     @Autowired
     private ISystemConfigService systemConfigService;
+    @Autowired
+    private IRealIpService iRealIpService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -1360,6 +1364,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     public void fetchLogisticsInfo() {
+        if (!iRealIpService.isRealTimerService()) return;
         Example example = new Example(SupplierOrderInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
