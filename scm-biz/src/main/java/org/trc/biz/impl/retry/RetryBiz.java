@@ -71,6 +71,7 @@ public class RetryBiz implements IRetryBiz {
 
 
     public void brandUpdateNoticeRetry(){
+        log.info("定时任务启动："+"brandUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -83,6 +84,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void propertyUpdateNoticeRetry(){
+        log.info("定时任务启动："+"propertyUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -95,6 +97,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void categoryUpdateNoticeRetry(){
+        log.info("定时任务启动："+"categoryUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -107,6 +110,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void categoryBrandUpdateNoticeRetry(){
+        log.info("定时任务启动："+"categoryBrandUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -119,6 +123,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void categoryPropertyUpdateNoticeRetry(){
+        log.info("定时任务启动："+"categoryPropertyUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -131,6 +136,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void itemUpdateNoticeRetry(){
+        log.info("定时任务启动："+"itemUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -143,6 +149,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void externalItemUpdateNoticeRetry(){
+        log.info("定时任务启动："+"externalItemUpdateNoticeRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -155,6 +162,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void channelReceiveOrderSubmitResultRetry(){
+        log.info("定时任务启动："+"channelReceiveOrderSubmitResultRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
@@ -167,6 +175,7 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void sendLogisticsInfoToChannelRetry(){
+        log.info("定时任务启动："+"sendLogisticsInfoToChannelRetry");
         if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
