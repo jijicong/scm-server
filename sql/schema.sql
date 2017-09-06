@@ -1859,4 +1859,17 @@ create table method_info
    primary key (id),
    unique key method (class_name, method_name)
 )
-ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='方法的信息以及方法的调用信息统计';
+ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='方法的信息以及方法的调用信息统计';
+
+/*==============================================================*/
+/* Table: method_long_time                                      */
+/*==============================================================*/
+create table method_long_time
+(
+   id                   bigint(20) not null auto_increment,
+   method_id            bigint(20) not null,
+   duration             bigint(20) not null comment '耗时',
+   create_time          timestamp not null default CURRENT_TIMESTAMP,
+   primary key (id)
+)
+ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='单次调用的时间和时长';
