@@ -20,7 +20,7 @@ public class ExternalItemSkuForm extends QueryModel{
     @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
     @QueryParam("itemName")
-    @Length(max = 128, message = "商品名称长度不能超过128个")
+    @Length(max = 255, message = "商品名称长度不能超过255个")
     private String itemName;
     @QueryParam("warehouse")
     @Length(max = 32, message = "仓库长度不能超过32个")

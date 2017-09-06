@@ -3,6 +3,7 @@ package org.trc.resource.api;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,7 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.Max;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -145,7 +147,7 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_BRAND_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") Long categoryId) throws Exception {
+    public ResponseAck<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") @Length(max = 20, message = "分类ID长度不能超过20个") Long categoryId) throws Exception {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类品牌查询成功", categoryBiz.queryBrands(categoryId));
     }
 

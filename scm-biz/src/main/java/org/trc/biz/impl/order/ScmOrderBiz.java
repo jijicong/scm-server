@@ -53,6 +53,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import javax.xml.ws.Response;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -151,6 +152,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     //京东下单余额不足错误代码
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
+    //金额为0的常量
+    public final static String ZERO_MONEY_STR = "0.000";
 
     @Override
     @Cacheable(key="#queryModel.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
@@ -202,6 +205,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
             criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
         }
+
         if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
             criteria.andEqualTo("orderType", form.getOrderType());
         }
@@ -355,39 +359,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String supplierOrderStatus = SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
         //调用京东下单服务接口
         responseAck = invokeSubmitSuuplierOrder(jingDongOrder);
+        ResponseAck responseAck2 = null;
         //保存请求流水
         requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, RequestFlowTypeEnum.JD_SUBMIT_ORDER, responseAck, RequestFlowConstant.GYL);
+        AssertUtil.notNull(responseAck.getData(), "调用京东下单服务返回下单结果为空");
+        OrderSubmitResult orderSubmitResult = getOrderSubmitResult(responseAck.getData().toString());
+        List<SupplierOrderReturn> supplierOrderReturnList = orderSubmitResult.getOrder();
+        AssertUtil.notEmpty(supplierOrderReturnList, "调用京东下单服务返回下单明细信息为空");
+        SupplierOrderReturn supplierOrderReturn = supplierOrderReturnList.get(0);//每次京东下单只会有一个订单
         if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
-            AssertUtil.notNull(responseAck.getData(), "调用京东下单服务返回下单结果为空");
-            OrderSubmitResult orderSubmitResult = getOrderSubmitResult(responseAck.getData().toString());
-            List<SupplierOrderReturn> supplierOrderReturnList = orderSubmitResult.getOrder();
-            AssertUtil.notEmpty(supplierOrderReturnList, "调用京东下单服务返回下单明细信息为空");
-            SupplierOrderReturn supplierOrderReturn = supplierOrderReturnList.get(0);//每次京东下单只会有一个订单
             RequestFlowTypeEnum requestFlowTypeEnum = null;
             if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, supplierOrderReturn.getState())){//京东商品价格不匹配
                 log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
                 responseAck = reSubmitJingDongOrder(jingDongOrder);
                 if(!StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
                     supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-                }
-                requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
-                //记录操作日志
-                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
-            }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, responseAck.getCode())){//京东下单余额不足
-                requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
-            }
-            //保存请求流水
-            requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
-            log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
-            //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
-        }else{
-            RequestFlowTypeEnum requestFlowTypeEnum = null;
-            if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, responseAck.getCode())){//京东商品价格不匹配
-                log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
-                responseAck = reSubmitJingDongOrder(jingDongOrder);
-                if(!StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
-                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                    responseAck2 = responseAck;
                 }
                 requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
                 //记录操作日志
@@ -396,12 +383,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
             }else {
                 supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
                 log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));
             }
-            if(null != requestFlowTypeEnum){
-                //保存请求流水
-                requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
-            }
+            //保存请求流水
+            requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
+            log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
+            //记录操作日志
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
+        }else{
+            supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+            responseAck2 = responseAck;
+            log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));
         }
         //根据仓库订单下单结果更新供应商订单状态
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderStatus);
@@ -422,6 +415,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String msg = String.format("仓库级订单编码为[%s]的京东订单下单结果通知渠道异常,异常信息:%s",
                     warehouseOrderCode, e.getMessage());
             log.error(msg, e);
+        }
+        if(null != responseAck2){
+            return responseAck2;
         }
         return responseAck;
     }
@@ -1037,7 +1033,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //校验订单金额
         if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
-            orderMoneyCheck(platformOrder, shopOrderList, orderItemList);
+            orderMoneyCheck(platformOrder, shopOrderList, warehouseOrderList, orderItemList);
         }
         //校验商品是否不是添加过的供应商商品
         checkItems(orderItemList, platformOrder.getChannelCode());
@@ -1101,9 +1097,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             encryptStr = encryptStr.substring(0, encryptStr.length()-1);
         }
         String _sign = SHAEncrypt.SHA256(encryptStr);
-        /*if(!StringUtils.equals(sign, _sign)){
+        if(!StringUtils.equals(sign, _sign)){
             throw new SignException(ExceptionEnum.SIGN_ERROR, "签名错误");
-        }*/
+        }
         Date operateDate = DateUtils.timestampToDate(operateTime);
         Long currentTime = System.currentTimeMillis();
         Long secondDiff = (currentTime - operateDate.getTime())/1000;
@@ -1112,9 +1108,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         systemConfig = systemConfigService.selectOne(systemConfig);
         AssertUtil.notNull(systemConfig, "订单接收时间间隔参数未配置");
         Long orderReceiveInterval = Long.parseLong(systemConfig.getContent());
-        /*if(secondDiff.longValue() >= orderReceiveInterval){
+        if(secondDiff.longValue() >= orderReceiveInterval){
             throw new OrderException(ExceptionEnum.ORDER_NOTIFY_TIME_OUT, String.format("渠道发送订单到供应链超过%s秒,不予接收", orderReceiveInterval));
-        }*/
+        }
     }
 
 
@@ -1124,8 +1120,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrders
      * @param orderItems
      */
-    private void orderMoneyCheck(PlatformOrder platformOrder, List<ShopOrder> shopOrders, List<OrderItem> orderItems){
-        platformOrderParamCheck(platformOrder);
+    private void orderMoneyCheck(PlatformOrder platformOrder, List<ShopOrder> shopOrders, List<WarehouseOrder> warehouseOrderList, List<OrderItem> orderItems){
+        platformOrderParamCheck(platformOrder, warehouseOrderList);
         int itemsNum = 0;//商品数量
         BigDecimal payment = new BigDecimal(0);//实付金额
         BigDecimal totalFee = new BigDecimal(0);//应付总金额
@@ -1366,8 +1362,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public void fetchLogisticsInfo() {
         Example example = new Example(SupplierOrderInfo.class);
         Example.Criteria criteria = example.createCriteria();
-        /*String[] statusArray = new String[]{SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), SupplierOrderStatusEnum.DELIVER.getCode()};
-        criteria.andIn("status", Arrays.asList(statusArray));*/
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
@@ -1376,6 +1370,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
                 warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
                 AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", supplierOrderInfo2.getWarehouseOrderCode()));
+                SupplierOrderLogistics supplierOrderLogistics = new SupplierOrderLogistics();
+                supplierOrderLogistics.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
+                List<SupplierOrderLogistics> supplierOrderLogisticsList = supplierOrderLogisticsService.select(supplierOrderLogistics);
                 String flag = "";
                 if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, supplierOrderInfo2.getSupplierCode()))
                     flag = SupplierLogisticsEnum.JD.getCode();
@@ -1393,8 +1390,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             List<Logistic> logistics = logisticForm.getLogistics();
                             for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
                                 Logistic logistic = it.next();
-                                if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderInfo2.getSupplierOrderCode())) {
-                                    it.remove();
+                                for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
+                                    if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderLogistics2.getSupplierOrderCode())) {
+                                        it.remove();
+                                    }
                                 }
                             }
                         }
@@ -1488,7 +1487,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param logisticForm
      */
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private void updateSupplierOrderLogistics(SupplierOrderInfo supplierOrderInfo, LogisticForm logisticForm){
+    void updateSupplierOrderLogistics(SupplierOrderInfo supplierOrderInfo, LogisticForm logisticForm){
         List<SupplierOrderLogistics> supplierOrderLogisticsList = new ArrayList<SupplierOrderLogistics>();
         //保存物流信息
         for(Logistic logistic: logisticForm.getLogistics()){
@@ -1939,8 +1938,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
             orderItem.setPriceTax(orderItemObj.getBigDecimal("priceTax"));//商品税费
             orderItem.setPrice(orderItemObj.getBigDecimal("price"));//商品价格
+            BigDecimal promotionPrice = orderItemObj.getBigDecimal("promotionPrice");
+            orderItem.setPromotionPrice(promotionPrice);//促销价
+            if(null != promotionPrice && promotionPrice.compareTo(new BigDecimal(ZERO_MONEY_STR)) > 0){
+                orderItem.setPrice(promotionPrice);
+            }
             orderItem.setMarketPrice(orderItemObj.getBigDecimal("marketPrice"));//市场价
-            orderItem.setPromotionPrice(orderItemObj.getBigDecimal("promotionPrice"));//促销价
             orderItem.setCustomsPrice(orderItemObj.getBigDecimal("customsPrice"));//报关单价
             orderItem.setTransactionPrice(orderItemObj.getBigDecimal("transactionPrice"));//成交单价
             orderItem.setTotalWeight(orderItemObj.getBigDecimal("totalWeight"));//商品重量
@@ -2026,7 +2029,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      *
      * @param platformOrder
      */
-    private void platformOrderParamCheck(PlatformOrder platformOrder) {
+    private void platformOrderParamCheck(PlatformOrder platformOrder, List<WarehouseOrder> warehouseOrderList) {
         AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
         checkChannel(platformOrder.getChannelCode());
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
@@ -2034,18 +2037,29 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
         AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
 
-        AssertUtil.notBlank(platformOrder.getPayType(), "平台订单单支付类型不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
+        for(WarehouseOrder warehouseOrder: warehouseOrderList){
+            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){
+                AssertUtil.notBlank(platformOrder.getReceiverIdCard(), "粮油下单收货人身份证不能为空");
+                break;
+            }
+        }
+        for(WarehouseOrder warehouseOrder: warehouseOrderList){
+            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
+                AssertUtil.notBlank(platformOrder.getReceiverEmail(), "京东下单收货人电子邮箱不能为空");
+                ValidateUtil.checkEmail(platformOrder.getReceiverEmail());
+                break;
+            }
+        }
         AssertUtil.notBlank(platformOrder.getReceiverProvince(), "平台订单收货人所在省不能为空");
         AssertUtil.notBlank(platformOrder.getReceiverCity(), "平台订单收货人所在城市不能为空");
         AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverIdCard(), "平台订单收货人身份证不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverEmail(), "平台订单收货人电子邮箱不能为空");
+        AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不空");
+
+        AssertUtil.notBlank(platformOrder.getPayType(), "平台订单单支付类型不能为空");
         AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
         AssertUtil.notBlank(platformOrder.getType(), "平台订单订单类型不能为空");
-        //AssertUtil.notNull(platformOrder.getCreateTime(), "平台订单创建时间不能为空");
         AssertUtil.notNull(platformOrder.getPayTime(), "平台订单支付时间不能为空");
 
         AssertUtil.isTrue(platformOrder.getItemNum() > 0, "买家购买的商品总数不能为空");
@@ -2102,7 +2116,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.isTrue(orderItem.getTotalFee().compareTo(new BigDecimal(0))==0 || orderItem.getTotalFee().compareTo(new BigDecimal(0))==1, "订单商品总金额应大于等于0");
         AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1 ,"订单商品实付金额应大于等于0");
         BigDecimal totalFee = orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum()));
-        AssertUtil.isTrue(totalFee.compareTo(orderItem.getTotalFee())==0, "订单商品价格*商品数量应等于订单应付金额totalFee");
+        //AssertUtil.isTrue(totalFee.compareTo(orderItem.getTotalFee())==0, "订单商品价格*商品数量应等于订单应付金额totalFee");
     }
 
 

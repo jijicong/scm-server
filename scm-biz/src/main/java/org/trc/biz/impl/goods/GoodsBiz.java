@@ -494,29 +494,33 @@ public class GoodsBiz implements IGoodsBiz {
         Map<Long, String> map = new HashMap<Long, String>();
         for(Category c : thirdCategories){
             String[] tmps = c.getFullPathId().split("\\"+CATEGORY_ID_SPLIT_SYMBOL);
-            StringBuilder sb = new StringBuilder();
-            //第一级分类名称
-            for(Category c2 : categories){
-                if(Long.parseLong(tmps[0]) == c2.getId()){
-                    sb.append(c2.getName());
-                    break;
+            if(tmps.length == 2){
+                StringBuilder sb = new StringBuilder();
+                //第一级分类名称
+                for(Category c2 : categories){
+                    if(Long.parseLong(tmps[0]) == c2.getId()){
+                        sb.append(c2.getName());
+                        break;
+                    }
                 }
-            }
-            //第二级分类名称
-            for(Category c2 : categories){
-                if(Long.parseLong(tmps[1]) == c2.getId()){
-                    sb.append(CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
-                    break;
+                //第二级分类名称
+                for(Category c2 : categories){
+                    if(Long.parseLong(tmps[1]) == c2.getId()){
+                        sb.append(CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                        break;
+                    }
                 }
-            }
-            //第三级分类名称
-            for(Category c2 : categories){
-                if(c.getId() == c2.getId()){
-                    sb.append(CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
-                    break;
+                //第三级分类名称
+                for(Category c2 : categories){
+                    if(c.getId() == c2.getId()){
+                        sb.append(CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                        break;
+                    }
                 }
+                map.put(c.getId(), sb.toString());
+            }else if(tmps.length < 2){
+                log.error(String.format("三级分类[%s]的上级分类信息为空", c.getName()));
             }
-            map.put(c.getId(), sb.toString());
         }
         return map;
     }
