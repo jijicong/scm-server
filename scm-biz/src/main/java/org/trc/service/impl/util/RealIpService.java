@@ -5,9 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.service.util.IRealIpService;
-import org.trc.util.IpUtil;
-
-import java.net.SocketException;
+import org.trc.util.HostData;
 
 /**
  * Created by hzwyz on 2017/9/4 0004.
@@ -20,17 +18,12 @@ public class RealIpService implements IRealIpService {
     private String taskIp;
     @Override
     public boolean isRealTimerService() {
-        try {
-            String realIp = IpUtil.getRealIp();
-            if(!realIp.equals(taskIp)){
-                log.info("非任务补偿机，跳过任务!"+realIp+"!="+taskIp);
-                return false;
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-            log.error("ConsumptionSummaryJob!跳过任务!");
+        String realIp = HostData.getLocalIP();
+        if(!realIp.equals(taskIp)){
+            log.info("非任务补偿机，跳过任务!"+realIp+"!="+taskIp);
             return false;
         }
         return true;
     }
+
 }
