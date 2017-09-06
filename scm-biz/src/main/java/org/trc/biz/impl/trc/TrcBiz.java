@@ -540,7 +540,7 @@ public class TrcBiz implements ITrcBiz {
     public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception {
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
-        if (StringUtils.isNoneBlank(queryModel.getSupplierCode())) {
+        if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {
             Supplier supplier = getSupplier(queryModel.getSupplierCode());
             if(null != supplier){
                 if(StringUtils.equals(SupplierBiz.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){//一件代发供应商
@@ -665,22 +665,22 @@ public class TrcBiz implements ITrcBiz {
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
-        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getSupplierName())) {//供应商名称
+        if (StringUtils.isNotBlank(queryModel.getSupplierName())) {//供应商名称
             criteria.andLike("supplierName", "%" + queryModel.getSupplierName() + "%");
         }
-        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getSupplierCode())) {//供应商编码
+        if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {//供应商编码
             criteria.andLike("supplierCode", "%" + queryModel.getSupplierCode() + "%");
         }
-        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getContact())) {//联系人
+        if (StringUtils.isNotBlank(queryModel.getContact())) {//联系人
             criteria.andLike("contact", "%" + queryModel.getContact() + "%");
         }
-        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getSupplierKindCode())) {//供应商性质
+        if (StringUtils.isNotBlank(queryModel.getSupplierKindCode())) {//供应商性质
             criteria.andEqualTo("supplierKindCode", queryModel.getSupplierKindCode());
         }
-        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getStartDate())) {//开始日期
+        if (StringUtils.isNotBlank(queryModel.getStartDate())) {//开始日期
             criteria.andGreaterThanOrEqualTo("updateTime", DateUtils.parseDate(queryModel.getStartDate()));
         }
-        if (tk.mybatis.mapper.util.StringUtil.isNotEmpty(queryModel.getEndDate())) {//截止日期
+        if (StringUtils.isNotBlank(queryModel.getEndDate())) {//截止日期
             Date endDate = DateUtils.parseDate(queryModel.getEndDate());
             criteria.andLessThan("updateTime", DateUtils.addDays(endDate, 1));
         }

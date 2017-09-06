@@ -55,8 +55,7 @@ public class RetryBiz implements IRetryBiz {
     @Autowired
     private IRealIpService iRealIpService;
 
-    @Value("${retry.server.ip}")
-    private String taskIp;
+
 
     private static final int EXECUTOR_SIZE = 6;
     private static final Long hours = 3600000L;
@@ -72,7 +71,8 @@ public class RetryBiz implements IRetryBiz {
 
 
     public void brandUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"brandUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -84,7 +84,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void propertyUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"propertyUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -96,7 +97,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void categoryUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"categoryUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -108,7 +110,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void categoryBrandUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"categoryBrandUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -120,7 +123,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void categoryPropertyUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"categoryPropertyUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -132,7 +136,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void itemUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"itemUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -144,7 +149,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void externalItemUpdateNoticeRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"externalItemUpdateNoticeRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -156,7 +162,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void channelReceiveOrderSubmitResultRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"channelReceiveOrderSubmitResultRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
@@ -168,7 +175,8 @@ public class RetryBiz implements IRetryBiz {
     }
 
     public void sendLogisticsInfoToChannelRetry(){
-        if (iRealIpService.isRealTimerService(taskIp)) return;
+        log.info("定时任务启动："+"sendLogisticsInfoToChannelRetry");
+        if (!iRealIpService.isRealTimerService()) return;
         //1、查询request flow表，找出需要重试的记录
         List<String> status = new ArrayList<String>();
         status.add(NetwordStateEnum.FAILED.getCode());
