@@ -300,7 +300,7 @@ public class SupplyConstants {
         public static final String ROLE_VALID = "rolevalid";
 
         //根据手机号查询用户名称
-        public static final String NAME_PHONE = "getNameByPhone";
+        public static final String NAME = "getName";
 
     }
 

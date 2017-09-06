@@ -156,11 +156,11 @@ public class AclUserAccreditInfoResource {
     }
 
     @GET
-    @Path(SupplyConstants.UserAccreditInfo.NAME_PHONE)
+    @Path(SupplyConstants.UserAccreditInfo.NAME)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getNameByPhone(@QueryParam("phone") String phone) {
-        AssertUtil.notBlank(phone, "手机号时输入参数phone为空");
-        return ResultUtil.createSuccessResult("查询成功", userAccreditInfoBiz.getNameByPhone(phone));
+    public Response getNameByPhone(@Context ContainerRequestContext requestContext) {
+        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        return ResultUtil.createSuccessResult("查询成功", aclUserAccreditInfo.getName());
     }
 
     @GET
