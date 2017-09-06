@@ -152,6 +152,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     //京东下单余额不足错误代码
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
+    //金额为0的常量
+    public final static String ZERO_MONEY_STR = "0.000";
 
     @Override
     @Cacheable(key="#queryModel.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
@@ -1360,8 +1362,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public void fetchLogisticsInfo() {
         Example example = new Example(SupplierOrderInfo.class);
         Example.Criteria criteria = example.createCriteria();
-        /*String[] statusArray = new String[]{SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), SupplierOrderStatusEnum.DELIVER.getCode()};
-        criteria.andIn("status", Arrays.asList(statusArray));*/
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
@@ -1370,6 +1370,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
                 warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
                 AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", supplierOrderInfo2.getWarehouseOrderCode()));
+                SupplierOrderLogistics supplierOrderLogistics = new SupplierOrderLogistics();
+                supplierOrderLogistics.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
+                List<SupplierOrderLogistics> supplierOrderLogisticsList = supplierOrderLogisticsService.select(supplierOrderLogistics);
                 String flag = "";
                 if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, supplierOrderInfo2.getSupplierCode()))
                     flag = SupplierLogisticsEnum.JD.getCode();
@@ -1387,8 +1390,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             List<Logistic> logistics = logisticForm.getLogistics();
                             for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
                                 Logistic logistic = it.next();
-                                if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderInfo2.getSupplierOrderCode())) {
-                                    it.remove();
+                                for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
+                                    if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderLogistics2.getSupplierOrderCode())) {
+                                        it.remove();
+                                    }
                                 }
                             }
                         }
@@ -1482,7 +1487,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param logisticForm
      */
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private void updateSupplierOrderLogistics(SupplierOrderInfo supplierOrderInfo, LogisticForm logisticForm){
+    void updateSupplierOrderLogistics(SupplierOrderInfo supplierOrderInfo, LogisticForm logisticForm){
         List<SupplierOrderLogistics> supplierOrderLogisticsList = new ArrayList<SupplierOrderLogistics>();
         //保存物流信息
         for(Logistic logistic: logisticForm.getLogistics()){
@@ -1933,8 +1938,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItem.setRefundFee(orderItemObj.getBigDecimal("refundFee"));//退款金额
             orderItem.setPriceTax(orderItemObj.getBigDecimal("priceTax"));//商品税费
             orderItem.setPrice(orderItemObj.getBigDecimal("price"));//商品价格
+            BigDecimal promotionPrice = orderItemObj.getBigDecimal("promotionPrice");
+            orderItem.setPromotionPrice(promotionPrice);//促销价
+            if(null != promotionPrice && promotionPrice.compareTo(new BigDecimal(ZERO_MONEY_STR)) > 0){
+                orderItem.setPrice(promotionPrice);
+            }
             orderItem.setMarketPrice(orderItemObj.getBigDecimal("marketPrice"));//市场价
-            orderItem.setPromotionPrice(orderItemObj.getBigDecimal("promotionPrice"));//促销价
             orderItem.setCustomsPrice(orderItemObj.getBigDecimal("customsPrice"));//报关单价
             orderItem.setTransactionPrice(orderItemObj.getBigDecimal("transactionPrice"));//成交单价
             orderItem.setTotalWeight(orderItemObj.getBigDecimal("totalWeight"));//商品重量
@@ -2107,7 +2116,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.isTrue(orderItem.getTotalFee().compareTo(new BigDecimal(0))==0 || orderItem.getTotalFee().compareTo(new BigDecimal(0))==1, "订单商品总金额应大于等于0");
         AssertUtil.isTrue(orderItem.getPayment().compareTo(new BigDecimal(0))==0 || orderItem.getPayment().compareTo(new BigDecimal(0))==1 ,"订单商品实付金额应大于等于0");
         BigDecimal totalFee = orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum()));
-        AssertUtil.isTrue(totalFee.compareTo(orderItem.getTotalFee())==0, "订单商品价格*商品数量应等于订单应付金额totalFee");
+        //AssertUtil.isTrue(totalFee.compareTo(orderItem.getTotalFee())==0, "订单商品价格*商品数量应等于订单应付金额totalFee");
     }
 
 
