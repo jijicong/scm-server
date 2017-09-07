@@ -1052,7 +1052,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //保存商品明细
         orderItemService.insertList(orderItemList);
         //保存仓库订单
-        warehouseOrderService.insertList(warehouseOrderList);
+        int count = warehouseOrderService.insertList(warehouseOrderList);
+        log.info("@@@@@@@插入仓库订单数"+count);
         //保存商铺订单
         shopOrderService.insertList(shopOrderList);
         //保存平台订单
