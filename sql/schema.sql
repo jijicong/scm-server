@@ -1047,6 +1047,7 @@ create table purchase_group
    leader_name          varchar(64) not null comment '组长',
    member_user_id       varchar(1024) not null comment '组员',
    member_name          varchar(128) not null comment '组员名称',
+   channel_code         varchar(32) comment '渠道编码',
    is_deleted           varchar(2) not null comment '是否删除:0-否,1-是',
    is_valid             varchar(2) not null comment '是否有效:0-无效,1-有效',
    create_operator      varchar(32) comment '创建人',
