@@ -478,10 +478,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private Map<String, Object> getScmOrderMap(String warehouseOrderCode){
         Map<String, Object> map = new HashMap<>();
-        /*WarehouseOrder warehouseOrder = new WarehouseOrder();
-        warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
-        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
-        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));*/
         Example example2 = new Example(WarehouseOrder.class);
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andEqualTo("warehouseOrderCode", warehouseOrderCode);
@@ -524,7 +520,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     @CacheEvit
-    //@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResponseAck submitLiangYouOrder(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单粮油订单仓库订单编码不能为空");
         //获取供应链订单数据
@@ -1052,8 +1048,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //保存商品明细
         orderItemService.insertList(orderItemList);
         //保存仓库订单
-        int count = warehouseOrderService.insertList(warehouseOrderList);
-        log.info("@@@@@@@插入仓库订单数"+count);
+        warehouseOrderService.insertList(warehouseOrderList);
         //保存商铺订单
         shopOrderService.insertList(shopOrderList);
         //保存平台订单
@@ -1207,7 +1202,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private void submitSupplierOrder(List<WarehouseOrder> warehouseOrderList){
         for(WarehouseOrder warehouseOrder: warehouseOrderList){
             if(org.apache.commons.lang.StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
-                /*threadPool.execute(new Runnable() {
+                threadPool.execute(new Runnable() {
                     @Override
                     public void run() {
                         try{
@@ -1226,22 +1221,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             log.error(msg, e);
                         }
                     }
-                });*/
-                try{
-                    //提交订单
-                    ResponseAck responseAck = submitLiangYouOrder(warehouseOrder.getWarehouseOrderCode());
-                    if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-                        log.info(responseAck.getMessage());
-                    }else{
-                        log.error(responseAck.getMessage());
-                    }
-                    //下单结果通知渠道
-                    notifyChannelSubmitOrderResult(warehouseOrder);
-                }catch (Exception e){
-                    String msg = String.format("调用代发商品供应商%s下单接口提交订单%s异常,%s",warehouseOrder.getSupplierName(),
-                            JSONObject.toJSON(warehouseOrder), e.getMessage());
-                    log.error(msg, e);
-                }
+                });
             }
         }
     }
