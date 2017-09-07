@@ -478,10 +478,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private Map<String, Object> getScmOrderMap(String warehouseOrderCode){
         Map<String, Object> map = new HashMap<>();
-        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        /*WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
-        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));
+        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));*/
+        Example example2 = new Example(WarehouseOrder.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("warehouseOrderCode", warehouseOrderCode);
+        List<WarehouseOrder> warehouseOrderList = warehouseOrderService.selectByExample(example2);
+        AssertUtil.notEmpty(warehouseOrderList, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));
+        WarehouseOrder warehouseOrder = warehouseOrderList.get(0);
         PlatformOrder platformOrder = new PlatformOrder();
         platformOrder.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
         platformOrder = platformOrderService.selectOne(platformOrder);
