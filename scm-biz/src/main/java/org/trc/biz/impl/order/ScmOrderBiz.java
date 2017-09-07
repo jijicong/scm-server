@@ -1586,7 +1586,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(supplierOrderInfo.getSupplierOrderCode()))
             supplierOrderLogistics.setSupplierParentOrderCode(supplierOrderInfo.getSupplierOrderCode());
         supplierOrderLogistics.setSupplierOrderCode(logistic.getSupplierOrderCode());
-        supplierOrderLogistics.setLogisticsStatus(logistic.getLogisticsStatus());
         supplierOrderLogistics.setLogisticsInfo(JSONArray.toJSONString(logistic.getSkus()));
         supplierOrderLogistics.setType(type);
         if(StringUtils.equals(type, LogsticsTypeEnum.WAYBILL_NUMBER.getCode())){//物流单号
