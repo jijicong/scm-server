@@ -1200,7 +1200,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private void submitSupplierOrder(List<WarehouseOrder> warehouseOrderList){
         for(WarehouseOrder warehouseOrder: warehouseOrderList){
             if(org.apache.commons.lang.StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
-                threadPool.execute(new Runnable() {
+                /*threadPool.execute(new Runnable() {
                     @Override
                     public void run() {
                         try{
@@ -1219,7 +1219,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             log.error(msg, e);
                         }
                     }
-                });
+                });*/
+                try{
+                    //提交订单
+                    ResponseAck responseAck = submitLiangYouOrder(warehouseOrder.getWarehouseOrderCode());
+                    if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+                        log.info(responseAck.getMessage());
+                    }else{
+                        log.error(responseAck.getMessage());
+                    }
+                    //下单结果通知渠道
+                    notifyChannelSubmitOrderResult(warehouseOrder);
+                }catch (Exception e){
+                    String msg = String.format("调用代发商品供应商%s下单接口提交订单%s异常,%s",warehouseOrder.getSupplierName(),
+                            JSONObject.toJSON(warehouseOrder), e.getMessage());
+                    log.error(msg, e);
+                }
             }
         }
     }
