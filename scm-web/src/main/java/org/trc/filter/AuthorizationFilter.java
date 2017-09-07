@@ -72,7 +72,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
                             log.warn("用户授权信息不存在或已经被禁用!");
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
-                            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
                             requestContext.setProperty(SupplyConstants.Authorization.USER_ID, userId);
                             requestContext.setProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO, aclUserAccreditInfo);
