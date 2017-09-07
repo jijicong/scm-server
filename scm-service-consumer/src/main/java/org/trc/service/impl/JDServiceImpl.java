@@ -890,18 +890,18 @@ public class JDServiceImpl implements IJDService {
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, TIME_OUT);
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, 20000);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 responseAck = jbo.toJavaObject(ResponseAck.class);
             }else {
                 responseAck = new ResponseAck(ExceptionEnum.SYSTEM_BUSY, "");
             }
-        }/*catch (IOException e){
+        }catch (IOException e){
             String msg = String.format("调用提交订单服务网络超时,错误信息:%s", e.getMessage());
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.REMOTE_INVOKE_TIMEOUT_EXCEPTION, "");
-        }*/catch (Exception e){
+        }catch (Exception e){
             String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.SYSTEM_EXCEPTION, "");

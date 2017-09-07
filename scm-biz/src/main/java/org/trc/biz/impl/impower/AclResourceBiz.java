@@ -379,7 +379,7 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     @Override
     public List<Map<String, Object>> getHtmlJurisdiction(String userId) {
-        List<Map<String, Object>> JurisdictionList = new ArrayList<>();
+        List<Map<String, Object>> jurisdictionList = new ArrayList<>();
         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
         try {
             AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息不存在");
@@ -403,7 +403,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         criteria.andIn("roleId", roleIdList);
         List<AclRoleResourceRelation> roleJdRelationList = roleJurisdictionRelationService.selectByExample(example);
         if (AssertUtil.collectionIsEmpty(roleJdRelationList)) {
-            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
+            return jurisdictionList;
         }
         Map<String, Object> map = new HashMap<>();
         Set<Long> resourceCodeSet = new HashSet<>();
@@ -423,9 +423,9 @@ public class AclResourceBiz implements IAclResourceBiz {
                 }
             }
             jurisdictionMap.put("codeList", longSet);
-            JurisdictionList.add(jurisdictionMap);
+            jurisdictionList.add(jurisdictionMap);
         }
-        return JurisdictionList;
+        return jurisdictionList;
     }
 
 }

@@ -54,7 +54,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     //1.判断该url是用户内部url还是api接口，api接口直接放行不验证
     //2.需要拦截的url判断用户是否登录，登录token是否过期，用户是否被停用
-    //3.对url进行验证，如果在权限列表中，则需要验证，不在则直接放行
+    //3.对url进行验证，如果在权限列表中，则需要验证，不在则直接放行401是,403是
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String url = ((ContainerRequest) requestContext).getPath(true);
@@ -72,7 +72,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
                             log.warn("用户授权信息不存在或已经被禁用!");
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
-                            requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
                             requestContext.setProperty(SupplyConstants.Authorization.USER_ID, userId);
                             requestContext.setProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO, aclUserAccreditInfo);
@@ -92,7 +92,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 } catch (AuthenticateException e) {
                     //token失效需要用户重新登录
                     log.error("message:{},e:{}",e.getMessage(),e);
-                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
+                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                 } catch (Exception e) {
                     log.error("message:{},e:{}",e.getMessage(),e);
                     requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());

@@ -160,7 +160,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String ZERO_MONEY_STR = "0.000";
 
     @Override
-    @Cacheable(key="#queryModel.toString()+aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
@@ -1586,7 +1586,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(supplierOrderInfo.getSupplierOrderCode()))
             supplierOrderLogistics.setSupplierParentOrderCode(supplierOrderInfo.getSupplierOrderCode());
         supplierOrderLogistics.setSupplierOrderCode(logistic.getSupplierOrderCode());
-        supplierOrderLogistics.setLogisticsStatus(logistic.getLogisticsStatus());
         supplierOrderLogistics.setLogisticsInfo(JSONArray.toJSONString(logistic.getSkus()));
         supplierOrderLogistics.setType(type);
         if(StringUtils.equals(type, LogsticsTypeEnum.WAYBILL_NUMBER.getCode())){//物流单号
