@@ -518,7 +518,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     @CacheEvit
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    //@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public ResponseAck submitLiangYouOrder(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单粮油订单仓库订单编码不能为空");
         //获取供应链订单数据
