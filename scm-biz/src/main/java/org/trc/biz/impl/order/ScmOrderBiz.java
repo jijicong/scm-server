@@ -478,12 +478,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private Map<String, Object> getScmOrderMap(String warehouseOrderCode){
         Map<String, Object> map = new HashMap<>();
-        Example example2 = new Example(WarehouseOrder.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andEqualTo("warehouseOrderCode", warehouseOrderCode);
-        List<WarehouseOrder> warehouseOrderList = warehouseOrderService.selectByExample(example2);
-        AssertUtil.notEmpty(warehouseOrderList, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));
-        WarehouseOrder warehouseOrder = warehouseOrderList.get(0);
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
+        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+        AssertUtil.notNull(warehouseOrder, String.format("根据仓库订单编码[%s]查询仓库订单为空", warehouseOrderCode));
+
         PlatformOrder platformOrder = new PlatformOrder();
         platformOrder.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
         platformOrder = platformOrderService.selectOne(platformOrder);
@@ -519,8 +518,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @CacheEvit
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck submitLiangYouOrder(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单粮油订单仓库订单编码不能为空");
         //获取供应链订单数据
@@ -563,6 +561,32 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.error(msg);
         }
         return responseAck;
+    }
+
+    @Override
+    public void submitLiangYouOrders(List<WarehouseOrder> warehouseOrders) {
+        for(WarehouseOrder warehouseOrder: warehouseOrders){
+            threadPool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        //提交订单
+                        ResponseAck responseAck = submitLiangYouOrder(warehouseOrder.getWarehouseOrderCode());
+                        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+                            log.info(responseAck.getMessage());
+                        }else{
+                            log.error(String.format("仓库订单号为[%s]的粮油订单下单失败,错误代码[%s],错误信息：%s;", warehouseOrder.getWarehouseOrderCode(), responseAck.getCode(), responseAck.getMessage()));
+                        }
+                        //下单结果通知渠道
+                        notifyChannelSubmitOrderResult(warehouseOrder);
+                    }catch (Exception e){
+                        String msg = String.format("调用代发商品供应商%s下单接口提交订单%s异常,%s",warehouseOrder.getSupplierName(),
+                                JSONObject.toJSON(warehouseOrder), e.getMessage());
+                        log.error(msg, e);
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -1055,17 +1079,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrderService.insert(platformOrder);
         //创建订单日志
         createOrderLog(warehouseOrderList);
-        //提交供应商订单
-        try{
-            //这里同步推送粮油的订单
-            submitSupplierOrder(warehouseOrderList);
-            /*
-             同步发送仓库的入库通知单
-             */
-        }catch (Exception e){
-            log.error(String.format("多线程提交供应商订单异常,%s", e));
+        //获取粮油仓库订单
+        List<WarehouseOrder> lyWarehouseOrders = new ArrayList<WarehouseOrder>();
+        for(WarehouseOrder warehouseOrder: warehouseOrderList){
+            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
+                lyWarehouseOrders.add(warehouseOrder);
+            }
         }
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", "");
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", lyWarehouseOrders);
     }
 
     /**
@@ -1196,35 +1217,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
     }
 
-    /**
-     * @param warehouseOrderList
-     */
-    private void submitSupplierOrder(List<WarehouseOrder> warehouseOrderList){
-        for(WarehouseOrder warehouseOrder: warehouseOrderList){
-            if(org.apache.commons.lang.StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
-                threadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try{
-                            //提交订单
-                            ResponseAck responseAck = submitLiangYouOrder(warehouseOrder.getWarehouseOrderCode());
-                            if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-                                log.info(responseAck.getMessage());
-                            }else{
-                                log.error(responseAck.getMessage());
-                            }
-                            //下单结果通知渠道
-                            notifyChannelSubmitOrderResult(warehouseOrder);
-                        }catch (Exception e){
-                            String msg = String.format("调用代发商品供应商%s下单接口提交订单%s异常,%s",warehouseOrder.getSupplierName(),
-                                    JSONObject.toJSON(warehouseOrder), e.getMessage());
-                            log.error(msg, e);
-                        }
-                    }
-                });
-            }
-        }
-    }
 
     /**
      * 通知渠道订单下单结果
