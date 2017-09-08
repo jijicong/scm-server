@@ -384,12 +384,12 @@ public class AclResourceBiz implements IAclResourceBiz {
         try {
             AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息不存在");
         } catch (IllegalArgumentException e) {
-            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户授权信息不存在");
+            return jurisdictionList;
         }
         //2.查询用户所拥有的角色
         List<AclUserAccreditRoleRelation> userRoleRelationList = userAccreditInfoRoleRelationService.selectListByUserAcId(aclUserAccreditInfo.getId());
         if (AssertUtil.collectionIsEmpty(userRoleRelationList)) {
-            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户角色信息不存在");
+            return jurisdictionList;
         }
         Long[] roleIds = new Long[userRoleRelationList.size()];
         for (int i = 0; i < userRoleRelationList.size(); i++) {
