@@ -206,7 +206,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         //3.查询用户所有角色下的权限
         List<AclRoleResourceRelation> roleJdRelationList = roleJurisdictionRelationService.selectListByRoleIds(roleIds);
         if (AssertUtil.collectionIsEmpty(roleJdRelationList)) {
-            throw new JurisdictionException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, "用户权限信息不存在");
+            return new ArrayList<>();
         }
         Long[] codes = new Long[roleJdRelationList.size()];
         for (int i = 0; i < roleJdRelationList.size(); i++) {
