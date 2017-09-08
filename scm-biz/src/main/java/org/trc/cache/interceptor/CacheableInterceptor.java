@@ -17,6 +17,8 @@ import org.trc.cache.Cacheable;
 import org.trc.util.RedisUtil;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 @Aspect
@@ -98,7 +100,19 @@ public class CacheableInterceptor {
 		        		result = pjp.proceed();
 		        		if(shouldSet){
 		        			Assert.notNull(key,"生成缓存的时,key值为空,缓存存储异常");
-		        			RedisUtil.setObject(key, result,expireTime);
+                            if(result == null){
+                                return result;
+                            }else if(result instanceof Collection){
+                                if(((Collection) result).size()!=0){
+                                    RedisUtil.setObject(key, result,expireTime);
+                                }
+                            } else if(result instanceof String){
+                                if(StringUtils.isNotBlank((String)result)){
+                                    RedisUtil.setObject(key, result,expireTime);
+                                }
+                            }else {
+                                RedisUtil.setObject(key, result,expireTime);
+                            }
 		        		}
 		        	}
 			}

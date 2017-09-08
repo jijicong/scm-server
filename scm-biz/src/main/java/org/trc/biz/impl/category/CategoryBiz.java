@@ -692,7 +692,9 @@ public class CategoryBiz implements ICategoryBiz {
 
         if (!AssertUtil.collectionIsEmpty(newCategoryBrands) || !AssertUtil.collectionIsEmpty(delBrandIdsList)) {
             List<CategoryBrand> updateCategoryBrandList = categoryBrandService.selectByExample(example);
-            noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_BRAND, null, null, updateCategoryBrandList, null, System.currentTimeMillis());
+            if (!AssertUtil.collectionIsEmpty(updateCategoryBrandList)){
+                noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_BRAND, null, null, updateCategoryBrandList, null, System.currentTimeMillis());
+            }
         }
 
         recordLinkLog(categoryId, aclUserAccreditInfo, "品牌");
@@ -894,7 +896,9 @@ public class CategoryBiz implements ICategoryBiz {
 
         if (!AssertUtil.collectionIsEmpty(newCategoryProperties) || !AssertUtil.collectionIsEmpty(delProperties) || !AssertUtil.collectionIsEmpty(sortProperties)) {
             List<CategoryProperty> updateCategoryProperty = categoryPropertyService.selectByExample(example);
-            noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY, null, null, null, updateCategoryProperty, System.currentTimeMillis());
+            if(AssertUtil.collectionIsEmpty(updateCategoryProperty)){
+                noticeCategory(TrcActionTypeEnum.EDIT_CATEGORY_PROPERTY, null, null, null, updateCategoryProperty, System.currentTimeMillis());
+            }
         }
         recordLinkLog(categoryId, aclUserAccreditInfo, "属性");
 

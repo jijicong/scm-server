@@ -19,6 +19,7 @@ import org.trc.domain.category.*;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
@@ -198,6 +199,11 @@ public class TaiRanResource {
         ResponseAck responseAck = null;
         try{
             responseAck = scmOrderBiz.reciveChannelOrder(orderInfo);
+            List<WarehouseOrder> lyWarehouseOrders = (List<WarehouseOrder>)responseAck.getData();
+            if(lyWarehouseOrders.size() > 0){
+                //粮油下单
+                scmOrderBiz.submitLiangYouOrders(lyWarehouseOrders);
+            }
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
             responseAck = new ResponseAck(code, e.getMessage(), "");

@@ -75,6 +75,13 @@ public interface IScmOrderBiz {
     ResponseAck submitLiangYouOrder(String warehouseOrderCode);
 
     /**
+     *提交粮油订单
+     * @param warehouseOrders
+     * @return
+     */
+    void submitLiangYouOrders(List<WarehouseOrder> warehouseOrders);
+
+    /**
      * 渠道订单请求流水
      * @param orderInfo
      * @return
