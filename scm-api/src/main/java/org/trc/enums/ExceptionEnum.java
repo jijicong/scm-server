@@ -124,6 +124,7 @@ public enum ExceptionEnum{
     INVOKE_JD_QUERY_INTERFACE_FAIL("600115","调用京东查询接口失败"),
     ORDER_NOTIFY_TIME_OUT("600116","订单同步超时"),
     ORDER_ITEMS_ERROR("600117","订单商品错误"),
+    SUBMIT_LY_ORDER("600118","调用京东下单服务异常"),
 
     USER_BE_FORBIDDEN("900001","该用户已被停用，请联系管理员"),
     USER_NOT_LOGIN("900002","用户未登录"),
