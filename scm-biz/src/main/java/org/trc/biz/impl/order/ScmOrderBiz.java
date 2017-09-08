@@ -1490,15 +1490,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SupplierOrderLogistics> supplierOrderLogisticsList = new ArrayList<SupplierOrderLogistics>();
         //保存物流信息
         for(Logistic logistic: logisticForm.getLogistics()){
-            SupplierOrderLogistics supplierOrderLogistics = null;
-            try{
-                //获取供应商订单物流信息
-                supplierOrderLogistics = getSupplierOrderLogistics(supplierOrderInfo, logistic, logisticForm.getType());
-                //保存的物流信息 or 更新物流信息
-                saveSupplierOrderLogistics(supplierOrderLogistics);
-                supplierOrderLogisticsList.add(supplierOrderLogistics);
-            }catch (Exception e){
-                log.error(String.format("保存供应商物流信息%s异常,%s", JSONObject.toJSON(supplierOrderLogistics), e.getMessage()), e);
+            if(StringUtils.equals(supplierOrderInfo.getSupplierOrderCode(), logistic.getSupplierOrderCode())){
+                SupplierOrderLogistics supplierOrderLogistics = null;
+                try{
+                    //获取供应商订单物流信息
+                    supplierOrderLogistics = getSupplierOrderLogistics(supplierOrderInfo, logistic, logisticForm.getType());
+                    //保存的物流信息 or 更新物流信息
+                    saveSupplierOrderLogistics(supplierOrderLogistics);
+                    supplierOrderLogisticsList.add(supplierOrderLogistics);
+                }catch (Exception e){
+                    log.error(String.format("保存供应商物流信息%s异常,%s", JSONObject.toJSON(supplierOrderLogistics), e.getMessage()), e);
+                }
             }
         }
 
@@ -1580,7 +1582,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(supplierOrderInfo.getSupplierOrderCode()))
             supplierOrderLogistics.setSupplierParentOrderCode(supplierOrderInfo.getSupplierOrderCode());
         supplierOrderLogistics.setSupplierOrderCode(logistic.getSupplierOrderCode());
-        supplierOrderLogistics.setLogisticsInfo(JSONArray.toJSONString(logistic.getSkus()));
         supplierOrderLogistics.setType(type);
         if(StringUtils.equals(type, LogsticsTypeEnum.WAYBILL_NUMBER.getCode())){//物流单号
             supplierOrderLogistics.setWaybillNumber(logistic.getWaybillNumber());
