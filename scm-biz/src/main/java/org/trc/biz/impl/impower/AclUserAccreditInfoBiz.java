@@ -111,7 +111,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    @Cacheable(key = "#trc+#page.pageNo+#page.pageSize+#form", isList = true)
     public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
