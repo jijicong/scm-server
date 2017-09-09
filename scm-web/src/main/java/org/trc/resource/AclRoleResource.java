@@ -33,8 +33,8 @@ public class AclRoleResource {
     @GET
     @Path(SupplyConstants.Role.ROLE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response rolePage(@BeanParam RoleForm form, @BeanParam Pagenation<AclRole> page){
-        return ResultUtil.createSuccessPageResult(roleBiz.rolePage(form,page));
+    public Response rolePage(@BeanParam RoleForm form, @BeanParam Pagenation<AclRole> page, @Context ContainerRequestContext requestContext){
+        return ResultUtil.createSuccessPageResult(roleBiz.rolePage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
     //修改角色信息以及与之对应的角色权限关联表信息的修改
     @PUT

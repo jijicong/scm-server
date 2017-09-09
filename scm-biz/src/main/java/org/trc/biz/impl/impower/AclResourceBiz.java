@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.impower.*;
@@ -41,6 +42,8 @@ public class AclResourceBiz implements IAclResourceBiz {
     private final static Integer WHOLE_JURISDICTION_ID = 1;//全局角色的所属
 
     private final static Integer CHANNEL_JURISDICTION_ID = 2;//渠道角色的所属
+    @Value("${admin.user.id}")
+    private String ADMIN_ID;
 
     @Override
     public List<AclResource> findWholeJurisdiction() {
@@ -55,13 +58,28 @@ public class AclResourceBiz implements IAclResourceBiz {
 
 
     @Override
-    public List<AclResource> findWholeJurisdictionModule() {
+    public List<AclResource> findWholeJurisdictionModule(AclUserAccreditInfo userAccreditInfo) {
         AclResource aclResource = new AclResource();
         aclResource.setBelong(WHOLE_JURISDICTION_ID);
         aclResource.setType(ZeroToNineEnum.ZERO.getCode());
         List<AclResource> wholeAclResourceList = jurisdictionService.select(aclResource);
         AssertUtil.notNull(wholeAclResourceList, "查询全局权限列表,数据库操作失败");
-        return wholeAclResourceList;
+        List<AclResource> wholeAclResourceList2 = new ArrayList<>();
+        if (StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
+            for (int i = 0; i <wholeAclResourceList.size() ; i++) {
+                AclResource resource =wholeAclResourceList.get(i);
+                if (resource.getCode().equals(10402L)||
+                        resource.getCode().equals(10404L)|| resource.getCode().equals(10405L)||
+                        resource.getCode().equals(10406L)||resource.getCode().equals(10501L)||
+                        resource.getCode().equals(105L)){
+             }else {
+                    wholeAclResourceList2.add(resource);
+                }
+           }
+        }else {
+            return wholeAclResourceList;
+        }
+        return wholeAclResourceList2;
     }
 
     @Override
@@ -86,10 +104,10 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    public List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId) {
+    public List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId, AclUserAccreditInfo userAccreditInfo) {
         AssertUtil.notNull(roleId, "根据角色的id,查询被选中的权限,角色id为空");
         // 1.查询对应的权限列表
-        List<AclResource> wholeAclResourceList = findWholeJurisdictionModule();
+        List<AclResource> wholeAclResourceList = findWholeJurisdictionModule(userAccreditInfo);
         //2.查询对应角色被选中权限
         List<Long> JurisdictionIdList = roleJurisdictionRelationService.selectJurisdictionIdList(roleId);
         AssertUtil.notNull(JurisdictionIdList, "查询全局角色对应的权限关系,数据库操作失败");

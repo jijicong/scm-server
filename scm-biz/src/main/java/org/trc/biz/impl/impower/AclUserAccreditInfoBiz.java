@@ -18,6 +18,7 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,6 +101,9 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     @Autowired
     private IPageNationService pageNationService;
+
+    @Value("${admin.user.id}")
+    private String ADMIN_ID;
 
 
     /**
@@ -299,7 +303,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * roleType为空时查询所有角色
      */
     @Override
-    public List<AclRole> findChannelOrWholeJur(String roleType) {
+    public List<AclRole> findChannelOrWholeJur(String roleType,AclUserAccreditInfo userAccreditInfo) {
         Example example = new Example(AclRole.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isBlank(roleType)) {
@@ -310,7 +314,18 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         }
         criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         example.orderBy("updateTime").desc();
-        return roleService.selectByExample(example);
+        List<AclRole> roleList = roleService.selectByExample(example);
+        if (StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)) {
+            List<AclRole> roleList2 =new ArrayList<>();
+            for (int i = 0; i < roleList.size(); i++) {
+                AclRole aclRole = roleList.get(i);
+                if (!(StringUtils.equals(aclRole.getName(),"渠道角色")||StringUtils.equals(aclRole.getName(),"全局角色"))){
+                    roleList2.add(aclRole);
+                }
+            }
+            return roleList2;
+        }
+        return roleList;
     }
 
     @Override

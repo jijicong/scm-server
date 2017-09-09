@@ -24,7 +24,7 @@ public interface IAclResourceBiz {
      *查询全局的资源权限:模块资源
      * @return
      */
-    List<AclResource> findWholeJurisdictionModule();
+    List<AclResource> findWholeJurisdictionModule(AclUserAccreditInfo userAccreditInfo);
 
     /**
      * 查询渠道的资源权限:三级资源
@@ -102,7 +102,7 @@ public interface IAclResourceBiz {
 
     List<Map<String,Object>> getHtmlJurisdiction(String userId);
 
-    List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId);
+    List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId, AclUserAccreditInfo userAccreditInfo);
 
     List<AclResource> findChannelJurisdictionAndCheckedModuleByRoleId(Long roleId);
 }

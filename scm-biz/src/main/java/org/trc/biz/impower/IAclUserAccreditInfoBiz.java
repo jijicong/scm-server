@@ -82,7 +82,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    List<AclRole> findChannelOrWholeJur(String roleType);
+    List<AclRole> findChannelOrWholeJur(String roleType,AclUserAccreditInfo userAccreditInfo);
 
     /**
      * 新增授权

@@ -104,9 +104,9 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ROLE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findChaAndWhole(@QueryParam("roleType") String roleType) {
+    public Response findChaAndWhole(@QueryParam("roleType") String roleType, @Context ContainerRequestContext requestContext) {
 
-        return ResultUtil.createSuccessResult("查询对应角色成功", userAccreditInfoBiz.findChannelOrWholeJur(roleType));
+        return ResultUtil.createSuccessResult("查询对应角色成功", userAccreditInfoBiz.findChannelOrWholeJur(roleType, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 
     }
 
@@ -159,7 +159,7 @@ public class AclUserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.NAME)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNameByPhone(@Context ContainerRequestContext requestContext) {
-        AclUserAccreditInfo aclUserAccreditInfo= (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         return ResultUtil.createSuccessResult("查询成功", aclUserAccreditInfo.getName());
     }
 

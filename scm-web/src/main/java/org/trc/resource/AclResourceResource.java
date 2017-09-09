@@ -41,8 +41,9 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE_MODULE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findWholeJurisdictionModule(){
-        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionModule());
+    public Response findWholeJurisdictionModule(@Context ContainerRequestContext requestContext){
+        AclUserAccreditInfo userAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionModule(userAccreditInfo));
     }
 
     @GET
@@ -85,17 +86,16 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_WHOLE_MODULE + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findWholeJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
-
-        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedModuleByRoleId(roleId));
+    public Response findWholeJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId,@Context ContainerRequestContext requestContext){
+        AclUserAccreditInfo userAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findWholeJurisdictionAndCheckedModuleByRoleId(roleId,userAccreditInfo));
 
     }
 
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_CHANNEL_MODULE + "/{roleId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findChannelJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId){
-
+    public Response findChannelJurisdictionAndCheckedModuleByRoleId(@PathParam("roleId") Long roleId,@Context ContainerRequestContext requestContext){
         return ResultUtil.createSuccessResult("查询全局角色成功", jurisdictionBiz.findChannelJurisdictionAndCheckedModuleByRoleId(roleId));
 
     }

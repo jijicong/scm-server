@@ -1,6 +1,8 @@
 package org.trc.service;
 
 import com.alibaba.fastjson.JSONObject;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.transport.TransportClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,9 @@ import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.category.Brand;
 import org.trc.form.category.BrandForm;
 import org.trc.util.Pagenation;
+import org.trc.util.TransportClientUtil;
+
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
  * Created by hzwyz on 2017/5/27 0027.
@@ -38,8 +43,21 @@ public class BrandBizTest {
 
     @Test
     public void Test(){
-        System.out.println(JSONObject.toJSONString(aclResourceBiz.getHtmlJurisdiction("E2E4BDAD80354EFAB6E70120C271968C")));
+
     }
 
+    public void updateEsBrand(Brand brand) throws Exception{
+        TransportClient clientUtil = TransportClientUtil.getTransportClient();
+
+        UpdateRequest updateRequest = new UpdateRequest("item_brand", "item_brand_type", String.valueOf(brand.getId()))
+                .doc(jsonBuilder()
+                        .startObject()
+                        .field("name", brand.getName())
+                        .field("alise", brand.getAlise())
+                        .field("web_url", brand.getWebUrl())
+                        .endObject());
+        clientUtil.update(updateRequest).get();
+
+    }
 
 }

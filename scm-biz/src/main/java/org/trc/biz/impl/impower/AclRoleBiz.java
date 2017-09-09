@@ -1,8 +1,10 @@
 package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +31,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import javax.annotation.Resource;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sone on 2017/5/11.
@@ -54,6 +54,8 @@ public class AclRoleBiz implements IAclRoleBiz {
     private IAclUserAccreditRoleRelationService userAccreditInfoRoleRelationService;
     @Resource
     private ILogInfoService logInfoService;
+    @Value("${admin.user.id}")
+    private String ADMIN_ID;
 
 
     @Override
@@ -125,7 +127,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
 
     @Override
-    public Pagenation<AclRole> rolePage(RoleForm form, Pagenation<AclRole> page) {
+    public Pagenation<AclRole> rolePage(RoleForm form, Pagenation<AclRole> page,AclUserAccreditInfo userAccreditInfo) {
 
         Example example=new Example(AclRole.class);
         Example.Criteria criteria = example.createCriteria();
@@ -140,6 +142,18 @@ public class AclRoleBiz implements IAclRoleBiz {
         }
         example.orderBy("updateTime").desc();
         Pagenation<AclRole> pagination = roleService.pagination(example,page,form);
+        if (StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
+            List<AclRole> aclRoleListPage =new ArrayList<>();
+            List<AclRole> aclRoleList =pagination.getResult();
+            for (int i = 0; i <aclRoleList.size() ; i++) {
+                AclRole aclRole =aclRoleList.get(i);
+                if (aclRole.getName().equals("全局角色")||aclRole.getName().equals("渠道角色")){
+                }else {
+                    aclRoleListPage.add(aclRole);
+                }
+            }
+            pagination.setResult(aclRoleListPage);
+        }
         userNameUtilService.handleUserName(pagination.getResult());
         return pagination;
 

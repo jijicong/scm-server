@@ -18,6 +18,7 @@
                 <value>classpath:config/dev/redis.properties</value>
                 <value>classpath:config/dev/config.properties</value>
                 <value>classpath:config/dev/cron.properties</value>
+                <value>classpath:config/dev/admin.properties</value>
             </list>
         </property>
         <property name="fileEncoding">

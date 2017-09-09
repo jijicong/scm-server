@@ -35,7 +35,7 @@ public interface IAclRoleBiz {
      * @param page 页面信息
      * @return
      */
-    Pagenation<AclRole> rolePage(RoleForm form, Pagenation<AclRole> page);
+    Pagenation<AclRole> rolePage(RoleForm form, Pagenation<AclRole> page,AclUserAccreditInfo userAccreditInfo);
     /**
      * 根据角色名查询
      * @param name 角色名称

@@ -18,6 +18,7 @@
                 <value>classpath:config/${package.environment}/redis.properties</value>
                 <value>classpath:config/${package.environment}/config.properties</value>
                 <value>classpath:config/${package.environment}/cron.properties</value>
+                <value>classpath:config/${package.environment}/admin.properties</value>
             </list>
         </property>
         <property name="fileEncoding">
