@@ -1,5 +1,7 @@
 package org.trc.form.purchase;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -80,14 +82,6 @@ public class PurchaseOrderForm extends QueryModel{
 
     @Override
     public String toString() {
-        return "PurchaseOrderForm{" +
-                "purchaseOrderCode='" + purchaseOrderCode + '\'' +
-                ", supplierName='" + supplierName + '\'' +
-                ", purchaseName='" + purchaseName + '\'' +
-                ", purchaseStatus='" + purchaseStatus + '\'' +
-                ", purchaseType='" + purchaseType + '\'' +
-                ", orderBy='" + orderBy + '\'' +
-                ", order='" + order + '\'' +
-                '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

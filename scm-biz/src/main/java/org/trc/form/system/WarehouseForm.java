@@ -1,5 +1,7 @@
 package org.trc.form.system;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -27,13 +29,6 @@ public class WarehouseForm extends QueryModel{
 
     @Override
     public String toString() {
-        return "WarehouseForm{" +
-                "name='" + name + '\'' +
-                ", isValid='" + isValid + '\'' +
-                ", startDate='" + startDate + '\'' +
-                ", endDate='" + endDate + '\'' +
-                ", orderBy='" + orderBy + '\'' +
-                ", order='" + order + '\'' +
-                '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

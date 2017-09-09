@@ -1,5 +1,7 @@
 package org.trc.form.warehouse;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -74,12 +76,6 @@ public class WarehouseNoticeForm extends QueryModel{
 
     @Override
     public String toString() {
-        return "WarehouseNoticeForm{" +
-                "warehouseNoticeCode='" + warehouseNoticeCode + '\'' +
-                ", purchaseOrderCode='" + purchaseOrderCode + '\'' +
-                ", purchaseType='" + purchaseType + '\'' +
-                ", warehouseNoticeStatus='" + warehouseNoticeStatus + '\'' +
-                ", supplierName='" + supplierName + '\'' +
-                '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
