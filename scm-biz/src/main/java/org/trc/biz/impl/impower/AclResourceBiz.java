@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.impower.*;
 import org.trc.enums.ExceptionEnum;
@@ -442,6 +443,35 @@ public class AclResourceBiz implements IAclResourceBiz {
             }
             jurisdictionMap.put("codeList", longSet);
             jurisdictionList.add(jurisdictionMap);
+        }
+        //两个商品管理需要合并
+        if(!AssertUtil.collectionIsEmpty(jurisdictionList)){
+            List<Map<String, Object>> needRemoveJurisdictionList = new ArrayList<>();
+            for (Map<String, Object> map1: jurisdictionList) {
+                if(map1.get("parentCode").equals(102l)){
+                    for (Map<String, Object> map2: jurisdictionList ) {
+                        if(map2.get("parentCode").equals(201l)){
+                            Set<Long> longSet1= (Set<Long>) map1.get("codeList");
+                            Set<Long> longSet2= (Set<Long>) map2.get("codeList");
+                            longSet1.addAll(longSet2);
+                            needRemoveJurisdictionList.add(map2);
+                        }
+                    }
+                }
+                if(map1.get("parentCode").equals(103l)){
+                    for (Map<String, Object> map2: jurisdictionList ) {
+                        if(map2.get("parentCode").equals(202l)){
+                            Set<Long> longSet1= (Set<Long>) map1.get("codeList");
+                            Set<Long> longSet2= (Set<Long>) map2.get("codeList");
+                            longSet1.addAll(longSet2);
+                            needRemoveJurisdictionList.add(map2);
+                        }
+                    }
+                }
+            }
+            if(!AssertUtil.collectionIsEmpty(needRemoveJurisdictionList)){
+                jurisdictionList.removeAll(needRemoveJurisdictionList);
+            }
         }
         return jurisdictionList;
     }
