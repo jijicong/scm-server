@@ -315,7 +315,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         example.orderBy("updateTime").desc();
         List<AclRole> roleList = roleService.selectByExample(example);
-        if (StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)) {
+        if (!StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)) {
             List<AclRole> roleList2 =new ArrayList<>();
             for (int i = 0; i < roleList.size(); i++) {
                 AclRole aclRole = roleList.get(i);

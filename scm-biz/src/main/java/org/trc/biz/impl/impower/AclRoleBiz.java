@@ -142,7 +142,7 @@ public class AclRoleBiz implements IAclRoleBiz {
         }
         example.orderBy("updateTime").desc();
         Pagenation<AclRole> pagination = roleService.pagination(example,page,form);
-        if (StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
+        if (!StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
             List<AclRole> aclRoleListPage =new ArrayList<>();
             List<AclRole> aclRoleList =pagination.getResult();
             for (int i = 0; i <aclRoleList.size() ; i++) {

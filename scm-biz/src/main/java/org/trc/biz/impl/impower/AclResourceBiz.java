@@ -66,7 +66,7 @@ public class AclResourceBiz implements IAclResourceBiz {
         List<AclResource> wholeAclResourceList = jurisdictionService.select(aclResource);
         AssertUtil.notNull(wholeAclResourceList, "查询全局权限列表,数据库操作失败");
         List<AclResource> wholeAclResourceList2 = new ArrayList<>();
-        if (StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
+        if (!StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
             for (int i = 0; i <wholeAclResourceList.size() ; i++) {
                 AclResource resource =wholeAclResourceList.get(i);
                 if (resource.getCode().equals(10402L)||
