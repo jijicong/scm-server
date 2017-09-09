@@ -17,13 +17,13 @@ public class QueryModel implements Serializable{
 
     @QueryParam("isValid")
     @Length(max = 2, message = "是否启用编码长度不能超过2个")
-    private String isValid;
+    protected String isValid;
     @QueryParam("startDate")
     @Length(max = 10, message = "开始日期长度不能超过2个")
-    private String startDate;//开始日期，格式：yyyy-mm-dd
+    protected String startDate;//开始日期，格式：yyyy-mm-dd
     @QueryParam("endDate")
     @Length(max = 10, message = "截止日期长度不能超过2个")
-    private String endDate;//截止日期，格式：yyyy-mm-dd
+    protected String endDate;//截止日期，格式：yyyy-mm-dd
 
     /**
      * 排序方向变量

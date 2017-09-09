@@ -29,6 +29,9 @@ public class WarehouseForm extends QueryModel{
     public String toString() {
         return "WarehouseForm{" +
                 "name='" + name + '\'' +
+                ", isValid='" + isValid + '\'' +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
                 ", orderBy='" + orderBy + '\'' +
                 ", order='" + order + '\'' +
                 '}';
