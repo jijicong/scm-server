@@ -126,7 +126,7 @@ public enum ExceptionEnum{
     ORDER_ITEMS_ERROR("600117","订单商品错误"),
     SUBMIT_LY_ORDER("600118","调用京东下单服务异常"),
 
-    USER_BE_FORBIDDEN("900001","该用户已被停用，请联系管理员"),
+    USER_BE_FORBIDDEN("900001","用户授权信息不存在或用户已经被禁用!"),
     USER_NOT_LOGIN("900002","用户未登录"),
     USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),
 
