@@ -92,7 +92,12 @@ public class JerseyResourceAop {
             }
             //执行方法
             resultObj = point.proceed();
-        } catch (Exception e) {
+        } catch (NullPointerException e){
+            String errorMsg = ExceptionUtil.handlerException(e, targetClass, method.getName());
+            log.error(errorMsg, e);
+            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "系统繁忙!", "");
+            resultObj = Response.status(Response.Status.BAD_REQUEST).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+        }catch (Exception e) {
             String errorMsg = ExceptionUtil.handlerException(e, targetClass, method.getName());
             log.error(errorMsg, e);
             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");
