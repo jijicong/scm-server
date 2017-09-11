@@ -93,7 +93,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //是否正式提交订单:1-是,0-否
     @Value("${submit.order.status}")
     private String submitOrderStatus;
-
+    //京东下单方式 0--预占库存方式 1--不是预占库存
+    @Value("${jd.submit.state}")
+    private String jdSubmitState;
 
 
     @Autowired
@@ -637,7 +639,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         jingDongOrder.setInvoiceContent(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));////目前选择1-明细
         jingDongOrder.setPaymentType(JdPaymentTypeEnum.ON_LINE.getCode());
         jingDongOrder.setIsUseBalance(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
-        jingDongOrder.setSubmitState(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));//预占库存
+        jingDongOrder.setSubmitState(Integer.parseInt(jdSubmitState));//预占库存
         jingDongOrder.setInvoiceName(platformOrder.getReceiverName());
         jingDongOrder.setInvoiceAddress(platformOrder.getReceiverAddress());
         jingDongOrder.setDoOrderPriceMode(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));//下单价格模式,1-必需验证客户端订单价格快照

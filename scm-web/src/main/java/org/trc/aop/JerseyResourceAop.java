@@ -92,7 +92,7 @@ public class JerseyResourceAop {
             }
             //执行方法
             resultObj = point.proceed();
-        } catch (Exception e) {
+        }catch (Exception e) {
             String errorMsg = ExceptionUtil.handlerException(e, targetClass, method.getName());
             log.error(errorMsg, e);
             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), e.getMessage(), "");

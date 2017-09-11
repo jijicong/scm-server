@@ -126,6 +126,8 @@ public class ExceptionUtil {
 		}else if(StringUtils.equals(exceptionName, JurisdictionException.class.getSimpleName())){
 			JurisdictionException jurisdictionException= (JurisdictionException) e;
 			exceptionEnum=jurisdictionException.getExceptionEnum();
+		}else if(StringUtils.equals(exceptionName, NullPointerException.class.getSimpleName())){
+			exceptionEnum = ExceptionEnum.SYSTEM_BUSY;
 		}else{
 			exceptionEnum = ExceptionEnum.SYSTEM_EXCEPTION;
 		}
