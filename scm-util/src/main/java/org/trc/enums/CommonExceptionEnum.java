@@ -12,6 +12,8 @@ public enum CommonExceptionEnum {
     PARAM_CHECK_EXCEPTION("2000100","参数校验错误"),
     JAVA_BEAN_TO_MAP_EXCEPTION("2000101","JavaBean转Map数据转换异常"),
     MAPJ_TO_AVA_BEAN_EXCEPTION("2000102","Map转JavaBean数据转换异常"),
+    NULL_EXCEPTION("2000103","系统繁忙"),
+
 
     NOVALID("0","停用");
 
