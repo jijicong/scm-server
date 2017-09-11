@@ -571,7 +571,26 @@ public class TrcBiz implements ITrcBiz {
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
         example.orderBy("supplierCode").desc();
-        return externalItemSkuService.pagination(example, page, queryModel);
+        page = externalItemSkuService.pagination(example, page, queryModel);
+        setMoneyWeight(page.getResult());
+        return page;
+    }
+
+    /**
+     * 设置金额和重量
+     * @param externalItemSkuList
+     */
+    private void setMoneyWeight(List<ExternalItemSku> externalItemSkuList){
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            if(null != externalItemSku.getSupplierPrice())
+                externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(externalItemSku.getSupplierPrice()));
+            if(null != externalItemSku.getSupplyPrice())
+                externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(externalItemSku.getSupplyPrice()));
+            if(null != externalItemSku.getMarketReferencePrice())
+                externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(externalItemSku.getMarketReferencePrice()));
+            if(null != externalItemSku.getWeight())
+                externalItemSku.setWeight(CommonUtil.getWeightLong(externalItemSku.getWeight()));
+        }
     }
 
     /**

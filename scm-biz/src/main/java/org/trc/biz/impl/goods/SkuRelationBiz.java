@@ -19,8 +19,10 @@ import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonUtil;
 import tk.mybatis.mapper.entity.Example;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +63,6 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         return skusList;
     }
 
-
     private void setSkuStock(List<Skus> skusList){
         StringBuilder sb = new StringBuilder();
         for(Skus skus: skusList){
@@ -96,7 +97,26 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", Arrays.asList(skuCodes));
         criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
-        return externalItemSkuService.selectByExample(example);
+        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example);
+        setMoneyWeight(externalItemSkuList);
+        return externalItemSkuList;
+    }
+
+    /**
+     * 设置金额和重量
+     * @param externalItemSkuList
+     */
+    private void setMoneyWeight(List<ExternalItemSku> externalItemSkuList){
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            if(null != externalItemSku.getSupplierPrice())
+                externalItemSku.setSupplierPrice(CommonUtil.getMoneyLong(externalItemSku.getSupplierPrice()));
+            if(null != externalItemSku.getSupplyPrice())
+                externalItemSku.setSupplyPrice(CommonUtil.getMoneyLong(externalItemSku.getSupplyPrice()));
+            if(null != externalItemSku.getMarketReferencePrice())
+                externalItemSku.setMarketReferencePrice(CommonUtil.getMoneyLong(externalItemSku.getMarketReferencePrice()));
+            if(null != externalItemSku.getWeight())
+                externalItemSku.setWeight(CommonUtil.getWeightLong(externalItemSku.getWeight()));
+        }
     }
 
 }
