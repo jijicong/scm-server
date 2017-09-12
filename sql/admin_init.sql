@@ -271,11 +271,11 @@ CREATE TABLE `acl_role` (
 -- ----------------------------
 -- Records of acl_role
 -- ----------------------------
-INSERT INTO `acl_role` VALUES ('1', '采购组员', 'channelJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-07-27 18:02:09', '2017-07-27 18:03:23', '');
-INSERT INTO `acl_role` VALUES ('4', '全局角色', 'wholeJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-09-09 19:24:37', '2017-09-09 19:24:37', '');
-INSERT INTO `acl_role` VALUES ('5', '渠道角色', 'channelJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-09-09 19:24:50', '2017-09-09 19:24:50', '');
-INSERT INTO `acl_role` VALUES ('6', '一般全局角色', 'wholeJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-09-09 19:44:39', '2017-09-09 19:44:39', '');
-INSERT INTO `acl_role` VALUES ('7', '一般渠道角色', 'channelJurisdiction', '1', 'E2E4BDAD80354EFAB6E70120C271968C', '0', '2017-09-09 19:44:53', '2017-09-09 19:44:53', '');
+INSERT INTO `acl_role` VALUES ('1', '采购组员', 'channelJurisdiction', '1', 'B9A33A668F054D70AA9AEB383D9C13FA', '0', '2017-07-27 18:02:09', '2017-07-27 18:03:23', '');
+INSERT INTO `acl_role` VALUES ('4', '全局角色', 'wholeJurisdiction', '1', 'B9A33A668F054D70AA9AEB383D9C13FA', '0', '2017-09-09 19:24:37', '2017-09-09 19:24:37', '');
+INSERT INTO `acl_role` VALUES ('5', '渠道角色', 'channelJurisdiction', '1', 'B9A33A668F054D70AA9AEB383D9C13FA', '0', '2017-09-09 19:24:50', '2017-09-09 19:24:50', '');
+INSERT INTO `acl_role` VALUES ('6', '一般全局角色', 'wholeJurisdiction', '1', 'B9A33A668F054D70AA9AEB383D9C13FA', '0', '2017-09-09 19:44:39', '2017-09-09 19:44:39', '');
+INSERT INTO `acl_role` VALUES ('7', '一般渠道角色', 'channelJurisdiction', '1', 'B9A33A668F054D70AA9AEB383D9C13FA', '0', '2017-09-09 19:44:53', '2017-09-09 19:44:53', '');
 -- ----------------------------
 -- Table structure for acl_role_resource_relation
 -- ----------------------------
@@ -360,7 +360,7 @@ CREATE TABLE `acl_user_accredit_info` (
 -- ----------------------------
 -- Records of acl_user_accredit_info
 -- ----------------------------
-INSERT INTO `acl_user_accredit_info` VALUES ('25', 'E2E4BDAD80354EFAB6E70120C271968C', '15757195796', 'admin', 'mixtureUser', 'QD001', 'admin', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-07-27 17:40:18', '2017-07-27 17:40:18');
+INSERT INTO `acl_user_accredit_info` VALUES ('25', 'B9A33A668F054D70AA9AEB383D9C13FA', '15068839416', 'admin', 'mixtureUser', 'QD001', 'admin', '1', '0', 'B9A33A668F054D70AA9AEB383D9C13FA', '2017-07-27 17:40:18', '2017-07-27 17:40:18');
 
 -- ----------------------------
 -- Table structure for acl_user_accredit_role_relation
@@ -382,6 +382,6 @@ CREATE TABLE `acl_user_accredit_role_relation` (
 -- ----------------------------
 -- Records of acl_user_accredit_role_relation
 -- ----------------------------
-INSERT INTO `acl_user_accredit_role_relation` VALUES ('3', '25', 'E2E4BDAD80354EFAB6E70120C271968C', '5', '1', NULL, 'E2E4BDAD80354EFAB6E70120C271968C', '2017-09-09 19:28:52', '2017-09-09 19:33:44');
-INSERT INTO `acl_user_accredit_role_relation` VALUES ('4', '25', 'E2E4BDAD80354EFAB6E70120C271968C', '4', '1', NULL, 'E2E4BDAD80354EFAB6E70120C271968C', '2017-09-09 19:28:52', '2017-09-09 19:47:08');
+INSERT INTO `acl_user_accredit_role_relation` VALUES ('3', '25', 'B9A33A668F054D70AA9AEB383D9C13FA', '5', '1', NULL, 'B9A33A668F054D70AA9AEB383D9C13FA', '2017-09-09 19:28:52', '2017-09-09 19:33:44');
+INSERT INTO `acl_user_accredit_role_relation` VALUES ('4', '25', 'B9A33A668F054D70AA9AEB383D9C13FA', '4', '1', NULL, 'B9A33A668F054D70AA9AEB383D9C13FA', '2017-09-09 19:28:52', '2017-09-09 19:47:08');
 
