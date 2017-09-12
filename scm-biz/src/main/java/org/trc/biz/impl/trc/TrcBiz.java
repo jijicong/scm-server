@@ -1343,17 +1343,19 @@ public class TrcBiz implements ITrcBiz {
             bool = true;
             criteria.andEqualTo("sort", queryModel.getSort());
         }
-        if (!StringUtils.isBlank(queryModel.getIsValid())) {
-            bool = true;
-            criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
         example.orderBy("sort").asc();
         example.orderBy("updateTime").desc();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
+            if (!StringUtils.isBlank(queryModel.getIsValid())) {
+                bool = true;
+                if(StringUtils.equals(flag,ZeroToNineEnum.ZERO.getCode())){
+                    criteria.andEqualTo("isValid", queryModel.getIsValid());
+                }
+            }
             page = propertyService.pagination(example, page, queryModel);
             List<Property> list = page.getResult();
             for (Property property : list){ //创建人暂时不返回给trc  ：为属性赋值属性值
-                endowPropertyValue(property);
+                endowPropertyValue(property, queryModel.getIsValid());
             }
             page.setResult(list);
             return page;
@@ -1384,6 +1386,9 @@ public class TrcBiz implements ITrcBiz {
             }
             if(!StringUtils.isBlank(queryModel.getPropertyValue())){
                 criteria1.andLike("value","%"+queryModel.getPropertyValue()+"%");
+            }
+            if (!StringUtils.isBlank(queryModel.getIsValid())) {
+                criteria1.andEqualTo("isValid", queryModel.getIsValid());
             }
             Pagenation<PropertyValue> page2 = new Pagenation<PropertyValue>();
             BeanUtils.copyProperties(page, page2);
@@ -1442,12 +1447,12 @@ public class TrcBiz implements ITrcBiz {
         if (!StringUtils.isBlank(queryModel.getLevel())) {
             criteria.andEqualTo("level", queryModel.getLevel());
         }
-        if (!StringUtils.isBlank(queryModel.getIsValid())) {
-            criteria.andEqualTo("isValid", queryModel.getIsValid());
-        }
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), queryModel.getFlag())){//查询分类信息
+            if (!StringUtils.isBlank(queryModel.getIsValid())) {
+                criteria.andEqualTo("isValid", queryModel.getIsValid());
+            }
             return categoryService.pagination(example, page, queryModel);
         }else {//查询分类子类信息
             List<Category> categoryList = categoryService.selectByExample(example); //查询当前的类
@@ -1460,6 +1465,9 @@ public class TrcBiz implements ITrcBiz {
                 criteria = example.createCriteria();
                 String ids = sb.substring(0, sb.length()-1);
                 String condition = String.format("parent_id in (%s)", ids);
+                if (!StringUtils.isBlank(queryModel.getIsValid())) {
+                    condition = String.format("parent_id in (%s) and is_valid = \"%s\"", ids, queryModel.getIsValid());
+                }
                 criteria.andCondition(condition);
                 return categoryService.pagination(example, page, new CategoryForm2());
             }else {
@@ -1497,11 +1505,14 @@ public class TrcBiz implements ITrcBiz {
     }
 
     //为属性赋予属性值
-    private void endowPropertyValue(Property property ){
+    private void endowPropertyValue(Property property, String isValid){
 
         List<PropertyValueForTrc> propertyValueForTrcs = new ArrayList<PropertyValueForTrc>();
         PropertyValue propertyValue = new PropertyValue();
         propertyValue.setPropertyId(property.getId());
+        if(StringUtils.isNotBlank(isValid)){
+            propertyValue.setIsValid(isValid);
+        }
         List<PropertyValue> propertyValueList = propertyValueService.select(propertyValue);
         for (PropertyValue pv : propertyValueList) {
             PropertyValueForTrc propertyValueForTrc = new PropertyValueForTrc();
