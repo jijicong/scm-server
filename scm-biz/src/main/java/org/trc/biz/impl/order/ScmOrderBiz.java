@@ -1364,6 +1364,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(SupplierOrderInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
+        criteria.andEqualTo("status", ResponseAck.SUCCESS_CODE);
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             try{
