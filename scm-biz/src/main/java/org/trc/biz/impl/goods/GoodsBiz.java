@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
@@ -26,6 +27,7 @@ import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
+import org.trc.domain.supplier.Supplier;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -51,6 +53,7 @@ import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
 import org.trc.service.impl.system.WarehouseService;
 import org.trc.service.purchase.IPurchaseDetailService;
+import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
@@ -137,6 +140,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ITrcBiz trcBiz;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private ISupplierService supplierService;
 
 
     @Override
@@ -1678,13 +1683,40 @@ public class GoodsBiz implements IGoodsBiz {
         ExternalItemSku externalItemSku = new ExternalItemSku();
         BeanUtils.copyProperties(form, externalItemSku);
         List<ExternalItemSku> externalItemSkuList = externalItemSkuService.select(externalItemSku);
+        Set<String> supplierCodes = new HashSet<String>();
         for(ExternalItemSku externalItems : externalItemSkuList){
+            supplierCodes.add(externalItems.getSupplierCode());
             if(StringUtils.equals(externalItems.getSupplierCode(), JD_SUPPLIER_CODE)){
                 externalItems.setJdPictureUrl(externalSupplierConfig.getJdPictureUrl());
                 externalItems.setCategory(getExternalItemCategory(externalItems.getCategory()));
             }
         }
+        if(supplierCodes.size() > 0){
+            setSupplierInfo(supplierCodes, externalItemSkuList);
+        }
         return externalItemSkuList;
+    }
+
+    /**
+     * 设置代付供应商信息
+     * @param supplierCodes
+     * @param externalItemSkuList
+     */
+    private void setSupplierInfo(Set<String> supplierCodes, List<ExternalItemSku> externalItemSkuList){
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("supplierInterfaceId", supplierCodes);
+        criteria.andEqualTo("supplierKindCode", SupplierBiz.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
+        List<Supplier> supplierList = supplierService.selectByExample(example);
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(externalItemSku.getSupplierCode(), supplier.getSupplierInterfaceId())){
+                    externalItemSku.setSupplierCode(supplier.getSupplierCode());
+                    externalItemSku.setSupplierName(supplier.getSupplierName());
+                    break;
+                }
+            }
+        }
     }
 
     /**
