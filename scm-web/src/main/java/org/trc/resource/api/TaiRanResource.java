@@ -57,10 +57,6 @@ public class TaiRanResource {
     private Logger logger = LoggerFactory.getLogger(TaiRanResource.class);
 
     @Resource
-    private BrandBiz brandBiz;
-    @Resource
-    private IPropertyBiz propertyBiz;
-    @Resource
     private ICategoryBiz categoryBiz;
     @Resource
     private ITrcBiz trcBiz;
@@ -115,7 +111,7 @@ public class TaiRanResource {
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
     public ResponseAck<Object> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page){
-        try {//Pagenation<Property>
+        try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
             logger.error("查询列表信息报错", e);
