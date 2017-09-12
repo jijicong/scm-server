@@ -45,11 +45,11 @@
     <aop:aspectj-autoproxy proxy-target-class="true"/>
 
     <task:scheduled-tasks>
-        <task:scheduled ref="retryBiz" method="brandUpdateNoticeRetry" cron="${retry.brand.start}"/>
+       <!-- <task:scheduled ref="retryBiz" method="brandUpdateNoticeRetry" cron="${retry.brand.start}"/>
         <task:scheduled ref="retryBiz" method="propertyUpdateNoticeRetry" cron="${retry.property.start}"/>
         <task:scheduled ref="retryBiz" method="categoryUpdateNoticeRetry" cron="${retry.category.start}"/>
         <task:scheduled ref="retryBiz" method="categoryBrandUpdateNoticeRetry" cron="${retry.categoryBrand.start}"/>
-        <task:scheduled ref="retryBiz" method="categoryPropertyUpdateNoticeRetry" cron="${retry.categoryProperty.start}"/>
+        <task:scheduled ref="retryBiz" method="categoryPropertyUpdateNoticeRetry" cron="${retry.categoryProperty.start}"/>-->
         <task:scheduled ref="retryBiz" method="itemUpdateNoticeRetry" cron="${retry.item.start}"/>
         <task:scheduled ref="retryBiz" method="externalItemUpdateNoticeRetry" cron="${retry.externalItem.start}"/>
         <task:scheduled ref="retryBiz" method="channelReceiveOrderSubmitResultRetry" cron="${retry.channelReceive.start}"/>
