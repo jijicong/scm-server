@@ -782,6 +782,8 @@ public class SupplyConstants {
         public final static String SUPPLIER_LY_CODE = "LY";
         //京东物流公司
         public final static String SUPPLIER_JD_LOGISTICS_COMPANY = "京东物流";
+        //京东物流公司
+        public final static String SUPPLIER_JD_LOGISTICS_COMPANY2 = "京东快递";
 
         public static final String ROOT = "order";
         //订单分页查询路径

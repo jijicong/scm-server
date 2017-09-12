@@ -1497,7 +1497,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 SupplierOrderLogistics supplierOrderLogistics = null;
                 try{
                     //获取供应商订单物流信息
-                    supplierOrderLogistics = getSupplierOrderLogistics(supplierOrderInfo, logistic, logisticForm.getType());
+                    supplierOrderLogistics = getSupplierOrderLogistics(supplierOrderInfo, logistic);
                     //保存的物流信息 or 更新物流信息
                     saveSupplierOrderLogistics(supplierOrderLogistics);
                     supplierOrderLogisticsList.add(supplierOrderLogistics);
@@ -1546,7 +1546,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param supplierOrderLogisticsList
      */
     private void updateSupplierOrderStatus(SupplierOrderInfo supplierOrderInfo, List<SupplierOrderLogistics> supplierOrderLogisticsList){
-        Boolean flag = true;
+        /*Boolean flag = true;
         for(SupplierOrderLogistics supplierOrderLogistics: supplierOrderLogisticsList){
             if(StringUtils.equals(SupplierOrderLogisticsStatusEnum.CREATE.getCode(), supplierOrderLogistics.getLogisticsStatus()) ||//新建
                     StringUtils.equals(SupplierOrderLogisticsStatusEnum.REJECT.getCode(), supplierOrderLogistics.getLogisticsStatus())){//拒收
@@ -1556,7 +1556,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(flag){
             supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.COMPLETE.getCode());//未完成);//已完成
-        }
+        }*/
         if(supplierOrderLogisticsList.size() > 0){
             supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.DELIVER.getCode());//已发货
         }
@@ -1575,23 +1575,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 获取供应商订单物流信息
      * @param supplierOrderInfo
      * @param logistic
-     * @param type
      * @return
      */
-    private SupplierOrderLogistics getSupplierOrderLogistics(SupplierOrderInfo supplierOrderInfo, Logistic logistic, String type){
+    private SupplierOrderLogistics getSupplierOrderLogistics(SupplierOrderInfo supplierOrderInfo, Logistic logistic){
         SupplierOrderLogistics supplierOrderLogistics = new SupplierOrderLogistics();
         supplierOrderLogistics.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
         supplierOrderLogistics.setSupplierCode(supplierOrderInfo.getSupplierCode());
         if(StringUtils.isNotBlank(supplierOrderInfo.getSupplierOrderCode()))
             supplierOrderLogistics.setSupplierParentOrderCode(supplierOrderInfo.getSupplierOrderCode());
         supplierOrderLogistics.setSupplierOrderCode(logistic.getSupplierOrderCode());
-        supplierOrderLogistics.setType(type);
-        if(StringUtils.equals(type, LogsticsTypeEnum.WAYBILL_NUMBER.getCode())){//物流单号
-            supplierOrderLogistics.setWaybillNumber(logistic.getWaybillNumber());
-            supplierOrderLogistics.setLogisticsCorporation(logistic.getLogisticsCorporation());
-        }else if(StringUtils.equals(type, LogsticsTypeEnum.LOGSTICS.getCode())){//配送信息
+        supplierOrderLogistics.setType(LogsticsTypeEnum.WAYBILL_NUMBER.getCode());
+        supplierOrderLogistics.setWaybillNumber(logistic.getWaybillNumber());
+        supplierOrderLogistics.setLogisticsCorporation(logistic.getLogisticsCorporation());
+        if(null != logistic.getLogisticInfo())
             supplierOrderLogistics.setLogisticsInfo(JSONArray.toJSONString(logistic.getLogisticInfo()));
-        }
         supplierOrderLogistics.setLogisticsStatus(logistic.getLogisticsStatus());
         ParamsUtil.setBaseDO(supplierOrderLogistics);
         return supplierOrderLogistics;
@@ -1639,14 +1636,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(Object obj: logisticsArray){
             JSONObject jbo = (JSONObject)obj;
             Logistic logistic = jbo.toJavaObject(Logistic.class);
-            if(StringUtils.equals(LogsticsTypeEnum.WAYBILL_NUMBER.getCode(), logisticForm.getType())){//物流单号
-                LogisticsCompany logisticsCompany = new LogisticsCompany();
-                logisticsCompany.setType(channelCode);
-                logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
-                logisticsCompany = logisticsCompanyService.selectOne(logisticsCompany);
-                AssertUtil.notNull(logisticsCompany, String.format("根据type[%s]和companyName[%s]查询物流公司信息为空", channelCode, logistic.getLogisticsCorporation()));
-                logistic.setLogisticsCorporationCode(logisticsCompany.getCompanyCode());
+            if(StringUtils.equals(LogsticsTypeEnum.LOGSTICS.getCode(), logisticForm.getType())){//京东配送信息
+                logistic.setWaybillNumber(logistic.getSupplierOrderCode());
+                logistic.setLogisticsCorporation(SupplyConstants.Order.SUPPLIER_JD_LOGISTICS_COMPANY2);
             }
+            LogisticsCompany logisticsCompany = new LogisticsCompany();
+            logisticsCompany.setType(channelCode);
+            logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
+            logisticsCompany = logisticsCompanyService.selectOne(logisticsCompany);
+            AssertUtil.notNull(logisticsCompany, String.format("根据type[%s]和companyName[%s]查询物流公司信息为空", channelCode, logistic.getLogisticsCorporation()));
+            logistic.setLogisticsCorporationCode(logisticsCompany.getCompanyCode());
             JSONArray skusArray = jbo.getJSONArray("skus");
             List<SkuInfo> skuInfoList = new ArrayList<SkuInfo>();
             for(Object skuObj: skusArray){
