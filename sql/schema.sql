@@ -1581,6 +1581,7 @@ create table supplier_order_logistics
    supplier_code        varchar(32) not null comment '供应商编码',
    logistics_corporation varchar(128) comment '物流公司,当字段type=0-物流信息时不为空',
    waybill_number       varchar(64) comment '运单号,当字段type=0-物流信息时不为空',
+   `skus` text COMMENT '供应商订单sku信息,JSONArray字符串',
    logistics_info       text comment '物流信息,当字段type=1-配送信息时不为空',
    logistics_status     varchar(2) comment '物流状态,0-新建,1-妥投,2-拒收,当字段type=1-配送信息时不为空',
    is_deleted           varchar(2) not null default '0' comment '是否删除:0-否,1-是',

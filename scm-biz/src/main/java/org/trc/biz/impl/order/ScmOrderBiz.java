@@ -1367,9 +1367,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andEqualTo("status", ResponseAck.SUCCESS_CODE);
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-            if(StringUtils.equals(supplierOrderInfo2.getWarehouseOrderCode(), "JD1201709040000373")){
-                System.out.println("@@@@");
-            }
             try{
                 WarehouseOrder warehouseOrder = new WarehouseOrder();
                 warehouseOrder.setWarehouseOrderCode(supplierOrderInfo2.getWarehouseOrderCode());
