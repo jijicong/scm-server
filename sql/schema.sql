@@ -1189,7 +1189,7 @@ create unique index uniq_requestFlow_requestNum on request_flow
 /*==============================================================*/
 create table retry_config
 (
-   id                   bigint(20) not null comment '主键',
+   id                   bigint(20) not null auto_increment comment '主键',
    type                 varbinary(64) default NULL comment '类型',
    count                bigint(20) default 0 comment '重试次数',
    period               bigint(20) default 0 comment '重试时间 单位/小时',
