@@ -147,7 +147,9 @@ public class JerseyResourceAop {
 
     //时间处理 :{这里为了}
     private void handleMethodTime(MethodInfo methodInfo,Long useTime){
-       Boolean flag = true; //这里做开关,防止方法信息执行异常的时候,执行时长的信心数据库操作失败
+        Boolean flag = true; //这里做开关,防止方法信息执行异常的时候,执行时长的信心数据库操作失败
+        String args = methodInfo.getArgs();
+        methodInfo.setArgs(null);
         MethodInfo info = methodInfoService.selectOne(methodInfo);
         if(info == null){ //数据初始化
             methodInfo.setAverageTime(useTime); //平均耗时
@@ -155,6 +157,7 @@ public class JerseyResourceAop {
             methodInfo.setFrequency(1L);//(次/天) 调用频率
             methodInfo.setUseNumber(1L); //使用次数
             methodInfo.setTotalTime(useTime);
+            methodInfo.setArgs(args);
             try{
                 methodInfoService.insert(methodInfo);
             }catch (Exception e){
@@ -167,6 +170,9 @@ public class JerseyResourceAop {
             //这里根据查询出来调用次数，作为本次更新的条件，如果条件不满足。说明，此期间有人对该条记录进行过更新
             //不应该覆盖其它操作者的数据  --尽量减少因为 执行效率的统计耗时
             MethodInfo udpateInfo = new MethodInfo();
+            if(!StringUtils.equals(args,info.getArgs())){ //说明方法参数有修改，需要更方法信息
+                udpateInfo.setArgs(args);
+            }
             //udpateInfo.setId(info.getId());
             udpateInfo.setTotalTime(info.getTotalTime()+useTime);
             udpateInfo.setUseNumber(info.getUseNumber()+1L);
