@@ -1711,6 +1711,7 @@ public class GoodsBiz implements IGoodsBiz {
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             for(Supplier supplier: supplierList){
                 if(StringUtils.equals(externalItemSku.getSupplierCode(), supplier.getSupplierInterfaceId())){
+                    externalItemSku.setSupplierCode2(externalItemSku.getSupplierCode());
                     externalItemSku.setSupplierCode(supplier.getSupplierCode());
                     externalItemSku.setSupplierName(supplier.getSupplierName());
                     break;

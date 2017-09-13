@@ -170,6 +170,9 @@ public class ExternalItemSku implements Serializable{
     @Transient
     private String jdPictureUrl;
 
+    @Transient
+    private String supplierCode2;
+
     public Long getId() {
         return id;
     }
@@ -424,5 +427,13 @@ public class ExternalItemSku implements Serializable{
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getSupplierCode2() {
+        return supplierCode2;
+    }
+
+    public void setSupplierCode2(String supplierCode2) {
+        this.supplierCode2 = supplierCode2;
     }
 }

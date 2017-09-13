@@ -113,7 +113,7 @@ public class JerseyResourceAop {
      * @return 返回切面处理的结果值
      * @throws Throwable 抛出下层切面抛出的异常
      */
-    @Around("jerseyService()")
+    //@Around("jerseyService()")
     public Object recordTime(ProceedingJoinPoint point)  throws Throwable {
         MethodInfo methodInfo = new MethodInfo();
         Class<?> targetClass = point.getTarget().getClass();
