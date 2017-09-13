@@ -50,7 +50,6 @@ public class CategoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response classifyTree(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) throws Exception {
         return ResultUtil.createSuccessResult("成功", categoryBiz.getNodes(parentId, isRecursive));
-
     }
 
     @GET

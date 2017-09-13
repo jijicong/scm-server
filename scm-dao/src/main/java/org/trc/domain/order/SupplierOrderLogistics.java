@@ -29,6 +29,10 @@ public class SupplierOrderLogistics extends ScmDO{
      */
     private String waybillNumber;
     /**
+     * 供应商订单sku信息,JSONArray字符串
+     */
+    private String skus;
+    /**
      *物流信息,当字段type=1-配送信息时不为空
      */
     private String logisticsInfo;
@@ -117,5 +121,13 @@ public class SupplierOrderLogistics extends ScmDO{
 
     public void setLogisticsStatus(String logisticsStatus) {
         this.logisticsStatus = logisticsStatus;
+    }
+
+    public String getSkus() {
+        return skus;
+    }
+
+    public void setSkus(String skus) {
+        this.skus = skus;
     }
 }
