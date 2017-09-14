@@ -155,7 +155,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     //京东下单价格不匹配错误代码
     public final static String JD_ORDER_SUBMIT_PRICE_ERROR = "3019";
-
+    //京东下单商品库存不足
+    public final static String JD_ORDER_SUBMIT_STOCK_LESS = "3008";
     //京东下单余额不足错误代码
     public final static String JD_BALANCE_NOT_ENOUGH = "3017";
     //金额为0的常量
@@ -374,27 +375,63 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notEmpty(supplierOrderReturnList, "调用京东下单服务返回下单明细信息为空");
         SupplierOrderReturn supplierOrderReturn = supplierOrderReturnList.get(0);//每次京东下单只会有一个订单
         if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
-            RequestFlowTypeEnum requestFlowTypeEnum = null;
-            if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, supplierOrderReturn.getState())){//京东商品价格不匹配
-                log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
-                responseAck = reSubmitJingDongOrder(jingDongOrder);
-                if(!StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
+            RequestFlowTypeEnum requestFlowTypeEnum = RequestFlowTypeEnum.JD_SUBMIT_ORDER;
+            if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, supplierOrderReturn.getState())){
+                if(StringUtils.equals(JD_ORDER_SUBMIT_PRICE_ERROR, supplierOrderReturn.getState())){//京东商品价格不匹配
+                    log.info(String.format("调用京东下单商品价格不匹配,更新京东最新价格重新下单"));
+                    responseAck = reSubmitJingDongOrder(jingDongOrder);
+                    AssertUtil.notNull(responseAck.getData(), "调用京东下单服务返回下单结果为空");
+                    OrderSubmitResult orderSubmitResult2 = getOrderSubmitResult(responseAck.getData().toString());
+                    if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
+                        List<SupplierOrderReturn> supplierOrderReturnList2 = orderSubmitResult2.getOrder();
+                        AssertUtil.notEmpty(supplierOrderReturnList2, "调用京东下单服务返回下单明细信息为空");
+                        SupplierOrderReturn supplierOrderReturn2 = supplierOrderReturnList2.get(0);//每次京东下单只会有一个订单
+                        if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, supplierOrderReturn2.getState())){
+                            if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, supplierOrderReturn2.getState())){//京东下单余额不足
+                                //TODO 这里以后可能会发起重新下单逻辑
+                                requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
+                                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                                responseAck2 = new ResponseAck(supplierOrderReturn2.getState(), supplierOrderReturn.getMessage(), "");
+                                log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn2.getMessage()));
+                            }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, supplierOrderReturn2.getState())){//京东下单库存不足
+                                //TODO 这里以后可能会发起重新下单逻辑
+                                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                                responseAck2 = new ResponseAck(supplierOrderReturn2.getState(), supplierOrderReturn.getMessage(), "");
+                                log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn2.getMessage()));
+                            }else {
+                                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                                responseAck2 = new ResponseAck(supplierOrderReturn2.getState(), supplierOrderReturn2.getMessage(), "");
+                                log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));
+                            }
+                        }
+                    }else {
+                        supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                        responseAck2 = responseAck;
+                    }
+                    requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
+                    //保存请求流水
+                    requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
+                    //记录操作日志
+                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
+                }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, supplierOrderReturn.getState())){//京东下单余额不足
+                    //TODO 这里以后可能会发起重新下单逻辑
+                    requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
                     supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-                    responseAck2 = responseAck;
+                    responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
+                    log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
+                }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, supplierOrderReturn.getState())){//京东下单库存不足
+                    //TODO 这里以后可能会发起重新下单逻辑
+                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                    responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
+                    log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
+                }else {
+                    supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
+                    responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
+                    log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
                 }
-                requestFlowTypeEnum = RequestFlowTypeEnum.JD_SKU_PRICE_UPDATE_SUBMIT_ORDER;
-                //记录操作日志
-                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
-            }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, responseAck.getCode())){//京东下单余额不足
-                requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
-            }else {
-                supplierOrderStatus = SupplierOrderStatusEnum.SUBMIT_FAILURE.getCode();
-                responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
-                log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));
+            }else{
+                log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
             }
-            //保存请求流水
-            requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
-            log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         }else{

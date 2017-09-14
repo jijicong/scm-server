@@ -113,7 +113,7 @@ public class SupplierBiz implements ISupplierBiz {
     private IPageNationService pageNationService;
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
