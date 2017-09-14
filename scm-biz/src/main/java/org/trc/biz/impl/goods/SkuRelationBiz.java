@@ -7,25 +7,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.goods.ISkuRelationBiz;
+import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.impl.trc.TrcBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Category;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
+import org.trc.domain.supplier.Supplier;
 import org.trc.enums.ValidEnum;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.supplier.ISupplierService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author: Ding
@@ -46,6 +48,8 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     private IExternalItemSkuService externalItemSkuService;
     @Autowired
     private ISkuStockService skuStockService;
+    @Autowired
+    private ISupplierService supplierService;
 
     @Override
     public List<Skus> getSkuInformation(String skuCode) {
@@ -98,8 +102,37 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         criteria.andIn("skuCode", Arrays.asList(skuCodes));
         criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
         List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example);
-        setMoneyWeight(externalItemSkuList);
+        if(!CollectionUtils.isEmpty(externalItemSkuList)){
+            setMoneyWeight(externalItemSkuList);
+            setSupplierInfo(externalItemSkuList);
+        }
         return externalItemSkuList;
+    }
+
+    /**
+     * 设置代付供应商信息
+     * @param externalItemSkuList
+     */
+    private void setSupplierInfo(List<ExternalItemSku> externalItemSkuList){
+        Set<String> supplierCodes = new HashSet<>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            supplierCodes.add(externalItemSku.getSupplierCode());
+        }
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("supplierInterfaceId", supplierCodes);
+        criteria.andEqualTo("supplierKindCode", SupplierBiz.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
+        List<Supplier> supplierList = supplierService.selectByExample(example);
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(externalItemSku.getSupplierCode(), supplier.getSupplierInterfaceId())){
+                    externalItemSku.setSupplierCode2(externalItemSku.getSupplierCode());
+                    externalItemSku.setSupplierCode(supplier.getSupplierCode());
+                    externalItemSku.setSupplierName(supplier.getSupplierName());
+                    break;
+                }
+            }
+        }
     }
 
     /**

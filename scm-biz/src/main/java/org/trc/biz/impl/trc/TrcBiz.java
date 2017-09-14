@@ -572,8 +572,37 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("supplierCode").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
-        setMoneyWeight(page.getResult());
+        if(!CollectionUtils.isEmpty(page.getResult())){
+            setMoneyWeight(page.getResult());
+            setSupplierInfo(page.getResult());
+        }
         return page;
+    }
+
+    /**
+     * 设置代付供应商信息
+     * @param externalItemSkuList
+     */
+    private void setSupplierInfo(List<ExternalItemSku> externalItemSkuList){
+        Set<String> supplierCodes = new HashSet<>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            supplierCodes.add(externalItemSku.getSupplierCode());
+        }
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("supplierInterfaceId", supplierCodes);
+        criteria.andEqualTo("supplierKindCode", SupplierBiz.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
+        List<Supplier> supplierList = supplierService.selectByExample(example);
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(externalItemSku.getSupplierCode(), supplier.getSupplierInterfaceId())){
+                    externalItemSku.setSupplierCode2(externalItemSku.getSupplierCode());
+                    externalItemSku.setSupplierCode(supplier.getSupplierCode());
+                    externalItemSku.setSupplierName(supplier.getSupplierName());
+                    break;
+                }
+            }
+        }
     }
 
     /**
