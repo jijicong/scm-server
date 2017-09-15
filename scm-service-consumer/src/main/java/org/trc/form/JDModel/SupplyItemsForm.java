@@ -42,4 +42,5 @@ public class SupplyItemsForm extends QueryModel{
     public void setSkuName(String skuName) {
         this.skuName = skuName;
     }
+
 }

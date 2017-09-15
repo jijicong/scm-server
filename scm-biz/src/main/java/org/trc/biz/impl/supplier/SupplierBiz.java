@@ -330,7 +330,7 @@ public class SupplierBiz implements ISupplierBiz {
     public List<Supplier> querySuppliers(SupplierForm supplierForm) throws Exception {
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(supplierForm, supplier);
-        if (StringUtils.isEmpty(supplierForm.getIsValid())) {
+        if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
             supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
         }
         supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -573,6 +573,9 @@ public class SupplierBiz implements ISupplierBiz {
                 log.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
             }
+        }
+        if (StringUtils.equals(SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())) {//一件代发供应商
+            AssertUtil.notBlank(supplier.getSupplierInterfaceId(), "供应商接口ID不能为空");
         }
     }
 
