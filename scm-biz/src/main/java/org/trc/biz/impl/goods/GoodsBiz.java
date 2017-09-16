@@ -1706,7 +1706,7 @@ public class GoodsBiz implements IGoodsBiz {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("supplierInterfaceId", supplierCodes);
-        criteria.andEqualTo("supplierKindCode", SupplierBiz.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
+        criteria.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
         List<Supplier> supplierList = supplierService.selectByExample(example);
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             for(Supplier supplier: supplierList){
@@ -1759,6 +1759,23 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
         SupplyItemsExt supplyItems2 = new SupplyItemsExt();
         BeanUtils.copyProperties(queryModel, supplyItems2);
+        Supplier supplier = new Supplier();
+        supplier.setIsValid(ValidEnum.NOVALID.getCode());//停用
+        supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
+        List<Supplier> supplierList = supplierService.select(supplier);
+        if(!CollectionUtils.isEmpty(supplierList)){
+            StringBuilder sb = new StringBuilder();
+            for(Supplier supplier2: supplierList){
+                sb.append(supplier2.getSupplierInterfaceId()).append(SupplyConstants.Symbol.COMMA);
+                if(StringUtils.isNotBlank(queryModel.getSupplierCode())){
+                    if(StringUtils.equals(queryModel.getSupplierCode(), supplier2.getSupplierInterfaceId())){
+                        return page;
+                    }
+                }
+            }
+            if(sb.length() > 0)
+                supplyItems2.setStopedSupplierCode(sb.substring(0, sb.length()-1));
+        }
         ReturnTypeDO<Pagenation<SupplyItemsExt>> returnTypeDO = jdService.skuPage(supplyItems2, page);
         if(!returnTypeDO.getSuccess()){
             log.error(returnTypeDO.getResultMessage());
@@ -1768,7 +1785,6 @@ public class GoodsBiz implements IGoodsBiz {
         setOutSupplierName(page.getResult());
         return page;
     }
-
 
     /**
      * 设置一件代发供应商名称

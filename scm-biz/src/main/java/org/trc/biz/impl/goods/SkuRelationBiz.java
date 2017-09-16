@@ -121,7 +121,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("supplierInterfaceId", supplierCodes);
-        criteria.andEqualTo("supplierKindCode", SupplierBiz.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
+        criteria.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
         List<Supplier> supplierList = supplierService.selectByExample(example);
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             for(Supplier supplier: supplierList){

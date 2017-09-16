@@ -506,6 +506,20 @@ public class SupplyConstants {
             public static final String IS_VALID = "isValid";
             //供应商分页查询路径
             public static final String APPLY_SUPPLIER_PAGE = "applySupplierPage";
+            //供应商性质：采购
+            public static final String SUPPLIER_PURCHASE = "purchase";
+            //供应商性质：一件代发
+            public static final String SUPPLIER_ONE_AGENT_SELLING= "oneAgentSelling";
+            //供应商类型：国内供应商
+            public static final String INTERNAL_SUPPLIER = "internalSupplier";
+            //供应商类型：海外供应商
+            public static final String OVERSEAS_SUPPLIER = "overseasSupplier";
+            //证件类型:普通三证
+            public static final String NORMAL_THREE_CERTIFICATE = "normalThreeCertificate";
+            //证件类型:多证合一
+            public static final String MULTI_CERTIFICATE_UNION = "multiCertificateUnion";
+
+
         }
 
         /**

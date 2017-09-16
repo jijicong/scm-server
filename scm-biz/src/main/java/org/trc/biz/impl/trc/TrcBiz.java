@@ -543,7 +543,7 @@ public class TrcBiz implements ITrcBiz {
         if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {
             Supplier supplier = getSupplier(queryModel.getSupplierCode());
             if(null != supplier){
-                if(StringUtils.equals(SupplierBiz.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){//一件代发供应商
+                if(StringUtils.equals(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){//一件代发供应商
                     criteria.andEqualTo("supplierCode", supplier.getSupplierInterfaceId());
                 }else{
                     criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
@@ -591,7 +591,7 @@ public class TrcBiz implements ITrcBiz {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("supplierInterfaceId", supplierCodes);
-        criteria.andEqualTo("supplierKindCode", SupplierBiz.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
+        criteria.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代付供应商
         List<Supplier> supplierList = supplierService.selectByExample(example);
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             for(Supplier supplier: supplierList){

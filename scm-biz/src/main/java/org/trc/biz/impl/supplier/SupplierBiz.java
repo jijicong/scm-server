@@ -64,18 +64,6 @@ import java.util.*;
 public class SupplierBiz implements ISupplierBiz {
 
     private Logger log = LoggerFactory.getLogger(SupplierBiz.class);
-    //供应商性质：采购
-    public static final String SUPPLIER_PURCHASE = "purchase";
-    //供应商性质：一件代发
-    public static final String SUPPLIER_ONE_AGENT_SELLING= "oneAgentSelling";
-    //供应商类型：国内供应商
-    private static final String INTERNAL_SUPPLIER = "internalSupplier";
-    //供应商类型：海外供应商
-    private static final String OVERSEAS_SUPPLIER = "overseasSupplier";
-    //证件类型:普通三证
-    private static final String NORMAL_THREE_CERTIFICATE = "normalThreeCertificate";
-    //证件类型:多证合一
-    private static final String MULTI_CERTIFICATE_UNION = "multiCertificateUnion";
     //停用供应商自动拒绝提交审核的申请原因
     private static final String STOP_SUPPLIER_REJECT_APPLY_REASON = "供应商停用，系统自动驳回";
 
@@ -349,7 +337,7 @@ public class SupplierBiz implements ISupplierBiz {
         supplier.setSupplierCode(code);
         //保存供应商
         saveSupplierBase(supplier);
-        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
+        if (StringUtils.equals(SupplyConstants.Supply.Supplier.INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
             //保存证件
             certificate.setSupplierId(supplier.getId());
             certificate.setSupplierCode(supplier.getSupplierCode());
@@ -419,7 +407,7 @@ public class SupplierBiz implements ISupplierBiz {
         boolean isValidFlag = isSupplerValid(supplier);
         //更新供应商
         updateSupplierBase(supplier);
-        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
+        if (StringUtils.equals(SupplyConstants.Supply.Supplier.INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {//国内供应商
             //保存证件
             certificate.setSupplierId(supplier.getId());
             certificate.setSupplierCode(supplier.getSupplierCode());
@@ -493,7 +481,8 @@ public class SupplierBiz implements ISupplierBiz {
      * @param certificate
      */
     private void supplierSaveCheck(Supplier supplier, Certificate certificate) {
-        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode()) && StringUtils.equals(SUPPLIER_PURCHASE, supplier.getSupplierKindCode())) {//国内供应商
+        if (StringUtils.equals(SupplyConstants.Supply.Supplier.INTERNAL_SUPPLIER, supplier.getSupplierTypeCode()) &&
+                StringUtils.equals(SupplyConstants.Supply.Supplier.SUPPLIER_PURCHASE, supplier.getSupplierKindCode())) {//国内供应商
             AssertUtil.notBlank(supplier.getCertificateTypeId(), "证件类型ID不能为空");
             AssertUtil.notBlank(certificate.getLegalPersonIdCard(), "法人身份证不能为空");
             AssertUtil.notBlank(certificate.getLegalPersonIdCardPic1(), "法人身份证正面图片不能为空");
@@ -512,7 +501,7 @@ public class SupplierBiz implements ISupplierBiz {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("法人身份证正面图片最多只能上传1张"));
             if(certificate.getLegalPersonIdCardPic2().split(SupplyConstants.Symbol.COMMA).length > 1)
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("法人身份证背面图片最多只能上传1张"));
-            if (StringUtils.equals(NORMAL_THREE_CERTIFICATE, supplier.getCertificateTypeId())) {//普通三证
+            if (StringUtils.equals(SupplyConstants.Supply.Supplier.NORMAL_THREE_CERTIFICATE, supplier.getCertificateTypeId())) {//普通三证
                 AssertUtil.notBlank(certificate.getBusinessLicence(), "营业执照不能为空");
                 AssertUtil.notBlank(certificate.getBusinessLicencePic(), "营业执照证件图片不能为空");
                 AssertUtil.notBlank(certificate.getOrganRegistraCodeCertificate(), "组织机构代码证不能为空");
@@ -557,7 +546,7 @@ public class SupplierBiz implements ISupplierBiz {
                 if(certificate.getTaxRegistrationCertificatePic().split(SupplyConstants.Symbol.COMMA).length > 1)
                     throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("税务登记证证件图片最多只能上传1张"));
 
-            } else if (StringUtils.equals(MULTI_CERTIFICATE_UNION, supplier.getCertificateTypeId())) {//多证合一
+            } else if (StringUtils.equals(SupplyConstants.Supply.Supplier.MULTI_CERTIFICATE_UNION, supplier.getCertificateTypeId())) {//多证合一
                 AssertUtil.notBlank(certificate.getMultiCertificateCombineNo(), "多证合一证号不能为空");
                 AssertUtil.notBlank(certificate.getMultiCertificateCombinePic(), "多证合一证件图片不能为空");
             } else {
@@ -565,16 +554,16 @@ public class SupplierBiz implements ISupplierBiz {
                 log.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
             }
-        } else if (StringUtils.equals(OVERSEAS_SUPPLIER, supplier.getSupplierTypeCode())) {//国外供应商
+        } else if (StringUtils.equals(SupplyConstants.Supply.Supplier.OVERSEAS_SUPPLIER, supplier.getSupplierTypeCode())) {//国外供应商
             AssertUtil.notBlank(supplier.getCountry(), "所在国家不能为空");
         } else {
-            if(!StringUtils.equals(SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){
+            if(!StringUtils.equals(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())){
                 String msg = String.format("供应商类型编码[%s]错误", supplier.getSupplierTypeCode());
                 log.error(msg);
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
             }
         }
-        if (StringUtils.equals(SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())) {//一件代发供应商
+        if (StringUtils.equals(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())) {//一件代发供应商
             AssertUtil.notBlank(supplier.getSupplierInterfaceId(), "供应商接口ID不能为空");
         }
     }
@@ -1167,7 +1156,7 @@ public class SupplierBiz implements ISupplierBiz {
         supplier = supplierService.selectOne(supplier);
         AssertUtil.notNull(supplier, String.format("%s%s%s", "根据供应商编码[", supplierCode, "]查询供应商基本信息为空"));
 
-        if (StringUtils.equals(INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {
+        if (StringUtils.equals(SupplyConstants.Supply.Supplier.INTERNAL_SUPPLIER, supplier.getSupplierTypeCode())) {
             Certificate certificate = new Certificate();
             certificate.setSupplierCode(supplierCode);
             certificate = certificateService.selectOne(certificate);
