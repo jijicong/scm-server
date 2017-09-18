@@ -7,27 +7,27 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.trc.domain.category.Brand;
-import org.trc.domain.category.Property;
-import org.trc.domain.category.PropertyValue;
-import org.trc.domain.trcDomain.Brands;
-import org.trc.domain.trcDomain.Properties;
-import org.trc.domain.trcDomain.PropertyValues;
+import org.trc.domain.category.*;
+import org.trc.domain.trcDomain.*;
 import org.trc.enums.SourceEnum;
+import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.service.category.ICategoryBrandService;
+import org.trc.service.category.ICategoryPropertyService;
+import org.trc.service.category.ICategoryService;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.category.PropertyService;
 import org.trc.service.impl.category.PropertyValueService;
 import org.trc.service.impl.trcCategory.TrcBrandsService;
 import org.trc.service.impl.util.SerialUtilService;
-import org.trc.service.trcCategory.ITrcPropertiesService;
-import org.trc.service.trcCategory.ITrcPropertiesValuesService;
+import org.trc.service.trcCategory.*;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
@@ -49,10 +49,27 @@ public class TrcToScmCategoryTest {
     @Autowired
     private PropertyValueService propertyValueService;
 
+    @Autowired
+    private ITrcCategoriesService trcCategoriesService;
+    @Autowired
+    private ICategoryService categoryService;
+
+    @Autowired
+    private ITrcCategoriesBrandsService trcCategoriesBrandsService;
+    @Autowired
+    private ICategoryBrandService categoryBrandService;
+
+    @Autowired
+    private ITrcCategoriesPropertiesService trcCategoriesPropertiesService;
+    @Autowired
+    private ICategoryPropertyService categoryPropertyService;
 
     private final static String BRAND_CODE_EX_NAME = "PP";
     private final static int BRAND_CODE_LENGTH = 5;
+    private final static String CHANNEL_TRC = "QD001";
 
+    private final static String FL_SERIALNAME = "FL";
+    private final static Integer FL_LENGTH = 3;
 
     @Test
     public void brandTest() {
@@ -148,6 +165,96 @@ public class TrcToScmCategoryTest {
 
             }
             propertyValueService.insertList(propertyValueList);
+        }
+    }
+
+    @Test
+    public void categoryTest() {
+        Example example = new Example(Categories.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("disabled", "0");
+
+        List<Categories> categoriesList = trcCategoriesService.selectByExample(example);
+        List<Category> categoryScm = new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(categoriesList)) {
+            for (Categories categories : categoriesList) {
+                Category category = new Category();
+                category.setId(Long.valueOf(categories.getCategoryId()));
+                category.setName(categories.getName());
+                category.setParentId(Long.valueOf(categories.getParentId()));
+                category.setLevel(categories.getLevel());
+                category.setSort(categories.getSortOrder());
+                category.setClassifyDescribe(categories.getDescription());
+                int disabled = categories.getDisabled();
+                if(disabled == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()))//正常
+                    category.setIsValid(ValidEnum.VALID.getCode());
+                else
+                    category.setIsValid(ValidEnum.NOVALID.getCode());
+                category.setSource(CHANNEL_TRC);
+                category.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                Date currentDate = Calendar.getInstance().getTime();
+                category.setCreateTime(currentDate);
+                category.setUpdateTime(currentDate);
+
+                StringBuilder sb = new StringBuilder();
+                if(categories.getPrimaryId() > 0)
+                    sb.append(categories.getPrimaryId());
+                if(categories.getSecondaryId() > 0)
+                    sb.append("|").append(categories.getSecondaryId());
+                category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
+
+                categoryScm.add(category);
+            }
+            categoryService.insertList(categoryScm);
+        }
+    }
+
+    @Test
+    public void categoryBrandTest() {
+        CategoryBrandRels categoryBrandRels = new CategoryBrandRels();
+        List<CategoryBrandRels> categoryBrandRelsList = trcCategoriesBrandsService.select(categoryBrandRels);
+        List<CategoryBrand> categoryBrandScm = new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(categoryBrandRelsList)) {
+            for (CategoryBrandRels categoryBrandRels2 : categoryBrandRelsList) {
+                CategoryBrand categoryBrand = new CategoryBrand();
+                categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
+                categoryBrand.setBrandId(Long.valueOf(categoryBrandRels2.getBrandId()));
+                Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getCategoryId()));
+                AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空",categoryBrandRels2.getCategoryId()));
+                categoryBrand.setCategoryCode(category.getCategoryCode());
+                Brand brand = brandService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getBrandId()));
+                AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空",categoryBrandRels2.getBrandId()));
+                categoryBrand.setBrandCode(brand.getBrandCode());
+                categoryBrand.setIsValid(ValidEnum.VALID.getCode());
+                categoryBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                Date currentDate = Calendar.getInstance().getTime();
+                categoryBrand.setCreateTime(currentDate);
+                categoryBrand.setUpdateTime(currentDate);
+
+                categoryBrandScm.add(categoryBrand);
+            }
+            categoryBrandService.insertList(categoryBrandScm);
+        }
+    }
+
+    @Test
+    public void categoryPropertyTest() {
+        CategoryPropertyRels categoryBrandRels = new CategoryPropertyRels();
+        List<CategoryPropertyRels> categoryPropertyRelsList = trcCategoriesPropertiesService.select(categoryBrandRels);
+        List<CategoryProperty> categoryPropertiesScm = new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(categoryPropertyRelsList)) {
+            for (CategoryPropertyRels categoryPropertyRels : categoryPropertyRelsList) {
+                CategoryProperty categoryProperty = new CategoryProperty();
+                categoryProperty.setCategoryId(Long.valueOf(categoryPropertyRels.getCategoryId()));
+                categoryProperty.setPropertyId(Long.valueOf(categoryPropertyRels.getPropertyId()));
+                categoryProperty.setIsValid(ValidEnum.VALID.getCode());
+                categoryProperty.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                Date currentDate = Calendar.getInstance().getTime();
+                categoryProperty.setCreateTime(currentDate);
+
+                categoryPropertiesScm.add(categoryProperty);
+            }
+            categoryPropertyService.insertList(categoryPropertiesScm);
         }
     }
 
