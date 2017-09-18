@@ -97,9 +97,9 @@ public class TrcToScmCategoryTest {
                 brandScm.setUpdateTime(brandScm.getCreateTime());
                 brandScm.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brandScm.getCreateTime())));
 
-                brandListScm.add(brandScm);
+                brandService.insert(brandScm);
             }
-            brandService.insertList(brandListScm);
+//            brandService.insertList(brandListScm);
         }
 
     }
@@ -134,9 +134,9 @@ public class TrcToScmCategoryTest {
                 property.setCreateTime(Calendar.getInstance().getTime());
                 property.setUpdateTime(property.getCreateTime());
                 property.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                propertyList.add(property);
+                propertyService.insert(property);
             }
-            propertyService.insertList(propertyList);
+//            propertyService.insertList(propertyList);
         }
     }
 
@@ -161,10 +161,10 @@ public class TrcToScmCategoryTest {
                 propertyValueScm.setIsValid(ZeroToNineEnum.ONE.getCode());
                 propertyValueScm.setCreateOperator("admin");
                 propertyValueScm.setSort(propertyValues.getSortOrder());
-                propertyValueList.add(propertyValueScm);
+                propertyValueService.insert(propertyValueScm);
 
             }
-            propertyValueService.insertList(propertyValueList);
+//            propertyValueService.insertList(propertyValueList);
         }
     }
 
@@ -181,7 +181,11 @@ public class TrcToScmCategoryTest {
                 Category category = new Category();
                 category.setId(Long.valueOf(categories.getCategoryId()));
                 category.setName(categories.getName());
-                category.setParentId(Long.valueOf(categories.getParentId()));
+                if (Long.valueOf(categories.getParentId())==0){
+                    category.setParentId(null);
+                }else {
+                    category.setParentId(Long.valueOf(categories.getParentId()));
+                }
                 category.setLevel(categories.getLevel());
                 category.setSort(categories.getSortOrder());
                 category.setClassifyDescribe(categories.getDescription());
@@ -195,17 +199,26 @@ public class TrcToScmCategoryTest {
                 Date currentDate = Calendar.getInstance().getTime();
                 category.setCreateTime(currentDate);
                 category.setUpdateTime(currentDate);
-
+                Example example2 = new Example(Categories.class);
+                Example.Criteria criteria2 = example.createCriteria();
+                criteria2.andEqualTo("parentId", categories.getCategoryId());
+                List<Categories> categoriesList2 = trcCategoriesService.selectByExample(example2);
+                if (!AssertUtil.collectionIsEmpty(categoriesList2)){
+                    category.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
+                }else {
+                    category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
+                }
                 StringBuilder sb = new StringBuilder();
                 if(categories.getPrimaryId() > 0)
                     sb.append(categories.getPrimaryId());
                 if(categories.getSecondaryId() > 0)
                     sb.append("|").append(categories.getSecondaryId());
+                category.setFullPathId(sb.toString());
                 category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
 
-                categoryScm.add(category);
+                categoryService.insert(category);
             }
-            categoryService.insertList(categoryScm);
+//            categoryService.insertList(categoryScm);
         }
     }
 
@@ -213,27 +226,26 @@ public class TrcToScmCategoryTest {
     public void categoryBrandTest() {
         CategoryBrandRels categoryBrandRels = new CategoryBrandRels();
         List<CategoryBrandRels> categoryBrandRelsList = trcCategoriesBrandsService.select(categoryBrandRels);
-        List<CategoryBrand> categoryBrandScm = new ArrayList<>();
         if (!AssertUtil.collectionIsEmpty(categoryBrandRelsList)) {
             for (CategoryBrandRels categoryBrandRels2 : categoryBrandRelsList) {
-                CategoryBrand categoryBrand = new CategoryBrand();
-                categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
-                categoryBrand.setBrandId(Long.valueOf(categoryBrandRels2.getBrandId()));
                 Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getCategoryId()));
-                AssertUtil.notNull(category, String.format("根据主键ID[%s]查询分类信息为空",categoryBrandRels2.getCategoryId()));
-                categoryBrand.setCategoryCode(category.getCategoryCode());
                 Brand brand = brandService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getBrandId()));
-                AssertUtil.notNull(brand, String.format("根据主键ID[%s]查询品牌信息为空",categoryBrandRels2.getBrandId()));
-                categoryBrand.setBrandCode(brand.getBrandCode());
-                categoryBrand.setIsValid(ValidEnum.VALID.getCode());
-                categoryBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                Date currentDate = Calendar.getInstance().getTime();
-                categoryBrand.setCreateTime(currentDate);
-                categoryBrand.setUpdateTime(currentDate);
-
-                categoryBrandScm.add(categoryBrand);
+                if(null != category && null != brand && category.getLevel() == 3){
+                    CategoryBrand categoryBrand = new CategoryBrand();
+                    categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
+                    categoryBrand.setBrandId(Long.valueOf(categoryBrandRels2.getBrandId()));
+                    categoryBrand.setCategoryCode(category.getCategoryCode());
+                    categoryBrand.setBrandCode(brand.getBrandCode());
+                    categoryBrand.setIsValid(ValidEnum.VALID.getCode());
+                    categoryBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                    Date currentDate = Calendar.getInstance().getTime();
+                    categoryBrand.setCreateTime(currentDate);
+                    categoryBrand.setUpdateTime(currentDate);
+                    if(category.getLevel() == 3){
+                        categoryBrandService.insert(categoryBrand);
+                    }
+                }
             }
-            categoryBrandService.insertList(categoryBrandScm);
         }
     }
 
@@ -241,20 +253,22 @@ public class TrcToScmCategoryTest {
     public void categoryPropertyTest() {
         CategoryPropertyRels categoryBrandRels = new CategoryPropertyRels();
         List<CategoryPropertyRels> categoryPropertyRelsList = trcCategoriesPropertiesService.select(categoryBrandRels);
-        List<CategoryProperty> categoryPropertiesScm = new ArrayList<>();
         if (!AssertUtil.collectionIsEmpty(categoryPropertyRelsList)) {
             for (CategoryPropertyRels categoryPropertyRels : categoryPropertyRelsList) {
-                CategoryProperty categoryProperty = new CategoryProperty();
-                categoryProperty.setCategoryId(Long.valueOf(categoryPropertyRels.getCategoryId()));
-                categoryProperty.setPropertyId(Long.valueOf(categoryPropertyRels.getPropertyId()));
-                categoryProperty.setIsValid(ValidEnum.VALID.getCode());
-                categoryProperty.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                Date currentDate = Calendar.getInstance().getTime();
-                categoryProperty.setCreateTime(currentDate);
-
-                categoryPropertiesScm.add(categoryProperty);
+                Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getCategoryId()));
+                Property property = propertyService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getPropertyId()));
+                if(null != category && null != property && category.getLevel() == 3){
+                    CategoryProperty categoryProperty = new CategoryProperty();
+                    categoryProperty.setCategoryId(Long.valueOf(categoryPropertyRels.getCategoryId()));
+                    categoryProperty.setPropertyId(Long.valueOf(categoryPropertyRels.getPropertyId()));
+                    categoryProperty.setIsValid(ValidEnum.VALID.getCode());
+                    categoryProperty.setPropertySort(1);
+                    categoryProperty.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                    Date currentDate = Calendar.getInstance().getTime();
+                    categoryProperty.setCreateTime(currentDate);
+                    categoryPropertyService.insert(categoryProperty);
+                }
             }
-            categoryPropertyService.insertList(categoryPropertiesScm);
         }
     }
 
