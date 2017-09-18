@@ -18,7 +18,7 @@
     </resultMap>
     <update id="changeState" parameterType="org.trc.domain.config.RequestFlow">
       UPDATE request_flow
-      SET status = #{status}
+      SET status = #{status}, response_param = #{responseParam}
       WHERE
       request_num = #{requestNum}
     </update>

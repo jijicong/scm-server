@@ -1,5 +1,6 @@
 package org.trc.biz.impl.retry;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,9 +14,7 @@ import org.trc.domain.config.QureyCondition;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.RetryConfig;
 import org.trc.domain.config.TimeRecord;
-import org.trc.enums.NetwordStateEnum;
-import org.trc.enums.RequestFlowTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.TrcConfig;
@@ -299,15 +298,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.BRAND_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendBrandNotice(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("品牌变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -327,15 +318,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.PROPERTY_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getPropertyUrl(),requestFlow.getRequestParam());
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("属性变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -354,15 +337,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryToTrc(trcConfig.getBrandUrl(),requestFlow.getRequestParam());
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("分类变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -381,15 +356,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_BRAND_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryBrandList(trcConfig.getCategoryBrandUrl(),requestFlow.getRequestParam());
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("分类品牌变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -408,15 +375,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.CATEFORY_PROPERTY_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendCategoryPropertyList(trcConfig.getCategoryPropertyUrl(),requestFlow.getRequestParam());
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("分类属性变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -435,15 +394,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.ITEM_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendItemsNotice(trcConfig.getItemUrl(),requestFlow.getRequestParam());
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("自营商品变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -462,15 +413,7 @@ public class RetryBiz implements IRetryBiz {
                 boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.EXTERNAL_ITEM_UPDATE_NOTICE.getCode());
                 if (result){
                     ToGlyResultDO resultDO = trcService.sendPropertyNotice(trcConfig.getExternalItemSkuUpdateUrl(),requestParam);
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("代发商品变更通知重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -491,15 +434,7 @@ public class RetryBiz implements IRetryBiz {
                     //执行重试
                     ChannelOrderResponse channelOrderResponse = JSONObject.parseObject(requestParam,ChannelOrderResponse.class);
                     ToGlyResultDO resultDO = trcService.sendOrderSubmitResultNotice(channelOrderResponse);
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("渠道接收订单提交结果重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
@@ -522,21 +457,47 @@ public class RetryBiz implements IRetryBiz {
                     //执行重试
                     LogisticNoticeForm logisticNoticeForm = JSONObject.parseObject(requestParam,LogisticNoticeForm.class);
                     ToGlyResultDO resultDO = trcService.sendLogisticInfoNotice(logisticNoticeForm);
-                    if (ZeroToNineEnum.ONE.getCode().equals(resultDO.getStatus())){
-                        RequestFlow tem = new RequestFlow();
-                        tem.setRequestNum(requestFlow.getRequestNum());
-                        tem.setStatus(NetwordStateEnum.SUCCESS.getCode());
-                        int count = requestFlowService.changeState(tem);
-                        if (count==0){
-                            log.error("发送物流信息给渠道重试：更新状态失败！");
-                        }
-                    }
+                    updateRequestFlow(requestFlow.getRequestNum(), resultDO);
                 }
             }else {
                 log.error("请求参数为空");
             }
         }catch (Exception e){
             log.error("发送物流信息给渠道重试异常："+e.getMessage(),e);
+        }
+    }
+
+    /**
+     * 更新请求流水
+     * @param requestNum
+     * @param resultDO
+     * @throws Exception
+     */
+    private void updateRequestFlow(String requestNum, ToGlyResultDO resultDO) throws Exception {
+        RequestFlow tem = new RequestFlow();
+        tem.setStatus(getRequestFlowStatus(resultDO.getStatus()));
+        tem.setRequestNum(requestNum);
+        tem.setResponseParam(JSONObject.toJSONString(resultDO));
+        int count = requestFlowService.changeState(tem);
+        if (count==0){
+            log.error(String.format("更新requestFlow数据[%s]状态失败！", JSONObject.toJSONString(tem)));
+        }
+    }
+
+    /**
+     * 获取请求流水状态
+     * @param status
+     * @return
+     */
+    private String getRequestFlowStatus(String status){
+        if (ZeroToNineEnum.ONE.getCode().equals(status)){
+            return RequestFlowStatusEnum.SEND_SUCCESS.getCode();
+        }else if(SuccessFailureEnum.SOCKET_TIME_OUT.getCode().equals(status)){
+            return RequestFlowStatusEnum.SEND_TIME_OUT.getCode();
+        }else if(SuccessFailureEnum.ERROR.getCode().equals(status)){
+            return RequestFlowStatusEnum.SEND_ERROR.getCode();
+        }else{
+            return RequestFlowStatusEnum.SEND_FAILED.getCode();
         }
     }
 
