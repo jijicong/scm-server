@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.impl.requestFlow.RequestFlowBiz;
+import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.retry.IRetryBiz;
 import org.trc.domain.config.QureyCondition;
 import org.trc.domain.config.RequestFlow;
@@ -18,13 +20,16 @@ import org.trc.enums.*;
 import org.trc.form.ChannelOrderResponse;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.TrcConfig;
+import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.model.ToGlyResultDO;
+import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.IRetryConfigService;
 import org.trc.service.config.ITimeRecordService;
 import org.trc.service.util.IRealIpService;
 import org.trc.util.IpUtil;
+import org.trc.util.ResponseAck;
 
 import java.net.SocketException;
 import java.util.*;
@@ -55,7 +60,6 @@ public class RetryBiz implements IRetryBiz {
     private IRealIpService iRealIpService;
 
 
-
     private static final int EXECUTOR_SIZE = 6;
     private static final Long hours = 3600000L;
 
@@ -67,6 +71,7 @@ public class RetryBiz implements IRetryBiz {
     private static final String ITEM_UPDATE_NOTICE = "ITEM_UPDATE_NOTICE";
     private static final String EXTERNAL_ITEM_UPDATE_NOTICE = "EXTERNAL_ITEM_UPDATE_NOTICE";
     private static final String CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT = "CHANNEL_RECEIVE_ORDER_SUBMIT_RESULT";
+    private static final String SUBMIT_LY_ORDER = "SUBMIT_LY_ORDER";
 
 
     public void brandUpdateNoticeRetry(){
@@ -185,6 +190,19 @@ public class RetryBiz implements IRetryBiz {
         condition.setType(RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode());
         executor(condition);
     }
+
+    /*public void submitLyOrderRetry(){
+        log.info("定时任务启动："+"submitLyOrderRetry");
+        if (!iRealIpService.isRealTimerService()) return;
+        //1、查询request flow表，找出需要重试的记录
+        List<String> status = new ArrayList<String>();
+        status.add(NetwordStateEnum.SOCKET_TIME_OUT.getCode());
+        QureyCondition condition = new QureyCondition();
+        condition.setList(status);
+        condition.setType(RequestFlowTypeEnum.LY_SUBMIT_ORDER.getCode());
+        executor(condition);
+    }*/
+
 
     private void executor(QureyCondition condition){
         List<RequestFlow> requestFlowList = null;
@@ -467,37 +485,51 @@ public class RetryBiz implements IRetryBiz {
         }
     }
 
+
+    //粮油下单失败重试
+    /*private void submitLyOrderRetry(RequestFlow requestFlow) throws Exception{
+        if(StringUtils.equals("GYLc0a892115058241363930", requestFlow.getRequestNum()))
+            System.out.println("@@@");
+        try {
+            log.info("重试请求参数："+requestFlow.getRequestParam());
+            String requestParam = requestFlow.getRequestParam();
+            if (StringUtils.isNotBlank(requestParam)){
+                boolean result = getNextExecut(requestFlow,RequestFlowTypeEnum.LY_SUBMIT_ORDER.getCode());
+                if (result){
+                    //执行重试
+                    LiangYouSupplierOrder liangYouSupplierOrder = JSONObject.parseObject(requestParam,LiangYouSupplierOrder.class);
+
+                    ResponseAck responseAck = new ResponseAck(ResponseAck.SUCCESS_CODE, "重试结束", "");
+                    updateRequestFlow(requestFlow.getRequestNum(), responseAck);
+                }
+            }else {
+                log.error("请求参数为空");
+            }
+        }catch (Exception e){
+            log.error("提交粮油订单重试异常："+e.getMessage(),e);
+        }
+    }*/
+
     /**
      * 更新请求流水
      * @param requestNum
      * @param resultDO
      * @throws Exception
      */
-    private void updateRequestFlow(String requestNum, ToGlyResultDO resultDO) throws Exception {
+    private void updateRequestFlow(String requestNum, Object resultDO) throws Exception {
         RequestFlow tem = new RequestFlow();
-        tem.setStatus(getRequestFlowStatus(resultDO.getStatus()));
+        if(resultDO instanceof ToGlyResultDO){
+            ToGlyResultDO toGlyResultDO = (ToGlyResultDO)resultDO;
+            tem.setStatus(RequestFlowBiz.getRequestFlowStatus(toGlyResultDO.getStatus()));
+        }else if(resultDO instanceof ResponseAck){
+            ResponseAck responseAck = (ResponseAck)resultDO;
+            tem.setStatus(RequestFlowBiz.getRequestFlowStatus(responseAck.getCode()));
+        }
         tem.setRequestNum(requestNum);
         tem.setResponseParam(JSONObject.toJSONString(resultDO));
         int count = requestFlowService.changeState(tem);
         if (count==0){
             log.error(String.format("更新requestFlow数据[%s]状态失败！", JSONObject.toJSONString(tem)));
-        }
-    }
-
-    /**
-     * 获取请求流水状态
-     * @param status
-     * @return
-     */
-    private String getRequestFlowStatus(String status){
-        if (ZeroToNineEnum.ONE.getCode().equals(status)){
-            return RequestFlowStatusEnum.SEND_SUCCESS.getCode();
-        }else if(SuccessFailureEnum.SOCKET_TIME_OUT.getCode().equals(status)){
-            return RequestFlowStatusEnum.SEND_TIME_OUT.getCode();
-        }else if(SuccessFailureEnum.ERROR.getCode().equals(status)){
-            return RequestFlowStatusEnum.SEND_ERROR.getCode();
-        }else{
-            return RequestFlowStatusEnum.SEND_FAILED.getCode();
         }
     }
 

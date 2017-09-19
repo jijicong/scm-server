@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.domain.config.RequestFlow;
+import org.trc.enums.RequestFlowStatusEnum;
 import org.trc.enums.RequestFlowTypeEnum;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.form.JDModel.ReturnTypeDO;
@@ -44,9 +45,9 @@ public class RequestFlowBiz implements IRequestFlowBiz {
             if(remoteInvokeResult instanceof AppResult){
                 AppResult appResult = (AppResult)remoteInvokeResult;
                 if (StringUtils.equals(appResult.getAppcode(), SuccessFailureEnum.SUCCESS.getCode())) {
-                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
+                    requestFlow.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
                 } else {
-                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
+                    requestFlow.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
                 }
                 requestFlow.setRemark(appResult.getDatabuffer());
             }else if(remoteInvokeResult instanceof ReturnTypeDO){
@@ -59,19 +60,11 @@ public class RequestFlowBiz implements IRequestFlowBiz {
                 requestFlow.setRemark(returnTypeDO.getResultMessage());
             }else if(remoteInvokeResult instanceof ToGlyResultDO){
                 ToGlyResultDO toGlyResultDO = (ToGlyResultDO)remoteInvokeResult;
-                if (StringUtils.equals(toGlyResultDO.getStatus(), SuccessFailureEnum.SUCCESS.getCode())) {
-                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                } else {
-                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                }
+                requestFlow.setStatus(getRequestFlowStatus(toGlyResultDO.getStatus()));
                 requestFlow.setRemark(toGlyResultDO.getMsg());
             }else if(remoteInvokeResult instanceof ResponseAck){
                 ResponseAck responseAck = (ResponseAck)remoteInvokeResult;
-                if (StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)) {
-                    requestFlow.setStatus(SuccessFailureEnum.SUCCESS.getCode());
-                } else {
-                    requestFlow.setStatus(SuccessFailureEnum.FAILURE.getCode());
-                }
+                requestFlow.setStatus(getRequestFlowStatus(responseAck.getCode()));
                 requestFlow.setRemark(responseAck.getMessage());
             }
             requestFlowService.insert(requestFlow);
@@ -81,4 +74,22 @@ public class RequestFlowBiz implements IRequestFlowBiz {
         }
 
     }
+
+    /**
+     * 获取请求流水状态
+     * @param status
+     * @return
+     */
+    public static String getRequestFlowStatus(String status){
+        if (SuccessFailureEnum.SUCCESS.getCode().equals(status) || ResponseAck.SUCCESS_CODE.equals(status)){
+            return RequestFlowStatusEnum.SEND_SUCCESS.getCode();
+        }else if(SuccessFailureEnum.SOCKET_TIME_OUT.getCode().equals(status)){
+            return RequestFlowStatusEnum.SEND_TIME_OUT.getCode();
+        }else if(SuccessFailureEnum.ERROR.getCode().equals(status)){
+            return RequestFlowStatusEnum.SEND_ERROR.getCode();
+        }else{
+            return RequestFlowStatusEnum.SEND_FAILED.getCode();
+        }
+    }
+
 }
