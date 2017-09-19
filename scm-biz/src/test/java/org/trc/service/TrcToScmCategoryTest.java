@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.domain.category.*;
+import org.trc.domain.supplier.Supplier;
 import org.trc.domain.trcDomain.*;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.SourceEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -23,12 +25,17 @@ import org.trc.service.impl.util.SerialUtilService;
 import org.trc.service.trcCategory.*;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
+import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration(locations = {"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
@@ -70,6 +77,8 @@ public class TrcToScmCategoryTest {
 
     private final static String FL_SERIALNAME = "FL";
     private final static Integer FL_LENGTH = 3;
+
+
 
     @Test
     public void brandTest() {
@@ -222,32 +231,65 @@ public class TrcToScmCategoryTest {
         }
     }
 
+    ExecutorService threadPool = Executors.newFixedThreadPool(100);
+
     @Test
     public void categoryBrandTest() {
         CategoryBrandRels categoryBrandRels = new CategoryBrandRels();
         List<CategoryBrandRels> categoryBrandRelsList = trcCategoriesBrandsService.select(categoryBrandRels);
-        if (!AssertUtil.collectionIsEmpty(categoryBrandRelsList)) {
-            for (CategoryBrandRels categoryBrandRels2 : categoryBrandRelsList) {
-                Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getCategoryId()));
-                Brand brand = brandService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getBrandId()));
-                if(null != category && null != brand && category.getLevel() == 3){
-                    CategoryBrand categoryBrand = new CategoryBrand();
-                    categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
-                    categoryBrand.setBrandId(Long.valueOf(categoryBrandRels2.getBrandId()));
-                    categoryBrand.setCategoryCode(category.getCategoryCode());
-                    categoryBrand.setBrandCode(brand.getBrandCode());
-                    categoryBrand.setIsValid(ValidEnum.VALID.getCode());
-                    categoryBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-                    Date currentDate = Calendar.getInstance().getTime();
-                    categoryBrand.setCreateTime(currentDate);
-                    categoryBrand.setUpdateTime(currentDate);
-                    if(category.getLevel() == 3){
-                        categoryBrandService.insert(categoryBrand);
+        List<List<CategoryBrandRels>> categoryBrandList = split(categoryBrandRelsList, 5000);
+        final CountDownLatch begin = new CountDownLatch(1);
+        final CountDownLatch end = new CountDownLatch(categoryBrandList.size());
+        for(List<CategoryBrandRels> categoryBrandRels1: categoryBrandList){
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        if (!AssertUtil.collectionIsEmpty(categoryBrandRels1)) {
+                            List<CategoryBrand> categoryBrands = new ArrayList<>();
+                            for (CategoryBrandRels categoryBrandRels2 : categoryBrandRels1) {
+                                Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getCategoryId()));
+                                Brand brand = brandService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getBrandId()));
+                                if(null != category && null != brand && category.getLevel() == 3){
+                                    CategoryBrand categoryBrand = new CategoryBrand();
+                                    categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
+                                    categoryBrand.setBrandId(Long.valueOf(categoryBrandRels2.getBrandId()));
+                                    categoryBrand.setCategoryCode(category.getCategoryCode());
+                                    categoryBrand.setBrandCode(brand.getBrandCode());
+                                    categoryBrand.setIsValid(ValidEnum.VALID.getCode());
+                                    categoryBrand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                                    Date currentDate = Calendar.getInstance().getTime();
+                                    categoryBrand.setCreateTime(currentDate);
+                                    categoryBrand.setUpdateTime(currentDate);
+                                    if(category.getLevel() == 3){
+                                        categoryBrands.add(categoryBrand);
+                                    }
+                                }
+                            }
+                            if(categoryBrands.size() > 0)
+                                categoryBrandService.insertList(categoryBrands);
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }finally {
+                        // 任务完成，end就减一
+                        end.countDown();
                     }
+
                 }
-            }
+            };
+            threadPool.submit(runnable);
         }
+        begin.countDown();
+        try {
+            end.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        threadPool.shutdown();
     }
+
+
 
     @Test
     public void categoryPropertyTest() {
@@ -270,6 +312,46 @@ public class TrcToScmCategoryTest {
                 }
             }
         }
+    }
+
+    /**
+     * 拆分集合
+     *
+     * @param <T>
+     * @param resList 要拆分的集合
+     * @param count   每个集合的元素个数
+     * @return 返回拆分后的各个集合
+     */
+    public static <T> List<List<T>> split(List<T> resList, int count) {
+
+        if (resList == null || count < 1)
+            return null;
+        List<List<T>> ret = new ArrayList<List<T>>();
+        int size = resList.size();
+        if (size <= count) { //数据量不足count指定的大小
+            ret.add(resList);
+        } else {
+            int pre = size / count;
+            int last = size % count;
+            //前面pre个集合，每个大小都是count个元素
+            for (int i = 0; i < pre; i++) {
+                List<T> itemList = new ArrayList<T>();
+                for (int j = 0; j < count; j++) {
+                    itemList.add(resList.get(i * count + j));
+                }
+                ret.add(itemList);
+            }
+            //last的进行处理
+            if (last > 0) {
+                List<T> itemList = new ArrayList<T>();
+                for (int i = 0; i < last; i++) {
+                    itemList.add(resList.get(pre * count + i));
+                }
+                ret.add(itemList);
+            }
+        }
+        return ret;
+
     }
 
 }
