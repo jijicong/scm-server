@@ -1752,21 +1752,30 @@ public class GoodsBiz implements IGoodsBiz {
         SupplyItemsExt supplyItems2 = new SupplyItemsExt();
         BeanUtils.copyProperties(queryModel, supplyItems2);
         Supplier supplier = new Supplier();
-        supplier.setIsValid(ValidEnum.NOVALID.getCode());//停用
+        //supplier.setIsValid(ValidEnum.NOVALID.getCode());//停用
         supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
         List<Supplier> supplierList = supplierService.select(supplier);
         if(!CollectionUtils.isEmpty(supplierList)){
+            List<Supplier> usedSupplierList = new ArrayList<>();
             StringBuilder sb = new StringBuilder();
             for(Supplier supplier2: supplierList){
-                sb.append(supplier2.getSupplierInterfaceId()).append(SupplyConstants.Symbol.COMMA);
-                if(StringUtils.isNotBlank(queryModel.getSupplierCode())){
-                    if(StringUtils.equals(queryModel.getSupplierCode(), supplier2.getSupplierInterfaceId())){
-                        return page;
+                if(StringUtils.equals(ValidEnum.VALID.getCode(), supplier2.getIsValid())){
+                    usedSupplierList.add(supplier2);
+                }else{
+                    sb.append(supplier2.getSupplierInterfaceId()).append(SupplyConstants.Symbol.COMMA);
+                    if(StringUtils.isNotBlank(queryModel.getSupplierCode())){
+                        if(StringUtils.equals(queryModel.getSupplierCode(), supplier2.getSupplierInterfaceId())){
+                            return page;
+                        }
                     }
                 }
             }
+            if(usedSupplierList.size() == 0)
+                return page;
             if(sb.length() > 0)
                 supplyItems2.setStopedSupplierCode(sb.substring(0, sb.length()-1));
+        }else {
+            return page;
         }
         ReturnTypeDO<Pagenation<SupplyItemsExt>> returnTypeDO = jdService.skuPage(supplyItems2, page);
         if(!returnTypeDO.getSuccess()){
