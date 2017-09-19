@@ -1050,11 +1050,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 sb.append(supplierOrderLogistics2.getLogisticsCorporation()).append(FLAG_EXT).append(supplierOrderLogistics2.getWaybillNumber()).append(HTML_BR);
             }
         }
-        if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
+        /*if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
             warehouseOrder.setLogisticsInfo(SupplyConstants.Order.SUPPLIER_JD_LOGISTICS_COMPANY);
         }else{
             warehouseOrder.setLogisticsInfo(sb.toString());
-        }
+        }*/
+        warehouseOrder.setLogisticsInfo(sb.toString());
     }
 
     /**
