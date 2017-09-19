@@ -27,6 +27,7 @@ import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
+import org.trc.domain.supplier.Supplier;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
 import org.trc.exception.ParamValidException;
@@ -48,6 +49,7 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.order.*;
+import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -138,6 +140,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ISystemConfigService systemConfigService;
     @Autowired
     private IRealIpService iRealIpService;
+    @Autowired
+    private ISupplierService supplierService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -1050,11 +1054,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 sb.append(supplierOrderLogistics2.getLogisticsCorporation()).append(FLAG_EXT).append(supplierOrderLogistics2.getWaybillNumber()).append(HTML_BR);
             }
         }
-        /*if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, warehouseOrder.getSupplierCode())){
-            warehouseOrder.setLogisticsInfo(SupplyConstants.Order.SUPPLIER_JD_LOGISTICS_COMPANY);
-        }else{
-            warehouseOrder.setLogisticsInfo(sb.toString());
-        }*/
         warehouseOrder.setLogisticsInfo(sb.toString());
     }
 
@@ -2219,19 +2218,34 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andIn("skuCode", skuCodeList);
         List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example);
         AssertUtil.notEmpty(externalItemSkuList, String.format("根据sku编码列表[%s]查询一件代发商品为空", CommonUtil.converCollectionToString(skuCodeList)));
-        Set<String> supplierCodes = new HashSet<>();
+        Set<String> supplierInterfaceIds = new HashSet<>();
         for (ExternalItemSku externalItemSku : externalItemSkuList) {
-            supplierCodes.add(externalItemSku.getSupplierCode());
+            supplierInterfaceIds.add(externalItemSku.getSupplierCode());
+        }
+        Example example2 = new Example(Supplier.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
+        criteria2.andIn("supplierInterfaceId", supplierInterfaceIds);
+        List<Supplier> supplierList = supplierService.selectByExample(example2);
+        for(String supplierInterfaceId: supplierInterfaceIds){
+            boolean bool = false;
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(supplier.getSupplierInterfaceId(), supplierInterfaceId)){
+                    bool = true;
+                    break;
+                }
+            }
+            if(!bool)
+                AssertUtil.notEmpty(supplierList, String.format("接口ID为[%s]的一件代发供应商信息为空", supplierInterfaceId));
         }
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
-        for (String supplierCode : supplierCodes) {
+        for (Supplier supplier: supplierList) {
             List<OrderItem> orderItemList2 = new ArrayList<OrderItem>();
             WarehouseOrder warehouseOrder = new WarehouseOrder();
-            warehouseOrder.setSupplierCode(supplierCode);
+            warehouseOrder.setSupplierCode(supplier.getSupplierCode());
             warehouseOrder.setShopId(shopOrder.getShopId());
             warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
             warehouseOrder.setShopName(shopOrder.getShopName());
-            warehouseOrder.setSupplierCode(supplierCode);
             warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
             warehouseOrder.setChannelCode(shopOrder.getChannelCode());
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
@@ -2241,17 +2255,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
             warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
             //流水号
-            String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER, supplierCode, ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+            String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER,
+                    supplier.getSupplierCode(), ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
             warehouseOrder.setWarehouseOrderCode(code);
             warehouseOrder.setOrderType(ZeroToNineEnum.ONE.getCode());
-            Boolean flag = false;
             for (ExternalItemSku externalItemSku : externalItemSkuList) {
-                if(org.apache.commons.lang.StringUtils.equals(supplierCode, externalItemSku.getSupplierCode())){
+                if(StringUtils.equals(supplier.getSupplierInterfaceId(), externalItemSku.getSupplierCode())){
                     OrderItem orderItem = getWarehouseOrderItems(warehouseOrder,externalItemSku, orderItems);
-                    if(!flag){
-                        warehouseOrder.setSupplierName(orderItem.getSupplierName());
-                        flag = true;
-                    }
+                    orderItem.setSupplierName(supplier.getSupplierName());
+                    warehouseOrder.setSupplierName(supplier.getSupplierName());
                     orderItemList2.add(orderItem);
                 }
             }
@@ -2309,12 +2321,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private OrderItem getWarehouseOrderItems(WarehouseOrder warehouseOrder, ExternalItemSku externalItemSku, List<OrderItem> orderItemList){
         for(OrderItem orderItem: orderItemList){
-            if(org.apache.commons.lang.StringUtils.equals(externalItemSku.getSkuCode(),orderItem.getSkuCode())){
+            if(StringUtils.equals(externalItemSku.getSkuCode(),orderItem.getSkuCode())){
                 orderItem.setPlatformOrderCode(warehouseOrder.getPlatformOrderCode());
                 orderItem.setShopOrderCode(warehouseOrder.getShopOrderCode());
                 orderItem.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
                 orderItem.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
-                orderItem.setSupplierName(externalItemSku.getSupplierName());
+                //orderItem.setSupplierName(externalItemSku.getSupplierName());
                 return orderItem;
             }
         }

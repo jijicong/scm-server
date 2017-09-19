@@ -1672,7 +1672,10 @@ public class GoodsBiz implements IGoodsBiz {
         }
         example.orderBy("updateTime").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
-        setSupplierName(page.getResult());
+        //setSupplierName(page.getResult());
+        for(ExternalItemSku externalItemSku: page.getResult()){
+            externalItemSku.setBarCode2(externalItemSku.getBarCode());
+        }
         return page;
     }
 
@@ -1741,17 +1744,6 @@ public class GoodsBiz implements IGoodsBiz {
         return "";
     }
 
-    /**
-     * 设置一件代发供应商名称
-     * @param externalItemSkuList
-     * @throws Exception
-     */
-    private void setSupplierName(List<ExternalItemSku> externalItemSkuList) throws Exception{
-        for(ExternalItemSku items: externalItemSkuList){
-            items.setSupplierName(getSupplierName(items.getSupplierCode()));
-        }
-    }
-
     @Override
     public Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm queryModel, Pagenation<SupplyItemsExt> page) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
@@ -1782,7 +1774,9 @@ public class GoodsBiz implements IGoodsBiz {
             throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_QUERY_EXCEPTION, returnTypeDO.getResultMessage());
         }
         page = returnTypeDO.getResult();
-        setOutSupplierName(page.getResult());
+        if(page.getResult().size() > 0){
+            setOutSupplierName(page.getResult());
+        }
         return page;
     }
 
@@ -1792,26 +1786,36 @@ public class GoodsBiz implements IGoodsBiz {
      * @throws Exception
      */
     private void setOutSupplierName(List<SupplyItemsExt> supplyItemsList) throws Exception{
+        Set<String> supplierInterfaceIds = new HashSet<>();
         for(SupplyItemsExt items: supplyItemsList){
-            items.setSupplyName(getSupplierName(items.getSupplierCode()));
+            supplierInterfaceIds.add(items.getSupplierCode());
+        }
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
+        criteria.andIn("supplierInterfaceId", supplierInterfaceIds);
+        List<Supplier> supplierList = supplierService.selectByExample(example);
+        for(String supplierInterfaceId: supplierInterfaceIds){
+            boolean bool = false;
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(supplier.getSupplierInterfaceId(), supplierInterfaceId)){
+                    bool = true;
+                    break;
+                }
+            }
+            if(!bool)
+                AssertUtil.notEmpty(supplierList, String.format("查询不到接口ID为[%s]的一件代发供应商信息", supplierInterfaceId));
+        }
+        for(SupplyItemsExt items: supplyItemsList){
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(items.getSupplierCode(), supplier.getSupplierInterfaceId())){
+                    items.setSupplyName(supplier.getSupplierName());
+                    break;
+                }
+            }
         }
     }
 
-    /**
-     * 获取一件代发供应商名称
-     * @param supplierCode
-     * @return
-     * @throws Exception
-     */
-    private String getSupplierName(String supplierCode) throws Exception{
-        DictForm form = new DictForm();
-        form.setTypeCode(SupplyConstants.SelectList.SUPPLIER);
-        form.setValue(supplierCode);
-        List<Dict> dicts = configBiz.queryDicts(form);
-        AssertUtil.notEmpty(dicts, String.format("根据字典类型编码[%s]和字典编码[%s]查询字典信息为空",
-                SupplyConstants.SelectList.SUPPLIER, supplierCode));
-        return dicts.get(0).getName();
-    }
 
     @Override
     @CacheEvit
@@ -2072,6 +2076,28 @@ public class GoodsBiz implements IGoodsBiz {
         List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
         Date sysDate = Calendar.getInstance().getTime();
         String sysDateStr = DateUtils.dateToCompactString(sysDate);
+        Map<String, String> supplierMap = new HashMap<>();
+        Set<String> supplierInterfaceIds = new HashSet<>();
+        for(SupplyItems items: supplyItems){
+            supplierInterfaceIds.add(items.getSupplierCode());
+            supplierMap.put(items.getSupplierCode(), items.getSupplyName());
+        }
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
+        criteria.andIn("supplierInterfaceId", supplierInterfaceIds);
+        List<Supplier> supplierList = supplierService.selectByExample(example);
+        for(String supplierInterfaceId: supplierInterfaceIds){
+            boolean bool = false;
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(supplier.getSupplierInterfaceId(), supplierInterfaceId)){
+                    bool = true;
+                    break;
+                }
+            }
+            if(!bool)
+                AssertUtil.notEmpty(supplierList, String.format("请先在供应商管理里面新增接口ID为[%s]的一件代发供应商[%s]", supplierInterfaceId, supplierMap.get(supplierInterfaceId)));
+        }
         for(SupplyItems items: supplyItems){
             ExternalItemSku externalItemSku = new ExternalItemSku();
             if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//新增代发商品
@@ -2098,7 +2124,12 @@ public class GoodsBiz implements IGoodsBiz {
                     externalItemSku.setMarketReferencePrice(items.getMarketPrice().longValue());
             }
             externalItemSku.setSupplierCode(items.getSupplierCode());
-            externalItemSku.setSupplierName(items.getSupplyName());
+            for(Supplier supplier: supplierList){
+                if(StringUtils.equals(items.getSupplierCode(), supplier.getSupplierInterfaceId())){
+                    externalItemSku.setSupplierName(supplier.getSupplierName());
+                    break;
+                }
+            }
             externalItemSku.setSupplierSkuCode(items.getSupplySku());
             String skuName = items.getSkuName().replaceAll(AND_QUOT_REPLACE, SupplyConstants.Symbol.AND);
             externalItemSku.setItemName(skuName);

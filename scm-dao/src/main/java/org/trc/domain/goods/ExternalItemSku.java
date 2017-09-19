@@ -60,6 +60,9 @@ public class ExternalItemSku implements Serializable{
     @Length(max = 64, message = "条形码长度不能超过64个")
     private String barCode;
 
+    @Transient
+    private String barCode2;
+
     // 供货价,单位/分
     @JsonSerialize(using = MoneySerializer.class)
     private Long supplyPrice;
@@ -435,5 +438,13 @@ public class ExternalItemSku implements Serializable{
 
     public void setSupplierCode2(String supplierCode2) {
         this.supplierCode2 = supplierCode2;
+    }
+
+    public String getBarCode2() {
+        return barCode2;
+    }
+
+    public void setBarCode2(String barCode2) {
+        this.barCode2 = barCode2;
     }
 }
