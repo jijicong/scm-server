@@ -152,12 +152,14 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        List<String> spuCodes = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode());
+        Map<String, Object> map = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode());
+        Object spuCodes = map.get("spuCodes");
         if(null != spuCodes){//根据SPU或者SKU来查询
-            if(spuCodes.size() == 0){
+            List<String> _spuCodes = (List<String>)spuCodes;
+            if(_spuCodes.size() == 0){
                 return page;
             }else{
-                criteria.andIn("spuCode", spuCodes);
+                criteria.andIn("spuCode", _spuCodes);
             }
         }
         if (null != queryModel.getCategoryId()) {//商品所属分类ID
@@ -171,7 +173,11 @@ public class GoodsBiz implements IGoodsBiz {
         }
         example.orderBy("updateTime").desc();
         page = itemsService.pagination(example, page, queryModel);
-        handerPage(page);
+        List<Skus> skusList = null;
+        if(null != map.get("skuList")){
+            skusList = (List<Skus>)map.get("skuList");
+        }
+        handerPage(page, skusList);
         //分页查询
         return page;
     }
@@ -331,7 +337,8 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
 
-    private List<String> handlerSkuCondition(String skuCode, String spuCode){
+    private Map<String, Object> handlerSkuCondition(String skuCode, String spuCode){
+        Map<String, Object> map = new HashMap<>();
         List<String> spuCodes = null;
         if(StringUtils.isNotBlank(spuCode)){
             spuCodes = new ArrayList<String>();
@@ -344,8 +351,7 @@ public class GoodsBiz implements IGoodsBiz {
             }
         }
         if(StringUtils.isNotBlank(skuCode)){
-            if(null == spuCodes)
-                spuCodes = new ArrayList<String>();
+            spuCodes = new ArrayList<String>();
             Example example = new Example(Skus.class);
             Example.Criteria criteria2 = example.createCriteria();
             criteria2.andLike("skuCode", "%" + skuCode + "%");
@@ -354,12 +360,14 @@ public class GoodsBiz implements IGoodsBiz {
                 for(Skus s : skusList){
                     spuCodes.add(s.getSpuCode());
                 }
+                map.put("skuList", skusList);
             }
         }
-        return spuCodes;
+        map.put("spuCodes", spuCodes);
+        return map;
     }
 
-    private void handerPage(Pagenation<Items> page){
+    private void handerPage(Pagenation<Items> page, List<Skus> skusList){
         List<Long> categoryIds = new ArrayList<Long>();
         List<Long> brandIds = new ArrayList<Long>();
         for(Items item : page.getResult()){
@@ -373,29 +381,34 @@ public class GoodsBiz implements IGoodsBiz {
             setBrandName(page.getResult(), brandIds);
         }
         //设置商品对应的Sku信息
-        setSkus(page.getResult());
+        setSkus(page.getResult(), skusList);
     }
 
     /**
      * 设置商品对应的sku
      * @param items
      */
-    private void setSkus(List<Items> items){
-        List<String> spuCodes = new ArrayList<String>();
-        for(Items item : items){
-            spuCodes.add(item.getSpuCode());
-        }
-        if(spuCodes.size() > 0){
-            //查询商品对应的SKU
-            Example example = new Example(Skus.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andIn("spuCode", spuCodes);
-            example.orderBy("isValid").desc();
-            example.orderBy("skuCode").asc();
-            List<Skus> skusList = skusService.selectByExample(example);
-            AssertUtil.notEmpty(skusList, String.format("批量查询商品SPU编码为[%s]的商品对应的SKU信息为空", CommonUtil.converCollectionToString(spuCodes)));
+    private void setSkus(List<Items> items, List<Skus> skusList){
+        if(items.size() > 0){
+            List<Skus> _skusList = new ArrayList<>();
+            if(null != skusList){
+                _skusList = skusList;
+            }else{
+                List<String> spuCodes = new ArrayList<String>();
+                for(Items item : items){
+                    spuCodes.add(item.getSpuCode());
+                }
+                //查询商品对应的SKU
+                Example example = new Example(Skus.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andIn("spuCode", spuCodes);
+                example.orderBy("isValid").desc();
+                example.orderBy("skuCode").asc();
+                _skusList = skusService.selectByExample(example);
+                AssertUtil.notEmpty(_skusList, String.format("批量查询商品SPU编码为[%s]的商品对应的SKU信息为空", CommonUtil.converCollectionToString(spuCodes)));
+            }
             List<String> skuCodes = new ArrayList<String>();
-            for(Skus skus : skusList){
+            for(Skus skus : _skusList){
                 skuCodes.add(skus.getSkuCode());
             }
             //查询所有sku对应的采购属性
@@ -403,7 +416,7 @@ public class GoodsBiz implements IGoodsBiz {
             Example.Criteria criteria2 = example2.createCriteria();
             criteria2.andIn("skuCode", skuCodes);
             List<ItemSalesPropery> itemSalesProperies = itemSalesProperyService.selectByExample(example2);
-            AssertUtil.notEmpty(skusList, String.format("批量查询商品SKU编码为[%s]的SKU对应的采购属性信息为空", CommonUtil.converCollectionToString(skuCodes)));
+            AssertUtil.notEmpty(itemSalesProperies, String.format("批量查询商品SKU编码为[%s]的SKU对应的采购属性信息为空", CommonUtil.converCollectionToString(skuCodes)));
             //查询所有采购属性详细信息
             List<Long> propertyIds = new ArrayList<Long>();
             for(ItemSalesPropery itemSalesPropery : itemSalesProperies){
@@ -413,15 +426,15 @@ public class GoodsBiz implements IGoodsBiz {
             Example.Criteria criteria3 = example3.createCriteria();
             criteria3.andIn("id", propertyIds);
             List<Property> propertyList = propertyService.selectByExample(example3);
-            AssertUtil.notEmpty(skusList, String.format("批量查询属性ID为[%s]的属性对应的信息为空", CommonUtil.converCollectionToString(propertyIds)));
+            AssertUtil.notEmpty(propertyList, String.format("批量查询属性ID为[%s]的属性对应的信息为空", CommonUtil.converCollectionToString(propertyIds)));
             //设置SKU的采购属性组合名称
-            for(Skus skus : skusList){
+            for(Skus skus : _skusList){
                 skus.setPropertyCombineName(getPropertyCombineName(skus, itemSalesProperies, propertyList));
             }
             //设置商品SKU
             for(Items item : items){
                 List<Skus> _tmpSkus = new ArrayList<Skus>();
-                for(Skus skus : skusList){
+                for(Skus skus : _skusList){
                     if(StringUtils.equals(item.getSpuCode(), skus.getSpuCode())){
                         _tmpSkus.add(skus);
                     }
@@ -517,7 +530,7 @@ public class GoodsBiz implements IGoodsBiz {
                 }
                 //第三级分类名称
                 for(Category c2 : categories){
-                    if(c.getId() == c2.getId()){
+                    if(c.getId().longValue() == c2.getId().longValue()){
                         sb.append(CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
                         break;
                     }
