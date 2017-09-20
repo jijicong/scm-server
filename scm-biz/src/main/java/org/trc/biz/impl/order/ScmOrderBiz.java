@@ -2242,7 +2242,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for (Supplier supplier: supplierList) {
             List<OrderItem> orderItemList2 = new ArrayList<OrderItem>();
             WarehouseOrder warehouseOrder = new WarehouseOrder();
-            warehouseOrder.setSupplierCode(supplier.getSupplierCode());
+            warehouseOrder.setSupplierCode(supplier.getSupplierInterfaceId());
             warehouseOrder.setShopId(shopOrder.getShopId());
             warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
             warehouseOrder.setShopName(shopOrder.getShopName());
