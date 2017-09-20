@@ -565,6 +565,11 @@ public class SupplierBiz implements ISupplierBiz {
         }
         if (StringUtils.equals(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING, supplier.getSupplierKindCode())) {//一件代发供应商
             AssertUtil.notBlank(supplier.getSupplierInterfaceId(), "供应商接口ID不能为空");
+            Supplier supplier2 = new Supplier();
+            supplier2.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
+            supplier2.setSupplierInterfaceId(supplier.getSupplierInterfaceId());
+            List<Supplier> supplierList = supplierService.select(supplier2);
+            AssertUtil.isTrue(supplierList.size()==0, String.format("已存在供应商接口ID为%s的供应商%s", supplier.getSupplierInterfaceId(), supplier.getSupplierName()));
         }
     }
 
