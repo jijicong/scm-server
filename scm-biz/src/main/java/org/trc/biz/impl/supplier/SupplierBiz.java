@@ -331,7 +331,7 @@ public class SupplierBiz implements ISupplierBiz {
     public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                              SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         //参数校验
-        supplierSaveCheck(supplier, certificate);
+        supplierSaveCheck(supplier, certificate, ZeroToNineEnum.ZERO.getCode());
         //生成序列号
         String code = serialUtilService.generateCode(SupplyConstants.Serial.SUPPLIER_LENGTH, SupplyConstants.Serial.SUPPLIER_NAME);
         supplier.setSupplierCode(code);
@@ -402,7 +402,7 @@ public class SupplierBiz implements ISupplierBiz {
         AssertUtil.notNull(supplier.getId(), "更新供应商供应商ID不能为空");
         AssertUtil.notNull(supplier.getSupplierCode(), "更新供应商供应商编号不能为空");
         //参数校验
-        supplierSaveCheck(supplier, certificate);
+        supplierSaveCheck(supplier, certificate, ZeroToNineEnum.ONE.getCode());
         //是否也要修改启停用
         boolean isValidFlag = isSupplerValid(supplier);
         //更新供应商
@@ -479,8 +479,9 @@ public class SupplierBiz implements ISupplierBiz {
      *
      * @param supplier
      * @param certificate
+     * @param flag 0-新增,1-修改
      */
-    private void supplierSaveCheck(Supplier supplier, Certificate certificate) {
+    private void supplierSaveCheck(Supplier supplier, Certificate certificate, String flag) {
         if (StringUtils.equals(SupplyConstants.Supply.Supplier.INTERNAL_SUPPLIER, supplier.getSupplierTypeCode()) &&
                 StringUtils.equals(SupplyConstants.Supply.Supplier.SUPPLIER_PURCHASE, supplier.getSupplierKindCode())) {//国内供应商
             AssertUtil.notBlank(supplier.getCertificateTypeId(), "证件类型ID不能为空");
@@ -569,7 +570,10 @@ public class SupplierBiz implements ISupplierBiz {
             supplier2.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
             supplier2.setSupplierInterfaceId(supplier.getSupplierInterfaceId());
             List<Supplier> supplierList = supplierService.select(supplier2);
-            AssertUtil.isTrue(supplierList.size()==0, String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
+            if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode()))
+                AssertUtil.isTrue(supplierList.size()==0, String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
+            else
+                AssertUtil.isTrue(supplierList.size()==1, String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
         }
     }
 
