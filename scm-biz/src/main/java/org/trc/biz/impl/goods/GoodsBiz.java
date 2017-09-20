@@ -657,7 +657,7 @@ public class GoodsBiz implements IGoodsBiz {
         skus.setSpuCode(items.getSpuCode());
         List<Skus> updateSkus = updateSkus(skus, userId);
         //根据sku启停用状态设置商品启停用状态
-        boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
+        //boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
         //保存商品基础信息
         updateItemsBase(items);
         //保存自然属性信息
@@ -669,9 +669,9 @@ public class GoodsBiz implements IGoodsBiz {
         //商品编辑通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.EDIT_ITEMS);
         //记录操作日志
-        String remark = null;
-        if(isValidUpdate)
-            remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());
+        String remark = "SPU信息更新";
+        /*if(isValidUpdate)
+            remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());*/
         logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),remark, null);
     }
 
