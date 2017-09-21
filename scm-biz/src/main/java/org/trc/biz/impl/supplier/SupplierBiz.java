@@ -855,7 +855,7 @@ public class SupplierBiz implements ISupplierBiz {
         for (SupplierCategory s : currentCategorys) {
             Boolean flag = false;
             for (SupplierCategory s2 : tmpList) {
-                if (s.getCategoryId() == s2.getCategoryId()) {
+                if (s.getCategoryId().longValue() == s2.getCategoryId().longValue()) {
                     flag = true;
                     break;
                 }
