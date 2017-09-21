@@ -572,8 +572,15 @@ public class SupplierBiz implements ISupplierBiz {
             List<Supplier> supplierList = supplierService.select(supplier2);
             if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode()))
                 AssertUtil.isTrue(supplierList.size()==0, String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
-            else
-                AssertUtil.isTrue(supplierList.size()==1, String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
+            else {
+                if(supplierList.size() > 0){
+                    if(supplierList.size() == 1){
+                        AssertUtil.isTrue(StringUtils.equals(supplier.getSupplierCode(), supplierList.get(0).getSupplierCode()), String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
+                    }else{
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("供应商接口ID为“%s”的供应商已存在！", supplier.getSupplierInterfaceId()));
+                    }
+                }
+            }
         }
     }
 
@@ -848,7 +855,7 @@ public class SupplierBiz implements ISupplierBiz {
         for (SupplierCategory s : currentCategorys) {
             Boolean flag = false;
             for (SupplierCategory s2 : tmpList) {
-                if (s.getCategoryId() == s2.getCategoryId()) {
+                if (s.getCategoryId().longValue() == s2.getCategoryId().longValue()) {
                     flag = true;
                     break;
                 }
