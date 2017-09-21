@@ -2,18 +2,19 @@ package org.trc.service;
 
 import com.alibaba.fastjson.JSON;
 import com.qiniu.util.Json;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.trcDomain.*;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.SourceEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
+import org.trc.exception.CategoryException;
 import org.trc.service.category.ICategoryBrandService;
 import org.trc.service.category.ICategoryPropertyService;
 import org.trc.service.category.ICategoryService;
@@ -26,6 +27,7 @@ import org.trc.service.trcCategory.*;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.ParamsUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
@@ -79,7 +81,6 @@ public class TrcToScmCategoryTest {
     private final static Integer FL_LENGTH = 3;
 
 
-
     @Test
     public void brandTest() {
         Example example = new Example(Brands.class);
@@ -91,7 +92,7 @@ public class TrcToScmCategoryTest {
         if (!AssertUtil.collectionIsEmpty(brandsList)) {
             for (Brands brandTrc : brandsList) {
                 Brand brandScm = new Brand();
-                brandScm.setId(Long.valueOf(brandTrc.getBrandId()));
+//                brandScm.setId(Long.valueOf(brandTrc.getBrandId()));
                 brandScm.setAlise(brandTrc.getAlias());
                 brandScm.setLogo(brandTrc.getLogo());
                 brandScm.setName(brandTrc.getName());
@@ -105,13 +106,14 @@ public class TrcToScmCategoryTest {
                 brandScm.setCreateTime(Calendar.getInstance().getTime());
                 brandScm.setUpdateTime(brandScm.getCreateTime());
                 brandScm.setBrandCode(serialUtilService.generateCode(BRAND_CODE_LENGTH, BRAND_CODE_EX_NAME, DateUtils.dateToCompactString(brandScm.getCreateTime())));
-
-                brandService.insert(brandScm);
+                brandListScm.add(brandScm);
+//                brandService.insert(brandScm);
             }
-//            brandService.insertList(brandListScm);
+            brandService.insertList(brandListScm);
         }
 
     }
+
     @Test
     public void propertyTest() {
         Example example = new Example(Properties.class);
@@ -120,20 +122,19 @@ public class TrcToScmCategoryTest {
         List<Properties> propertiesList = trcPropertiesService.selectByExample(example);
         List<Property> propertyList = new ArrayList<>();
         if (!AssertUtil.collectionIsEmpty(propertiesList)) {
-            for (Properties properties:  propertiesList) {
+            for (Properties properties : propertiesList) {
                 Property property = new Property();
-                property.setId(Long.valueOf(properties.getPropertyId()));
                 property.setDescription(properties.getDescription());
                 property.setLastEditOperator("admin");
                 property.setName(properties.getName());
-                if (properties.getType().equals("Natural")){
+                if (properties.getType().equals("Natural")) {
                     property.setTypeCode("natureProperty");
-                }else {
+                } else {
                     property.setTypeCode("purchaseProperty");
                 }
-                if (properties.getShowType().equals("Text")){
+                if (properties.getShowType().equals("Text")) {
                     property.setValueType(ZeroToNineEnum.ZERO.getCode());
-                }else {
+                } else {
                     property.setValueType(ZeroToNineEnum.ONE.getCode());
                 }
                 property.setIsValid(ZeroToNineEnum.ONE.getCode());
@@ -143,16 +144,41 @@ public class TrcToScmCategoryTest {
                 property.setCreateTime(Calendar.getInstance().getTime());
                 property.setUpdateTime(property.getCreateTime());
                 property.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                int trcId = properties.getPropertyId();
                 propertyService.insert(property);
+                insertPropertyValue(property, trcId);
+//                propertyList.add(property);
             }
 //            propertyService.insertList(propertyList);
         }
     }
 
+    private void insertPropertyValue(Property property, int trcId) {
+        Example example = new Example(PropertyValues.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("propertyId", trcId);
+        List<PropertyValues> propertiesValueList = trcPropertiesValuesService.selectByExample(example);
+        List<PropertyValue> propertyValueList = new ArrayList<>();
+        for (PropertyValues propertyValue : propertiesValueList) {
+            PropertyValue propertyValueScm = new PropertyValue();
+//            propertyValueScm.setId(Long.valueOf(propertyValue.getPropertyValueId()));
+            propertyValueScm.setPropertyId(Long.valueOf(property.getId()));
+            propertyValueScm.setPicture(propertyValue.getImage());
+            propertyValueScm.setValue(propertyValue.getText());
+            propertyValueScm.setCreateTime(Calendar.getInstance().getTime());
+            propertyValueScm.setUpdateTime(propertyValueScm.getCreateTime());
+            propertyValueScm.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            propertyValueScm.setIsValid(ZeroToNineEnum.ONE.getCode());
+            propertyValueScm.setCreateOperator("admin");
+            propertyValueScm.setSort(propertyValue.getSortOrder());
+            propertyValueList.add(propertyValueScm);
+        }
+        propertyValueService.insertList(propertyValueList);
+    }
 
     @Test
     public void propertyValueTest() {
-        Example example = new Example(PropertyValues.class);
+       /* Example example = new Example(PropertyValues.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIsNotNull("propertyValueId");
         List<PropertyValues> propertyValuesList = trcPropertiesValuesService.selectByExample(example);
@@ -170,36 +196,29 @@ public class TrcToScmCategoryTest {
                 propertyValueScm.setIsValid(ZeroToNineEnum.ONE.getCode());
                 propertyValueScm.setCreateOperator("admin");
                 propertyValueScm.setSort(propertyValues.getSortOrder());
-                propertyValueService.insert(propertyValueScm);
+                propertyValueList.add(propertyValueScm);
+//                propertyValueService.insert(propertyValueScm);
 
             }
-//            propertyValueService.insertList(propertyValueList);
-        }
+            propertyValueService.insertList(propertyValueList);
+        }*/
     }
 
     @Test
-    public void categoryTest() {
+    public void categoryTest() throws Exception {
         Example example = new Example(Categories.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("disabled", "0");
-
         List<Categories> categoriesList = trcCategoriesService.selectByExample(example);
-        List<Category> categoryScm = new ArrayList<>();
         if (!AssertUtil.collectionIsEmpty(categoriesList)) {
             for (Categories categories : categoriesList) {
                 Category category = new Category();
-                category.setId(Long.valueOf(categories.getCategoryId()));
                 category.setName(categories.getName());
-                if (Long.valueOf(categories.getParentId())==0){
-                    category.setParentId(null);
-                }else {
-                    category.setParentId(Long.valueOf(categories.getParentId()));
-                }
                 category.setLevel(categories.getLevel());
                 category.setSort(categories.getSortOrder());
                 category.setClassifyDescribe(categories.getDescription());
                 int disabled = categories.getDisabled();
-                if(disabled == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()))//正常
+                if (disabled == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()))//正常
                     category.setIsValid(ValidEnum.VALID.getCode());
                 else
                     category.setIsValid(ValidEnum.NOVALID.getCode());
@@ -208,26 +227,10 @@ public class TrcToScmCategoryTest {
                 Date currentDate = Calendar.getInstance().getTime();
                 category.setCreateTime(currentDate);
                 category.setUpdateTime(currentDate);
-                Example example2 = new Example(Categories.class);
-                Example.Criteria criteria2 = example.createCriteria();
-                criteria2.andEqualTo("parentId", categories.getCategoryId());
-                List<Categories> categoriesList2 = trcCategoriesService.selectByExample(example2);
-                if (!AssertUtil.collectionIsEmpty(categoriesList2)){
-                    category.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
-                }else {
-                    category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
-                }
-                StringBuilder sb = new StringBuilder();
-                if(categories.getPrimaryId() > 0)
-                    sb.append(categories.getPrimaryId());
-                if(categories.getSecondaryId() > 0)
-                    sb.append("|").append(categories.getSecondaryId());
-                category.setFullPathId(sb.toString());
                 category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
-
-                categoryService.insert(category);
+                category.setCreateOperator("admin");
+                saveCategory(category);
             }
-//            categoryService.insertList(categoryScm);
         }
     }
 
@@ -240,17 +243,17 @@ public class TrcToScmCategoryTest {
         List<List<CategoryBrandRels>> categoryBrandList = split(categoryBrandRelsList, 5000);
         final CountDownLatch begin = new CountDownLatch(1);
         final CountDownLatch end = new CountDownLatch(categoryBrandList.size());
-        for(List<CategoryBrandRels> categoryBrandRels1: categoryBrandList){
+        for (List<CategoryBrandRels> categoryBrandRels1 : categoryBrandList) {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    try{
+                    try {
                         if (!AssertUtil.collectionIsEmpty(categoryBrandRels1)) {
                             List<CategoryBrand> categoryBrands = new ArrayList<>();
                             for (CategoryBrandRels categoryBrandRels2 : categoryBrandRels1) {
                                 Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getCategoryId()));
                                 Brand brand = brandService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getBrandId()));
-                                if(null != category && null != brand && category.getLevel() == 3){
+                                if (null != category && null != brand && category.getLevel() == 3) {
                                     CategoryBrand categoryBrand = new CategoryBrand();
                                     categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
                                     categoryBrand.setBrandId(Long.valueOf(categoryBrandRels2.getBrandId()));
@@ -261,17 +264,17 @@ public class TrcToScmCategoryTest {
                                     Date currentDate = Calendar.getInstance().getTime();
                                     categoryBrand.setCreateTime(currentDate);
                                     categoryBrand.setUpdateTime(currentDate);
-                                    if(category.getLevel() == 3){
+                                    if (category.getLevel() == 3) {
                                         categoryBrands.add(categoryBrand);
                                     }
                                 }
                             }
-                            if(categoryBrands.size() > 0)
+                            if (categoryBrands.size() > 0)
                                 categoryBrandService.insertList(categoryBrands);
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
-                    }finally {
+                    } finally {
                         // 任务完成，end就减一
                         end.countDown();
                     }
@@ -289,8 +292,6 @@ public class TrcToScmCategoryTest {
         threadPool.shutdown();
     }
 
-
-
     @Test
     public void categoryPropertyTest() {
         CategoryPropertyRels categoryBrandRels = new CategoryPropertyRels();
@@ -299,7 +300,7 @@ public class TrcToScmCategoryTest {
             for (CategoryPropertyRels categoryPropertyRels : categoryPropertyRelsList) {
                 Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getCategoryId()));
                 Property property = propertyService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getPropertyId()));
-                if(null != category && null != property && category.getLevel() == 3){
+                if (null != category && null != property && category.getLevel() == 3) {
                     CategoryProperty categoryProperty = new CategoryProperty();
                     categoryProperty.setCategoryId(Long.valueOf(categoryPropertyRels.getCategoryId()));
                     categoryProperty.setPropertyId(Long.valueOf(categoryPropertyRels.getPropertyId()));
@@ -354,4 +355,72 @@ public class TrcToScmCategoryTest {
 
     }
 
+    public void saveCategory(Category category) throws Exception {
+        category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
+        category.setSource(SourceEnum.SCM.getCode());
+        category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
+        category.setCreateTime(Calendar.getInstance().getTime());
+        category.setUpdateTime(Calendar.getInstance().getTime());
+
+        int count = categoryService.insert(category);
+        if (count == 0) {
+            String msg = "增加分类" + JSON.toJSONString(category) + "数据库操作失败";
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_SAVE_EXCEPTION, msg);
+        }
+        //判断新增的分类等级
+        if (category.getLevel() == 1) {
+            category.setFullPathId(null);
+        } else if (category.getLevel() == 2) {
+            category.setFullPathId(category.getParentId().toString());
+        } else {
+            category.setFullPathId(queryPathId(category.getParentId()) + SupplyConstants.Symbol.FULL_PATH_SPLIT + category.getParentId());
+        }
+        updateCategory(category, true);
+        //判断叶子节点,并更新
+        if (category.getLevel() != 1 && isLeaf(category.getParentId()) != 0) {
+            updateIsLeaf(category);
+        }
+    }
+
+    public int isLeaf(Long id) throws Exception {
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("parentId", id);
+        return categoryService.selectByExample(example).size();
+    }
+    public Long queryPathId(Long parentId) throws Exception {
+        AssertUtil.notNull(parentId, "根据parentId查询父级分类,参数parentId为空");
+        Category category = new Category();
+        category.setId(parentId);
+        return categoryService.selectOne(category).getParentId();
+    }
+    public void updateCategory(Category category, boolean isSave) throws Exception {
+        AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
+        Category oldCategory = new Category();
+        oldCategory.setId(category.getId());
+        //判断是否叶子节点
+        if (isLeaf(category.getId()) == 0) {
+            category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
+        } else {
+            category.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
+        }
+        category.setUpdateTime(Calendar.getInstance().getTime());
+        int count = categoryService.updateByPrimaryKeySelective(category);
+        if (count == 0) {
+            String msg = "修改分类" + JSON.toJSONString(category) + "数据库操作失败";
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+        }
+    }
+
+    public void updateIsLeaf(Category category) throws Exception {
+        AssertUtil.notNull(category.getParentId(), "根据分类ID查询分类父节点的参数id为空");
+        Category categoryParent = new Category();
+        categoryParent.setId(category.getParentId());
+        categoryParent.setIsLeaf(ZeroToNineEnum.ZERO.getCode());
+        int count = categoryService.updateByPrimaryKeySelective(categoryParent);
+        if (count == 0) {
+            String msg = "更新分类是否叶子节点" + JSON.toJSONString(category) + "操作失败";
+            throw new CategoryException(ExceptionEnum.CATEGORY_CATEGORY_UPDATE_EXCEPTION, msg);
+        }
+    }
 }
