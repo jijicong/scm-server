@@ -95,6 +95,7 @@ public class TrcToScmCategoryTest {
 //                brandScm.setId(Long.valueOf(brandTrc.getBrandId()));
                 brandScm.setAlise(brandTrc.getAlias());
                 brandScm.setLogo(brandTrc.getLogo());
+                brandScm.setTrcId(brandTrc.getBrandId());
                 brandScm.setName(brandTrc.getName());
                 brandScm.setIsValid(ZeroToNineEnum.ONE.getCode());
                 brandScm.setSource(SourceEnum.TRC.getCode());
@@ -126,6 +127,7 @@ public class TrcToScmCategoryTest {
                 Property property = new Property();
                 property.setDescription(properties.getDescription());
                 property.setLastEditOperator("admin");
+                property.setTrcId(properties.getPropertyId());
                 property.setName(properties.getName());
                 if (properties.getType().equals("Natural")) {
                     property.setTypeCode("natureProperty");
@@ -163,6 +165,7 @@ public class TrcToScmCategoryTest {
             PropertyValue propertyValueScm = new PropertyValue();
 //            propertyValueScm.setId(Long.valueOf(propertyValue.getPropertyValueId()));
             propertyValueScm.setPropertyId(Long.valueOf(property.getId()));
+            propertyValueScm.setTrcId(propertyValue.getPropertyValueId());
             propertyValueScm.setPicture(propertyValue.getImage());
             propertyValueScm.setValue(propertyValue.getText());
             propertyValueScm.setCreateTime(Calendar.getInstance().getTime());
@@ -171,6 +174,7 @@ public class TrcToScmCategoryTest {
             propertyValueScm.setIsValid(ZeroToNineEnum.ONE.getCode());
             propertyValueScm.setCreateOperator("admin");
             propertyValueScm.setSort(propertyValue.getSortOrder());
+
             propertyValueList.add(propertyValueScm);
         }
         propertyValueService.insertList(propertyValueList);
@@ -209,13 +213,25 @@ public class TrcToScmCategoryTest {
         Example example = new Example(Categories.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("disabled", "0");
+        criteria.andEqualTo("level", 3);
         List<Categories> categoriesList = trcCategoriesService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(categoriesList)) {
             for (Categories categories : categoriesList) {
                 Category category = new Category();
                 category.setName(categories.getName());
                 category.setLevel(categories.getLevel());
+                if (category.getLevel()!=1){
+                    Example example2 = new Example(Category.class);
+                    Example.Criteria criteria2 = example2.createCriteria();
+                    criteria2.andEqualTo("trcId", categories.getParentId());
+                    List<Category> categoryList = categoryService.selectByExample(example2);
+                    if (!AssertUtil.collectionIsEmpty(categoryList)){
+                        Category categoryParent = categoryList.get(0);
+                        category.setParentId(categoryParent.getId());
+                    }
+                }
                 category.setSort(categories.getSortOrder());
+                category.setTrcId(categories.getCategoryId());
                 category.setClassifyDescribe(categories.getDescription());
                 int disabled = categories.getDisabled();
                 if (disabled == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()))//正常
@@ -229,6 +245,7 @@ public class TrcToScmCategoryTest {
                 category.setUpdateTime(currentDate);
                 category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
                 category.setCreateOperator("admin");
+                category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
                 saveCategory(category);
             }
         }
@@ -251,8 +268,24 @@ public class TrcToScmCategoryTest {
                         if (!AssertUtil.collectionIsEmpty(categoryBrandRels1)) {
                             List<CategoryBrand> categoryBrands = new ArrayList<>();
                             for (CategoryBrandRels categoryBrandRels2 : categoryBrandRels1) {
-                                Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getCategoryId()));
-                                Brand brand = brandService.selectByPrimaryKey(Long.valueOf(categoryBrandRels2.getBrandId()));
+                                Category category = null;
+                                Example example2 = new Example(Category.class);
+                                Example.Criteria criteria2 = example2.createCriteria();
+                                criteria2.andEqualTo("trcId", categoryBrandRels2.getCategoryId());
+                                List<Category> categoryList = categoryService.selectByExample(example2);
+                                if (!AssertUtil.collectionIsEmpty(categoryList)){
+                                    category = categoryList.get(0);
+                                }
+
+                                Brand brand = null;
+                                Example example3 = new Example(Brand.class);
+                                Example.Criteria criteria3 = example3.createCriteria();
+                                criteria3.andEqualTo("trcId", categoryBrandRels2.getCategoryId());
+                                List<Brand> brandList = brandService.selectByExample(example3);
+                                if (!AssertUtil.collectionIsEmpty(brandList)){
+                                    brand = brandList.get(0);
+                                }
+
                                 if (null != category && null != brand && category.getLevel() == 3) {
                                     CategoryBrand categoryBrand = new CategoryBrand();
                                     categoryBrand.setCategoryId(Long.valueOf(categoryBrandRels2.getCategoryId()));
@@ -294,16 +327,34 @@ public class TrcToScmCategoryTest {
 
     @Test
     public void categoryPropertyTest() {
-        CategoryPropertyRels categoryBrandRels = new CategoryPropertyRels();
-        List<CategoryPropertyRels> categoryPropertyRelsList = trcCategoriesPropertiesService.select(categoryBrandRels);
+        CategoryPropertyRels categoryPropertyRels = new CategoryPropertyRels();
+        List<CategoryPropertyRels> categoryPropertyRelsList = trcCategoriesPropertiesService.select(categoryPropertyRels);
         if (!AssertUtil.collectionIsEmpty(categoryPropertyRelsList)) {
-            for (CategoryPropertyRels categoryPropertyRels : categoryPropertyRelsList) {
-                Category category = categoryService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getCategoryId()));
-                Property property = propertyService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getPropertyId()));
+            for (CategoryPropertyRels categoryPropertyRel : categoryPropertyRelsList) {
+                Category category = null;
+                Example example2 = new Example(Category.class);
+                Example.Criteria criteria2 = example2.createCriteria();
+                criteria2.andEqualTo("trcId", categoryPropertyRel.getCategoryId());
+                List<Category> categoryList = categoryService.selectByExample(example2);
+                if (!AssertUtil.collectionIsEmpty(categoryList)){
+                    category = categoryList.get(0);
+                }
+
+                Property property = null;
+                Example example3 = new Example(Property.class);
+                Example.Criteria criteria3 = example3.createCriteria();
+                criteria3.andEqualTo("trcId", categoryPropertyRel.getCategoryId());
+                List<Property> propertyList = propertyService.selectByExample(example3);
+                if (!AssertUtil.collectionIsEmpty(propertyList)){
+                     property = propertyList.get(0);
+                }
+
+
+//                Property property = propertyService.selectByPrimaryKey(Long.valueOf(categoryPropertyRels.getPropertyId()));
                 if (null != category && null != property && category.getLevel() == 3) {
                     CategoryProperty categoryProperty = new CategoryProperty();
-                    categoryProperty.setCategoryId(Long.valueOf(categoryPropertyRels.getCategoryId()));
-                    categoryProperty.setPropertyId(Long.valueOf(categoryPropertyRels.getPropertyId()));
+                    categoryProperty.setCategoryId(category.getId());
+                    categoryProperty.setPropertyId(property.getId());
                     categoryProperty.setIsValid(ValidEnum.VALID.getCode());
                     categoryProperty.setPropertySort(1);
                     categoryProperty.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -356,11 +407,11 @@ public class TrcToScmCategoryTest {
     }
 
     public void saveCategory(Category category) throws Exception {
-        category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
+        /*category.setCategoryCode(serialUtilService.generateCode(FL_LENGTH, FL_SERIALNAME));
         category.setSource(SourceEnum.SCM.getCode());
         category.setIsLeaf(ZeroToNineEnum.ONE.getCode());
         category.setCreateTime(Calendar.getInstance().getTime());
-        category.setUpdateTime(Calendar.getInstance().getTime());
+        category.setUpdateTime(Calendar.getInstance().getTime());*/
 
         int count = categoryService.insert(category);
         if (count == 0) {
