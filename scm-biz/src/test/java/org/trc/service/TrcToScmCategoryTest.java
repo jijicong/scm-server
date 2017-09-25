@@ -95,7 +95,7 @@ public class TrcToScmCategoryTest {
 //                brandScm.setId(Long.valueOf(brandTrc.getBrandId()));
                 brandScm.setAlise(brandTrc.getAlias());
                 brandScm.setLogo(brandTrc.getLogo());
-                brandScm.setTrcId(brandTrc.getBrandId());
+                //brandScm.setTrcId(brandTrc.getBrandId());
                 brandScm.setName(brandTrc.getName());
                 brandScm.setIsValid(ZeroToNineEnum.ONE.getCode());
                 brandScm.setSource(SourceEnum.TRC.getCode());
@@ -127,7 +127,7 @@ public class TrcToScmCategoryTest {
                 Property property = new Property();
                 property.setDescription(properties.getDescription());
                 property.setLastEditOperator("admin");
-                property.setTrcId(properties.getPropertyId());
+                //property.setTrcId(properties.getPropertyId());
                 property.setName(properties.getName());
                 if (properties.getType().equals("Natural")) {
                     property.setTypeCode("natureProperty");
@@ -165,7 +165,7 @@ public class TrcToScmCategoryTest {
             PropertyValue propertyValueScm = new PropertyValue();
 //            propertyValueScm.setId(Long.valueOf(propertyValue.getPropertyValueId()));
             propertyValueScm.setPropertyId(Long.valueOf(property.getId()));
-            propertyValueScm.setTrcId(propertyValue.getPropertyValueId());
+            //propertyValueScm.setTrcId(propertyValue.getPropertyValueId());
             propertyValueScm.setPicture(propertyValue.getImage());
             propertyValueScm.setValue(propertyValue.getText());
             propertyValueScm.setCreateTime(Calendar.getInstance().getTime());
@@ -231,7 +231,7 @@ public class TrcToScmCategoryTest {
                     }
                 }
                 category.setSort(categories.getSortOrder());
-                category.setTrcId(categories.getCategoryId());
+                //category.setTrcId(categories.getCategoryId());
                 category.setClassifyDescribe(categories.getDescription());
                 int disabled = categories.getDisabled();
                 if (disabled == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()))//正常
