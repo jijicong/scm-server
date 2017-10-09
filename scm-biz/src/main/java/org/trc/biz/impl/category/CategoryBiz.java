@@ -156,47 +156,75 @@ public class CategoryBiz implements ICategoryBiz {
      * @param isRecursive
      * @return
      */
+
     @Override
     @Cacheable(key = "#parentId+#isRecursive", isList = true)
     public List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception {
+        //查询所有分类
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
-        if (null == parentId) {
+        if (isRecursive){
+            criteria.andIsNotNull("id");
+        }else {
             criteria.andIsNull("parentId");
-        } else {
-            criteria.andEqualTo("parentId", parentId);
         }
         example.orderBy("sort").asc();
         example.orderBy("createTime").desc();
 
         List<Category> childCategoryList = categoryService.selectByExample(example);
-        List<TreeNode> childNodeList = new ArrayList<>();
-        for (Category category : childCategoryList) {
-            TreeNode treeNode = new TreeNode();
-            treeNode.setId(category.getId().toString());
-            treeNode.setName(category.getName());
-            treeNode.setSort(category.getSort());
-            treeNode.setIsValid(category.getIsValid());
-            treeNode.setLevel(category.getLevel());
-            treeNode.setFullPathId(category.getFullPathId());
-            treeNode.setSource(category.getSource());
-            treeNode.setClassifyDescribe(category.getClassifyDescribe());
-            treeNode.setCategoryCode(category.getCategoryCode());
-            treeNode.setIsLeaf(category.getIsLeaf());
-            childNodeList.add(treeNode);
+        List<TreeNode> childNodeList =delGetNodes(parentId,isRecursive,childCategoryList);
+        return childNodeList;
+    }
+
+    private List<TreeNode> delGetNodes(Long parentId, boolean isRecursive,List<Category> AllCategoryList) throws Exception {
+        List<TreeNode> nodeList = new ArrayList<>();
+        if (null == parentId) {
+            for (Category category : AllCategoryList) {
+                if (category.getParentId()==null){
+                TreeNode treeNode = new TreeNode();
+                treeNode.setId(category.getId().toString());
+                treeNode.setName(category.getName());
+                treeNode.setSort(category.getSort());
+                treeNode.setIsValid(category.getIsValid());
+                treeNode.setLevel(category.getLevel());
+                treeNode.setFullPathId(category.getFullPathId());
+                treeNode.setSource(category.getSource());
+                treeNode.setClassifyDescribe(category.getClassifyDescribe());
+                treeNode.setCategoryCode(category.getCategoryCode());
+                treeNode.setIsLeaf(category.getIsLeaf());
+                nodeList.add(treeNode);
+                }
+            }
+        }else {
+            AllCategoryList.stream().
+                    filter(category -> StringUtils.equals(String.valueOf(category.getParentId()), String.valueOf(parentId))).
+                    forEach(category -> {
+                        TreeNode treeNode = new TreeNode();
+                        treeNode.setId(category.getId().toString());
+                        treeNode.setName(category.getName());
+                        treeNode.setSort(category.getSort());
+                        treeNode.setIsValid(category.getIsValid());
+                        treeNode.setLevel(category.getLevel());
+                        treeNode.setFullPathId(category.getFullPathId());
+                        treeNode.setSource(category.getSource());
+                        treeNode.setClassifyDescribe(category.getClassifyDescribe());
+                        treeNode.setCategoryCode(category.getCategoryCode());
+                        treeNode.setIsLeaf(category.getIsLeaf());
+                        nodeList.add(treeNode);
+                    });
         }
-        if (childNodeList.size() == 0) {
-            return childNodeList;
+        if (AssertUtil.collectionIsEmpty(nodeList)){
+            return nodeList;
         }
-        if (isRecursive == true) {
-            for (TreeNode childNode : childNodeList) {
-                List<TreeNode> nextChildCategoryList = getNodes(Long.parseLong(childNode.getId()), isRecursive);
+        if (isRecursive){
+            for (TreeNode childNode : nodeList) {
+                List<TreeNode> nextChildCategoryList = delGetNodes(Long.parseLong(childNode.getId()), isRecursive,AllCategoryList);
                 if (!AssertUtil.collectionIsEmpty(nextChildCategoryList)) {
                     childNode.setChildren(nextChildCategoryList);
                 }
             }
         }
-        return childNodeList;
+        return nodeList;
     }
 
     /**
