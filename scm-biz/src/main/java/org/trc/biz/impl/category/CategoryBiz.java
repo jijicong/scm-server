@@ -246,6 +246,7 @@ public class CategoryBiz implements ICategoryBiz {
         category.setUpdateTime(Calendar.getInstance().getTime());
 
         String userId = aclUserAccreditInfo.getUserId();
+
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
 //        category.setCreateOperator(userId);
 
