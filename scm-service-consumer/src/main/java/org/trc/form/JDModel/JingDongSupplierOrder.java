@@ -2,6 +2,7 @@ package org.trc.form.JDModel;
 
 import org.trc.form.SupplierOrderBase;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -9,6 +10,8 @@ import java.util.List;
  */
 public class JingDongSupplierOrder extends SupplierOrderBase {
 
+    // 平台订单编码
+    private String platformOrderCode;
     //仓库订单编码
     private String warehouseOrderCode;
     //第三方的订单单号
@@ -35,6 +38,8 @@ public class JingDongSupplierOrder extends SupplierOrderBase {
     private String mobile;
     //邮箱
     private String email;
+    //渠道订单提交时间
+    private Date orderSubmitTime;
     //备注（少于100字）
     private String remark;
     //开票方式(1-为随货开票，0-为订单预借，2-为集中开票 )
@@ -368,5 +373,21 @@ public class JingDongSupplierOrder extends SupplierOrderBase {
 
     public void setPromiseTimeRangeCode(Integer promiseTimeRangeCode) {
         this.promiseTimeRangeCode = promiseTimeRangeCode;
+    }
+
+    public String getPlatformOrderCode() {
+        return platformOrderCode;
+    }
+
+    public void setPlatformOrderCode(String platformOrderCode) {
+        this.platformOrderCode = platformOrderCode;
+    }
+
+    public Date getOrderSubmitTime() {
+        return orderSubmitTime;
+    }
+
+    public void setOrderSubmitTime(Date orderSubmitTime) {
+        this.orderSubmitTime = orderSubmitTime;
     }
 }

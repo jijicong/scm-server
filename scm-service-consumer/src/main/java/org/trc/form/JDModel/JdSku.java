@@ -2,6 +2,8 @@ package org.trc.form.JDModel;
 
 import com.alibaba.fastjson.JSONArray;
 
+import java.math.BigDecimal;
+
 /**
  * Created by hzwdx on 2017/7/1.
  */
@@ -16,6 +18,8 @@ public class JdSku {
     private Boolean bNeedGift;
     //延保商品skuId列表
     private JSONArray yanbao;
+    //用户实付金额
+    private BigDecimal payment;
 
     public String getSkuId() {
         return skuId;
@@ -55,5 +59,13 @@ public class JdSku {
 
     public void setYanbao(JSONArray yanbao) {
         this.yanbao = yanbao;
+    }
+
+    public BigDecimal getPayment() {
+        return payment;
+    }
+
+    public void setPayment(BigDecimal payment) {
+        this.payment = payment;
     }
 }
