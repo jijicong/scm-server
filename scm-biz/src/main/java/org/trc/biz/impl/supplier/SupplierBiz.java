@@ -318,11 +318,39 @@ public class SupplierBiz implements ISupplierBiz {
     public List<Supplier> querySuppliers(SupplierForm supplierForm) throws Exception {
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(supplierForm, supplier);
-        if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
-            supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+        if (StringUtils.isNotBlank(supplierForm.getStatus())){
+            if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
+                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+            }
+            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            List<Supplier> supplierList =  supplierService.select(supplier);
+
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+
+            if (!AssertUtil.collectionIsEmpty(supplierList)) {
+                for (int i = 0; i < supplierList.size(); i++) {
+                    boolean isAudit = false;
+                    Supplier supplierResult = supplierList.get(i);
+                    for (SupplierApply  supplierApply:supplierApplyList) {
+                        if (StringUtils.equals(supplierResult.getSupplierCode(),supplierApply.getSupplierCode())){
+                        isAudit = true;}
+                    }
+                    if (isAudit==false){
+                        supplierList.remove(i);
+                    }
+                }
+            }
+            return supplierList;
+        }else {
+            if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
+                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+            }
+            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            return supplierService.select(supplier);
         }
-        supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        return supplierService.select(supplier);
     }
 
     @Override
