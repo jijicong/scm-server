@@ -774,7 +774,7 @@ public class TrcBiz implements ITrcBiz {
         for(Skus skus: page.getResult()){
             Skus2 skus2 = new Skus2();
             BeanUtils.copyProperties(skus, skus2);
-            skus2.setName(skus.getSkuName()); // 将“SKU名称”赋值给接口中的“商品名称”给到渠道（原先传的是SPU信息中的商品名称）；
+           // skus2.setName(skus.getSkuName()); // 将“SKU名称”赋值给接口中的“商品名称”给到渠道（原先传的是SPU信息中的商品名称）；
             skus2List.add(skus2);
         }
         //设置SPU商品信息
