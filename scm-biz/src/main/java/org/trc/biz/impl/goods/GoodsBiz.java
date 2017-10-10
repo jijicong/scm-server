@@ -1663,7 +1663,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -2175,6 +2175,8 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
             externalItemSku.setUpdateTime(sysDate);
+            externalItemSku.setNotifyTime(items.getNotifyTime());
+
             externalItemSkus.add(externalItemSku);
         }
         return externalItemSkus;

@@ -157,16 +157,12 @@ public class CategoryBiz implements ICategoryBiz {
      * @return
      */
     @Override
-    @Cacheable(key = "#parentId+#isRecursive", isList = true)
+//    @Cacheable(key = "#parentId+#isRecursive", isList = true)
     public List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception {
         //查询所有分类
-        Example example = new Example(Category.class);
+            Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
-        if (isRecursive){
             criteria.andIsNotNull("id");
-        }else {
-            criteria.andIsNull("parentId");
-        }
         example.orderBy("sort").asc();
         example.orderBy("createTime").desc();
 
