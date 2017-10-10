@@ -2173,6 +2173,8 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
             externalItemSku.setUpdateTime(sysDate);
+            externalItemSku.setNotifyTime(items.getNotifyTime());
+
             externalItemSkus.add(externalItemSku);
         }
         return externalItemSkus;
