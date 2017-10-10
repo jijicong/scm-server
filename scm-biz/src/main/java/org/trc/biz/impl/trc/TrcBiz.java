@@ -468,7 +468,7 @@ public class TrcBiz implements ITrcBiz {
         //保存请求流水
         requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
         if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品%s更新通知渠道失败,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道失败,渠道返回失败信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
@@ -476,7 +476,7 @@ public class TrcBiz implements ITrcBiz {
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品%s更新通知渠道成功,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道成功,渠道返回信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
