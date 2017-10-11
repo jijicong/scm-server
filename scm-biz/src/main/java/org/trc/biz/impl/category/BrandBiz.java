@@ -50,7 +50,7 @@ public class BrandBiz implements IBrandBiz {
     private Logger log = LoggerFactory.getLogger(BrandBiz.class);
     private final static String BRAND_CODE_EX_NAME = "PP";
     private final static int BRAND_CODE_LENGTH = 5;
-
+    private final static String  EXTERNAL_IMG_URL_HEAD= "https";
     @Autowired
     private IBrandService brandService;
     @Autowired
@@ -366,24 +366,33 @@ public class BrandBiz implements IBrandBiz {
 
     private Map<String, String> constructFileUrlMap(List<Brand> brandList) throws Exception {
         Set<String> urlSet = new HashSet<>();
+        Set<String> externalImgUrlSet=new HashSet<>();
         for (Brand brand : brandList) {
             if (!StringUtils.isBlank(brand.getLogo())) {
-                urlSet.add(brand.getLogo());
+                if(!brand.getLogo().startsWith(EXTERNAL_IMG_URL_HEAD)){
+                    urlSet.add(brand.getLogo());
+                }else{
+                    externalImgUrlSet.add(brand.getLogo());
+                }
             }
         }
+        Map<String, String> fileUrlMap = new HashMap<>();
         if (null != urlSet && urlSet.size() > 0) {
             String[] urlStr = new String[urlSet.size()];
             urlSet.toArray(urlStr);
             List<FileUrl> fileUrlList = qinniuBiz.batchGetFileUrl(urlStr, ZeroToNineEnum.ONE.getCode());
             if (null != fileUrlList && fileUrlList.size() > 0) {
-                Map<String, String> fileUrlMap = new HashMap<>();
                 for (FileUrl fileUrl : fileUrlList) {
                     fileUrlMap.put(fileUrl.getFileKey(), fileUrl.getUrl());
                 }
-                return fileUrlMap;
             }
         }
-        return null;
+        if (null != externalImgUrlSet && externalImgUrlSet.size() > 0) {
+            for (String externalImgUrl:externalImgUrlSet) {
+                fileUrlMap.put(externalImgUrl,externalImgUrl);
+            }
+        }
+        return fileUrlMap;
     }
 
     private Map<String,AclUserAccreditInfo> constructUserAccreditInfoMap(List<Brand> brandList){

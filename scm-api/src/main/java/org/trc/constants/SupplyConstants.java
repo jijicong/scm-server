@@ -732,6 +732,18 @@ public class SupplyConstants {
         public static final String CHECK_BALANCE = "check";
         //查询所有业务类型路径
         public static final String GET_ALL_TREAD_TYPE = "treadType";
+        //获取京东账户余额信息
+        public static final String GET_BALANCE_INFO = "balance";
+        //获取订单对比明细
+        public static final String ORDER_DETAIL_PAGE = "orderDetailPage";
+        //获取余额明细
+        public static final String BALANCE_DETAIL_PAGE = "balanceDetailPage";
+        //导出余额明细
+        public static final String EXPORT_BALANCE_DETAIL = "exportBalanceDetail";
+        //导出订单明细
+        public static final String EXPORT_ORDER_DETAIL = "exportOrderDetail";
+        //订单操作
+        public static final String OPERATE_ORDER = "operate";
 
     }
 
