@@ -123,8 +123,21 @@ public class Skus extends ScmDO {
      */
     @Transient
     private Long stock;
+    
+    
+    @FormParam("skuName")
+    @Length(max = 256, message = "商品SKU名字不能超过256个")
+    private String skuName;
 
-    public String getSkuCode() {
+    public String getSkuName() {
+		return skuName;
+	}
+
+	public void setSkuName(String skuName) {
+		this.skuName = skuName;
+	}
+
+	public String getSkuCode() {
         return skuCode;
     }
 

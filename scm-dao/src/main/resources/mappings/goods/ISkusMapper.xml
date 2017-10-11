@@ -13,7 +13,8 @@
                 weight = #{skus.weight},
                 update_time = #{skus.updateTime},
                 is_valid = #{skus.isValid},
-                is_deleted = #{skus.isDeleted}
+                is_deleted = #{skus.isDeleted},
+                sku_name = #{skus.skuName}
             </set>
             where
               spu_code = #{skus.spuCode} AND sku_code = #{skus.skuCode}
