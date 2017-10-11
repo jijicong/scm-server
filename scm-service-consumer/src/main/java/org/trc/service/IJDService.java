@@ -3,6 +3,8 @@ package org.trc.service;
 
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
+import org.trc.form.external.OrderDetail;
+import org.trc.form.external.OrderDetailForm;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
@@ -64,13 +66,13 @@ public interface IJDService {
      */
     ReturnTypeDO getSellPrice(String skus);
 
-    /**
+   /* *//**
      * 获取京东对账详情
      * @param queryModel
      * @param page
      * @return
-     */
-    ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page);
+     *//*
+    ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page);*/
 
     /**
      * 获取所有京东交易类型
@@ -83,5 +85,35 @@ public interface IJDService {
      * @return
      */
     ReturnTypeDO getJingDongArea();
+
+    /**
+     * 京东账户余额信息查询接口
+     */
+    ReturnTypeDO queryBalanceInfo();
+
+    /**
+     * 订单对比明细分页查询接口
+     */
+    ReturnTypeDO orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page);
+
+    /**
+     * 余额明细分页查询接口
+     */
+    ReturnTypeDO balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page);
+
+    /**
+     * 余额明细导出接口
+     */
+    ReturnTypeDO exportBalanceDetail(BalanceDetailDO queryModel);
+
+    /**
+     * 订单明细导出接口
+     */
+    ReturnTypeDO exportOrderDetail(OrderDetailForm queryModel);
+
+    /**
+     * 订单明操作接口
+     */
+    ReturnTypeDO operateRecord(OrderDetail orderDetail);
 
 }
