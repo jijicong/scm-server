@@ -246,7 +246,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
-        example.setOrderByClause("instr('1,5,2,3,4',`supplier_order_status`)");
+        example.setOrderByClause("instr('1,5',`supplier_order_status`)");
         example.orderBy("updateTime").desc();
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
@@ -648,9 +648,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private JingDongSupplierOrder getJingDongOrder(WarehouseOrder warehouseOrder, PlatformOrder platformOrder, List<OrderItem> orderItemList, String[] jdAddressCodes){
         JingDongSupplierOrder jingDongOrder = new JingDongSupplierOrder();
+        jingDongOrder.setPlatformOrderCode(platformOrder.getPlatformOrderCode());
+        jingDongOrder.setOrderSubmitTime(platformOrder.getCreateTime());
         jingDongOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         jingDongOrder.setThirdOrder(warehouseOrder.getWarehouseOrderCode());
         jingDongOrder.setName(platformOrder.getReceiverName());
+
         if(jdAddressCodes.length > 0){
             jingDongOrder.setProvince(jdAddressCodes[0]);
             jingDongOrder.setInvoiceProvice(Integer.parseInt(jdAddressCodes[0]));
@@ -738,6 +741,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             JdSku jdSku = new JdSku();
             jdSku.setSkuId(orderItem2.getSupplierSkuCode());
             jdSku.setNum(orderItem2.getNum());
+            jdSku.setPayment(orderItem2.getPayment());
             jdSku.setbNeedAnnex(true);
             jdSku.setbNeedGift(false);
             jdSkuList.add(jdSku);

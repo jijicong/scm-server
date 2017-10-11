@@ -762,6 +762,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
+            skus2.setSkuName(jbo.getString("skuName")); // sku名称 
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skus2.setCreateTime(sysTime);
             skus2.setUpdateTime(sysTime);
@@ -991,6 +992,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setIsValid(jbo.getString("isValid"));
             skus2.setUpdateTime(sysTime);
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            skus2.setSkuName(jbo.getString("skuName")); // sku名称 
             if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
                 String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
                         SupplyConstants.Serial.SKU_INNER, DateUtils.dateToCompactString(sysTime));
@@ -1661,7 +1663,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -2173,6 +2175,8 @@ public class GoodsBiz implements IGoodsBiz {
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
             externalItemSku.setUpdateTime(sysDate);
+            externalItemSku.setNotifyTime(items.getNotifyTime());
+
             externalItemSkus.add(externalItemSku);
         }
         return externalItemSkus;

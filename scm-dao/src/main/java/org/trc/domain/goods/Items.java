@@ -65,8 +65,13 @@ public class Items extends BaseDO{
      */
     @Transient
     private List<Skus> records;
-
-
+    
+    /**
+     * SPU商品主图
+     */
+    @FormParam("mainPicture")
+    private String mainPicture;
+    
     public Long getId() {
         return id;
     }
@@ -194,4 +199,14 @@ public class Items extends BaseDO{
     public void setRecords(List<Skus> records) {
         this.records = records;
     }
+
+	public String getMainPicture() {
+		return mainPicture;
+	}
+
+	public void setMainPicture(String mainPicture) {
+		this.mainPicture = mainPicture == null ? null : mainPicture.trim();
+	}
+    
+    
 }

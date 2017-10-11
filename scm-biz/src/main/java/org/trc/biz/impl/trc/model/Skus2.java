@@ -14,10 +14,10 @@ import java.util.List;
  */
 public class Skus2 extends Skus{
 
-    @FormParam("name")
-    @NotEmpty
-    @Length(max = 128, message = "商品名称长度不能超过128个")
-    private String name;
+//    @FormParam("name")
+//    @NotEmpty
+//    @Length(max = 128, message = "商品名称长度不能超过128个")
+//    private String name;
     @FormParam("categoryId")
     @NotNull(message = "分类不能为空")
     private Long categoryId;
@@ -83,14 +83,14 @@ public class Skus2 extends Skus{
     public void setProducer(String producer) {
         this.producer = producer;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+//
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
     public List<SkusProperty> getPropertys() {
         return propertys;

@@ -17,6 +17,8 @@ import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.JingDongException;
 import org.trc.form.JDModel.*;
+import org.trc.form.external.OrderDetail;
+import org.trc.form.external.OrderDetailForm;
 import org.trc.form.jingdong.AddressDO;
 import org.trc.form.jingdong.MessageDO;
 import org.trc.form.jingdong.NewStockDO;
@@ -26,6 +28,7 @@ import org.trc.service.jingdong.ICommonService;
 import org.trc.service.jingdong.ITableMappingService;
 import org.trc.util.*;
 
+import javax.ws.rs.core.Response;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +55,7 @@ public class JingDongBizImpl implements IJingDongBiz {
     @Autowired
     IRequestFlowService requestFlowService;
 
-    public Pagenation<JdBalanceDetail> checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
+    /*public Pagenation<JdBalanceDetail> checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -63,13 +66,56 @@ public class JingDongBizImpl implements IJingDongBiz {
         }
         page = returnTypeDO.getResult();
         return page;
-    }
+    }*/
 
     /**
      * 获取所有京东交易类型
      * @return
      */
+    @Override
     public ReturnTypeDO getAllTreadType() throws Exception{
         return ijdService.getAllTreadType();
     }
+
+    /**
+     * 京东账户余额信息查询接口
+     */
+    @Override
+    public Response queryBalanceInfo() throws Exception{
+        ReturnTypeDO result = ijdService.queryBalanceInfo();
+        return ResultUtil.createSuccessResult("京东账户余额信息查询成功",result.getResult());
+    }
+
+    @Override
+    public Response orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page) throws Exception{
+        ReturnTypeDO result = ijdService.orderDetailByPage(queryModel,page);
+        return ResultUtil.createSuccessResult("订单对比明细分页查询成功",result.getResult());
+    }
+
+    @Override
+    public Response balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
+        ReturnTypeDO result = ijdService.balanceDetailByPage(queryModel,page);
+        return ResultUtil.createSuccessResult("余额明细分页查询成功",result.getResult());
+    }
+
+    @Override
+    public Response exportBalanceDetail(BalanceDetailDO queryModel)throws Exception {
+        ReturnTypeDO result = ijdService.exportBalanceDetail(queryModel);
+        return ResultUtil.createSuccessResult("余额明细导出成功",result.getResult());
+    }
+
+    @Override
+    public Response exportOrderDetail(OrderDetailForm queryModel) throws Exception{
+        ReturnTypeDO result = ijdService.exportOrderDetail(queryModel);
+        return ResultUtil.createSuccessResult("订单明细导出成功",result.getResult());
+    }
+
+    @Override
+    public Response operateRecord(OrderDetail orderDetail) throws Exception{
+        AssertUtil.notNull(orderDetail.getId(), "操作参数id不能为空");
+        ReturnTypeDO result = ijdService.operateRecord(orderDetail);
+        return ResultUtil.createSuccessResult("订单明操作成功",result.getResult());
+    }
+
+
 }

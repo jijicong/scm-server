@@ -11,8 +11,8 @@ public class BalanceDetailDO extends QueryModel {
     @QueryParam("orderId")
     private String orderId;
 
-    @QueryParam("tradeType")
-    private String tradeType;
+    @QueryParam("tradeTypeName")
+    private String tradeTypeName;
 
     @QueryParam("tradeNo")
     private String tradeNo;
@@ -35,11 +35,11 @@ public class BalanceDetailDO extends QueryModel {
     }
 
     public String getTradeType() {
-        return tradeType;
+        return tradeTypeName;
     }
 
-    public void setTradeType(String tradeType) {
-        this.tradeType = tradeType;
+    public void setTradeType(String tradeTypeName) {
+        this.tradeTypeName = tradeTypeName;
     }
 
     public String getTradeNo() {
