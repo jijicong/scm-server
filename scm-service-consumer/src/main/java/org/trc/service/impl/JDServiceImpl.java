@@ -15,6 +15,8 @@ import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
+import org.trc.form.external.OrderDetail;
+import org.trc.form.external.OrderDetailForm;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.service.IJDService;
 import org.trc.util.*;
@@ -228,7 +230,7 @@ public class JDServiceImpl implements IJDService {
         return responseAck;
     }
 
-    public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){
+    /*public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -266,7 +268,7 @@ public class JDServiceImpl implements IJDService {
             returnTypeDO.setResultMessage(msg);
         }
         return returnTypeDO;
-    }
+    }*/
 
     public ReturnTypeDO getAllTreadType(){
         ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
@@ -323,6 +325,181 @@ public class JDServiceImpl implements IJDService {
         }
         log.debug("结束调用京东区域查询服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO queryBalanceInfo() {
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdBalanceInfoUrl();
+            response = HttpClientUtil.httpGetRequest(url);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray page = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(page);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用查询账户余额信息接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用查询账户余额信息接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page) {
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        returnTypeDO.setSuccess(false);
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(page);
+        map.putAll(BeanToMapUtil.convertBeanToMap(queryModel));
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOrderDetailPageUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray json = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用订单对比明细分页查询接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用订单对比明细分页查询接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) {
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        returnTypeDO.setSuccess(false);
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(page);
+        map.putAll(BeanToMapUtil.convertBeanToMap(queryModel));
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdBalanceDetailPageUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray json = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用余额明细分页查询接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用余额明细分页查询接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO exportBalanceDetail(BalanceDetailDO queryModel) {
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        returnTypeDO.setSuccess(false);
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(queryModel);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdExportBalanceUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray json = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用余额明细导出接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用余额明细导出接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO exportOrderDetail(OrderDetailForm queryModel) {
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(queryModel);
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdExportOrderUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray json = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用订单明细导出接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用订单明细导出接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO operateRecord(OrderDetail orderDetail) {
+        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(orderDetail);
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOrderOperateUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONArray json = jbo.getJSONArray("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用订单明操作接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用订单明操作接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
         return returnTypeDO;
     }
 
