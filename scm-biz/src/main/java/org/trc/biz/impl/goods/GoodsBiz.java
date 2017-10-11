@@ -28,6 +28,7 @@ import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierApply;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -41,6 +42,7 @@ import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.category.*;
@@ -53,6 +55,7 @@ import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
 import org.trc.service.impl.system.WarehouseService;
 import org.trc.service.purchase.IPurchaseDetailService;
+import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
@@ -142,6 +145,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private ISupplierService supplierService;
+    @Autowired
+    private ISupplierApplyService supplierApplyService;
 
 
     @Override
@@ -1664,11 +1669,30 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
 //    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
-    public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception{
+    public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {//供应商编号
             criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
+        }else {
+            //查询到当前渠道下审核通过的一件代发供应商
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
+            if (StringUtils.equals(queryModel.getQuerySource(),ZeroToNineEnum.ZERO.getCode())){
+            criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+            }
+//            criteria2.andEqualTo("supplierKindCode",SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            List<String>  supplierInterfaceIdList = new ArrayList<>();
+            for (SupplierApply supplierApply:supplierApplyList) {
+                Supplier supplier = new Supplier();
+                supplier.setSupplierCode(supplierApply.getSupplierCode());
+                supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
+                supplier=  supplierService.selectOne(supplier);
+                supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
+            }
+            criteria.andIn("supplierCode",supplierInterfaceIdList);
         }
         if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
@@ -1685,6 +1709,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
+
         example.orderBy("updateTime").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
         //setSupplierName(page.getResult());
@@ -1760,7 +1785,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm queryModel, Pagenation<SupplyItemsExt> page) throws Exception{
+    public Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm queryModel, Pagenation<SupplyItemsExt> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -1769,7 +1794,26 @@ public class GoodsBiz implements IGoodsBiz {
         Supplier supplier = new Supplier();
         //supplier.setIsValid(ValidEnum.NOVALID.getCode());//停用
         supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
-        List<Supplier> supplierList = supplierService.select(supplier);
+        List<Supplier> supplierListAll = supplierService.select(supplier);
+
+        Example example2 = new Example(SupplierApply.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
+        criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+        List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+        List<Supplier> supplierList =  new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(supplierListAll)) {
+            for (Supplier  supplierResult:supplierListAll) {
+                boolean isAudit = false;
+                for (SupplierApply  supplierApply:supplierApplyList) {
+                    if (StringUtils.equals(supplierResult.getSupplierCode(),supplierApply.getSupplierCode())){
+                        isAudit = true;}
+                }
+                if (isAudit){
+                    supplierList.add(supplierResult);
+                }
+            }
+        }
         if(!CollectionUtils.isEmpty(supplierList)){
             List<Supplier> usedSupplierList = new ArrayList<>();
             StringBuilder sb = new StringBuilder();
@@ -1784,7 +1828,7 @@ public class GoodsBiz implements IGoodsBiz {
                         }
                     }
                 }
-            }
+             }
             if(usedSupplierList.size() == 0)
                 return page;
             if(sb.length() > 0)
@@ -2033,6 +2077,46 @@ public class GoodsBiz implements IGoodsBiz {
         //检查采购属性
         if(purchasPropertys.size() > 0)
             checkPropetyStatus(purchasPropertys, ZeroToNineEnum.ONE.getCode());
+    }
+
+    @Override
+    @Cacheable(key="#supplierForm.toString()",isList=true)
+    public List<Supplier> querySuppliers(SupplierForm supplierForm,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        Supplier supplier = new Supplier();
+        BeanUtils.copyProperties(supplierForm, supplier);
+        if (StringUtils.isNotBlank(supplierForm.getStatus())){
+            if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
+                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+            }
+            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            List<Supplier> supplierList =  supplierService.select(supplier);
+
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
+            criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            List<Supplier> supplierResultList =  new ArrayList<>();
+            if (!AssertUtil.collectionIsEmpty(supplierList)) {
+                for (Supplier  supplierResult:supplierList) {
+                    boolean isAudit = false;
+                    for (SupplierApply  supplierApply:supplierApplyList) {
+                        if (StringUtils.equals(supplierResult.getSupplierCode(),supplierApply.getSupplierCode())){
+                            isAudit = true;}
+                    }
+                    if (isAudit){
+                        supplierResultList.add(supplierResult);
+                    }
+                }
+            }
+            return supplierResultList;
+        }else {
+            if (StringUtils.isNotBlank(supplierForm.getIsValid())) {
+                supplier.setIsValid(ZeroToNineEnum.ONE.getCode());
+            }
+            supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            return supplierService.select(supplier);
+        }
     }
 
     /**

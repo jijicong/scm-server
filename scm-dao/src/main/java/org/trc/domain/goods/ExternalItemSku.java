@@ -177,8 +177,13 @@ public class ExternalItemSku implements Serializable{
     private String supplierCode2;
     @Transient
     private String updateFlag;
-    @FormParam("notify_time")
+
+
+
+    @FormParam("notifyTime")
     private Date notifyTime;
+    @FormParam("minBuyCount")
+    private Integer minBuyCount;
 
     public Long getId() {
         return id;
@@ -466,5 +471,12 @@ public class ExternalItemSku implements Serializable{
 
     public void setNotifyTime(Date notifyTime) {
         this.notifyTime = notifyTime;
+    }
+    public Integer getMinBuyCount() {
+        return minBuyCount;
+    }
+
+    public void setMinBuyCount(Integer minBuyCount) {
+        this.minBuyCount = minBuyCount;
     }
 }
