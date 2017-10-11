@@ -774,7 +774,7 @@ public class TrcBiz implements ITrcBiz {
         for(Skus skus: page.getResult()){
             Skus2 skus2 = new Skus2();
             BeanUtils.copyProperties(skus, skus2);
-           // skus2.setName(skus.getSkuName()); // 将“SKU名称”赋值给接口中的“商品名称”给到渠道（原先传的是SPU信息中的商品名称）；
+            skus2.setName(skus.getSkuName()); // 将“SKU名称”赋值给接口中的“商品名称”给到渠道（原先传的是SPU信息中的商品名称）；
             skus2List.add(skus2);
         }
         //设置SPU商品信息
@@ -785,6 +785,8 @@ public class TrcBiz implements ITrcBiz {
         return page2;
 
     }
+    
+    
 
     /**
      *设置品牌名称
@@ -945,6 +947,7 @@ public class TrcBiz implements ITrcBiz {
                             skus.setItemNo(items.getItemNo());
                             skus.setProducer(items.getProducer());
                             skus.setTradeType(items.getTradeType());
+                            skus.setMainPicture(items.getMainPicture());// 设置spu主图信息
                         }
                     }
                 }
@@ -969,6 +972,7 @@ public class TrcBiz implements ITrcBiz {
             criteria.andCondition(condition);
             List<SkuStock> skuStockList = skuStockService.selectByExample(example);
             for(Skus skus: skusList){
+            	skus.setName(skus.getSkuName());// 将skuName赋值给name，提供给泰然城用
                 for(SkuStock skuStock: skuStockList){
                     if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
                         skus.setStock(skuStock.getAvailableInventory());

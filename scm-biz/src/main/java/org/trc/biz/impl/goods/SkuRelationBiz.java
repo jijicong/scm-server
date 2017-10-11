@@ -1,6 +1,10 @@
 package org.trc.biz.impl.goods;
 
-import com.alibaba.fastjson.JSON;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +13,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.goods.ISkuRelationBiz;
-import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.impl.trc.TrcBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.Category;
 import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.supplier.Supplier;
@@ -21,13 +24,12 @@ import org.trc.enums.ValidEnum;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.goods.ItemsService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
-import tk.mybatis.mapper.entity.Example;
 
-import java.math.BigDecimal;
-import java.util.*;
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * @author: Ding
@@ -50,6 +52,8 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private ISupplierService supplierService;
+    @Autowired
+    private ItemsService itemsService;
 
     @Override
     public List<Skus> getSkuInformation(String skuCode) {
@@ -64,7 +68,31 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         criteria.andIn("skuCode", Arrays.asList(skuCodes));
         List<Skus> skusList = skusService.selectByExample(example);
         setSkuStock(skusList);
+        setSpuInfo(skusList); // 将spu里面的相关信息设置到sku中，例如：spu商品主图mainPicture字段
         return skusList;
+    }
+    
+    private void setSpuInfo (List<Skus> skusList) {
+        StringBuilder sb = new StringBuilder();
+        for (Skus skus: skusList) {
+            sb.append("\"").append(skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        }
+        if (sb.length() > 0) {
+            Example example = new Example(Items.class);
+            Example.Criteria criteria = example.createCriteria();
+            String ids = sb.substring(0, sb.length()-1);
+            String condition = String.format("spu_code in (%s)", ids);
+            criteria.andCondition(condition);
+            List<Items> itemsList = itemsService.selectByExample(example);
+            for (Skus sku: skusList) {
+            	sku.setName(sku.getSkuName());// 将skuName赋值给name，提供给泰然城用
+                for(Items item: itemsList){
+                    if(StringUtils.equals(sku.getSpuCode(), item.getSpuCode())){
+                        sku.setMainPicture(item.getMainPicture());
+                    }
+                }
+            }
+        }
     }
 
     private void setSkuStock(List<Skus> skusList){

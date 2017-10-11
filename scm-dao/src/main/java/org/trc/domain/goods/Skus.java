@@ -128,8 +128,36 @@ public class Skus extends ScmDO {
     @FormParam("skuName")
     @Length(max = 256, message = "商品SKU名字不能超过256个")
     private String skuName;
+    
+    /**
+     * 商品主图，来自spu
+     */
+    @Transient
+    private String mainPicture;
+    
+    /**
+     * sku名称，与skuName相同，提供给泰然城时用
+     */
+    @Transient
+    private String name;
 
-    public String getSkuName() {
+    public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getMainPicture() {
+		return mainPicture;
+	}
+
+	public void setMainPicture(String mainPicture) {
+		this.mainPicture = mainPicture;
+	}
+
+	public String getSkuName() {
 		return skuName;
 	}
 
