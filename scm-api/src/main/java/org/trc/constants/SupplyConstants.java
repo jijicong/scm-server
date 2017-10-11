@@ -621,6 +621,8 @@ public class SupplyConstants {
         public static final String EXTERNAL_ITEM__VALID = "externalItemsValid";
         //检查属性启停用状态
         public static final String CHECK_PROPERTY_STATUS = "checkPropetyStatus";
+        //查询供应商列表
+        public static final String SUPPLIERS_LIST = "suppliersList";
 
     }
 
