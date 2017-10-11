@@ -1,7 +1,7 @@
 package org.trc.form.order;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.hibernate.validator.constraints.Length;
 import org.trc.util.QueryModel;
 
@@ -32,9 +32,20 @@ public class ShopOrderForm extends QueryModel{
     @Length(max = 128, message = "收货人姓名长度不能超过128个")
     private String receiverName;
 
+    // 店铺名称
+    @QueryParam("shopName")
+    @Length(max = 255, message = "店铺名称长度不能超过255个")
+    private String shopName;
+
     // 订单类型：0-普通订单 1-零元购 2-分期购 3-拼团
     @QueryParam("type")
     private String type;
+
+    //供应商订单状态：1-待发货,2-部分发货,3-全部发货,4-已取消
+    @QueryParam("supplierOrderStatus")
+    private String supplierOrderStatus;
+
+
 
     public String getShopOrderCode() {
         return shopOrderCode;
@@ -74,6 +85,22 @@ public class ShopOrderForm extends QueryModel{
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
+    }
+
+    public String getShopName() {
+        return shopName;
+    }
+
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
     }
 
     @Override
