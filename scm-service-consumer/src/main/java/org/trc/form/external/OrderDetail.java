@@ -1,5 +1,6 @@
 package org.trc.form.external;
 
+import javax.ws.rs.QueryParam;
 import java.util.Date;
 
 /**
@@ -8,12 +9,16 @@ import java.util.Date;
 public class OrderDetail {
 
     //主键
+    @QueryParam("id")
     private Long id;
     //仓库级订单
+    @QueryParam("warehouseOrderCode")
     private String warehouseOrderCode;
     //子订单号
+    @QueryParam("spitOrderCode")
     private String spitOrderCode;
     //商品sku
+    @QueryParam("skuId")
     private String skuId;
     //京东下单商品数量
     private Integer num;
@@ -65,10 +70,12 @@ public class OrderDetail {
 
     private String balanceDetailCode;
     //操作
+    @QueryParam("operate")
     private Integer operate;
     //异常说明
     private String errMsg;
     //备注
+    @QueryParam("remark")
     private String remark;
 
     public Long getId() {

@@ -12,6 +12,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.form.JDModel.BalanceDetailDO;
 import org.trc.form.JDModel.JdBalanceDetail;
 import org.trc.form.JDModel.OrderDO;
+import org.trc.form.external.OperateForm;
 import org.trc.form.external.OrderDetail;
 import org.trc.form.external.OrderDetailForm;
 import org.trc.util.AppResult;
@@ -87,7 +88,7 @@ public class JingDongResource {
     @Produces("application/json;charset=utf-8")
     public Response orderDetailByPage(@BeanParam OrderDetailForm queryModel, @BeanParam Pagenation<OrderDetail> page) throws Exception {
         log.info("进入订单明细分页查询接口======>"+ JSON.toJSONString(queryModel)+"===>"+JSON.toJSONString(page));
-        return iJingDongBiz.orderDetailByPage(queryModel,page);
+        return ResultUtil.createSuccessPageResult(iJingDongBiz.orderDetailByPage(queryModel,page));
     }
 
     /**
@@ -102,7 +103,7 @@ public class JingDongResource {
     @Produces("application/json;charset=utf-8")
     public Response balanceDetailByPage(@BeanParam BalanceDetailDO queryModel, @BeanParam Pagenation<JdBalanceDetail> page) throws Exception {
         log.info("进入余额明细分页查询接口======>"+ JSON.toJSONString(queryModel)+"===>"+JSON.toJSONString(page));
-        return iJingDongBiz.balanceDetailByPage(queryModel,page);
+        return ResultUtil.createSuccessPageResult(iJingDongBiz.balanceDetailByPage(queryModel,page));
     }
     /**
      * 余额明细导出接口
@@ -142,9 +143,9 @@ public class JingDongResource {
 
     @PUT
     @Path(SupplyConstants.JingDongOrder.OPERATE_ORDER)
-    @Consumes("text/plain;charset=utf-8")
+    @Consumes("application/x-www-form-urlencoded;charset=utf-8")
     @Produces("application/json;charset=utf-8")
-    public Response operateRecord(@BeanParam OrderDetail orderDetail) throws Exception {
+    public Response operateRecord(@BeanParam OperateForm orderDetail) throws Exception {
         log.info("进入订单明操作接口======>"+ JSON.toJSONString(orderDetail));
         return iJingDongBiz.operateRecord(orderDetail);
     }
