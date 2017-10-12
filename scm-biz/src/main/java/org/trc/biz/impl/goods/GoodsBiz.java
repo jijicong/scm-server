@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.CacheEvit;
@@ -202,6 +203,11 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
+
+        if (StringUtil.isNotEmpty(queryModel.getSkuName())) {//skuName
+            criteria.andEqualTo("skuName", queryModel.getSkuName());
+        }
+
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
         if(null != spus){
             if(spus.size() > 0){
@@ -1690,7 +1696,9 @@ public class GoodsBiz implements IGoodsBiz {
                 supplier.setSupplierCode(supplierApply.getSupplierCode());
                 supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
                 supplier=  supplierService.selectOne(supplier);
-                supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
+                if (null!=supplier){
+                    supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
+                }
             }
             criteria.andIn("supplierCode",supplierInterfaceIdList);
         }
@@ -2056,6 +2064,14 @@ public class GoodsBiz implements IGoodsBiz {
                 String msg = String.format("根据供应商SKU编号[%s]更新代发商品%s失败", externalItemSku.getSupplierSkuCode(), JSONObject.toJSON(externalItemSku));
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
+            }else {
+                ExternalItemSku itemSku =new ExternalItemSku();
+                itemSku.setSkuCode(externalItemSku.getSkuCode());
+                itemSku = externalItemSkuService.selectOne(itemSku);
+                List<String> ids =  new ArrayList<>();
+                ids.add(String.valueOf(itemSku.getId()));
+                logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN,
+                        LogOperationEnum.SYNCHRONIZE.getMessage(), null, null,ids);
             }
         }
 
@@ -2258,8 +2274,11 @@ public class GoodsBiz implements IGoodsBiz {
             //externalItemSku.setProperties();// 属性 TODO
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
-            externalItemSku.setUpdateTime(sysDate);
+            if (!items.getUpdateFlag().equals(ZeroToNineEnum.ZERO.getCode())){
+                externalItemSku.setUpdateTime(sysDate);
+            }
             externalItemSku.setNotifyTime(items.getNotifyTime());
+            externalItemSku.setMinBuyCount(items.getMinBuyCount());
 
             externalItemSkus.add(externalItemSku);
         }

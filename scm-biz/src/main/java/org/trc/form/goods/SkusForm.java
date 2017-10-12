@@ -30,6 +30,9 @@ public class SkusForm extends QueryModel {
     //贸易类型
     @QueryParam("tradeType")
     private String tradeType;
+    //sku名称
+    @QueryParam("skuName")
+    private String skuName;
 
     public String getSpuCode() {
         return spuCode;
@@ -78,4 +81,13 @@ public class SkusForm extends QueryModel {
     public void setTradeType(String tradeType) {
         this.tradeType = tradeType;
     }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
 }
