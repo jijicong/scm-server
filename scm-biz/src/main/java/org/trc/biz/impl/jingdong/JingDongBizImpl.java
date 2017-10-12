@@ -231,5 +231,15 @@ public class JingDongBizImpl implements IJingDongBiz {
         return ResultUtil.createSuccessResult("订单明操作成功",result.getResult());
     }
 
+    /**
+     * 订单明操作查询接口
+     */
+    @Override
+    public Response getOperateState(Long id)throws Exception{
+        AssertUtil.notNull(id, "操作参数id不能为空");
+        ReturnTypeDO result = ijdService.getOperateState(id);
+        return ResultUtil.createSuccessResult("订单明操作查询成功",result.getResult());
+    }
+
 
 }

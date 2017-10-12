@@ -289,6 +289,10 @@ public class JDServiceImpl implements IJDService {
             }else {
                 returnTypeDO.setResultMessage("调用查询业务类型接口返回结果为空");
             }
+        }catch (IOException e){
+            String msg = String.format("调用查询业务类型接口网络超时,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
         }catch (Exception e){
             String msg = String.format("调用查询业务类型接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
@@ -487,6 +491,34 @@ public class JDServiceImpl implements IJDService {
             }
         }catch (Exception e){
             String msg = String.format("调用订单明操作接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    public ReturnTypeDO getOperateState(Long id){
+        ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(id);
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOperateStateUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONObject json = jbo.getJSONObject("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用订单明操作查询接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用订单明操作查询接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }

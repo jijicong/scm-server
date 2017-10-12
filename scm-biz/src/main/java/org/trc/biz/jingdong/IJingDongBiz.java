@@ -50,4 +50,9 @@ public interface IJingDongBiz {
      */
     Response operateRecord(OperateForm orderDetail)throws Exception;
 
+    /**
+     * 订单明操作查询接口
+     */
+    Response getOperateState(Long id)throws Exception;
+
 }
