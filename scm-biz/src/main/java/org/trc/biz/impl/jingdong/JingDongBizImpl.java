@@ -48,6 +48,12 @@ public class JingDongBizImpl implements IJingDongBiz {
     @Autowired
     IRequestFlowService requestFlowService;
 
+    //错误信息
+    public final static String BAR = "-";
+
+    //错误信息
+    public final static String EXCEL = ".xls";
+
     /*public Pagenation<JdBalanceDetail> checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
@@ -90,11 +96,14 @@ public class JingDongBizImpl implements IJingDongBiz {
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
+
         ReturnTypeDO result = ijdService.orderDetailByPage(queryModel,page);
         JSONObject jbo = JSONObject.parseObject(String.valueOf(result.getResult()));
         Pagenation<OrderDetailDTO> appResult = jbo.toJavaObject(Pagenation.class);
         return appResult;
     }
+
+
 
     @Override
     public Pagenation<BalanceDetailDTO> balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
@@ -132,7 +141,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             cellDefinitionList.add(tradeTypeName);
             cellDefinitionList.add(notePub);
             String sheetName = "余额变动明细";
-            String fileName = "余额变动明细-" + queryModel.getStartUpdateTime() + "-" + queryModel.getEndUpdateTime() + ".xls";
+            String fileName = "余额变动明细-" + queryModel.getStartUpdateTime() + BAR + queryModel.getEndUpdateTime() + EXCEL;
             try {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
             } catch (UnsupportedEncodingException e1) {
@@ -211,7 +220,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             cellDefinitionList.add(state);
             cellDefinitionList.add(remark);
             String sheetName = "订单比对明细";
-            String fileName = "订单比对明细-" + queryModel.getStartDate() + "-" + queryModel.getEndDate() + ".xls";
+            String fileName = "订单比对明细-" + queryModel.getStartDate() + BAR + queryModel.getEndDate() + EXCEL;
             try {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
             } catch (UnsupportedEncodingException e1) {
