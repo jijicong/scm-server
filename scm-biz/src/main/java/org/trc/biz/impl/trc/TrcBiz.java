@@ -327,6 +327,7 @@ public class TrcBiz implements ITrcBiz {
             skuRelation.setSkuCode(skus2.getSkuCode());
             skuRelation = skuRelationService.selectOne(skuRelation);
             if(null != skuRelation){
+            	skus2.setName(skus2.getSkuName());// trc那边统一用name字段表示skuName字段，所以此处需要设置下
                 noticeSkus.add(skus2);
             }
         }
@@ -431,12 +432,14 @@ public class TrcBiz implements ITrcBiz {
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
                 if(StringUtils.equals(externalItemSku.getSkuCode(), externalItemSku2.getSkuCode())){
+                	// 以下字段变更需要通知泰然城
                     if(getLongVal(externalItemSku.getSupplierPrice()) != getLongVal(externalItemSku2.getSupplierPrice()) ||
                             getLongVal(externalItemSku.getSupplyPrice()) != getLongVal(externalItemSku2.getSupplyPrice()) ||
                             getLongVal(externalItemSku.getMarketReferencePrice()) != getLongVal(externalItemSku2.getMarketReferencePrice()) ||
                             getLongVal(externalItemSku.getStock()) != getLongVal(externalItemSku2.getStock()) ||
                             !StringUtils.equals(externalItemSku.getBarCode(), externalItemSku2.getBarCode()) ||
-                            !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid())){
+                            !StringUtils.equals(externalItemSku.getIsValid(), externalItemSku2.getIsValid()) ||
+                            getIntVal(externalItemSku.getMinBuyCount()) != getIntVal(externalItemSku2.getMinBuyCount())) {
                         if(null == externalItemSku.getStock())
                             externalItemSku.setStock(0L);
                         sendList.add(externalItemSku);
@@ -496,6 +499,13 @@ public class TrcBiz implements ITrcBiz {
         else{
             return val.longValue();
         }
+    }
+    private int getIntVal(Integer val){
+    	if(null == val)
+    		return 0;
+    	else{
+    		return val.intValue();
+    	}
     }
 
     @Override
