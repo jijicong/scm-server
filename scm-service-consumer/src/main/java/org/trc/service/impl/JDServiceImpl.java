@@ -3,6 +3,7 @@ package org.trc.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.protocol.HTTP;
@@ -499,12 +500,14 @@ public class JDServiceImpl implements IJDService {
 
     public ReturnTypeDO getOperateState(Long id){
         ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
-        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(id);
+        Map<String, Object> map = new HashedMap();
+        map.put("id",id);
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
-            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOperateStateUrl();
-            response = HttpClientUtil.httpGetRequest(url,map);
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOperateStateUrl()+"/"+id;
+            response = HttpClientUtil.httpGetRequest(url);
+            //response = HttpClientUtil.httpGetRequest(url,map);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);

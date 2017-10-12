@@ -158,7 +158,7 @@ public class JingDongResource {
      * @throws Exception
      * */
 
-    @PUT
+    @GET
     @Path(SupplyConstants.JingDongOrder.GET_OPERATE+ "/{id}")
     @Consumes("text/plain;charset=utf-8")
     @Produces("application/json;charset=utf-8")
