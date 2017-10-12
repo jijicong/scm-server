@@ -216,7 +216,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(key="#form+#aclUserAccreditInfo+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#form+#aclUserAccreditInfo+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         AssertUtil.notNull(form, "查询供应商订单分页参数不能为空");
@@ -255,7 +255,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
-        example.setOrderByClause("instr('1,5,2',`supplier_order_status`)");
+        example.setOrderByClause("instr('2,5,1',`supplier_order_status`) DESC");
         example.orderBy("payTime").desc();
         example.orderBy("updateTime").desc();
         page = warehouseOrderService.pagination(example, page, form);
@@ -717,8 +717,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //等待供应商发货：所有商品的发货状态均为“等待供应商发货”时，供应商订单的状态就为“等待供应商发货”
             if(waitDeliverNum == orderItemList.size())
                 return SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
-            //部分发货：存在发货状态为“部分发货”的商品时，供应商订单的状态就为“部分发货”
-            if(partsDeliverNum > 0)
+            //部分发货：存在发货状态为“部分发货”的商品或者同时存在待发货和已发货(部分发货或全部发货)的商品，供应商订单的状态就为“部分发货”
+            if(partsDeliverNum > 0 || (waitDeliverNum > 0 && (partsDeliverNum > 0 || allDeliverNum > 0)))
                 return SupplierOrderStatusEnum.PARTS_DELIVER.getCode();
             //全部发货：所有商品的发货状态均更新为“全部发货”时，供应商订单的状态就更新为“全部发货”
             if(allDeliverNum == orderItemList.size())
@@ -733,8 +733,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //已取消：订单中全部商品的发货状态均为“已取消”时，订单就更新为“已取消”
             if(cancelNum == orderItemList.size())
                 return OrderDeliverStatusEnum.ORDER_CANCEL.getCode();
-            //部分发货：订单中存在发货状态为“部分发货”的商品时，订单的状态就为“部分发货”；
-            if(partsDeliverNum > 0)
+            //部分发货：订单中存在发货状态为“部分发货”的商品或者同时存在待发货和已发货(部分发货或全部发货)的商品，订单的状态就为“部分发货”；
+            if(partsDeliverNum > 0 || (waitDeliverNum > 0 && (partsDeliverNum > 0 || allDeliverNum > 0)))
                 return OrderDeliverStatusEnum.PARTS_DELIVER.getCode();
             //全部发货：订单中除去发货状态为“已取消”的商品外，其他商品的发货状态均为“全部发货”时，订单就更新为“全部发货”；
             if(allDeliverNum == orderItemList.size() || (allDeliverNum+cancelNum) == orderItemList.size())
@@ -1183,23 +1183,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             setLogisticsInfo(warehouseOrder);
             setOrderSubmitFialureMsg(warehouseOrder);
         }
-        /*List<WarehouseOrder> tmpList = page.getResult();
-        //按付款时间将序排序
-        Collections.sort(page.getResult(), new Comparator<WarehouseOrder>() {
-            @Override
-            public int compare(WarehouseOrder o1, WarehouseOrder o2) {
-                if(o1.getSupplierOrderStatus().compareTo(o2.getSupplierOrderStatus()) == 0){
-                    if(null != o2.getPayTime() && null != o1.getPayTime()){
-                        return o2.getPayTime().compareTo(o1.getPayTime());
-                    }else{
-                        return 0;
-                    }
-                }else {
-                    return 0;
-                }
-            }
-        });
-        page.setResult(tmpList);*/
     }
 
     /**
@@ -1588,7 +1571,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         //在这里剔除已经通知了的物流信息(全部发货)
                         if(StringUtils.equals(supplierOrderStatus,SupplierOrderStatusEnum.ALL_DELIVER.getCode())){
                             List<Logistic> logistics = logisticForm.getLogistics();
-                            for (Iterator<Logistic> it = logistics.iterator(); it.hasNext(); ) {
+                            for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
                                 Logistic logistic = it.next();
                                 for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
                                     if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderLogistics2.getSupplierOrderCode())) {
@@ -1610,7 +1593,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                 }
             }catch (Exception e){
-                log.error(String.format("更新供应商订单%s物流信息异常,%s", JSONObject.toJSON(supplierOrderInfo2), e.getMessage()));
+                log.error(String.format("更新供应商订单%s物流信息异常,%s", JSONObject.toJSON(supplierOrderInfo2), e.getMessage()), e);
             }
         }
     }
@@ -1714,6 +1697,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(!flag){
             for(Logistic logistic: logisticForm.getLogistics()){
+                if(StringUtils.equals(supplierOrderInfo.getSupplierCode(), SupplyConstants.Order.SUPPLIER_LY_CODE)){
+                    if(!StringUtils.equals(supplierOrderInfo.getSupplierOrderCode(), logistic.getSupplierOrderCode())){
+                        continue;
+                    }
+                }
                 SupplierOrderLogistics supplierOrderLogistics = null;
                 try{
                     //获取供应商订单物流信息
@@ -1727,10 +1715,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         if(supplierOrderLogisticsList.size() > 0){
-            //更新供应商订单状态
-            updateSupplierOrderStatus(supplierOrderInfo, supplierOrderLogisticsList);
             //根据物流信息更新订单商品供应商订单状态
-            updateOrderItemSupplierOrderStatusByLogistics(supplierOrderInfo, logisticForm);
+            updateOrderItemSupplierOrderStatusByLogistics(supplierOrderInfo.getWarehouseOrderCode(), logisticForm);
+            //更新供应商订单状态
+            updateSupplierOrderStatus(supplierOrderInfo);
             //更新仓库订单供应商订单状态
             WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode());
             //更新店铺订单供应商订单状态
@@ -1740,35 +1728,28 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     /**
      * 根据物流信息更新订单商品供应商订单状态
-     * @param supplierOrderInfo
+     * @param warehouseOrderCode
      * @param logisticForm
      */
-    private void updateOrderItemSupplierOrderStatusByLogistics(SupplierOrderInfo supplierOrderInfo, LogisticForm logisticForm){
+    private void updateOrderItemSupplierOrderStatusByLogistics(String warehouseOrderCode, LogisticForm logisticForm){
         OrderItem orderItem = new OrderItem();
-        orderItem.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
+        orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);
-        AssertUtil.notEmpty(orderItemList, String.format("获取物流信息后更新订单商品供应商订单状态,根据仓库订单号[%s]查询相应的商品明细为空", supplierOrderInfo.getWarehouseOrderCode()));
+        AssertUtil.notEmpty(orderItemList, String.format("获取物流信息后更新订单商品供应商订单状态,根据仓库订单号[%s]查询相应的商品明细为空", warehouseOrderCode));
         for(Logistic logistic: logisticForm.getLogistics()){
             List<SkuInfo> skuInfos = logistic.getSkus();
             for(SkuInfo skuInfo : skuInfos){
                 for(OrderItem orderItem2: orderItemList){
-                    if(StringUtils.equals(orderItem2.getSupplierSkuCode(), skuInfo.getSkuCode())){
-                        orderItem2.setSupplierOrderStatus(supplierOrderInfo.getSupplierOrderStatus());
-                        /**
-                         * 说明：SupplierOrderInfo级别供应商下单异常状态(同时存在供应商下单失败和等待供应商发货的商品，
-                         * 或同时存在供应商下单失败或已取消的商品)是不会出现的，要么下单全部成功，要么下单全部失败
-                         */
-                        if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
-                                StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())
-                                ){
-                            if(orderItem2.getNum() == skuInfo.getNum()){
-                                orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
-                            }else if(orderItem2.getNum() > skuInfo.getNum()){
-                                orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
-                            }{
-                                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("仓库订单编码为%s的订单中商品sku为%s的商品数量为%s,而供应商下单接口返回的商品数量为%s",
-                                        supplierOrderInfo.getWarehouseOrderCode(), orderItem2.getSupplierSkuCode(), orderItem2.getNum(), skuInfo.getNum()));
-                            }
+                    if((StringUtils.equals(orderItem2.getSupplierOrderStatus(), OrderItemDeliverStatusEnum.WAIT_FOR_DELIVER.getCode()) ||
+                            StringUtils.equals(orderItem2.getSupplierOrderStatus(), OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())
+                    ) && StringUtils.equals(orderItem2.getSupplierSkuCode(), skuInfo.getSkuCode())){
+                        if(orderItem2.getNum() == skuInfo.getNum()){
+                            orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
+                        }else if(orderItem2.getNum() > skuInfo.getNum()){
+                            orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+                        }else{
+                            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("仓库订单编码为%s的订单中商品sku为%s的商品数量为%s,而供应商下单接口返回的商品数量为%s",
+                                    warehouseOrderCode, orderItem2.getSupplierSkuCode(), orderItem2.getNum(), skuInfo.getNum()));
                         }
                         orderItemService.updateByPrimaryKey(orderItem2);
                     }
@@ -1804,20 +1785,32 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 更新供应商订单物流状态
      * @param supplierOrderInfo
-     * @param supplierOrderLogisticsList
      */
-    private void updateSupplierOrderStatus(SupplierOrderInfo supplierOrderInfo, List<SupplierOrderLogistics> supplierOrderLogisticsList){
-        if(supplierOrderLogisticsList.size() > 0){
-            supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());//全部发货
-            supplierOrderInfo.setLogisticsStatus(SupplierOrderDeliverStatusEnum.COMPLETE.getCode());
-            supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
-            int count = supplierOrderInfoService.updateByPrimaryKeySelective(supplierOrderInfo);
-            if(count == 0){
-                String msg = String.format("更新供应商订单%s物流状态失败", JSONObject.toJSON(supplierOrderInfo));
-                log.error(msg);
-                throw new OrderException(ExceptionEnum.SUPPLIER_LOGISTICS_UPDATE_EXCEPTION, msg);
+    private void updateSupplierOrderStatus(SupplierOrderInfo supplierOrderInfo){
+        OrderItem orderItem = new OrderItem();
+        orderItem.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        AssertUtil.notEmpty(orderItemList, String.format("更新供应商订单供应商订单状态,根据仓库订单号[%s]查询相应的商品明细为空", supplierOrderInfo.getWarehouseOrderCode()));
+        List<SkuInfo> skuInfos = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
+        List<OrderItem> tmpOrderItemList = new ArrayList<OrderItem>();
+        for(SkuInfo skuInfo: skuInfos){
+            for(OrderItem orderItem2: orderItemList){
+                if(StringUtils.equals(skuInfo.getSkuCode(), orderItem2.getSupplierSkuCode())){
+                    tmpOrderItemList.add(orderItem2);
+                }
             }
         }
+        if(tmpOrderItemList.size() == 0)
+            return;
+        String logisticsStatus = SupplierOrderDeliverStatusEnum.UM_COMPLETE.getCode();//未完成
+        String supplierOrderStatus = getSupplierOrderStatusByItems(tmpOrderItemList, ZeroToNineEnum.ZERO.getCode());
+        if(StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderStatus)){//全部发货
+            logisticsStatus = SupplierOrderDeliverStatusEnum.COMPLETE.getCode();//完成
+        }
+        supplierOrderInfo.setLogisticsStatus(logisticsStatus);
+        supplierOrderInfo.setSupplierOrderStatus(supplierOrderStatus);
+        supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
+        supplierOrderInfoService.updateByPrimaryKeySelective(supplierOrderInfo);
     }
 
     /**
