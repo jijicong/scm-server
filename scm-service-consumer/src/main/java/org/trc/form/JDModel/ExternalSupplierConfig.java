@@ -46,7 +46,8 @@ public class ExternalSupplierConfig {
     private String jdExportBalanceUrl;
     //京东订单对比明细操作接口url地址
     private String jdOrderOperateUrl;
-
+    //京东订单对比明细操作查询接口url地址
+    private String jdOperateStateUrl;
     //粮油下单接口地址
     private String lySubmitOrderUrl;
 
@@ -224,5 +225,13 @@ public class ExternalSupplierConfig {
 
     public void setJdOrderOperateUrl(String jdOrderOperateUrl) {
         this.jdOrderOperateUrl = jdOrderOperateUrl;
+    }
+
+    public String getJdOperateStateUrl() {
+        return jdOperateStateUrl;
+    }
+
+    public void setJdOperateStateUrl(String jdOperateStateUrl) {
+        this.jdOperateStateUrl = jdOperateStateUrl;
     }
 }

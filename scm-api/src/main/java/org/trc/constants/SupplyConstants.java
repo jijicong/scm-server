@@ -744,6 +744,8 @@ public class SupplyConstants {
         public static final String EXPORT_ORDER_DETAIL = "exportOrderDetail";
         //订单操作
         public static final String OPERATE_ORDER = "operate";
+        //订单操作查询
+        public static final String GET_OPERATE = "getOperate";
 
     }
 

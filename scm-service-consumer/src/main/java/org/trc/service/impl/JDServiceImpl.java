@@ -3,6 +3,7 @@ package org.trc.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.protocol.HTTP;
@@ -289,6 +290,10 @@ public class JDServiceImpl implements IJDService {
             }else {
                 returnTypeDO.setResultMessage("调用查询业务类型接口返回结果为空");
             }
+        }catch (IOException e){
+            String msg = String.format("调用查询业务类型接口网络超时,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
         }catch (Exception e){
             String msg = String.format("调用查询业务类型接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
@@ -487,6 +492,36 @@ public class JDServiceImpl implements IJDService {
             }
         }catch (Exception e){
             String msg = String.format("调用订单明操作接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    public ReturnTypeDO getOperateState(Long id){
+        ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
+        Map<String, Object> map = new HashedMap();
+        map.put("id",id);
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOperateStateUrl()+"/"+id;
+            response = HttpClientUtil.httpGetRequest(url);
+            //response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONObject json = jbo.getJSONObject("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用订单明操作查询接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用订单明操作查询接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }
