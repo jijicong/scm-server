@@ -106,7 +106,6 @@ public class WarehouseOrder implements Serializable {
     private String orderType;
 
     //付款时间
-    @Transient
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date payTime;
 

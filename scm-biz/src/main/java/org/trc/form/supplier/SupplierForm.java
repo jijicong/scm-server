@@ -24,6 +24,17 @@ public class SupplierForm extends QueryModel{
     @QueryParam("contact")
     @Length(max = 64, message = "联系人长度不能超过64个")
     private String contact;
+    @QueryParam("status")
+    @Length(max = 2, message = "审核状态长度不能超过2个")
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getSupplierCode() {
         return supplierCode;

@@ -347,6 +347,10 @@ public class OrderItem implements Serializable {
     // 商品规格描述
     private String specNatureInfo;
 
+    //供应商订单状态：1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
+    private String supplierOrderStatus;
+
+
     public String getSupplierSkuCode() {
         return supplierSkuCode;
     }
@@ -1321,5 +1325,13 @@ public class OrderItem implements Serializable {
      */
     public void setSpecNatureInfo(String specNatureInfo) {
         this.specNatureInfo = specNatureInfo == null ? null : specNatureInfo.trim();
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
     }
 }

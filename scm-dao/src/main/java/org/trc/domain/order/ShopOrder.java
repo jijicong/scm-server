@@ -200,6 +200,9 @@ public class ShopOrder extends OrderBase {
     // 交易备注
     private String tradeMemo;
 
+    //供应商订单状态：1-待发货,2-部分发货,3-全部发货,4-已取消
+    private String supplierOrderStatus;
+
     /**
      * 订单商品明细
      */
@@ -762,5 +765,13 @@ public class ShopOrder extends OrderBase {
     @Override
     public void setPayTime(Date payTime) {
         this.payTime = payTime;
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
     }
 }

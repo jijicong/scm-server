@@ -19,6 +19,7 @@ import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -118,17 +119,18 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response externalGoodsPage(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page) throws Exception {
+    public Response externalGoodsPage(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page,@Context ContainerRequestContext requestContext) throws Exception {
         //return goodsBiz.externalGoodsPage(form, page);
-        return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage(form, page));
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage(form, page,aclUserAccreditInfo));
     }
 
     @GET
     @Path(SupplyConstants.Goods.EXTERNAL_GOODS_PAGE_2)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response externalGoodsPage2(@BeanParam SupplyItemsForm form, @BeanParam Pagenation<SupplyItemsExt> page) throws Exception {
+    public Response externalGoodsPage2(@BeanParam SupplyItemsForm form, @BeanParam Pagenation<SupplyItemsExt> page, @Context ContainerRequestContext requestContext) throws Exception {
         //return goodsBiz.externalGoodsPage2(form, page);
-        return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage2(form, page));
+        return ResultUtil.createSuccessPageResult(goodsBiz.externalGoodsPage2(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @GET
@@ -176,5 +178,11 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("检查属性启停用状态成功","");
     }
 
+    @GET
+    @Path(SupplyConstants.Goods.SUPPLIERS_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response querySupplierList(@BeanParam SupplierForm form, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult("查询供应商列表成功", goodsBiz.querySuppliers(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 
+    }
 }
