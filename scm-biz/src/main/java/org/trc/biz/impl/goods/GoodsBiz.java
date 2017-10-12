@@ -203,6 +203,11 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
+
+        if (StringUtil.isNotEmpty(queryModel.getSkuName())) {//skuName
+            criteria.andEqualTo("skuName", queryModel.getSkuName());
+        }
+
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
         if(null != spus){
             if(spus.size() > 0){

@@ -116,4 +116,9 @@ public interface IJDService {
      */
     ReturnTypeDO operateRecord(OperateForm orderDetail);
 
+    /**
+     * 订单明操作查询接口
+     */
+    ReturnTypeDO getOperateState(Long id);
+
 }

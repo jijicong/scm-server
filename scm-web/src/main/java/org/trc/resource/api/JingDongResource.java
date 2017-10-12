@@ -139,7 +139,8 @@ public class JingDongResource {
      * 订单明操作接口
      *
      * @return
-     * @throws Exception*/
+     * @throws Exception
+     * */
 
     @PUT
     @Path(SupplyConstants.JingDongOrder.OPERATE_ORDER)
@@ -148,5 +149,21 @@ public class JingDongResource {
     public Response operateRecord(@BeanParam OperateForm orderDetail) throws Exception {
         log.info("进入订单明操作接口======>"+ JSON.toJSONString(orderDetail));
         return iJingDongBiz.operateRecord(orderDetail);
+    }
+
+    /**
+     * 订单明操作接口
+     *
+     * @return
+     * @throws Exception
+     * */
+
+    @GET
+    @Path(SupplyConstants.JingDongOrder.GET_OPERATE+ "/{id}")
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/json;charset=utf-8")
+    public Response operateRecord(@PathParam("id") Long id) throws Exception {
+        log.info("进入订单明操作查询接口======>"+ JSON.toJSONString(id));
+        return iJingDongBiz.getOperateState(id);
     }
 }
