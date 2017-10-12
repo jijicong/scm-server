@@ -1,4 +1,4 @@
-package org.trc.form.external;
+package org.trc.util;
 
 
 public class CellDefinition {
