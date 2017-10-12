@@ -1,9 +1,6 @@
 package org.trc.biz.impl.goods;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,11 +17,14 @@ import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierApply;
 import org.trc.enums.ValidEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.ItemsService;
+import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
@@ -54,6 +54,8 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     private ISupplierService supplierService;
     @Autowired
     private ItemsService itemsService;
+    @Autowired
+    private ISupplierApplyService supplierApplyService;
 
     @Override
     public List<Skus> getSkuInformation(String skuCode) {
@@ -118,7 +120,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     }
 
     @Override
-    public List<ExternalItemSku> getExternalSkuInformation(String skuCode) {
+    public List<ExternalItemSku> getExternalSkuInformation(String skuCode,String channelCode) {
         AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
         AssertUtil.isTrue(skuCode.indexOf(TrcBiz.COMMA_ZH) == -1, "分隔多个sku编码必须是英文逗号");
         String[] skuCodes = skuCode.split(SupplyConstants.Symbol.COMMA);
@@ -129,6 +131,25 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", Arrays.asList(skuCodes));
         criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
+        if (StringUtils.isNotBlank(channelCode)){
+            //查询到当前渠道下审核通过的一件代发供应商
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status", ZeroToNineEnum.TWO.getCode());
+                criteria2.andEqualTo("channelCode",channelCode);
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            List<String>  supplierInterfaceIdList = new ArrayList<>();
+            for (SupplierApply supplierApply:supplierApplyList) {
+                Supplier supplier = new Supplier();
+                supplier.setSupplierCode(supplierApply.getSupplierCode());
+                supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
+                supplier=  supplierService.selectOne(supplier);
+                if (null!=supplier){
+                    supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
+                }
+            }
+            criteria.andIn("supplierCode",supplierInterfaceIdList);
+        }
         List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example);
         if(!CollectionUtils.isEmpty(externalItemSkuList)){
             setMoneyWeight(externalItemSkuList);

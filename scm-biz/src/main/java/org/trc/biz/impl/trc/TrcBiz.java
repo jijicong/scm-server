@@ -3,9 +3,6 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import javafx.scene.control.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,21 +13,17 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.impl.goods.GoodsBiz;
-import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.impl.trc.model.SkusProperty;
-import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.cache.Cacheable;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.BaseDO;
 import org.trc.domain.System.Channel;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
+import org.trc.domain.config.SystemConfig;
 import org.trc.domain.forTrc.PropertyValueForTrc;
 import org.trc.domain.goods.*;
-import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
@@ -40,15 +33,13 @@ import org.trc.exception.ParamValidException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
-import org.trc.form.category.BrandForm;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.BrandForm2;
 import org.trc.form.trc.CategoryForm2;
-import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.form.trc.ItemsForm2;
+import org.trc.form.trcForm.PropertyFormForTrc;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
@@ -58,6 +49,7 @@ import org.trc.service.category.ICategoryService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
 import org.trc.service.config.IRequestFlowService;
+import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.*;
 import org.trc.service.impl.category.BrandService;
 import org.trc.service.impl.system.ChannelService;
@@ -117,6 +109,8 @@ public class TrcBiz implements ITrcBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private IItemSalesProperyService itemSalesProperyService;
+    @Autowired
+    private ISystemConfigService systemConfigService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -537,7 +531,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception {
+    public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,String channelCode) throws Exception {
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {
@@ -552,6 +546,7 @@ public class TrcBiz implements ITrcBiz {
                return page;
             }
         }
+
         if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
         }
@@ -569,6 +564,25 @@ public class TrcBiz implements ITrcBiz {
         }
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
+        }
+        if (StringUtils.isNotBlank(channelCode)){
+            //查询到当前渠道下审核通过的一件代发供应商
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status", ZeroToNineEnum.TWO.getCode());
+            criteria2.andEqualTo("channelCode",channelCode);
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            List<String>  supplierInterfaceIdList = new ArrayList<>();
+            for (SupplierApply supplierApply:supplierApplyList) {
+                Supplier supplier = new Supplier();
+                supplier.setSupplierCode(supplierApply.getSupplierCode());
+                supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
+                supplier=  supplierService.selectOne(supplier);
+                if (null!=supplier){
+                    supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
+                }
+            }
+            criteria.andIn("supplierCode",supplierInterfaceIdList);
         }
         example.orderBy("supplierCode").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
@@ -710,7 +724,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
+    public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page,String channelCode) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(queryModel.getSupplierName())) {//供应商名称
@@ -719,6 +733,7 @@ public class TrcBiz implements ITrcBiz {
         if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {//供应商编码
             criteria.andLike("supplierCode", "%" + queryModel.getSupplierCode() + "%");
         }
+
         if (StringUtils.isNotBlank(queryModel.getContact())) {//联系人
             criteria.andLike("contact", "%" + queryModel.getContact() + "%");
         }
@@ -738,6 +753,28 @@ public class TrcBiz implements ITrcBiz {
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
         page = supplierService.pagination(example, page, queryModel);
+        List<Supplier> supplierList = page.getResult();
+        if (StringUtils.isNotBlank(channelCode)){
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
+            criteria2.andEqualTo("channelCode",channelCode);
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            List<Supplier> supplierResultList =  new ArrayList<>();
+            if (!AssertUtil.collectionIsEmpty(supplierList)) {
+                for (Supplier  supplierResult:supplierList) {
+                    boolean isAudit = false;
+                    for (SupplierApply  supplierApply:supplierApplyList) {
+                        if (StringUtils.equals(supplierResult.getSupplierCode(),supplierApply.getSupplierCode())){
+                            isAudit = true;}
+                    }
+                    if (isAudit){
+                        supplierResultList.add(supplierResult);
+                    }
+                }
+            }
+            page.setResult(supplierResultList);
+        }
         handlerSupplierPage(page);
         //分页查询
         return page;
@@ -1447,6 +1484,7 @@ public class TrcBiz implements ITrcBiz {
 
     }
 
+
     @Override
     public Pagenation<Brand> brandList(BrandForm2 queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
@@ -1456,8 +1494,11 @@ public class TrcBiz implements ITrcBiz {
         return pagenation;
     }
 
+
+
     @Override
     public Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception {
+
         //为字符串‘1’or '0'
         Boolean flagParam = StringUtils.equals(queryModel.getFlag(),ZeroToNineEnum.ZERO.getCode()) || StringUtils.equals(queryModel.getFlag(),ZeroToNineEnum.ONE.getCode());
         if(!flagParam){
@@ -1507,6 +1548,16 @@ public class TrcBiz implements ITrcBiz {
             }else {
                 return page;
             }
+        }
+    }
+
+    @Override
+    public void checkChannelCode(String channelCode) throws Exception {
+        SystemConfig systemConfig = new SystemConfig();
+        systemConfig.setCode("channelCodeCheck");
+        systemConfig=systemConfigService.selectOne(systemConfig);
+        if (StringUtils.equals(systemConfig.getContent(), ZeroToNineEnum. ONE.getCode())){
+            AssertUtil.notBlank(channelCode,"channelCode不能为空!");
         }
     }
 

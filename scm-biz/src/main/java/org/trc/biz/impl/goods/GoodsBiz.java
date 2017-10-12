@@ -1669,13 +1669,13 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(queryModel.getSupplierCode())) {//供应商编号
             criteria.andEqualTo("supplierCode", queryModel.getSupplierCode());
-        }else {
+        }else if(StringUtils.equals(queryModel.getQuerySource(),ZeroToNineEnum.ZERO.getCode())){
             //查询到当前渠道下审核通过的一件代发供应商
             Example example2 = new Example(SupplierApply.class);
             Example.Criteria criteria2 = example2.createCriteria();
@@ -2065,7 +2065,7 @@ public class GoodsBiz implements IGoodsBiz {
                 itemSku = externalItemSkuService.selectOne(itemSku);
                 List<String> ids =  new ArrayList<>();
                 ids.add(String.valueOf(itemSku.getId()));
-                logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN,
+                logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
                         LogOperationEnum.SYNCHRONIZE.getMessage(), null, null,ids);
             }
         }
@@ -2191,8 +2191,7 @@ public class GoodsBiz implements IGoodsBiz {
      * @param flag 0-新增代发商品,1-根据供应商sku更新通知更新一件代发商品
      * @return
      */
-    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems, String flag){
-        List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
+    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems, String flag){ List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
         Date sysDate = Calendar.getInstance().getTime();
         String sysDateStr = DateUtils.dateToCompactString(sysDate);
         Map<String, String> supplierMap = new HashMap<>();
