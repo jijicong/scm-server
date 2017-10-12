@@ -94,6 +94,9 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     @Override
     public Pagenation<OrderDetailDTO> orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page) throws Exception{
+        AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
+        AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
+        AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
         ReturnTypeDO result = ijdService.orderDetailByPage(queryModel,page);
         JSONObject jbo = JSONObject.parseObject(String.valueOf(result.getResult()));
         Pagenation<OrderDetailDTO> appResult = jbo.toJavaObject(Pagenation.class);
@@ -102,6 +105,9 @@ public class JingDongBizImpl implements IJingDongBiz {
 
     @Override
     public Pagenation<BalanceDetailDTO> balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
+        AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
+        AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
+        AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
         ReturnTypeDO result = ijdService.balanceDetailByPage(queryModel,page);
         JSONObject jbo = JSONObject.parseObject(String.valueOf(result.getResult()));
         Pagenation<BalanceDetailDTO> appResult = jbo.toJavaObject(Pagenation.class);
@@ -116,10 +122,10 @@ public class JingDongBizImpl implements IJingDongBiz {
         CellDefinition orderId = new CellDefinition("orderId", "京东订单号", CellDefinition.TEXT, 8000);
         CellDefinition income = new CellDefinition("income", "收入", CellDefinition.NUM_0_00, 4000);
         CellDefinition outcome = new CellDefinition("outcome", "支出", CellDefinition.NUM_0_00, 6000);
-        CellDefinition accountType = new CellDefinition("accountType", "账号类型", CellDefinition.TEXT, 16000);
-        CellDefinition createdDate = new CellDefinition("createdDate", "余额变动时间", CellDefinition.TEXT, 4000);
-        CellDefinition tradeTypeName = new CellDefinition("tradeTypeName", "业务类型", CellDefinition.TEXT, 4000);
-        CellDefinition notePub = new CellDefinition("notePub", "备注", CellDefinition.TEXT, 4000);
+        CellDefinition accountType = new CellDefinition("accountType", "账号类型", CellDefinition.TEXT, 6000);
+        CellDefinition createdDate = new CellDefinition("createdDate", "余额变动时间", CellDefinition.TEXT, 8000);
+        CellDefinition tradeTypeName = new CellDefinition("tradeTypeName", "业务类型", CellDefinition.TEXT, 8000);
+        CellDefinition notePub = new CellDefinition("notePub", "备注", CellDefinition.TEXT, 10000);
 
         List<CellDefinition> cellDefinitionList = new ArrayList<>();
         cellDefinitionList.add(tradeNo);
@@ -150,17 +156,17 @@ public class JingDongBizImpl implements IJingDongBiz {
         List<OrderDetailDTO> result = ijdService.exportOrderDetail(queryModel);
         CellDefinition operate = new CellDefinition("operate", "操作", CellDefinition.TEXT, 4000);
         CellDefinition errMsg = new CellDefinition("errMsg", "异常说明", CellDefinition.TEXT, 4000);
-        CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.DATE_TIME, 8000);
-        CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.DATE_TIME, 8000);
+        CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.TEXT, 4000);
+        CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.TEXT, 4000);
         CellDefinition channelPlatformOrder = new CellDefinition("channelPlatformOrder", "渠道平台订单号", CellDefinition.TEXT, 6000);
-        CellDefinition parentOrderCode = new CellDefinition("parentOrderCode", "京东父订单编号", CellDefinition.TEXT, 8000);
-        CellDefinition orderCode = new CellDefinition("orderCode", "京东子订单编号", CellDefinition.TEXT, 8000);
+        CellDefinition parentOrderCode = new CellDefinition("parentOrderCode", "京东父订单编号", CellDefinition.TEXT, 4000);
+        CellDefinition orderCode = new CellDefinition("orderCode", "京东子订单编号", CellDefinition.TEXT, 4000);
         CellDefinition itemSkuCode = new CellDefinition("itemSkuCode", "京东商品编号", CellDefinition.TEXT, 4000);
 
-        CellDefinition itemSkuName = new CellDefinition("itemSkuName", "京东商品名称", CellDefinition.TEXT, 10000);
-        CellDefinition firstClassify = new CellDefinition("firstClassify", "京东一级分类", CellDefinition.TEXT, 8000);
-        CellDefinition secondClassify = new CellDefinition("secondClassify", "京东二级分类", CellDefinition.TEXT, 8000);
-        CellDefinition thirdClassify = new CellDefinition("thirdClassify", "京东三级分类", CellDefinition.TEXT, 8000);
+        CellDefinition itemSkuName = new CellDefinition("itemSkuName", "京东商品名称", CellDefinition.TEXT, 16000);
+        CellDefinition firstClassify = new CellDefinition("firstClassify", "京东一级分类", CellDefinition.TEXT, 4000);
+        CellDefinition secondClassify = new CellDefinition("secondClassify", "京东二级分类", CellDefinition.TEXT, 4000);
+        CellDefinition thirdClassify = new CellDefinition("thirdClassify", "京东三级分类", CellDefinition.TEXT, 4000);
         CellDefinition channelItemsNum = new CellDefinition("channelItemsNum", "渠道商品数量", CellDefinition.NUM_0, 4000);
         CellDefinition jdItemsNum = new CellDefinition("jdItemsNum", "京东商品数量", CellDefinition.NUM_0, 4000);
         CellDefinition price = new CellDefinition("price", "京东商品单价", CellDefinition.NUM_0_00, 4000);
@@ -173,9 +179,9 @@ public class JingDongBizImpl implements IJingDongBiz {
         CellDefinition actualPay = new CellDefinition("actualPay", "账户实际支付金额", CellDefinition.NUM_0_00, 4000);
         CellDefinition refund = new CellDefinition("refund", "账户实际退款金额", CellDefinition.NUM_0_00, 4000);
 
-        CellDefinition balanceCreateTime = new CellDefinition("balanceCreateTime", "余额变动时间", CellDefinition.DATE_TIME, 8000);
+        CellDefinition balanceCreateTime = new CellDefinition("balanceCreateTime", "余额变动时间", CellDefinition.TEXT, 8000);
         CellDefinition state = new CellDefinition("state", "订单状态", CellDefinition.TEXT, 4000);
-        CellDefinition remark = new CellDefinition("remark", "备注", CellDefinition.TEXT, 16000);
+        CellDefinition remark = new CellDefinition("remark", "备注", CellDefinition.TEXT, 8000);
         List<CellDefinition> cellDefinitionList = new ArrayList<>();
         cellDefinitionList.add(operate);
         cellDefinitionList.add(errMsg);

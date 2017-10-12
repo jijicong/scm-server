@@ -114,7 +114,7 @@ public class JingDongResource {
     @GET
     @Path(SupplyConstants.JingDongOrder.EXPORT_BALANCE_DETAIL)
     @Consumes("text/plain;charset=utf-8")
-    @Produces("application/json;charset=utf-8")
+    @Produces("application/octet-stream")
     public Response exportBalanceDetail(@BeanParam BalanceDetailDO queryModel) throws Exception {
         log.info("进入余额明细导出接口======>"+ JSON.toJSONString(queryModel));
         return iJingDongBiz.exportBalanceDetail(queryModel);
@@ -131,7 +131,7 @@ public class JingDongResource {
     @Consumes("text/plain;charset=utf-8")
     @Produces("application/json;charset=utf-8")
     public Response exportOrderDetail(@BeanParam OrderDetailForm queryModel) throws Exception {
-        log.info("进入余额明细导出接口======>"+ JSON.toJSONString(queryModel));
+        log.info("进入订单明细导出接口======>"+ JSON.toJSONString(queryModel));
         return iJingDongBiz.exportOrderDetail(queryModel);
     }
 
