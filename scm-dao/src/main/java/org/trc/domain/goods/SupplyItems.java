@@ -34,6 +34,7 @@ public class SupplyItems extends BaseDO {
     private Long stock;//库存
     private String updateFlag;
     private Date notifyTime;
+    private Integer minBuyCount;
 
 
     public Long getId() {
@@ -234,5 +235,13 @@ public class SupplyItems extends BaseDO {
 
     public void setNotifyTime(Date notifyTime) {
         this.notifyTime = notifyTime;
+    }
+
+    public Integer getMinBuyCount() {
+        return minBuyCount;
+    }
+
+    public void setMinBuyCount(Integer minBuyCount) {
+        this.minBuyCount = minBuyCount;
     }
 }
