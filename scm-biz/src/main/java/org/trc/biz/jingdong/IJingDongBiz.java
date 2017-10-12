@@ -1,8 +1,7 @@
 package org.trc.biz.jingdong;
 
 import org.trc.form.JDModel.*;
-import org.trc.form.external.OrderDetail;
-import org.trc.form.external.OrderDetailForm;
+import org.trc.form.external.*;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -29,12 +28,12 @@ public interface IJingDongBiz {
     /**
      * 订单对比明细分页查询接口
      */
-    Response orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page)throws Exception;
+    Pagenation<OrderDetailDTO> orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page)throws Exception;
 
     /**
      * 余额明细分页查询接口
      */
-    Response balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page)throws Exception;
+    Pagenation<BalanceDetailDTO> balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page)throws Exception;
 
     /**
      * 余额明细导出接口
@@ -49,6 +48,6 @@ public interface IJingDongBiz {
     /**
      * 订单明操作接口
      */
-    Response operateRecord(OrderDetail orderDetail)throws Exception;
+    Response operateRecord(OperateForm orderDetail)throws Exception;
 
 }

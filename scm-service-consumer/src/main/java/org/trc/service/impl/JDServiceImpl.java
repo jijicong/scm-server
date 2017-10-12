@@ -15,13 +15,13 @@ import org.trc.enums.JingDongEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
-import org.trc.form.external.OrderDetail;
-import org.trc.form.external.OrderDetailForm;
+import org.trc.form.external.*;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.service.IJDService;
 import org.trc.util.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
@@ -330,7 +330,7 @@ public class JDServiceImpl implements IJDService {
 
     @Override
     public ReturnTypeDO queryBalanceInfo() {
-        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
@@ -340,7 +340,7 @@ public class JDServiceImpl implements IJDService {
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    JSONArray page = jbo.getJSONArray("result");
+                    JSONObject page = jbo.getJSONObject("result");
                     returnTypeDO.setSuccess(true);
                     returnTypeDO.setResult(page);
                 }
@@ -358,7 +358,7 @@ public class JDServiceImpl implements IJDService {
 
     @Override
     public ReturnTypeDO orderDetailByPage(OrderDetailForm queryModel, Pagenation<OrderDetail> page) {
-        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         returnTypeDO.setSuccess(false);
         Map<String, Object> map = BeanToMapUtil.convertBeanToMap(page);
         map.putAll(BeanToMapUtil.convertBeanToMap(queryModel));
@@ -370,7 +370,7 @@ public class JDServiceImpl implements IJDService {
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    JSONArray json = jbo.getJSONArray("result");
+                    JSONObject json = jbo.getJSONObject("result");
                     returnTypeDO.setSuccess(true);
                     returnTypeDO.setResult(json);
                 }
@@ -388,7 +388,7 @@ public class JDServiceImpl implements IJDService {
 
     @Override
     public ReturnTypeDO balanceDetailByPage(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) {
-        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+        ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         returnTypeDO.setSuccess(false);
         Map<String, Object> map = BeanToMapUtil.convertBeanToMap(page);
         map.putAll(BeanToMapUtil.convertBeanToMap(queryModel));
@@ -400,7 +400,7 @@ public class JDServiceImpl implements IJDService {
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    JSONArray json = jbo.getJSONArray("result");
+                    JSONObject json = jbo.getJSONObject("result");
                     returnTypeDO.setSuccess(true);
                     returnTypeDO.setResult(json);
                 }
@@ -417,9 +417,7 @@ public class JDServiceImpl implements IJDService {
     }
 
     @Override
-    public ReturnTypeDO exportBalanceDetail(BalanceDetailDO queryModel) {
-        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
-        returnTypeDO.setSuccess(false);
+    public List<BalanceDetailDTO> exportBalanceDetail(BalanceDetailDO queryModel) {
         Map<String, Object> map = BeanToMapUtil.convertBeanToMap(queryModel);
         String response = null;
         try{
@@ -430,23 +428,19 @@ public class JDServiceImpl implements IJDService {
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     JSONArray json = jbo.getJSONArray("result");
-                    returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(json);
+                    return json.toJavaList(BalanceDetailDTO.class);
                 }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
-            }else {
-                returnTypeDO.setResultMessage("调用余额明细导出接口返回结果为空");
             }
+            return null;
         }catch (Exception e){
             String msg = String.format("调用余额明细导出接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
+            return null;
         }
-        return returnTypeDO;
     }
 
     @Override
-    public ReturnTypeDO exportOrderDetail(OrderDetailForm queryModel) {
+    public List<OrderDetailDTO> exportOrderDetail(OrderDetailForm queryModel) {
         ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
         Map<String, Object> map = BeanToMapUtil.convertBeanToMap(queryModel);
         returnTypeDO.setSuccess(false);
@@ -459,35 +453,31 @@ public class JDServiceImpl implements IJDService {
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     JSONArray json = jbo.getJSONArray("result");
-                    returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(json);
+                    return json.toJavaList(OrderDetailDTO.class);
                 }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
-            }else {
-                returnTypeDO.setResultMessage("调用订单明细导出接口返回结果为空");
             }
+            return null;
         }catch (Exception e){
             String msg = String.format("调用订单明细导出接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
+            return null;
         }
-        return returnTypeDO;
     }
 
     @Override
-    public ReturnTypeDO operateRecord(OrderDetail orderDetail) {
-        ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
+    public ReturnTypeDO operateRecord(OperateForm orderDetail) {
+        ReturnTypeDO<Boolean> returnTypeDO = new ReturnTypeDO<Boolean>();
         Map<String, Object> map = BeanToMapUtil.convertBeanToMap(orderDetail);
         returnTypeDO.setSuccess(false);
         String response = null;
         try{
             String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOrderOperateUrl();
-            response = HttpClientUtil.httpGetRequest(url,map);
+            response = HttpClientUtil.httpPutRequest(url,map,5000);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    JSONArray json = jbo.getJSONArray("result");
+                    Boolean json = jbo.getBoolean("result");
                     returnTypeDO.setSuccess(true);
                     returnTypeDO.setResult(json);
                 }

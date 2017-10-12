@@ -5,10 +5,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -168,7 +166,7 @@ public class HttpClientUtil {
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 // long len = entity.getContentLength();// -1 表示长度未知
-                String result = EntityUtils.toString(entity);
+                String result = EntityUtils.toString(entity, "UTF-8");
                 response.close();
                 //httpClient.close();
                 return result;
@@ -180,6 +178,16 @@ public class HttpClientUtil {
             throw e;
         }
         return EMPTY_STR;
+    }
+
+    public static String httpPutRequest(String url, Map<String, Object> params, Integer timeout) throws UnsupportedEncodingException,IOException {
+        HttpPut httpPut = new HttpPut(url);
+        int time_out = null!=timeout?timeout:SOCKET_TIMEOUT;
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(time_out).setConnectTimeout(time_out).build();//设置请求和传输超时时间
+        httpPut.setConfig(requestConfig);
+        ArrayList<NameValuePair> pairs = covertParams2NVPS(params);
+        httpPut.setEntity(new UrlEncodedFormEntity(pairs, UTF_8));
+        return getResult(httpPut);
     }
 
     public static void main(String [] args) {

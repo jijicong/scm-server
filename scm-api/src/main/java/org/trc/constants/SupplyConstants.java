@@ -839,6 +839,8 @@ public class SupplyConstants {
         public final static String Root = "api";
         //接收代发商品变更通知
         public final static String EXTERNAL_ITEM_UPDATE = "externalItemUpdate";
+        //接收供应商订单取消通知
+        public final static String SUPPLIER_ORDER_CANCEL = "supplierOrderCancel";
 
     }
 

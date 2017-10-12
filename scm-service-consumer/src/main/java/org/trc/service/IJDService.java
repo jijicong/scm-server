@@ -3,12 +3,12 @@ package org.trc.service;
 
 import org.trc.form.JDModel.*;
 import org.trc.form.SupplyItemsExt;
-import org.trc.form.external.OrderDetail;
-import org.trc.form.external.OrderDetailForm;
+import org.trc.form.external.*;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -104,16 +104,16 @@ public interface IJDService {
     /**
      * 余额明细导出接口
      */
-    ReturnTypeDO exportBalanceDetail(BalanceDetailDO queryModel);
+    List<BalanceDetailDTO> exportBalanceDetail(BalanceDetailDO queryModel);
 
     /**
      * 订单明细导出接口
      */
-    ReturnTypeDO exportOrderDetail(OrderDetailForm queryModel);
+    List<OrderDetailDTO> exportOrderDetail(OrderDetailForm queryModel);
 
     /**
      * 订单明操作接口
      */
-    ReturnTypeDO operateRecord(OrderDetail orderDetail);
+    ReturnTypeDO operateRecord(OperateForm orderDetail);
 
 }
