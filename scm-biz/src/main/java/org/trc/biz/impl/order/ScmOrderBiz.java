@@ -1569,9 +1569,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 String code = warehouseOrder.getSupplierOrderStatus();
                 String name = SupplierOrderStatusEnum.getSupplierOrderStatusEnumByCode(code).getName();
                 warehouseOrder.setSupplierOrderStatus(name);
-                if (warehouseOrder.getLogisticsInfo().indexOf("<br>")!=-1){
+                if (warehouseOrder.getLogisticsInfo().indexOf(HTML_BR)!=-1){
                     String logisticsInfo = warehouseOrder.getLogisticsInfo();
-                    logisticsInfo=  logisticsInfo.replaceAll("<br>","  ");
+                    logisticsInfo=  logisticsInfo.replaceAll(HTML_BR,"  ");
                     warehouseOrder.setLogisticsInfo(logisticsInfo);
                 }
             }
