@@ -139,13 +139,13 @@ public class CacheableInterceptor {
             argTypes[i]=args[i].getClass();
         }
         Method method=null;
-        try {
+   /*     try {
             method=pjp.getTarget().getClass().getMethod(pjp.getSignature().getName(),argTypes);
         } catch (NoSuchMethodException e) {
             LOGGER.error("获取方法失败!",e);
         } catch (SecurityException e) {
             LOGGER.error("未获得得到该方法的权限!",e);
-        }
+        }*/
         return method;
         
     }

@@ -834,6 +834,8 @@ public class SupplyConstants {
         public static final String JING_DONG_ORDER = "jingDongOrder";
         //订单取消
         public static final String ORDER_CANCEL = "orderCancel";
+
+        public static final String EXPORT_SUPPLIER_ORDER = "exportSupplierOrder";
     }
 
     /**

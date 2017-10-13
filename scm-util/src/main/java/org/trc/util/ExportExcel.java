@@ -173,6 +173,7 @@ public class ExportExcel {
         headCellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
         headCellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
         headCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 居中
+        headCellStyle.setWrapText(true);
         HSSFFont font2 = workbook.createFont();
         font2.setFontName("仿宋_GB2312");
         font2.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);//粗体显示
@@ -184,7 +185,10 @@ public class ExportExcel {
         titleCellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
         titleCellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
         titleCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 居中
+        titleCellStyle.setWrapText(true);
+
     }
+
 
     /**
      * 生成标题（第零行创建）
