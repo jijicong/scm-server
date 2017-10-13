@@ -1,5 +1,7 @@
 package org.trc.enums;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 供应商订单状态
  * Created by hzqph on 2017/5/16.
@@ -24,6 +26,26 @@ public enum SupplierOrderStatusEnum {
 
     private String code;
     private String name;
+
+
+    /**
+     *
+     * @Title: getOneToNineEnumByCode
+     * @Description: 根据枚举编码获取枚举
+     * @param @param name
+     * @param @return
+     * @return OneToNineEnum
+     * @throws
+     */
+    public static SupplierOrderStatusEnum getSupplierOrderStatusEnumByCode(String code){
+        for(SupplierOrderStatusEnum supplierOrderStatusEnum : SupplierOrderStatusEnum.values()){
+            if(StringUtils.equals(supplierOrderStatusEnum.getCode(), code)){
+                return supplierOrderStatusEnum;
+            }
+        }
+        return null;
+    }
+
 
     public String getCode() {
         return code;

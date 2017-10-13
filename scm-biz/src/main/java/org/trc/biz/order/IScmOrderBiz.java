@@ -4,12 +4,10 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
-import org.trc.form.LogisticNoticeForm;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.WarehouseOrderForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
@@ -109,5 +107,5 @@ public interface IScmOrderBiz {
      */
     void fetchLogisticsInfo();
 
-
+    Response exportSupplierOrder(WarehouseOrderForm queryModel,AclUserAccreditInfo aclUserAccreditInfo);
 }
