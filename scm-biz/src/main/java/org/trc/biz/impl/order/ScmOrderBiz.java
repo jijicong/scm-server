@@ -3,7 +3,9 @@ package org.trc.biz.impl.order;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -57,8 +59,12 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.xml.ws.Response;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -93,7 +99,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //供应商平台取消订单说明
     public final static String SUPPLIER_PLATFORM_CANCEL_ORDER = "供应商平台已取消订单";
 
+    public final static String BAR = "-";
 
+    public final static String EXCEL = ".xls";
 
     //渠道订单金额校验:1-是,0-否
     @Value("${channel.orderMoneyCheck}")
@@ -1539,7 +1547,69 @@ public class ScmOrderBiz implements IScmOrderBiz {
         requestFlowBiz.saveRequestFlow(String.format("{shopOrderCode:%s}", shopOrderCode), RequestFlowConstant.TRC, RequestFlowConstant.GYL, RequestFlowTypeEnum.LY_LOGISTIC_INFO_QUERY, responseAck, RequestFlowConstant.GYL);
         return responseAck;
     }
+    @Override
+    public javax.ws.rs.core.Response exportSupplierOrder(WarehouseOrderForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) {
+//        WarehouseOrderForm queryModel = new WarehouseOrderForm();
+        try {
+            List<WarehouseOrder> warehouseOrderList =new ArrayList<>();
+            queryModel.setOrderType(ZeroToNineEnum.ONE.getCode());
+            Pagenation<WarehouseOrder> page =new Pagenation<>();
+            page.setPageSize(300);
+            page=warehouseOrderPage(queryModel, page, aclUserAccreditInfo);
+            warehouseOrderList.addAll(page.getResult());
+            if (page.getTotalPages()>1){
+                for (int i = 2; i <= page.getTotalPages(); i++) {
+                    page.setPageNo(i);
+                    page=warehouseOrderPage(queryModel, page, aclUserAccreditInfo);
+                    warehouseOrderList.addAll(page.getResult());
+                }
+            }
+            for (WarehouseOrder warehouseOrder:warehouseOrderList) {
+                String code = warehouseOrder.getSupplierOrderStatus();
+                String name = SupplierOrderStatusEnum.getSupplierOrderStatusEnumByCode(code).getName();
+                warehouseOrder.setSupplierOrderStatus(name);
+                if (warehouseOrder.getLogisticsInfo().indexOf("<br>")!=-1){
+                    String logisticsInfo = warehouseOrder.getLogisticsInfo();
+                    logisticsInfo=  logisticsInfo.replaceAll("<br>","  ");
+                    warehouseOrder.setLogisticsInfo(logisticsInfo);
+                }
+            }
+            CellDefinition warehouseOrderCode = new CellDefinition("warehouseOrderCode", "供应商订单编号", CellDefinition.TEXT, 8000);
+            CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, 8000);
+            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "店铺订单号", CellDefinition.TEXT, 8000);
+            CellDefinition itemsNum = new CellDefinition("itemsNum", "商品总数量", CellDefinition.NUM_0, 8000);
+            CellDefinition payment = new CellDefinition("payment", "商品总金额(元)", CellDefinition.NUM_0_00, 8000);
+            CellDefinition supplierOrderStatus = new CellDefinition("supplierOrderStatus", "状态", CellDefinition.TEXT, 8000);
+            CellDefinition logisticsInfo = new CellDefinition("logisticsInfo", "反馈物流公司名称-反馈运单号", CellDefinition.TEXT, 16000);
 
+            List<CellDefinition> cellDefinitionList = new ArrayList<>();
+            cellDefinitionList.add(warehouseOrderCode);
+            cellDefinitionList.add(supplierName);
+            cellDefinitionList.add(shopOrderCode);
+            cellDefinitionList.add(itemsNum);
+            cellDefinitionList.add(payment);
+            cellDefinitionList.add(supplierOrderStatus);
+            cellDefinitionList.add(logisticsInfo);
+
+            String sheetName = "供应商订单";
+            String fileName = "供应商订单" + (queryModel.getStartDate()==null?"":queryModel.getStartDate()+BAR) + (queryModel.getEndDate()==null?"":queryModel.getEndDate()) + EXCEL;
+
+
+            try {
+                fileName = URLEncoder.encode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException e1) {
+                log.error("文件导出错误",e1);
+            }
+            HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(warehouseOrderList, cellDefinitionList, sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+        } catch (Exception e) {
+            log.error("供应商订单导出异常" + e.getMessage(), e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.SUPPLIER_ORDER_EXPORT_EXCEPTION.getCode()), ExceptionEnum.SUPPLIER_ORDER_EXPORT_EXCEPTION.getMessage());
+        }
+    }
 
     @Override
     public void fetchLogisticsInfo() {
