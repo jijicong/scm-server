@@ -128,6 +128,8 @@ public enum ExceptionEnum{
     ORDER_NOTIFY_TIME_OUT("600116","订单同步超时"),
     ORDER_ITEMS_ERROR("600117","订单商品错误"),
     SUBMIT_LY_ORDER("600118","调用京东下单服务异常"),
+    ORDER_IS_CANCEL("600119","订单已经是取消状态，不能进行取消操作"),
+    ORDER_IS_CLOSE_CANCEL("600120","订单不是取消状态，不能进行关闭取消操作"),
 
     USER_BE_FORBIDDEN("900001","用户授权信息不存在或用户已经被禁用!"),
     USER_NOT_LOGIN("900002","用户未登录"),
