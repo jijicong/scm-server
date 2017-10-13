@@ -115,7 +115,7 @@ public interface IScmOrderBiz {
      * @param form
      * @param aclUserAccreditInfo
      */
-    void cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo);
+    ResponseAck<String> cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 供应商取消订单

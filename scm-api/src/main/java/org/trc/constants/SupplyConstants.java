@@ -832,6 +832,8 @@ public class SupplyConstants {
         public static final String PLATFORM_ORDER_LIST = "platformOrders";
         //京东订单路径
         public static final String JING_DONG_ORDER = "jingDongOrder";
+        //订单取消
+        public static final String ORDER_CANCEL = "orderCancel";
     }
 
     /**
