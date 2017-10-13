@@ -350,6 +350,8 @@ public class OrderItem implements Serializable {
     //供应商订单状态：1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
     private String supplierOrderStatus;
 
+    //老供应商订单状态:1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
+    private String oldSupplierOrderStatus;
 
     public String getSupplierSkuCode() {
         return supplierSkuCode;
@@ -1333,5 +1335,13 @@ public class OrderItem implements Serializable {
 
     public void setSupplierOrderStatus(String supplierOrderStatus) {
         this.supplierOrderStatus = supplierOrderStatus;
+    }
+
+    public String getOldSupplierOrderStatus() {
+        return oldSupplierOrderStatus;
+    }
+
+    public void setOldSupplierOrderStatus(String oldSupplierOrderStatus) {
+        this.oldSupplierOrderStatus = oldSupplierOrderStatus;
     }
 }

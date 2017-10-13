@@ -54,6 +54,9 @@ public class SupplierOrderInfo extends ScmDO{
 
     private String logisticsStatus;
 
+    //老供应商订单状态:1-待发送供应商,2-供应商下单异常,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
+    private String oldSupplierOrderStatus;
+
     public Long getId() {
         return id;
     }
@@ -188,5 +191,13 @@ public class SupplierOrderInfo extends ScmDO{
 
     public void setSupplierOrderStatus(String supplierOrderStatus) {
         this.supplierOrderStatus = supplierOrderStatus;
+    }
+
+    public String getOldSupplierOrderStatus() {
+        return oldSupplierOrderStatus;
+    }
+
+    public void setOldSupplierOrderStatus(String oldSupplierOrderStatus) {
+        this.oldSupplierOrderStatus = oldSupplierOrderStatus;
     }
 }

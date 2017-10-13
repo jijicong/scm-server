@@ -37,9 +37,7 @@ import org.trc.form.*;
 import org.trc.form.JDModel.*;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.form.liangyou.OutOrderGoods;
-import org.trc.form.order.PlatformOrderForm;
-import org.trc.form.order.ShopOrderForm;
-import org.trc.form.order.WarehouseOrderForm;
+import org.trc.form.order.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
@@ -57,7 +55,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
-import javax.xml.ws.Response;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -92,6 +89,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     //供应商平台取消订单说明
     public final static String SUPPLIER_PLATFORM_CANCEL_ORDER = "供应商平台已取消订单";
+
+    //系统操作员
+    public final static String SYSTEM = "系统";
 
 
 
@@ -1598,6 +1598,178 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户信息不能为空");
+        AssertUtil.notBlank(form.getIsCancel(), "供应商订单取消操作是否取消参数isCancel不能为空");
+        if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), form.getIsCancel())){//取消操作
+            AssertUtil.notBlank(form.getCancelReason(), "供应商订单取消操作时取消原因参数cancelReason不能为空");
+        }
+        //更新仓库订单状态
+        WarehouseOrder warehouseOrder = updateWarehouseOrderByCancel(form);
+        //根据取消操作更新供应商订单状态
+        updateSupplierOrderInfoByCancel(warehouseOrder);
+        //更新订单相关商品供应商订单状态
+        updateOrderItemByCancel(warehouseOrder);
+        //更新店铺订单供应商订单状态
+        updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
+        //记录操作日志
+        String logOperation = LogOperationEnum.ORDER_CLOSE.getMessage();
+        if(StringUtils.equals(CancelStatusEnum.CLOASE_CANCEL.getCode(), warehouseOrder.getIsCancel())){//关闭取消操作
+            logOperation = LogOperationEnum.ORDER_REOPEN.getMessage();
+        }
+        logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), logOperation, form.getCancelReason(),null);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public ResponseAck<String> supplierCancelOrder(String orderInfo) {
+        AssertUtil.notBlank(orderInfo, "供应商取消订单通知接口输入参数不能为空");
+        SupplierOrderCancelNotify supplierOrderCancelNotify = JSON.parseObject(orderInfo, SupplierOrderCancelNotify.class);
+        List<SupplierOrderInfo> supplierOrderInfoList = new ArrayList<SupplierOrderInfo>();
+        for(SupplierOrderCancelInfo supplierOrderCancelInfo: supplierOrderCancelNotify.getOrder()){
+            SupplierOrderInfo supplierOrderInfo = null;
+            if(StringUtils.equals(supplierOrderCancelNotify.getOrderType(), ZeroToNineEnum.ZERO.getCode())){//京东订单
+                supplierOrderInfo = cancelSupplierOrderByNotify(supplierOrderCancelInfo, 1);
+            }else if(StringUtils.equals(supplierOrderCancelNotify.getOrderType(), ZeroToNineEnum.ONE.getCode())){//粮油订单
+                supplierOrderInfo = cancelSupplierOrderByNotify(supplierOrderCancelInfo, 0);
+            }else {
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "供应商渠道订单同步供应链参数订单类型orderType的值错误");
+            }
+            if(null != supplierOrderInfo){
+                supplierOrderInfoList.add(supplierOrderInfo);
+            }
+        }
+        if(supplierOrderInfoList.size() > 0){
+            //根据供应商订单取消通知更新订单商品状态
+            for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
+                cancelOrderItemByNotify(supplierOrderInfo);
+                //更新仓库订单供应商订单状态
+                WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode());
+                //更新店铺订单供应商订单状态
+                updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
+                //记录操作日志
+                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), SYSTEM, LogOperationEnum.ORDER_CANCEL.getMessage(), SUPPLIER_PLATFORM_CANCEL_ORDER,null);
+            }
+        }
+        return new ResponseAck<String>(ResponseAck.SUCCESS_CODE, "订单取消通知接收成功", "");
+    }
+
+    /**
+     * 根据供应商订单取消通知取消订单
+     * @param supplierOrderCancelInfo
+     * @param flag 0-粮油订单,1-京东订单
+     */
+    private SupplierOrderInfo cancelSupplierOrderByNotify(SupplierOrderCancelInfo supplierOrderCancelInfo, int flag){
+        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+        supplierOrderInfo.setWarehouseOrderCode(supplierOrderCancelInfo.getWarehouseOrderCode());
+        if(flag == 0){
+            supplierOrderInfo.setSupplierOrderCode(supplierOrderCancelInfo.getSupplyOrderCode());
+        }else{
+            supplierOrderInfo.setSupplierOrderCode(supplierOrderCancelInfo.getSupplierParentOrderCode());
+        }
+        supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
+        if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus()))
+            return null;
+        supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.ORDER_CANCEL.getCode());
+        supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
+        supplierOrderInfoService.updateByPrimaryKey(supplierOrderInfo);
+        return supplierOrderInfo;
+    }
+
+    /**
+     * 根据供应商订单取消通知更新订单商品状态
+     * @param supplierOrderInfo
+     */
+    private void cancelOrderItemByNotify(SupplierOrderInfo supplierOrderInfo){
+        OrderItem orderItem = new OrderItem();
+        orderItem.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        AssertUtil.notEmpty(orderItemList, String.format("根据仓库订单号%s查询订单商品明细为空", supplierOrderInfo.getWarehouseOrderCode()));
+        List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
+        for(SkuInfo skuInfo: skuInfoList){
+            for(OrderItem orderItem2: orderItemList){
+                if(StringUtils.equals(skuInfo.getSkuCode(), orderItem2.getSupplierSkuCode()) &&
+                        !StringUtils.equals(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode(), orderItem2.getSupplierOrderStatus())){
+                    orderItem2.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode());
+                    orderItem2.setUpdateTime(Calendar.getInstance().getTime());
+                    orderItemService.updateByPrimaryKey(orderItem2);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 根据取消操作更新仓库订单状态
+     * @param form
+     */
+    private WarehouseOrder updateWarehouseOrderByCancel(SupplierOrderCancelForm form){
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setWarehouseOrderCode(form.getWarehouseOrderCode());
+        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+        AssertUtil.notNull(warehouseOrder, String.format("供应链订单取消操作根据仓库订单编码%s查询仓库订单信息为空", form.getWarehouseOrderCode()));
+        if(StringUtils.equals(form.getIsCancel(), warehouseOrder.getIsCancel())){
+            if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
+                throw new OrderException(ExceptionEnum.ORDER_IS_CANCEL, "订单已经是取消状态，不能进行取消操作");
+            }else if(StringUtils.equals(CancelStatusEnum.CLOASE_CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
+                throw new OrderException(ExceptionEnum.ORDER_IS_CLOSE_CANCEL, "订单不是取消状态，不能进行关闭取消操作");
+            }
+        }else{
+            warehouseOrder.setIsCancel(form.getIsCancel());
+            if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
+                warehouseOrder.setOldSupplierOrderStatus(warehouseOrder.getSupplierOrderStatus());
+                warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.ORDER_CANCEL.getCode());
+            }else if(StringUtils.equals(CancelStatusEnum.CLOASE_CANCEL.getCode(), warehouseOrder.getIsCancel())){//关闭取消操作
+                warehouseOrder.setSupplierOrderStatus(warehouseOrder.getOldSupplierOrderStatus());
+            }
+            warehouseOrder.setUpdateTime(Calendar.getInstance().getTime());
+            warehouseOrderService.updateByPrimaryKey(warehouseOrder);
+        }
+        return warehouseOrder;
+    }
+
+    /**
+     * 根据取消操作更新供应商订单状态
+     * @param warehouseOrder
+     */
+    private void updateSupplierOrderInfoByCancel(WarehouseOrder warehouseOrder){
+        Example example = new Example(SupplierOrderInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseOrderCode", warehouseOrder.getWarehouseOrderCode());
+        SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+        if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
+            supplierOrderInfo.setOldSupplierOrderStatus(supplierOrderInfo.getSupplierOrderStatus());
+            supplierOrderInfo.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode());
+        }else if(StringUtils.equals(CancelStatusEnum.CLOASE_CANCEL.getCode(), warehouseOrder.getIsCancel())){//关闭取消操作
+            supplierOrderInfo.setSupplierOrderStatus(supplierOrderInfo.getOldSupplierOrderStatus());
+        }
+        supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
+        supplierOrderInfoService.updateByExampleSelective(supplierOrderInfo, example);
+    }
+
+    /**
+     * 根据取消操作更新商品状态
+     * @param warehouseOrder
+     */
+    private void updateOrderItemByCancel(WarehouseOrder warehouseOrder){
+        Example example = new Example(OrderItem.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseOrderCode", warehouseOrder.getWarehouseOrderCode());
+        OrderItem orderItem = new OrderItem();
+        if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
+            orderItem.setOldSupplierOrderStatus(orderItem.getSupplierOrderStatus());
+            orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode());
+        }else if(StringUtils.equals(CancelStatusEnum.CLOASE_CANCEL.getCode(), warehouseOrder.getIsCancel())){//关闭取消操作
+            orderItem.setSupplierOrderStatus(orderItem.getOldSupplierOrderStatus());
+        }
+        orderItem.setUpdateTime(Calendar.getInstance().getTime());
+        orderItemService.updateByExampleSelective(orderItem, example);
+    }
+
+
+
     /**
      * 物流信息通知渠道
      * @param logisticForm
@@ -2077,7 +2249,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.error("重复提交订单: ",e);
             throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单");
         }
-
     }
 
     /**

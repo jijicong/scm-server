@@ -8,6 +8,7 @@ import org.trc.form.LogisticNoticeForm;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.SupplierOrderCancelForm;
 import org.trc.form.order.WarehouseOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -108,6 +109,20 @@ public interface IScmOrderBiz {
      * 获取物流信息
      */
     void fetchLogisticsInfo();
+
+    /**
+     *取消操作
+     * @param form
+     * @param aclUserAccreditInfo
+     */
+    void cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 供应商取消订单
+     * @param orderInfo
+     * @return
+     */
+    ResponseAck<String> supplierCancelOrder(String orderInfo);
 
 
 }
