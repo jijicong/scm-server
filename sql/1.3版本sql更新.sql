@@ -41,3 +41,12 @@ MODIFY  COLUMN  `main_picture`    text  CHARACTER  SET  utf8  COLLATE  utf8_gene
 
 ALTER  TABLE  `skus`
 ADD  COLUMN  `sku_name`    varchar(256)  NULL  AFTER  `sku_code`;
+
+
+INSERT INTO `dict_type` (`id`, `code`, `name`, `description`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (157, 'orderDeliverStatus', '订单发货状态', '订单发货状态', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:22', '2017-10-16 18:34:22');
+
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (443, 'orderDeliverStatus', '待发货', '1', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:37', '2017-10-16 18:34:37');
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (444, 'orderDeliverStatus', '全部发货', '4', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:46', '2017-10-16 18:34:46');
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (445, 'orderDeliverStatus', '部分发货', '6', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:55', '2017-10-16 18:34:55');
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (446, 'orderDeliverStatus', '已取消', '7', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:35:05', '2017-10-16 18:35:05');
+
