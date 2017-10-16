@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,7 +8,6 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
-import org.trc.form.JDModel.BalanceDetailDO;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.SupplierOrderCancelForm;
@@ -38,7 +36,6 @@ public class OrderResource {
     @Path(SupplyConstants.Order.SHOP_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response shopOrderPage(@BeanParam ShopOrderForm form, @BeanParam Pagenation<ShopOrder> page, @Context ContainerRequestContext requestContext){
-        //return scmOrderBiz.shopOrderPage(form, page);
         return ResultUtil.createSuccessPageResult(scmOrderBiz.shopOrderPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
