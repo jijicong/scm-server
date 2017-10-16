@@ -447,6 +447,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }else {
                     responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
                     log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
+                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), supplierOrderReturn.getMessage(),null);
                 }
             }else{
                 log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
@@ -462,7 +463,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品供应商订单状态
         updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderInfoList);
         //更新仓库订单供应商订单状态
-        WarehouseOrder warehouseOrder2 = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+        updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         //订单提交异常记录日志
@@ -653,12 +654,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.info(responseAck.getMessage());
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
-        }/*else{
-            supplierOrderStatus = SupplierOrderStatusEnum.ORDER_FAILURE.getCode();
+        }else{
             log.error(responseAck.getMessage());
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), responseAck.getMessage(),null);
-        }*/
+        }
         if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
             log.info(String.format("调用粮油下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
         }else{
@@ -741,12 +741,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String remark = "";
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_EXCEPTION;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        }/*else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_FAILURE;
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_CANCEL;
             remark = SUPPLIER_PLATFORM_CANCEL_ORDER;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        }*/else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.PARTS_DELIVER;
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ALL_DELIVER;
@@ -1860,7 +1860,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public ResponseAck<String> cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo) {
+    public String cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户信息不能为空");
         AssertUtil.notBlank(form.getIsCancel(), "供应商订单取消操作是否取消参数isCancel不能为空");
         if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), form.getIsCancel())){//取消操作
@@ -1884,7 +1884,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), form.getIsCancel())){//取消操作
             msg = "关闭成功";
         }
-        return new ResponseAck<String>(ResponseAck.SUCCESS_CODE, msg, "");
+        return msg;
     }
 
     @Override
@@ -1925,7 +1925,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     /**
      * 供应商取消订单通知渠道
+     * @param warehouseOrder
      * @param supplierOrderInfo
+     * @param orderItemList
      */
     private void supplierOrderCancelNotifyChannel(WarehouseOrder warehouseOrder, SupplierOrderInfo supplierOrderInfo, List<OrderItem> orderItemList){
         ChannelOrderResponse channelOrderResponse = new ChannelOrderResponse();
@@ -1941,8 +1943,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SupplierOrderReturn> supplierOrderReturnList = new ArrayList<SupplierOrderReturn>();
         SupplierOrderReturn supplierOrderReturn = new SupplierOrderReturn();
         supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo.getSupplierOrderCode());
-        supplierOrderReturn.setState(supplierOrderInfo.getStatus());
-        supplierOrderReturn.setMessage(supplierOrderInfo.getMessage());
+        supplierOrderReturn.setState(ZeroToNineEnum.TWO.getCode());//订单取消
+        supplierOrderReturn.setMessage(SUPPLIER_PLATFORM_CANCEL_ORDER);
         supplierOrderReturn.setSkus(getSupplierOrderReturnSkuInfo(supplierOrderInfo, orderItemList));
         supplierOrderReturnList.add(supplierOrderReturn);
         channelOrderResponse.setOrder(supplierOrderReturnList);
@@ -2016,6 +2018,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 throw new OrderException(ExceptionEnum.ORDER_IS_CLOSE_CANCEL, "订单不是取消状态，不能进行关闭取消操作");
             }
         }else{
+            if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), form.getIsCancel()) &&
+                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), warehouseOrder.getSupplierOrderStatus())){//取消操作
+                throw new OrderException(ExceptionEnum.ORDER_IS_CANCEL, "订单已被供应商取消，不能进行取消操作");
+            }
             warehouseOrder.setIsCancel(form.getIsCancel());
             if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
                 warehouseOrder.setOldSupplierOrderStatus(warehouseOrder.getSupplierOrderStatus());

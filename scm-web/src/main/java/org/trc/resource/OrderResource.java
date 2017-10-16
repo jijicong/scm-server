@@ -97,8 +97,8 @@ public class OrderResource {
     @PUT
     @Path(SupplyConstants.Order.ORDER_CANCEL)
     @Produces(MediaType.APPLICATION_JSON)
-    public ResponseAck<String> orderCancel(@BeanParam SupplierOrderCancelForm form, @Context ContainerRequestContext requestContext) throws Exception {
-        return scmOrderBiz.cancelHandler(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response orderCancel(@BeanParam SupplierOrderCancelForm form, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult(scmOrderBiz.cancelHandler(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)), "");
     }
 
 }

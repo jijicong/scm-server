@@ -9,7 +9,7 @@ public class SupplierOrderReturn {
 
     //供应商订单号
     private String supplyOrderCode;
-    //订单状态:1-成功,0-失败
+    //订单状态:1-成功,0-失败,2-取消
     private String state;
     //错误信息
     private String message;
