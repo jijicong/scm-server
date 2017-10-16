@@ -179,8 +179,9 @@ public class ExternalItemSku implements Serializable{
     private String updateFlag;
 
 
-
+    // 上一次同步时间,格式yyyy-mm-dd hh:mi:ss
     @FormParam("notifyTime")
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date notifyTime;
     @FormParam("minBuyCount")
     private Integer minBuyCount;

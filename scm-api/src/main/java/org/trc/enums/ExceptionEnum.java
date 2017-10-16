@@ -118,6 +118,9 @@ public enum ExceptionEnum{
     SUPPLIER_LOGISTICS_QUERY_EXCEPTION("600109","供应商物流信息查询异常"),
     SUPPLIER_LOGISTICS_UPDATE_EXCEPTION("600110","供应商物流信息更新异常"),
     SUPPLIER_ORDER_NOTIFY_EXCEPTION("600111","供应商订单下单结果通知信息错误"),
+    SUPPLIER_ORDER_EXPORT_EXCEPTION("600112","供应商订单导出异常"),
+    SUPPLIER_ORDER__DETAIL_EXPORT_EXCEPTION("600113","供应商订单明细导出异常"),
+
     ORDER_STATUS_UPDATE_EXCEPTION("600112","更新订单状态异常"),
     ORDER_QUERY_EXCEPTION("600113","订单查询异常"),
     ORDER_PARAM_DATA_ERROR("600114","订单参数数据错误"),
@@ -125,6 +128,8 @@ public enum ExceptionEnum{
     ORDER_NOTIFY_TIME_OUT("600116","订单同步超时"),
     ORDER_ITEMS_ERROR("600117","订单商品错误"),
     SUBMIT_LY_ORDER("600118","调用京东下单服务异常"),
+    ORDER_IS_CANCEL("600119","订单已经是取消状态，不能进行取消操作"),
+    ORDER_IS_CLOSE_CANCEL("600120","订单不是取消状态，不能进行关闭取消操作"),
 
     USER_BE_FORBIDDEN("900001","用户授权信息不存在或用户已经被禁用!"),
     USER_NOT_LOGIN("900002","用户未登录"),

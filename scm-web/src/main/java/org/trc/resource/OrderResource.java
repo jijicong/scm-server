@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -8,10 +9,11 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.JDModel.BalanceDetailDO;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.SupplierOrderCancelForm;
 import org.trc.form.order.WarehouseOrderForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
@@ -21,7 +23,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -82,6 +83,25 @@ public class OrderResource {
         }else{
             return ResultUtil.createfailureResult(Integer.parseInt(responseAck.getCode()), responseAck.getMessage());
         }
+    }
+
+    /**
+     * 供应商订单导出
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.Order.EXPORT_SUPPLIER_ORDER)
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response exportBalanceDetail(@BeanParam WarehouseOrderForm queryModel,@Context ContainerRequestContext requestContext) throws Exception {
+        return scmOrderBiz.exportSupplierOrder( queryModel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+    @PUT
+    @Path(SupplyConstants.Order.ORDER_CANCEL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ResponseAck<String> orderCancel(@BeanParam SupplierOrderCancelForm form, @Context ContainerRequestContext requestContext) throws Exception {
+        return scmOrderBiz.cancelHandler(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
 }

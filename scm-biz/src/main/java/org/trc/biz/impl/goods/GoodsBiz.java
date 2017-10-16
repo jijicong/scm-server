@@ -2273,10 +2273,13 @@ public class GoodsBiz implements IGoodsBiz {
             //externalItemSku.setProperties();// 属性 TODO
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
-            if (!items.getUpdateFlag().equals(ZeroToNineEnum.ZERO.getCode())){
-                externalItemSku.setUpdateTime(sysDate);
+            if (items.getUpdateFlag().equals(ZeroToNineEnum.ZERO.getCode())){
+                externalItemSku.setNotifyTime(items.getNotifyTime());
+                externalItemSku.setUpdateTime(items.getUpdateTime());
+            }else{
+                externalItemSku.setNotifyTime(items.getUpdateTime());
+                externalItemSku.setUpdateTime(items.getUpdateTime());
             }
-            externalItemSku.setNotifyTime(items.getNotifyTime());
             externalItemSku.setMinBuyCount(items.getMinBuyCount());
 
             externalItemSkus.add(externalItemSku);

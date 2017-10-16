@@ -3,8 +3,10 @@ package org.trc.resource.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
+import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.util.AppResult;
+import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
 import javax.ws.rs.*;
@@ -18,6 +20,8 @@ import javax.ws.rs.core.MediaType;
 public class ScmApiResource {
     @Autowired
     private IGoodsBiz goodsBiz;
+    @Autowired
+    private IScmOrderBiz scmOrderBiz;
 
     @POST
     @Path(SupplyConstants.Api.EXTERNAL_ITEM_UPDATE)
@@ -26,6 +30,13 @@ public class ScmApiResource {
     public AppResult supplierSkuUpdateNotice(@FormParam("updateSupplierSkus") String updateSupplierSkus) throws Exception {
         goodsBiz.supplierSkuUpdateNotice(updateSupplierSkus);
         return ResultUtil.createSucssAppResult("供应商sku更新通知成功", "");
+    }
+
+    @POST
+    @Path(SupplyConstants.Api.SUPPLIER_ORDER_CANCEL)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> supplierOrderCancel(String orderInfo) {
+        return scmOrderBiz.supplierCancelOrder(orderInfo);
     }
 
 
