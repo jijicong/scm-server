@@ -1802,26 +1802,7 @@ public class GoodsBiz implements IGoodsBiz {
         Supplier supplier = new Supplier();
         //supplier.setIsValid(ValidEnum.NOVALID.getCode());//停用
         supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发
-        List<Supplier> supplierListAll = supplierService.select(supplier);
-
-        Example example2 = new Example(SupplierApply.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andEqualTo("status",ZeroToNineEnum.TWO.getCode());
-        criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
-        List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
-        List<Supplier> supplierList =  new ArrayList<>();
-        if (!AssertUtil.collectionIsEmpty(supplierListAll)) {
-            for (Supplier  supplierResult:supplierListAll) {
-                boolean isAudit = false;
-                for (SupplierApply  supplierApply:supplierApplyList) {
-                    if (StringUtils.equals(supplierResult.getSupplierCode(),supplierApply.getSupplierCode())){
-                        isAudit = true;}
-                }
-                if (isAudit){
-                    supplierList.add(supplierResult);
-                }
-            }
-        }
+        List<Supplier> supplierList = supplierService.select(supplier);
         if(!CollectionUtils.isEmpty(supplierList)){
             List<Supplier> usedSupplierList = new ArrayList<>();
             StringBuilder sb = new StringBuilder();
@@ -1836,7 +1817,7 @@ public class GoodsBiz implements IGoodsBiz {
                         }
                     }
                 }
-             }
+            }
             if(usedSupplierList.size() == 0)
                 return page;
             if(sb.length() > 0)
