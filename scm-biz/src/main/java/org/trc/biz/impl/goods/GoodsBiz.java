@@ -2056,6 +2056,10 @@ public class GoodsBiz implements IGoodsBiz {
                     externalItemSku.setSkuCode(externalItemSku2.getSkuCode());
                 }
             }
+            ExternalItemSku oldItemSku =new ExternalItemSku();
+            oldItemSku.setSkuCode(externalItemSku.getSkuCode());
+            oldItemSku = externalItemSkuService.selectOne(oldItemSku);
+
             Example example = new Example(ExternalItemSku.class);
             Example.Criteria criteria =example.createCriteria();
             criteria.andEqualTo("supplierSkuCode", externalItemSku.getSupplierSkuCode());
@@ -2065,13 +2069,24 @@ public class GoodsBiz implements IGoodsBiz {
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
             }else {
-                ExternalItemSku itemSku =new ExternalItemSku();
-                itemSku.setSkuCode(externalItemSku.getSkuCode());
-                itemSku = externalItemSkuService.selectOne(itemSku);
+                ExternalItemSku newItemSku =new ExternalItemSku();
+                newItemSku.setSkuCode(externalItemSku.getSkuCode());
+                newItemSku = externalItemSkuService.selectOne(newItemSku);
+
+                //记录同步日志
                 List<String> ids =  new ArrayList<>();
-                ids.add(String.valueOf(itemSku.getId()));
+                ids.add(String.valueOf(newItemSku.getId()));
                 logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
-                        LogOperationEnum.SYNCHRONIZE.getMessage(), null, null,ids);
+                        LogOperationEnum.SYNCHRONIZE.getMessage(), "", null,ids);
+                //记录改动日志
+                if (!StringUtils.equals(oldItemSku.getState(),newItemSku.getState())){
+                    logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
+                            LogOperationEnum.UPDATE.getMessage(), "商品状态由"+StateEnum.getStateEnumByCode(oldItemSku.getState()).getName()+"修改为"+StateEnum.getStateEnumByCode(newItemSku.getState()).getName(), null,ids);
+                }
+                if(oldItemSku.getSupplyPrice().longValue() != newItemSku.getSupplyPrice().longValue()){
+                    logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
+                            LogOperationEnum.UPDATE.getMessage(), "供货价由"+oldItemSku.getSupplyPrice()+"修改为"+newItemSku.getSupplyPrice(), null,ids);
+                }
             }
         }
 
@@ -2273,11 +2288,15 @@ public class GoodsBiz implements IGoodsBiz {
             //externalItemSku.setProperties();// 属性 TODO
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
+            if (StringUtils.equals(flag,ZeroToNineEnum.ONE.getCode())){
             if (items.getUpdateFlag().equals(ZeroToNineEnum.ZERO.getCode())){
                 externalItemSku.setNotifyTime(items.getNotifyTime());
                 externalItemSku.setUpdateTime(items.getUpdateTime());
             }else{
                 externalItemSku.setNotifyTime(items.getUpdateTime());
+                externalItemSku.setUpdateTime(items.getUpdateTime());
+                }
+            }else {
                 externalItemSku.setUpdateTime(items.getUpdateTime());
             }
             externalItemSku.setMinBuyCount(items.getMinBuyCount());
@@ -2446,3 +2465,4 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
 }
+

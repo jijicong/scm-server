@@ -741,6 +741,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String remark = "";
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_EXCEPTION;
+            SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+            supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
+            List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+            if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
+                remark = getOrderExceptionMessage(supplierOrderInfoList);
+            }
         }/*else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_FAILURE;
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), warehouseOrder.getSupplierOrderStatus())){
@@ -1744,6 +1750,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         criteria.andEqualTo("status", ResponseAck.SUCCESS_CODE);
+        List<String> supplierOrderStatusList = new ArrayList<String>();
+        supplierOrderStatusList.add(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());
+        supplierOrderStatusList.add(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+        criteria.andIn("supplierOrderStatus", supplierOrderStatusList);
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             try{
@@ -2046,7 +2056,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
-        AssertUtil.notEmpty(supplierOrderInfoList, String.format("根据仓库订单号%s查询相关供应商订单信息为空", warehouseOrder.getWarehouseOrderCode()));
+        if(CollectionUtils.isEmpty(supplierOrderInfoList))
+            return;
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
                 supplierOrderInfo2.setOldSupplierOrderStatus(supplierOrderInfo2.getSupplierOrderStatus());
