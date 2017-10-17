@@ -165,8 +165,8 @@ public class JingDongBizImpl implements IJingDongBiz {
             List<OrderDetailDTO> result = ijdService.exportOrderDetail(queryModel);
             CellDefinition operate = new CellDefinition("operate", "操作", CellDefinition.TEXT, 4000);
             CellDefinition errMsg = new CellDefinition("errMsg", "异常说明", CellDefinition.TEXT, 4000);
-            CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.TEXT, 4000);
-            CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.TEXT, 4000);
+            CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.TEXT, 6000);
+            CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.TEXT, 6000);
             CellDefinition channelPlatformOrder = new CellDefinition("channelPlatformOrder", "渠道平台订单号", CellDefinition.TEXT, 6000);
             CellDefinition parentOrderCode = new CellDefinition("parentOrderCode", "京东父订单编号", CellDefinition.TEXT, 4000);
             CellDefinition orderCode = new CellDefinition("orderCode", "京东子订单编号", CellDefinition.TEXT, 4000);
