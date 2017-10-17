@@ -529,15 +529,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         StringBuilder sb = new StringBuilder();
         if(StringUtils.isNotBlank(successSku)){
             successSku = successSku.substring(0, successSku.length()-1);
-            sb.append(successSku).append(":").append(ORDER_SUCCESS_INFO);
+            sb.append(successSku).append(":").append(ORDER_SUCCESS_INFO).append(HTML_BR);
         }
         if(StringUtils.isNotBlank(failureSku)){
             failureSku = failureSku.substring(0, failureSku.length()-1);
-            sb.append(failureSku).append(":").append(failureMsg);
+            sb.append(failureSku).append(":").append(failureMsg).append(HTML_BR);
         }
         if(StringUtils.isNotBlank(cancelSku)){
             cancelSku = cancelSku.substring(0, cancelSku.length()-1);
-            sb.append(cancelSku).append(":").append(cancelMsg);
+            sb.append(cancelSku).append(":").append(cancelMsg).append(HTML_BR);
         }
         return sb.toString();
     }
@@ -1960,12 +1960,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private SupplierOrderInfo cancelSupplierOrderByNotify(SupplierOrderCancelInfo supplierOrderCancelInfo, int flag){
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(supplierOrderCancelInfo.getWarehouseOrderCode());
+        String supplierOrderCode = "";
         if(flag == 0){
-            supplierOrderInfo.setSupplierOrderCode(supplierOrderCancelInfo.getSupplyOrderCode());
+            supplierOrderCode = supplierOrderCancelInfo.getSupplyOrderCode();
         }else{
-            supplierOrderInfo.setSupplierOrderCode(supplierOrderCancelInfo.getSupplierParentOrderCode());
+            supplierOrderCode = supplierOrderCancelInfo.getSupplierParentOrderCode();
         }
+        supplierOrderInfo.setSupplierOrderCode(supplierOrderCode);
         supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
+        AssertUtil.notNull(supplierOrderInfo, String.format("供应商订单号%s不存在", supplierOrderCode));
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus()))
             return null;
         supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.ORDER_CANCEL.getCode());
