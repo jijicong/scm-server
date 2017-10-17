@@ -68,9 +68,10 @@ public class LogInfoBiz implements ILogInfoBiz {
                     if(aclUserAccreditInfo!=null){
                         logInfo.setOperator(aclUserAccreditInfo.getName());
                     }
-                }
-                if(logInfo.getOperatorUserid().equals(ADMIN_SIGN)){
+                } else if(logInfo.getOperatorUserid().equals(ADMIN_SIGN)){
                     logInfo.setOperator(ADMIN);
+                }else{
+                    logInfo.setOperator(logInfo.getOperatorUserid());
                 }
             }
         }
