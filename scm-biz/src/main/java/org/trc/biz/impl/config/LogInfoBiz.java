@@ -63,15 +63,15 @@ public class LogInfoBiz implements ILogInfoBiz {
             userIds.toArray(userIdArr);
             Map<String, AclUserAccreditInfo> userMap = aclUserAccreditInfoService.selectByIds(userIdArr);
             for (LogInfo logInfo: logInfoList){
+                logInfo.setOperator(logInfo.getOperatorUserid());
                 if (userMap != null) {
                     AclUserAccreditInfo aclUserAccreditInfo=userMap.get(logInfo.getOperatorUserid());
                     if(aclUserAccreditInfo!=null){
                         logInfo.setOperator(aclUserAccreditInfo.getName());
                     }
-                } else if(logInfo.getOperatorUserid().equals(ADMIN_SIGN)){
+                }
+                if(logInfo.getOperatorUserid().equals(ADMIN_SIGN)){
                     logInfo.setOperator(ADMIN);
-                }else{
-                    logInfo.setOperator(logInfo.getOperatorUserid());
                 }
             }
         }
