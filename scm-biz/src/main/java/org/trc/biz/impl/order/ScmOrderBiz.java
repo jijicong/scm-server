@@ -1836,6 +1836,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "店铺订单号", CellDefinition.TEXT, 8000);
             CellDefinition itemsNum = new CellDefinition("itemsNum", "商品总数量", CellDefinition.NUM_0, 8000);
             CellDefinition payment = new CellDefinition("payment", "商品总金额(元)", CellDefinition.NUM_0_00, 8000);
+            CellDefinition payTime = new CellDefinition("payTime", "付款时间", CellDefinition.DATE_TIME, 8000);
             CellDefinition supplierOrderStatus = new CellDefinition("supplierOrderStatus", "状态", CellDefinition.TEXT, 8000);
             CellDefinition logisticsInfo = new CellDefinition("logisticsInfo", "反馈物流公司名称-反馈运单号", CellDefinition.TEXT, 16000);
 
@@ -1845,6 +1846,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             cellDefinitionList.add(shopOrderCode);
             cellDefinitionList.add(itemsNum);
             cellDefinitionList.add(payment);
+            cellDefinitionList.add(payTime);
             cellDefinitionList.add(supplierOrderStatus);
             cellDefinitionList.add(logisticsInfo);
 
