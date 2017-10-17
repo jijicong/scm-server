@@ -741,6 +741,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String remark = "";
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_EXCEPTION;
+            SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+            supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
+            List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+            if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
+                remark = getOrderExceptionMessage(supplierOrderInfoList);
+            }
         }/*else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_FAILURE;
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), warehouseOrder.getSupplierOrderStatus())){
