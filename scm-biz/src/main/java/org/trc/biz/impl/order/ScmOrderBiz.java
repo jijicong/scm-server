@@ -2052,7 +2052,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
-        AssertUtil.notEmpty(supplierOrderInfoList, String.format("根据仓库订单号%s查询相关供应商订单信息为空", warehouseOrder.getWarehouseOrderCode()));
+        if(CollectionUtils.isEmpty(supplierOrderInfoList))
+            return;
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//取消操作
                 supplierOrderInfo2.setOldSupplierOrderStatus(supplierOrderInfo2.getSupplierOrderStatus());

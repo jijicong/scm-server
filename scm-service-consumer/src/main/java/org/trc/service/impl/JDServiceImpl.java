@@ -210,19 +210,18 @@ public class JDServiceImpl implements IJDService {
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE,"text/plain; charset=utf-8");
             httpPost.setHeader("Accept", "application/json");
-            //response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, 20000);
-            response = "{\"code\": \"200\",\"data\": {\"orderType\": \"1\",\"warehouseOrderCode\": \"GYS0000611201710170000526\",\"order\": [{\"supplyOrderCode\": \"33333xxxxxxxxx0000014-1\",\"skus\": [{\"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\"num\": 1,\"skuCode\": \"1075510226\"}],\"state\": \"300\",\"message\": \"测试子订单下单失败\"},{\"supplyOrderCode\": \"33333xxxxxxxxx0000014-2\",\"skus\": [{\"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\"num\": 2,\"skuCode\": \"310516625460002590\"}],\"state\": \"200\",\"message\": \"子订单下单成功\"}]},\"message\": \"仓库级订单:GYS0000611201710170000526,粮油下单完成\"}";
+            response = HttpClientUtil.httpPostJsonRequest(url, jsonParams, httpPost, 20000);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 responseAck = jbo.toJavaObject(ResponseAck.class);
             }else {
                 responseAck = new ResponseAck(ExceptionEnum.SYSTEM_BUSY, "");
             }
-        }/*catch (IOException e){
+        }catch (IOException e){
             String msg = String.format("调用提交订单服务网络超时,错误信息:%s", e.getMessage());
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.REMOTE_INVOKE_TIMEOUT_EXCEPTION, "");
-        }*/catch (Exception e){
+        }catch (Exception e){
             String msg = String.format("调用提交订单服务异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.SYSTEM_EXCEPTION, "");
