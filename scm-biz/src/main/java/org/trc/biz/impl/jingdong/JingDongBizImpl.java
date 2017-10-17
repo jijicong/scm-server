@@ -220,7 +220,7 @@ public class JingDongBizImpl implements IJingDongBiz {
             cellDefinitionList.add(state);
             cellDefinitionList.add(remark);
             String sheetName = "订单比对明细";
-            String fileName = "订单比对明细-" + queryModel.getStartDate() + BAR + queryModel.getEndDate() + EXCEL;
+            String fileName = "订单比对明细-" + queryModel.getStartUpdateTime() + BAR + queryModel.getEndUpdateTime() + EXCEL;
             try {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
             } catch (UnsupportedEncodingException e1) {
