@@ -2038,7 +2038,7 @@ public class GoodsBiz implements IGoodsBiz {
                 }
             }
             ExternalItemSku oldItemSku =new ExternalItemSku();
-            oldItemSku.setSkuCode(externalItemSku.getSkuCode());
+            oldItemSku.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
             oldItemSku = externalItemSkuService.selectOne(oldItemSku);
 
             Example example = new Example(ExternalItemSku.class);
@@ -2051,7 +2051,7 @@ public class GoodsBiz implements IGoodsBiz {
                 throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
             }else {
                 ExternalItemSku newItemSku =new ExternalItemSku();
-                newItemSku.setSkuCode(externalItemSku.getSkuCode());
+                newItemSku.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
                 newItemSku = externalItemSkuService.selectOne(newItemSku);
 
                 //记录同步日志
