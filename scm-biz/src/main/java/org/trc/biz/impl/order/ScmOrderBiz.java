@@ -1750,6 +1750,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
         criteria.andEqualTo("status", ResponseAck.SUCCESS_CODE);
+        List<String> supplierOrderStatusList = new ArrayList<String>();
+        supplierOrderStatusList.add(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());
+        supplierOrderStatusList.add(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+        criteria.andIn("supplierOrderStatus", supplierOrderStatusList);
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
             try{
