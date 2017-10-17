@@ -34,11 +34,11 @@ public class BalanceDetailDO extends QueryModel {
         this.orderId = orderId;
     }
 
-    public String getTradeType() {
+    public String getTradeTypeName() {
         return tradeTypeName;
     }
 
-    public void setTradeType(String tradeTypeName) {
+    public void setTradeTypeName(String tradeTypeName) {
         this.tradeTypeName = tradeTypeName;
     }
 

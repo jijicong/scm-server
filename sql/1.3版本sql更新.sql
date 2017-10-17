@@ -23,7 +23,7 @@ alter table external_item_sku add `notify_time` timestamp NULL DEFAULT CURRENT_T
 alter table external_item_sku add `min_buy_count` int(11) DEFAULT NULL COMMENT '最小购买数量';
 
 
-DELETE FROM dict WHERE type_code = 'supplierOrderStatus';
+DELETE FROM dict WHERE type_code = 'supplierOrderStatus'
 INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (436, 'supplierOrderStatus', '待发送供应商', '1', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-10 11:38:19', '2017-10-10 11:38:19');
 INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (437, 'supplierOrderStatus', '供应商下单异常', '2', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-10 11:38:31', '2017-10-10 11:39:00');
 INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (438, 'supplierOrderStatus', '等待供应商发货', '3', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-10 11:38:49', '2017-10-10 11:38:49');
@@ -42,4 +42,11 @@ MODIFY  COLUMN  `main_picture`    text  CHARACTER  SET  utf8  COLLATE  utf8_gene
 ALTER  TABLE  `skus`
 ADD  COLUMN  `sku_name`    varchar(256)  NULL  AFTER  `sku_code`;
 
-INSERT INTO `system_config` (`code`, `name`, `type`, `content`, `description`, `create_operator`, `create_time`, `update_time`) VALUES ( 'channelCodeCheck', '渠道编码校验', '', '0', '0-不校验,1-校验', '', '2017-10-11 15:41:00', '2017-10-12 14:53:03');
+
+INSERT INTO `dict_type` (`id`, `code`, `name`, `description`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (157, 'orderDeliverStatus', '订单发货状态', '订单发货状态', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:22', '2017-10-16 18:34:22');
+
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (443, 'orderDeliverStatus', '待发货', '1', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:37', '2017-10-16 18:34:37');
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (444, 'orderDeliverStatus', '全部发货', '4', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:46', '2017-10-16 18:34:46');
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (445, 'orderDeliverStatus', '部分发货', '6', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:55', '2017-10-16 18:34:55');
+INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (446, 'orderDeliverStatus', '已取消', '7', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:35:05', '2017-10-16 18:35:05');
+
