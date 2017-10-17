@@ -2050,24 +2050,29 @@ public class GoodsBiz implements IGoodsBiz {
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.EXTERNAL_GOODS_UPDATE_EXCEPTION, msg);
             }else {
-                ExternalItemSku newItemSku =new ExternalItemSku();
-                newItemSku.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
-                newItemSku = externalItemSkuService.selectOne(newItemSku);
+                try {
+                    ExternalItemSku newItemSku =new ExternalItemSku();
+                    newItemSku.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
+                    newItemSku = externalItemSkuService.selectOne(newItemSku);
 
-                //记录同步日志
-                List<String> ids =  new ArrayList<>();
-                ids.add(String.valueOf(newItemSku.getId()));
-                logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
-                        LogOperationEnum.SYNCHRONIZE.getMessage(), "", null,ids);
-                //记录改动日志
-                if (!StringUtils.equals(oldItemSku.getState(),newItemSku.getState())){
+                    //记录同步日志
+                    List<String> ids =  new ArrayList<>();
+                    ids.add(String.valueOf(newItemSku.getId()));
                     logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
-                            LogOperationEnum.UPDATE.getMessage(), "商品状态由"+StateEnum.getStateEnumByCode(oldItemSku.getState()).getName()+"修改为"+StateEnum.getStateEnumByCode(newItemSku.getState()).getName(), null,ids);
+                            LogOperationEnum.SYNCHRONIZE.getMessage(), "", null,ids);
+                    //记录改动日志
+                    if (!StringUtils.equals(oldItemSku.getState(),newItemSku.getState())){
+                        logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
+                                LogOperationEnum.UPDATE.getMessage(), "商品状态由"+StateEnum.getStateEnumByCode(oldItemSku.getState()).getName()+"修改为"+StateEnum.getStateEnumByCode(newItemSku.getState()).getName(), null,ids);
+                    }
+                    if(oldItemSku.getSupplyPrice().longValue() != newItemSku.getSupplyPrice().longValue()){
+                        logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
+                                LogOperationEnum.UPDATE.getMessage(), "供货价由"+oldItemSku.getSupplyPrice()+"修改为"+newItemSku.getSupplyPrice(), null,ids);
+                    }
+                }catch (Exception e){
+                    log.error("日志记录失败");
                 }
-                if(oldItemSku.getSupplyPrice().longValue() != newItemSku.getSupplyPrice().longValue()){
-                    logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
-                            LogOperationEnum.UPDATE.getMessage(), "供货价由"+oldItemSku.getSupplyPrice()+"修改为"+newItemSku.getSupplyPrice(), null,ids);
-                }
+
             }
         }
 
