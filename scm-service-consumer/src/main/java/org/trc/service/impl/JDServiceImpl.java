@@ -528,4 +528,32 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+
+    public ReturnTypeDO statisticsRecord(BalanceDetailDO queryModel){
+        ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
+        returnTypeDO.setSuccess(false);
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(queryModel);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getBalancestatisticsUrl();
+            response = HttpClientUtil.httpGetRequest(url,map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    JSONObject json = jbo.getJSONObject("result");
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(json);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用余额明细统计接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用余额明细统计接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
 }

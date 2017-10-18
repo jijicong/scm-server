@@ -746,6 +746,8 @@ public class SupplyConstants {
         public static final String OPERATE_ORDER = "operate";
         //订单操作查询
         public static final String GET_OPERATE = "getOperate";
+        //统计余额明细
+        public static final String GET_STATISTIC_BALANCE = "statisticsBalance";
 
     }
 

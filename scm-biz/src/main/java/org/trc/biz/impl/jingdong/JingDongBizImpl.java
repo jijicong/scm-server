@@ -3,6 +3,7 @@ package org.trc.biz.impl.jingdong;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.jingdong.IJingDongBiz;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.OperateEnum;
 import org.trc.form.JDModel.*;
 import org.trc.form.external.*;
 import org.trc.service.IJDService;
@@ -240,6 +242,10 @@ public class JingDongBizImpl implements IJingDongBiz {
     @Override
     public Response operateRecord(OperateForm orderDetail) throws Exception{
         try{
+            if (orderDetail.getOperate() == OperateEnum.HANDLE.getCode()){
+                if (StringUtils.isBlank(orderDetail.getRemark()))
+                return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_REMARK_NOT_NULL_EXCEPTION.getCode()),ExceptionEnum.JING_DONG_REMARK_NOT_NULL_EXCEPTION.getMessage());
+            }
             AssertUtil.notNull(orderDetail.getId(), "操作参数id不能为空");
             ReturnTypeDO result = ijdService.operateRecord(orderDetail);
             return ResultUtil.createSuccessResult("订单明细操作更新成功",result.getResult());
@@ -261,6 +267,16 @@ public class JingDongBizImpl implements IJingDongBiz {
         }catch (Exception e){
             log.error("京东获取订单明细操作状态异常"+e.getMessage(),e);
             return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_ORDER_GET_OPERATE_STATE_EXCEPTION.getCode()),ExceptionEnum.JING_DONG_ORDER_GET_OPERATE_STATE_EXCEPTION.getMessage());
+        }
+    }
+
+    public Response statisticsRecord(BalanceDetailDO queryModel) throws Exception{
+        try{
+            ReturnTypeDO result = ijdService.statisticsRecord(queryModel);
+            return ResultUtil.createSuccessResult("余额明细统计查询成功",result.getResult());
+        }catch (Exception e){
+            log.error("京东获取订单明细操作状态异常"+e.getMessage(),e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_STATISTICS_EXCEPTION.getCode()),ExceptionEnum.JING_DONG_STATISTICS_EXCEPTION.getMessage());
         }
     }
 
