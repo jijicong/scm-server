@@ -445,9 +445,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
                     log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
                 }else {
-                    responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
+                    /*responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
                     log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
-                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), supplierOrderReturn.getMessage(),null);
+                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), supplierOrderReturn.getMessage(),null);*/
                 }
             }else{
                 log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
@@ -469,6 +469,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //订单提交异常记录日志
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ORDER_EXCEPTION.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
+        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ORDER_FAILURE.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
         }
         if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
             String msg = String.format("提交仓库级订单编码为[%s]的京东订单下单成功", warehouseOrderCode);
@@ -476,7 +478,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }else{
             log.error(String.format("调用京东下单接口提交仓库订单%s失败,错误信息:%s", JSONObject.toJSON(warehouseOrder), responseAck.getMessage()));
         }
-
         //下单结果通知渠道
         try{
             notifyChannelSubmitOrderResult(warehouseOrder);
@@ -650,20 +651,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         ResponseAck responseAck = invokeSubmitSuuplierOrder(liangYouOrder);
         //保存请求流水
         requestFlowBiz.saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, responseAck, RequestFlowConstant.GYL);
-        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            log.info(responseAck.getMessage());
-            //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
-        }else{
-            log.error(responseAck.getMessage());
-            //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), responseAck.getMessage(),null);
-        }
-        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            log.info(String.format("调用粮油下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
-        }else{
-            log.error(String.format("调用粮油下单接口提交仓库订单%s失败,错误信息:%s", JSONObject.toJSON(warehouseOrder), responseAck.getMessage()));
-        }
         //保存粮油订单信息
         List<SupplierOrderInfo> supplierOrderInfoList = saveSupplierOrderInfo(warehouseOrder, responseAck, orderItemList, new String[0], new String[0], ZeroToNineEnum.ZERO.getCode());
         //更新订单商品供应商订单状态
@@ -672,6 +659,27 @@ public class ScmOrderBiz implements IScmOrderBiz {
         updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+            log.info(responseAck.getMessage());
+            //记录操作日志
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
+        }else{
+            /*log.error(responseAck.getMessage());
+            //记录操作日志
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);*/
+        }
+        //订单提交异常记录日志
+        if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_EXCEPTION.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
+        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+            log.error(responseAck.getMessage());
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
+        }
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+            log.info(String.format("调用粮油下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
+        }else{
+            log.error(String.format("调用粮油下单接口提交仓库订单%s失败,错误信息:%s", JSONObject.toJSON(warehouseOrder), responseAck.getMessage()));
+        }
         if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
             String msg = String.format("提交仓库级订单编码为[%s]的粮油订单下单失败。粮油下单接口返回错误信息:%s",
                     warehouseOrderCode, responseAck.getMessage());
