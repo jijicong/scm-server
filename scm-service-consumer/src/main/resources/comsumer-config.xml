@@ -30,6 +30,13 @@
         <property name="lySubmitOrderUrl" value="${ly.submitOrder.url}"/>
         <property name="checkOrderDetailUrl" value="${jd.checkOrderDetail.url}"/>
         <property name="treadTypeUrl" value="${jd.treadType.url}"/>
+        <property name="jdBalanceInfoUrl" value="${jd.balance.info.url}"/>
+        <property name="jdOrderDetailPageUrl" value="${jd.order.detail.page.url}"/>
+        <property name="jdBalanceDetailPageUrl" value="${jd.balance.detail.page.url}"/>
+        <property name="jdExportOrderUrl" value="${jd.export.order.url}"/>
+        <property name="jdExportBalanceUrl" value="${jd.export.balance.url}"/>
+        <property name="jdOrderOperateUrl" value="${jd.order.operate.url}"/>
+        <property name="jdOperateStateUrl" value="${get.jd.operate.state.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

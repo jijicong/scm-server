@@ -10,8 +10,8 @@ import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.SupplierOrderCancelForm;
 import org.trc.form.order.WarehouseOrderForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
@@ -21,7 +21,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -37,7 +36,6 @@ public class OrderResource {
     @Path(SupplyConstants.Order.SHOP_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response shopOrderPage(@BeanParam ShopOrderForm form, @BeanParam Pagenation<ShopOrder> page, @Context ContainerRequestContext requestContext){
-        //return scmOrderBiz.shopOrderPage(form, page);
         return ResultUtil.createSuccessPageResult(scmOrderBiz.shopOrderPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
@@ -82,6 +80,25 @@ public class OrderResource {
         }else{
             return ResultUtil.createfailureResult(Integer.parseInt(responseAck.getCode()), responseAck.getMessage());
         }
+    }
+
+    /**
+     * 供应商订单导出
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path(SupplyConstants.Order.EXPORT_SUPPLIER_ORDER)
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response exportBalanceDetail(@BeanParam WarehouseOrderForm queryModel,@Context ContainerRequestContext requestContext) throws Exception {
+        return scmOrderBiz.exportSupplierOrder( queryModel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+    @PUT
+    @Path(SupplyConstants.Order.ORDER_CANCEL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response orderCancel(@BeanParam SupplierOrderCancelForm form, @Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult(scmOrderBiz.cancelHandler(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)), "");
     }
 
 }

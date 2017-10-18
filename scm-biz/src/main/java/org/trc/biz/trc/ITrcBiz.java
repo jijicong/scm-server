@@ -113,7 +113,7 @@ public interface ITrcBiz {
     /**
      *
      */
-    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page) throws Exception;
+    Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,String channelCode) throws Exception;
 
     void updateRelation(String action, JSONArray relations) throws Exception;
 
@@ -124,7 +124,7 @@ public interface ITrcBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception;
+    Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page,String channelCode) throws Exception;
 
     /**
      * 自采商品SKU查询
@@ -171,5 +171,7 @@ public interface ITrcBiz {
      * @throws Exception
      */
     Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception;
+
+    void checkChannelCode(String channelCode) throws Exception;
 
 }

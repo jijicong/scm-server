@@ -24,5 +24,5 @@ public interface ISkuRelationBiz {
      * @param skuCode
      * @return
      */
-    List<ExternalItemSku> getExternalSkuInformation(String skuCode);
+    List<ExternalItemSku> getExternalSkuInformation(String skuCode,String channelCode);
 }

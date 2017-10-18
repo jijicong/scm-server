@@ -63,7 +63,7 @@ public class WarehouseOrder implements Serializable {
     // 订单状态(自采):1-待出库 2-部分出库 3-全部出库
     private String status;
 
-    //供应商订单状态(代发):1-待发送,2-已发送,3-代发货,4-已发货,5-下单失败
+    //供应商订单状态:1-待发送供应商,2-供应商下单异常,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
     private String supplierOrderStatus;
 
     // 卖家手工调整金额,子订单调整金额之和,单位/分,单位/分
@@ -106,9 +106,14 @@ public class WarehouseOrder implements Serializable {
     private String orderType;
 
     //付款时间
-    @Transient
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date payTime;
+
+    //是否取消：0-否,1-是
+    private String isCancel;
+
+    //老供应商订单状态:1-待发送供应商,2-供应商下单异常,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
+    private String oldSupplierOrderStatus;
 
     /**
      * 订单商品明细列表
@@ -597,5 +602,21 @@ public class WarehouseOrder implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getIsCancel() {
+        return isCancel;
+    }
+
+    public void setIsCancel(String isCancel) {
+        this.isCancel = isCancel;
+    }
+
+    public String getOldSupplierOrderStatus() {
+        return oldSupplierOrderStatus;
+    }
+
+    public void setOldSupplierOrderStatus(String oldSupplierOrderStatus) {
+        this.oldSupplierOrderStatus = oldSupplierOrderStatus;
     }
 }

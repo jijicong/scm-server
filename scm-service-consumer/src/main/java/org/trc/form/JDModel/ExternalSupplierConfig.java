@@ -34,7 +34,20 @@ public class ExternalSupplierConfig {
     private String checkOrderDetailUrl;
     //京东业务类型接口
     private String treadTypeUrl;
-
+    //京东账户信息接口url地址
+    private String jdBalanceInfoUrl;
+    //京东订单对比明细分页查询接口url地址
+    private String jdOrderDetailPageUrl;
+    //京东余额变动明细分页查询接口url地址
+    private String jdBalanceDetailPageUrl;
+    //京东订单对比明细导出接口url地址
+    private String jdExportOrderUrl;
+    //京东余额变动明细导出接口url地址
+    private String jdExportBalanceUrl;
+    //京东订单对比明细操作接口url地址
+    private String jdOrderOperateUrl;
+    //京东订单对比明细操作查询接口url地址
+    private String jdOperateStateUrl;
     //粮油下单接口地址
     private String lySubmitOrderUrl;
 
@@ -164,5 +177,61 @@ public class ExternalSupplierConfig {
 
     public void setJdAddressUrl(String jdAddressUrl) {
         this.jdAddressUrl = jdAddressUrl;
+    }
+
+    public String getJdBalanceInfoUrl() {
+        return jdBalanceInfoUrl;
+    }
+
+    public void setJdBalanceInfoUrl(String jdBalanceInfoUrl) {
+        this.jdBalanceInfoUrl = jdBalanceInfoUrl;
+    }
+
+    public String getJdOrderDetailPageUrl() {
+        return jdOrderDetailPageUrl;
+    }
+
+    public void setJdOrderDetailPageUrl(String jdOrderDetailPageUrl) {
+        this.jdOrderDetailPageUrl = jdOrderDetailPageUrl;
+    }
+
+    public String getJdBalanceDetailPageUrl() {
+        return jdBalanceDetailPageUrl;
+    }
+
+    public void setJdBalanceDetailPageUrl(String jdBalanceDetailPageUrl) {
+        this.jdBalanceDetailPageUrl = jdBalanceDetailPageUrl;
+    }
+
+    public String getJdExportOrderUrl() {
+        return jdExportOrderUrl;
+    }
+
+    public void setJdExportOrderUrl(String jdExportOrderUrl) {
+        this.jdExportOrderUrl = jdExportOrderUrl;
+    }
+
+    public String getJdExportBalanceUrl() {
+        return jdExportBalanceUrl;
+    }
+
+    public void setJdExportBalanceUrl(String jdExportBalanceUrl) {
+        this.jdExportBalanceUrl = jdExportBalanceUrl;
+    }
+
+    public String getJdOrderOperateUrl() {
+        return jdOrderOperateUrl;
+    }
+
+    public void setJdOrderOperateUrl(String jdOrderOperateUrl) {
+        this.jdOrderOperateUrl = jdOrderOperateUrl;
+    }
+
+    public String getJdOperateStateUrl() {
+        return jdOperateStateUrl;
+    }
+
+    public void setJdOperateStateUrl(String jdOperateStateUrl) {
+        this.jdOperateStateUrl = jdOperateStateUrl;
     }
 }

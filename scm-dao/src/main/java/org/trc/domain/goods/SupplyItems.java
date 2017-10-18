@@ -3,6 +3,7 @@ package org.trc.domain.goods;
 import org.trc.domain.BaseDO;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Created by hzszy on 2017/6/19.
@@ -31,6 +32,10 @@ public class SupplyItems extends BaseDO {
     private String isUsed;//是否已经使用
     private String warehouse;//仓库名称
     private Long stock;//库存
+    private String updateFlag;
+    private Date notifyTime;
+    private Integer minBuyCount;
+
 
     public Long getId() {
         return id;
@@ -214,5 +219,29 @@ public class SupplyItems extends BaseDO {
 
     public void setStock(Long stock) {
         this.stock = stock;
+    }
+
+    public String getUpdateFlag() {
+        return updateFlag;
+    }
+
+    public void setUpdateFlag(String updateFlag) {
+        this.updateFlag = updateFlag;
+    }
+
+    public Date getNotifyTime() {
+        return notifyTime;
+    }
+
+    public void setNotifyTime(Date notifyTime) {
+        this.notifyTime = notifyTime;
+    }
+
+    public Integer getMinBuyCount() {
+        return minBuyCount;
+    }
+
+    public void setMinBuyCount(Integer minBuyCount) {
+        this.minBuyCount = minBuyCount;
     }
 }

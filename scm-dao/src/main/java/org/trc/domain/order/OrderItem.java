@@ -5,13 +5,11 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Ding on 2017/6/21.
@@ -346,6 +344,28 @@ public class OrderItem implements Serializable {
 
     // 商品规格描述
     private String specNatureInfo;
+
+    //供应商订单状态：1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
+    private String supplierOrderStatus;
+
+    //老供应商订单状态:1-待发送供应商,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
+    private String oldSupplierOrderStatus;
+
+    //供应商订单号
+    @Transient
+    private String supplierOrderCode;
+
+    //商品类型:0-自采,1-代发
+    @Transient
+    private String itemType;
+
+    //实发商品数量
+    @Transient
+    private Integer deliverNum;
+
+    //物流信息
+    @Transient
+    private List<DeliverPackageForm> deliverPackageFormList;
 
     public String getSupplierSkuCode() {
         return supplierSkuCode;
@@ -1321,5 +1341,53 @@ public class OrderItem implements Serializable {
      */
     public void setSpecNatureInfo(String specNatureInfo) {
         this.specNatureInfo = specNatureInfo == null ? null : specNatureInfo.trim();
+    }
+
+    public String getSupplierOrderStatus() {
+        return supplierOrderStatus;
+    }
+
+    public void setSupplierOrderStatus(String supplierOrderStatus) {
+        this.supplierOrderStatus = supplierOrderStatus;
+    }
+
+    public String getOldSupplierOrderStatus() {
+        return oldSupplierOrderStatus;
+    }
+
+    public void setOldSupplierOrderStatus(String oldSupplierOrderStatus) {
+        this.oldSupplierOrderStatus = oldSupplierOrderStatus;
+    }
+
+    public String getSupplierOrderCode() {
+        return supplierOrderCode;
+    }
+
+    public void setSupplierOrderCode(String supplierOrderCode) {
+        this.supplierOrderCode = supplierOrderCode;
+    }
+
+    public String getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
+    }
+
+    public Integer getDeliverNum() {
+        return deliverNum;
+    }
+
+    public void setDeliverNum(Integer deliverNum) {
+        this.deliverNum = deliverNum;
+    }
+
+    public List<DeliverPackageForm> getDeliverPackageFormList() {
+        return deliverPackageFormList;
+    }
+
+    public void setDeliverPackageFormList(List<DeliverPackageForm> deliverPackageFormList) {
+        this.deliverPackageFormList = deliverPackageFormList;
     }
 }

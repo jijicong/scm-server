@@ -3,12 +3,14 @@ package org.trc.biz.goods;
 import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.supplier.Supplier;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
@@ -101,7 +103,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm form, Pagenation<ExternalItemSku> page) throws Exception;
+    Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm form, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      *查询代发商品
@@ -116,7 +118,7 @@ public interface IGoodsBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm form, Pagenation<SupplyItemsExt> page) throws Exception;
+    Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm form, Pagenation<SupplyItemsExt> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     /**
      * 新增一件代发商品
@@ -148,4 +150,11 @@ public interface IGoodsBiz {
      * @param propertyInfo
      */
     void checkPropetyStatus(String propertyInfo);
+
+    /**
+     * 查询供应商列表
+     * @return
+     * @throws Exception
+     */
+    List<Supplier> querySuppliers(SupplierForm SupplierForm,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 }
