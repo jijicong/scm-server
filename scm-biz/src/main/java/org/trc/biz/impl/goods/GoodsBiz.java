@@ -2283,7 +2283,7 @@ public class GoodsBiz implements IGoodsBiz {
                 externalItemSku.setUpdateTime(items.getUpdateTime());
                 }
             }else {
-                externalItemSku.setUpdateTime(items.getUpdateTime());
+                externalItemSku.setUpdateTime(sysDate);
             }
             externalItemSku.setMinBuyCount(items.getMinBuyCount());
 
