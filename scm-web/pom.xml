@@ -143,6 +143,10 @@
             <resource>
                 <directory>src/main/java</directory>
                 <filtering>true</filtering>
+                <!-- 排除  -->
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources/config/${package.environment}</directory>
