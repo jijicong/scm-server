@@ -35,6 +35,7 @@ public class SupplyItemsExt {
     private String isDeleted; //是否删除:0-否,1-是
     private String highLightName;
     private Long stock;//库存
+    private Integer minBuyCount;
     /**
      * 被停用供应商编码，多个用逗号分隔
      */
@@ -270,5 +271,13 @@ public class SupplyItemsExt {
 
     public void setStopedSupplierCode(String stopedSupplierCode) {
         this.stopedSupplierCode = stopedSupplierCode;
+    }
+
+    public Integer getMinBuyCount() {
+        return minBuyCount;
+    }
+
+    public void setMinBuyCount(Integer minBuyCount) {
+        this.minBuyCount = minBuyCount;
     }
 }
