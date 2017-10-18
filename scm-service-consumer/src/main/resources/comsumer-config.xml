@@ -37,6 +37,7 @@
         <property name="jdExportBalanceUrl" value="${jd.export.balance.url}"/>
         <property name="jdOrderOperateUrl" value="${jd.order.operate.url}"/>
         <property name="jdOperateStateUrl" value="${get.jd.operate.state.url}"/>
+        <property name="balancestatisticsUrl" value="${get.jd.statistics.balance.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->

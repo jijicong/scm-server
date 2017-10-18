@@ -121,4 +121,7 @@ public interface IJDService {
      */
     ReturnTypeDO getOperateState(Long id);
 
+    //余额明细统计接口
+    ReturnTypeDO statisticsRecord(BalanceDetailDO queryModel);
+
 }

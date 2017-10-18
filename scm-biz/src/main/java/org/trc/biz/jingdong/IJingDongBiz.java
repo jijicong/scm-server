@@ -55,4 +55,7 @@ public interface IJingDongBiz {
      */
     Response getOperateState(Long id)throws Exception;
 
+    //根据查询条件统计数据
+    Response statisticsRecord(BalanceDetailDO queryModel)throws Exception;
+
 }

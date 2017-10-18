@@ -166,4 +166,20 @@ public class JingDongResource {
         log.info("进入订单明操作查询接口======>"+ JSON.toJSONString(id));
         return iJingDongBiz.getOperateState(id);
     }
+
+    /**
+     * 统计余额明细接口
+     *
+     * @return
+     * @throws Exception*/
+
+    @GET
+    @Path(SupplyConstants.JingDongOrder.GET_STATISTIC_BALANCE)
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/json;charset=utf-8")
+    public Response getStatisticsRecord(@BeanParam BalanceDetailDO queryModel) throws Exception {
+        log.info("进入订单明操作查询接口======>");
+        return iJingDongBiz.statisticsRecord(queryModel);
+    }
+
 }
