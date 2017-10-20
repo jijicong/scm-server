@@ -1301,6 +1301,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     List<SkuInfo> skuInfoList = JSONArray.parseArray(SupplierOrderInfo.getSkus(), SkuInfo.class);
                     for(SkuInfo skuInfo: skuInfoList){
                         if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
+                            if(StringUtils.isBlank(SupplierOrderInfo.getSupplierOrderCode())){
+                                orderItem.setSupplierOrderCode(SupplierOrderInfo.getSupplierOrderCode());
+                            }
                             deliverNum += skuInfo.getNum();
                         }
                     }

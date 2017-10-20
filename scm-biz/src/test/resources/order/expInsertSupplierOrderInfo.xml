@@ -1,35 +1,12 @@
 <?xml version="1.0" encoding='UTF-8'?>
 <dataset>
     <supplier_order_info
-            id="246"
-            warehouse_order_code="JD1201708290000305"
-            supplier_order_code=""
-            supplier_code="JD"
-            status="3008"
-            skus='[{"num":2,"skuCode":"10549938139","skuName":"京东"}]'
-            jd_city_code="2768"
-            jd_district_code="53499"
-            jd_province_code="32"
-            jd_town_code=""
-            jd_city="台湾"
-            jd_district="新竹"
-            jd_province="台湾"
-            jd_town=""
-            logistics_status="0"
-            is_deleted="0"
-            create_time="2017/8/29 17:21"
-            update_time="2017/8/29 17:21"
-            message="您好，如下商品无货:商品10549938139"
-            supplier_order_status="5"
-    />
-
-    <supplier_order_info
-            id="245"
-            warehouse_order_code="LY1201708290000306"
-            supplier_order_code="000xxxxxxxxx000042"
+            id="400"
+            warehouse_order_code="GYS0000571201710180000530"
+            supplier_order_code="33333xxxxxxxxx0000016-1"
             supplier_code="LY"
             status="200"
-            skus='[{"num":2,"skuCode":"1203030101","skuName":"浙粮定制高级葡萄酒礼品皮盒（不带酒具）"}]'
+            skus='[{"num":1,"skuCode":"1075510226","skuName":"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml"}]'
             jd_city_code=""
             jd_district_code=""
             jd_province_code=""
@@ -40,9 +17,36 @@
             jd_town=""
             logistics_status="0"
             is_deleted="0"
-            create_time="2017/8/29 17:13"
-            update_time="2017/8/29 17:13"
+            create_time="2017/10/18 18:55"
+            update_time="2017/10/18 18:55"
             message="子订单下单成功"
             supplier_order_status="3"
+            old_supplier_order_status=""
     />
+
+    <supplier_order_info
+            id="401"
+            warehouse_order_code="GYS0000571201710180000530"
+            supplier_order_code="33333xxxxxxxxx0000016-2"
+            supplier_code="LY"
+            status="200"
+            skus='[{"num":2,"skuCode":"310516625460002590","skuName":"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜"}]'
+            jd_city_code=""
+            jd_district_code=""
+            jd_province_code=""
+            jd_town_code=""
+            jd_city=""
+            jd_district=""
+            jd_province=""
+            jd_town=""
+            logistics_status="0"
+            is_deleted="0"
+            create_time="2017/10/18 18:55"
+            update_time="2017/10/18 18:55"
+            message="子订单下单成功"
+            supplier_order_status="3"
+            old_supplier_order_status=""
+    />
+
+
 </dataset>
