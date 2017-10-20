@@ -1290,34 +1290,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(WarehouseOrder warehouseOrder2: warehouseOrderList){
             warehouseOrderCodes.add(warehouseOrder2.getWarehouseOrderCode());
         }
-        Example example = new Example(SupplierOrderInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("warehouseOrderCode", warehouseOrderCodes);
-        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
-        if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
-            for (OrderItem orderItem : orderItemList) {
-                int deliverNum = 0;//实发商品数量
-                for(SupplierOrderInfo SupplierOrderInfo: supplierOrderInfoList){
-                    List<SkuInfo> skuInfoList = JSONArray.parseArray(SupplierOrderInfo.getSkus(), SkuInfo.class);
-                    for(SkuInfo skuInfo: skuInfoList){
-                        if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
-                            if(StringUtils.isBlank(SupplierOrderInfo.getSupplierOrderCode())){
-                                orderItem.setSupplierOrderCode(SupplierOrderInfo.getSupplierOrderCode());
-                            }
-                            deliverNum += skuInfo.getNum();
-                        }
-                    }
-                }
-                orderItem.setDeliverNum(deliverNum);
-            }
-        }
         Example example2 = new Example(SupplierOrderLogistics.class);
-        Example.Criteria criteria2 = example.createCriteria();
+        Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("warehouseOrderCode", warehouseOrderCodes);
         List<SupplierOrderLogistics> supplierOrderLogisticsList = supplierOrderLogisticsService.selectByExample(example2);
         if(!CollectionUtils.isEmpty(supplierOrderLogisticsList)){
             //设置商品供应商订单、物流信息
             for (OrderItem orderItem : orderItemList) {
+                int deliverNum = 0;//实发商品数量
                 List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
                 Set<String> supplierSkus = new HashSet<>();
                 for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
@@ -1325,6 +1305,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     if(!CollectionUtils.isEmpty(skuInfoList)){
                         for(SkuInfo skuInfo: skuInfoList){
                             if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
+                                deliverNum += skuInfo.getNum();
+                                if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
+                                    orderItem.setSupplierOrderCode(supplierOrderLogistics2.getSupplierOrderCode());
+                                }
                                 supplierSkus.add(skuInfo.getSkuCode());
                                 DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
                                 deliverPackageForm.setSkuCode(skuInfo.getSkuCode());
@@ -1336,6 +1320,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         }
                     }
                 }
+                orderItem.setDeliverNum(deliverNum);
                 if(supplierSkus.size() > 0){
                     Example example3 = new Example(ExternalItemSku.class);
                     Example.Criteria criteria3 = example3.createCriteria();
@@ -1350,6 +1335,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                 }
                 orderItem.setDeliverPackageFormList(deliverPackageFormList);
+            }
+        }
+        Example example = new Example(SupplierOrderInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("warehouseOrderCode", warehouseOrderCodes);
+        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
+            for (OrderItem orderItem : orderItemList) {
+                for(SupplierOrderInfo SupplierOrderInfo: supplierOrderInfoList){
+                    List<SkuInfo> skuInfoList = JSONArray.parseArray(SupplierOrderInfo.getSkus(), SkuInfo.class);
+                    for(SkuInfo skuInfo: skuInfoList){
+                        if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
+                            if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
+                                orderItem.setSupplierOrderCode(SupplierOrderInfo.getSupplierOrderCode());
+                            }
+                        }
+                    }
+                }
             }
         }
     }
