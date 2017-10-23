@@ -341,6 +341,7 @@ public class JDServiceImpl implements IJDService {
         try{
             String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdBalanceInfoUrl();
             response = HttpClientUtil.httpGetRequest(url);
+            log.info("调用external余额信息接口："+response);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -371,6 +372,7 @@ public class JDServiceImpl implements IJDService {
         try{
             String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdOrderDetailPageUrl();
             response = HttpClientUtil.httpGetRequest(url,map);
+            log.info("调用external订单明细分页查询结果："+response);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
@@ -401,6 +403,7 @@ public class JDServiceImpl implements IJDService {
         try{
             String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getJdBalanceDetailPageUrl();
             response = HttpClientUtil.httpGetRequest(url,map);
+            log.info("调用external余额明细分页查询结果："+response);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
