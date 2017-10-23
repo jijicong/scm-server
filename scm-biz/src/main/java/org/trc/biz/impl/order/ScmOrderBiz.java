@@ -463,7 +463,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品供应商订单状态
         updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderInfoList);
         //更新仓库订单供应商订单状态
-        updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         //订单提交异常记录日志
@@ -656,7 +656,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品供应商订单状态
         updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderInfoList);
         //更新仓库订单供应商订单状态
-        updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
@@ -1320,7 +1320,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         }
                     }
                 }
-                orderItem.setDeliverNum(deliverNum);
+                if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), orderItem.getSupplierOrderStatus()) ||
+                        StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus()) ||
+                        StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), orderItem.getSupplierOrderStatus())){
+                    orderItem.setDeliverNum(null);
+                }else {
+                    orderItem.setDeliverNum(deliverNum);
+                }
                 if(supplierSkus.size() > 0){
                     Example example3 = new Example(ExternalItemSku.class);
                     Example.Criteria criteria3 = example3.createCriteria();
@@ -1348,7 +1354,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     for(SkuInfo skuInfo: skuInfoList){
                         if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
                             if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
-                                orderItem.setSupplierOrderCode(SupplierOrderInfo.getSupplierOrderCode());
+                                if(!StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
+                                    orderItem.setSupplierOrderCode(SupplierOrderInfo.getSupplierOrderCode());
+                                }
+                            }else{
+                                if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
+                                    orderItem.setSupplierOrderCode(null);
+                                }
                             }
                         }
                     }
