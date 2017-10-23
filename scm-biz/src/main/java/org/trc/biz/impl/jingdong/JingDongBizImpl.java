@@ -101,7 +101,14 @@ public class JingDongBizImpl implements IJingDongBiz {
 
         ReturnTypeDO result = ijdService.orderDetailByPage(queryModel,page);
         JSONObject jbo = JSONObject.parseObject(String.valueOf(result.getResult()));
-        Pagenation<OrderDetailDTO> appResult = jbo.toJavaObject(Pagenation.class);
+        Pagenation<OrderDetailDTO> appResult = null;
+        try{
+            log.info("订单明细分页查询："+jbo.toJSONString());
+            appResult = jbo.toJavaObject(Pagenation.class);
+        }catch (Exception e){
+            log.info("转换成java对象失败");
+            throw e;
+        }
         return appResult;
     }
 
@@ -114,7 +121,14 @@ public class JingDongBizImpl implements IJingDongBiz {
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
         ReturnTypeDO result = ijdService.balanceDetailByPage(queryModel,page);
         JSONObject jbo = JSONObject.parseObject(String.valueOf(result.getResult()));
-        Pagenation<BalanceDetailDTO> appResult = jbo.toJavaObject(Pagenation.class);
+        Pagenation<BalanceDetailDTO> appResult = null;
+        try{
+            log.info("余额明细分页查询"+jbo.toJSONString());
+            appResult = jbo.toJavaObject(Pagenation.class);
+        }catch (Exception e){
+            log.info("转换成java对象失败");
+            throw e;
+        }
         return appResult;
     }
 
