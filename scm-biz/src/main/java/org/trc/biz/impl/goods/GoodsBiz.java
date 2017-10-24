@@ -2069,6 +2069,10 @@ public class GoodsBiz implements IGoodsBiz {
                         logInfoService.recordLogs(new ExternalItemSku(), newItemSku.getSupplierName(),
                                 LogOperationEnum.RENEWAL.getMessage(), "供货价由"+oldItemSku.getSupplyPrice()+"修改为"+newItemSku.getSupplyPrice(), null,ids);
                     }
+                    if(StringUtils.equals(externalItemSku.getUpdateFlag(),ZeroToNineEnum.ONE.getCode())){
+                        logInfoService.recordLogs(new ExternalItemSku(), externalItemSku.getSupplierName(),
+                                LogOperationEnum.RENEWAL.getMessage(), "", null,ids);
+                    }
                 }catch (Exception e){
                     log.error("日志记录失败");
                 }
@@ -2274,6 +2278,7 @@ public class GoodsBiz implements IGoodsBiz {
             //externalItemSku.setProperties();// 属性 TODO
             externalItemSku.setState(items.getState());//上下架状态
             externalItemSku.setStock(items.getStock());//库存
+            externalItemSku.setUpdateFlag(items.getUpdateFlag());
             if (StringUtils.equals(flag,ZeroToNineEnum.ONE.getCode())){
             if (items.getUpdateFlag().equals(ZeroToNineEnum.ZERO.getCode())){
                 externalItemSku.setNotifyTime(items.getNotifyTime());
