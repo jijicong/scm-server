@@ -1308,7 +1308,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
                                 deliverNum += skuInfo.getNum();
                                 if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
-                                    //orderItem.setSupplierOrderCode(supplierOrderLogistics2.getSupplierOrderCode());
                                     sb.append(supplierOrderLogistics2.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
                                 }
                                 supplierSkus.add(skuInfo.getSkuCode());
@@ -1354,20 +1353,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
             for (OrderItem orderItem : orderItemList) {
+                StringBuilder sb = new StringBuilder();//供应商订单编码
                 for(SupplierOrderInfo SupplierOrderInfo: supplierOrderInfoList){
                     List<SkuInfo> skuInfoList = JSONArray.parseArray(SupplierOrderInfo.getSkus(), SkuInfo.class);
                     for(SkuInfo skuInfo: skuInfoList){
                         if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
                             if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
                                 if(!StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
-                                    orderItem.setSupplierOrderCode(SupplierOrderInfo.getSupplierOrderCode());
-                                }
-                            }else{
-                                if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
-                                    orderItem.setSupplierOrderCode(null);
+                                    sb.append(SupplierOrderInfo.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
                                 }
                             }
                         }
+                    }
+                }
+                if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
+                    orderItem.setSupplierOrderCode(null);
+                }else{
+                    if(sb.length() > 0){
+                        orderItem.setSupplierOrderCode(sb.substring(0, sb.length()-1));
                     }
                 }
             }
