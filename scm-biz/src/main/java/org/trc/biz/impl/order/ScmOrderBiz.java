@@ -1297,6 +1297,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(!CollectionUtils.isEmpty(supplierOrderLogisticsList)){
             //设置商品供应商订单、物流信息
             for (OrderItem orderItem : orderItemList) {
+                StringBuilder sb = new StringBuilder();//供应商订单编码
                 int deliverNum = 0;//实发商品数量
                 List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
                 Set<String> supplierSkus = new HashSet<>();
@@ -1307,7 +1308,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
                                 deliverNum += skuInfo.getNum();
                                 if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
-                                    orderItem.setSupplierOrderCode(supplierOrderLogistics2.getSupplierOrderCode());
+                                    //orderItem.setSupplierOrderCode(supplierOrderLogistics2.getSupplierOrderCode());
+                                    sb.append(supplierOrderLogistics2.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
                                 }
                                 supplierSkus.add(skuInfo.getSkuCode());
                                 DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
@@ -1319,6 +1321,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             }
                         }
                     }
+                }
+                if(sb.length() > 0){
+                    orderItem.setSupplierOrderCode(sb.substring(0, sb.length()-1));
                 }
                 if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), orderItem.getSupplierOrderStatus()) ||
                         StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus()) ||
