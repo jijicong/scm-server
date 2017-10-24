@@ -1444,7 +1444,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public ResponseAck<String> reciveChannelOrder(String orderInfo) {
+    public ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
@@ -2239,7 +2239,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(supplierOrderLogisticsList.size() > 0){
             //根据物流信息更新订单商品供应商订单状态
-            updateOrderItemSupplierOrderStatusByLogistics(supplierOrderInfo.getWarehouseOrderCode(), logisticForm);
+            updateOrderItemSupplierOrderStatusByLogistics(supplierOrderInfo.getWarehouseOrderCode());
             //更新供应商订单状态
             updateSupplierOrderStatus(supplierOrderInfo);
             //更新仓库订单供应商订单状态
@@ -2252,33 +2252,53 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 根据物流信息更新订单商品供应商订单状态
      * @param warehouseOrderCode
-     * @param logisticForm
      */
-    private void updateOrderItemSupplierOrderStatusByLogistics(String warehouseOrderCode, LogisticForm logisticForm){
+    private void updateOrderItemSupplierOrderStatusByLogistics(String warehouseOrderCode){
         OrderItem orderItem = new OrderItem();
         orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);
         AssertUtil.notEmpty(orderItemList, String.format("获取物流信息后更新订单商品供应商订单状态,根据仓库订单号[%s]查询相应的商品明细为空", warehouseOrderCode));
-        for(Logistic logistic: logisticForm.getLogistics()){
-            List<SkuInfo> skuInfos = logistic.getSkus();
-            for(SkuInfo skuInfo : skuInfos){
-                for(OrderItem orderItem2: orderItemList){
-                    if((StringUtils.equals(orderItem2.getSupplierOrderStatus(), OrderItemDeliverStatusEnum.WAIT_FOR_DELIVER.getCode()) ||
-                            StringUtils.equals(orderItem2.getSupplierOrderStatus(), OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode())
-                    ) && StringUtils.equals(orderItem2.getSupplierSkuCode(), skuInfo.getSkuCode())){
-                        if(orderItem2.getNum() == skuInfo.getNum()){
-                            orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
-                        }else if(orderItem2.getNum() > skuInfo.getNum()){
-                            orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
-                        }else{
-                            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("仓库订单编码为%s的订单中商品sku为%s的商品数量为%s,而供应商下单接口返回的商品数量为%s",
-                                    warehouseOrderCode, orderItem2.getSupplierSkuCode(), orderItem2.getNum(), skuInfo.getNum()));
-                        }
-                        orderItemService.updateByPrimaryKey(orderItem2);
+        SupplierOrderLogistics supplierOrderLogistics = new SupplierOrderLogistics();
+        supplierOrderLogistics.setWarehouseOrderCode(warehouseOrderCode);
+        List<SupplierOrderLogistics> supplierOrderLogisticsList = supplierOrderLogisticsService.select(supplierOrderLogistics);
+        for(OrderItem orderItem2: orderItemList){
+            int deliverNum = 0;
+            for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
+                List<SkuInfo> skuInfos = JSONArray.parseArray(supplierOrderLogistics2.getSkus(), SkuInfo.class);
+                for(SkuInfo skuInfo : skuInfos){
+                    if(StringUtils.equals(orderItem2.getSupplierSkuCode(), skuInfo.getSkuCode())){
+                        deliverNum += skuInfo.getNum();
+                    }
+                }
+            }
+            if(deliverNum == orderItem2.getNum()){
+                orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
+            }else if(deliverNum < orderItem2.getNum()){
+                orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+            }
+            orderItemService.updateByPrimaryKey(orderItem2);
+        }
+    }
+
+    /**
+     * 获取商品已经发货数量
+     * @param supplierOrderCode
+     * @param supplierSkuCode
+     * @param supplierOrderLogisticsList
+     * @return
+     */
+    private int getOrderItemDeliveredNum(String supplierOrderCode, String supplierSkuCode, List<SupplierOrderLogistics> supplierOrderLogisticsList){
+        for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
+            if(StringUtils.equals(supplierOrderCode, supplierOrderLogistics2.getSupplierOrderCode())){
+                List<SkuInfo> skuInfos = JSONArray.parseArray(supplierOrderLogistics2.getSkus(), SkuInfo.class);
+                for(SkuInfo skuInfo : skuInfos){
+                    if(StringUtils.equals(supplierSkuCode, skuInfo.getSkuCode())){
+                        return skuInfo.getNum();
                     }
                 }
             }
         }
+        return 0;
     }
 
 

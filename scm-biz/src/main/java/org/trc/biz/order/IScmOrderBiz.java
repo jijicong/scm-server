@@ -92,7 +92,7 @@ public interface IScmOrderBiz {
      * @param orderInfo
      * @return
      */
-    ResponseAck<String> reciveChannelOrder(String orderInfo);
+    ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo);
 
     /**
      * 查询京东物流信息
