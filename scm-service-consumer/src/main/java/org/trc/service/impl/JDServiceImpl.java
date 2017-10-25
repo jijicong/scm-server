@@ -231,6 +231,47 @@ public class JDServiceImpl implements IJDService {
         return responseAck;
     }
 
+    /*public ReturnTypeDO checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page){
+        AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
+        AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
+        AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
+        Map<String, Object> map = BeanToMapUtil.convertBeanToMap(page);
+        map.putAll(BeanToMapUtil.convertBeanToMap(queryModel));
+        ReturnTypeDO<Pagenation<JdBalanceDetail>> returnTypeDO = new ReturnTypeDO<Pagenation<JdBalanceDetail>>();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getCheckOrderDetailUrl();
+            response = HttpClientUtil.httpGetRequest(url, map);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                AppResult appResult = jbo.toJavaObject(AppResult.class);
+                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
+                    page = jbo.getJSONObject("result").toJavaObject(Pagenation.class);
+                    List<JdBalanceDetail> balanceDetails = new ArrayList<JdBalanceDetail>();
+                    for(Object obj: page.getResult()){
+                        JSONObject bo = (JSONObject)obj;
+                        JdBalanceDetail detail = (JdBalanceDetail)bo.toJavaObject(JdBalanceDetail.class);
+                        detail.setAmount(new Double(CommonUtil.getMoneyYuan(detail.getAmount())));
+                        balanceDetails.add(detail);
+                    }
+                    page.setResult(balanceDetails);
+                    returnTypeDO.setSuccess(true);
+                    returnTypeDO.setResult(page);
+                }
+                returnTypeDO.setResultMessage(appResult.getDatabuffer());
+            }else {
+                returnTypeDO.setResultMessage("调用对账明细接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用对账明细服务异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }*/
+
+    @Override
     public ReturnTypeDO getAllTreadType(){
         ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
         returnTypeDO.setSuccess(false);
