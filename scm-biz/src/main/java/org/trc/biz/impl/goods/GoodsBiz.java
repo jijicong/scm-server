@@ -2060,18 +2060,24 @@ public class GoodsBiz implements IGoodsBiz {
                     ids.add(String.valueOf(newItemSku.getId()));
                     logInfoService.recordLogs(new ExternalItemSku(), LogInfoBiz.ADMIN_SIGN,
                             LogOperationEnum.SYNCHRONIZE.getMessage(), "", null,ids);
+                    boolean isLog = false;
                     //记录改动日志
                     if (!StringUtils.equals(oldItemSku.getState(),newItemSku.getState())){
+                        isLog = true;
                         logInfoService.recordLogs(new ExternalItemSku(),newItemSku.getSupplierName(),
                                 LogOperationEnum.RENEWAL.getMessage(), "商品状态由"+StateEnum.getStateEnumByCode(oldItemSku.getState()).getName()+"修改为"+StateEnum.getStateEnumByCode(newItemSku.getState()).getName(), null,ids);
+
                     }
                     if(oldItemSku.getSupplyPrice().longValue() != newItemSku.getSupplyPrice().longValue()){
+                        isLog = true;
                         logInfoService.recordLogs(new ExternalItemSku(), newItemSku.getSupplierName(),
                                 LogOperationEnum.RENEWAL.getMessage(), "供货价由"+oldItemSku.getSupplyPrice()+"修改为"+newItemSku.getSupplyPrice(), null,ids);
                     }
                     if(StringUtils.equals(externalItemSku.getUpdateFlag(),ZeroToNineEnum.ONE.getCode())){
-                        logInfoService.recordLogs(new ExternalItemSku(), externalItemSku.getSupplierName(),
-                                LogOperationEnum.RENEWAL.getMessage(), "", null,ids);
+                        if (!isLog){
+                            logInfoService.recordLogs(new ExternalItemSku(), externalItemSku.getSupplierName(),
+                                    LogOperationEnum.RENEWAL.getMessage(), "", null,ids);
+                        }
                     }
                 }catch (Exception e){
                     log.error("日志记录失败");
