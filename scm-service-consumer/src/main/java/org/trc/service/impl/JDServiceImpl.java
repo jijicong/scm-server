@@ -271,6 +271,7 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }*/
 
+    @Override
     public ReturnTypeDO getAllTreadType(){
         ReturnTypeDO<List> returnTypeDO = new ReturnTypeDO<List>();
         returnTypeDO.setSuccess(false);
@@ -501,6 +502,7 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+    @Override
     public ReturnTypeDO getOperateState(Long id){
         ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         Map<String, Object> map = new HashedMap();
@@ -532,6 +534,7 @@ public class JDServiceImpl implements IJDService {
     }
 
 
+    @Override
     public ReturnTypeDO statisticsRecord(BalanceDetailDO queryModel){
         ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         returnTypeDO.setSuccess(false);

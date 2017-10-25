@@ -256,9 +256,10 @@ public class JingDongBizImpl implements IJingDongBiz {
     @Override
     public Response operateRecord(OperateForm orderDetail) throws Exception{
         try{
-            if (orderDetail.getOperate() == OperateEnum.HANDLE.getCode()){
-                if (StringUtils.isBlank(orderDetail.getRemark()))
-                return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_REMARK_NOT_NULL_EXCEPTION.getCode()),ExceptionEnum.JING_DONG_REMARK_NOT_NULL_EXCEPTION.getMessage());
+            if (orderDetail.getOperate().equals(OperateEnum.HANDLE.getCode())){
+                if (StringUtils.isBlank(orderDetail.getRemark())) {
+                    return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_REMARK_NOT_NULL_EXCEPTION.getCode()), ExceptionEnum.JING_DONG_REMARK_NOT_NULL_EXCEPTION.getMessage());
+                }
             }
             AssertUtil.notNull(orderDetail.getId(), "操作参数id不能为空");
             ReturnTypeDO result = ijdService.operateRecord(orderDetail);
@@ -284,6 +285,7 @@ public class JingDongBizImpl implements IJingDongBiz {
         }
     }
 
+    @Override
     public Response statisticsRecord(BalanceDetailDO queryModel) throws Exception{
         try{
             ReturnTypeDO result = ijdService.statisticsRecord(queryModel);
