@@ -12,8 +12,8 @@
             channel_code="QD001"
             platform_code="QD001"
             platform_type="wap"
-            warehouse_id=""
-            warehouse_name=""
+            warehouse_id="*"
+            warehouse_name="*"
             user_id="5"
             status="1"
             supplier_order_status="1"
@@ -32,8 +32,8 @@
             update_time="2017/10/18 18:55"
             consign_time="0/0/0000 00:00:00"
             pay_time="2017/10/17 10:22"
-            is_cancel=""
-            old_supplier_order_status=""
+            is_cancel="*"
+            old_supplier_order_status="*"
     />
 
     <warehouse_order
@@ -48,11 +48,11 @@
             channel_code="QD001"
             platform_code="QD001"
             platform_type="wap"
-            warehouse_id=""
-            warehouse_name=""
+            warehouse_id="*"
+            warehouse_name="*"
             user_id="10"
             status="1"
-            supplier_order_status="3"
+            supplier_order_status="1"
             order_type="1"
             items_num="3"
             adjust_fee="0.000"
@@ -68,7 +68,7 @@
             update_time="2017/10/18 18:55"
             consign_time="0/0/0000 00:00:00"
             pay_time="2017/10/17 10:22"
-            is_cancel=""
-            old_supplier_order_status=""
+            is_cancel="*"
+            old_supplier_order_status="*"
     />
 </dataset>

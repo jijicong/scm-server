@@ -3,6 +3,7 @@ package org.trc.dbUnit.order;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang3.StringUtils;
+import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.dbUnit.order.form.*;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.service.BaseTest;
+import org.trc.util.AssertUtil;
+import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
 
 import java.util.ArrayList;
@@ -25,6 +29,11 @@ public class OrderDbUnit extends BaseTest{
 
     @Autowired
     private IScmOrderBiz scmOrderBiz;
+
+    private static final String TABLE_PLATFORM_ORDER= "platform_order";
+    private static final String TABLE_SHOP_ORDER= "shop_order";
+    private static final String TABLE_ORDER_ITEM_ORDER= "order_item";
+    private static final String TABLE_WAREHOUSE_ORDER= "warehouse_order";
 
 
     @Test
@@ -46,7 +55,41 @@ public class OrderDbUnit extends BaseTest{
         prepareData(conn, "order/preInsertSystemConfig.xml");
         prepareData(conn, "order/preInsertExternalItemSku.xml");
         //测试接收渠道订单
-        scmOrderBiz.reciveChannelOrder(createOrderInfo());
+        ResponseAck<List<WarehouseOrder>> responseAck = scmOrderBiz.reciveChannelOrder(createOrderInfo());
+        List<WarehouseOrder> lyWarehouseOrders = (List<WarehouseOrder>)responseAck.getData();
+        AssertUtil.isTrue(lyWarehouseOrders.size() == 1, "测试方法testReciveChannelOrder返回粮油订单结果不等于1");
+        /**
+         * 校验平台订单数据
+         */
+        ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertPlatformOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_PLATFORM_ORDER,"select * from platform_order",expResult,conn);
+        /**
+         * 校验店铺订单数据
+         */
+        ReplacementDataSet expResult2 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertShopOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult2.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SHOP_ORDER,"select * from shop_order",expResult2,conn);
+        /**
+         * 校验仓库订单数据
+         */
+        ReplacementDataSet expResult3 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertWarehouseOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult3.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult3,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult4 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertOrderItem.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult4.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
     }
 
 
