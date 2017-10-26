@@ -18,9 +18,7 @@ ALTER table warehouse_order MODIFY supplier_order_status varchar(2)  NULL DEFAUL
 ALTER table supplier_order_info MODIFY supplier_order_status varchar(2)  NULL DEFAULT NULL COMMENT '供应商订单状态:1-待发送供应商,2-供应商下单异常,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消';
 ALTER table supplier_order_info add old_supplier_order_status varchar(2) NULL  COMMENT '老供应商订单状态:1-待发送供应商,2-供应商下单异常,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消';
 
-alter table external_item_sku add `notify_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最近同步时间';
 
-alter table external_item_sku add `min_buy_count` int(11) DEFAULT NULL COMMENT '最小购买数量';
 
 
 DELETE FROM dict WHERE type_code = 'supplierOrderStatus';
@@ -50,7 +48,6 @@ INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`
 INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (445, 'orderDeliverStatus', '部分发货', '6', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:34:55', '2017-10-16 18:34:55');
 INSERT INTO `dict` (`id`, `type_code`, `name`, `value`, `is_valid`, `is_deleted`, `create_operator`, `create_time`, `update_time`) VALUES (446, 'orderDeliverStatus', '已取消', '7', '1', '0', 'E2E4BDAD80354EFAB6E70120C271968C', '2017-10-16 18:35:05', '2017-10-16 18:35:05');
 
-INSERT INTO `system_config` ( `code`, `name`, `type`, `content`, `description`, `create_operator`, `create_time`, `update_time`) VALUES ( 'channelCodeCheck', '渠道编码校验', '', '0', '0-不校验,1-校验', '', '2017-10-11 15:41:00', '2017-10-12 14:53:03');
 
 
 INSERT  INTO `acl_resource`  (`id`, `code`, `name`, `url`, `method`, `parent_id`, `belong`, `type`, `create_operator`, `is_deleted`, `create_time`, `update_time`) VALUES (234, 204020105, '供应商订单导出', 'order/exportSupplierOrder', 'GET', 20402, 2, '1', 'admin', '0', '2017-10-12 20:31:48', '2017-10-12 20:31:48');
