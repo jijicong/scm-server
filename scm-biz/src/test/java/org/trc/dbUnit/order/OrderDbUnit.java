@@ -77,19 +77,19 @@ public class OrderDbUnit extends BaseTest{
         /**
          * 校验仓库订单数据
          */
-        expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertWarehouseOrder.xml"));
+        ReplacementDataSet expResult3 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertWarehouseOrder.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
-        expResult.addReplacementObject("[null]", null);
+        expResult3.addReplacementObject("*", null);
         //从数据库中查出数据与期望结果作比较
-        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult,conn);
+        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult3,conn);
         /**
          * 校验订单商品数据
          */
-        expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertOrderItem.xml"));
+        ReplacementDataSet expResult4 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertOrderItem.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
-        expResult.addReplacementObject("[null]", null);
+        expResult4.addReplacementObject("*", null);
         //从数据库中查出数据与期望结果作比较
-        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult,conn);
+        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
     }
 
 
