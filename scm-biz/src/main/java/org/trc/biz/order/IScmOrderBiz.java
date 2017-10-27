@@ -9,6 +9,7 @@ import org.trc.form.order.PlatformOrderForm;
 import org.trc.form.order.ShopOrderForm;
 import org.trc.form.order.SupplierOrderCancelForm;
 import org.trc.form.order.WarehouseOrderForm;
+import org.trc.service.IJDService;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
@@ -122,6 +123,8 @@ public interface IScmOrderBiz {
      * @return
      */
     ResponseAck<String> supplierCancelOrder(String orderInfo);
+
+    public void setIjdService(IJDService ijdService);
 
 
 }
