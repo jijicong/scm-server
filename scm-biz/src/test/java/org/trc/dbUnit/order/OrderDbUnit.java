@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,28 +13,33 @@ import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.dbUnit.order.form.*;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.service.BaseTest;
+import org.trc.service.IJDService;
+import org.trc.service.order.IWarehouseOrderService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by hzwdx on 2017/8/29.
  */
 public class OrderDbUnit extends BaseTest{
 
-    private Logger log = LoggerFactory.getLogger(OrderDbUnit.class);
-
     @Autowired
     private IScmOrderBiz scmOrderBiz;
+    @Autowired
+    private IWarehouseOrderService warehouseOrderService;
 
     private static final String TABLE_PLATFORM_ORDER= "platform_order";
     private static final String TABLE_SHOP_ORDER= "shop_order";
     private static final String TABLE_ORDER_ITEM_ORDER= "order_item";
     private static final String TABLE_WAREHOUSE_ORDER= "warehouse_order";
+    private static final String TABLE_SUPPLIER_ORDER_INFO= "supplier_order_info";
 
 
     @Test
@@ -90,6 +96,122 @@ public class OrderDbUnit extends BaseTest{
         expResult4.addReplacementObject("*", null);
         //从数据库中查出数据与期望结果作比较
         assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
+    }
+
+    /**
+     * 粮油订单下单成功
+     * @throws Exception
+     */
+    @Test
+    public void testSubmitLiangYouOrders_success() throws Exception{
+        //删除原数据
+        execSql(conn,"delete from platform_order");
+        execSql(conn,"delete from shop_order");
+        execSql(conn,"delete from order_item");
+        execSql(conn,"delete from warehouse_order");
+        execSql(conn,"delete from supplier_order_info");
+        execSql(conn,"delete from supplier_order_logistics");
+        execSql(conn,"delete from external_item_sku");
+        execSql(conn,"delete from log_information");
+        execSql(conn,"delete from order_flow");
+        execSql(conn,"delete from request_flow");
+        //从xml文件读取数据并插入数据库中
+        prepareData(conn, "order/submitOrder/preInsertPlatformOrder.xml");
+        prepareData(conn, "order/submitOrder/preInsertShopOrder.xml");
+        prepareData(conn, "order/submitOrder/preInsertWarehouseOrder.xml");
+        prepareData(conn, "order/submitOrder/preInsertOrderItem.xml");
+        prepareData(conn, "order/preInsertExternalItemSku.xml");
+
+        //mock调用外部接口提交粮油订单
+        mockSubmitLiangYouOrder(scmOrderBiz);
+
+        String PLATFORM_ORDER_CODE = "1608201657240531";
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setPlatformOrderCode(PLATFORM_ORDER_CODE);
+        warehouseOrder.setSupplierCode(SupplyConstants.Order.SUPPLIER_LY_CODE);
+        List<WarehouseOrder> warehouseOrderList = warehouseOrderService.select(warehouseOrder);
+        AssertUtil.notEmpty(warehouseOrderList, String.format("单元测试testSubmitLiangYouOrders_success方法中根据平台订单号%s和供应商编码%s查询仓库级订单信息为空", PLATFORM_ORDER_CODE, SupplyConstants.Order.SUPPLIER_LY_CODE));
+        //scmOrderBiz.submitLiangYouOrders(warehouseOrderList);
+        for(WarehouseOrder warehouseOrder2: warehouseOrderList){
+            scmOrderBiz.submitLiangYouOrder(warehouseOrder2.getWarehouseOrderCode());
+        }
+        /**
+         * 校验店铺订单数据
+         */
+        ReplacementDataSet expResult2 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/submitOrder/expInsertShopOrder_ly.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult2.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SHOP_ORDER,"select * from shop_order",expResult2,conn);
+        /**
+         * 校验仓库订单数据
+         */
+        ReplacementDataSet expResult3 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/submitOrder/expInsertWarehouseOrder_ly.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult3.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult3,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult4 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/submitOrder/expInsertOrderItem_ly.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult4.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
+        /**
+         * 校验订单商品数据
+         */
+        /*ReplacementDataSet expResult5 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/submitOrder/expInsertSupplierOrderInfo_ly.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult5.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);*/
+
+    }
+
+    /**
+     * mock调用外部接口提交粮油订单
+     * @param scmOrderBiz
+     */
+    private void mockSubmitLiangYouOrder(IScmOrderBiz scmOrderBiz){
+        IJDService ijdService = mock(IJDService.class);
+        scmOrderBiz.setIjdService(ijdService);
+        LiangYouSupplierOrder liangYouSupplierOrder = new LiangYouSupplierOrder();
+        ResponseAck responseAck = new ResponseAck();
+        responseAck.setCode(ResponseAck.SUCCESS_CODE);
+        String submitOrderReturn = "{\n" +
+                "        \"orderType\": \"1\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201710180000530\",\n" +
+                "        \"order\": [\n" +
+                "            {\n" +
+                "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
+                "                        \"num\": 2,\n" +
+                "                        \"skuCode\": \"310516625460002590\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"state\": \"200\",\n" +
+                "                \"message\": \"子订单下单成功\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\n" +
+                "                        \"num\": 1,\n" +
+                "                        \"skuCode\": \"1075510226\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"state\": \"200\",\n" +
+                "                \"message\": \"子订单下单成功\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }";
+        responseAck.setData(submitOrderReturn);
+        when(ijdService.submitLiangYouOrder(any(liangYouSupplierOrder.getClass()))).thenReturn(responseAck);
     }
 
 

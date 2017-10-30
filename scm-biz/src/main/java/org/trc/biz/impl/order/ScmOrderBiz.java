@@ -3065,5 +3065,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return null;
     }
 
-
+    @Override
+    public void setIjdService(IJDService ijdService) {
+        this.ijdService = ijdService;
+    }
 }

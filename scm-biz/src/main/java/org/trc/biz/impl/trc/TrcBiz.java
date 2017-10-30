@@ -1568,6 +1568,12 @@ public class TrcBiz implements ITrcBiz {
         systemConfig=systemConfigService.selectOne(systemConfig);
         if (StringUtils.equals(systemConfig.getContent(), ZeroToNineEnum. ONE.getCode())){
             AssertUtil.notBlank(channelCode,"channelCode不能为空!");
+            if (StringUtils.isNotBlank(channelCode)){
+                Channel channel = new Channel();
+                channel.setCode(channelCode);
+                channel=  channelService.selectOne(channel);
+                AssertUtil.notNull(channel,"渠道编码对应的渠道不存在");
+            }
         }
     }
 
