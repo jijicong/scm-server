@@ -179,7 +179,7 @@ public class JingDongBizImpl implements IJingDongBiz {
     public Response exportOrderDetail(OrderDetailForm queryModel) throws Exception{
         try{
             List<OrderDetailDTO> result = ijdService.exportOrderDetail(queryModel);
-            CellDefinition operate = new CellDefinition("operate", "操作", CellDefinition.TEXT, 4000);
+            CellDefinition operate = new CellDefinition("operate", "了结状态", CellDefinition.TEXT, 4000);
             CellDefinition errMsg = new CellDefinition("errMsg", "异常说明", CellDefinition.TEXT, 4000);
             CellDefinition channelOrderSubmitTime = new CellDefinition("channelOrderSubmitTime", "渠道订单提交时间", CellDefinition.TEXT, 6000);
             CellDefinition jingdongOrderCreateTime = new CellDefinition("jingdongOrderCreateTime", "京东订单生成时间", CellDefinition.TEXT, 6000);
