@@ -167,7 +167,6 @@ public class OrderDbUnit extends BaseTest{
         expResult5.addReplacementObject("*", null);
         //从数据库中查出数据与期望结果作比较
         assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);*/
-
     }
 
     /**
