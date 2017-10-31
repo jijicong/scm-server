@@ -434,7 +434,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     //保存请求流水
                     requestFlowBiz.saveRequestFlow(JSONObject.toJSON(jingDongOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.JINGDONG, requestFlowTypeEnum, responseAck, RequestFlowConstant.GYL);
                     //记录操作日志
-                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
+                    //logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
                 }else if(StringUtils.equals(JD_BALANCE_NOT_ENOUGH, supplierOrderReturn.getState())){//京东下单余额不足
                     //TODO 这里以后可能会发起重新下单逻辑
                     requestFlowTypeEnum = RequestFlowTypeEnum.JD_BALANCE_NOT_ENOUGH;
