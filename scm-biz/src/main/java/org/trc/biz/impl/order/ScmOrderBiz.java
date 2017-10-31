@@ -182,6 +182,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String ZERO_MONEY_STR = "0.000";
     //下单成功日志信息
     public final static String ORDER_SUCCESS_INFO = "下单成功";
+    //下单失败日志信息
+    public final static String ORDER_FAILURE_INFO = "下单失败";
+    //下单成功日志信息
+    public final static String ORDER_CANCEL_INFO = "已取消";
 
 
     @Override
@@ -499,46 +503,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @return
      */
     private String getOrderExceptionMessage(List<SupplierOrderInfo> supplierOrderInfoList){
-        //下单成功sku
-        String successSku = "";
-        //下单失败sku
-        String failureSku = "";
-        String failureMsg = "";
-        //取消sku
-        String cancelSku = "";
-        String cancelMsg = "";
+        StringBuilder sb = new StringBuilder();
         for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
             List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
             if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
                     StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
                     StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
-                    successSku += skuInfo.getSkuCode() + SupplyConstants.Symbol.COMMA;
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_SUCCESS_INFO).append(HTML_BR);
                 }
             }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
-                    failureSku += skuInfo.getSkuCode() + SupplyConstants.Symbol.COMMA;
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_FAILURE_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
                 }
-                failureMsg += supplierOrderInfo.getMessage() + SupplyConstants.Symbol.SEMICOLON;
             }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
-                    cancelSku += skuInfo.getSkuCode() + SupplyConstants.Symbol.COMMA;
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
                 }
-                cancelMsg += supplierOrderInfo.getMessage() + SupplyConstants.Symbol.SEMICOLON;
             }
-        }
-        StringBuilder sb = new StringBuilder();
-        if(StringUtils.isNotBlank(successSku)){
-            successSku = successSku.substring(0, successSku.length()-1);
-            sb.append(successSku).append(":").append(ORDER_SUCCESS_INFO).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
-        }
-        if(StringUtils.isNotBlank(failureSku)){
-            failureSku = failureSku.substring(0, failureSku.length()-1);
-            sb.append(failureSku).append(":").append(failureMsg).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
-        }
-        if(StringUtils.isNotBlank(cancelSku)){
-            cancelSku = cancelSku.substring(0, cancelSku.length()-1);
-            sb.append(cancelSku).append(":").append(cancelMsg).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
         }
         return sb.toString();
     }
