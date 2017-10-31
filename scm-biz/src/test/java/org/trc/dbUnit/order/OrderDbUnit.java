@@ -162,11 +162,11 @@ public class OrderDbUnit extends BaseTest{
         /**
          * 校验订单商品数据
          */
-        /*ReplacementDataSet expResult5 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/submitOrder/expInsertSupplierOrderInfo_ly.xml"));
+        ReplacementDataSet expResult5 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/submitOrder/expInsertSupplierOrderInfo_ly.xml"));
         //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
         expResult5.addReplacementObject("*", null);
         //从数据库中查出数据与期望结果作比较
-        assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);*/
+        //assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);
     }
 
     /**
