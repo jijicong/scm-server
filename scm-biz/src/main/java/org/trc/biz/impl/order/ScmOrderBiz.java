@@ -467,9 +467,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         //订单提交异常记录日志
-        if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        /*if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ORDER_EXCEPTION.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        }else */if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ORDER_FAILURE.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
         }
         if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
@@ -530,15 +530,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         StringBuilder sb = new StringBuilder();
         if(StringUtils.isNotBlank(successSku)){
             successSku = successSku.substring(0, successSku.length()-1);
-            sb.append(successSku).append(":").append(ORDER_SUCCESS_INFO).append(HTML_BR);
+            sb.append(successSku).append(":").append(ORDER_SUCCESS_INFO).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
         }
         if(StringUtils.isNotBlank(failureSku)){
             failureSku = failureSku.substring(0, failureSku.length()-1);
-            sb.append(failureSku).append(":").append(failureMsg).append(HTML_BR);
+            sb.append(failureSku).append(":").append(failureMsg).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
         }
         if(StringUtils.isNotBlank(cancelSku)){
             cancelSku = cancelSku.substring(0, cancelSku.length()-1);
-            sb.append(cancelSku).append(":").append(cancelMsg).append(HTML_BR);
+            sb.append(cancelSku).append(":").append(cancelMsg).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
         }
         return sb.toString();
     }
@@ -669,9 +669,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);*/
         }
         //订单提交异常记录日志
-        if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        /*if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_EXCEPTION.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        }else */if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             log.error(responseAck.getMessage());
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), getOrderExceptionMessage(supplierOrderInfoList),null);
         }
@@ -757,10 +757,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }/*else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_FAILURE;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            logOperationEnum = LogOperationEnum.ORDER_CANCEL;
-            remark = SUPPLIER_PLATFORM_CANCEL_ORDER;
-        }*/else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        }*/else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
+            logOperationEnum = LogOperationEnum.WAIT_FOR_DELIVER;
+        }else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.PARTS_DELIVER;
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ALL_DELIVER;
