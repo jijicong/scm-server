@@ -18,7 +18,8 @@ public class SupplyItemsForm extends QueryModel{
     @QueryParam("skuName")
     @Length(max = 255, message = "商品名称长度不能超过255个")
     private String skuName;//商品名称
-
+    @QueryParam("brand")
+    private String brand;
     public String getSupplierCode() {
         return supplierCode;
     }
@@ -43,4 +44,11 @@ public class SupplyItemsForm extends QueryModel{
         this.skuName = skuName;
     }
 
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
 }
