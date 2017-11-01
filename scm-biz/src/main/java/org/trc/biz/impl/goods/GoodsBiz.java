@@ -2107,7 +2107,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#supplierForm.toString()",isList=true)
+//    @Cacheable(key="#supplierForm.toString()",isList=true)
     public List<Supplier> querySuppliers(SupplierForm supplierForm,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(supplierForm, supplier);
