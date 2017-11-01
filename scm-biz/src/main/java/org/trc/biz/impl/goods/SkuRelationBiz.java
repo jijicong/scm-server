@@ -138,6 +138,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
             criteria2.andEqualTo("status", ZeroToNineEnum.TWO.getCode());
                 criteria2.andEqualTo("channelCode",channelCode);
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            AssertUtil.notEmpty(supplierApplyList,"当前渠道没有一件代发供应商!");
             List<String>  supplierInterfaceIdList = new ArrayList<>();
             for (SupplierApply supplierApply:supplierApplyList) {
                 Supplier supplier = new Supplier();
