@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
-public class DeliverPackageForm {
+import java.io.Serializable;
+
+public class DeliverPackageForm implements Serializable{
 
     /**
      *物流公司,当字段type=0-物流信息时不为空
