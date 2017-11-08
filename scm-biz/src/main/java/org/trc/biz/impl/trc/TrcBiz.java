@@ -395,6 +395,8 @@ public class TrcBiz implements ITrcBiz {
                 skuRelationList.add(skuRelation);
             }
         }
+        List<ExternalItemSku> externalItemSkuList2 = new ArrayList<>(externalItemSkuList);
+        List<ExternalItemSku> oldExternalItemSkuList2 = new ArrayList<>(oldExternalItemSkuList);
         if(skuRelationList.size() > 0){
             for(ExternalItemSku externalItemSku: oldExternalItemSkuList){
                 boolean flag = false;
@@ -405,7 +407,7 @@ public class TrcBiz implements ITrcBiz {
                     }
                 }
                 if(!flag){
-                    oldExternalItemSkuList.remove(externalItemSku);
+                    oldExternalItemSkuList2.remove(externalItemSku);
                 }
             }
             for(ExternalItemSku externalItemSku: externalItemSkuList){
@@ -417,14 +419,14 @@ public class TrcBiz implements ITrcBiz {
                     }
                 }
                 if(!flag){
-                    externalItemSkuList.remove(externalItemSku);
+                    externalItemSkuList2.remove(externalItemSku);
                 }
             }
         }else{
             return toGlyResult;
         }
-        for(ExternalItemSku externalItemSku: externalItemSkuList){
-            for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
+        for(ExternalItemSku externalItemSku: externalItemSkuList2){
+            for(ExternalItemSku externalItemSku2: oldExternalItemSkuList2){
                 if(StringUtils.equals(externalItemSku.getSkuCode(), externalItemSku2.getSkuCode())){
                 	// 以下字段变更需要通知泰然城
                     if(getLongVal(externalItemSku.getSupplierPrice()) != getLongVal(externalItemSku2.getSupplierPrice()) ||
@@ -465,19 +467,19 @@ public class TrcBiz implements ITrcBiz {
         //保存请求流水
         requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
         if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品%s更新通知渠道失败,渠道返回失败信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道失败,渠道返回失败信息:%s", JSON.toJSONString(oldExternalItemSkuList2), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_FAILED.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道超时,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList2), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品%s更新通知渠道成功,渠道返回信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道成功,渠道返回信息:%s", JSON.toJSONString(oldExternalItemSkuList2), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_SUCCESS.getCode());
         }
         if(StringUtils.equals(SuccessFailureEnum.ERROR.getCode(), toGlyResultDO.getStatus())){
-            logger.error(String.format("代发商品%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList), toGlyResultDO.getMsg()));
+            logger.error(String.format("代发商品%s更新通知渠道错误,渠道返回错误信息:%s", JSON.toJSONString(oldExternalItemSkuList2), toGlyResultDO.getMsg()));
             requestFlowUpdate.setStatus(RequestFlowStatusEnum.SEND_ERROR.getCode());
         }
         int count = requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
