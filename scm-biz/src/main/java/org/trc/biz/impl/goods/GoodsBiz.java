@@ -2071,7 +2071,7 @@ public class GoodsBiz implements IGoodsBiz {
                     if(oldItemSku.getSupplyPrice().longValue() != newItemSku.getSupplyPrice().longValue()){
                         isLog = true;
                         logInfoService.recordLogs(new ExternalItemSku(), newItemSku.getSupplierName(),
-                                LogOperationEnum.RENEWAL.getMessage(), "供货价由"+oldItemSku.getSupplyPrice()+"修改为"+newItemSku.getSupplyPrice(), null,ids);
+                                LogOperationEnum.RENEWAL.getMessage(), "供货价由"+CommonUtil.fenToYuan(oldItemSku.getSupplyPrice())+"修改为"+CommonUtil.fenToYuan(newItemSku.getSupplyPrice()), null,ids);
                     }
                     if(StringUtils.equals(externalItemSku.getUpdateFlag(),ZeroToNineEnum.ONE.getCode())){
                         if (!isLog){
