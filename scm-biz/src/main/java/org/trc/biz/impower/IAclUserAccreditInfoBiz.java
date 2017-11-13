@@ -31,7 +31,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param page 分页信息
      * @return 分页信息及当前页面的数据
      */
-    Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
+//    Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
 
 
     /**
