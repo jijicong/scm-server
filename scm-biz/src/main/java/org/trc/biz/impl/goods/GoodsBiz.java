@@ -18,6 +18,7 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.impl.supplier.SupplierBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
@@ -46,6 +47,7 @@ import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
+import org.trc.service.IQinniuService;
 import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IExternalItemSkuService;
@@ -65,6 +67,8 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -73,6 +77,9 @@ import java.util.*;
 public class GoodsBiz implements IGoodsBiz {
 
     private Logger  log = LoggerFactory.getLogger(GoodsBiz.class);
+
+    private final static int EXECUTOR_SIZE = 10;
+    ExecutorService fixedThreadPool = Executors.newFixedThreadPool(EXECUTOR_SIZE);
 
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
@@ -100,6 +107,8 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String LY_SUPPLIER_CODE = "LY";
     //代发商品名称中替换&符号的字符串
     private static final String AND_QUOT_REPLACE = "__111__222__";
+    //代发商品图片七牛路径
+    public static final String EXTERNAL_QINNIU_PATH = "external";
 
 
     @Autowired
@@ -133,8 +142,6 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private IExternalItemSkuService externalItemSkuService;
     @Autowired
-    private IConfigBiz configBiz;
-    @Autowired
     private IJDService jdService;
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
@@ -148,6 +155,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ISupplierService supplierService;
     @Autowired
     private ISupplierApplyService supplierApplyService;
+    @Autowired
+    private IQinniuBiz qinniuBiz;
 
 
     @Override
@@ -1909,6 +1918,40 @@ public class GoodsBiz implements IGoodsBiz {
         //记录操作日志
         logInfoService.recordLogs(new ExternalItemSku(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.ADD.getMessage(), null, null, newIds);
+    }
+
+    /**
+     * 设置代发商品图片的七牛存储路径
+     * @param externalItemSkuList
+     */
+    private void setExternalPictureQinniuPath(List<ExternalItemSku> externalItemSkuList){
+        Map<String, String> map = new HashMap<>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            if(StringUtils.isNotBlank(externalItemSku.getMainPictrue())){
+                String[] mainPics = externalItemSku.getMainPictrue().split(SupplyConstants.Symbol.COMMA);
+                for(String mainPicUrl: mainPics){
+                    //文件类型
+                    String suffix = mainPicUrl.substring(mainPicUrl.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+                    String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
+                    //map.put(String.valueOf(System.nanoTime()))
+                }
+            }
+        }
+    }
+
+
+
+
+    /**
+     * 上传代发商品图片到七牛
+     * @param externalItemSkuList
+     */
+    private void uploadExternalPictureToQinniu(List<ExternalItemSku> externalItemSkuList){
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+
+        }
+
+
     }
 
     /**
