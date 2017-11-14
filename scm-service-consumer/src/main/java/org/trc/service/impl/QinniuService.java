@@ -157,7 +157,7 @@ public class QinniuService implements IQinniuService {
 
     @Override
     public FetchRet fetch(String url, String fileName) throws Exception {
-        return getBucketManager().fetch(url, fileName);
+        return getBucketManager().fetch(url, qinniuForm.getBucket(), fileName);
     }
 
     private String[] getDeleteFileNames(String[] fileNames, BaseThumbnailSize baseThumbnailSize) {
