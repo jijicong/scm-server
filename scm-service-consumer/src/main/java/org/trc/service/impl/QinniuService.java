@@ -8,6 +8,7 @@ import com.qiniu.storage.Configuration;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.BatchStatus;
 import com.qiniu.storage.model.DefaultPutRet;
+import com.qiniu.storage.model.FetchRet;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 import com.qiniu.util.UrlSafeBase64;
@@ -152,6 +153,11 @@ public class QinniuService implements IQinniuService {
         map.put("fialure", fialure);
         map.put("msg", builder.toString());
         return map;
+    }
+
+    @Override
+    public FetchRet fetch(String url, String fileName) throws Exception {
+        return getBucketManager().fetch(url, fileName);
     }
 
     private String[] getDeleteFileNames(String[] fileNames, BaseThumbnailSize baseThumbnailSize) {
