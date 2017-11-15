@@ -30,7 +30,7 @@ public class ExternalPicture  implements Serializable {
     private String supplierSkuCode;
 
     //供应商编号
-    private String status;
+    private Integer status;
 
     //资源url路径
     private String url;
@@ -78,11 +78,11 @@ public class ExternalPicture  implements Serializable {
         this.supplierSkuCode = supplierSkuCode;
     }
 
-    public String getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
