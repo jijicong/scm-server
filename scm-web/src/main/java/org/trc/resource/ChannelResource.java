@@ -69,6 +69,14 @@ public class ChannelResource {
         return ResultUtil.createSuccessResult("查询渠道成功", channelBiz.findChannelById(id));
     }
 
+    //根据id查询,编辑页面回写数据
+    @GET
+    @Path(SupplyConstants.Channel.CHANNEL_ID_SELL_CHANNEL+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findChannelByIdForUpdate(@PathParam("id") Long id){
+        return ResultUtil.createSuccessResult("查询业务线信息成功", channelBiz.queryChannelForUpdate(id));
+    }
+
     //根据id查询已关联的销售渠道
     @GET
     @Path(SupplyConstants.Channel.CHANNEL_ID+"/{id}")
@@ -82,7 +90,7 @@ public class ChannelResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateChannel(@BeanParam  Channel channel,@Context ContainerRequestContext requestContext){
         channelBiz.updateChannel(channel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return  ResultUtil.createSuccessResult("修改渠道信息成功","");
+        return  ResultUtil.createSuccessResult("修改业务线信息成功","");
     }
 
     //渠道状态的修改
