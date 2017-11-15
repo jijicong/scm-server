@@ -40,7 +40,7 @@ public class ChannelResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response findChannelByName(@QueryParam("name") String name){
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
-        return  ResultUtil.createSuccessResult("查询渠道成功", channelBiz.findChannelByName(name)==null ? null :"1");
+        return  ResultUtil.createSuccessResult("查询业务线成功", channelBiz.findChannelByName(name)==null ? null :"1");
     }
 
     //渠道列表查询
@@ -48,7 +48,7 @@ public class ChannelResource {
     @Path(SupplyConstants.Channel.CHANNEL_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryChannels(@BeanParam ChannelForm channelForm) {
-        return  ResultUtil.createSuccessResult("查询渠道列表成功", channelBiz.queryChannels(channelForm));
+        return  ResultUtil.createSuccessResult("查询业务线列表成功", channelBiz.queryChannels(channelForm));
     }
 
     //保存渠道
@@ -66,7 +66,7 @@ public class ChannelResource {
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findChannelById(@PathParam("id") Long id){
-        return ResultUtil.createSuccessResult("查询渠道成功", channelBiz.findChannelById(id));
+        return ResultUtil.createSuccessResult("查询业务线成功", channelBiz.findChannelById(id));
     }
 
     //根据id查询,编辑页面回写数据
