@@ -7,11 +7,14 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
 /**
- * Created by sone on 2017/5/2.
+ *
+ * @author sone
+ * @date 2017/5/2
  */
 public class Channel extends BaseDO{
     @PathParam("id")
@@ -28,6 +31,13 @@ public class Channel extends BaseDO{
     @FormParam("remark")
     @Length(max = 1024,message = "渠道备注字母和数字不能超过1024个,汉字不能超过512个")
     private String remark;
+
+    /**
+     * 业务销售渠道
+     */
+    @Transient
+    @FormParam("sellChannel")
+    private String sellChannel;
 
 
     public String getRemark() {
@@ -60,5 +70,13 @@ public class Channel extends BaseDO{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSellChannel() {
+        return sellChannel;
+    }
+
+    public void setSellChannel(String sellChannel) {
+        this.sellChannel = sellChannel;
     }
 }

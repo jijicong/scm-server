@@ -1,7 +1,5 @@
 package org.trc.util;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.trc.domain.BaseDO;
 import org.trc.domain.util.ScmDO;
@@ -13,7 +11,9 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * Created by george on 2017/4/27.
+ *
+ * @author george
+ * @date 2017/4/27
  */
 public class ParamsUtil {
 
