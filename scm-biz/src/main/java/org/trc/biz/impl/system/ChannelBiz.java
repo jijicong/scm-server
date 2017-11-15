@@ -73,7 +73,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
-    @Cacheable(key = "#form+#page.pageNo+#page.pageSize" ,isList = true)
+    @Cacheable(key = "#form+#page.pageNo+#page.pageSize", isList = true)
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
@@ -140,7 +140,6 @@ public class ChannelBiz implements IChannelBiz {
 
     }
 
-
     public Channel findChannelByName(String name) {
 
         AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
@@ -151,7 +150,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    @Cacheable(key = "#channelForm",isList = true)
+    @Cacheable(key = "#channelForm", isList = true)
     public List<Channel> queryChannels(ChannelForm channelForm) {//查询有效的渠道
         Channel channel = new Channel();
         if (StringUtils.isEmpty(channelForm.getIsValid())) {

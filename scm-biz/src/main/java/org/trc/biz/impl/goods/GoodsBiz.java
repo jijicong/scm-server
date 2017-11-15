@@ -1688,7 +1688,6 @@ public class GoodsBiz implements IGoodsBiz {
             if (StringUtils.equals(queryModel.getQuerySource(),ZeroToNineEnum.ZERO.getCode())){
             criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
             }
-//            criteria2.andEqualTo("supplierKindCode",SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
             List<String>  supplierInterfaceIdList = new ArrayList<>();
             for (SupplierApply supplierApply:supplierApplyList) {
@@ -1708,8 +1707,11 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
             criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
         }
-        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+       /* if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
             criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
+        }*/
+        if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商sku编号 2.0新增
+            criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
         }
         if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
             criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
@@ -1717,7 +1719,17 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
-
+        //2.0新增条件最近更新时间
+        if (!StringUtils.isBlank(queryModel.getStartDate())) {
+            criteria.andGreaterThan("updateTime", queryModel.getStartDate());
+        }
+        if (!StringUtils.isBlank(queryModel.getEndDate())) {
+            criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndDate(),DateUtils.NORMAL_DATE_FORMAT,1)));
+        }
+        //2.0新增供应商商品状态
+        if (StringUtils.isNotBlank(queryModel.getState())) {//条形码
+            criteria.andEqualTo("state",queryModel.getState());
+        }
         example.orderBy("updateTime").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
         //setSupplierName(page.getResult());

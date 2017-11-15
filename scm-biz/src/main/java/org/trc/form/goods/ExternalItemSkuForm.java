@@ -13,9 +13,11 @@ import javax.ws.rs.QueryParam;
 public class ExternalItemSkuForm extends QueryModel{
     @QueryParam("supplierId")
     private Long supplierId;
+
     @QueryParam("supplierCode")
     @Length(max = 32, message = "供应商编号长度不能超过32个")
     private String supplierCode;
+
     @QueryParam("skuCode")
     @Length(max = 32, message = "商品SKU编号长度不能超过32个")
     private String skuCode;
@@ -36,6 +38,9 @@ public class ExternalItemSkuForm extends QueryModel{
     private String supplierSkuCode;
     @QueryParam("querySource")
     private String querySource;//0-商品查询 1-商品管理
+    @QueryParam("state")
+    private String state;//商品状态0-商品下架 1-商品上架
+
 
     public String getSupplierCode() {
         return supplierCode;
@@ -107,6 +112,14 @@ public class ExternalItemSkuForm extends QueryModel{
 
     public void setQuerySource(String querySource) {
         this.querySource = querySource;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     @Override
