@@ -133,65 +133,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         return page;
     }
 
-    @Override
-    public Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
-        TransportClient clientUtil = TransportClientUtil.getTransportClient();
-        HighlightBuilder hiBuilder = new HighlightBuilder();
-        hiBuilder.preTags("<b style=\"color: red\">");
-        hiBuilder.postTags("</b>");
-        //设置高亮字段
-        hiBuilder.fields().add(new HighlightBuilder.Field("name.pinyin"));
-        SearchRequestBuilder srb = clientUtil.prepareSearch("acl_user_accredit_info")//es表名
-                .highlighter(hiBuilder)
-                .setFrom(page.getStart())//第几个开始
-                .setSize(page.getPageSize());//长度
-        //查询条件
-        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        if (StringUtils.isNotBlank(form.getName())) {
-            QueryBuilder matchQuery = QueryBuilders.matchQuery("name.pinyin", form.getName());
-            queryBuilder.should(matchQuery);
-        }
-        if (StringUtils.isNotBlank(form.getPhone())) {
-            QueryBuilder filterBuilder = QueryBuilders.multiMatchQuery(form.getPhone(), "phone").
-                    type(MatchQuery.Type.PHRASE_PREFIX);
-            queryBuilder.should(filterBuilder);
-        }
-        if (StringUtils.isNotBlank(form.getIsValid())) {
-            QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", form.getIsValid());
-            queryBuilder.must(filterBuilder);
-        }
-        srb.setQuery(queryBuilder);
-        SearchResult searchResult;
-        try {
-            searchResult = pageNationService.resultES(srb, clientUtil);
-        } catch (Exception e) {
-            LOGGER.error("es查询失败" + e.getMessage(), e);
-            return page;
-        }
-        List<AclUserAccreditInfo> accreditInfoList = new ArrayList<>();
-        for (SearchHit searchHit : searchResult.getSearchHits()) {
-            AclUserAccreditInfo aclUserAccreditInfo = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), AclUserAccreditInfo.class);
-            for (Map.Entry<String, HighlightField> entry : searchHit.getHighlightFields().entrySet()) {
-                if ("name.pinyin".equals(entry.getKey())) {
-                    for (Text text : entry.getValue().getFragments()) {
-                        aclUserAccreditInfo.setHighLightName(text.string());
-                    }
-                }
-            }
-            accreditInfoList.add(aclUserAccreditInfo);
-        }
-        if (AssertUtil.collectionIsEmpty(accreditInfoList)) {
-            return page;
-        }
-        List<AclUserAddPageDate> pageDateRoleList = page.getResult();
-        userNameUtilService.handleUserName(accreditInfoList);
-        if (!AssertUtil.collectionIsEmpty(accreditInfoList)) {//1.按要求查处需要的授权用户
-            pageDateRoleList = handleRolesStr(accreditInfoList);
-        }
-        page.setTotalCount(searchResult.getCount());
-        page.setResult(pageDateRoleList);
-        return page;
-    }
+
 
     @Override
     public List<AclUserAccreditInfo> findPurchase(AclUserAccreditInfo aclUserAccreditInfo) {
@@ -280,7 +222,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     }
 
     /**
-     * 查询已启用的渠道
+     * 查询已启用的渠道(业务线)
      *
      * @return
      * @throws Exception
@@ -372,7 +314,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                 aclUserAccreditRoleRelation.setUserAccreditId(aclUserAccreditInfo.getId());
                 aclUserAccreditRoleRelation.setUserId(aclUserAccreditInfo.getUserId());
                 aclUserAccreditRoleRelation.setRoleId(roleIds[i]);
-                //aclUserAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 aclUserAccreditRoleRelation.setIsValid(aclUserAccreditInfo.getIsValid());
                 aclUserAccreditRoleRelation.setCreateOperator(aclUserAccreditInfo.getCreateOperator());
                 aclUserAccreditRoleRelation.setCreateTime(aclUserAccreditInfo.getCreateTime());

@@ -732,15 +732,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setUpdateTime(Calendar.getInstance().getTime());
         warehouseOrderService.updateByPrimaryKey(warehouseOrder);
         LogOperationEnum logOperationEnum = null;
-        String remark = "";
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_EXCEPTION;
-            SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
-            supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
-            List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
-            if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
-                remark = getOrderExceptionMessage(supplierOrderInfoList);
-            }
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             logOperationEnum = LogOperationEnum.ORDER_FAILURE;
         }else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
@@ -751,6 +744,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
             logOperationEnum = LogOperationEnum.ALL_DELIVER;
         }
         if(null != logOperationEnum){
+            String remark = "";
+            if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus()) ||
+                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+                SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
+                supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
+                List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+                if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
+                    remark = getOrderExceptionMessage(supplierOrderInfoList);
+                }
+            }
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), logOperationEnum.getMessage(), remark,null);
         }

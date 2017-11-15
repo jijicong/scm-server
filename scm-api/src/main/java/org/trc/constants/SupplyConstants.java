@@ -242,6 +242,33 @@ public class SupplyConstants {
     }
 
     /**
+     * 销售渠道管理
+     */
+    public static final class SellChannel {
+        //根路径
+        public static final String ROOT = "system";
+        /**
+         * 销售渠道分页查询
+         */
+        public static final String SELL_CHANNEL_PAGE = "sellChannelPage";
+        /**
+         * 销售渠道列表
+         */
+        public static final String SELL_CHANNEL_LIST = "sellChannelList";
+        /**
+         * 销售渠道名称查询
+         */
+        public static final String SELL_CHANNEL_NAME = "sellChannelName";
+        /**
+         * 销售渠道修改
+         */
+        public static final String SELL_CHANNEL_UPDATE = "update/sellChannel";
+        /**
+         * 销售渠道新增
+         */
+        public static final String SELL_CHANNEL_SAVE = "save/sellChannel";
+    }
+    /**
      * 仓库管理
      */
     public static final class Warehouse {
