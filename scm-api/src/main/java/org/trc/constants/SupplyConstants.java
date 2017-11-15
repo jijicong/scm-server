@@ -797,6 +797,12 @@ public class SupplyConstants {
         //查询订单状态接口路径
         public static final String ORDER_STATUS = "OrderStatus";
 
+        //查询粮油代发报表导出路径
+        public static final String LY_OREDER_PAGE = "LyOrderPage";
+
+        //查询粮油代发报表导出路径
+        public static final String EXPORT_ORDER = "ExportOrder";
+
     }
 
     /**
