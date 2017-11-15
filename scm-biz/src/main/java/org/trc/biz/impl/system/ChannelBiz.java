@@ -20,7 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.ChannelSellChannel;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
@@ -30,7 +33,9 @@ import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
 import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
+import org.trc.service.System.IChannelSellChannelService;
 import org.trc.service.System.IChannelService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
@@ -42,18 +47,25 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by sone on 2017/5/2.
+ *
+ * @author sone
+ * @date 2017/5/2
  */
 @Service("channelBiz")
 public class ChannelBiz implements IChannelBiz {
 
     private Logger logger = LoggerFactory.getLogger(ChannelBiz.class);
 
-    private final static String SERIALNAME = "QD";
+    /**
+     * 原渠道修该为业务线,流水编码方式修改
+     * private final static String SERIALNAME = "QD";
+     */
+    private final static String SERIALNAME ="YWX";
 
     private final static Integer LENGTH = 3;
 
@@ -68,8 +80,14 @@ public class ChannelBiz implements IChannelBiz {
 
     @Autowired
     private IPageNationService pageNationService;
-    @Resource
+    @Autowired
     private ILogInfoService logInfoService;
+
+    @Autowired
+    private ISellChannelService sellChannelService;
+    @Autowired
+    private IChannelSellChannelService channelSellChannelService;
+
 
 
     @Override
@@ -92,57 +110,11 @@ public class ChannelBiz implements IChannelBiz {
 
     }
 
+
     @Override
-    public Pagenation<Channel> channelPageES(ChannelForm queryModel, Pagenation<Channel> page) {
-        TransportClient clientUtil = TransportClientUtil.getTransportClient();
-        HighlightBuilder hiBuilder = new HighlightBuilder();
-        hiBuilder.preTags("<b style=\"color: red\">");
-        hiBuilder.postTags("</b>");
-        hiBuilder.field("name.pinyin");//http://172.30.250.164:9100/ 模糊字段可在这里找到
-        SearchRequestBuilder srb = clientUtil.prepareSearch("channel")
-                .highlighter(hiBuilder)
-                .addSort(SortBuilders.fieldSort("update_time").order(SortOrder.DESC))
-                .setFrom(page.getStart())//第几个开始
-                .setSize(page.getPageSize());//长度
-        String name = "name.pinyin";
-        if (StringUtils.isNotBlank(queryModel.getName())) {
-            QueryBuilder matchQuery = QueryBuilders.matchQuery(name, queryModel.getName());
-            srb.setQuery(matchQuery);
-        }
-        if (!StringUtils.isBlank(queryModel.getIsValid())) {
-            QueryBuilder filterBuilder = QueryBuilders.termQuery("is_valid", queryModel.getIsValid());
-            srb.setPostFilter(filterBuilder);
-        }
-        SearchResult searchResult;
-        try {
-            searchResult = pageNationService.resultES(srb, clientUtil);
-        } catch (Exception e) {
-            logger.error("es查询失败" + e.getMessage(), e);
-            return page;
-        }
-        List<Channel> channelList = new ArrayList<>();
-        for (SearchHit searchHit : searchResult.getSearchHits()) {
-            Channel channel = JSON.parseObject(JSON.toJSONString(searchHit.getSource()), Channel.class);
-            if (StringUtils.isNotBlank(queryModel.getName())) {
-                for (Text text : searchHit.getHighlightFields().get(name).getFragments()) {
-                    channel.setHighLightName(text.string());
-                }
-            }
-            channelList.add(channel);
-        }
-        if (AssertUtil.collectionIsEmpty(channelList)) {
-            return page;
-        }
-        page.setResult(channelList);
-        userNameUtilService.handleUserName(page.getResult());
-        page.setTotalCount(searchResult.getCount());
-        return page;
-
-    }
-
     public Channel findChannelByName(String name) {
 
-        AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
+        AssertUtil.notBlank(name, "根据业务线名称查询渠道的参数name为空");
         Channel channel = new Channel();
         channel.setName(name);
         return channelService.selectOne(channel);
@@ -164,22 +136,40 @@ public class ChannelBiz implements IChannelBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
     public void saveChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
-
-        AssertUtil.notNull(channel, "渠道管理模块保存仓库信息失败，仓库信息为空");
+       List<SellChannel> sellChannelList =  checkSellChannel(channel);
+        AssertUtil.notNull(channel, "业务线信息为空");
         Channel tmp = findChannelByName(channel.getName());
-        AssertUtil.isNull(tmp, String.format("渠道名称[name=%s]的数据已存在,请使用其他名称", channel.getName()));
-        channel.setIsValid(ValidEnum.VALID.getCode()); //渠道状态一直为有效
+        AssertUtil.isNull(tmp, String.format("业务线名称[name=%s]的数据已存在,请使用其他名称", channel.getName()));
+        channel.setIsValid(ValidEnum.VALID.getCode());
         ParamsUtil.setBaseDO(channel);
         channel.setCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         int count = channelService.insert(channel);
         if (count == 0) {
-            String msg = "渠道保存,数据库操作失败";
+            String msg = "业务线保存,数据库操作失败";
             logger.error(msg);
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
+        //关联表保存
+        List<ChannelSellChannel> channelSellChannels = new ArrayList<>();
+        for (SellChannel sellChannel:sellChannelList) {
+            ChannelSellChannel channelSellChannel = new ChannelSellChannel();
+            channelSellChannel.setChannelCode(channel.getCode());
+            channelSellChannel.setChannelId(channel.getId());
+            channelSellChannel.setSellChannelCode(sellChannel.getSellCode());
+            channelSellChannel.setSellChannelId(sellChannel.getId());
+            channelSellChannels.add(channelSellChannel);
+        }
+        if (!AssertUtil.collectionIsEmpty(channelSellChannels)){
+            int count2 =  channelSellChannelService.insertList(channelSellChannels);
+            if (count2 == 0) {
+                String msg = "业务线关联销售渠道,数据库操作失败";
+                logger.error(msg);
+                throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
+            }
+        }
+        //记录日志
         String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增渠道", null);
-
+        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增业务线", null);
     }
 
 
@@ -243,4 +233,37 @@ public class ChannelBiz implements IChannelBiz {
 
     }
 
+    /**
+     * 业务销售渠道校验
+     * 如果校验通过,返回选中的销售渠道
+     * @param channel
+     */
+    private List<SellChannel> checkSellChannel(Channel channel) {
+        AssertUtil.notBlank(channel.getSellChannel(),"业务销售渠道不能为空!");
+        String[] sellChannelCodes = channel.getSellChannel().split(SupplyConstants.Symbol.COMMA);
+        Example example = new Example(SellChannel.class);
+        Example.Criteria  criteria = example.createCriteria();
+        criteria.andIn("sellCode", Arrays.asList(sellChannelCodes));
+        List<SellChannel> sellChannelList = sellChannelService.selectByExample(example);
+        if (!AssertUtil.collectionIsEmpty(sellChannelList)){
+            for (String sellCode: sellChannelCodes) {
+                boolean isExist = false;
+                for (SellChannel sellChannel:sellChannelList) {
+                    if (StringUtils.equals(sellCode,sellChannel.getSellCode())){
+                        isExist = true;
+                    }
+                }
+                if (!isExist){
+                    String msg ="未查询到需要关联的销售渠道,请检查销售渠道编码"+sellCode+"是否存在";
+                    logger.error(msg);
+                    throw  new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION,msg);
+                }
+            }
+        }else {
+            String msg ="未查询到需要关联的销售渠道,请检查销售渠道是否存在";
+            logger.error(msg);
+            throw  new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION,msg);
+        }
+        return  sellChannelList;
+    }
 }
