@@ -128,10 +128,13 @@ public class ChannelBiz implements IChannelBiz {
             criteria.andIn("id",sellChannelIdList);
             List<SellChannel> sellChannelList = sellChannelService.selectByExample(example);
             List<String> sellChannelNameList = new ArrayList<>();
+            List<String> sellChannelCodeList = new ArrayList<>();
             for (SellChannel sellChannel:sellChannelList) {
                 sellChannelNameList.add(sellChannel.getSellName());
+                sellChannelCodeList.add(sellChannel.getSellCode());
             }
             channel.setSellChannelName(StringUtils.join(sellChannelNameList,SupplyConstants.Symbol.COMMA));
+            channel.setSellChannel(StringUtils.join(sellChannelCodeList,SupplyConstants.Symbol.COMMA));
             }
         }
     }
