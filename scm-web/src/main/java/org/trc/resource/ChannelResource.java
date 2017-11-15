@@ -1,13 +1,11 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSON;
 import org.springframework.stereotype.Component;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.system.ChannelForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -88,5 +86,4 @@ public class ChannelResource {
         channelBiz.updateChannelState(channel);
        return ResultUtil.createSuccessResult("状态修改成功","");
     }
-
 }
