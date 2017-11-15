@@ -69,6 +69,13 @@ public class ChannelResource {
         return ResultUtil.createSuccessResult("查询渠道成功", channelBiz.findChannelById(id));
     }
 
+    //根据id查询已关联的销售渠道
+    @GET
+    @Path(SupplyConstants.Channel.CHANNEL_ID+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findLinkSellChannelById(@PathParam("id") Long id){
+        return ResultUtil.createSuccessResult("查询已关联的销售渠道成功", channelBiz.selectLinkSellChannelById(id));
+    }
     //渠道修改
     @PUT
     @Path(SupplyConstants.Channel.CHANNEL+"/{id}")

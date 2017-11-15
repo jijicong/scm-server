@@ -239,6 +239,10 @@ public class SupplyConstants {
         public static final String SALES_CHANNEL_PAGE = "salesChannelPage";
         //销售渠道
         public static final String SALES_CHANNEL = "salesChannel";
+        /**
+         * 根据渠道ID查询关联的业务线
+         */
+        public static final String CHANNEL_ID = "channelId";
     }
 
     /**

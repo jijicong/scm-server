@@ -114,7 +114,7 @@ public class ChannelBiz implements IChannelBiz {
     @Override
     public Channel findChannelByName(String name) {
 
-        AssertUtil.notBlank(name, "根据业务线名称查询渠道的参数name为空");
+        AssertUtil.notBlank(name, "根据业务线名称查询业务线的参数name为空");
         Channel channel = new Channel();
         channel.setName(name);
         return channelService.selectOne(channel);
@@ -202,11 +202,11 @@ public class ChannelBiz implements IChannelBiz {
     @Cacheable(key = "#id")
     public Channel findChannelById(Long id) {
 
-        AssertUtil.notNull(id, "根据ID查询渠道明细,参数ID不能为空");
+        AssertUtil.notNull(id, "根据ID查询业务线明细,参数ID不能为空");
         Channel channel = new Channel();
         channel.setId(id);
         channel = channelService.selectOne(channel);
-        AssertUtil.notNull(channel, String.format("根据主键ID[id=%s]查询渠道为空", id.toString()));
+        AssertUtil.notNull(channel, String.format("根据主键ID[%s]查询业务线为空", id.toString()));
         return channel;
 
     }
@@ -215,7 +215,7 @@ public class ChannelBiz implements IChannelBiz {
     @CacheEvit(key = {"#channel.id"})
     public void updateChannelState(Channel channel) {
 
-        AssertUtil.notNull(channel, "渠道管理模块修改渠道信息失败，仓库信息为空");
+        AssertUtil.notNull(channel, "业务线管理模块修改业务线信息失败，业务线信息为空");
         Channel updateChannel = new Channel();
         updateChannel.setId(channel.getId());
         if (channel.getIsValid().equals(ValidEnum.VALID.getCode())) {
@@ -233,9 +233,37 @@ public class ChannelBiz implements IChannelBiz {
 
     }
 
+    @Override
+    public List<SellChannel> selectLinkSellChannelById(Long channelId) {
+        AssertUtil.notNull(channelId,"查询条件业务线主键Id不能为空!");
+        findChannelById(channelId);
+        //查询关联表
+        ChannelSellChannel channelSellChannel = new ChannelSellChannel();
+        channelSellChannel.setChannelId(channelId);
+        List<ChannelSellChannel> channelSellChannelList= channelSellChannelService.select(channelSellChannel);
+        List<Long> sellChannelIdList = new ArrayList<>();
+        List<SellChannel> sellChannelList = new ArrayList<>();
+       if (!AssertUtil.collectionIsEmpty(channelSellChannelList)){
+           for (ChannelSellChannel channelSell:channelSellChannelList) {
+               sellChannelIdList.add(channelSell.getSellChannelId());
+           }
+           if (!AssertUtil.collectionIsEmpty(sellChannelIdList)){
+               Example example = new Example(SellChannel.class);
+               Example.Criteria criteria = example.createCriteria();
+               criteria.andIn("id",sellChannelIdList);
+               sellChannelList= sellChannelService.selectByExample(example);
+           }
+       }else {
+           String msg ="当前业务线下没有关联的销售渠道";
+           throw  new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_QUERY_EXCEPTION,msg);
+       }
+        return sellChannelList;
+    }
+
+
     /**
      * 业务销售渠道校验
-     * 如果校验通过,返回选中的销售渠道
+     * 如果校验通过,返回选中的销售渠道信息
      * @param channel
      */
     private List<SellChannel> checkSellChannel(Channel channel) {
