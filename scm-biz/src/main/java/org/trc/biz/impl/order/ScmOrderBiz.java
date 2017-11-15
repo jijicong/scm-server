@@ -157,6 +157,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IRealIpService iRealIpService;
     @Autowired
     private ISupplierService supplierService;
+    @Autowired
+    private IExceptionOrderService exceptionOrderService;
+    @Autowired
+    private IExceptionOrderItemService exceptionOrderItemService;
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -3052,5 +3056,70 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     public void setIjdService(IJDService ijdService) {
         this.ijdService = ijdService;
+    }
+
+    @Override
+    @Cacheable(key="#form.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    public Pagenation<ExceptionOrder> exceptionOrderPage(ExceptionOrderForm form, Pagenation<ExceptionOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
+        AssertUtil.notNull(form, "查询拆单异常订单信息分页参数不能为空");
+        Example example = new Example(ExceptionOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
+            criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
+
+        if(StringUtils.isNotBlank(form.getExceptionType())){//异常类型:1-缺货退回,2-缺货等待
+            criteria.andEqualTo("exceptionType", form.getExceptionType());
+        }
+        if(StringUtils.isNotBlank(form.getStatus())){//状态:1-待了结,2-已了结
+            criteria.andEqualTo("status", form.getStatus());
+        }
+        if(StringUtils.isNotBlank(form.getExceptionOrderCode())){//拆单异常单编号
+            criteria.andLike("exceptionOrderCode", "%" + form.getExceptionOrderCode() + "%");
+        }
+        if(StringUtils.isNotBlank(form.getShopOrderCode())){//店铺订单编码
+            criteria.andLike("shopOrderCode", "%" + form.getShopOrderCode() + "%");
+        }
+        if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//平台订单编码
+            criteria.andLike("platformOrderCode", "%" + form.getPlatformOrderCode() + "%");
+        }
+        if(StringUtils.isNotBlank(form.getReceiverName())){//收货人姓名
+            criteria.andLike("receiverName", "%" + form.getReceiverName() + "%");
+        }
+        if (StringUtil.isNotEmpty(form.getStartDate())) {//开始日期
+            criteria.andGreaterThanOrEqualTo("createTime", DateUtils.parseDate(form.getStartDate()));
+        }
+        if (StringUtil.isNotEmpty(form.getEndDate())) {//截止日期
+            Date endDate = DateUtils.parseDate(form.getEndDate());
+            criteria.andLessThan("createTime", DateUtils.addDays(endDate, 1));
+        }
+
+        example.orderBy("status").asc();
+        example.orderBy("createTime").desc();
+        page = exceptionOrderService.pagination(example, page, form);
+        return page;
+    }
+
+    @Override
+    public ExceptionOrder queryExceptionOrdersDetail(String exceptionOrderCode) {
+        AssertUtil.notBlank(exceptionOrderCode, "查询拆单异常订单明细参数拆单异常订单编码不能为空");
+        ExceptionOrder exceptionOrder = new ExceptionOrder();
+        exceptionOrder.setExceptionOrderCode(exceptionOrderCode);
+        exceptionOrder = exceptionOrderService.selectOne(exceptionOrder);
+        AssertUtil.notNull(exceptionOrder, String.format("根据拆单异常订单编码[%s]查询拆单异常订单为空",exceptionOrderCode));
+        //查询平台订单
+        PlatformOrder platformOrder = new PlatformOrder();
+        platformOrder.setPlatformOrderCode(exceptionOrder.getPlatformOrderCode());
+        platformOrder = platformOrderService.selectOne(platformOrder);
+        AssertUtil.notNull(platformOrder, String.format("根据平台订单编码[%s]查询平台订单为空", exceptionOrder.getPlatformOrderCode()));
+        exceptionOrder.setPlatformOrder(platformOrder);
+        //查询拆单异常订单商品明细
+        ExceptionOrderItem exceptionOrderItem = new ExceptionOrderItem();
+        exceptionOrderItem.setExceptionOrderCode(exceptionOrderCode);
+        List<ExceptionOrderItem> exceptionOrderItemList = exceptionOrderItemService.select(exceptionOrderItem);
+        AssertUtil.notEmpty(exceptionOrderItemList, String.format("根据拆单异常订单编码[%s]查询拆单异常订单商品明细为空",exceptionOrderCode));
+        exceptionOrder.setExceptionOrderItemList(exceptionOrderItemList);
+        return exceptionOrder;
     }
 }

@@ -70,6 +70,4 @@ public interface IChannelBiz {
      * 渠道Es搜索
      */
     Pagenation<Channel> channelPageES(ChannelForm form, Pagenation<Channel> page);
-
-
 }
