@@ -8,6 +8,7 @@ import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
 import org.trc.service.IJDService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
@@ -140,4 +141,6 @@ public interface IScmOrderBiz {
      * @return
      */
     ExceptionOrder queryExceptionOrdersDetail(String exceptionOrderCode);
+
+    public void setiRealIpService(IRealIpService iRealIpService);
 }

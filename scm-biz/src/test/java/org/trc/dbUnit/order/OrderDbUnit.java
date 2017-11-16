@@ -13,10 +13,12 @@ import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.dbUnit.order.form.*;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.service.BaseTest;
 import org.trc.service.IJDService;
 import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
@@ -169,6 +171,26 @@ public class OrderDbUnit extends BaseTest{
         //assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);
     }
 
+    @Test
+    public void testFetchLogisticsInfo()throws Exception{
+        //删除原数据
+        execSql(conn,"delete from platform_order");
+        execSql(conn,"delete from shop_order");
+        execSql(conn,"delete from order_item");
+        execSql(conn,"delete from warehouse_order");
+        execSql(conn,"delete from supplier_order_info");
+        //从xml文件读取数据并插入数据库中
+        prepareData(conn, "order/logistics/preInsertPlatformOrder.xml");
+        prepareData(conn, "order/logistics/preInsertShopOrder.xml");
+        prepareData(conn, "order/logistics/preInsertWarehouseOrder.xml");
+        prepareData(conn, "order/logistics/preInsertOrderItem.xml");
+        prepareData(conn, "order/logistics/preInsertSupplierOrderInfo.xml");
+        //mock调用外部接口查询物流
+        mockQueryLogistics(scmOrderBiz);
+        scmOrderBiz.fetchLogisticsInfo();
+
+    }
+
     /**
      * mock调用外部接口提交粮油订单
      * @param scmOrderBiz
@@ -211,6 +233,54 @@ public class OrderDbUnit extends BaseTest{
                 "    }";
         responseAck.setData(submitOrderReturn);
         when(ijdService.submitLiangYouOrder(any(liangYouSupplierOrder.getClass()))).thenReturn(responseAck);
+    }
+
+    /**
+     * mock调用外部接口查询供应商订单物流信息
+     * @param scmOrderBiz
+     */
+    private void mockQueryLogistics(IScmOrderBiz scmOrderBiz){
+        IJDService ijdService = mock(IJDService.class);
+        scmOrderBiz.setIjdService(ijdService);
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(true);
+        String result = "{\n" +
+                "        \"logistics\": [\n" +
+                "            {\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\n" +
+                "                        \"num\": \"2\",\n" +
+                "                        \"skuCode\": \"1241479\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"22222222-test\",\n" +
+                "                \"logisticsCorporation\": \"京东快递\",\n" +
+                "                \"logisticInfo\": [\n" +
+                "                    {\n" +
+                "                        \"msgTime\": \"2017-09-21 22:42:04\",\n" +
+                "                        \"content\": \"您提交了订单，请等待系统确认\",\n" +
+                "                        \"operator\": \"客户\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"msgTime\": \"2017-09-21 22:42:17\",\n" +
+                "                        \"content\": \"您的订单预计9月22日送达您手中\",\n" +
+                "                        \"operator\": \"系统\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"supplierOrderCode\": \"22222222-test\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"type\": \"0\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201710180000529\"\n" +
+                "    }";
+        returnTypeDO.setResult(result);
+        when(ijdService.getLogisticsInfo(anyString(), anyString())).thenReturn(returnTypeDO);
+
+        IRealIpService iRealIpService = mock(IRealIpService.class);
+        scmOrderBiz.setiRealIpService(iRealIpService);
+        when(iRealIpService.isRealTimerService()).thenReturn(true);
     }
 
 
@@ -264,6 +334,8 @@ public class OrderDbUnit extends BaseTest{
         orderForm.setSign(sign);
         return JSON.toJSONString(orderForm);
     }
+
+
 
 
 
