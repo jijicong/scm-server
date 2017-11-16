@@ -247,6 +247,10 @@ public class SupplyConstants {
          * 编辑时回写的数据
          */
         public static final String CHANNEL_ID_SELL_CHANNEL= "channelInSellChannel";
+        /**
+         * 查询所有的销售渠道
+         */
+        public static final String SELL_CHANNEL_LIST= "channelList";
     }
 
     /**

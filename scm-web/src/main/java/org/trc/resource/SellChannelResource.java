@@ -53,14 +53,14 @@ public class SellChannelResource {
         return  ResultUtil.createSuccessResult("查询销售渠道成功", sellChannelBiz.selectSellChannelByName(name)==null ? null :"1");
     }
 
-    @POST
+    @PUT
     @Path(SupplyConstants.SellChannel.SELL_CHANNEL_UPDATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateSellChannel(@BeanParam  SellChannel sellChannel,@Context ContainerRequestContext requestContext){
         sellChannelBiz.updateSellChannel(sellChannel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSuccessResult("修改销售渠道信息成功","");
     }
-    @PUT
+    @POST
     @Path(SupplyConstants.SellChannel.SELL_CHANNEL_SAVE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response saveSellChannel(@BeanParam  SellChannel sellChannel,@Context ContainerRequestContext requestContext){

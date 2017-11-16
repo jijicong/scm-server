@@ -80,5 +80,16 @@ public interface IChannelBiz {
      */
     List<SellChannel> selectLinkSellChannelById(Long channelId);
 
+    /**
+     * 渠道编辑时的返回数据
+     * @param id
+     * @return
+     */
     ChannelExt queryChannelForUpdate(Long id);
+
+    /**
+     * 查询所有销售渠道
+     * @return
+     */
+    List<SellChannel> querySellChannel();
 }
