@@ -844,6 +844,10 @@ public class SupplyConstants {
         public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
 
         public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
+
+        public static final String OWNER_INFO = "ownerInfo";
+
+        public static final String DELETE_WAREHOUSE_INFO = "deleteWarehouse";
     }
 
     /**

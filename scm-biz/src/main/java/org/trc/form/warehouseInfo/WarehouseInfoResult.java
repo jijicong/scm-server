@@ -4,6 +4,8 @@ package org.trc.form.warehouseInfo;
  * Created by wangyz on 2017/11/15.
  */
 public class WarehouseInfoResult {
+    //主键
+    private Long id;
     //仓库名称
     private String warehouseName;
 
@@ -39,6 +41,14 @@ public class WarehouseInfoResult {
 
     //备注
     private String remark;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getWarehouseName() {
         return warehouseName;

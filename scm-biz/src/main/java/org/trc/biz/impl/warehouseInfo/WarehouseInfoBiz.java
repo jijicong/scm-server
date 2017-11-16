@@ -1,16 +1,17 @@
 package org.trc.biz.impl.warehouseInfo;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.trc.biz.warehouseInfo.IWarehouseInfoBiz;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ValidStateEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
 import org.trc.form.warehouseInfo.WarehouseInfoForm;
 import org.trc.form.warehouseInfo.WarehouseInfoResult;
@@ -43,12 +44,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private IWarehouseInfoService warehouseInfoService;
 
     @Override
-    public Response saveWarehouse(String qimenWarehouseCode) {
-        AssertUtil.notBlank(qimenWarehouseCode,"奇门仓库编号不能为空");
+    public Response saveWarehouse(String code,AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notBlank(code,"奇门仓库编号不能为空");
         log.info("查询符合条件的仓库=====》");
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("qimenWarehouseCode", qimenWarehouseCode);
+        criteria.andEqualTo("code", code);
         List<Warehouse> list = warehouseService.selectByExample(example);
         if (list.size()>1){
             log.info("一个奇门仓库编号取到多条数据");
@@ -58,22 +59,37 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         warehouseInfo.setWarehouseName(warehouse.getName());
         warehouseInfo.setType(warehouse.getWarehouseTypeCode());
         warehouseInfo.setQimenWarehouseCode(warehouse.getQimenWarehouseCode());
+        //warehouseInfo.setSkuNum();
+        warehouseInfo.setOwnerId(aclUserAccreditInfo.getChannelCode());
 
-        /*warehouseInfo.setSkuNum();
-        warehouseInfo.setOwnerId();
-        warehouseInfo.setWarehouseOwnerId();
-        warehouseInfo.setOwnerName();
-        warehouseInfo.setOwnerWarehouseState();
-        warehouseInfo.setIsDelete();*/
-        log.info("保存仓库到数据库=====》");
-        int count = warehouseInfoService.insert(warehouseInfo);
-        if (count == 0) {
-            String msg = "仓库信息管理添加新仓库到数据库失败";
-            log.error(msg);
-            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        if (warehouse.getIsNoticeSuccess()!=null && warehouse.getIsNoticeSuccess().equals(NoticeSuccessEnum.NOTIC.getCode())){
+            //调用仓库接口获取仓库货主ID
+            //warehouseInfo.setWarehouseOwnerId();
+        }else {
+            warehouseInfo.setWarehouseOwnerId(null);
         }
-        log.info("《===========保存到数据库成功");
-        return ResultUtil.createSuccessResult("获取仓库名称成功","success");
+        warehouseInfo.setOwnerName(aclUserAccreditInfo.getChannelName());
+        warehouseInfo.setOwnerWarehouseState(WarehouseStateEnum.UN_NOTIC.getCode());
+        warehouseInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
+        log.info("保存仓库到数据库=====》");
+        try {
+            int count = warehouseInfoService.insert(warehouseInfo);
+            if (count == 0) {
+                String msg = "仓库信息管理添加新仓库到数据库失败";
+                log.error(msg);
+                throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+            }
+            log.info("《===========保存到数据库成功");
+            return ResultUtil.createSuccessResult("保存仓库成功","success");
+        }catch (DuplicateKeyException e){
+            log.error("重复插入仓库到数据失败，开始更新数据库",e);
+            Example example1 = new Example(WarehouseInfo.class);
+            Example.Criteria criteria1 = example1.createCriteria();
+            criteria1.andEqualTo("qimenWarehouseCode",warehouse.getQimenWarehouseCode());
+            warehouseInfoService.updateByExampleSelective(warehouseInfo,example1);
+            return ResultUtil.createSuccessResult("更新仓库成功","success");
+        }
+
     }
 
     @Override
@@ -82,6 +98,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         log.info("查询符合条件的仓库===》");
         Example example1 = new Example(WarehouseInfo.class);
         Example.Criteria criteria1 = example1.createCriteria();
+        criteria1.andEqualTo("isDelete",ZeroToNineEnum.ZERO.getCode());
         List<WarehouseInfo> resultList = warehouseInfoService.selectByExample(example1);
         List<String> warehouseCodeList = new ArrayList<>();
         for (WarehouseInfo warehouseInfo:resultList){
@@ -99,7 +116,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<Map<String,String>> rev = new ArrayList<>();
         for (Warehouse warehouse:list){
             Map<String,String> map = new HashMap<>();
-            map.put(warehouse.getName(),warehouse.getQimenWarehouseCode());
+            map.put(warehouse.getName(),warehouse.getCode());
             rev.add(map);
         }
         log.info("《==========返回符合条件的仓库名称");
@@ -117,7 +134,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<Map<String,String>> rev = new ArrayList<>();
         for (Warehouse warehouse:list){
             Map<String,String> map = new HashMap<>();
-            map.put(warehouse.getName(),warehouse.getQimenWarehouseCode());
+            map.put(warehouse.getName(),warehouse.getCode());
             rev.add(map);
         }
         log.info("<======返回仓库名称");
@@ -142,6 +159,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<WarehouseInfoResult> newList = new ArrayList<>();
         for (WarehouseInfo warehouseInfo:list){
             WarehouseInfoResult result = new WarehouseInfoResult();
+            result.setId(warehouseInfo.getId());
             result.setWarehouseName(warehouseInfo.getWarehouseName());
             result.setType(warehouseInfo.getType());
             result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
@@ -190,5 +208,35 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             count = 1;
         }
         return count;
+    }
+
+    @Override
+    public Response saveOwnerInfo(WarehouseInfo warehouseInfo){
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id",warehouseInfo.getId());
+        int cout = warehouseInfoService.updateByExampleSelective(warehouseInfo,example);
+        if (cout==0){
+            log.error("更新货主信息失败");
+            String msg = "更新货主信息失败";
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+        return ResultUtil.createSuccessResult("保存货主信息成功","success");
+    }
+
+    @Override
+    public Response deleteWarehouse(String id){
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id",id);
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ONE.getCode()));
+        int cout = warehouseInfoService.updateByExampleSelective(warehouseInfo,example);
+        if (cout==0){
+            log.error("删除从库信息失败");
+            String msg = "删除从库信息失败";
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+        return ResultUtil.createSuccessResult("删除从库信息成功","success");
     }
 }
