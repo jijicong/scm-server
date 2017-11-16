@@ -207,7 +207,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.TWO.getCode())){
             count = 1;
         }
-        if (warehouseInfo.getSkuNum() == 0 ){
+        if (warehouseInfo.getSkuNum()==null || warehouseInfo.getSkuNum() == 0 ){
             count = 1;
         }
         return count;
