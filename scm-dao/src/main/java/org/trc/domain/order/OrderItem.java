@@ -367,6 +367,9 @@ public class OrderItem implements Serializable {
     @Transient
     private List<DeliverPackageForm> deliverPackageFormList;
 
+    //提交供应商时间
+    private Date submitTime;
+
     public String getSupplierSkuCode() {
         return supplierSkuCode;
     }
@@ -1389,5 +1392,13 @@ public class OrderItem implements Serializable {
 
     public void setDeliverPackageFormList(List<DeliverPackageForm> deliverPackageFormList) {
         this.deliverPackageFormList = deliverPackageFormList;
+    }
+
+    public Date getSubmitTime() {
+        return submitTime;
+    }
+
+    public void setSubmitTime(Date submitTime) {
+        this.submitTime = submitTime;
     }
 }

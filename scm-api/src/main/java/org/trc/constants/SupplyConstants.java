@@ -239,6 +239,14 @@ public class SupplyConstants {
         public static final String SALES_CHANNEL_PAGE = "salesChannelPage";
         //销售渠道
         public static final String SALES_CHANNEL = "salesChannel";
+        /**
+         * 根据渠道ID查询关联的业务线
+         */
+        public static final String CHANNEL_ID = "channelId";
+        /**
+         * 编辑时回写的数据
+         */
+        public static final String CHANNEL_ID_SELL_CHANNEL= "channelInSellChannel";
     }
 
     /**
@@ -797,6 +805,12 @@ public class SupplyConstants {
         //查询订单状态接口路径
         public static final String ORDER_STATUS = "OrderStatus";
 
+        //查询粮油代发报表导出路径
+        public static final String LY_OREDER_PAGE = "LyOrderPage";
+
+        //查询粮油代发报表导出路径
+        public static final String EXPORT_ORDER = "ExportOrder";
+
     }
 
     /**
@@ -818,6 +832,18 @@ public class SupplyConstants {
         //用户授权列表
         public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
 
+    }
+
+    public static final class WarehouseInfo {
+        public static final String ROOT = "warehouseInfo";
+
+        public static final String SAVE_WAREHOUSE_INFO = "saveWarehouseInfo";
+
+        public static final String SELECT_WAREHOUSE_NAME_NOT_LOCATION = "selectWarehouseNameNotLocation";
+
+        public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
+
+        public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
     }
 
     /**
