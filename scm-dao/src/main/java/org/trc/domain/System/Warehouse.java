@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -37,7 +38,7 @@ public class Warehouse extends BaseDO {
     private Integer isCustomsClearance; //是否支持清关 0.不支持 1. 支持  null.无   只用保税仓，才会有清关 ，其它为null
 
     @FormParam("isThroughQimen")
-    @NotEmpty
+    @NotNull
     private Integer isThroughQimen; // 是否通过奇门对接：0-不通过 1-通过
 
     @FormParam("qimenWarehouseCode")
