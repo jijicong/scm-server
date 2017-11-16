@@ -332,19 +332,19 @@ public class LiangYouBiz implements ILiangYouBiz {
         Example example = new Example(OrderItem.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(form.getSupplierSkuCode())){
-            criteria.andEqualTo("supplierSkuCode",form.getSupplierSkuCode());
+            criteria.andLike("supplierSkuCode","%"+form.getSupplierSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getSkuCode())){
-            criteria.andEqualTo("skuCode",form.getSkuCode());
+            criteria.andLike("skuCode","%"+form.getSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getItemName())){
-            criteria.andEqualTo("itemName",form.getItemName());
+            criteria.andLike("itemName","%"+form.getItemName()+"%");
         }
         if (!StringUtils.isBlank(form.getPlatformOrderCode())){
-            criteria.andEqualTo("platformOrderCode",form.getPlatformOrderCode());
+            criteria.andLike("platformOrderCode","%"+form.getPlatformOrderCode()+"%");
         }
         if (!StringUtils.isBlank(form.getShopOrderCode())){
-            criteria.andEqualTo("shopOrderCode",form.getShopOrderCode());
+            criteria.andLike("shopOrderCode","%"+form.getShopOrderCode()+"%");
         }
         criteria.andIn("warehouseOrderCode",list);
         example.orderBy("submitTime").desc();
@@ -356,19 +356,19 @@ public class LiangYouBiz implements ILiangYouBiz {
         Example example = new Example(OrderItem.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(form.getSupplierSkuCode())){
-            criteria.andEqualTo("supplierSkuCode",form.getSupplierSkuCode());
+            criteria.andLike("supplierSkuCode","%"+form.getSupplierSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getSkuCode())){
-            criteria.andEqualTo("skuCode",form.getSkuCode());
+            criteria.andLike("skuCode","%"+form.getSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getItemName())){
-            criteria.andEqualTo("itemName",form.getItemName());
+            criteria.andLike("itemName","%"+form.getItemName()+"%");
         }
         if (!StringUtils.isBlank(form.getPlatformOrderCode())){
-            criteria.andEqualTo("platformOrderCode",form.getPlatformOrderCode());
+            criteria.andLike("platformOrderCode","%"+form.getPlatformOrderCode()+"%");
         }
         if (!StringUtils.isBlank(form.getShopOrderCode())){
-            criteria.andEqualTo("shopOrderCode",form.getShopOrderCode());
+            criteria.andLike("shopOrderCode","%"+form.getShopOrderCode()+"%");
         }
         criteria.andIn("warehouseOrderCode",list);
         example.orderBy("submitTime").desc();
@@ -387,7 +387,7 @@ public class LiangYouBiz implements ILiangYouBiz {
             criteria.andLessThanOrEqualTo("createTime",form.getEndDate());
         }
         if (!StringUtils.isBlank(form.getSupplierOrderCode())){
-            criteria.andEqualTo("supplierOrderCode",form.getSupplierOrderCode());
+            criteria.andLike("supplierOrderCode","%"+form.getSupplierOrderCode()+"%");
         }
         List<String> list = new ArrayList();
         list.add("3");

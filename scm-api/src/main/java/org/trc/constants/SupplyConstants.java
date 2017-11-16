@@ -830,6 +830,18 @@ public class SupplyConstants {
 
     }
 
+    public static final class WarehouseInfo {
+        public static final String ROOT = "warehouseInfo";
+
+        public static final String SAVE_WAREHOUSE_INFO = "saveWarehouseInfo";
+
+        public static final String SELECT_WAREHOUSE_NAME_NOT_LOCATION = "selectWarehouseNameNotLocation";
+
+        public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
+
+        public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
+    }
+
     /**
      * 出库通知单
      */
