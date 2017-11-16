@@ -116,7 +116,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<Map<String,String>> rev = new ArrayList<>();
         for (Warehouse warehouse:list){
             Map<String,String> map = new HashMap<>();
-            map.put(warehouse.getName(),warehouse.getCode());
+            map.put("name",warehouse.getName());
+            map.put("code",warehouse.getCode());
             rev.add(map);
         }
         log.info("《==========返回符合条件的仓库名称");
@@ -134,7 +135,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<Map<String,String>> rev = new ArrayList<>();
         for (Warehouse warehouse:list){
             Map<String,String> map = new HashMap<>();
-            map.put(warehouse.getName(),warehouse.getCode());
+            map.put("name",warehouse.getName());
+            map.put("code",warehouse.getCode());
             rev.add(map);
         }
         log.info("<======返回仓库名称");
