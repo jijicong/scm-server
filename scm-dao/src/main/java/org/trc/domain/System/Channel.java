@@ -33,11 +33,16 @@ public class Channel extends BaseDO{
     private String remark;
 
     /**
-     * 业务销售渠道
+     * 业务销售渠道id
      */
     @Transient
     @FormParam("sellChannel")
     private String sellChannel;
+    /**
+     * 业务销售渠道name
+     */
+    @Transient
+    private String sellChannelName;
 
 
     public String getRemark() {
@@ -78,5 +83,13 @@ public class Channel extends BaseDO{
 
     public void setSellChannel(String sellChannel) {
         this.sellChannel = sellChannel;
+    }
+
+    public String getSellChannelName() {
+        return sellChannelName;
+    }
+
+    public void setSellChannelName(String sellChannelName) {
+        this.sellChannelName = sellChannelName;
     }
 }

@@ -1,6 +1,7 @@
 package org.trc.biz.system;
 
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.ChannelExt;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.system.ChannelForm;
@@ -78,4 +79,6 @@ public interface IChannelBiz {
      * @return
      */
     List<SellChannel> selectLinkSellChannelById(Long channelId);
+
+    ChannelExt queryChannelForUpdate(Long id);
 }

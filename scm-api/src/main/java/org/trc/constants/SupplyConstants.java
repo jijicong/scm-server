@@ -243,6 +243,10 @@ public class SupplyConstants {
          * 根据渠道ID查询关联的业务线
          */
         public static final String CHANNEL_ID = "channelId";
+        /**
+         * 编辑时回写的数据
+         */
+        public static final String CHANNEL_ID_SELL_CHANNEL= "channelInSellChannel";
     }
 
     /**

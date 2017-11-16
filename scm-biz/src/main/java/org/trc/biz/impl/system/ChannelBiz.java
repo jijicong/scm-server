@@ -22,6 +22,7 @@ import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.ChannelExt;
 import org.trc.domain.System.ChannelSellChannel;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -105,9 +106,37 @@ public class ChannelBiz implements IChannelBiz {
         Pagenation<Channel> pagenation = channelService.pagination(example, page, form);
 
         List<Channel> channelList = pagenation.getResult();
+        handleSellChannel(channelList);
         userNameUtilService.handleUserName(channelList);
+        
         return pagenation;
 
+    }
+
+    private void handleSellChannel( List<Channel> channelList) {
+        for (Channel channel:channelList) {
+            ChannelSellChannel channelSellChannel  = new ChannelSellChannel();
+            channelSellChannel.setChannelId(channel.getId());
+            List<ChannelSellChannel> channelSellChannelList=  channelSellChannelService.select(channelSellChannel);
+            List<Long> sellChannelIdList =  new ArrayList<>();
+            for (ChannelSellChannel sellChannel:channelSellChannelList){
+                sellChannelIdList.add(sellChannel.getSellChannelId());
+            }
+            if (!AssertUtil.collectionIsEmpty(sellChannelIdList)){
+            Example example = new Example(SellChannel.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("id",sellChannelIdList);
+            List<SellChannel> sellChannelList = sellChannelService.selectByExample(example);
+            List<String> sellChannelNameList = new ArrayList<>();
+            List<String> sellChannelCodeList = new ArrayList<>();
+            for (SellChannel sellChannel:sellChannelList) {
+                sellChannelNameList.add(sellChannel.getSellName());
+                sellChannelCodeList.add(sellChannel.getSellCode());
+            }
+            channel.setSellChannelName(StringUtils.join(sellChannelNameList,SupplyConstants.Symbol.COMMA));
+            channel.setSellChannel(StringUtils.join(sellChannelCodeList,SupplyConstants.Symbol.COMMA));
+            }
+        }
     }
 
 
@@ -150,6 +179,55 @@ public class ChannelBiz implements IChannelBiz {
             throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
         }
         //关联表保存
+        AddLinkChannelSellChannel(channel, sellChannelList);
+        //记录日志
+        String userId = aclUserAccreditInfo.getUserId();
+        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增业务线", null);
+    }
+
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CacheEvit(key = {"#channel.id"})
+    public void updateChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
+
+        AssertUtil.notNull(channel.getId(), "修改业务线参数ID为空");
+       List<SellChannel> sellChannelList = checkSellChannel(channel);
+        Channel tmp = findChannelByName(channel.getName());
+        if (tmp != null) {
+            if (!tmp.getId().equals(channel.getId())) {
+                throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, "其它的渠道已经使用该渠道名称");
+            }
+        }
+        int count = 0;
+        channel.setUpdateTime(Calendar.getInstance().getTime());
+        count = channelService.updateByPrimaryKeySelective(channel);
+        if (count == 0) {
+            String msg = String.format("修改渠道%s数据库操作失败", JSON.toJSONString(channel));
+            logger.error(msg);
+            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
+        }
+        //修改关联表
+        //1.清除当前业务线ID的关联信息
+        channel = channelService.selectByPrimaryKey(channel.getId());
+        Example example = new Example(ChannelSellChannel.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("channelId",channel.getId());
+        channelSellChannelService.deleteByExample(example);
+        //2.添加新的关联信息
+        AddLinkChannelSellChannel(channel, sellChannelList);
+        //记录日志
+        String userId = aclUserAccreditInfo.getUserId();
+        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
+
+    }
+
+    /**
+     * 添加关联数据
+     * @param channel
+     * @param sellChannelList
+     */
+    private void AddLinkChannelSellChannel(Channel channel, List<SellChannel> sellChannelList) {
         List<ChannelSellChannel> channelSellChannels = new ArrayList<>();
         for (SellChannel sellChannel:sellChannelList) {
             ChannelSellChannel channelSellChannel = new ChannelSellChannel();
@@ -167,35 +245,6 @@ public class ChannelBiz implements IChannelBiz {
                 throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_SAVE_EXCEPTION, msg);
             }
         }
-        //记录日志
-        String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), "新增业务线", null);
-    }
-
-
-    @Override
-    @CacheEvit(key = {"#channel.id"})
-    public void updateChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
-
-        AssertUtil.notNull(channel.getId(), "修改渠道参数ID为空");
-        Channel tmp = findChannelByName(channel.getName());
-        if (tmp != null) {
-            if (!tmp.getId().equals(channel.getId())) {
-                throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, "其它的渠道已经使用该渠道名称");
-            }
-        }
-        int count = 0;
-        channel.setUpdateTime(Calendar.getInstance().getTime());
-        count = channelService.updateByPrimaryKeySelective(channel);
-        if (count == 0) {
-            String msg = String.format("修改渠道%s数据库操作失败", JSON.toJSONString(channel));
-            logger.error(msg);
-            throw new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_UPDATE_EXCEPTION, msg);
-        }
-
-        String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(channel, channel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
-
     }
 
     @Override
@@ -258,6 +307,15 @@ public class ChannelBiz implements IChannelBiz {
            throw  new ChannelException(ExceptionEnum.SYSTEM_CHANNEL_QUERY_EXCEPTION,msg);
        }
         return sellChannelList;
+    }
+
+    @Override
+    public ChannelExt queryChannelForUpdate(Long id) {
+        Channel channel =  findChannelById(id);
+        ChannelExt channelExt =JSON.parseObject(JSON.toJSONString(channel),ChannelExt.class);
+        List<SellChannel> sellChannelList = selectLinkSellChannelById(id);
+        channelExt.setSellChannelList(sellChannelList);
+        return channelExt;
     }
 
 
