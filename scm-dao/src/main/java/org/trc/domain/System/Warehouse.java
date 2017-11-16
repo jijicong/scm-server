@@ -57,6 +57,9 @@ public class Warehouse extends BaseDO {
     @Length(max = 16, message = "运单发件人手机号长度不能超过16个")
     private String senderPhoneNumber; // 运单发件人手机号
 
+    @FormParam("isNoticeSuccess")
+    private Integer isNoticeSuccess;
+
     public void setQimenWarehouseCode(String qimenWarehouseCode) {
         this.qimenWarehouseCode = qimenWarehouseCode;
     }
@@ -213,6 +216,7 @@ public class Warehouse extends BaseDO {
                 ", warehouseContact='" + warehouseContact + '\'' +
                 ", warehouseContactNumber='" + warehouseContactNumber + '\'' +
                 ", senderPhoneNumber='" + senderPhoneNumber + '\'' +
+                ", isNoticeSuccess=" + isNoticeSuccess +
                 ", province='" + province + '\'' +
                 ", city='" + city + '\'' +
                 ", area='" + area + '\'' +
@@ -227,4 +231,11 @@ public class Warehouse extends BaseDO {
         return isThroughQimen;
     }
 
+    public Integer getIsNoticeSuccess() {
+        return isNoticeSuccess;
+    }
+
+    public void setIsNoticeSuccess(Integer isNoticeSuccess) {
+        this.isNoticeSuccess = isNoticeSuccess;
+    }
 }
