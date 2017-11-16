@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.system.IChannelBiz;
 import org.trc.constants.SupplyConstants;
@@ -17,13 +18,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by sone on 2017/5/2.
+ *
+ * @author sone
+ * @date 2017/5/2
  */
 @Component
 @Path(SupplyConstants.Channel.ROOT)
 public class ChannelResource {
 
-    @Resource
+    @Autowired
     private IChannelBiz channelBiz;
 
     //渠道分页查询
@@ -49,6 +52,15 @@ public class ChannelResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryChannels(@BeanParam ChannelForm channelForm) {
         return  ResultUtil.createSuccessResult("查询业务线列表成功", channelBiz.queryChannels(channelForm));
+    }
+
+
+    //销售渠道列表查询
+    @GET
+    @Path(SupplyConstants.Channel.SELL_CHANNEL_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response querySellChannelList() {
+        return  ResultUtil.createSuccessResult("查询销售渠道列表成功", channelBiz.querySellChannel());
     }
 
     //保存渠道

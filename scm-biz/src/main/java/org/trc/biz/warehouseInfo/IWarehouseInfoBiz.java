@@ -1,5 +1,6 @@
 package org.trc.biz.warehouseInfo;
 
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.warehouseInfo.WarehouseInfoForm;
 import org.trc.form.warehouseInfo.WarehouseInfoResult;
@@ -14,10 +15,10 @@ public interface IWarehouseInfoBiz {
 
     /**
      * 添加仓库
-     * @param qimenWarehouseCode 奇门仓库编码
+     * @param code 奇门仓库编码
      * @return
      */
-    Response saveWarehouse(String qimenWarehouseCode);
+    Response saveWarehouse(String code, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 查询不在本地的仓库
@@ -38,5 +39,19 @@ public interface IWarehouseInfoBiz {
      * @return
      */
     Pagenation<WarehouseInfoResult> selectWarehouseInfoByPage(WarehouseInfoForm query, Pagenation<WarehouseInfo> page);
+
+    /**
+     * 保存货主信息
+     * @param warehouseInfo 货主信息
+     * @return
+     */
+    Response saveOwnerInfo(WarehouseInfo warehouseInfo);
+
+    /**
+     * 删除仓库信息
+     * @param id 仓库ID
+     * @return
+     */
+    Response deleteWarehouse(String id);
 
 }
