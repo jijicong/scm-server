@@ -160,6 +160,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         for (WarehouseInfo warehouseInfo:list){
             WarehouseInfoResult result = new WarehouseInfoResult();
             result.setId(warehouseInfo.getId());
+            result.setWarehouseId(warehouseInfo.getWarehouseId());
             result.setWarehouseName(warehouseInfo.getWarehouseName());
             result.setType(warehouseInfo.getType());
             result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
@@ -194,6 +195,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             state = "通知成功";
         }else if (StringUtils.isEquals(ownerWarehouseState, ZeroToNineEnum.TWO.getCode())){
             state = "通知失败";
+        }else if (StringUtils.isEquals(ownerWarehouseState, ZeroToNineEnum.THREE.getCode())){
+            state = "通知中";
         }
         return state;
     }
@@ -212,13 +215,24 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     public Response saveOwnerInfo(WarehouseInfo warehouseInfo){
-        Example example = new Example(WarehouseInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("id",warehouseInfo.getId());
-        int cout = warehouseInfoService.updateByExampleSelective(warehouseInfo,example);
-        if (cout==0){
-            log.error("更新货主信息失败");
-            String msg = "更新货主信息失败";
+        AssertUtil.notBlank(warehouseInfo.getOwnerName(),"货主姓名不能为空");
+        AssertUtil.notNull(warehouseInfo.getId(),"主键不能为空");
+        AssertUtil.notBlank(warehouseInfo.getWarehouseId(),"仓库主键不能为空");
+        Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
+        if (warehouse.getIsNoticeSuccess() != null && warehouse.getIsNoticeSuccess().equals(NoticeSuccessEnum.UN_NOTIC.getCode())){
+            Example example = new Example(WarehouseInfo.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("id",warehouseInfo.getId());
+            warehouseInfo.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+            int cout = warehouseInfoService.updateByExampleSelective(warehouseInfo,example);
+            if (cout==0){
+                log.error("更新货主信息失败");
+                String msg = "更新货主信息失败";
+                throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+            }
+        }else {
+            log.info("不符合保存操作");
+            String msg = "不符合保存操作";
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }
         return ResultUtil.createSuccessResult("保存货主信息成功","success");
@@ -226,6 +240,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     public Response deleteWarehouse(String id){
+        AssertUtil.notBlank(id,"主键不能为空");
         Example example = new Example(WarehouseInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",id);
