@@ -1,7 +1,6 @@
 package org.trc.biz.impl.warehouseInfo;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,8 +227,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseInfo.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
             int cout = warehouseInfoService.updateByExampleSelective(warehouseInfo,example);
             if (cout==0){
-                log.error("更新货主信息失败");
-                String msg = "更新货主信息失败";
+                log.error("保存货主信息失败");
+                String msg = "保存货主信息失败";
                 throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
             }
         }else {
@@ -250,10 +249,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         warehouseInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ONE.getCode()));
         int cout = warehouseInfoService.updateByExampleSelective(warehouseInfo,example);
         if (cout==0){
-            log.error("删除从库信息失败");
+            log.error("删除仓库信息失败");
             String msg = "删除从库信息失败";
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }
-        return ResultUtil.createSuccessResult("删除从库信息成功","success");
+        return ResultUtil.createSuccessResult("删除仓库信息成功","success");
     }
 }
