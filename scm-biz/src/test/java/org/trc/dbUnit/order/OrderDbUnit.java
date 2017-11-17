@@ -14,9 +14,12 @@ import org.trc.constants.SupplyConstants;
 import org.trc.dbUnit.order.form.*;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.LogisticNoticeForm;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
+import org.trc.model.ToGlyResultDO;
 import org.trc.service.BaseTest;
 import org.trc.service.IJDService;
+import org.trc.service.ITrcService;
 import org.trc.service.order.IWarehouseOrderService;
 import org.trc.service.util.IRealIpService;
 import org.trc.util.AssertUtil;
@@ -188,7 +191,38 @@ public class OrderDbUnit extends BaseTest{
         //mock调用外部接口查询物流
         mockQueryLogistics(scmOrderBiz);
         scmOrderBiz.fetchLogisticsInfo();
-
+        /**
+         * 校验店铺订单数据
+         */
+        ReplacementDataSet expResult2 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertShopOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult2.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SHOP_ORDER,"select * from shop_order",expResult2,conn);
+        /**
+         * 校验仓库订单数据
+         */
+        ReplacementDataSet expResult3 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertWarehouseOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult3.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult3,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult5 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertSupplierOrderInfo.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult5.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult4 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertOrderItem.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult4.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
     }
 
     /**
@@ -276,11 +310,57 @@ public class OrderDbUnit extends BaseTest{
                 "        \"warehouseOrderCode\": \"GYS0000561201710180000529\"\n" +
                 "    }";
         returnTypeDO.setResult(result);
-        when(ijdService.getLogisticsInfo(anyString(), anyString())).thenReturn(returnTypeDO);
+
+        ReturnTypeDO returnTypeDO2 = new ReturnTypeDO();
+        returnTypeDO2.setSuccess(true);
+        String result2 = "{\n" +
+                "        \"logistics\": [\n" +
+                "            {\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
+                "                        \"num\": \"2\",\n" +
+                "                        \"skuCode\": \"310516625460002590\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"logisticsCorporation\": \"圆通快递\",\n" +
+                "                \"logisticInfo\": [],\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            },\n" +
+                "\t\t\t{\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\n" +
+                "                        \"num\": \"1\",\n" +
+                "                        \"skuCode\": \"1075510226\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"logisticsCorporation\": \"圆通快递\",\n" +
+                "                \"logisticInfo\": [],\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"type\": \"1\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201710180000530\"\n" +
+                "    }";
+        returnTypeDO2.setResult(result2);
+        when(ijdService.getLogisticsInfo(anyString(), eq("0"))).thenReturn(returnTypeDO);
+        when(ijdService.getLogisticsInfo(anyString(), eq("1"))).thenReturn(returnTypeDO2);
 
         IRealIpService iRealIpService = mock(IRealIpService.class);
         scmOrderBiz.setiRealIpService(iRealIpService);
         when(iRealIpService.isRealTimerService()).thenReturn(true);
+
+        ITrcService trcService = mock(ITrcService.class);
+        scmOrderBiz.setTrcService(trcService);
+        ToGlyResultDO resultDO = new ToGlyResultDO();
+        resultDO.setStatus("1");
+        resultDO.setMsg("发送物流信息给泰然城成功");
+        when(trcService.sendLogisticInfoNotice(any(LogisticNoticeForm.class))).thenReturn(resultDO);
     }
 
 
