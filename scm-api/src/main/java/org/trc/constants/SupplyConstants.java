@@ -844,6 +844,15 @@ public class SupplyConstants {
         public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
 
         public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
+
+        //仓库商品信息分页查询路径
+        public static final String WAREHOUSE_ITEM_INFO_PAGE = "warehouseItemInfoPage";
+
+        //仓库商品信息路径
+        public static final String WAREHOUSE_ITEM_INFO = "warehouseItemInfo";
+
+        //通知状态
+        public static final String NOTICE_STATUS = "noticeStatus";
     }
 
     /**
