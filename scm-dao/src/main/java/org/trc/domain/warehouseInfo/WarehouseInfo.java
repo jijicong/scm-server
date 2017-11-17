@@ -25,6 +25,10 @@ public class WarehouseInfo {
     private Long id;
 
     //仓库名称
+    @FormParam("warehouseId")
+    private String warehouseId;
+
+    //仓库名称
     @FormParam("warehouseName")
     @Length(max = 64, message = "入库通知的编码字母和数字不能超过64个,汉字不能超过32个")
     private String warehouseName;
@@ -84,6 +88,14 @@ public class WarehouseInfo {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(String warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
     public String getWarehouseName() {

@@ -318,6 +318,13 @@ public class ChannelBiz implements IChannelBiz {
         return channelExt;
     }
 
+    @Override
+    public List<SellChannel> querySellChannel() {
+        List<SellChannel> sellChannelList = sellChannelService.queryAllSellChannel();
+        AssertUtil.notEmpty(sellChannelList,"销售渠道查询结果为空");
+        return sellChannelList;
+    }
+
 
     /**
      * 业务销售渠道校验

@@ -247,6 +247,10 @@ public class SupplyConstants {
          * 编辑时回写的数据
          */
         public static final String CHANNEL_ID_SELL_CHANNEL= "channelInSellChannel";
+        /**
+         * 查询所有的销售渠道
+         */
+        public static final String SELL_CHANNEL_LIST= "channelList";
     }
 
     /**
@@ -844,6 +848,10 @@ public class SupplyConstants {
         public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
 
         public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
+
+        public static final String OWNER_INFO = "ownerInfo";
+
+        public static final String DELETE_WAREHOUSE_INFO = "deleteWarehouse";
 
         //仓库商品信息分页查询路径
         public static final String WAREHOUSE_ITEM_INFO_PAGE = "warehouseItemInfoPage";

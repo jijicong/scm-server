@@ -252,6 +252,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(form.getSupplierOrderStatus())){//状态
             criteria.andEqualTo("supplierOrderStatus", form.getSupplierOrderStatus());
         }
+        if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//平台订单编号
+            criteria.andLike("platformOrderCode", "%" + form.getPlatformOrderCode() + "%");
+        }
         if(StringUtils.isNotBlank(form.getWarehouseOrderCode())){//供应商订单编号
             criteria.andLike("warehouseOrderCode", "%" + form.getWarehouseOrderCode() + "%");
         }
@@ -529,6 +532,34 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return sb.toString();
     }
 
+    /**
+     * 获取异常订单错误信息,给供应商订单分页查询页面用
+     * @param supplierOrderInfoList
+     * @return
+     */
+    private String getOrderExceptionMessage2(List<SupplierOrderInfo> supplierOrderInfoList){
+        StringBuilder sb = new StringBuilder();
+        for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
+            List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
+            if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
+                    StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
+                    StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_SUCCESS_INFO).append(HTML_BR);
+                }
+            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append("<font color=\"red\">").append(skuInfo.getSkuCode()).append(":").append(ORDER_FAILURE_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append("</font>").append(HTML_BR);
+                }
+            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
 
 
     /**
@@ -795,7 +826,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(partsDeliverNum > 0 || (waitDeliverNum > 0 && (partsDeliverNum > 0 || allDeliverNum > 0)))
                 return SupplierOrderStatusEnum.PARTS_DELIVER.getCode();
             //全部发货：所有商品的发货状态均更新为“全部发货”时，供应商订单的状态就更新为“全部发货”
-            if(allDeliverNum == orderItemList.size())
+            if(allDeliverNum + cancelNum == orderItemList.size())
                 return SupplierOrderStatusEnum.ALL_DELIVER.getCode();
             //已取消：所有商品的发货状态均更新为“已取消”时，供应商订单的状态就更新为“已取消”；
             if(cancelNum == orderItemList.size())
@@ -1385,6 +1416,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //设置仓库订单支付时间、物流信息、下单失败原因
         for(WarehouseOrder warehouseOrder: page.getResult()){
+            //计算是否显示"取消关闭"操作
+            computeShowCancel(warehouseOrder);
+
             for(PlatformOrder platformOrder: platformOrders){
                 if(StringUtils.equals(warehouseOrder.getPlatformOrderCode(), platformOrder.getPlatformOrderCode())){
                     warehouseOrder.setPayTime(platformOrder.getPayTime());
@@ -1392,6 +1426,32 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             setLogisticsInfo(warehouseOrder);
             setOrderSubmitFialureMsg(warehouseOrder);
+        }
+    }
+
+    /**
+     * 计算是否显示"取消关闭"操作
+     * @param warehouseOrder
+     */
+    private void computeShowCancel(WarehouseOrder warehouseOrder){
+        if(StringUtils.equals(CancelStatusEnum.CANCEL.getCode(), warehouseOrder.getIsCancel())){//手工取消订单
+            if(null != warehouseOrder.getHandCancelTime()){
+                int days = DateUtils.getDaysBetween(warehouseOrder.getHandCancelTime(), Calendar.getInstance().getTime());
+                if(days <= 7){
+                    warehouseOrder.setShowCancel(ZeroToNineEnum.ONE.getCode());
+                }else {
+                    warehouseOrder.setShowCancel(ZeroToNineEnum.ZERO.getCode());
+                }
+            }else{
+                int days = DateUtils.getDaysBetween(warehouseOrder.getPayTime(), Calendar.getInstance().getTime());
+                if(days <= 7){
+                    warehouseOrder.setShowCancel(ZeroToNineEnum.ONE.getCode());
+                }else {
+                    warehouseOrder.setShowCancel(ZeroToNineEnum.ZERO.getCode());
+                }
+            }
+        }else{
+            warehouseOrder.setShowCancel(ZeroToNineEnum.ZERO.getCode());
         }
     }
 
@@ -1433,9 +1493,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseOrder.setMessage(StringUtils.EMPTY);
             }
         }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            warehouseOrder.setMessage(getOrderExceptionMessage(supplierOrderInfoList));
+            warehouseOrder.setMessage(getOrderExceptionMessage2(supplierOrderInfoList));
         }
     }
+
 
     @Override
     @CacheEvit
@@ -2066,7 +2127,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else if(StringUtils.equals(CancelStatusEnum.CLOASE_CANCEL.getCode(), warehouseOrder.getIsCancel())){//关闭取消操作
                 warehouseOrder.setSupplierOrderStatus(warehouseOrder.getOldSupplierOrderStatus());
             }
-            warehouseOrder.setUpdateTime(Calendar.getInstance().getTime());
+            Date currentDate = Calendar.getInstance().getTime();
+            warehouseOrder.setUpdateTime(currentDate);
+            warehouseOrder.setHandCancelTime(currentDate);
             warehouseOrderService.updateByPrimaryKey(warehouseOrder);
         }
         return warehouseOrder;
@@ -3121,5 +3184,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notEmpty(exceptionOrderItemList, String.format("根据拆单异常订单编码[%s]查询拆单异常订单商品明细为空",exceptionOrderCode));
         exceptionOrder.setExceptionOrderItemList(exceptionOrderItemList);
         return exceptionOrder;
+    }
+
+    @Override
+    public void setiRealIpService(IRealIpService iRealIpService) {
+        this.iRealIpService = iRealIpService;
     }
 }
