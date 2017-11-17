@@ -15,12 +15,12 @@
             jd_district="6"
             jd_province="7"
             jd_town="8"
-            logistics_status="0"
+            logistics_status="1"
             is_deleted="0"
             create_time="2017-10-18 18:55:00"
             update_time="2017-10-18 18:55:00"
             message="子订单下单成功"
-            supplier_order_status="3"
+            supplier_order_status="4"
             old_supplier_order_status="3"
     />
 
@@ -39,12 +39,12 @@
             jd_district="6"
             jd_province="7"
             jd_town="8"
-            logistics_status="0"
+            logistics_status="1"
             is_deleted="0"
             create_time="2017-10-18 18:55:00"
             update_time="2017-10-18 18:55:00"
             message="子订单下单成功"
-            supplier_order_status="3"
+            supplier_order_status="4"
             old_supplier_order_status="3"
     />
 
@@ -63,15 +63,14 @@
             jd_district="6"
             jd_province="7"
             jd_town="8"
-            logistics_status="0"
+            logistics_status="1"
             is_deleted="0"
             create_time="2017-10-18 18:55:00"
             update_time="2017-10-18 18:55:00"
             message="子订单下单成功"
-            supplier_order_status="3"
+            supplier_order_status="4"
             old_supplier_order_status="3"
     />
-
 
 
 </dataset>

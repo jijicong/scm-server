@@ -31,14 +31,14 @@
             is_part_consign="0"
             group_buy_status="NO_APPLY"
             total_tax="1"
-            create_time="2016/7/15 12:01"
-            consign_time="2016/7/15 13:16"
-            update_time="2017/10/18 18:55"
-            pay_time="2017/10/17 10:22"
-            supplier_order_status="3"
+            create_time="2016-7-15 12:01:00"
+            consign_time="2016-7-15 13:16:00"
+            update_time="2017-10-18 18:55:00"
+            pay_time="2017-10-17 10:22:00"
+            supplier_order_status="1"
     />
 
-    <shop_order
+   <!-- <shop_order
             id="420"
             shop_order_code="33333xxxxxxxxx0000016"
             platform_order_code="1608201657240531"
@@ -64,15 +64,15 @@
             item_num="3"
             shop_memo="[null]"
             total_weight="0.100"
-            trade_memo=""
+            trade_memo="0"
             rate_status="1"
             is_part_consign="0"
             group_buy_status="NO_APPLY"
             total_tax="1"
-            create_time="2016/7/15 12:37"
-            consign_time="2016/7/19 16:53"
-            update_time="2017/10/18 18:55"
-            pay_time="2017/10/17 10:22"
+            create_time="2016-7-15 12:37:00"
+            consign_time="2016-7-19 16:53:00"
+            update_time="2017-10-18 18:55:00"
+            pay_time="2017-10-17 10:22:00"
             supplier_order_status="1"
-    />
+    />-->
 </dataset>
