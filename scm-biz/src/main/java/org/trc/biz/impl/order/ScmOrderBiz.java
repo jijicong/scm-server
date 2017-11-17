@@ -2332,10 +2332,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             if(deliverNum == orderItem2.getNum()){
                 orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
-            }else if(deliverNum < orderItem2.getNum()){
-                orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+                orderItemService.updateByPrimaryKey(orderItem2);
+            }else{
+                if(deliverNum > 0 && deliverNum < orderItem2.getNum()){
+                    orderItem2.setSupplierOrderStatus(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+                    orderItemService.updateByPrimaryKey(orderItem2);
+                }
             }
-            orderItemService.updateByPrimaryKey(orderItem2);
         }
     }
 
@@ -3189,5 +3192,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     public void setiRealIpService(IRealIpService iRealIpService) {
         this.iRealIpService = iRealIpService;
+    }
+
+    @Override
+    public void setTrcService(ITrcService trcService) {
+        this.trcService = trcService;
     }
 }
