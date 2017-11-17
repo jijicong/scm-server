@@ -864,6 +864,12 @@ public class SupplyConstants {
 
         //仓库商品信息导出路径
         public static final String ITEMS_EXPORT = "itemsExport";
+
+        //新增商品路径
+        public static final String SAVE_ITEMS = "saveItems";
+
+        //新增商品信息分页查询路径
+        public static final String ITEMS_PAGE = "itemsPage";
     }
 
     /**

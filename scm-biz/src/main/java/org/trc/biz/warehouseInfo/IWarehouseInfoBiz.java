@@ -84,9 +84,20 @@ public interface IWarehouseInfoBiz {
      */
     Response exportWarehouseItems(WarehouseItemInfoForm form, Long warehouseInfoId);
 
-    //新增商品
+    /**
+     * 新增商品
+     * @param itemsList
+     * @param warehouseInfoId
+     * @return
+     */
     Response saveWarehouseItemsSku(List<Skus> itemsList,Long warehouseInfoId);
 
-   //新增商品信息分页查询
+    /**
+     * 新增商品信息分页查询
+     * @param form
+     * @param page
+     * @param warehouseInfoId
+     * @return
+     */
    Pagenation<ItemsResult> queryWarehouseItemsSku(SkusForm form, Pagenation<Skus> page, Long warehouseInfoId);
 }

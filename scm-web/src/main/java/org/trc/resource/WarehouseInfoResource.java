@@ -9,13 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.warehouseInfo.IWarehouseInfoBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.form.UploadResponse;
-import org.trc.form.warehouseInfo.WarehouseInfoForm;
-import org.trc.form.warehouseInfo.WarehouseInfoResult;
-import org.trc.form.warehouseInfo.WarehouseItemInfoForm;
+import org.trc.form.warehouseInfo.*;
 import org.trc.util.AssertUtil;
 import org.trc.util.ImportExcel;
 import org.trc.util.Pagenation;
@@ -27,6 +26,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -123,6 +123,22 @@ public class WarehouseInfoResource {
     public Response exportOrderDetail(@BeanParam WarehouseItemInfoForm form, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
         logger.info("进入商品信息导出接口======>"+ "传入参数为：form："+JSON.toJSONString(form)+",warehouseInfoId:"+warehouseInfoId);
         return warehouseInfoBiz.exportWarehouseItems(form,warehouseInfoId);
+    }
+
+    @POST
+    @Path(SupplyConstants.WarehouseInfo.SAVE_ITEMS+"/{warehouseInfoId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveWarehouseItemsSku(@BeanParam List<Skus> itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+        logger.info("进入添加新商品接口======>"+ "传入参数为：form："+JSON.toJSONString(itemsList)+",warehouseInfoId:"+warehouseInfoId);
+        return warehouseInfoBiz.saveWarehouseItemsSku(itemsList,warehouseInfoId);
+    }
+
+    @GET
+    @Path(SupplyConstants.WarehouseInfo.ITEMS_PAGE+"/{warehouseInfoId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Pagenation<ItemsResult> queryWarehouseItemInfoPage(@BeanParam SkusForm form, @BeanParam Pagenation<Skus> page, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+        logger.info("进入商品分页查询接口======>"+ "传入参数为：form："+JSON.toJSONString(form)+",warehouseInfoId:"+warehouseInfoId);
+        return warehouseInfoBiz.queryWarehouseItemsSku(form, page,warehouseInfoId);
     }
 
 //    @POST
