@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -37,7 +38,7 @@ public class Warehouse extends BaseDO {
     private Integer isCustomsClearance; //是否支持清关 0.不支持 1. 支持  null.无   只用保税仓，才会有清关 ，其它为null
 
     @FormParam("isThroughQimen")
-    @NotEmpty
+    @NotNull
     private Integer isThroughQimen; // 是否通过奇门对接：0-不通过 1-通过
 
     @FormParam("qimenWarehouseCode")
@@ -55,6 +56,9 @@ public class Warehouse extends BaseDO {
     @FormParam("senderPhoneNumber")
     @Length(max = 16, message = "运单发件人手机号长度不能超过16个")
     private String senderPhoneNumber; // 运单发件人手机号
+
+    @FormParam("isNoticeSuccess")
+    private Integer isNoticeSuccess;
 
     public void setQimenWarehouseCode(String qimenWarehouseCode) {
         this.qimenWarehouseCode = qimenWarehouseCode;
@@ -212,6 +216,7 @@ public class Warehouse extends BaseDO {
                 ", warehouseContact='" + warehouseContact + '\'' +
                 ", warehouseContactNumber='" + warehouseContactNumber + '\'' +
                 ", senderPhoneNumber='" + senderPhoneNumber + '\'' +
+                ", isNoticeSuccess=" + isNoticeSuccess +
                 ", province='" + province + '\'' +
                 ", city='" + city + '\'' +
                 ", area='" + area + '\'' +
@@ -226,4 +231,11 @@ public class Warehouse extends BaseDO {
         return isThroughQimen;
     }
 
+    public Integer getIsNoticeSuccess() {
+        return isNoticeSuccess;
+    }
+
+    public void setIsNoticeSuccess(Integer isNoticeSuccess) {
+        this.isNoticeSuccess = isNoticeSuccess;
+    }
 }

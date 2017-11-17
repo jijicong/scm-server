@@ -24,7 +24,7 @@ public class LyStatement {
     //买家实付商品金额
     private BigDecimal payment;
     //系统发送粮油时间
-    private Date createTime;
+    private String createTime;
 
     public String getSupplierSkuCode() {
         return supplierSkuCode;
@@ -90,11 +90,11 @@ public class LyStatement {
         this.payment = payment;
     }
 
-    public Date getCreateTime() {
+    public String getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(String createTime) {
         this.createTime = createTime;
     }
 }

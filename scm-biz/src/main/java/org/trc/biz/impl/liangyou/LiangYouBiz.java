@@ -288,7 +288,7 @@ public class LiangYouBiz implements ILiangYouBiz {
             lyStatement.setShopOrderCode(orderItem.getShopOrderCode());
             lyStatement.setSupplierOrderCode(orderItem.getSupplierOrderCode());
             lyStatement.setPayment(orderItem.getPayment());
-            lyStatement.setCreateTime(orderItem.getCreateTime());
+            lyStatement.setCreateTime(DateUtils.formatDateTime(orderItem.getCreateTime()));
             list.add(lyStatement);
         }
         return list;
@@ -332,19 +332,19 @@ public class LiangYouBiz implements ILiangYouBiz {
         Example example = new Example(OrderItem.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(form.getSupplierSkuCode())){
-            criteria.andEqualTo("supplierSkuCode",form.getSupplierSkuCode());
+            criteria.andLike("supplierSkuCode","%"+form.getSupplierSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getSkuCode())){
-            criteria.andEqualTo("skuCode",form.getSkuCode());
+            criteria.andLike("skuCode","%"+form.getSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getItemName())){
-            criteria.andEqualTo("itemName",form.getItemName());
+            criteria.andLike("itemName","%"+form.getItemName()+"%");
         }
         if (!StringUtils.isBlank(form.getPlatformOrderCode())){
-            criteria.andEqualTo("platformOrderCode",form.getPlatformOrderCode());
+            criteria.andLike("platformOrderCode","%"+form.getPlatformOrderCode()+"%");
         }
         if (!StringUtils.isBlank(form.getShopOrderCode())){
-            criteria.andEqualTo("shopOrderCode",form.getShopOrderCode());
+            criteria.andLike("shopOrderCode","%"+form.getShopOrderCode()+"%");
         }
         criteria.andIn("warehouseOrderCode",list);
         example.orderBy("submitTime").desc();
@@ -356,19 +356,19 @@ public class LiangYouBiz implements ILiangYouBiz {
         Example example = new Example(OrderItem.class);
         Example.Criteria criteria = example.createCriteria();
         if (!StringUtils.isBlank(form.getSupplierSkuCode())){
-            criteria.andEqualTo("supplierSkuCode",form.getSupplierSkuCode());
+            criteria.andLike("supplierSkuCode","%"+form.getSupplierSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getSkuCode())){
-            criteria.andEqualTo("skuCode",form.getSkuCode());
+            criteria.andLike("skuCode","%"+form.getSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getItemName())){
-            criteria.andEqualTo("itemName",form.getItemName());
+            criteria.andLike("itemName","%"+form.getItemName()+"%");
         }
         if (!StringUtils.isBlank(form.getPlatformOrderCode())){
-            criteria.andEqualTo("platformOrderCode",form.getPlatformOrderCode());
+            criteria.andLike("platformOrderCode","%"+form.getPlatformOrderCode()+"%");
         }
         if (!StringUtils.isBlank(form.getShopOrderCode())){
-            criteria.andEqualTo("shopOrderCode",form.getShopOrderCode());
+            criteria.andLike("shopOrderCode","%"+form.getShopOrderCode()+"%");
         }
         criteria.andIn("warehouseOrderCode",list);
         example.orderBy("submitTime").desc();
@@ -387,7 +387,7 @@ public class LiangYouBiz implements ILiangYouBiz {
             criteria.andLessThanOrEqualTo("createTime",form.getEndDate());
         }
         if (!StringUtils.isBlank(form.getSupplierOrderCode())){
-            criteria.andEqualTo("supplierOrderCode",form.getSupplierOrderCode());
+            criteria.andLike("supplierOrderCode","%"+form.getSupplierOrderCode()+"%");
         }
         List<String> list = new ArrayList();
         list.add("3");
@@ -414,10 +414,10 @@ public class LiangYouBiz implements ILiangYouBiz {
             CellDefinition skuCode = new CellDefinition("supplierSkuCode", "粮油商品SKU", CellDefinition.TEXT, 4000);
             CellDefinition itemName = new CellDefinition("itemName", "粮油商品名称", CellDefinition.TEXT, 8000);
             CellDefinition num = new CellDefinition("num", "交易数量", CellDefinition.NUM_0_00, 2000);
-            CellDefinition platformOrderCode = new CellDefinition("platformOrderCode", "平台订单号", CellDefinition.NUM_0_00, 4000);
+            CellDefinition platformOrderCode = new CellDefinition("platformOrderCode", "平台订单号", CellDefinition.TEXT, 4000);
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "店铺订单号", CellDefinition.TEXT, 4000);
             CellDefinition supplierOrderCode = new CellDefinition("supplierOrderCode", "粮油订单号", CellDefinition.TEXT, 4000);
-            CellDefinition payment = new CellDefinition("payment", "买家实付商品金额", CellDefinition.TEXT, 2000);
+            CellDefinition payment = new CellDefinition("payment", "买家实付商品金额", CellDefinition.NUM_0_00, 2000);
             CellDefinition createTime = new CellDefinition("createTime", "系统发送粮油时间", CellDefinition.TEXT, 8000);
 
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
