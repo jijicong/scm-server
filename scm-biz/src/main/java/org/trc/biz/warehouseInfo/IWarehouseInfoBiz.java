@@ -1,14 +1,14 @@
 package org.trc.biz.warehouseInfo;
 
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.form.warehouseInfo.WarehouseInfoForm;
-import org.trc.form.warehouseInfo.WarehouseInfoResult;
-import org.trc.form.warehouseInfo.WarehouseItemInfoForm;
+import org.trc.form.warehouseInfo.*;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by wangyz on 2017/11/15.
@@ -75,4 +75,18 @@ public interface IWarehouseInfoBiz {
      * @param warehouseItemInfo
      */
     void updateWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo);
+
+    /**
+     * 商品信息导出
+     * @param form 查询条件
+     * @param warehouseInfoId 仓库ID
+     * @return
+     */
+    Response exportWarehouseItems(WarehouseItemInfoForm form, Long warehouseInfoId);
+
+    //新增商品
+    Response saveWarehouseItemsSku(List<Skus> itemsList,Long warehouseInfoId);
+
+   //新增商品信息分页查询
+   Pagenation<ItemsResult> queryWarehouseItemsSku(SkusForm form, Pagenation<Skus> page, Long warehouseInfoId);
 }

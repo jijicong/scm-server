@@ -117,6 +117,14 @@ public class WarehouseInfoResource {
         return ResultUtil.createSuccessResult("修改仓库商品信息成功", "");
     }
 
+    @GET
+    @Path(SupplyConstants.WarehouseInfo.ITEMS_EXPORT+"/{warehouseInfoId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response exportOrderDetail(@BeanParam WarehouseItemInfoForm form, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+        logger.info("进入商品信息导出接口======>"+ "传入参数为：form："+JSON.toJSONString(form)+",warehouseInfoId:"+warehouseInfoId);
+        return warehouseInfoBiz.exportWarehouseItems(form,warehouseInfoId);
+    }
+
 //    @POST
 //    @Path(SupplyConstants.WarehouseInfo.NOTICE_STATUS )
 //    @Consumes(MediaType.MULTIPART_FORM_DATA)
