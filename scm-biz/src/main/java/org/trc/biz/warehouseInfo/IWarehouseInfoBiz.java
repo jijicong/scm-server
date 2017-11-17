@@ -1,8 +1,10 @@
 package org.trc.biz.warehouseInfo;
 
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.form.warehouseInfo.WarehouseInfoForm;
 import org.trc.form.warehouseInfo.WarehouseInfoResult;
+import org.trc.form.warehouseInfo.WarehouseItemInfoForm;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -39,4 +41,23 @@ public interface IWarehouseInfoBiz {
      */
     Pagenation<WarehouseInfoResult> selectWarehouseInfoByPage(WarehouseInfoForm query, Pagenation<WarehouseInfo> page);
 
+    /**
+     *仓库商品信息分页查询
+     * @param query
+     * @param page
+     * @return
+     */
+    Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page);
+
+    /**
+     * 删除仓库商品信息
+     * @param id
+     */
+    void deleteWarehouseItemInfoById(Long id);
+
+    /**
+     * 编辑仓库商品信息
+     * @param warehouseItemInfo
+     */
+    void updateWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo);
 }
