@@ -1,5 +1,6 @@
 package org.trc.domain.goods;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
@@ -11,7 +12,7 @@ import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
-
+//@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Skus extends ScmDO {
 
     @PathParam("id")
