@@ -140,6 +140,12 @@ public class Skus extends ScmDO {
      */
     @Transient
     private String name;
+    
+    /**
+     * sku规格信息
+     */   
+    @FormParam("specInfo")
+    private String specInfo;
 
     public String getName() {
 		return name;
@@ -412,4 +418,13 @@ public class Skus extends ScmDO {
     public void setStock(Long stock) {
         this.stock = stock;
     }
+
+	public String getSpecInfo() {
+		return specInfo;
+	}
+
+	public void setSpecInfo(String specInfo) {
+		this.specInfo = specInfo;
+	}
+    
 }
