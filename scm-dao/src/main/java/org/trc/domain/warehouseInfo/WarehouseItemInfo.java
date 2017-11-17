@@ -7,13 +7,14 @@ import org.trc.domain.BaseDO;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by hzcyn on 2017/11/16.
  * @author hzcyn
  */
-public class WarehouseItemInfo extends BaseDO {
+public class WarehouseItemInfo implements Serializable{
 
     /**
      * 主键
@@ -50,6 +51,8 @@ public class WarehouseItemInfo extends BaseDO {
     private Integer isDelete;
     //失败原因
     private String exceptionReason;
+    //商品状态:1-停用,2-启用
+    private Integer isValid;
 
     public Long getId() {
         return id;
@@ -131,22 +134,18 @@ public class WarehouseItemInfo extends BaseDO {
         this.noticeStatus = noticeStatus;
     }
 
-    @Override
     public Date getCreateTime() {
         return createTime;
     }
 
-    @Override
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
 
-    @Override
     public Date getUpdateTime() {
         return updateTime;
     }
 
-    @Override
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
@@ -167,6 +166,14 @@ public class WarehouseItemInfo extends BaseDO {
         this.exceptionReason = exceptionReason;
     }
 
+    public Integer getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(Integer isValid) {
+        this.isValid = isValid;
+    }
+
     @Override
     public String toString() {
         return "WarehouseItemInfo{" +
@@ -183,7 +190,8 @@ public class WarehouseItemInfo extends BaseDO {
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", isDelete=" + isDelete +
-                ", exception_reason='" + exceptionReason + '\'' +
+                ", exceptionReason='" + exceptionReason + '\'' +
+                ", isValid=" + isValid +
                 '}';
     }
 }
