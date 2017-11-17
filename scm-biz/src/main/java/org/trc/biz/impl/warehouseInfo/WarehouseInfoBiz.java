@@ -46,6 +46,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
 
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
+
     @Override
     public Response saveWarehouse(String code,AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(code,"奇门仓库编号不能为空");
