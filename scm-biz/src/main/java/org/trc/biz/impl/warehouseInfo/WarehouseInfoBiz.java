@@ -349,11 +349,19 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    public Response saveWarehouseItemsSku(List<Skus> itemsList,Long warehouseInfoId) {
+    public Response saveWarehouseItemsSku(String items,Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId,"仓库的主键不能为空");
-        if (itemsList.size()==0){
-            log.info("至少选择一件商品");
-            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"至少选择一件商品");
+        AssertUtil.notBlank(items,"至少选择一件商品");
+        List<Skus> itemsList = JSON.parseArray(items,Skus.class);
+        //验证商品是否停用
+        List<String> stopSkuCode = valideItems(itemsList);
+        if (stopSkuCode.size()>0){
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU停用："+JSON.toJSONString(stopSkuCode));
+        }
+        //验证商品是否添加过
+        List<String> hasAdd = hasAddItems(itemsList,warehouseInfoId);
+        if (hasAdd.size()>0){
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU已经添加："+JSON.toJSONString(hasAdd));
         }
         List<WarehouseItemInfo> list = new ArrayList<>();
         Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseInfoId);
@@ -364,16 +372,59 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+            warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
+            warehouseItemInfo.setWarehouseItemId(String.valueOf(sku.getItemId()));
             warehouseItemInfo.setSkuCode(sku.getSkuCode());
             warehouseItemInfo.setItemName(sku.getSkuName());
             warehouseItemInfo.setSpecNatureInfo(sku.getSpecInfo());
-            warehouseItemInfo.setIsValid(Integer.valueOf(sku.getIsValid()));
+            warehouseItemInfo.setIsValid(Integer.valueOf(ZeroToNineEnum.ONE.getCode()));
             warehouseItemInfo.setWarehouseItemId(warehouseItemId);
             warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.UN_NOTICS.getCode());
+            warehouseItemInfo.setBarCode(sku.getBarCode());
+            warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
+            //要修改
+            warehouseItemInfo.setItemNo("1");
+            warehouseItemInfo.setItemType("ZC");
+
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
         return ResultUtil.createSuccessResult("添加新商品成功","success");
+    }
+
+    private List<String> valideItems(List<Skus> itemsList){
+        List<String> list = new ArrayList<>();
+        for (Skus sku:itemsList){
+            list.add(sku.getSkuCode());
+        }
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode",list);
+        List<Skus> skuList = skusService.selectByExample(example);
+        List<String> stopSkuCode = new ArrayList<>();
+        for (Skus sku:skuList){
+            if (sku.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())){
+                stopSkuCode.add(sku.getSkuCode());
+            }
+        }
+        return stopSkuCode;
+    }
+
+    private List<String> hasAddItems(List<Skus> itemsList,Long warehouseInfoId){
+        List<String> list = new ArrayList<>();
+        for (Skus sku:itemsList){
+            list.add(sku.getSkuCode());
+        }
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode",list);
+        criteria.andEqualTo("warehouseInfoId",warehouseInfoId);
+        List<Skus> skuList = skusService.selectByExample(example);
+        List<String> hasAdd = new ArrayList<>();
+        for (Skus sku:skuList){
+            hasAdd.add(sku.getSkuCode());
+        }
+        return hasAdd;
     }
 
     @Override
@@ -401,6 +452,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<Skus> includeList = pageTem.getResult();
         log.info("开始补全未添加过的sku信息===============》");
         Map<String,BrandCategoryForm> map = completionData(includeList);
+        if (map==null){
+            String msg = "补全商品信息异常";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
         List<ItemsResult> newList = new ArrayList<>();
         for (Skus sku:includeList){
             ItemsResult itemsResult = new ItemsResult();
@@ -408,9 +464,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             itemsResult.setSkuName(sku.getSkuName());
             itemsResult.setSpuCode(sku.getSpuCode());
             itemsResult.setSpecInfo(sku.getSpecInfo());
-            BrandCategoryForm BrandCategoryForm = map.get(sku.getSkuCode());
+            BrandCategoryForm BrandCategoryForm = map.get(sku.getSpuCode());
             itemsResult.setBrandName(BrandCategoryForm.getBrandName());
             itemsResult.setCategoryName(BrandCategoryForm.getCategoryName());
+            itemsResult.setBarCode(sku.getBarCode());
+            itemsResult.setItemId(sku.getItemId());
             newList.add(itemsResult);
         }
         Pagenation<ItemsResult> pagenation = new Pagenation<>();
@@ -482,9 +540,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         String str = null;
         if (StringUtils.isBlank(state)){
             str = "商品状态为空";
-        }else if (state == ZeroToNineEnum.ONE.getCode()){
+        }else if (state.equals(ZeroToNineEnum.ONE.getCode())){
             str = "停用";
-        }else if (state == ZeroToNineEnum.TWO.getCode()){
+        }else if (state.equals(ZeroToNineEnum.TWO.getCode())){
             str = "启用";
         }
         return str;

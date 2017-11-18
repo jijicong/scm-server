@@ -86,11 +86,11 @@ public interface IWarehouseInfoBiz {
 
     /**
      * 新增商品
-     * @param itemsList
+     * @param items
      * @param warehouseInfoId
      * @return
      */
-    Response saveWarehouseItemsSku(List<Skus> itemsList,Long warehouseInfoId);
+    Response saveWarehouseItemsSku(String items,Long warehouseInfoId);
 
     /**
      * 新增商品信息分页查询

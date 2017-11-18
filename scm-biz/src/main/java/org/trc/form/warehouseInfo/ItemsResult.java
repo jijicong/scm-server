@@ -16,6 +16,10 @@ public class ItemsResult {
 
     private String categoryName;
 
+    private String barCode;
+
+    private Long itemId;
+
     public String getSkuCode() {
         return skuCode;
     }
@@ -62,5 +66,21 @@ public class ItemsResult {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public String getBarCode() {
+        return barCode;
+    }
+
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 }

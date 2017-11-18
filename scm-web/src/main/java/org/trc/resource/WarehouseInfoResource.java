@@ -127,8 +127,9 @@ public class WarehouseInfoResource {
 
     @POST
     @Path(SupplyConstants.WarehouseInfo.SAVE_ITEMS+"/{warehouseInfoId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response saveWarehouseItemsSku(@BeanParam List<Skus> itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/json;charset=utf-8")
+    public Response saveWarehouseItemsSku(String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
         logger.info("进入添加新商品接口======>"+ "传入参数为：form："+JSON.toJSONString(itemsList)+",warehouseInfoId:"+warehouseInfoId);
         return warehouseInfoBiz.saveWarehouseItemsSku(itemsList,warehouseInfoId);
     }
