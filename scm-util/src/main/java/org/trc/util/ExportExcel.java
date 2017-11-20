@@ -6,6 +6,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
@@ -106,18 +107,13 @@ public class ExportExcel {
      * @param cellDefinitionList  表头信息（对象属性名称->要显示的标题值)[按顺序添加]
      * @param sheetName sheet名称和表头值
      */
-    public static void excelExport(List<?> dataList, List<CellDefinition> cellDefinitionList, String sheetName, String fileName) {
+    public static void excelExport(List<?> dataList, List<CellDefinition> cellDefinitionList, String sheetName, String fileName) throws IOException{
         initExcel(dataList, cellDefinitionList, sheetName);
         UUID uuid = UUID.randomUUID();
         // 写入处理结果
-        try {
-            //生成UUID文件名称
-            OutputStream out = new FileOutputStream(fileName);
-            workbook.write(out);
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        OutputStream out = new FileOutputStream(fileName);
+        workbook.write(out);
+        out.close();
     }
 
     /**
