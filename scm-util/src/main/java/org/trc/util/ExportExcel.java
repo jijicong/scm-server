@@ -5,6 +5,7 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -109,9 +110,9 @@ public class ExportExcel {
      */
     public static void excelExport(List<?> dataList, List<CellDefinition> cellDefinitionList, String sheetName, String fileName) throws IOException{
         initExcel(dataList, cellDefinitionList, sheetName);
-        UUID uuid = UUID.randomUUID();
         // 写入处理结果
-        OutputStream out = new FileOutputStream(fileName);
+        File f = new File(fileName);
+        OutputStream out = new FileOutputStream(f);
         workbook.write(out);
         out.close();
     }
