@@ -53,6 +53,14 @@ public class SellChannelResource {
         return  ResultUtil.createSuccessResult("查询销售渠道成功", sellChannelBiz.selectSellChannelByName(name)==null ? null :"1");
     }
 
+    //根据销售渠道id
+    @GET
+    @Path(SupplyConstants.SellChannel.SELL_CHANNEL+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response selectSellChannelById(@PathParam("id") Long id){
+        return  ResultUtil.createSuccessResult("查询销售渠道成功", sellChannelBiz.selectSellChannelById(id));
+    }
+
     @PUT
     @Path(SupplyConstants.SellChannel.SELL_CHANNEL_UPDATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
