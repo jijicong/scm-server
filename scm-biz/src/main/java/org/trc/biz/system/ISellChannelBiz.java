@@ -35,10 +35,11 @@ public interface ISellChannelBiz {
 
     /**
      * 根据名称查询销售渠道,用于校验
+     * @param id
      * @param sellName
      * @return
      */
-    SellChannel selectSellChannelByName(String sellName);
+    SellChannel selectSellChannelByName(Long id,String sellName);
 
     /**
      * 根据主键id查询销售渠道
@@ -46,4 +47,7 @@ public interface ISellChannelBiz {
      * @return
      */
     SellChannel selectSellChannelById(Long id);
+
+
+    SellChannel  selectSellChannelByNameAndId(Long id,String name);
 }
