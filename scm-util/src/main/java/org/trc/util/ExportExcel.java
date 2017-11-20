@@ -111,10 +111,7 @@ public class ExportExcel {
     public static void excelExport(List<?> dataList, List<CellDefinition> cellDefinitionList, String sheetName, String fileName) throws IOException{
         initExcel(dataList, cellDefinitionList, sheetName);
         // 写入处理结果
-        File f = new File(fileName);
-        String a = "e";
-        f.createNewFile();
-        OutputStream out = new FileOutputStream(f);
+        OutputStream out = new FileOutputStream(fileName);
         workbook.write(out);
         out.close();
     }
