@@ -44,6 +44,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.io.IOException;
@@ -106,6 +107,15 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
+
+    @Value("${sftp.host.value}")
+    private String HOST;
+
+    @Value("${sftp.username.value}")
+    private String USERNAME;
+
+    @Value("${sftp.password.value}")
+    private String PASSWORD;
 
     @Override
     public Response saveWarehouse(String code,AclUserAccreditInfo aclUserAccreditInfo) {
@@ -623,11 +633,14 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             int failCount = countNum - successCount;
 
             //将错误通知导入excel
-            String url = "";
+            String url = null;
             if (!(Boolean) contentMapResult.get("flag")) {
                 flag = false;
                 String newFileName = String.valueOf(System.nanoTime());
-                url = this.saveExceptionExcel((Map<String, String>) contentMapResult.get("exceptionContent"), newFileName);
+                url = newFileName + XLS;
+                ByteArrayOutputStream stream = this.saveExceptionExcel((Map<String, String>) contentMapResult.get("exceptionContent"), newFileName);
+                //保存文本到前端服务器
+                this.saveExcel(stream, url);
             }
 
             //构造返回参数
@@ -644,7 +657,15 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", result);
     }
 
+    private void saveExcel(ByteArrayOutputStream out, String fileName) throws Exception{
+        FTPUtil sf = new FTPUtil();
+        int port = 22;
 
+        ByteArrayInputStream swapStream = new ByteArrayInputStream(out.toByteArray());
+        sf.connect(HOST, port, USERNAME, PASSWORD);
+        sf.upload(EXCEPTION_NOTICE_UPLOAD_ADDRESS, swapStream, fileName);
+        sf.disconnect();
+    }
 
     private int saveNoticeStatus(List<String> list, String warehouseInfoId) {
         String[] values = null;
@@ -664,7 +685,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return count;
     }
 
-    private String saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {
+    private ByteArrayOutputStream saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {
         //获取所有异常信息
         List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map);
 
@@ -679,11 +700,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
         String sheetName = "仓库商品信息异常原因";
         //fileName = "仓库商品信息异常原因" + fileName;
-        fileName = fileName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
-        String downloadAddress = EXCEPTION_NOTICE_UPLOAD_ADDRESS + fileName;
+        //fileName = fileName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+        //String downloadAddress = EXCEPTION_NOTICE_UPLOAD_ADDRESS + fileName;
 
-        ExportExcel.excelExport(warehouseItemInfoExceptionList, cellDefinitionList, sheetName, downloadAddress);
-        return fileName;
+        HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(warehouseItemInfoExceptionList, cellDefinitionList, sheetName);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        hssfWorkbook.write(stream);
+        return stream;
     }
 
     private List<WarehouseItemInfoException> getWarehouseItemInfoExceptionList(Map<String, String> map) {

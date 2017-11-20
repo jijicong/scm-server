@@ -145,14 +145,6 @@ public class WarehouseInfoResource {
         return warehouseInfoBiz.queryWarehouseItemsSku(form, page,warehouseInfoId);
     }
 
-//    @POST
-//    @Path(SupplyConstants.WarehouseInfo.NOTICE_STATUS )
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response upload(@FormDataParam("file") InputStream uploadedInputStream,
-//                              @FormDataParam("file") FormDataContentDisposition fileDetail,
-//                              @FormParam("warehouseInfoId") String warehouseInfoId) {
-//        return warehouseInfoBiz.
-//    }
     @POST
     @Path(SupplyConstants.WarehouseInfo.NOTICE_STATUS)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
