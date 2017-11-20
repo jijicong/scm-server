@@ -637,7 +637,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if (!(Boolean) contentMapResult.get("flag")) {
                 flag = false;
                 String newFileName = String.valueOf(System.nanoTime());
-                url = newFileName + XLS;
+                url = newFileName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
                 ByteArrayOutputStream stream = this.saveExceptionExcel((Map<String, String>) contentMapResult.get("exceptionContent"), newFileName);
                 //保存文本到前端服务器
                 this.saveExcel(stream, url);
