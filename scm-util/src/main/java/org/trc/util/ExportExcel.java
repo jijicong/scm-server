@@ -112,6 +112,7 @@ public class ExportExcel {
         initExcel(dataList, cellDefinitionList, sheetName);
         // 写入处理结果
         File f = new File(fileName);
+        f.mkdir();
         OutputStream out = new FileOutputStream(f);
         workbook.write(out);
         out.close();
