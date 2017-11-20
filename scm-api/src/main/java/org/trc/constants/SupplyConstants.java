@@ -279,6 +279,10 @@ public class SupplyConstants {
          * 销售渠道新增
          */
         public static final String SELL_CHANNEL_SAVE = "save/sellChannel";
+        /**
+         *根据主键查询销售渠道
+         */
+        public static final String SELL_CHANNEL = "sellChannel";
     }
     /**
      * 仓库管理

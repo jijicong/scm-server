@@ -145,6 +145,14 @@ public class SellChannelBiz implements ISellChannelBiz{
         return sellChannel;
     }
 
+    @Override
+    public SellChannel selectSellChannelById(Long id) {
+        AssertUtil.notNull(id, "根据Id查询销售渠道,参数Id不能为空");
+        SellChannel sellChannel = sellChannelService.selectByPrimaryKey(id);
+        AssertUtil.notNull(sellChannel, "根据Id"+id+"查询销售渠道结果为空!");
+        return sellChannel;
+    }
+
 
     private void checkSaveSellChannel(SellChannel sellChannel){
         AssertUtil.notBlank(sellChannel.getSellName(), "销售渠道参数sellName不能为空");

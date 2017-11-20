@@ -19,15 +19,17 @@ public interface ISellChannelBiz {
     Pagenation<SellChannel> sellChannelPage(SellChannelFrom form, Pagenation<SellChannel> page);
 
 
-
     /**
-     *新增销售渠道
-     * @return 整数改变
+     * 新增销售渠道
+     * @param sellChannel
+     * @param aclUserAccreditInfo
      */
-    void saveSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo);
+     void saveSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
-     *修改销售渠道
+     * 修改销售渠道
+     * @param sellChannel
+     * @param aclUserAccreditInfo
      */
     void updateSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo);
 
@@ -38,5 +40,10 @@ public interface ISellChannelBiz {
      */
     SellChannel selectSellChannelByName(String sellName);
 
-
+    /**
+     * 根据主键id查询销售渠道
+     * @param id
+     * @return
+     */
+    SellChannel selectSellChannelById(Long id);
 }
