@@ -5,6 +5,7 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -111,8 +112,9 @@ public class ExportExcel {
         UUID uuid = UUID.randomUUID();
         // 写入处理结果
         try {
-            //生成UUID文件名称
-            OutputStream out = new FileOutputStream(fileName);
+            File f=new File(fileName);
+            f.setWritable(true, false);
+            OutputStream out = new FileOutputStream(f);
             workbook.write(out);
             out.close();
         } catch (Exception e) {
