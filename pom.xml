@@ -66,6 +66,8 @@
         <httpcore.version>4.4.4</httpcore.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
 
+        <jcraft.jsch.version>0.1.53</jcraft.jsch.version>
+
 
         <javax.servlet.version>2.5</javax.servlet.version>
         <javassist.version>3.21.0-GA</javassist.version>
@@ -327,6 +329,11 @@
                 <version>${elasticsearch.client.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>${jcraft.jsch.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
