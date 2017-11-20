@@ -93,7 +93,7 @@ public class WarehouseInfoResource {
 
 
     @GET
-    @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_INFO_PAGE)
+    @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_INFO_PAGE + "/{warehouseInfoId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryWarehouseItemInfoPage(
             @PathParam("warehouseInfoId") Long warehouseInfoId, @BeanParam WarehouseItemInfoForm form,

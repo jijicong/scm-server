@@ -46,6 +46,7 @@ public class WarehouseItemInfo implements Serializable{
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
     // 更新时间
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
     //是否删除  0--未删除 1--已删除
     private Integer isDelete;

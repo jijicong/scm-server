@@ -285,7 +285,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             criteria.andEqualTo("noticeStatus", form.getNoticeStatus());
         }
         criteria.andEqualTo("warehouseInfoId", String.valueOf(warehouseInfoId));
-        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("isDelete", "0");
         example.orderBy("noticeStatus").asc();
         example.orderBy("updateTime").desc();
         page = warehouseItemInfoService.pagination(example, page, form);
@@ -676,6 +676,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(Long.valueOf(warehouseInfoId));
             warehouseItemInfo.setSkuCode(values[0]);
+            warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
             warehouseItemInfo = warehouseItemInfoService.selectOne(warehouseItemInfo);
             warehouseItemInfo.setWarehouseItemId(values[1]);
             warehouseItemInfo.setNoticeStatus(Integer.valueOf(ZeroToNineEnum.FOUR.getCode()));
@@ -762,6 +763,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 warehouseItemInfo = new WarehouseItemInfo();
                 warehouseItemInfo.setWarehouseInfoId(Long.valueOf(warehouseInfoId));
                 warehouseItemInfo.setSkuCode(skuCode);
+                warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
                 warehouseItemInfo = warehouseItemInfoService.selectOne(warehouseItemInfo);
                 if (warehouseItemInfo == null) {
                     flag = false;
