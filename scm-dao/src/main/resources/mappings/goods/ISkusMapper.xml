@@ -14,7 +14,8 @@
                 update_time = #{skus.updateTime},
                 is_valid = #{skus.isValid},
                 is_deleted = #{skus.isDeleted},
-                sku_name = #{skus.skuName}
+                sku_name = #{skus.skuName},
+                spec_info = #{skus.specInfo}
             </set>
             where
               spu_code = #{skus.spuCode} AND sku_code = #{skus.skuCode}

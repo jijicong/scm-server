@@ -774,6 +774,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
             skus2.setSkuName(jbo.getString("skuName")); // sku名称 
+            skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skus2.setCreateTime(sysTime);
             skus2.setUpdateTime(sysTime);
@@ -999,6 +1000,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setBarCode(jbo.getString("barCode"));
             skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
+            skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
             skus2.setUpdateTime(sysTime);
