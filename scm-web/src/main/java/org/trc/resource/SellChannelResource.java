@@ -48,9 +48,9 @@ public class SellChannelResource {
     @GET
     @Path(SupplyConstants.SellChannel.SELL_CHANNEL_NAME)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response selectSellChannelByName(@QueryParam("name") String name){
+    public Response selectSellChannelByName(@QueryParam("id") Long id,@QueryParam("name") String name){
         //  前台接受为null则数据没问题 ，有数据则名称不能使用，"1" 为标志存在数据
-        return  ResultUtil.createSuccessResult("查询销售渠道成功", sellChannelBiz.selectSellChannelByName(name)==null ? null :"1");
+        return  ResultUtil.createSuccessResult("查询销售渠道成功", sellChannelBiz.selectSellChannelByName(id,name)==null ? null :"1");
     }
 
     //根据销售渠道id
