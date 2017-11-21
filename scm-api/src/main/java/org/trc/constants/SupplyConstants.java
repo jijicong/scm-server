@@ -17,6 +17,11 @@ public class SupplyConstants {
         public static final String SEMICOLON = ";";//分号
         public static final String XIE_GANG = "/";//斜杠
         public static final String AND = "&";//与
+        /**
+         * 等号
+         */
+        public static final String EQUAL = "=";
+
     }
 
 
@@ -394,6 +399,8 @@ public class SupplyConstants {
         public static final String JURISDICTION_EDIT = "jurisdictionEdit";
         //页面资源
         public static final String JURISDICTION_HTML = "jurisdictionHtml";
+
+
     }
 
     /**
@@ -839,6 +846,10 @@ public class SupplyConstants {
         public static final String USER_ID = "userId";
         //用户授权列表
         public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
+        /**
+         *业务线ID
+         */
+        public static final String CHANNEL_CODE = "channelCode";
 
     }
 
@@ -940,6 +951,15 @@ public class SupplyConstants {
         public final static String EXTERNAL_ITEM_UPDATE = "externalItemUpdate";
         //接收供应商订单取消通知
         public final static String SUPPLIER_ORDER_CANCEL = "supplierOrderCancel";
+        /**
+         * 查询当前用户所属业务线
+         */
+        public static final String JURISDICTION_USER_CHANNEL = "jurisdictionUserChannel";
+        /**
+         * 确认用户业务线
+         */
+        public static final String CONFIRM_USER_CHANNEL = "confirmUser";
+
 
     }
 
