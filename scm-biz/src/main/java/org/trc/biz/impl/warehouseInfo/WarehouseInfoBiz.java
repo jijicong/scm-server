@@ -584,13 +584,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     private void setQueryParam(Example example, Example.Criteria criteria, SkusForm form){
         if (!StringUtils.isBlank(form.getSkuName())){
-            criteria.andEqualTo("skuName",form.getSkuName());
+            criteria.andEqualTo("skuName","%"+form.getSkuName()+"%");
         }
         if (!StringUtils.isBlank(form.getSkuCode())){
-            criteria.andEqualTo("skuCode",form.getSkuCode());
+            criteria.andEqualTo("skuCode","%"+form.getSkuCode()+"%");
         }
         if (!StringUtils.isBlank(form.getSpuCode())){
-            criteria.andEqualTo("spuCode",form.getSpuCode());
+            criteria.andEqualTo("spuCode","%"+form.getSpuCode()+"%");
         }
 
     }
