@@ -17,6 +17,11 @@ public class SupplyConstants {
         public static final String SEMICOLON = ";";//分号
         public static final String XIE_GANG = "/";//斜杠
         public static final String AND = "&";//与
+        /**
+         * 等号
+         */
+        public static final String EQUAL = "=";
+
     }
 
 
@@ -394,6 +399,11 @@ public class SupplyConstants {
         public static final String JURISDICTION_EDIT = "jurisdictionEdit";
         //页面资源
         public static final String JURISDICTION_HTML = "jurisdictionHtml";
+        /**
+         * 查询当前用户所属业务线
+         */
+        public static final String JURISDICTION_USER_CHANNEL = "jurisdictionUserChannel";
+
     }
 
     /**
