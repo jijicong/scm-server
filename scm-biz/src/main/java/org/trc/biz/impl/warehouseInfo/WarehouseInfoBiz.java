@@ -60,54 +60,35 @@ import java.util.*;
 @Service("warehouseInfoBiz")
 public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
-    private Logger log = LoggerFactory.getLogger(WarehouseInfoBiz.class);
-
-    @Autowired
-    private IWarehouseService warehouseService;
-
-    @Autowired
-    private IWarehouseInfoService warehouseInfoService;
-
-    @Autowired
-    private IWarehouseItemInfoService warehouseItemInfoService;
-
-    @Autowired
-    private ISkusService skusService;
-
-    @Autowired
-    private IItemsService iItemsService;
-
-    @Autowired
-    private IBrandService brandService;
-
-    @Autowired
-    private ICategoryService categoryService;
-
-    @Autowired
-    private ICategoryBiz categoryBiz;
-
     //错误信息
     public final static String BAR = "-";
-
     //错误信息
     public final static String EXCEL = ".xls";
-
     private static final String TITLE_ONE = "商品SKU编号";
-
     private static final String TITLE_TWO = "仓库商品ID";
-
     private static final String TITLE_THREE = "异常说明";
-
     private static final String CODE = "code";
-
     private static final String MSG = "msg";
-
     private static final String URL = "url";
-
     private final static String XLS = "xls";
-
     private final static String XLSX = "xlsx";
-
+    private Logger log = LoggerFactory.getLogger(WarehouseInfoBiz.class);
+    @Autowired
+    private IWarehouseService warehouseService;
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private ISkusService skusService;
+    @Autowired
+    private IItemsService iItemsService;
+    @Autowired
+    private IBrandService brandService;
+    @Autowired
+    private ICategoryService categoryService;
+    @Autowired
+    private ICategoryBiz categoryBiz;
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -148,7 +129,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         criteria2.andEqualTo("warehouseInfoId",warehouseInfo1.getWarehouseId());
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example2);
         warehouseInfo.setSkuNum(warehouseItemInfoList.size());
-        warehouseInfo.setOwnerId(aclUserAccreditInfo.getChannelCode());
+        warehouseInfo.setChannelCode(aclUserAccreditInfo.getChannelCode());
 
         if (warehouse.getIsNoticeSuccess()!=null && warehouse.getIsNoticeSuccess().equals(NoticeSuccessEnum.NOTIC.getCode())){
             //调用仓库接口获取仓库货主ID
@@ -261,7 +242,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));
             result.setIsDelete(convertDeleteState(warehouseInfo));
-            result.setOwnerId(warehouseInfo.getOwnerId());
+            result.setOwnerId(warehouseInfo.getChannelCode());
             result.setOwnerName(warehouseInfo.getOwnerName());
             result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
             result.setRemark(warehouseInfo.getRemark());
