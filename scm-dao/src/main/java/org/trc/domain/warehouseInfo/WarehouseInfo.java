@@ -78,8 +78,8 @@ public class WarehouseInfo {
     private Integer isDelete;
 
     //是否删除 0--未删除 1--已删除
-    @FormParam("isNoticWarehouseItems")
-    private Integer isNoticWarehouseItems;
+    @FormParam("isNoticeWarehouseItems")
+    private Integer isNoticeWarehouseItems;
 
     //备注
     @FormParam("warehouseOwnerId")
@@ -198,11 +198,11 @@ public class WarehouseInfo {
         this.remark = remark;
     }
 
-    public Integer getIsNoticWarehouseItems() {
-        return isNoticWarehouseItems;
+    public Integer getIsNoticeWarehouseItems() {
+        return isNoticeWarehouseItems;
     }
 
-    public void setIsNoticWarehouseItems(Integer isNoticWarehouseItems) {
-        this.isNoticWarehouseItems = isNoticWarehouseItems;
+    public void setIsNoticeWarehouseItems(Integer isNoticeWarehouseItems) {
+        this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 }
