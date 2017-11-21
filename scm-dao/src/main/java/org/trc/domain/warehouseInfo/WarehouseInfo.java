@@ -77,6 +77,10 @@ public class WarehouseInfo {
     @FormParam("isDelete")
     private Integer isDelete;
 
+    //是否删除 0--未删除 1--已删除
+    @FormParam("isNoticWarehouseItems")
+    private Integer isNoticWarehouseItems;
+
     //备注
     @FormParam("warehouseOwnerId")
     @Length(max = 100, message = "仓库货主ID的编码字母和数字不能超过100个,汉字不能超过50个")
@@ -192,5 +196,13 @@ public class WarehouseInfo {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Integer getIsNoticWarehouseItems() {
+        return isNoticWarehouseItems;
+    }
+
+    public void setIsNoticWarehouseItems(Integer isNoticWarehouseItems) {
+        this.isNoticWarehouseItems = isNoticWarehouseItems;
     }
 }
