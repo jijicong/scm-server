@@ -86,7 +86,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page,AclUserAccreditInfo aclUserAccreditInfo) {
+    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, 
+    		Pagenation<WarehouseNotice> page,AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo,"查询订单分页中,获得授权信息失败");
         String  channelCode = aclUserAccreditInfo.getChannelCode(); //获得渠道的编码
