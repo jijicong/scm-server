@@ -1701,7 +1701,11 @@ public class GoodsBiz implements IGoodsBiz {
                     supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
                 }
             }
-            criteria.andIn("supplierCode",supplierInterfaceIdList);
+            if (!AssertUtil.collectionIsEmpty(supplierInterfaceIdList)){
+                criteria.andIn("supplierCode",supplierInterfaceIdList);
+            }else {
+                return page;
+            }
         }
         if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
