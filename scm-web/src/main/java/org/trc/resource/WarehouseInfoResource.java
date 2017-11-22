@@ -38,9 +38,9 @@ import java.util.Map;
 @Component
 @Path(SupplyConstants.WarehouseInfo.ROOT)
 public class WarehouseInfoResource {
-    private Logger logger = LoggerFactory.getLogger("WarehouseInfoResource");
     @Autowired
     IWarehouseInfoBiz warehouseInfoBiz;
+    private Logger logger = LoggerFactory.getLogger("WarehouseInfoResource");
 
     @POST
     @Path(SupplyConstants.WarehouseInfo.SAVE_WAREHOUSE_INFO)
@@ -130,8 +130,8 @@ public class WarehouseInfoResource {
 
     @POST
     @Path(SupplyConstants.WarehouseInfo.SAVE_ITEMS+"/{warehouseInfoId}")
-    @Produces("application/json;charset=utf-8")
-    public Response saveWarehouseItemsSku(String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveWarehouseItemsSku(@FormParam("itemsList") String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
         logger.info("进入添加新商品接口======>"+ "传入参数为：form："+JSON.toJSONString(itemsList)+",warehouseInfoId:"+warehouseInfoId);
         return warehouseInfoBiz.saveWarehouseItemsSku(itemsList,warehouseInfoId);
     }
