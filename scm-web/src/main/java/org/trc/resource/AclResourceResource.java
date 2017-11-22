@@ -1,5 +1,7 @@
 package org.trc.resource;
 
+import com.alibaba.fastjson.JSON;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.constants.SupplyConstants;
@@ -8,6 +10,7 @@ import org.trc.form.impower.JurisdictionTreeNode;
 import org.trc.util.ResultUtil;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -21,7 +24,7 @@ import javax.ws.rs.core.Response;
 @Component
 @Path(SupplyConstants.Jurisdiction.ROOT)
 public class AclResourceResource {
-    @Resource
+    @Autowired
     private IAclResourceBiz jurisdictionBiz;
 
     /**
@@ -127,8 +130,12 @@ public class AclResourceResource {
     @GET
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_HTML)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateJurisdiction(@Context ContainerRequestContext requestContext){
+    public Response updateJurisdiction(@Context ContainerRequestContext requestContext, HttpServletRequest request){
+        System.out.println(request.getSession());
+        System.out.println(request.getSession().getAttribute("channelCode"));
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         return ResultUtil.createSuccessResult("查询用户html页面权限成功", jurisdictionBiz.getHtmlJurisdiction(userId));
     }
+
+
 }

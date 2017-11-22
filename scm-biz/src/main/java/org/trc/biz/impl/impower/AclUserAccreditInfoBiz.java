@@ -5,16 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import com.tairanchina.md.account.user.model.UserDO;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.search.MatchQuery;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,32 +17,36 @@ import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
-import org.trc.domain.impower.AclRole;
-import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.impower.AclUserAccreditRoleRelation;
-import org.trc.domain.impower.AclUserAddPageDate;
+import org.trc.domain.System.ChannelExt;
+import org.trc.domain.System.ChannelSellChannel;
+import org.trc.domain.System.SellChannel;
+import org.trc.domain.impower.*;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.UserTypeEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.UserAccreditInfoException;
+import org.trc.form.impower.ChannelSelectMsg;
+import org.trc.form.impower.SellChannelSelectMsg;
 import org.trc.form.impower.UserAccreditInfoForm;
-import org.trc.model.SearchResult;
 import org.trc.service.IPageNationService;
+import org.trc.service.System.IChannelSellChannelService;
 import org.trc.service.System.IChannelService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.impl.UserDoService;
 import org.trc.service.impower.IAclRoleService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.impower.IAclUserAccreditRoleRelationService;
+import org.trc.service.impower.IAclUserChannelSellService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.StringUtil;
-import org.trc.util.TransportClientUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -61,7 +55,9 @@ import java.util.regex.Pattern;
 import static org.trc.util.StringUtil.splitByComma;
 
 /**
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 @Service("userAccreditInfoBiz")
 public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
@@ -102,6 +98,13 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Autowired
     private IPageNationService pageNationService;
 
+    @Autowired
+    private ISellChannelService sellChannelService;
+    @Autowired
+    private IChannelSellChannelService channelSellChannelService;
+    @Autowired
+    private IAclUserChannelSellService aclUserChannelSellService;
+
     @Value("${admin.user.id}")
     private String ADMIN_ID;
 
@@ -124,7 +127,8 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         List<AclUserAccreditInfo> pageDateList = userAccreditInfoService.selectAccreditInfoList(map);
         List<AclUserAddPageDate> pageDateRoleList = page.getResult();
         userNameUtilService.handleUserName(pageDateList);
-        if (pageDateList != null && !pageDateList.isEmpty() && pageDateList.size() > 0) {//1.按要求查处需要的授权用户
+        if (pageDateList != null && !pageDateList.isEmpty() && pageDateList.size() > 0) {
+            //1.按要求查询需要的授权用户
             pageDateRoleList = handleRolesStr(pageDateList);
         }
         int count = userAccreditInfoService.selectCountUser(map);
@@ -137,9 +141,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     @Override
     public List<AclUserAccreditInfo> findPurchase(AclUserAccreditInfo aclUserAccreditInfo) {
-
         String channelCode = aclUserAccreditInfo.getChannelCode();
-
         return userAccreditInfoService.findPurchase(channelCode);
 
     }
@@ -222,20 +224,44 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     }
 
     /**
-     * 查询已启用的渠道(业务线)
+     * 查询所有已启用的渠道(业务线)和业务线下已关联的销售渠道
      *
      * @return
      * @throws Exception
      */
     @Override
-    public List<Channel> findChannel() {
+    @Cacheable(isList = true)
+    public List<ChannelExt> findChannel() {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
         example.orderBy("updateTime").desc();
         List<Channel> channelList = channelService.selectByExample(example);
-        AssertUtil.notNull(channelList, "未查询到已经启用的渠道");
-        return channelList;
+        AssertUtil.notNull(channelList, "未查询到业务线");
+        List<ChannelExt> channelExtList =  new ArrayList<>();
+        for (Channel channel:channelList ) {
+            ChannelExt channelExt =JSON.parseObject(JSON.toJSONString(channel),ChannelExt.class);
+            ChannelSellChannel channelSellChannel= new ChannelSellChannel();
+            channelSellChannel.setChannelId(channel.getId());
+            List<ChannelSellChannel> channelSellChannelList=channelSellChannelService.select(channelSellChannel);
+            if (!AssertUtil.collectionIsEmpty(channelSellChannelList)){
+                List<Long> sellIdList = new ArrayList<>();
+                for (ChannelSellChannel sellChannel:channelSellChannelList) {
+                    sellIdList.add(sellChannel.getSellChannelId());
+                }
+                if (!AssertUtil.collectionIsEmpty(sellIdList)){
+                    Example example2 = new Example(SellChannel.class);
+                    Example.Criteria criteria2 = example2.createCriteria();
+                    criteria2.andIn("id",sellIdList);
+                    List<SellChannel> sellChannelList = sellChannelService.selectByExample(example2);
+                    if (!AssertUtil.collectionIsEmpty(sellChannelList)){
+                        channelExt.setSellChannelList(sellChannelList);
+                    }
+                }
+            }
+            channelExtList.add(channelExt);
+        }
+        return channelExtList;
     }
 
 
@@ -289,7 +315,11 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
-
+        //业务线关联信息校验,通过后组装数据userChannelSll数据;
+        List<AclUserChannelSell> aclUserChannelSellList = new ArrayList<>();
+        if (!StringUtils.equals(userAddPageDate.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
+            aclUserChannelSellList =checkChannelMsg(userAddPageDate.getChannelMsg());
+        }
         //写入user_accredit_info表
         AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
         aclUserAccreditInfo.setName(userAddPageDate.getName());
@@ -304,6 +334,14 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         aclUserAccreditInfo.setCreateTime(Calendar.getInstance().getTime());
         aclUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         userAccreditInfoService.insert(aclUserAccreditInfo);
+        //写入业务线关联表
+        if (!AssertUtil.collectionIsEmpty(aclUserChannelSellList)){
+            for (AclUserChannelSell userChannelSell:aclUserChannelSellList) {
+                userChannelSell.setUserId(aclUserAccreditInfo.getUserId());
+                userChannelSell.setUserAccreditId(aclUserAccreditInfo.getId());
+            }
+            aclUserChannelSellService.insertList(aclUserChannelSellList);
+        }
 
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {
@@ -342,12 +380,54 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     }
 
+    private List<AclUserChannelSell> checkChannelMsg(String channelMsg) {
+        List<AclUserChannelSell> aclUserChannelSellList = new ArrayList<>();
+        List<ChannelSelectMsg> channelSelectMsgList = new ArrayList<>();
+        try {
+            channelSelectMsgList = JSON.parseArray(channelMsg, ChannelSelectMsg.class);
+        } catch (Exception e) {
+            LOGGER.error("业务线关联信息输入错误!",e);
+        }
+        if (!AssertUtil.collectionIsEmpty(channelSelectMsgList)) {
+            for (ChannelSelectMsg channelSelectMsg : channelSelectMsgList) {
+                //校验业务线是否存在
+                Channel channel = new Channel();
+                channel.setCode(channelSelectMsg.getChannelCode());
+                channel.setName(channelSelectMsg.getChannelName());
+                channel = channelService.selectOne(channel);
+                AssertUtil.notNull(channel, "业务线" + channelSelectMsg.getChannelName() + "不存在!");
+                AssertUtil.notEmpty(channelSelectMsg.getSellChannelList(), "业务线" + channelSelectMsg.getChannelName() + "未选择销售渠道!");
+                for (SellChannelSelectMsg selectSellMsg : channelSelectMsg.getSellChannelList()) {
+                    //校验销售渠道是否存在
+                    SellChannel sellChannel = new SellChannel();
+                    sellChannel.setSellName(selectSellMsg.getSellChannelName());
+                    sellChannel.setSellCode(selectSellMsg.getSellChannelCode());
+                    sellChannel = sellChannelService.selectOne(sellChannel);
+                    AssertUtil.notNull(sellChannel, "销售渠道" + selectSellMsg.getSellChannelName() + "不存在!");
+                    //校验业务线与业务线是否关联
+                    ChannelSellChannel channelSellChannel = new ChannelSellChannel();
+                    channelSellChannel.setChannelCode(channel.getCode());
+                    channelSellChannel.setSellChannelCode(sellChannel.getSellCode());
+                    channelSellChannel = channelSellChannelService.selectOne(channelSellChannel);
+                    AssertUtil.notNull(channelSellChannel, "业务线:" + channel.getName() + "和销售渠道" + sellChannel.getSellName() + "未关联!");
+                    AclUserChannelSell aclUserChannelSell = new AclUserChannelSell();
+                    aclUserChannelSell.setChannelCode(channel.getCode());
+                    aclUserChannelSell.setSellChannelCode(selectSellMsg.getSellChannelCode());
+                    aclUserChannelSellList.add(aclUserChannelSell);
+                }
+            }
+        }
+
+        return aclUserChannelSellList;
+    }
+
     private void checkUserAddPageDate(AclUserAddPageDate userAddPageDate) {
         AssertUtil.notBlank(userAddPageDate.getPhone(), "用户手机号未输入");
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
         AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
         AssertUtil.notBlank(userAddPageDate.getIsValid(), "参数isValid不能为空");
+        AssertUtil.notBlank(userAddPageDate.getChannelMsg(),"业务线关联信息为空");
     }
 
     /**
@@ -364,11 +444,10 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
         aclUserAccreditInfo.setId(id);
         aclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
-        if (null == aclUserAccreditInfo) {
-            String msg = String.format("根据主键ID[id=%s]查询角色为空", id.toString());
-            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_QUERY_EXCEPTION, msg);
-        }
+        AssertUtil.notNull(aclUserAccreditInfo,"根据主键ID"+id+"未查询到相关用户");
         userAddPageDate = new AclUserAddPageDate(aclUserAccreditInfo);
+        //获取当前用户关联的业务线 以及关联的销售渠道
+        setChannelResult(userAddPageDate);
         AssertUtil.notNull(userAddPageDate.getId(), "根据授权Id的查询用户userAccreditRoleRelation，参数Id为空");
         Example example = new Example(AclUserAccreditRoleRelation.class);
         Example.Criteria criteria = example.createCriteria();
@@ -384,8 +463,67 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         }
         JSONArray roleIdArray = (JSONArray) JSONArray.toJSON(userAccreditroleIds);
         userAddPageDate.setRoleNames(roleIdArray.toString());
+
         return userAddPageDate;
     }
+
+    private void setChannelResult( AclUserAddPageDate userAddPageDate) {
+        AclUserChannelSell aclUserChannelSell = new AclUserChannelSell();
+        aclUserChannelSell.setUserId(userAddPageDate.getUserId());
+        aclUserChannelSell.setUserAccreditId(userAddPageDate.getId());
+        List<AclUserChannelSell> userChannelSellList = aclUserChannelSellService.select(aclUserChannelSell);
+        //查询到所有的业务线
+        Channel queryChannel = new Channel();
+        List<Channel> channelList = channelService.select(queryChannel);
+        //返回的业务线,和用户关联的销售渠道
+        List<ChannelExt> channelExtList = new ArrayList<>();
+        //查询所有的销售渠道
+        SellChannel sellChannel = new SellChannel();
+        List<SellChannel> sellChannelList = sellChannelService.select(sellChannel);
+        if (!AssertUtil.collectionIsEmpty(userChannelSellList)) {
+            //业务线去重
+            Set<String> channelSet = new HashSet<>();
+            Map<String, List<SellChannel>> channelMap = new HashMap<>();
+            for (AclUserChannelSell userChannelSell : userChannelSellList) {
+                channelSet.add(userChannelSell.getChannelCode());
+                channelMap.put(userChannelSell.getChannelCode(), new ArrayList<>());
+            }
+
+            //组装业务线
+            for (Channel channel : channelList) {
+                for (String channelCode : channelSet) {
+                    if (StringUtils.equals(channel.getCode(), channelCode)) {
+                        ChannelExt channelExt = JSON.parseObject(JSON.toJSONString(channel), ChannelExt.class);
+                        channelExtList.add(channelExt);
+                    }
+                }
+            }
+            //组装销售渠道
+            for (String key : channelMap.keySet()) {
+                List<SellChannel> linkSellChannel = new ArrayList<>();
+                for (AclUserChannelSell userChannelSell : userChannelSellList) {
+                    if (StringUtils.equals(userChannelSell.getChannelCode(), key)) {
+                        for (SellChannel sell : sellChannelList) {
+                            if (StringUtils.equals(sell.getSellCode(), userChannelSell.getSellChannelCode())) {
+                                linkSellChannel.add(sell);
+                            }
+                        }
+                    }
+
+                }
+                channelMap.put(key, linkSellChannel);
+            }
+            for (ChannelExt channelExt : channelExtList) {
+                channelExt.setSellChannelList(channelMap.get(channelExt.getCode()));
+            }
+            userAddPageDate.setChannelExtList(channelExtList);
+        }
+    }
+
+
+
+
+
 
     /**
      * 修改授权
@@ -402,23 +540,25 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         AssertUtil.notBlank(userAddPageDate.getUserType(), "用户类型未选择");
         AssertUtil.notBlank(userAddPageDate.getRoleNames(), "关联角色未选择");
         AssertUtil.notNull(userAddPageDate.getId(), "更新用户时,参数Id为空");
+        AssertUtil.notBlank(userAddPageDate.getChannelMsg(),"业务线关联信息为空");
         //采购组校验
-        Long roles[] = StringUtil.splitByComma(userAddPageDate.getRoleNames());
+        Long[] roles = StringUtil.splitByComma(userAddPageDate.getRoleNames());
         //采购组员角色的ID
         Example example = new Example(AclRole.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("name", ROLE_PURCHASE);
         List<AclRole> aclRoleList = roleService.selectByExample(example);
         //如果在采购组中,就判断页面传进来的采购组角色有没有被选择
-        String purchaseNames[] = purchaseRole(userAddPageDate.getId());
+        String[] purchaseNames = purchaseRole(userAddPageDate.getId());
         if (purchaseNames != null) {
             if (purchaseNames.length > 0) {
                 //该角色在采购组中
                 boolean flag = false;
                 for (Long role : roles) {
                     for (AclRole r : aclRoleList) {
-                        if (role == r.getId()) {
-                            flag = true;//页面上已经勾选
+                        if (role .equals( r.getId())) {
+                            //页面上已经勾选
+                            flag = true;
                         }
                     }
                 }
@@ -441,6 +581,11 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         aclUserAccreditInfo.setUserId(userDO.getUserId());
         aclUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         userAccreditInfoService.updateByPrimaryKeySelective(aclUserAccreditInfo);
+        //业务线关联信息校验,通过后组装数据userChannelSll数据;
+        List<AclUserChannelSell> aclUserChannelSellList = new ArrayList<>();
+        if (!StringUtils.equals(userAddPageDate.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
+            aclUserChannelSellList =checkChannelMsg(userAddPageDate.getChannelMsg());
+        }
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {
             int count = userAccreditInfoRoleRelationService.deleteByUserAccreditId(aclUserAccreditInfo.getId());
@@ -449,7 +594,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                 LOGGER.error(msg);
                 throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_UPDATE_EXCEPTION, msg);
             }
-            Long roleIds[] = splitByComma(userAddPageDate.getRoleNames());
+            Long[] roleIds = splitByComma(userAddPageDate.getRoleNames());
             //检验被选中个的角色的起停用状态
             List<AclRole> selectAclRoleList = roleService.findRoleList(Arrays.asList(roleIds));
             for (AclRole selectAclRole : selectAclRoleList) {
@@ -465,7 +610,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                 aclUserAccreditRoleRelation.setUserAccreditId(aclUserAccreditInfo.getId());
                 aclUserAccreditRoleRelation.setUserId(aclUserAccreditInfo.getUserId());
                 aclUserAccreditRoleRelation.setRoleId(roleIds[i]);
-                //aclUserAccreditRoleRelation.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 aclUserAccreditRoleRelation.setIsValid(aclUserAccreditInfo.getIsValid());
                 aclUserAccreditRoleRelation.setCreateOperator(userId);
                 aclUserAccreditRoleRelation.setCreateTime(aclUserAccreditInfo.getCreateTime());
@@ -473,6 +617,19 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                 uAcRoleRelationList.add(aclUserAccreditRoleRelation);
             }
             userAccreditInfoRoleRelationService.insertList(uAcRoleRelationList);
+        }
+        //写入user_channel_sell关联表
+        if (!AssertUtil.collectionIsEmpty(aclUserChannelSellList)){
+            //清空关联
+            Example example2 = new Example(AclUserChannelSell.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("userAccreditId", aclUserAccreditInfo.getId());
+            aclUserChannelSellService.deleteByExample(example2);
+            for (AclUserChannelSell userChannelSell:aclUserChannelSellList) {
+                userChannelSell.setUserId(aclUserAccreditInfo.getUserId());
+                userChannelSell.setUserAccreditId(aclUserAccreditInfo.getId());
+            }
+            aclUserChannelSellService.insertList(aclUserChannelSellList);
         }
         AclUserAccreditInfo logAclUserAccreditInfo;
         logAclUserAccreditInfo = userAccreditInfoService.selectByPrimaryKey(userAddPageDate.getId());
@@ -483,7 +640,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     /**
      * 校验手机号
-     *
+     *2.0
      * @param phone
      * @return
      * @throws Exception
@@ -509,9 +666,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Override
     public String getNameByPhone(String phone) {
         UserDO userDO = userDoService.getUserDo(phone);
- /*       Example example = new Example(AclUserAccreditInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("phone", phone);*/
         AclUserAccreditInfo userAccreditInfo = new AclUserAccreditInfo();
         userAccreditInfo.setPhone(phone);
         userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
@@ -578,14 +732,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         return null;
     }
 
-/*
-    @Override
-    public int checkName(String name) throws Exception {
-        Example example = new Example(AclUserAccreditInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("name", name);
-        return userAccreditInfoService.selectByExample(example).size();
-    }
-*/
+
 
 }
