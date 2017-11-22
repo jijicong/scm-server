@@ -351,7 +351,20 @@
                 <version>${log4j.version}</version>
             </dependency>
 
-        </dependencies>
+            <!--奇门接口-->
+            <dependency>
+                <groupId>com.taobao</groupId>
+                <artifactId>open</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.taobao</groupId>
+                <artifactId>open-source</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+    </dependencies>
     </dependencyManagement>
 
     <profiles>

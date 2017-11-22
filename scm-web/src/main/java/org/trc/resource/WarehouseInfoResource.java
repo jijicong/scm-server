@@ -1,6 +1,7 @@
 package org.trc.resource;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -152,5 +153,13 @@ public class WarehouseInfoResource {
                                        @FormDataParam("warehouseInfoId") String warehouseInfoId) {
         logger.info("开始导入仓库商品信息，请求参数分别为：warehouseInfoId=" + warehouseInfoId);
         return warehouseInfoBiz.uploadNoticeStatus(uploadedInputStream, fileDetail, warehouseInfoId);
+    }
+
+    @POST
+    @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_NOTICE_QIMEN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response warehouseItemNoticeQimen(@FormParam("itemIds") String itemIds){
+        logger.info("仓库商品信息开始通知奇门同步，请求参数分别为：itemIds=" + itemIds);
+        return warehouseInfoBiz.warehouseItemNoticeQimen(itemIds);
     }
 }

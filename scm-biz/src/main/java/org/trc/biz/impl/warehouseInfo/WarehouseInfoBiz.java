@@ -4,6 +4,8 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.ItemsSynchronizeRequest;
+import com.qimen.api.response.ItemsSynchronizeResponse;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -30,10 +32,12 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.external.OrderDetailForm;
 import org.trc.form.liangyou.LyStatement;
 import org.trc.form.warehouseInfo.*;
 import org.trc.form.warehouseInfo.*;
+import org.trc.service.IQimenService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
@@ -89,6 +93,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private ICategoryService categoryService;
     @Autowired
     private ICategoryBiz categoryBiz;
+    @Autowired
+    private IQimenService qimenService;
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -676,6 +682,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
+    @CacheEvit
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response uploadNoticeStatus(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String warehouseInfoId) {
         String fileName = fileDetail.getFileName();
@@ -731,6 +738,102 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", result);
         }
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", result);
+    }
+
+    @Override
+    @CacheEvit
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public Response warehouseItemNoticeQimen(String itemIds) {
+        AssertUtil.notBlank(itemIds, "同步商品不能为空");
+        //获取同步itemId
+        List<String> itemList = this.getItemList(itemIds);
+        if(itemList == null){
+            String msg = "同步商品不能为空";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+
+        //获取商品详情
+        List<WarehouseItemInfo> warehouseItemInfoList = this.getWarehouseItemInfos(itemList);
+        if(warehouseItemInfoList == null || warehouseItemInfoList.size() < 1){
+            String msg = "同步商品不能为空";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+
+        //组装商品
+        List<ItemsSynchronizeRequest.Item> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
+
+        //获取仓库信息详情
+        WarehouseInfo warehouseInfo = this.getWarehouseInfo(warehouseItemInfoList.get(0).getWarehouseInfoId());
+        if(warehouseInfo == null){
+            String msg = "仓库信息不存在";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+
+        //调用奇门接口
+        ReturnTypeDO returnTypeDO = qimenService.itemsSync(warehouseInfo.getQimenWarehouseCode(),
+                warehouseInfo.getWarehouseOwnerId(), itemsSynList);
+
+        //解析接口
+        if(returnTypeDO.getSuccess()){
+            ItemsSynchronizeResponse res = ((JSONObject)returnTypeDO.getResult()).toJavaObject(ItemsSynchronizeResponse.class);
+            if("200".equals(res.getCode())){
+                return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
+            }else{
+                return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), res.getMessage(), res.getItems());
+            }
+        }
+        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), returnTypeDO.getResultMessage(), "");
+    }
+
+    private List<ItemsSynchronizeRequest.Item> getItemsSynList(List<WarehouseItemInfo> infoList){
+        List<ItemsSynchronizeRequest.Item> list = new ArrayList<ItemsSynchronizeRequest.Item>();
+        ItemsSynchronizeRequest.Item item = null;
+        for(WarehouseItemInfo info : infoList){
+            item = new ItemsSynchronizeRequest.Item();
+            item.setItemCode(info.getSkuCode());
+            item.setGoodsCode(info.getItemNo());
+            item.setItemName(info.getItemName());
+            item.setBarCode(info.getBarCode());
+            item.setSkuProperty(info.getSpecNatureInfo());
+            item.setItemType(info.getItemType());
+
+            list.add(item);
+        }
+        return list;
+    }
+
+    private WarehouseInfo getWarehouseInfo(Long warehouseInfoId){
+        WarehouseInfo info = new WarehouseInfo();
+        info.setId(warehouseInfoId);
+        return warehouseInfoService.selectOne(info);
+    }
+
+    private List<WarehouseItemInfo> getWarehouseItemInfos(List<String> itemList){
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", itemList);
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+        return warehouseItemInfoList;
+    }
+
+    private List<String> getItemList(String items){
+        String[] itemArray = items.split(SupplyConstants.Symbol.COMMA);
+        if(itemArray.length < 1){
+            return null;
+        }
+        List<String> itemList = new ArrayList<String>();
+        for(String s : itemArray){
+            if(StringUtils.isNotEmpty(s)){
+                itemList.add(s);
+            }
+        }
+        if(itemList.size() < 1){
+            return null;
+        }
+        return itemList;
     }
 
     private void saveExcel(ByteArrayOutputStream out, String fileName) throws Exception{
@@ -951,4 +1054,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         return ResultUtil.createSuccessResult("删除仓库信息成功","success");
     }
+
+
 }

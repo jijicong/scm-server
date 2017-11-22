@@ -73,7 +73,17 @@
             <artifactId>log4j-web</artifactId>
         </dependency>
 
-    </dependencies>
+        <dependency>
+            <groupId>com.taobao</groupId>
+            <artifactId>open</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.taobao</groupId>
+            <artifactId>open-source</artifactId>
+        </dependency>
+
+</dependencies>
 
 
 </project>

@@ -124,4 +124,11 @@ public interface IWarehouseInfoBiz {
      * @return
      */
     Response uploadNoticeStatus(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String warehouseInfoId);
+
+    /**
+     * 本地仓库商品同步仓库
+     * @param itemIds
+     * @return
+     */
+    Response warehouseItemNoticeQimen(String itemIds);
 }
