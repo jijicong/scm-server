@@ -107,7 +107,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         log.info("查询符合条件的仓库=====》");
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("code", code);
+        criteria.andEqualTo("qimenWarehouseCode", code);
         List<Warehouse> list = warehouseService.selectByExample(example);
         if (list.size()>1){
             log.info("一个奇门仓库编号取到多条数据");
@@ -117,18 +117,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         warehouseInfo.setWarehouseName(warehouse.getName());
         warehouseInfo.setType(warehouse.getWarehouseTypeCode());
         warehouseInfo.setQimenWarehouseCode(warehouse.getQimenWarehouseCode());
-        //根据code查询出仓库信息表Id
-        Example example01 = new Example(WarehouseInfo.class);
-        Example.Criteria criteria01 = example01.createCriteria();
-        criteria01.andEqualTo("qimenWarehouseCode",code);
-        List<WarehouseInfo> list1 = warehouseInfoService.selectByExample(example01);
-        WarehouseInfo warehouseInfo1 = list1.get(0);
-        //根据仓库信息表id查询出商品数量
-        Example example2 = new Example(WarehouseItemInfo.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andEqualTo("warehouseInfoId",warehouseInfo1.getWarehouseId());
-        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example2);
-        warehouseInfo.setSkuNum(warehouseItemInfoList.size());
+        warehouseInfo.setWarehouseId(String.valueOf(warehouse.getId()));
+        warehouseInfo.setSkuNum(0);
         warehouseInfo.setChannelCode(aclUserAccreditInfo.getChannelCode());
 
         if (warehouse.getIsNoticeSuccess()!=null && warehouse.getIsNoticeSuccess().equals(NoticeSuccessEnum.NOTIC.getCode())){
@@ -186,7 +176,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         for (Warehouse warehouse:list){
             Map<String,String> map = new HashMap<>();
             map.put("name",warehouse.getName());
-            map.put("code",warehouse.getCode());
+            map.put("code",warehouse.getQimenWarehouseCode());
             rev.add(map);
         }
         log.info("《==========返回符合条件的仓库名称");
@@ -205,7 +195,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         for (Warehouse warehouse:list){
             Map<String,String> map = new HashMap<>();
             map.put("name",warehouse.getName());
-            map.put("code",warehouse.getCode());
+            map.put("code",warehouse.getQimenWarehouseCode());
             rev.add(map);
         }
         log.info("<======返回仓库名称");
@@ -430,6 +420,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
+        //开始统计warehouseItem数量
+        Example example01 = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria01 = example01.createCriteria();
+        criteria01.andEqualTo("warehouseInfoId",warehouseInfoId);
+        List<WarehouseItemInfo> list1 =warehouseItemInfoService.selectByExample(example01);
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id",warehouseInfoId);
+        WarehouseInfo warehouseInfo1 = new WarehouseInfo();
+        warehouseInfo1.setSkuNum(list1.size());
+        warehouseInfoService.updateByExampleSelective(warehouseInfo1,example);
         return ResultUtil.createSuccessResult("添加新商品成功","success");
     }
 
