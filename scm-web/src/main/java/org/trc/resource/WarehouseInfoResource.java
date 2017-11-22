@@ -38,9 +38,9 @@ import java.util.Map;
 @Component
 @Path(SupplyConstants.WarehouseInfo.ROOT)
 public class WarehouseInfoResource {
-    private Logger logger = LoggerFactory.getLogger("WarehouseInfoResource");
     @Autowired
     IWarehouseInfoBiz warehouseInfoBiz;
+    private Logger logger = LoggerFactory.getLogger("WarehouseInfoResource");
 
     @POST
     @Path(SupplyConstants.WarehouseInfo.SAVE_WAREHOUSE_INFO)
@@ -86,7 +86,7 @@ public class WarehouseInfoResource {
     @Path(SupplyConstants.WarehouseInfo.DELETE_WAREHOUSE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteWarehouse(@PathParam("id") String id) throws Exception{
-        logger.info("开始保存货主信息=========》");
+        logger.info("开始删除仓库=========》");
         return warehouseInfoBiz.deleteWarehouse(id);
     }
 
@@ -130,9 +130,8 @@ public class WarehouseInfoResource {
 
     @POST
     @Path(SupplyConstants.WarehouseInfo.SAVE_ITEMS+"/{warehouseInfoId}")
-    @Consumes("text/plain;charset=utf-8")
-    @Produces("application/json;charset=utf-8")
-    public Response saveWarehouseItemsSku(String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveWarehouseItemsSku(@FormParam("itemsList") String itemsList, @PathParam("warehouseInfoId") Long warehouseInfoId) throws Exception {
         logger.info("进入添加新商品接口======>"+ "传入参数为：form："+JSON.toJSONString(itemsList)+",warehouseInfoId:"+warehouseInfoId);
         return warehouseInfoBiz.saveWarehouseItemsSku(itemsList,warehouseInfoId);
     }
