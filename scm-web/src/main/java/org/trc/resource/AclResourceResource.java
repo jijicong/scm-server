@@ -131,8 +131,6 @@ public class AclResourceResource {
     @Path(SupplyConstants.Jurisdiction.JURISDICTION_HTML)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateJurisdiction(@Context ContainerRequestContext requestContext, HttpServletRequest request){
-        System.out.println(request.getSession());
-        System.out.println(request.getSession().getAttribute("channelCode"));
         String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
         return ResultUtil.createSuccessResult("查询用户html页面权限成功", jurisdictionBiz.getHtmlJurisdiction(userId));
     }

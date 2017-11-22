@@ -89,8 +89,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                     AclUserAccreditInfo aclUserAccreditInfo =null;
                     if (null != beegoToken) {
                         String userId = beegoToken.getUserId();
-                        //String channelCode = _getCookieChannelCode(requestContext);
-                        String channelCode = "YWX001";
+                        String channelCode = _getCookieChannelCode(requestContext);
                         List<AclUserAccreditInfo> accreditInfoList = userAccreditInfoService.selectUserListByUserId(userId,channelCode);
                             if (!AssertUtil.collectionIsEmpty(accreditInfoList)){
                                 for (AclUserAccreditInfo accreditInfo:accreditInfoList ) {
@@ -216,18 +215,11 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     private String _getCookieChannelCode(ContainerRequestContext requestContext) {
 
-        /*String channelCode = null;
-        Cookie cookie = requestContext.getCookies().get("channelCode");
-        if (cookie != null) {
-            channelCode = cookie.getValue();
-        }
-        return channelCode;*/
-        /*HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession(false);
         if(null == session){
             return StringUtils.EMPTY;
         }
-        return session.getAttribute("channelCode").toString();*/
-        return "";
+        return session.getAttribute("channelCode").toString();
 
     }
     private String _getChannelCode(ContainerRequestContext requestContext) {
