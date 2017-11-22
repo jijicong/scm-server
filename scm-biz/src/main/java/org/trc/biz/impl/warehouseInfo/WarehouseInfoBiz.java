@@ -397,6 +397,19 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         if (map==null){
             return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"根据skucode获取商品货号为空");
         }
+        List<Skus> list2 = new ArrayList<>();
+        List<Skus> list3 = new ArrayList<>();
+
+        for (Skus sku:itemsList){
+            if (StringUtils.isBlank(sku.getSkuName())){
+                list2.add(sku);
+            }
+            if (StringUtils.isBlank(sku.getSkuCode())){
+                list3.add(sku);
+            }
+        }
+        AssertUtil.isNull(list2,"商品名称不能为空，如下skuName名称为空"+list2);
+        AssertUtil.isNull(list3,"商品sku编码不能为空，如下skuCode名称为空"+list3);
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
