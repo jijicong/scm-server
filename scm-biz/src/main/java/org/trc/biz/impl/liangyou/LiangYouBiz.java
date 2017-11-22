@@ -42,37 +42,27 @@ import java.util.*;
 @Service("liangYouBiz")
 public class LiangYouBiz implements ILiangYouBiz {
 
-    private Logger log = LoggerFactory.getLogger(LiangYouBiz.class);
-
-    @Resource(name = "LiangYouService")
-    private ILiangYouService liangYouService;
-
-    @Autowired
-    ICommonService commonService;
-
-    @Autowired
-    JingDongUtil jingDongUtil;
-
-    @Resource
-    ISkusListService skusListService;
-
-    @Resource
-    SupplierOrderInfoService supplierOrderInfoService;
-
-    @Resource
-    OrderItemService orderItemService;
-
     //粮油供应商编码
     public final static String SUPPLIER_LY_CODE = "LY";
-
     //粮油供应商编码
     public final static String SUCCESS = "200";
-
     //错误信息
     public final static String BAR = "-";
-
     //错误信息
     public final static String EXCEL = ".xls";
+    @Autowired
+    ICommonService commonService;
+    @Autowired
+    JingDongUtil jingDongUtil;
+    @Resource
+    ISkusListService skusListService;
+    @Resource
+    SupplierOrderInfoService supplierOrderInfoService;
+    @Resource
+    OrderItemService orderItemService;
+    private Logger log = LoggerFactory.getLogger(LiangYouBiz.class);
+    @Resource(name = "LiangYouService")
+    private ILiangYouService liangYouService;
 
     @Override
     public String getAccessToken() throws Exception {
@@ -256,13 +246,16 @@ public class LiangYouBiz implements ILiangYouBiz {
         AssertUtil.notNull(page.getStart(),"分页查询参数start不能为空");
         //1.根据查询条件查处符合要求的粮油订单
         List<SupplierOrderInfo> supplierOrderInfoList = getLySuccessOrder(form);
+        Pagenation<LyStatement> newPage  = new Pagenation<>();
+        if (supplierOrderInfoList.size()==0){
+            return newPage;
+        }
         List<String> list = new ArrayList();
         for (SupplierOrderInfo supplierOrderInfo : supplierOrderInfoList){
             list.add(supplierOrderInfo.getWarehouseOrderCode());
         }
         //2.分页查询订单商品详情信息
         Pagenation<OrderItem> pagenation  = getOrderItemsByPage(list,form, page);
-        Pagenation<LyStatement> newPage  = new Pagenation<>();
         List<OrderItem> orderItemList = pagenation.getResult();
         newPage.setStart(pagenation.getStart());
         newPage.setTotalCount(pagenation.getTotalCount());
@@ -270,14 +263,18 @@ public class LiangYouBiz implements ILiangYouBiz {
         newPage.setPageNo(pagenation.getPageNo());
         if (orderItemList.size()!= 0){
             List<OrderItem> orderItemList1 = packageData(supplierOrderInfoList, orderItemList);
-            List<LyStatement> list1 = setParam(orderItemList1);
+            List<LyStatement> list1 = setParam(orderItemList1,supplierOrderInfoList);
             newPage.setResult(list1);
         }
         return newPage;
     }
 
-    private List<LyStatement> setParam(List<OrderItem> orderItemList){
+    private List<LyStatement> setParam(List<OrderItem> orderItemList,List<SupplierOrderInfo> supplierOrderInfoList){
         List<LyStatement> list = new ArrayList<>();
+        Map<String,String> map = new HashMap<>();
+        for (SupplierOrderInfo supplierOrderInfo:supplierOrderInfoList){
+            map.put(supplierOrderInfo.getWarehouseOrderCode(),supplierOrderInfo.getSupplierOrderCode());
+        }
         for (OrderItem orderItem:orderItemList){
             LyStatement lyStatement = new LyStatement();
             lyStatement.setSupplierSkuCode(orderItem.getSupplierSkuCode());
@@ -286,7 +283,7 @@ public class LiangYouBiz implements ILiangYouBiz {
             lyStatement.setNum(orderItem.getNum());
             lyStatement.setPlatformOrderCode(orderItem.getPlatformOrderCode());
             lyStatement.setShopOrderCode(orderItem.getShopOrderCode());
-            lyStatement.setSupplierOrderCode(orderItem.getSupplierOrderCode());
+            lyStatement.setSupplierOrderCode(map.get(orderItem.getWarehouseOrderCode()));
             lyStatement.setPayment(orderItem.getPayment());
             lyStatement.setCreateTime(DateUtils.formatDateTime(orderItem.getCreateTime()));
             list.add(lyStatement);
@@ -458,7 +455,7 @@ public class LiangYouBiz implements ILiangYouBiz {
         List<OrderItem> orderItems = getOrderItems(list,form);
         //将要返回到前端的数据补全
         List<OrderItem> list1 = packageData(supplierOrderInfoList, orderItems);
-        List<LyStatement> newList = setParam(list1);
+        List<LyStatement> newList = setParam(list1,supplierOrderInfoList);
         return newList;
     }
 
