@@ -885,6 +885,9 @@ public class SupplyConstants {
 
         //新增商品信息分页查询路径
         public static final String ITEMS_PAGE = "itemsPage";
+
+        //仓库商品信息通知奇门同步
+        public static final String WAREHOUSE_ITEM_NOTICE_QIMEN = "warehouseItemNoticeQimen";
     }
 
     /**
