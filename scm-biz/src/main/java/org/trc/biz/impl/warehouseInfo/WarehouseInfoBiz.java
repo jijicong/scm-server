@@ -375,12 +375,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         //验证商品是否停用
         List<String> stopSkuCode = valideItems(itemsList);
         if (stopSkuCode.size()>0){
-            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU停用："+JSON.toJSONString(stopSkuCode));
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU停用："+stopSkuCode);
         }
         //验证商品是否添加过
         List<String> hasAdd = hasAddItems(itemsList,warehouseInfoId);
         if (hasAdd.size()>0){
-            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU已经添加："+JSON.toJSONString(hasAdd));
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU已经添加："+hasAdd);
         }
         //验证仓库是否通知成功
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouseInfoId);
