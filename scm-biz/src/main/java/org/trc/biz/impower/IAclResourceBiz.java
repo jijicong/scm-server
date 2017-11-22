@@ -1,5 +1,6 @@
 package org.trc.biz.impower;
 
+import com.alibaba.fastjson.JSONArray;
 import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.JurisdictionTreeNode;
@@ -9,7 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 public interface IAclResourceBiz {
     /**
@@ -105,4 +108,13 @@ public interface IAclResourceBiz {
     List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId, AclUserAccreditInfo userAccreditInfo);
 
     List<AclResource> findChannelJurisdictionAndCheckedModuleByRoleId(Long roleId);
+
+    /**
+     * 查询当前用户的业务线列表
+     * @param userId
+     * @return
+     */
+    JSONArray queryChannelList(String userId);
+
+
 }

@@ -10,7 +10,9 @@ import java.util.Map;
 
 /**
  * 用户授权信息的mapper
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 public  interface AclUserAccreditInfoMapper extends BaseMapper<AclUserAccreditInfo>{
     /**
@@ -46,10 +48,36 @@ public  interface AclUserAccreditInfoMapper extends BaseMapper<AclUserAccreditIn
      */
     List<AclUserAccreditInfo> selectUserNames(String strs[]);
 
-
+    /**
+     * 根据用户id查询用户
+     * @param userId
+     * @return
+     */
     AclUserAccreditInfo selectOneById(@Param("userId")String userId);
 
+    /**
+     * 根据用户id批量查询
+     * @param ids
+     * @return
+     */
     List<AclUserAccreditInfo> selectByUserIds(@Param("userIds")String ...ids);
-    //根据姓名模糊查询用户
+
+
+    /**
+     *根据姓名模糊查询用户
+     * @param name
+     * @return
+     */
     List<AclUserAccreditInfo> selectUserByName(String name);
+
+    /**
+     * 根据用户id查询同用户的不同业务线
+     * @param userId
+     *  @param channelCodeString
+     * @return
+     */
+    List<AclUserAccreditInfo> selectUserListByUserId(@Param("userId")String userId,@Param("channelCode")String channelCodeString);
+
+    List<AclUserAccreditInfo> selectUserListByUserId2(@Param("userId")String userId);
+
 }

@@ -21,7 +21,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 @Component
 @Path(SupplyConstants.UserAccreditInfo.ROOT)
@@ -94,7 +96,7 @@ public class AclUserAccreditInfoResource {
     @Path(SupplyConstants.UserAccreditInfo.CHANNEL)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findChannel() {
-        return ResultUtil.createSuccessResult("查询已启用的渠道成功", userAccreditInfoBiz.findChannel());
+        return ResultUtil.createSuccessResult("查询业务线以及销售渠道成功", userAccreditInfoBiz.findChannel());
 
     }
 
@@ -128,7 +130,7 @@ public class AclUserAccreditInfoResource {
     @GET
     @Path(SupplyConstants.UserAccreditInfo.ACCREDIT + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findUserAccreditInfoById(@QueryParam("id") Long id) {
+    public Response findUserAccreditInfoById(@PathParam("id") Long id) {
         return ResultUtil.createSuccessResult("查询用户成功", userAccreditInfoBiz.findUserAccreditInfoById(id));
     }
 
