@@ -46,8 +46,8 @@ public class WarehouseInfo {
     private Integer skuNum;
 
     //货主ID
-    @FormParam("ownerId")
-    private String ownerId;
+    @FormParam("channelCode")
+    private String channelCode;
 
     //仓库货主ID
     @FormParam("warehouseOwnerId")
@@ -76,6 +76,10 @@ public class WarehouseInfo {
     //是否删除 0--未删除 1--已删除
     @FormParam("isDelete")
     private Integer isDelete;
+
+    //是否删除 0--未删除 1--已删除
+    @FormParam("isNoticeWarehouseItems")
+    private Integer isNoticeWarehouseItems;
 
     //备注
     @FormParam("warehouseOwnerId")
@@ -130,12 +134,12 @@ public class WarehouseInfo {
         this.skuNum = skuNum;
     }
 
-    public String getOwnerId() {
-        return ownerId;
+    public String getChannelCode() {
+        return channelCode;
     }
 
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 
     public String getWarehouseOwnerId() {
@@ -192,5 +196,13 @@ public class WarehouseInfo {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Integer getIsNoticeWarehouseItems() {
+        return isNoticeWarehouseItems;
+    }
+
+    public void setIsNoticeWarehouseItems(Integer isNoticeWarehouseItems) {
+        this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 }

@@ -19,6 +19,10 @@ public class ImportExcel {
     private static HSSFSheet sheet;
     private static HSSFRow row;
 
+    private static final String SEPARATOR = ",";
+
+    public static final String COUNT = "count";
+
     /**
      * 读取Excel表格表头的内容
      *
@@ -38,8 +42,8 @@ public class ImportExcel {
         System.out.println("colNum:" + colNum);
         String[] title = new String[colNum];
         for (int i = 0; i < colNum; i++) {
-            //title[i] = getStringCellValue(row.getCell((short) i));
-            title[i] = getCellFormatValue(row.getCell((short) i));
+            title[i] = getStringCellValue(row.getCell((short) i));
+            //title[i] = getCellFormatValue(row.getCell((short) i));
         }
         return title;
     }
@@ -49,8 +53,8 @@ public class ImportExcel {
      *
      * @return Map 包含单元格数据内容的Map对象
      */
-    public static Map<Integer, String> readExcelContent(InputStream is) {
-        Map<Integer, String> content = new HashMap<Integer, String>();
+    public static Map<String, String> readExcelContent(InputStream is, String separator) {
+        Map<String, String> content = new HashMap<String, String>();
         String str = "";
         try {
             fs = new POIFSFileSystem(is);
@@ -61,6 +65,7 @@ public class ImportExcel {
         sheet = wb.getSheetAt(0);
         // 得到总行数
         int rowNum = sheet.getLastRowNum();
+        content.put(COUNT, String.valueOf(rowNum));
         row = sheet.getRow(0);
         int colNum = row.getPhysicalNumberOfCells();
         // 正文内容应该从第二行开始,第一行为表头的标题
@@ -70,12 +75,12 @@ public class ImportExcel {
             while (j < colNum) {
                 // 每个单元格的数据内容用"-"分割开，以后需要时用String类的replace()方法还原数据
                 // 也可以将每个单元格的数据设置到一个javabean的属性中，此时需要新建一个javabean
-                // str += getStringCellValue(row.getCell((short) j)).trim() +
+                str += getStringCellValue(row.getCell((short) j)).trim() + separator;
                 // "-";
-                str += getCellFormatValue(row.getCell((short) j)).trim() + "    ";
+                //str += getCellFormatValue(row.getCell((short) j)).trim() + "    ";
                 j++;
             }
-            content.put(i, str);
+            content.put(String.valueOf(i), str);
             str = "";
         }
         return content;
@@ -94,7 +99,8 @@ public class ImportExcel {
                 strCell = cell.getStringCellValue();
                 break;
             case HSSFCell.CELL_TYPE_NUMERIC:
-                strCell = String.valueOf(cell.getNumericCellValue());
+                HSSFDataFormatter dataFormatter = new HSSFDataFormatter();
+                strCell = dataFormatter.formatCellValue(cell);
                 break;
             case HSSFCell.CELL_TYPE_BOOLEAN:
                 strCell = String.valueOf(cell.getBooleanCellValue());

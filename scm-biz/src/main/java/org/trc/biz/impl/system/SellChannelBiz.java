@@ -90,7 +90,7 @@ public class SellChannelBiz implements ISellChannelBiz{
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
     public void saveSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo) {
-        SellChannel tmp =selectSellChannelByName(sellChannel.getSellName());
+        SellChannel tmp =selectSellChannelByName(null,sellChannel.getSellName());
         if (null!=tmp){
            throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, "该销售渠道名称已存在!");
         }
@@ -115,7 +115,7 @@ public class SellChannelBiz implements ISellChannelBiz{
     @CacheEvit(key = {"#sellChannel.id"})
     public void updateSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(sellChannel.getId(), "修改销售渠道参数ID为空");
-        SellChannel tmp = selectSellChannelByName(sellChannel.getSellName());
+        SellChannel tmp = selectSellChannelByName(null,sellChannel.getSellName());
         if (null != tmp) {
             if (!tmp.getId().equals(sellChannel.getId())) {
                 throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_UPDATE_EXCEPTION, "该销售渠道名称已存在");
@@ -138,11 +138,29 @@ public class SellChannelBiz implements ISellChannelBiz{
      * @return
      */
     @Override
-    public SellChannel selectSellChannelByName(String sellName) {
+    public SellChannel selectSellChannelByName(Long id,String sellName) {
         SellChannel sellChannel = new SellChannel();
         sellChannel.setSellName(sellName);
         sellChannel=  sellChannelService.selectOne(sellChannel);
+        if (null!=id&&null!=sellChannel){
+          if (id.equals(sellChannel.getId())){
+              return null;
+          }
+        }
         return sellChannel;
+    }
+
+    @Override
+    public SellChannel selectSellChannelById(Long id) {
+        AssertUtil.notNull(id, "根据Id查询销售渠道,参数Id不能为空");
+        SellChannel sellChannel = sellChannelService.selectByPrimaryKey(id);
+        AssertUtil.notNull(sellChannel, "根据Id"+id+"查询销售渠道结果为空!");
+        return sellChannel;
+    }
+
+    @Override
+    public SellChannel selectSellChannelByNameAndId(Long id, String name) {
+        return null;
     }
 
 
