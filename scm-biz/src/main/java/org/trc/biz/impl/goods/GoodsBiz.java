@@ -30,6 +30,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -59,6 +60,7 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -148,6 +150,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ISupplierService supplierService;
     @Autowired
     private ISupplierApplyService supplierApplyService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
 
 
     @Override
@@ -1395,10 +1399,47 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notEmpty(updateSkus, String.format("根据商品SPU编码[%s]查询相关SKU为空", items2.getSpuCode()));
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, updateSkus, TrcActionTypeEnum.ITEMS_IS_VALID);
+        //商品启停用通知仓库商品信息
+        itemsUpdateNoticeWarehouseItemInfo(items2);
         //记录操作日志
         logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
+    }
+
+    private void itemsUpdateNoticeWarehouseItemInfo(Items items) {
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setSpuCode(items.getSpuCode());
+        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        String isValid = items.getIsValid();
+        if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
+            isValid = ZeroToNineEnum.ONE.getCode();
+        }else{
+            isValid = ZeroToNineEnum.TWO.getCode();
+        }
+        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
+            int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
+            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
+            if(ZeroToNineEnum.ONE.getCode().equals(isValid)){
+                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
+                }else{
+
+                }
+            }else{
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
+                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                    }
+                    warehouseItemInfo1.setOldNoticeStatus(null);
+                }
+            }
+            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
+        }
     }
 
     /**
