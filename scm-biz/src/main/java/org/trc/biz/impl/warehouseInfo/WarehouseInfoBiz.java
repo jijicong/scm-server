@@ -416,8 +416,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 list3.add(sku);
             }
         }
-        AssertUtil.isNull(list2,"商品名称不能为空，如下skuName名称为空"+list2);
-        AssertUtil.isNull(list3,"商品sku编码不能为空，如下skuCode名称为空"+list3);
+        AssertUtil.isTrue(list2.size()==0,"商品名称不能为空，如下skuName名称为空"+list2);
+        AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空，如下skuCode名称为空"+list3);
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
@@ -436,15 +436,22 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 log.info("未获取到该sku编号对应的商品货号");
                 continue;
             }
+            warehouseItemInfo.setSpuCode(sku.getSpuCode());
             warehouseItemInfo.setItemNo(map.get(sku.getSkuCode()));
             warehouseItemInfo.setItemType(ItemTypeEnum.NOEMAL.getCode());
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
+        countSkuNum(warehouseInfoId);
+        return ResultUtil.createSuccessResult("添加新商品成功","success");
+    }
+
+    private void countSkuNum(Long warehouseInfoId) {
         //开始统计warehouseItem数量
         Example example01 = new Example(WarehouseItemInfo.class);
         Example.Criteria criteria01 = example01.createCriteria();
         criteria01.andEqualTo("warehouseInfoId",warehouseInfoId);
+        criteria01.andEqualTo("isDelete",ZeroToNineEnum.ZERO.getCode());
         List<WarehouseItemInfo> list1 =warehouseItemInfoService.selectByExample(example01);
         Example example = new Example(WarehouseInfo.class);
         Example.Criteria criteria = example.createCriteria();
@@ -452,7 +459,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         WarehouseInfo warehouseInfo1 = new WarehouseInfo();
         warehouseInfo1.setSkuNum(list1.size());
         warehouseInfoService.updateByExampleSelective(warehouseInfo1,example);
-        return ResultUtil.createSuccessResult("添加新商品成功","success");
     }
 
     private Map<String,String> getItemNoBySku(List<String> skuList){
@@ -513,6 +519,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         Example example = new Example(WarehouseItemInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode",list);
+        criteria.andEqualTo("isDelete",ZeroToNineEnum.ZERO.getCode());
         criteria.andEqualTo("warehouseInfoId",warehouseInfoId);
         List<WarehouseItemInfo> skuList = warehouseItemInfoService.selectByExample(example);
         List<String> hasAdd = new ArrayList<>();
