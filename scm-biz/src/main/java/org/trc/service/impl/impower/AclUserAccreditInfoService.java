@@ -1,8 +1,7 @@
 package org.trc.service.impl.impower;
 
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.mapper.impower.AclUserAccreditInfoMapper;
@@ -10,20 +9,21 @@ import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AssertUtil;
 
-import javax.annotation.Resource;
-import javax.ws.rs.container.ContainerRequestContext;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 @Service("userAccreditInfoService")
 public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo, Long> implements IAclUserAccreditInfoService {
 
 
-    @Resource
+    @Autowired
     private AclUserAccreditInfoMapper aclUserAccreditInfoMapper;
 
     @Override
@@ -81,5 +81,35 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
     @Override
     public List<AclUserAccreditInfo> selectUserByName(String name) {
         return aclUserAccreditInfoMapper.selectUserByName(name);
+    }
+
+    @Override
+    public List<AclUserAccreditInfo> selectUserListByUserId(String userId,String channelCodeString) {
+        //根据userId查询用户业务线销售渠道关联表,只需要关联的业务线条数,所以要去重
+        List<AclUserAccreditInfo> aclUserAccreditInfoList =  aclUserAccreditInfoMapper.selectUserListByUserId(userId,channelCodeString);
+        List<AclUserAccreditInfo> dedupAccreditInfoList = new ArrayList<>();
+        Map<String,AclUserAccreditInfo> userMap = new HashMap<>();
+        for (AclUserAccreditInfo accreditInfo:aclUserAccreditInfoList ) {
+            userMap.put(accreditInfo.getChannelCode(),accreditInfo);
+        }
+        for (String channelCode : userMap.keySet()) {
+            dedupAccreditInfoList.add(userMap.get(channelCode));
+        }
+        return dedupAccreditInfoList;
+    }
+    @Override
+    public List<AclUserAccreditInfo> selectUserListByUserId2(String userId) {
+        //根据userId查询用户业务线销售渠道关联表,只需要关联的业务线条数,所以要去重
+        List<AclUserAccreditInfo> aclUserAccreditInfoList =  aclUserAccreditInfoMapper.selectUserListByUserId2(userId);
+        AssertUtil.notEmpty(aclUserAccreditInfoList,"根据userId未查询到相关的用户信息.");
+        List<AclUserAccreditInfo> dedupAccreditInfoList = new ArrayList<>();
+        Map<String,AclUserAccreditInfo> userMap = new HashMap<>();
+        for (AclUserAccreditInfo accreditInfo:aclUserAccreditInfoList ) {
+            userMap.put(accreditInfo.getChannelCode(),accreditInfo);
+        }
+        for (String channelCode : userMap.keySet()) {
+            dedupAccreditInfoList.add(userMap.get(channelCode));
+        }
+        return dedupAccreditInfoList;
     }
 }

@@ -963,7 +963,10 @@ public class SupplyConstants {
          */
         public static final String CONFIRM_USER_CHANNEL = "confirmUser";
 
-
+        /**
+         * 清除session
+         */
+        public static final String CLEAR_SESSION = "clearSession";
     }
 
     /**

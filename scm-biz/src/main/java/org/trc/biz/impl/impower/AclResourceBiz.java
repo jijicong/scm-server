@@ -1,7 +1,9 @@
 package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.qiniu.util.Json;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,9 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.*;
 
 /**
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 @Service("jurisdictionBiz")
 public class AclResourceBiz implements IAclResourceBiz {
@@ -39,10 +43,17 @@ public class AclResourceBiz implements IAclResourceBiz {
     private IAclUserAccreditInfoService userAccreditInfoService;
     @Autowired
     private IAclUserAccreditRoleRelationService userAccreditInfoRoleRelationService;
+    @Autowired
+    private  IAclUserChannelSellService aclUserChannelSellService;
 
-    private final static Integer WHOLE_JURISDICTION_ID = 1;//全局角色的所属
-
-    private final static Integer CHANNEL_JURISDICTION_ID = 2;//渠道角色的所属
+    /**
+     * 全局角色的所属
+     */
+    private final static Integer WHOLE_JURISDICTION_ID = 1;
+    /**
+     * 渠道角色的所属
+     */
+    private final static Integer CHANNEL_JURISDICTION_ID = 2;
     @Value("${admin.user.id}")
     private String ADMIN_ID;
 
@@ -161,6 +172,21 @@ public class AclResourceBiz implements IAclResourceBiz {
             }
         }
         return channelAclResourceList;
+    }
+
+    @Override
+    public JSONArray queryChannelList(String userId) {
+        AssertUtil.notBlank(userId,"用户UserId为空,请检查用户");
+        List<AclUserAccreditInfo> aclUserAccreditInfoList = userAccreditInfoService.selectUserListByUserId2(userId);
+        AssertUtil.notEmpty(aclUserAccreditInfoList,"当前用户没有相关的销售渠道,请确认该用户是否已经授权!");
+        JSONArray jsonArray = new JSONArray();
+        for (AclUserAccreditInfo userAccreditInfo:aclUserAccreditInfoList) {
+            JSONObject object= new JSONObject();
+            object.put("channelCode",userAccreditInfo.getChannelCode());
+            object.put("channelName",userAccreditInfo.getChannelName());
+            jsonArray.add(object);
+        }
+        return jsonArray;
     }
 
     @Override

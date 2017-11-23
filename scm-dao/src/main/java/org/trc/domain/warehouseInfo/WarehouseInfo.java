@@ -82,6 +82,10 @@ public class WarehouseInfo {
     private Integer isNoticeWarehouseItems;
 
     //备注
+    @FormParam("code")
+    private String code;
+
+    //备注
     @FormParam("warehouseOwnerId")
     @Length(max = 100, message = "仓库货主ID的编码字母和数字不能超过100个,汉字不能超过50个")
     private String remark;
@@ -204,5 +208,13 @@ public class WarehouseInfo {
 
     public void setIsNoticeWarehouseItems(Integer isNoticeWarehouseItems) {
         this.isNoticeWarehouseItems = isNoticeWarehouseItems;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

@@ -85,10 +85,10 @@ public class CacheEvitInterceptor {
 
 		Method method = null;
 		try {
-			String name =  pjp.getSignature().getName();
-			method = pjp.getTarget().getClass().getMethod(name, argTypes);
-		} catch (NoSuchMethodException e) {
-			LOGGER.error("获取方法失败!",e);
+			/*String name =  pjp.getSignature().getName();
+			method = pjp.getTarget().getClass().getMethod(name, argTypes);*/
+//		} catch (NoSuchMethodException e) {
+//			LOGGER.error("获取方法失败!",e);
 		} catch (SecurityException e) {
 			LOGGER.error("未获得得到该方法的权限!",e);
 		}

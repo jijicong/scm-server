@@ -59,12 +59,27 @@ public interface IAclUserAccreditInfoService extends IBaseService<AclUserAccredi
 
     /**
      * 根据cookies中的token获取用户信息
-     * @param requestContext
+     * @param ids
      * @return
      *//*
     AclUserAccreditInfo selectOneByRequestContext(ContainerRequestContext requestContext);*/
 
     Map<String,AclUserAccreditInfo> selectByIds(String ...ids);
 
+    /**
+     * 根据名称查询用户
+     * @param name
+     * @return
+     */
     List<AclUserAccreditInfo> selectUserByName(String name);
+
+    /**
+     * 根据UserID查询用户列表
+     * @param userId
+     * @param channelCode
+     * @return
+     */
+    List<AclUserAccreditInfo> selectUserListByUserId(String userId,String channelCode);
+    List<AclUserAccreditInfo> selectUserListByUserId2(String userId);
+
 }
