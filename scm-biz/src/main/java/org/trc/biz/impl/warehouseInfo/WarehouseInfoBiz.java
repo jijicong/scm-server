@@ -357,7 +357,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             cellDefinitionList.add(noticeStatus);
             cellDefinitionList.add(updateTime);
             String sheetName = "仓库信息管理-商品信息报表";
-            String fileName = "仓库信息管理-商品信息报表-" + form.getStartDate() + BAR + form.getEndDate() + EXCEL;
+            String fileName = "仓库信息管理-商品信息报表" + EXCEL;
             try {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
             } catch (UnsupportedEncodingException e1) {
@@ -448,6 +448,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     private void countSkuNum(Long warehouseInfoId) {
         //开始统计warehouseItem数量
+        AssertUtil.notNull(warehouseInfoId,"仓库信息Id不能为空");
         Example example01 = new Example(WarehouseItemInfo.class);
         Example.Criteria criteria01 = example01.createCriteria();
         criteria01.andEqualTo("warehouseInfoId",warehouseInfoId);
