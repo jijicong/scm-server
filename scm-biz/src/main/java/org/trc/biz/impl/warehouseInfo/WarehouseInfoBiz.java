@@ -685,9 +685,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         String str = null;
         if (StringUtils.isBlank(state)){
             str = "商品状态为空";
-        }else if (state.equals(ZeroToNineEnum.ONE.getCode())){
+        }else if (state.equals(ZeroToNineEnum.ZERO.getCode())){
             str = "停用";
-        }else if (state.equals(ZeroToNineEnum.TWO.getCode())){
+        }else if (state.equals(ZeroToNineEnum.ONE.getCode())){
             str = "启用";
         }
         return str;
