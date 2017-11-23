@@ -1505,14 +1505,9 @@ public class GoodsBiz implements IGoodsBiz {
         warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
         String isValid = _isValid;
-        if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
-            isValid = ZeroToNineEnum.ONE.getCode();
-        }else{
-            isValid = ZeroToNineEnum.TWO.getCode();
-        }
         for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
             warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
-            if(ZeroToNineEnum.ONE.getCode().equals(isValid)){
+            if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
                 int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
                 warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
                 if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||

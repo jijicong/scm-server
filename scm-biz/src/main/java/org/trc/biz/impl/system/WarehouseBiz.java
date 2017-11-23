@@ -23,10 +23,7 @@ import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.Area;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.remarkEnum;
+import org.trc.enums.*;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
 import org.trc.model.SearchResult;
@@ -224,6 +221,13 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
+        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
+                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) && !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode())){
+            String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
         int count = warehouseService.insert(warehouse);
         if (count == 0) {
             String msg = "仓库保存,数据库操作失败";
@@ -233,6 +237,20 @@ public class WarehouseBiz implements IWarehouseBiz {
         String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
 
+    }
+
+
+
+    private boolean checkQimenWarehouseCode(String qimenWarehouseCode){
+        Example example = new Example(Warehouse.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("qimenWarehouseCode",qimenWarehouseCode);
+        List<Warehouse> list = warehouseService.selectByExample(example);
+        if(list == null || list.size() < 1){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     @Override
@@ -295,6 +313,14 @@ public class WarehouseBiz implements IWarehouseBiz {
                 throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, "其它的仓库已经使用该仓库名称");
             }
         }
+
+        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
+                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) && !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode())){
+            String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
         Warehouse _warehouse = warehouseService.selectByPrimaryKey(warehouse.getId());
         String remark = null;
