@@ -2,6 +2,7 @@ package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.tairanchina.md.account.user.model.UserDO;
 import org.apache.commons.lang3.StringUtils;
@@ -256,9 +257,14 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                     List<SellChannel> sellChannelList = sellChannelService.selectByExample(example2);
                     if (!AssertUtil.collectionIsEmpty(sellChannelList)){
                         channelExt.setSellChannelList(sellChannelList);
+
                     }
                 }
             }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("channelName",channelExt.getName());
+            jsonObject.put("channelCode",channelExt.getCode());
+            channelExt.setNameValue(jsonObject);
             channelExtList.add(channelExt);
         }
         return channelExtList;
