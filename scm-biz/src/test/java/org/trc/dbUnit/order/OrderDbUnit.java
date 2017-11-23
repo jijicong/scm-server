@@ -182,12 +182,15 @@ public class OrderDbUnit extends BaseTest{
         execSql(conn,"delete from order_item");
         execSql(conn,"delete from warehouse_order");
         execSql(conn,"delete from supplier_order_info");
+        execSql(conn,"delete from logistics_company");
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "order/logistics/preInsertPlatformOrder.xml");
         prepareData(conn, "order/logistics/preInsertShopOrder.xml");
         prepareData(conn, "order/logistics/preInsertWarehouseOrder.xml");
         prepareData(conn, "order/logistics/preInsertOrderItem.xml");
         prepareData(conn, "order/logistics/preInsertSupplierOrderInfo.xml");
+        prepareData(conn, "order/logistics/preInsertLogisticsCompanyData.xml");
+
         //mock调用外部接口查询物流
         mockQueryLogistics(scmOrderBiz);
         scmOrderBiz.fetchLogisticsInfo();
@@ -324,7 +327,7 @@ public class OrderDbUnit extends BaseTest{
                 "                    }\n" +
                 "                ],\n" +
                 "                \"waybillNumber\": \"1608201657240531\",\n" +
-                "                \"logisticsCorporation\": \"圆通快递\",\n" +
+                "                \"logisticsCorporation\": \"圆通速递\",\n" +
                 "                \"logisticInfo\": [],\n" +
                 "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
                 "                \"logisticsStatus\": \"1\"\n" +
@@ -338,7 +341,7 @@ public class OrderDbUnit extends BaseTest{
                 "                    }\n" +
                 "                ],\n" +
                 "                \"waybillNumber\": \"1608201657240531\",\n" +
-                "                \"logisticsCorporation\": \"圆通快递\",\n" +
+                "                \"logisticsCorporation\": \"圆通速递\",\n" +
                 "                \"logisticInfo\": [],\n" +
                 "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
                 "                \"logisticsStatus\": \"1\"\n" +

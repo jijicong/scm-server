@@ -108,6 +108,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private String PASSWORD;
 
     @Override
+    @CacheEvit
     public Response saveWarehouse(String code,AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(code,"奇门仓库编号不能为空");
         log.info("查询符合条件的仓库=====》");
@@ -236,7 +237,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
             result.setSkuNum(warehouseInfo.getSkuNum());
             String state = convertWarehouseState(warehouseInfo.getOwnerWarehouseState());
+            Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
             result.setOwnerWarehouseState(state);
+            Integer noticeSuccess = warehouse.getIsNoticeSuccess();
+            if (noticeSuccess == null){
+                noticeSuccess=0;
+            }
+            result.setIsNoticeSuccess(noticeSuccess);
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));
             result.setIsDelete(convertDeleteState(warehouseInfo));
@@ -385,6 +392,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
+    @CacheEvit
     public Response saveWarehouseItemsSku(String items,Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId,"仓库的主键不能为空");
         AssertUtil.notBlank(items,"至少选择一件商品");
@@ -392,12 +400,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         //验证商品是否停用
         List<String> stopSkuCode = valideItems(itemsList);
         if (stopSkuCode.size()>0){
-            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU停用："+stopSkuCode);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU停用："+stopSkuCode.toString());
         }
         //验证商品是否添加过
         List<String> hasAdd = hasAddItems(itemsList,warehouseInfoId);
         if (hasAdd.size()>0){
-            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU已经添加："+hasAdd);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"如下商品SKU已经添加："+hasAdd.toString());
         }
         //验证仓库是否通知成功
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouseInfoId);
@@ -540,6 +548,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
+    @Cacheable(key = "#form.toString()+#page.pageNo+#page.pageSize+#warehouseInfoId", isList = true)
     public Pagenation<ItemsResult> queryWarehouseItemsSku(SkusForm form, Pagenation<Skus> page, Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
@@ -676,9 +685,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         String str = null;
         if (StringUtils.isBlank(state)){
             str = "商品状态为空";
-        }else if (state.equals(ZeroToNineEnum.ONE.getCode())){
+        }else if (state.equals(ZeroToNineEnum.ZERO.getCode())){
             str = "停用";
-        }else if (state.equals(ZeroToNineEnum.TWO.getCode())){
+        }else if (state.equals(ZeroToNineEnum.ONE.getCode())){
             str = "启用";
         }
         return str;
