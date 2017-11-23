@@ -1399,48 +1399,13 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notEmpty(updateSkus, String.format("根据商品SPU编码[%s]查询相关SKU为空", items2.getSpuCode()));
         //商品启停用通知渠道
         itemsUpdateNoticeChannel(items2, updateSkus, TrcActionTypeEnum.ITEMS_IS_VALID);
-        //商品启停用通知仓库商品信息
-        itemsUpdateNoticeWarehouseItemInfo(items2);
         //记录操作日志
         logInfoService.recordLog(items2,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(_isValid).getName()), null);
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
     }
 
-    private void itemsUpdateNoticeWarehouseItemInfo(Items items) {
-        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
-        warehouseItemInfo.setSpuCode(items.getSpuCode());
-        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
-        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
-        String isValid = items.getIsValid();
-        if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
-            isValid = ZeroToNineEnum.ONE.getCode();
-        }else{
-            isValid = ZeroToNineEnum.TWO.getCode();
-        }
-        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
-            int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
-            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
-            if(ZeroToNineEnum.ONE.getCode().equals(isValid)){
-                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
-                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
-                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
-                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
-                }else{
 
-                }
-            }else{
-                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
-                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
-                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
-                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
-                    }
-                    warehouseItemInfo1.setOldNoticeStatus(null);
-                }
-            }
-            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
-        }
-    }
 
     /**
      * 停用自采商品检查是否存在启用的SKU
@@ -1525,11 +1490,52 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> updateSkus = skusService.select(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         updateSkus.add(skus2);
+        //商品SKU启停用通知仓库商品信息
+        itemsUpdateNoticeWarehouseItemInfo(skus2, _isValid);
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+    }
+
+    private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setSkuCode(skus.getSkuCode());
+        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        String isValid = _isValid;
+        if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
+            isValid = ZeroToNineEnum.ONE.getCode();
+        }else{
+            isValid = ZeroToNineEnum.TWO.getCode();
+        }
+        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
+            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
+            if(ZeroToNineEnum.ONE.getCode().equals(isValid)){
+                int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
+                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
+                }else{
+
+                }
+            }else{
+                Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
+                if(oldNoticeStatus == null){
+                    continue;
+                }
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
+                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                    }
+                    warehouseItemInfo1.setOldNoticeStatus(null);
+                }
+            }
+            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
+        }
     }
 
     /**
