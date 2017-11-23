@@ -1049,7 +1049,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         AssertUtil.notNull(warehouseInfo.getId(),"主键不能为空");
         AssertUtil.notBlank(warehouseInfo.getWarehouseId(),"仓库主键不能为空");
         Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
-        if (warehouse.getIsNoticeSuccess() != null && warehouse.getIsNoticeSuccess().equals(NoticeSuccessEnum.UN_NOTIC.getCode())){
+        Integer isNoticeSuccess = warehouse.getIsNoticeSuccess();
+        if (isNoticeSuccess == null){
+            isNoticeSuccess =0;
+        }
+        if (isNoticeSuccess.equals(NoticeSuccessEnum.UN_NOTIC.getCode())){
             Example example = new Example(WarehouseInfo.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andEqualTo("id",warehouseInfo.getId());
