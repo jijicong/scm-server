@@ -198,7 +198,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         log.info("开始查询启用的仓库====》");
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        //criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<Warehouse> list = warehouseService.selectByExample(example);
         List<Map<String,String>> rev = new ArrayList<>();
         for (Warehouse warehouse:list){
