@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.ISellChannelBiz;
 import org.trc.cache.CacheEvit;
+import org.trc.cache.Cacheable;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
@@ -62,6 +63,7 @@ public class SellChannelBiz implements ISellChannelBiz{
      * @return
      */
     @Override
+    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<SellChannel> sellChannelPage(SellChannelFrom form, Pagenation<SellChannel> page) {
         Example example = new Example(SellChannel.class);
         Example.Criteria criteria = example.createCriteria();
@@ -110,7 +112,8 @@ public class SellChannelBiz implements ISellChannelBiz{
             throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, msg);
         }
         String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(sellChannel, sellChannel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
+        sellChannel = sellChannelService.selectOne(sellChannel);
+        logInfoService.recordLog(sellChannel, String.valueOf(sellChannel.getId()), userId, LogOperationEnum.ADD.getMessage(), "", null);
 
     }
 
@@ -132,7 +135,8 @@ public class SellChannelBiz implements ISellChannelBiz{
             throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_UPDATE_EXCEPTION, msg);
         }
         String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(sellChannel, sellChannel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), null, null);
+        sellChannel = sellChannelService.selectByPrimaryKey(sellChannel.getId());
+        logInfoService.recordLog(sellChannel, sellChannel.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), StringUtils.EMPTY, null);
     }
 
     /**

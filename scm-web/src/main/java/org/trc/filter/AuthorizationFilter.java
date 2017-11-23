@@ -1,12 +1,10 @@
 package org.trc.filter;
 
-import com.alibaba.fastjson.JSON;
 import com.tairanchina.beego.api.exception.AuthenticateException;
 import com.tairanchina.beego.api.model.BeegoToken;
 import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
 import com.tairanchina.beego.api.service.BeegoService;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.grizzly.http.server.Session;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +19,6 @@ import org.trc.enums.ResultEnum;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
-import org.trc.util.StringUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +27,10 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
 
@@ -100,7 +100,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                             }else {
                                 AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "查询用户信息为空,请尝试重新登录!", null);
                                 requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                                return;
+//                                return;
                             }
 
                         if (aclUserAccreditInfo == null) {
