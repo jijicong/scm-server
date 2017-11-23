@@ -301,6 +301,15 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             log.error(msg);
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }
+        //修改仓库信息sku数量
+        this.updateSkuNum(id);
+    }
+
+    private void updateSkuNum(Long id){
+        WarehouseItemInfo tmp2 = new WarehouseItemInfo();
+        tmp2.setId(id);
+        tmp2 = warehouseItemInfoService.selectOne(tmp2);
+        this.countSkuNum(tmp2.getWarehouseInfoId());
     }
 
     @Override
