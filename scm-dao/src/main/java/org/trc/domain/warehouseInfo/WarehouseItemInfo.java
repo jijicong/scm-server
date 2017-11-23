@@ -54,6 +54,10 @@ public class WarehouseItemInfo implements Serializable{
     private String exceptionReason;
     //商品状态:1-停用,2-启用
     private Integer isValid;
+    //spu编码
+    private String spuCode;
+    //原始通知状态
+    private Integer oldNoticeStatus;
 
     public Long getId() {
         return id;
@@ -175,6 +179,22 @@ public class WarehouseItemInfo implements Serializable{
         this.isValid = isValid;
     }
 
+    public String getSpuCode() {
+        return spuCode;
+    }
+
+    public void setSpuCode(String spuCode) {
+        this.spuCode = spuCode;
+    }
+
+    public Integer getOldNoticeStatus() {
+        return oldNoticeStatus;
+    }
+
+    public void setOldNoticeStatus(Integer oldNoticeStatus) {
+        this.oldNoticeStatus = oldNoticeStatus;
+    }
+
     @Override
     public String toString() {
         return "WarehouseItemInfo{" +
@@ -193,6 +213,8 @@ public class WarehouseItemInfo implements Serializable{
                 ", isDelete=" + isDelete +
                 ", exceptionReason='" + exceptionReason + '\'' +
                 ", isValid=" + isValid +
+                ", spuCode='" + spuCode + '\'' +
+                ", oldNoticeStatus=" + oldNoticeStatus +
                 '}';
     }
 }
