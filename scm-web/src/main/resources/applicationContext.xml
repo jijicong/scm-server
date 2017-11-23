@@ -43,10 +43,10 @@
 
     <bean id="jedisConnectionFactory"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
-        <property name="hostName" value="${mall.redis.host}"/>
-        <property name="port" value="${mall.redis.port}"/>
-        <property name="password" value="${mall.redis.password}"/>
-        <property name="timeout" value="2000" />
+        <property name="hostName" value="${session.redis.host}"/>
+        <property name="port" value="${session.redis.port}"/>
+        <property name="password" value="${session.redis.password}"/>
+        <property name="timeout" value="${session.redis.timeout}" />
         <property name="poolConfig" ref="jedisPoolConfig" />
         <property name="usePool" value="true" />
     </bean>

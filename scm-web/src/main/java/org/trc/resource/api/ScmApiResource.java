@@ -61,8 +61,8 @@ public class ScmApiResource {
     }
     @GET
     @Path(SupplyConstants.Api.CLEAR_SESSION)
-    public Response clearSession(@Context ContainerRequestContext requestContext){
-        RedisUtil.del("session");
-        return ResultUtil.createSuccessResult("清除Session!","");
+    public Response clearSession(@Context ContainerRequestContext requestContext,@Context HttpServletRequest request){
+        request.getSession().invalidate();
+        return ResultUtil.createSuccessResult("设置Session失效成功!","");
     }
 }
