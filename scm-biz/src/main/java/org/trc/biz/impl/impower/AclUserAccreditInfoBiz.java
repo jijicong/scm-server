@@ -2,6 +2,7 @@ package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.tairanchina.md.account.user.model.UserDO;
 import org.apache.commons.lang3.StringUtils;
@@ -256,9 +257,14 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                     List<SellChannel> sellChannelList = sellChannelService.selectByExample(example2);
                     if (!AssertUtil.collectionIsEmpty(sellChannelList)){
                         channelExt.setSellChannelList(sellChannelList);
+
                     }
                 }
             }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("channelName",channelExt.getName());
+            jsonObject.put("channelCode",channelExt.getCode());
+            channelExt.setNameValue(jsonObject);
             channelExtList.add(channelExt);
         }
         return channelExtList;
@@ -318,7 +324,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         //业务线关联信息校验,通过后组装数据userChannelSll数据;
         List<AclUserChannelSell> aclUserChannelSellList = new ArrayList<>();
         if (!StringUtils.equals(userAddPageDate.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
-            aclUserChannelSellList =checkChannelMsg(userAddPageDate.getChannelMsg());
+            aclUserChannelSellList =checkChannelMsg(userAddPageDate.getChannelMsg(),userAddPageDate);
         }
         //写入user_accredit_info表
         AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
@@ -380,7 +386,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     }
 
-    private List<AclUserChannelSell> checkChannelMsg(String channelMsg) {
+    private List<AclUserChannelSell> checkChannelMsg(String channelMsg,AclUserAddPageDate userAddPageDate) {
         List<AclUserChannelSell> aclUserChannelSellList = new ArrayList<>();
         List<ChannelSelectMsg> channelSelectMsgList = new ArrayList<>();
         try {
@@ -388,6 +394,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         } catch (Exception e) {
             LOGGER.error("业务线关联信息输入错误!",e);
         }
+        AssertUtil.notEmpty(channelSelectMsgList,"业务线关联错误!");
         if (!AssertUtil.collectionIsEmpty(channelSelectMsgList)) {
             for (ChannelSelectMsg channelSelectMsg : channelSelectMsgList) {
                 //校验业务线是否存在
@@ -584,7 +591,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         //业务线关联信息校验,通过后组装数据userChannelSll数据;
         List<AclUserChannelSell> aclUserChannelSellList = new ArrayList<>();
         if (!StringUtils.equals(userAddPageDate.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
-            aclUserChannelSellList =checkChannelMsg(userAddPageDate.getChannelMsg());
+            aclUserChannelSellList =checkChannelMsg(userAddPageDate.getChannelMsg(),userAddPageDate);
         }
         //写入user_accredit_role_relation表
         if (StringUtils.isNotBlank(userAddPageDate.getRoleNames())) {

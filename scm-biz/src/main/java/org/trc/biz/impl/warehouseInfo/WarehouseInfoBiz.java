@@ -198,7 +198,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         log.info("开始查询启用的仓库====》");
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        //criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<Warehouse> list = warehouseService.selectByExample(example);
         List<Map<String,String>> rev = new ArrayList<>();
         for (Warehouse warehouse:list){
@@ -1079,7 +1079,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         AssertUtil.notNull(warehouseInfo.getId(),"主键不能为空");
         AssertUtil.notBlank(warehouseInfo.getWarehouseId(),"仓库主键不能为空");
         Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
-        if (warehouse.getIsNoticeSuccess() != null && warehouse.getIsNoticeSuccess().equals(NoticeSuccessEnum.UN_NOTIC.getCode())){
+        Integer isNoticeSuccess = warehouse.getIsNoticeSuccess();
+        if (isNoticeSuccess == null){
+            isNoticeSuccess =0;
+        }
+        if (isNoticeSuccess.equals(NoticeSuccessEnum.UN_NOTIC.getCode())){
             Example example = new Example(WarehouseInfo.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andEqualTo("id",warehouseInfo.getId());

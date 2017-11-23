@@ -1,5 +1,7 @@
 package org.trc.domain.System;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.List;
 
 /**
@@ -17,7 +19,17 @@ public class ChannelExt extends Channel{
         return sellChannelList;
     }
 
+    private JSONObject nameValue;
+
     public void setSellChannelList(List<SellChannel> sellChannelList) {
         this.sellChannelList = sellChannelList;
+    }
+
+    public JSONObject getNameValue() {
+        return nameValue;
+    }
+
+    public void setNameValue(JSONObject nameValue) {
+        this.nameValue = nameValue;
     }
 }
