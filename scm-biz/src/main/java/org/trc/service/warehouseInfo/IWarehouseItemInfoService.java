@@ -3,6 +3,8 @@ package org.trc.service.warehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.service.IBaseService;
 
+import java.util.List;
+
 /**
  * Created by hzcyn on 2017/11/16.
  * @author hzcyn

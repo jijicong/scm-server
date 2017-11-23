@@ -3,6 +3,7 @@ package org.trc.mapper.purchase;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.util.BaseMapper;
 
 import java.util.List;
@@ -28,4 +29,5 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
     List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
 
+    List<WarehouseInfo> findWarehousesByChannelCode(String channelCode);
 }
