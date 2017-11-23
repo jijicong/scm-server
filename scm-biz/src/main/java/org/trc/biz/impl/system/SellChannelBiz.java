@@ -109,6 +109,9 @@ public class SellChannelBiz implements ISellChannelBiz{
             logger.error(msg);
             throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, msg);
         }
+        String userId = aclUserAccreditInfo.getUserId();
+        logInfoService.recordLog(sellChannel, sellChannel.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
+
     }
 
     @Override
