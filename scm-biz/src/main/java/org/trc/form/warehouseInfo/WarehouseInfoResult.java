@@ -42,6 +42,8 @@ public class WarehouseInfoResult {
     //是否删除 0--未删除 1--已删除
     private Integer isDelete;
 
+    private Integer isNoticeSuccess;
+
     //备注
     private String remark;
 
@@ -147,6 +149,14 @@ public class WarehouseInfoResult {
 
     public void setIsDelete(Integer isDelete) {
         this.isDelete = isDelete;
+    }
+
+    public Integer getIsNoticeSuccess() {
+        return isNoticeSuccess;
+    }
+
+    public void setIsNoticeSuccess(Integer isNoticeSuccess) {
+        this.isNoticeSuccess = isNoticeSuccess;
     }
 
     public String getRemark() {

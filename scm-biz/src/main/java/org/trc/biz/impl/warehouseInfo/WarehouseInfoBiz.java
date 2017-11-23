@@ -237,7 +237,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
             result.setSkuNum(warehouseInfo.getSkuNum());
             String state = convertWarehouseState(warehouseInfo.getOwnerWarehouseState());
+            Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
             result.setOwnerWarehouseState(state);
+            Integer noticeSuccess = warehouse.getIsNoticeSuccess();
+            if (noticeSuccess == null){
+                noticeSuccess=0;
+            }
+            result.setIsNoticeSuccess(noticeSuccess);
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));
             result.setIsDelete(convertDeleteState(warehouseInfo));
