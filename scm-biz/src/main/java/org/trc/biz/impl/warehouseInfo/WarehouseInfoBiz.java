@@ -433,8 +433,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 list3.add(sku);
             }
         }
-        AssertUtil.isTrue(list2.size()==0,"商品名称不能为空，如下skuName名称为空"+list2.toString());
-        AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空，如下skuCode名称为空"+list3.toString());
+        AssertUtil.isTrue(list2.size()==0,"商品名称不能为空");
+        AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空");
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
