@@ -396,6 +396,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         }
         AssertUtil.notEmpty(channelSelectMsgList,"业务线关联错误!");
         if (!AssertUtil.collectionIsEmpty(channelSelectMsgList)) {
+            List<String> noSelectSellName = new ArrayList<>();
             for (ChannelSelectMsg channelSelectMsg : channelSelectMsgList) {
                 //校验业务线是否存在
                 Channel channel = new Channel();
@@ -403,26 +404,30 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                 channel.setName(channelSelectMsg.getChannelName());
                 channel = channelService.selectOne(channel);
                 AssertUtil.notNull(channel, "业务线" + channelSelectMsg.getChannelName() + "不存在!");
-                AssertUtil.notEmpty(channelSelectMsg.getSellChannelList(), "业务线" + channelSelectMsg.getChannelName() + "未选择销售渠道!");
-                for (SellChannelSelectMsg selectSellMsg : channelSelectMsg.getSellChannelList()) {
-                    //校验销售渠道是否存在
-                    SellChannel sellChannel = new SellChannel();
-                    sellChannel.setSellName(selectSellMsg.getSellChannelName());
-                    sellChannel.setSellCode(selectSellMsg.getSellChannelCode());
-                    sellChannel = sellChannelService.selectOne(sellChannel);
-                    AssertUtil.notNull(sellChannel, "销售渠道" + selectSellMsg.getSellChannelName() + "不存在!");
-                    //校验业务线与业务线是否关联
-                    ChannelSellChannel channelSellChannel = new ChannelSellChannel();
-                    channelSellChannel.setChannelCode(channel.getCode());
-                    channelSellChannel.setSellChannelCode(sellChannel.getSellCode());
-                    channelSellChannel = channelSellChannelService.selectOne(channelSellChannel);
-                    AssertUtil.notNull(channelSellChannel, "业务线:" + channel.getName() + "和销售渠道" + sellChannel.getSellName() + "未关联!");
-                    AclUserChannelSell aclUserChannelSell = new AclUserChannelSell();
-                    aclUserChannelSell.setChannelCode(channel.getCode());
-                    aclUserChannelSell.setSellChannelCode(selectSellMsg.getSellChannelCode());
-                    aclUserChannelSellList.add(aclUserChannelSell);
+                if (!AssertUtil.collectionIsEmpty(channelSelectMsg.getSellChannelList())){
+                    for (SellChannelSelectMsg selectSellMsg : channelSelectMsg.getSellChannelList()) {
+                        //校验销售渠道是否存在
+                        SellChannel sellChannel = new SellChannel();
+                        sellChannel.setSellName(selectSellMsg.getSellChannelName());
+                        sellChannel.setSellCode(selectSellMsg.getSellChannelCode());
+                        sellChannel = sellChannelService.selectOne(sellChannel);
+                        AssertUtil.notNull(sellChannel, "销售渠道" + selectSellMsg.getSellChannelName() + "不存在!");
+                        //校验业务线与业务线是否关联
+                        ChannelSellChannel channelSellChannel = new ChannelSellChannel();
+                        channelSellChannel.setChannelCode(channel.getCode());
+                        channelSellChannel.setSellChannelCode(sellChannel.getSellCode());
+                        channelSellChannel = channelSellChannelService.selectOne(channelSellChannel);
+                        AssertUtil.notNull(channelSellChannel, "业务线:" + channel.getName() + "和销售渠道" + sellChannel.getSellName() + "未关联!");
+                        AclUserChannelSell aclUserChannelSell = new AclUserChannelSell();
+                        aclUserChannelSell.setChannelCode(channel.getCode());
+                        aclUserChannelSell.setSellChannelCode(selectSellMsg.getSellChannelCode());
+                        aclUserChannelSellList.add(aclUserChannelSell);
+                    }
+                }else {
+                    noSelectSellName.add( channelSelectMsg.getChannelName());
                 }
             }
+           AssertUtil.isNull(noSelectSellName,"业务线["+StringUtils.join(noSelectSellName,SupplyConstants.Symbol.COMMA)+"]未选择销售渠道!");
         }
 
         return aclUserChannelSellList;
