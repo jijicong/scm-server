@@ -9,11 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.constants.SupplyConstants;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-
+import javax.ws.rs.*;
 
 
 /**
@@ -25,7 +21,7 @@ import javax.ws.rs.Produces;
 
 public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
-    @GET
+    @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces("application/json;charset=utf-8")
     public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
