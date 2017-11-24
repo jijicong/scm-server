@@ -427,7 +427,11 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                     noSelectSellName.add( channelSelectMsg.getChannelName());
                 }
             }
-           AssertUtil.isNull(noSelectSellName,"业务线["+StringUtils.join(noSelectSellName,SupplyConstants.Symbol.COMMA)+"]未选择销售渠道!");
+            if (!AssertUtil.collectionIsEmpty(noSelectSellName)){
+                String msg ="业务线["+StringUtils.join(noSelectSellName,SupplyConstants.Symbol.COMMA)+"]未选择销售渠道!";
+                LOGGER.error(msg);
+                throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACL_EXCEPTION, msg);
+            }
         }
 
         return aclUserChannelSellList;
