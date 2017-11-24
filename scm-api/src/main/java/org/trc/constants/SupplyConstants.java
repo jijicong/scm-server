@@ -84,9 +84,9 @@ public class SupplyConstants {
         public static final String QI_MEN = "Qimen";
 
         /**
-         * 发货单确认
+         * 接收奇门回调
          */
-        public static final String CONFIRM_INVOICE = "confirmInvoice";
+        public static final String QIMEN_CALLBACK = "QimenCallback";
 
     }
 

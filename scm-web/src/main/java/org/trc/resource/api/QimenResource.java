@@ -26,7 +26,7 @@ import javax.xml.ws.Response;
 public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @GET
-    @Path(SupplyConstants.Qimen.CONFIRM_INVOICE)
+    @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces("application/json;charset=utf-8")
     public Response confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
         logger.info(JSON.toJSONString(confirmRequest));
