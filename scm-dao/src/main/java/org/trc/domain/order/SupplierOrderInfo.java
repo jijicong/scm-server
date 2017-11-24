@@ -1,5 +1,7 @@
 package org.trc.domain.order;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
@@ -85,6 +87,16 @@ public class SupplierOrderInfo extends ScmDO{
     //买家实付商品金额
     @Transient
     private Long payment;
+
+    // 渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String channelCode;
+
+    // 销售渠道编码
+    @NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
 
     public Long getId() {
         return id;
@@ -285,4 +297,20 @@ public class SupplierOrderInfo extends ScmDO{
     public void setPayment(Long payment) {
         this.payment = payment;
     }
+
+    /*public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }
