@@ -155,7 +155,9 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private ISupplierApplyService supplierApplyService;
     @Autowired
-    private IWarehouseItemInfoService warehouseItemInfoService;
+    private IQinniuBiz qinniuBiz;
+    @Autowired
+    private IExternalPictureService externalPictureService;
 
 
     @Override
