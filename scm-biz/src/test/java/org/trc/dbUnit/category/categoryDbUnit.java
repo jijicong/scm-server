@@ -156,8 +156,8 @@ public class categoryDbUnit extends BaseTest {
     @Test
     public void exportData() throws Exception {
         List<String> tableNameList = new ArrayList<>();
-        tableNameList.add("external_item_sku");
-        exportData(tableNameList, "preInsertExternalItemSkuData.xml");
+        tableNameList.add("logistics_company");
+        exportData(tableNameList, "preInsertLogisticsCompanyData.xml");
     }
 
     /**，
