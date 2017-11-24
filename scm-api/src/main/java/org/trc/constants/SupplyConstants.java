@@ -75,6 +75,22 @@ public class SupplyConstants {
     }
 
     /**
+     * 对泰然城开放接口
+     */
+    public static final class Qimen {
+        /**
+         * 根路径
+         */
+        public static final String QI_MEN = "Qimen";
+
+        /**
+         * 发货单确认
+         */
+        public static final String CONFIRM_INVOICE = "confirmInvoice";
+
+    }
+
+        /**
      * 配置管理
      */
     public static final class Config {
