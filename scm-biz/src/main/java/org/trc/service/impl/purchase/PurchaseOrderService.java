@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.mapper.purchase.IPurchaseOrderMapper;
 import org.trc.service.impl.BaseService;
 import org.trc.service.purchase.IPurchaseOrderService;
@@ -41,6 +42,11 @@ public class PurchaseOrderService extends BaseService<PurchaseOrder,Long> implem
     @Override
     public List<PurchaseDetail> selectAllCategory(List<Long> categoryIds) {
         return purchaseOrderMapper.selectAllCategory(categoryIds);
+    }
+
+    @Override
+    public List<WarehouseInfo> findWarehousesByChannelCode(String channelCode) {
+        return purchaseOrderMapper.findWarehousesByChannelCode(channelCode);
     }
 
 }

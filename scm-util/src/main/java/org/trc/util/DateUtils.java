@@ -510,7 +510,8 @@ public class DateUtils {
 	
 	public static void main(String[] paramArrayOfString) {
 		try {
-			System.out.println(dateToNormalFullString(timestampToDate("1468568194")));
+			Date date1 = DateUtils.parseDate("2017-11-09");
+			System.out.println(getDaysBetween(date1, Calendar.getInstance().getTime()));
 		} catch (Exception localException) {
 			System.out.println(localException);
 		}

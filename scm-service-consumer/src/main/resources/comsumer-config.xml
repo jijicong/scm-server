@@ -55,4 +55,9 @@
         <property name="noticeChannal" value="${notice.channal}"/>
     </bean>
 
+    <!--奇门接口调用地址-->
+    <bean id="qimenConfig" class="org.trc.form.QimenConfig">
+        <property name="qimenItemsSyncUrl" value="${qimen.itemsSync.url}"/>
+    </bean>
+
 </beans>

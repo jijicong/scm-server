@@ -6,8 +6,6 @@ package org.trc.constants;
 public class SupplyConstants {
 
 
-
-
     /**
      * 符号
      */
@@ -19,6 +17,11 @@ public class SupplyConstants {
         public static final String SEMICOLON = ";";//分号
         public static final String XIE_GANG = "/";//斜杠
         public static final String AND = "&";//与
+        /**
+         * 等号
+         */
+        public static final String EQUAL = "=";
+
     }
 
 
@@ -52,13 +55,13 @@ public class SupplyConstants {
 
         public static final String CATEGORY_PROPERTY_LIST = "categoryPrepertyList";//分类属性查询
 
-        public static final String SKU_INFORMATION ="skuInformation";//获取自采sku信息
+        public static final String SKU_INFORMATION = "skuInformation";//获取自采sku信息
 
-        public static final String EXTERNAL_SKU_INFORMATION ="externalSkuInformation";//批量获取代发sku信息
+        public static final String EXTERNAL_SKU_INFORMATION = "externalSkuInformation";//批量获取代发sku信息
 
-        public static final String ORDER_PROCESSING ="orderProcessing";//订单处理
+        public static final String ORDER_PROCESSING = "orderProcessing";//订单处理
 
-        public static final String SKURELATION_UPDATE ="skurelation/update";//sku关联信息变更
+        public static final String SKURELATION_UPDATE = "skurelation/update";//sku关联信息变更
 
         public static final String ITEM_LIST = "itemList";//获取自采商品列表
 
@@ -72,6 +75,22 @@ public class SupplyConstants {
     }
 
     /**
+     * 对泰然城开放接口
+     */
+    public static final class Qimen {
+        /**
+         * 根路径
+         */
+        public static final String QI_MEN = "Qimen";
+
+        /**
+         * 接收奇门回调
+         */
+        public static final String QIMEN_CALLBACK = "QimenCallback";
+
+    }
+
+        /**
      * 配置管理
      */
     public static final class Config {
@@ -237,8 +256,55 @@ public class SupplyConstants {
         public static final String CHANNEL = "channel";
         //状态的修改
         public static final String UPDATE_STATE = "channel/updateState";
+        //销售渠道分页查询
+        public static final String SALES_CHANNEL_PAGE = "salesChannelPage";
+        //销售渠道
+        public static final String SALES_CHANNEL = "salesChannel";
+        /**
+         * 根据渠道ID查询关联的业务线
+         */
+        public static final String CHANNEL_ID = "channelId";
+        /**
+         * 编辑时回写的数据
+         */
+        public static final String CHANNEL_ID_SELL_CHANNEL= "channelInSellChannel";
+        /**
+         * 查询所有的销售渠道
+         */
+        public static final String SELL_CHANNEL_LIST= "channelList";
     }
 
+    /**
+     * 销售渠道管理
+     */
+    public static final class SellChannel {
+        //根路径
+        public static final String ROOT = "system";
+        /**
+         * 销售渠道分页查询
+         */
+        public static final String SELL_CHANNEL_PAGE = "sellChannelPage";
+        /**
+         * 销售渠道列表
+         */
+        public static final String SELL_CHANNEL_LIST = "sellChannelList";
+        /**
+         * 销售渠道名称查询
+         */
+        public static final String SELL_CHANNEL_NAME = "sellChannelName";
+        /**
+         * 销售渠道修改
+         */
+        public static final String SELL_CHANNEL_UPDATE = "update/sellChannel";
+        /**
+         * 销售渠道新增
+         */
+        public static final String SELL_CHANNEL_SAVE = "save/sellChannel";
+        /**
+         *根据主键查询销售渠道
+         */
+        public static final String SELL_CHANNEL = "sellChannel";
+    }
     /**
      * 仓库管理
      */
@@ -349,6 +415,8 @@ public class SupplyConstants {
         public static final String JURISDICTION_EDIT = "jurisdictionEdit";
         //页面资源
         public static final String JURISDICTION_HTML = "jurisdictionHtml";
+
+
     }
 
     /**
@@ -377,7 +445,7 @@ public class SupplyConstants {
     /**
      * 采购订单审核
      */
-    public static final class PurchaseOrderAudit{
+    public static final class PurchaseOrderAudit {
         //根路径
         public static final String ROOT = "purchase";
         //采购订单分页查询
@@ -390,13 +458,13 @@ public class SupplyConstants {
     /**
      * 采购明细
      */
-    public static final class PurchaseDetail{
+    public static final class PurchaseDetail {
         //根路径
         public static final String ROOT = "purchase";
         //
-        public static final String  PURCHASE_DETAIL= "purchaseDetail";
+        public static final String PURCHASE_DETAIL = "purchaseDetail";
         //根据采购单编码查询采购信息列表
-        public static final String  PURCHASE_DETAILE_BY_CODE= "purchaseDetailByCode";
+        public static final String PURCHASE_DETAILE_BY_CODE = "purchaseDetailByCode";
     }
 
 
@@ -417,7 +485,7 @@ public class SupplyConstants {
         //采购单状态的修改--删除 作废
         public static final String UPDATE_STATE = "purchaseOrder/updateState";
         //采购单的入库-作废的状态
-        public static final String WAREHOUSE_UPDATE="warahouseAdvice/cancellation";
+        public static final String WAREHOUSE_UPDATE = "warahouseAdvice/cancellation";
         //采购单状态的修改--冻结
         public static final String FREEZE = "purchaseOrder/freeze";
         public static final String WAREHOUSE_ADVICE = "purchaseOrder/warahouseAdvice";
@@ -432,24 +500,29 @@ public class SupplyConstants {
         //根据采购单编码查询采购单
         public static final String PURCHASE_ORDER_BY_CODE = "purchaseOrderByCode";
         //根据供应商编码查询该对应上对应的品牌
-        public static final String  SUPPLIER_BRAND = "supplierBrand";
+        public static final String SUPPLIER_BRAND = "supplierBrand";
+        //查询该业务线对应的仓库
+        public static final String WAREHOUSE = "warehouse";
+        //查询该业务线对应的仓库商品
+        public static final String WAREHOUSE_ITEM = "warehouseItem";
     }
+
     /**
      * 入库通知
      */
-    public static final class WarehouseNotice{
+    public static final class WarehouseNotice {
         //根路径
         public static final String ROOT = "warehouseNotice";
         //入库通知的分页路径
         public static final String WAREHOUSE_NOTICE_PAGE = "warehouseNoticePage";
         //入库通知的点击操作
-        public static final String RECEIPT_ADVICE= "receiptAdvice";
+        public static final String RECEIPT_ADVICE = "receiptAdvice";
         //入库通知单详情页的入库通知操作
-        public static final String RECEIPT_ADVICE_INFO= "receiptAdviceInfo";
+        public static final String RECEIPT_ADVICE_INFO = "receiptAdviceInfo";
         //入库通知的信息查询
-        public static final String WAERHOUSE_NOTICE_INFO= "warehouseNoticeInfo";
+        public static final String WAERHOUSE_NOTICE_INFO = "warehouseNoticeInfo";
         //入库通知明细查询
-        public static final String WAREHOUSE_NOTICE_DETAIL="warehouseNoticeDetail";
+        public static final String WAREHOUSE_NOTICE_DETAIL = "warehouseNoticeDetail";
 
     }
 
@@ -509,7 +582,7 @@ public class SupplyConstants {
             //供应商性质：采购
             public static final String SUPPLIER_PURCHASE = "purchase";
             //供应商性质：一件代发
-            public static final String SUPPLIER_ONE_AGENT_SELLING= "oneAgentSelling";
+            public static final String SUPPLIER_ONE_AGENT_SELLING = "oneAgentSelling";
             //供应商类型：国内供应商
             public static final String INTERNAL_SUPPLIER = "internalSupplier";
             //供应商类型：海外供应商
@@ -672,7 +745,7 @@ public class SupplyConstants {
         //供应商
         public static final String SUPPLIER = "oneAgentSupplier";
         //采购订单的审核状态
-        public static final String PURCHASE_ORDER_AUDIT_STATUS="purchaseOrderAuditStatus";
+        public static final String PURCHASE_ORDER_AUDIT_STATUS = "purchaseOrderAuditStatus";
         //查询采购订单的状态
         public static final String OUTBOUND_ORDER_STATUS = "outboundOrderStatus";
     }
@@ -702,6 +775,10 @@ public class SupplyConstants {
         public static final String SKU_INNER = "0";
         //表示一件代发的商品
         public static final String SKU_OUTERER = "1";
+        //异常订单
+        public static final String EXCEPTION_ORDER = "CDYC";
+        //异常订单编码长度
+        public static final Integer EXCEPTION_ORDER_LENGTH = 6;
 
 
         //序列号查询路径
@@ -767,6 +844,12 @@ public class SupplyConstants {
         //查询订单状态接口路径
         public static final String ORDER_STATUS = "OrderStatus";
 
+        //查询粮油代发报表导出路径
+        public static final String LY_OREDER_PAGE = "LyOrderPage";
+
+        //查询粮油代发报表导出路径
+        public static final String EXPORT_ORDER = "ExportOrder";
+
     }
 
     /**
@@ -782,18 +865,59 @@ public class SupplyConstants {
     /**
      * 授权
      */
-    public static final class Authorization{
+    public static final class Authorization {
         //用户ID
         public static final String USER_ID = "userId";
         //用户授权列表
         public static final String ACL_USER_ACCREDIT_INFO = "aclUserAccreditInfo";
+        /**
+         *业务线ID
+         */
+        public static final String CHANNEL_CODE = "channelCode";
 
     }
 
+    public static final class WarehouseInfo {
+        public static final String ROOT = "warehouseInfo";
+
+        public static final String SAVE_WAREHOUSE_INFO = "saveWarehouseInfo";
+
+        public static final String SELECT_WAREHOUSE_NAME_NOT_LOCATION = "selectWarehouseNameNotLocation";
+
+        public static final String SELECT_WAREHOUSE_NAME = "selectWarehouseName";
+
+        public static final String WAREHOUSE_INFO_PAGE = "warehouseInfoPage";
+
+        public static final String OWNER_INFO = "ownerInfo";
+
+        public static final String DELETE_WAREHOUSE_INFO = "deleteWarehouse";
+
+        //仓库商品信息分页查询路径
+        public static final String WAREHOUSE_ITEM_INFO_PAGE = "warehouseItemInfoPage";
+
+        //仓库商品信息路径
+        public static final String WAREHOUSE_ITEM_INFO = "warehouseItemInfo";
+
+        //通知状态
+        public static final String NOTICE_STATUS = "noticeStatus";
+
+        //仓库商品信息导出路径
+        public static final String ITEMS_EXPORT = "itemsExport";
+
+        //新增商品路径
+        public static final String SAVE_ITEMS = "saveItems";
+
+        //新增商品信息分页查询路径
+        public static final String ITEMS_PAGE = "itemsPage";
+
+        //仓库商品信息通知奇门同步
+        public static final String WAREHOUSE_ITEM_NOTICE_QIMEN = "warehouseItemNoticeQimen";
+    }
+
     /**
-     *出库通知单
+     * 出库通知单
      */
-    public static final class OutboundOrder{
+    public static final class OutboundOrder {
 
         public static final String ROOT = "outOrder";
 
@@ -838,7 +962,30 @@ public class SupplyConstants {
         public static final String ORDER_CANCEL = "orderCancel";
 
         public static final String EXPORT_SUPPLIER_ORDER = "exportSupplierOrder";
+
+        //拆单异常订单分页查询路径
+        public static final String EXCEPTION_ORDER_PAGE = "exceptionOrderPage";
+        //根据拆单异常订单编码查询拆单异常订单详情路径
+        public static final String EXCEPTION_ORDER_DETAIL = "exceptionOrder/exceptionOrderCode";
     }
+
+    /**
+     * 异常订单管理
+     */
+    public static final class ExceptionOrder {
+
+        //找不到满足发货数量的仓库
+        public final static String ALL_WAREHOUSE_STOCK_LESS = "找不到满足发货数量的仓库";
+        //供应商反馈库存不足
+        public final static String SUPPLIER_STOCK_LESS = "供应商反馈库存不足";
+        //指定仓库“XX仓库名称”库存不足
+        public final static String WAREHOUSE_STOCK_LESS = "指定仓库“%s”库存不足";
+        //同一仓库/供应商中存在库存不足的sku
+        public final static String SKU_STOCK_LESS_OF_WAREHOUSE = "同一仓库/供应商中存在库存不足的sku";
+
+
+    }
+
 
     /**
      * api
@@ -849,16 +996,29 @@ public class SupplyConstants {
         public final static String EXTERNAL_ITEM_UPDATE = "externalItemUpdate";
         //接收供应商订单取消通知
         public final static String SUPPLIER_ORDER_CANCEL = "supplierOrderCancel";
+        /**
+         * 查询当前用户所属业务线
+         */
+        public static final String JURISDICTION_USER_CHANNEL = "jurisdictionUserChannel";
+        /**
+         * 确认用户业务线
+         */
+        public static final String CONFIRM_USER_CHANNEL = "confirmUser";
 
+        /**
+         * 清除session
+         */
+        public static final String CLEAR_SESSION = "clearSession";
     }
 
     /**
      * 操作日志
      */
-    public static final class LogInfo{
+    public static final class LogInfo {
         //日志分页查询路径
         public static final String LOG_INFO_PAGE = "logInfoPage";
     }
+
     /**
      * 直辖市
      */
@@ -868,18 +1028,18 @@ public class SupplyConstants {
 
         public final static String SHANG_HAI = "上海";
 
-        public final static String  TIAN_JING = "天津";
+        public final static String TIAN_JING = "天津";
 
         public final static String CHONG_QING = "重庆";
 
-        public final static String[]  DIRECT_CITY = {BEI_JING, SHANG_HAI, TIAN_JING, CHONG_QING};
+        public final static String[] DIRECT_CITY = {BEI_JING, SHANG_HAI, TIAN_JING, CHONG_QING};
 
     }
 
     /**
      * 元数据
      */
-    public static final class Metadata{
+    public static final class Metadata {
         public final static String ROOT = "metadata";
         //字典
         public final static String DICT = "dict";
@@ -895,12 +1055,9 @@ public class SupplyConstants {
     /**
      * 系统配置类型
      */
-    public static final class SystemConfigType{
+    public static final class SystemConfigType {
         //对接供应链渠道类型编码
         public final static String CHANNEL = "channel";
     }
-
-
-
 
 }

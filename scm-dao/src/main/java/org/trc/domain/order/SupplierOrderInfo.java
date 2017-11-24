@@ -1,10 +1,13 @@
 package org.trc.domain.order;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 
 public class SupplierOrderInfo extends ScmDO{
@@ -56,6 +59,44 @@ public class SupplierOrderInfo extends ScmDO{
 
     //老供应商订单状态:1-待发送供应商,2-供应商下单异常,3-等待供应商发货,4-全部发货,5-供应商下单失败,6-部分发货,7-已取消
     private String oldSupplierOrderStatus;
+
+    //商品sku编号
+    @Transient
+    private String skuCode;
+
+    //粮油商品sku编号
+    @Transient
+    private String supplierSkuCode;
+
+    //商品名称
+    @Transient
+    private String itemName;
+
+    //交易数
+    @Transient
+    private Integer num;
+
+    //平台订单号
+    @Transient
+    private String platformOrderCode;
+
+    //店铺订单号
+    @Transient
+    private String shopOrderCode;
+
+    //买家实付商品金额
+    @Transient
+    private Long payment;
+
+    // 渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String channelCode;
+
+    // 销售渠道编码
+    @NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
 
     public Long getId() {
         return id;
@@ -200,4 +241,76 @@ public class SupplierOrderInfo extends ScmDO{
     public void setOldSupplierOrderStatus(String oldSupplierOrderStatus) {
         this.oldSupplierOrderStatus = oldSupplierOrderStatus;
     }
+
+    public String getSkuCode() {
+        return skuCode;
+    }
+
+    public void setSkuCode(String skuCode) {
+        this.skuCode = skuCode;
+    }
+
+    public String getSupplierSkuCode() {
+        return supplierSkuCode;
+    }
+
+    public void setSupplierSkuCode(String supplierSkuCode) {
+        this.supplierSkuCode = supplierSkuCode;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public Integer getNum() {
+        return num;
+    }
+
+    public void setNum(Integer num) {
+        this.num = num;
+    }
+
+    public String getPlatformOrderCode() {
+        return platformOrderCode;
+    }
+
+    public void setPlatformOrderCode(String platformOrderCode) {
+        this.platformOrderCode = platformOrderCode;
+    }
+
+    public String getShopOrderCode() {
+        return shopOrderCode;
+    }
+
+    public void setShopOrderCode(String shopOrderCode) {
+        this.shopOrderCode = shopOrderCode;
+    }
+
+    public Long getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Long payment) {
+        this.payment = payment;
+    }
+
+    /*public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }

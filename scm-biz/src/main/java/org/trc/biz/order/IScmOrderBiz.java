@@ -1,15 +1,15 @@
 package org.trc.biz.order;
 
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.order.ExceptionOrder;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.LogisticNoticeForm2;
-import org.trc.form.order.PlatformOrderForm;
-import org.trc.form.order.ShopOrderForm;
-import org.trc.form.order.SupplierOrderCancelForm;
-import org.trc.form.order.WarehouseOrderForm;
+import org.trc.form.order.*;
 import org.trc.service.IJDService;
+import org.trc.service.ITrcService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
@@ -126,5 +126,24 @@ public interface IScmOrderBiz {
 
     public void setIjdService(IJDService ijdService);
 
+    /**
+     * 异常订单信息分页查询
+     * @param form
+     * @param page
+     * @param aclUserAccreditInfo
+     * @return
+     * @throws Exception
+     */
+    Pagenation<ExceptionOrder> exceptionOrderPage(ExceptionOrderForm form, Pagenation<ExceptionOrder> page, AclUserAccreditInfo aclUserAccreditInfo);
 
+    /**
+     *根据异常订单编码查询拆单异常订单详情
+     * @param exceptionOrderCode
+     * @return
+     */
+    ExceptionOrder queryExceptionOrdersDetail(String exceptionOrderCode);
+
+    public void setiRealIpService(IRealIpService iRealIpService);
+
+    public void setTrcService(ITrcService trcService);
 }

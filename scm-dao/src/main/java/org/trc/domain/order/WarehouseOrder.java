@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
@@ -44,6 +46,11 @@ public class WarehouseOrder implements Serializable {
 
     // 渠道编码
     private String channelCode;
+
+    // 销售渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
 
     // 来源平台编码
     private String platformCode;
@@ -109,6 +116,9 @@ public class WarehouseOrder implements Serializable {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date payTime;
 
+    // 手工取消时间,格式yyyy-mm-dd hh:mi:ss
+    private Date handCancelTime;
+
     //是否取消：0-否,1-是
     private String isCancel;
 
@@ -141,6 +151,12 @@ public class WarehouseOrder implements Serializable {
      */
     @Transient
     private String message;
+
+    /**
+     * 是否显示取消关闭操作:0-不显示,1-显示
+     */
+    @Transient
+    private String showCancel;
 
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
@@ -619,4 +635,28 @@ public class WarehouseOrder implements Serializable {
     public void setOldSupplierOrderStatus(String oldSupplierOrderStatus) {
         this.oldSupplierOrderStatus = oldSupplierOrderStatus;
     }
+
+    public String getShowCancel() {
+        return showCancel;
+    }
+
+    public void setShowCancel(String showCancel) {
+        this.showCancel = showCancel;
+    }
+
+    public Date getHandCancelTime() {
+        return handCancelTime;
+    }
+
+    public void setHandCancelTime(Date handCancelTime) {
+        this.handCancelTime = handCancelTime;
+    }
+
+    /*public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }

@@ -6,12 +6,10 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.order.ExceptionOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.WarehouseOrder;
-import org.trc.form.order.PlatformOrderForm;
-import org.trc.form.order.ShopOrderForm;
-import org.trc.form.order.SupplierOrderCancelForm;
-import org.trc.form.order.WarehouseOrderForm;
+import org.trc.form.order.*;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
@@ -101,6 +99,19 @@ public class OrderResource {
         return ResultUtil.createSuccessResult(scmOrderBiz.cancelHandler(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)), "");
     }
 
+    @GET
+    @Path(SupplyConstants.Order.EXCEPTION_ORDER_PAGE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response exceptionOrderPage(@BeanParam ExceptionOrderForm form, @BeanParam Pagenation<ExceptionOrder> page, @Context ContainerRequestContext requestContext){
+        return ResultUtil.createSuccessPageResult(scmOrderBiz.exceptionOrderPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    }
+
+    @GET
+    @Path(SupplyConstants.Order.EXCEPTION_ORDER_DETAIL+"/{exceptionOrderCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryExceptionOrdersDetail(@PathParam("exceptionOrderCode") String exceptionOrderCode){
+        return ResultUtil.createSuccessResult("根据拆单异常订单编码查询拆单异常订单详情成功", scmOrderBiz.queryExceptionOrdersDetail(exceptionOrderCode));
+    }
 }
 
 

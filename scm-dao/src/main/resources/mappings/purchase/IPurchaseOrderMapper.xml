@@ -11,23 +11,45 @@
             supplier
         WHERE
             is_valid = '1'
+            AND supplier_kind_code = 'purchase'
             AND supplier_code IN (
-            SELECT
-            supplier_code
-            FROM
-            apply_for_supplier
-            WHERE
-            STATUS = '2'
-            AND channel_code = (
-            SELECT
-            channel_code
-            FROM
-            acl_user_accredit_info
-            WHERE
-            user_id = #{userId}
-            )
+                SELECT
+                supplier_code
+                FROM
+                apply_for_supplier
+                WHERE
+                STATUS = '2'
+                AND channel_code = (
+                    SELECT
+                    channel_code
+                    FROM
+                    acl_user_accredit_info
+                    WHERE
+                    user_id = #{userId}
+                )
             )
 
+    </select>
+
+    <!-- 根据业务线，查询对应的仓库-->
+    <select id="findWarehousesByChannelCode" resultType="org.trc.domain.warehouseInfo.WarehouseInfo">
+        SELECT
+            id ,
+            owner_warehouse_state AS ownerWarehouseState ,
+            warehouse_name AS warehouseName
+        FROM
+          warehouse_info
+        WHERE
+            is_delete = '0'
+            AND warehouse_id IN (
+                    SELECT
+                      id
+                    FROM
+                      warehouse
+                    WHERE
+                      is_valid = '1'
+                )
+            AND channel_code = #{channelCode}
     </select>
 
     <!--查询某供应商下对应的可卖商品  /*#{supplierCode}*/
@@ -35,42 +57,45 @@
        商品的名称，商品的sku，品牌id，分类id
        再联合品牌表，分类表来查询查询对应的名称
     -->
-    <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail" parameterType="java.util.Map">
-        SELECT bssi.spu_code AS spuCode, bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT JOIN
+    <select id="selectItemsBySupplierCode" resultType="org.trc.domain.purchase.PurchaseDetail"
+            parameterType="java.util.Map">
+        SELECT bssi.spu_code AS spuCode, bssi.sku_code AS skuCode,bssi.name AS itemName,bssi.brand_id AS
+        brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName FROM category c RIGHT
+        JOIN
         (
         SELECT ssi.spu_code , ssi.sku_code,ssi.name,ssi.brand_id,ssi.category_id,b.name AS brand_name FROM brand b
         INNER JOIN
         (
-            SELECT skus.sku_code,si.name,si.brand_id ,si.category_id,si.spu_code FROM skus
+        SELECT skus.sku_code,si.name,si.brand_id ,si.category_id,si.spu_code FROM skus
         RIGHT JOIN (
-                SELECT i.spu_code,i.name,i.brand_id,s.category_id
-                    from
-                items i inner join supplier_brand s
-                    ON
-                s.brand_id = i.brand_id AND
-                s.category_id = i.category_id
-                    WHERE
-                s.supplier_code=#{supplierCode}
-                AND s.is_valid='1'
-                AND i.is_valid='1'
-                <if test="name != null and name != ''">
-                    AND name LIKE  CONCAT('%', #{name}, '%')
-                </if>
-            ) si
-                ON
-            si.spu_code = skus.spu_code
-            WHERE
-            skus.is_valid='1'
-            <if test="skuCode != null and skuCode != ''">
-                AND skus.sku_code LIKE CONCAT('%', #{skuCode}, '%')
-            </if>
+        SELECT i.spu_code,i.name,i.brand_id,s.category_id
+        from
+        items i inner join supplier_brand s
+        ON
+        s.brand_id = i.brand_id AND
+        s.category_id = i.category_id
+        WHERE
+        s.supplier_code=#{supplierCode}
+        AND s.is_valid='1'
+        AND i.is_valid='1'
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ) si
+        ON
+        si.spu_code = skus.spu_code
+        WHERE
+        skus.is_valid='1'
+        <if test="skuCode != null and skuCode != ''">
+            AND skus.sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        </if>
 
-            <if test="skuTemp != null and skuTemp !=''">
-                AND skus.sku_code NOT IN
-                <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
-                    #{item}
-                </foreach>
-            </if>
+        <if test="skuTemp != null and skuTemp !=''">
+            AND skus.sku_code NOT IN
+            <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
 
         ) ssi
         ON
@@ -83,45 +108,45 @@
         c.id=bssi.category_id
     </select>
     <!--查询某供应商下对应的可卖商品的总数量-->
-    <select id="selectCountItems" resultType="java.lang.Integer"  parameterType="java.util.Map">
+    <select id="selectCountItems" resultType="java.lang.Integer" parameterType="java.util.Map">
         SELECT COUNT(*) FROM brand b
         INNER JOIN
         (
-            SELECT si.brand_id FROM skus
-            RIGHT JOIN (
-                SELECT i.spu_code ,i.brand_id
-                    from
-                items i inner join supplier_brand s
-                    ON
-                s.brand_id = i.brand_id AND
-                s.category_id = i.category_id
-                    WHERE
-                s.supplier_code=#{supplierCode}
-                AND s.is_valid='1'
-                AND i.is_valid='1'
-                <if test="name != null and name != ''">
-                    AND name LIKE  CONCAT('%', #{name}, '%')
-                </if>
-            ) si
-                ON
-            si.spu_code = skus.spu_code
-            WHERE
-            skus.is_valid='1'
-            <if test="skuCode != null and skuCode != ''">
-                AND skus.sku_code LIKE CONCAT('%', #{skuCode}, '%')
-            </if>
+        SELECT si.brand_id FROM skus
+        RIGHT JOIN (
+        SELECT i.spu_code ,i.brand_id
+        from
+        items i inner join supplier_brand s
+        ON
+        s.brand_id = i.brand_id AND
+        s.category_id = i.category_id
+        WHERE
+        s.supplier_code=#{supplierCode}
+        AND s.is_valid='1'
+        AND i.is_valid='1'
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ) si
+        ON
+        si.spu_code = skus.spu_code
+        WHERE
+        skus.is_valid='1'
+        <if test="skuCode != null and skuCode != ''">
+            AND skus.sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        </if>
 
-            <if test="skuTemp != null and skuTemp !=''">
-                AND skus.sku_code NOT IN
-                <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
-                    #{item}
-                </foreach>
-            </if>
+        <if test="skuTemp != null and skuTemp !=''">
+            AND skus.sku_code NOT IN
+            <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
         ) ssi
         ON
         ssi.brand_id=b.id
         <if test="brandName != null and brandName != ''">
-            AND b.name LIKE  CONCAT('%', #{brandName}, '%')
+            AND b.name LIKE CONCAT('%', #{brandName}, '%')
         </if>
     </select>
     <!--AND skus.sku_code NOT IN
@@ -131,13 +156,13 @@
     <!--根据分类的ids拼接全路径名和ids-->
     <select id="selectAllCategory" resultType="org.trc.domain.purchase.PurchaseDetail">
         SELECT
-            A.id AS categoryId,
-            concat(C. name,'/ ',B. name,'/ ',A. name) AS allCategoryName,
-            concat(C.id,' / ',B.id,' / ',A.id) AS allCategory
+        A.id AS categoryId,
+        concat(C. name,'/ ',B. name,'/ ',A. name) AS allCategoryName,
+        concat(C.id,' / ',B.id,' / ',A.id) AS allCategory
         FROM
-            category A
-            LEFT JOIN category B ON A.parent_id = B.id
-            LEFT JOIN category C ON B.parent_id = C.id
+        category A
+        LEFT JOIN category B ON A.parent_id = B.id
+        LEFT JOIN category C ON B.parent_id = C.id
         WHERE A.id IN
         <foreach collection="list" item="categoryId" index="index"
                  open="(" close=")" separator=",">

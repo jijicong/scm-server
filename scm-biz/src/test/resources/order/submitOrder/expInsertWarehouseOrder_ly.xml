@@ -34,6 +34,7 @@
             pay_time="2017/10/17 10:22"
             is_cancel="*"
             old_supplier_order_status="*"
+            hand_cancel_time="0/0/0000 00:00:00"
     />
 
     <warehouse_order
@@ -70,5 +71,6 @@
             pay_time="2017/10/17 10:22"
             is_cancel="*"
             old_supplier_order_status="*"
+            hand_cancel_time="0/0/0000 00:00:00"
     />
 </dataset>

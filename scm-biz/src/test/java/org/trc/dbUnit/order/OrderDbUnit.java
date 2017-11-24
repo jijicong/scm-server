@@ -13,10 +13,15 @@ import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.dbUnit.order.form.*;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.LogisticNoticeForm;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
+import org.trc.model.ToGlyResultDO;
 import org.trc.service.BaseTest;
 import org.trc.service.IJDService;
+import org.trc.service.ITrcService;
 import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
@@ -169,6 +174,60 @@ public class OrderDbUnit extends BaseTest{
         //assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);
     }
 
+    @Test
+    public void testFetchLogisticsInfo()throws Exception{
+        //删除原数据
+        execSql(conn,"delete from platform_order");
+        execSql(conn,"delete from shop_order");
+        execSql(conn,"delete from order_item");
+        execSql(conn,"delete from warehouse_order");
+        execSql(conn,"delete from supplier_order_info");
+        execSql(conn,"delete from logistics_company");
+        //从xml文件读取数据并插入数据库中
+        prepareData(conn, "order/logistics/preInsertPlatformOrder.xml");
+        prepareData(conn, "order/logistics/preInsertShopOrder.xml");
+        prepareData(conn, "order/logistics/preInsertWarehouseOrder.xml");
+        prepareData(conn, "order/logistics/preInsertOrderItem.xml");
+        prepareData(conn, "order/logistics/preInsertSupplierOrderInfo.xml");
+        prepareData(conn, "order/logistics/preInsertLogisticsCompanyData.xml");
+
+        //mock调用外部接口查询物流
+        mockQueryLogistics(scmOrderBiz);
+        scmOrderBiz.fetchLogisticsInfo();
+        /**
+         * 校验店铺订单数据
+         */
+        ReplacementDataSet expResult2 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertShopOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult2.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SHOP_ORDER,"select * from shop_order",expResult2,conn);
+        /**
+         * 校验仓库订单数据
+         */
+        ReplacementDataSet expResult3 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertWarehouseOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult3.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult3,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult5 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertSupplierOrderInfo.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        //expResult5.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SUPPLIER_ORDER_INFO,"select * from supplier_order_info",expResult5,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult4 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/logistics/expInsertOrderItem.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult4.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
+    }
+
     /**
      * mock调用外部接口提交粮油订单
      * @param scmOrderBiz
@@ -211,6 +270,100 @@ public class OrderDbUnit extends BaseTest{
                 "    }";
         responseAck.setData(submitOrderReturn);
         when(ijdService.submitLiangYouOrder(any(liangYouSupplierOrder.getClass()))).thenReturn(responseAck);
+    }
+
+    /**
+     * mock调用外部接口查询供应商订单物流信息
+     * @param scmOrderBiz
+     */
+    private void mockQueryLogistics(IScmOrderBiz scmOrderBiz){
+        IJDService ijdService = mock(IJDService.class);
+        scmOrderBiz.setIjdService(ijdService);
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(true);
+        String result = "{\n" +
+                "        \"logistics\": [\n" +
+                "            {\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\n" +
+                "                        \"num\": \"2\",\n" +
+                "                        \"skuCode\": \"1241479\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"22222222-test\",\n" +
+                "                \"logisticsCorporation\": \"京东快递\",\n" +
+                "                \"logisticInfo\": [\n" +
+                "                    {\n" +
+                "                        \"msgTime\": \"2017-09-21 22:42:04\",\n" +
+                "                        \"content\": \"您提交了订单，请等待系统确认\",\n" +
+                "                        \"operator\": \"客户\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"msgTime\": \"2017-09-21 22:42:17\",\n" +
+                "                        \"content\": \"您的订单预计9月22日送达您手中\",\n" +
+                "                        \"operator\": \"系统\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"supplierOrderCode\": \"22222222-test\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"type\": \"0\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201710180000529\"\n" +
+                "    }";
+        returnTypeDO.setResult(result);
+
+        ReturnTypeDO returnTypeDO2 = new ReturnTypeDO();
+        returnTypeDO2.setSuccess(true);
+        String result2 = "{\n" +
+                "        \"logistics\": [\n" +
+                "            {\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
+                "                        \"num\": \"2\",\n" +
+                "                        \"skuCode\": \"310516625460002590\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"logisticsCorporation\": \"圆通速递\",\n" +
+                "                \"logisticInfo\": [],\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            },\n" +
+                "\t\t\t{\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\n" +
+                "                        \"num\": \"1\",\n" +
+                "                        \"skuCode\": \"1075510226\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"logisticsCorporation\": \"圆通速递\",\n" +
+                "                \"logisticInfo\": [],\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"type\": \"1\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201710180000530\"\n" +
+                "    }";
+        returnTypeDO2.setResult(result2);
+        when(ijdService.getLogisticsInfo(anyString(), eq("0"))).thenReturn(returnTypeDO);
+        when(ijdService.getLogisticsInfo(anyString(), eq("1"))).thenReturn(returnTypeDO2);
+
+        IRealIpService iRealIpService = mock(IRealIpService.class);
+        scmOrderBiz.setiRealIpService(iRealIpService);
+        when(iRealIpService.isRealTimerService()).thenReturn(true);
+
+        ITrcService trcService = mock(ITrcService.class);
+        scmOrderBiz.setTrcService(trcService);
+        ToGlyResultDO resultDO = new ToGlyResultDO();
+        resultDO.setStatus("1");
+        resultDO.setMsg("发送物流信息给泰然城成功");
+        when(trcService.sendLogisticInfoNotice(any(LogisticNoticeForm.class))).thenReturn(resultDO);
     }
 
 
@@ -264,6 +417,8 @@ public class OrderDbUnit extends BaseTest{
         orderForm.setSign(sign);
         return JSON.toJSONString(orderForm);
     }
+
+
 
 
 

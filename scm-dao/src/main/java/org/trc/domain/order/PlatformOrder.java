@@ -103,6 +103,11 @@ public class PlatformOrder  implements Serializable {
     @Length(max = 32)
     private String channelCode;
 
+    // 销售渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
+
     // 来源平台编码
     @NotEmpty
     @Length(max = 32)
@@ -1286,4 +1291,12 @@ public class PlatformOrder  implements Serializable {
     public void setReceiverEmail(String receiverEmail) {
         this.receiverEmail = receiverEmail;
     }
+
+    /*public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }
