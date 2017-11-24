@@ -193,7 +193,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
