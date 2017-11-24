@@ -501,6 +501,10 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_BY_CODE = "purchaseOrderByCode";
         //根据供应商编码查询该对应上对应的品牌
         public static final String SUPPLIER_BRAND = "supplierBrand";
+        //查询该业务线对应的仓库
+        public static final String WAREHOUSE = "warehouse";
+        //查询该业务线对应的仓库商品
+        public static final String WAREHOUSE_ITEM = "warehouseItem";
     }
 
     /**

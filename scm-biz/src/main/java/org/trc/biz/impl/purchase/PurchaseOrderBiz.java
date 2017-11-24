@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
@@ -36,11 +38,13 @@ import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -83,6 +87,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ILogInfoService logInfoService;
     @Resource
     private ISupplierBrandService iSupplierBrandService;
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -96,6 +102,20 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Resource
     private ISerialUtilService serialUtilService;
+
+    private final static List<String> STATUS_LIST;
+
+    static {
+        List<String> list = new ArrayList<String>();
+        list.add(ZeroToNineEnum.ZERO.getCode());
+        list.add(ZeroToNineEnum.ONE.getCode());
+        list.add(ZeroToNineEnum.TWO.getCode());
+        list.add(ZeroToNineEnum.THREE.getCode());
+        list.add(ZeroToNineEnum.SIX.getCode());
+        list.add(ZeroToNineEnum.SEVEN.getCode());
+        list.add(ZeroToNineEnum.EIGHT.getCode());
+        STATUS_LIST = list;
+    }
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
@@ -306,6 +326,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         if(!StringUtils.isBlank(form.getPurchaseStatus())){
             criteria.andEqualTo("status", form.getPurchaseStatus());
+        }else{
+            criteria.andIn("status", STATUS_LIST);
         }
 
         if (!StringUtils.isBlank(form.getStartDate())) {
@@ -326,7 +348,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             criteria.andLessThan("updateTime", form.getEndDate());
         }
         criteria.andEqualTo("isDeleted","0");
-        example.orderBy("status").asc();
+        example.setOrderByClause("instr('0,1,3,2,8,6,7',`status`) ASC");
+        //example.orderBy("status").asc();
         example.orderBy("updateTime").desc();
         return example;
 
@@ -346,6 +369,38 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             supplierList = new ArrayList<Supplier>();
         }
         return supplierList;
+    }
+
+    @Override
+    public Response findWarehousesByChannelCode(String channelCode) {
+        //根据业务线查询对应的仓库
+        AssertUtil.notBlank(channelCode ,"获取业务线失败");
+        if (StringUtils.isBlank(channelCode)) {
+            String msg = "根据业务线查询仓库的参数为空";
+            LOGGER.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+
+        //获取已启用仓库信息
+        List<WarehouseInfo> warehouseInfoList = purchaseOrderService.findWarehousesByChannelCode(channelCode);
+        if(warehouseInfoList==null || warehouseInfoList.size() < 1){
+            String msg = "无数据，请确认【系统管理-仓库管理】中存在“启用”状态的仓库！";
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, msg);
+        }
+
+        //校验仓库是否已通知
+        List<WarehouseInfo> warehouseInfoList2 = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoList){
+            if(StringUtils.isNoneEmpty(info.getOwnerWarehouseState()) &&
+                    ZeroToNineEnum.ONE.getCode().equals(info.getOwnerWarehouseState())){
+                warehouseInfoList2.add(info);
+            }
+        }
+        if(warehouseInfoList2.size() > 0){
+            ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList2);
+        }
+        String msg2 = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
+        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg2, msg2);
     }
 
     //保存采购单
