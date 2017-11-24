@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.trc.constants.SupplyConstants;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 
 /**
@@ -23,12 +24,13 @@ public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Produces("application/json;charset=utf-8")
+    @Produces(MediaType.APPLICATION_ATOM_XML+";charset=utf-8")
     public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
         logger.info(JSON.toJSONString(confirmRequest));
         QimenResponse qimenResponse = new QimenResponse() {
         };
         qimenResponse.setCode("1");
+        qimenResponse.setFlag("");
         return qimenResponse;
     }
 }
