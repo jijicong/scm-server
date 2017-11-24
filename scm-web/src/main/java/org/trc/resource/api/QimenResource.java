@@ -4,14 +4,16 @@ package org.trc.resource.api;
 import com.alibaba.fastjson.JSON;
 import com.qimen.api.QimenResponse;
 import com.qimen.api.request.EntryorderConfirmRequest;
-import okhttp3.Response;
+import org.apache.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.constants.SupplyConstants;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 
 /**
@@ -25,9 +27,10 @@ public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Produces(MediaType.APPLICATION_XML)
-    public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
+    @Produces(MediaType.APPLICATION_JSON)
+    public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest, @Context HttpRequest request) throws Exception{
         logger.info(JSON.toJSONString(confirmRequest));
+        logger.info(JSON.toJSONString(request));
         QimenResponse qimenResponse = new QimenResponse() {
             @Override
             public void setFlag(String flag) {
@@ -48,6 +51,6 @@ public class QimenResource {
         qimenResponse.setCode("0");
         qimenResponse.setMessage("invalid appkey");
         qimenResponse.setBody("hello");
-        return null;
+        return qimenResponse;
     }
 }
