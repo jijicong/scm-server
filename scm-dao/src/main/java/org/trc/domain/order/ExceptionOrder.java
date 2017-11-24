@@ -47,6 +47,8 @@ public class ExceptionOrder implements Serializable {
     private Date createTime;
     // 更新时间
     private Date updateTime;
+    //销售渠道编号
+    private String sellCode;
 
 
     /**
@@ -189,8 +191,15 @@ public class ExceptionOrder implements Serializable {
         this.platformOrder = platformOrder;
     }
 
-    @Override
+    public String getSellCode() {
+        return sellCode;
+    }
 
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }
+
+    @Override
     public String toString() {
         return "ExceptionOrder{" +
                 "id=" + id +
@@ -207,6 +216,9 @@ public class ExceptionOrder implements Serializable {
                 ", itemNum=" + itemNum +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
+                ", sellCode='" + sellCode + '\'' +
+                ", exceptionOrderItemList=" + exceptionOrderItemList +
+                ", platformOrder=" + platformOrder +
                 '}';
     }
 }

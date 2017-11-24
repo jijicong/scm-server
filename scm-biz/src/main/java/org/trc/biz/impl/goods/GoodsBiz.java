@@ -30,6 +30,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -59,6 +60,7 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -148,6 +150,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ISupplierService supplierService;
     @Autowired
     private ISupplierApplyService supplierApplyService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
 
 
     @Override
@@ -189,7 +193,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -1401,6 +1405,8 @@ public class GoodsBiz implements IGoodsBiz {
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
     }
 
+
+
     /**
      * 停用自采商品检查是否存在启用的SKU
      * @param spuCode
@@ -1484,11 +1490,47 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> updateSkus = skusService.select(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         updateSkus.add(skus2);
+        //商品SKU启停用通知仓库商品信息
+        itemsUpdateNoticeWarehouseItemInfo(skus2, _isValid);
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+    }
+
+    private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setSkuCode(skus.getSkuCode());
+        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        String isValid = _isValid;
+        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
+            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
+            if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
+                int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
+                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
+                }else{
+
+                }
+            }else{
+                Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
+                if(oldNoticeStatus == null){
+                    continue;
+                }
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
+                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                    }
+                    warehouseItemInfo1.setOldNoticeStatus(null);
+                }
+            }
+            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
+        }
     }
 
     /**
@@ -1676,7 +1718,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();

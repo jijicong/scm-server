@@ -75,6 +75,22 @@ public class SupplyConstants {
     }
 
     /**
+     * 对泰然城开放接口
+     */
+    public static final class Qimen {
+        /**
+         * 根路径
+         */
+        public static final String QI_MEN = "Qimen";
+
+        /**
+         * 接收奇门回调
+         */
+        public static final String QIMEN_CALLBACK = "QimenCallback";
+
+    }
+
+        /**
      * 配置管理
      */
     public static final class Config {
@@ -485,6 +501,10 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_BY_CODE = "purchaseOrderByCode";
         //根据供应商编码查询该对应上对应的品牌
         public static final String SUPPLIER_BRAND = "supplierBrand";
+        //查询该业务线对应的仓库
+        public static final String WAREHOUSE = "warehouse";
+        //查询该业务线对应的仓库商品
+        public static final String WAREHOUSE_ITEM = "warehouseItem";
     }
 
     /**
@@ -755,6 +775,10 @@ public class SupplyConstants {
         public static final String SKU_INNER = "0";
         //表示一件代发的商品
         public static final String SKU_OUTERER = "1";
+        //异常订单
+        public static final String EXCEPTION_ORDER = "CDYC";
+        //异常订单编码长度
+        public static final Integer EXCEPTION_ORDER_LENGTH = 6;
 
 
         //序列号查询路径
@@ -946,6 +970,24 @@ public class SupplyConstants {
     }
 
     /**
+     * 异常订单管理
+     */
+    public static final class ExceptionOrder {
+
+        //找不到满足发货数量的仓库
+        public final static String ALL_WAREHOUSE_STOCK_LESS = "找不到满足发货数量的仓库";
+        //供应商反馈库存不足
+        public final static String SUPPLIER_STOCK_LESS = "供应商反馈库存不足";
+        //指定仓库“XX仓库名称”库存不足
+        public final static String WAREHOUSE_STOCK_LESS = "指定仓库“%s”库存不足";
+        //同一仓库/供应商中存在库存不足的sku
+        public final static String SKU_STOCK_LESS_OF_WAREHOUSE = "同一仓库/供应商中存在库存不足的sku";
+
+
+    }
+
+
+    /**
      * api
      */
     public static final class Api {
@@ -963,7 +1005,10 @@ public class SupplyConstants {
          */
         public static final String CONFIRM_USER_CHANNEL = "confirmUser";
 
-
+        /**
+         * 清除session
+         */
+        public static final String CLEAR_SESSION = "clearSession";
     }
 
     /**

@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <logistics_company id="2" company_code="YTO" company_name="&#22278;&#36890;&#36895;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:55:35.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="3" company_code="ZY_BH" company_name="&#36125;&#28023;&#22269;&#38469;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:55:42.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="4" company_code="DBL" company_name="&#24503;&#37030;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:55:50.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="5" company_code="ZYWL" company_name="&#20013;&#37038;&#29289;&#27969;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:56:06.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="6" company_code="YD" company_name="&#38901;&#36798;&#36895;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:56:11.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="7" company_code="YZPY" company_name="&#37038;&#25919;&#23567;&#21253;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:56:24.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="8" company_code="EMS" company_name="EMS&#65288;&#22269;&#20869;&#65289;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:56:39.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="9" company_code="GTO" company_name="&#22269;&#36890;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:56:59.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="10" company_code="ZJS" company_name="&#23429;&#24613;&#36865;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:57:08.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="11" company_code="HTKY" company_name="&#30334;&#19990;&#27719;&#36890;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:57:20.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="12" company_code="SURE" company_name="&#36895;&#23572;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:57:29.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="13" company_code="HHTT" company_name="&#22825;&#22825;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:57:44.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="14" company_code="SF" company_name="&#39034;&#20016;&#36895;&#36816;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:57:54.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="15" company_code="JYM" company_name="&#21152;&#36816;&#32654;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:03.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="16" company_code="AAE" company_name="&#20840;&#29699;&#19987;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:13.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="17" company_code="QFKD" company_name="&#20840;&#23792;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:23.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="18" company_code="EMSGJ" company_name="EMS&#22269;&#38469;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:33.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="19" company_code="UC" company_name="&#20248;&#36895;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:41.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="20" company_code="FAST" company_name="&#24555;&#25463;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:48.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="21" company_code="ZTKY" company_name="&#20013;&#38081;&#24555;&#36816;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:58:58.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="22" company_code="EWE" company_name="EWE" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:59:09.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="23" company_code="WXWL" company_name="&#19975;&#35937;&#29289;&#27969;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:59:19.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="24" company_code="AYCA" company_name="&#28595;&#37038;&#19987;&#32447;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:59:31.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="25" company_code="NSF" company_name="&#26032;&#39034;&#20016;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:59:40.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="26" company_code="FTD" company_name="&#23500;&#33150;&#36798;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:59:48.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="27" company_code="RFD" company_name="&#22914;&#39118;&#36798;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 12:59:59.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="28" company_code="ANE" company_name="&#23433;&#33021;&#29289;&#27969;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 13:00:08.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="29" company_code="HPTEX" company_name="&#28023;&#27966;&#36890;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 13:00:15.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="30" company_code="ZTO" company_name="&#20013;&#36890;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 13:00:24.0" update_time="2017-11-23 01:21:04.0"/>
+  <logistics_company id="31" company_code="jd" company_name="&#20140;&#19996;&#24555;&#36882;" type="QD001" is_valid="1" is_deleted="0" create_time="2017-08-08 13:00:32.0" update_time="2017-11-23 01:21:04.0"/>
+</dataset>
