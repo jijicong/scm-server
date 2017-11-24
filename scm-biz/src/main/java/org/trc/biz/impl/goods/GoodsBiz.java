@@ -1718,7 +1718,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
