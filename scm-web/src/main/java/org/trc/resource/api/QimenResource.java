@@ -26,7 +26,7 @@ public class QimenResource {
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces(MediaType.APPLICATION_XML)
-    public Response confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
+    public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
         logger.info(JSON.toJSONString(confirmRequest));
         QimenResponse qimenResponse = new QimenResponse() {
             @Override
