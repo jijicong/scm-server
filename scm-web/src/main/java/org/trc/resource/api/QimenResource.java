@@ -2,6 +2,7 @@ package org.trc.resource.api;
 
 
 import com.alibaba.fastjson.JSON;
+import com.qimen.api.QimenResponse;
 import com.qimen.api.request.EntryorderConfirmRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,6 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.xml.ws.Response;
 
 
 
@@ -28,8 +28,11 @@ public class QimenResource {
     @GET
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces("application/json;charset=utf-8")
-    public Response confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
+    public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest) throws Exception{
         logger.info(JSON.toJSONString(confirmRequest));
-        return null;
+        QimenResponse qimenResponse = new QimenResponse() {
+        };
+        qimenResponse.setCode("1");
+        return qimenResponse;
     }
 }
