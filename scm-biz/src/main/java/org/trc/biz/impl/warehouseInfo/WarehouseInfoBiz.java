@@ -810,12 +810,42 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         if(returnTypeDO.getSuccess()){
             ItemsSynchronizeResponse res = ((JSONObject)returnTypeDO.getResult()).toJavaObject(ItemsSynchronizeResponse.class);
             if("200".equals(res.getCode())){
+                this.updateWarehouseItemInfo(itemList);
                 return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
             }else{
+                List<ItemsSynchronizeResponse.BatchItemSynItem> batchItemSynItems = res.getItems();
+                if(batchItemSynItems != null && batchItemSynItems.size() > 0){
+                    this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseItemInfoList,batchItemSynItems));
+                }
                 return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), res.getMessage(), res.getItems());
             }
         }
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), returnTypeDO.getResultMessage(), "");
+    }
+
+    private List<String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ItemsSynchronizeResponse.BatchItemSynItem> batchItemSynItems){
+        List<String> itemIds = new ArrayList<String>();
+        for(WarehouseItemInfo item : infoList){
+            boolean flag = true;
+            for(ItemsSynchronizeResponse.BatchItemSynItem synItem : batchItemSynItems){
+                if(synItem.getItemCode().equals(item.getSkuCode())){
+                    flag = false;
+                }
+            }
+            if(flag){
+                itemIds.add(String.valueOf(item.getId()));
+            }
+        }
+        return itemIds;
+    }
+
+    private void updateWarehouseItemInfo(List<String> itemList){
+        for(String itemId : itemList){
+            WarehouseItemInfo info = new WarehouseItemInfo();
+            info.setId(Long.parseLong(itemId));
+            info.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.FOUR.getCode()));
+            warehouseItemInfoService.updateByPrimaryKeySelective(info);
+        }
     }
 
     private List<ItemsSynchronizeRequest.Item> getItemsSynList(List<WarehouseItemInfo> infoList){

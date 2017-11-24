@@ -7,7 +7,6 @@ import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.util.AppResult;
-import org.trc.util.RedisUtil;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
@@ -62,6 +61,7 @@ public class ScmApiResource {
     @GET
     @Path(SupplyConstants.Api.CLEAR_SESSION)
     public Response clearSession(@Context ContainerRequestContext requestContext,@Context HttpServletRequest request){
+        request.getSession().removeAttribute("channelCode");
         request.getSession().invalidate();
         return ResultUtil.createSuccessResult("设置Session失效成功!","");
     }

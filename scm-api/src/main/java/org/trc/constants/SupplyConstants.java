@@ -75,6 +75,22 @@ public class SupplyConstants {
     }
 
     /**
+     * 对泰然城开放接口
+     */
+    public static final class Qimen {
+        /**
+         * 根路径
+         */
+        public static final String QI_MEN = "Qimen";
+
+        /**
+         * 接收奇门回调
+         */
+        public static final String QIMEN_CALLBACK = "QimenCallback";
+
+    }
+
+        /**
      * 配置管理
      */
     public static final class Config {
@@ -485,6 +501,10 @@ public class SupplyConstants {
         public static final String PURCHASE_ORDER_BY_CODE = "purchaseOrderByCode";
         //根据供应商编码查询该对应上对应的品牌
         public static final String SUPPLIER_BRAND = "supplierBrand";
+        //查询该业务线对应的仓库
+        public static final String WAREHOUSE = "warehouse";
+        //查询该业务线对应的仓库商品
+        public static final String WAREHOUSE_ITEM = "warehouseItem";
     }
 
     /**
