@@ -155,4 +155,9 @@ public class ResultUtil {
 	public static Response createSuccessPageResult(Object result){
 		return Response.status(Response.Status.OK).entity(result).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
 	}
+
+	public static Response createfailureResult(int code, String databuffer, Object result){
+		AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), databuffer, result);
+		return Response.status(code).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
+	}
 }

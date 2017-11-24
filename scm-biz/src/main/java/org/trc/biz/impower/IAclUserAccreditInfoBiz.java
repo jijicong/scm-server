@@ -1,6 +1,7 @@
 package org.trc.biz.impower;
 
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.ChannelExt;
 import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserAddPageDate;
@@ -11,7 +12,9 @@ import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  */
 public interface IAclUserAccreditInfoBiz {
     /**
@@ -31,7 +34,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param page 分页信息
      * @return 分页信息及当前页面的数据
      */
-    Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
+//    Pagenation<AclUserAddPageDate> userAccreditInfoPageES(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page);
 
 
     /**
@@ -74,7 +77,7 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    List<Channel> findChannel();
+    List<ChannelExt> findChannel();
 
     /**
      * 查询渠道角色或者全局角色
@@ -138,4 +141,6 @@ public interface IAclUserAccreditInfoBiz {
      * 查询用户对应用户的起停用状态
      */
     String[] checkRoleValid (Long id);
+
+//    void queryChannelAndSellChannel() ;
 }

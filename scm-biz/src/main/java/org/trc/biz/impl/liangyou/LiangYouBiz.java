@@ -3,6 +3,10 @@ package org.trc.biz.impl.liangyou;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
@@ -11,20 +15,26 @@ import org.trc.constant.LiangYouConstant;
 import org.trc.domain.config.Common;
 import org.trc.domain.config.LiangYouSkuList;
 import org.trc.domain.config.SkuListForm;
+import org.trc.domain.order.OrderItem;
+import org.trc.domain.order.SupplierOrderInfo;
+import org.trc.enums.ExceptionEnum;
+import org.trc.form.external.BalanceDetailDTO;
 import org.trc.form.liangyou.*;
 import org.trc.service.ILiangYouService;
 import org.trc.service.config.ISkusListService;
+import org.trc.service.impl.order.OrderItemService;
+import org.trc.service.impl.order.SupplierOrderInfoService;
 import org.trc.service.jingdong.ICommonService;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.JingDongUtil;
-import org.trc.util.RedisUtil;
+import org.trc.util.*;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
 /**
  * Created by hzwyz on 2017/6/13 0013.
@@ -32,17 +42,27 @@ import java.util.List;
 @Service("liangYouBiz")
 public class LiangYouBiz implements ILiangYouBiz {
 
-    @Resource(name = "LiangYouService")
-    private ILiangYouService liangYouService;
-
+    //粮油供应商编码
+    public final static String SUPPLIER_LY_CODE = "LY";
+    //粮油供应商编码
+    public final static String SUCCESS = "200";
+    //错误信息
+    public final static String BAR = "-";
+    //错误信息
+    public final static String EXCEL = ".xls";
     @Autowired
     ICommonService commonService;
-
     @Autowired
     JingDongUtil jingDongUtil;
-
     @Resource
     ISkusListService skusListService;
+    @Resource
+    SupplierOrderInfoService supplierOrderInfoService;
+    @Resource
+    OrderItemService orderItemService;
+    private Logger log = LoggerFactory.getLogger(LiangYouBiz.class);
+    @Resource(name = "LiangYouService")
+    private ILiangYouService liangYouService;
 
     @Override
     public String getAccessToken() throws Exception {
@@ -73,6 +93,7 @@ public class LiangYouBiz implements ILiangYouBiz {
         }
     }
 
+    @Override
     public void ExportGoods() throws Exception{
         try {
             String token = getAccessToken();
@@ -208,6 +229,234 @@ public class LiangYouBiz implements ILiangYouBiz {
         JSONObject object = (JSONObject)result.getData();
         GoodsInfoDO goodsInfo = object.toJavaObject(GoodsInfoDO.class);
         return goodsInfo;
+    }
+
+    /**
+     * 分页查询粮油报表
+     *
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Pagenation<LyStatement> LyStatementPage(LyStatementForm form, Pagenation<OrderItem> page) throws Exception {
+        AssertUtil.notNull(page.getPageNo(),"分页查询参数pageNo不能为空");
+        AssertUtil.notNull(page.getPageSize(),"分页查询参数pageSize不能为空");
+        AssertUtil.notNull(page.getStart(),"分页查询参数start不能为空");
+        //1.根据查询条件查处符合要求的粮油订单
+        List<SupplierOrderInfo> supplierOrderInfoList = getLySuccessOrder(form);
+        Pagenation<LyStatement> newPage  = new Pagenation<>();
+        if (supplierOrderInfoList.size()==0){
+            return newPage;
+        }
+        List<String> list = new ArrayList();
+        for (SupplierOrderInfo supplierOrderInfo : supplierOrderInfoList){
+            list.add(supplierOrderInfo.getWarehouseOrderCode());
+        }
+        //2.分页查询订单商品详情信息
+        Pagenation<OrderItem> pagenation  = getOrderItemsByPage(list,form, page);
+        List<OrderItem> orderItemList = pagenation.getResult();
+        newPage.setStart(pagenation.getStart());
+        newPage.setTotalCount(pagenation.getTotalCount());
+        newPage.setPageSize(pagenation.getPageSize());
+        newPage.setPageNo(pagenation.getPageNo());
+        if (orderItemList.size()!= 0){
+            List<OrderItem> orderItemList1 = packageData(supplierOrderInfoList, orderItemList);
+            List<LyStatement> list1 = setParam(orderItemList1,supplierOrderInfoList);
+            newPage.setResult(list1);
+        }
+        return newPage;
+    }
+
+    private List<LyStatement> setParam(List<OrderItem> orderItemList,List<SupplierOrderInfo> supplierOrderInfoList){
+        List<LyStatement> list = new ArrayList<>();
+        Map<String,String> map = new HashMap<>();
+        for (SupplierOrderInfo supplierOrderInfo:supplierOrderInfoList){
+            map.put(supplierOrderInfo.getWarehouseOrderCode(),supplierOrderInfo.getSupplierOrderCode());
+        }
+        for (OrderItem orderItem:orderItemList){
+            LyStatement lyStatement = new LyStatement();
+            lyStatement.setSupplierSkuCode(orderItem.getSupplierSkuCode());
+            lyStatement.setSkuCode(orderItem.getSkuCode());
+            lyStatement.setItemName(orderItem.getItemName());
+            lyStatement.setNum(orderItem.getNum());
+            lyStatement.setPlatformOrderCode(orderItem.getPlatformOrderCode());
+            lyStatement.setShopOrderCode(orderItem.getShopOrderCode());
+            lyStatement.setSupplierOrderCode(map.get(orderItem.getWarehouseOrderCode()));
+            lyStatement.setPayment(orderItem.getPayment());
+            lyStatement.setCreateTime(DateUtils.formatDateTime(orderItem.getCreateTime()));
+            list.add(lyStatement);
+        }
+        return list;
+    }
+
+    private List<OrderItem> packageData(List<SupplierOrderInfo> supplierOrderInfoList, List<OrderItem> orderItemList) {
+        //将要返回到前端的数据补全
+        Map<String,Map<String,SupplierOrderInfo>> map = getSku(supplierOrderInfoList);
+        for (OrderItem orderItem:orderItemList){
+            Map<String,SupplierOrderInfo> temMap = map.get(orderItem.getWarehouseOrderCode());
+            SupplierOrderInfo supplierOrderInfo = temMap.get(orderItem.getSupplierSkuCode());
+            if (supplierOrderInfo==null){
+                continue;
+            }
+            orderItem.setSupplierOrderCode(supplierOrderInfo.getSupplierOrderCode());
+            orderItem.setSubmitTime(supplierOrderInfo.getCreateTime());
+        }
+        return orderItemList;
+    }
+
+    //取出sku
+    private Map<String,Map<String,SupplierOrderInfo>> getSku(List<SupplierOrderInfo> supplierOrderInfoList){
+        Map<String,Map<String,SupplierOrderInfo>> map = new HashMap<>();
+        for (SupplierOrderInfo supplierOrderInfo : supplierOrderInfoList){
+            String skus = supplierOrderInfo.getSkus();
+            String warehouseOrderCode = supplierOrderInfo.getWarehouseOrderCode();
+            if(StringUtils.isBlank(skus)){
+                continue;
+            }
+            List<SkuForm> list = JSONArray.parseArray(skus,SkuForm.class);
+            Map<String,SupplierOrderInfo> newMap = new HashMap<>();
+            for (SkuForm skuForm:list){
+                newMap.put(skuForm.getSkuCode(),supplierOrderInfo);
+            }
+            map.put(warehouseOrderCode,newMap);
+        }
+        return map;
+    }
+
+    private Pagenation<OrderItem> getOrderItemsByPage(List<String> list, LyStatementForm form, Pagenation<OrderItem> page){
+        Example example = new Example(OrderItem.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (!StringUtils.isBlank(form.getSupplierSkuCode())){
+            criteria.andLike("supplierSkuCode","%"+form.getSupplierSkuCode()+"%");
+        }
+        if (!StringUtils.isBlank(form.getSkuCode())){
+            criteria.andLike("skuCode","%"+form.getSkuCode()+"%");
+        }
+        if (!StringUtils.isBlank(form.getItemName())){
+            criteria.andLike("itemName","%"+form.getItemName()+"%");
+        }
+        if (!StringUtils.isBlank(form.getPlatformOrderCode())){
+            criteria.andLike("platformOrderCode","%"+form.getPlatformOrderCode()+"%");
+        }
+        if (!StringUtils.isBlank(form.getShopOrderCode())){
+            criteria.andLike("shopOrderCode","%"+form.getShopOrderCode()+"%");
+        }
+        criteria.andIn("warehouseOrderCode",list);
+        example.orderBy("submitTime").desc();
+        Pagenation<OrderItem> pagenation = orderItemService.pagination(example,page,form);
+        return pagenation;
+    }
+
+    private List<OrderItem> getOrderItems(List<String> list, LyStatementForm form){
+        Example example = new Example(OrderItem.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (!StringUtils.isBlank(form.getSupplierSkuCode())){
+            criteria.andLike("supplierSkuCode","%"+form.getSupplierSkuCode()+"%");
+        }
+        if (!StringUtils.isBlank(form.getSkuCode())){
+            criteria.andLike("skuCode","%"+form.getSkuCode()+"%");
+        }
+        if (!StringUtils.isBlank(form.getItemName())){
+            criteria.andLike("itemName","%"+form.getItemName()+"%");
+        }
+        if (!StringUtils.isBlank(form.getPlatformOrderCode())){
+            criteria.andLike("platformOrderCode","%"+form.getPlatformOrderCode()+"%");
+        }
+        if (!StringUtils.isBlank(form.getShopOrderCode())){
+            criteria.andLike("shopOrderCode","%"+form.getShopOrderCode()+"%");
+        }
+        criteria.andIn("warehouseOrderCode",list);
+        example.orderBy("submitTime").desc();
+        List<OrderItem> result = orderItemService.selectByExample(example);
+        return result;
+    }
+
+    private List<SupplierOrderInfo> getLySuccessOrder(LyStatementForm form) {
+        Example example = new Example(SupplierOrderInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("supplierCode",SUPPLIER_LY_CODE);
+        if (!StringUtils.isBlank(form.getStartDate())){
+            criteria.andGreaterThanOrEqualTo("createTime",form.getStartDate());
+        }
+        if (!StringUtils.isBlank(form.getEndDate())){
+            criteria.andLessThanOrEqualTo("createTime",form.getEndDate());
+        }
+        if (!StringUtils.isBlank(form.getSupplierOrderCode())){
+            criteria.andLike("supplierOrderCode","%"+form.getSupplierOrderCode()+"%");
+        }
+        List<String> list = new ArrayList();
+        list.add("3");
+        list.add("4");
+        list.add("6");
+        criteria.andIn("supplierOrderStatus",list);
+        criteria.andEqualTo("status",SUCCESS);
+        List<SupplierOrderInfo> supplierInfo = supplierOrderInfoService.selectByExample(example);
+        return supplierInfo;
+    }
+
+    /**
+     * 粮油代发报表导出
+     *
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Response exportStatement(LyStatementForm form) throws Exception {
+        try{
+            List<LyStatement> result = queryOrderForExport(form);
+            CellDefinition spuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 4000);
+            CellDefinition skuCode = new CellDefinition("supplierSkuCode", "粮油商品SKU", CellDefinition.TEXT, 4000);
+            CellDefinition itemName = new CellDefinition("itemName", "粮油商品名称", CellDefinition.TEXT, 8000);
+            CellDefinition num = new CellDefinition("num", "交易数量", CellDefinition.NUM_0_00, 2000);
+            CellDefinition platformOrderCode = new CellDefinition("platformOrderCode", "平台订单号", CellDefinition.TEXT, 4000);
+            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", "店铺订单号", CellDefinition.TEXT, 4000);
+            CellDefinition supplierOrderCode = new CellDefinition("supplierOrderCode", "粮油订单号", CellDefinition.TEXT, 4000);
+            CellDefinition payment = new CellDefinition("payment", "买家实付商品金额", CellDefinition.NUM_0_00, 2000);
+            CellDefinition createTime = new CellDefinition("createTime", "系统发送粮油时间", CellDefinition.TEXT, 8000);
+
+            List<CellDefinition> cellDefinitionList = new ArrayList<>();
+            cellDefinitionList.add(spuCode);
+            cellDefinitionList.add(skuCode);
+            cellDefinitionList.add(itemName);
+            cellDefinitionList.add(num);
+            cellDefinitionList.add(platformOrderCode);
+            cellDefinitionList.add(shopOrderCode);
+            cellDefinitionList.add(supplierOrderCode);
+            cellDefinitionList.add(payment);
+            cellDefinitionList.add(createTime);
+            String sheetName = "粮油代发报表";
+            String fileName = "粮油代发报表-" + form.getStartDate() + BAR + form.getEndDate() + EXCEL;
+            try {
+                fileName = URLEncoder.encode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException e1) {
+                e1.printStackTrace();
+            }
+            HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(result, cellDefinitionList, sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+            return Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+        }catch (Exception e){
+            log.error("粮油代发报表导出异常"+e.getMessage(),e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.LIANG_YOU_EXPORT_EXCEPTION.getCode()),ExceptionEnum.LIANG_YOU_EXPORT_EXCEPTION.getMessage());
+        }
+    }
+
+    private List<LyStatement> queryOrderForExport(LyStatementForm form){
+        //1.根据查询条件查处符合要求的粮油订单
+        List<SupplierOrderInfo> supplierOrderInfoList = getLySuccessOrder(form);
+        List<String> list = new ArrayList();
+        for (SupplierOrderInfo supplierOrderInfo : supplierOrderInfoList){
+            list.add(supplierOrderInfo.getWarehouseOrderCode());
+        }
+        List<OrderItem> orderItems = getOrderItems(list,form);
+        //将要返回到前端的数据补全
+        List<OrderItem> list1 = packageData(supplierOrderInfoList, orderItems);
+        List<LyStatement> newList = setParam(list1,supplierOrderInfoList);
+        return newList;
     }
 
     private String createToken() throws Exception{

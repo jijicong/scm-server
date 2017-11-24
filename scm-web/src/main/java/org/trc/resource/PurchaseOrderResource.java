@@ -176,4 +176,11 @@ public class PurchaseOrderResource {
         return ResultUtil.createSuccessResult("入库通知单添加成功!","");
     }
 
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.WAREHOUSE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findWarehouses(@Context ContainerRequestContext requestContext)  {
+        String channelCode = (String)requestContext.getProperty(SupplyConstants.Authorization.CHANNEL_CODE);
+        return purchaseOrderBiz.findWarehousesByChannelCode(channelCode);
+    }
 }

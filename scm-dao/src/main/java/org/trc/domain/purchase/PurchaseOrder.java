@@ -85,10 +85,10 @@ public class PurchaseOrder extends BaseDO{
      private String endReceiveDate;
      @FormParam("handlerPriority")
      private String handlerPriority;//处理优先级
-    @Transient
-    private String handlerPriorityName;
+     @Transient
+     private String handlerPriorityName;
      @FormParam("status")
-     private String status;//状态:0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-全部收货,5-收货异常,6-冻结,7-作废',
+     private String status;//状态:0-暂存,1-审核驳回,2-审核通过,3-提交审核,4-全部收货,5-收货异常,6-冻结,7-作废,8-入库通知
      @FormParam("enterWarehouseNotice")
      private String enterWarehouseNotice;//'入库通知:0-待通知,1-已通知',
      @FormParam("enterWarehouseNotice")
@@ -96,9 +96,9 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("remark")
      @Length(max = 3072, message = "采购单编号字母和数字不能超过3072个,汉字不能超过3072个")
      private String remark;
-    @FormParam("totalFeeD")
-    @Transient
-    private BigDecimal totalFeeD;//'采购总金额,单位/分',
+     @FormParam("totalFeeD")
+     @Transient
+     private BigDecimal totalFeeD;//'采购总金额,单位/分',
      @FormParam("totalFee")
      @JsonSerialize(using = MoneySerializer.class)
      private Long totalFee;//'采购总金额,单位/分',

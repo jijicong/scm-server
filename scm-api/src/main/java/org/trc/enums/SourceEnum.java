@@ -4,7 +4,7 @@ package org.trc.enums;
  * Created by hzqph on 2017/5/2.
  */
 public enum SourceEnum {
-    SCM("scm","系统录入"),TRC("QD001","泰然城录入");
+    SCM("scm","系统录入"),TRC("YWX001","泰然城录入");
 
 
     public static SourceEnum queryNameByCode(String code){

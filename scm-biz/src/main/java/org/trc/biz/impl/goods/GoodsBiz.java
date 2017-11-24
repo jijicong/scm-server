@@ -32,6 +32,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -59,6 +60,7 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -199,7 +201,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -784,6 +786,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
             skus2.setSkuName(jbo.getString("skuName")); // sku名称 
+            skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skus2.setCreateTime(sysTime);
             skus2.setUpdateTime(sysTime);
@@ -1009,6 +1012,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setBarCode(jbo.getString("barCode"));
             skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
+            skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
             skus2.setUpdateTime(sysTime);
@@ -1409,6 +1413,8 @@ public class GoodsBiz implements IGoodsBiz {
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
     }
 
+
+
     /**
      * 停用自采商品检查是否存在启用的SKU
      * @param spuCode
@@ -1492,11 +1498,47 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> updateSkus = skusService.select(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         updateSkus.add(skus2);
+        //商品SKU启停用通知仓库商品信息
+        itemsUpdateNoticeWarehouseItemInfo(skus2, _isValid);
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+    }
+
+    private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setSkuCode(skus.getSkuCode());
+        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        String isValid = _isValid;
+        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
+            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
+            if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
+                int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
+                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
+                }else{
+
+                }
+            }else{
+                Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
+                if(oldNoticeStatus == null){
+                    continue;
+                }
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
+                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                    }
+                    warehouseItemInfo1.setOldNoticeStatus(null);
+                }
+            }
+            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
+        }
     }
 
     /**
@@ -1684,7 +1726,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1698,7 +1740,6 @@ public class GoodsBiz implements IGoodsBiz {
             if (StringUtils.equals(queryModel.getQuerySource(),ZeroToNineEnum.ZERO.getCode())){
             criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
             }
-//            criteria2.andEqualTo("supplierKindCode",SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
             List<String>  supplierInterfaceIdList = new ArrayList<>();
             for (SupplierApply supplierApply:supplierApplyList) {
@@ -1710,7 +1751,11 @@ public class GoodsBiz implements IGoodsBiz {
                     supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
                 }
             }
-            criteria.andIn("supplierCode",supplierInterfaceIdList);
+            if (!AssertUtil.collectionIsEmpty(supplierInterfaceIdList)){
+                criteria.andIn("supplierCode",supplierInterfaceIdList);
+            }else {
+                return page;
+            }
         }
         if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
@@ -1718,8 +1763,11 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
             criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
         }
-        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+       /* if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
             criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
+        }*/
+        if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商sku编号 2.0新增
+            criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
         }
         if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
             criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
@@ -1727,7 +1775,17 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
-
+        //2.0新增条件最近更新时间
+        if (!StringUtils.isBlank(queryModel.getStartDate())) {
+            criteria.andGreaterThan("updateTime", queryModel.getStartDate());
+        }
+        if (!StringUtils.isBlank(queryModel.getEndDate())) {
+            criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndDate(),DateUtils.NORMAL_DATE_FORMAT,1)));
+        }
+        //2.0新增供应商商品状态
+        if (StringUtils.isNotBlank(queryModel.getState())) {//条形码
+            criteria.andEqualTo("state",queryModel.getState());
+        }
         example.orderBy("updateTime").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
         //setSupplierName(page.getResult());

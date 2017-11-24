@@ -1,15 +1,19 @@
 package org.trc.biz.purchase;
 
+import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -83,5 +87,12 @@ public interface IPurchaseOrderBiz {
      * 删除缓存
      */
     public void cacheEvitForPurchaseOrder();
+
+    /**
+     * 根据业务线查询仓库信息
+     * @param channelCode
+     * @return
+     */
+    Response findWarehousesByChannelCode(String channelCode);
 
 }

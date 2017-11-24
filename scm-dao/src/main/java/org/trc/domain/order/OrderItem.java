@@ -114,6 +114,11 @@ public class OrderItem implements Serializable {
     @Length(max = 32)
     private String channelCode;
 
+    // 销售渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
+
     // 来源平台编码
     @NotEmpty
     @Length(max = 32)
@@ -366,6 +371,9 @@ public class OrderItem implements Serializable {
     //物流信息
     @Transient
     private List<DeliverPackageForm> deliverPackageFormList;
+
+    //提交供应商时间
+    private Date submitTime;
 
     public String getSupplierSkuCode() {
         return supplierSkuCode;
@@ -1390,4 +1398,20 @@ public class OrderItem implements Serializable {
     public void setDeliverPackageFormList(List<DeliverPackageForm> deliverPackageFormList) {
         this.deliverPackageFormList = deliverPackageFormList;
     }
+
+    public Date getSubmitTime() {
+        return submitTime;
+    }
+
+    public void setSubmitTime(Date submitTime) {
+        this.submitTime = submitTime;
+    }
+
+    /*public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }

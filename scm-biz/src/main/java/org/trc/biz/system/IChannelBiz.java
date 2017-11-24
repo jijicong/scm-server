@@ -1,6 +1,8 @@
 package org.trc.biz.system;
 
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.ChannelExt;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.system.ChannelForm;
 import org.trc.util.Pagenation;
@@ -69,7 +71,25 @@ public interface IChannelBiz {
     /**
      * 渠道Es搜索
      */
-    Pagenation<Channel> channelPageES(ChannelForm form, Pagenation<Channel> page);
+//    Pagenation<Channel> channelPageES(ChannelForm form, Pagenation<Channel> page);
 
+    /**
+     * 根据业务线主键id查询已关联的销售渠道
+     * @param channelId
+     * @return
+     */
+    List<SellChannel> selectLinkSellChannelById(Long channelId);
 
+    /**
+     * 渠道编辑时的返回数据
+     * @param id
+     * @return
+     */
+    ChannelExt queryChannelForUpdate(Long id);
+
+    /**
+     * 查询所有销售渠道
+     * @return
+     */
+    List<SellChannel> querySellChannel();
 }

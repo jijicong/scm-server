@@ -69,6 +69,7 @@
             end_time="2016/7/15 15:36"
             supplier_order_status="1"
             old_supplier_order_status="*"
+            submit_time="2016/7/15 15:36"
 
     />
 
@@ -141,6 +142,7 @@
             end_time="2016/7/28 13:52"
             supplier_order_status="1"
             old_supplier_order_status="*"
+            submit_time="2016/7/15 15:36"
     />
 
     <order_item
@@ -212,6 +214,7 @@
             end_time="2016/7/15 15:38"
             supplier_order_status="3"
             old_supplier_order_status="*"
+            submit_time="2016/7/15 15:36"
     />
 
     <order_item
@@ -283,6 +286,7 @@
             end_time="2016/7/18 13:01"
             supplier_order_status="3"
             old_supplier_order_status="*"
+            submit_time="2016/7/15 15:36"
 
     />
 </dataset>

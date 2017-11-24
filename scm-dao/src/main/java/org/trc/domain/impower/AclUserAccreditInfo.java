@@ -15,7 +15,9 @@ import javax.ws.rs.PathParam;
 
 /**
  * 用户授权列表
- * Created by sone on 2017/5/11.
+ *
+ * @author sone
+ * @date 2017/5/11
  * 对应数据库表user_accredit_info
  */
 public class AclUserAccreditInfo extends BaseDO{//acl_user_accredit_info
@@ -27,10 +29,11 @@ public class AclUserAccreditInfo extends BaseDO{//acl_user_accredit_info
     @FormParam("userId")
     private String userId;
 
+    //必须已经存在用户中心的id
     @FormParam("phone")
     @NotEmpty
     @Length(max = 64, message = "用户授权电话字母和数字不能超过64个,汉字不能超过32个")
-    private String phone;//必须已经存在用户中心的id
+    private String phone;
 
     @FormParam("name")
     @NotEmpty

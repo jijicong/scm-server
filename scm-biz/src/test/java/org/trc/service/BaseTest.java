@@ -121,8 +121,8 @@ public abstract class BaseTest extends AbstractTransactionalJUnit4SpringContextT
         //获取期望结果数据
         ITable expData= expectedDataSet.getTable(tableName);
         //排除那些你不想要比较的对象
-        actData= DefaultColumnFilter.excludedColumnsTable(actData, new String[]{"id","create_operator","create_time","update_time", "pay_time", "consign_time", "receive_time", "timeout_action_time", "end_time", "warehouse_order_code"});
-        expData = DefaultColumnFilter.excludedColumnsTable(expData, new String[]{"id","create_operator","create_time","update_time", "pay_time", "consign_time", "receive_time", "timeout_action_time", "end_time", "warehouse_order_code"});
+        actData= DefaultColumnFilter.excludedColumnsTable(actData, new String[]{"id","create_operator","create_time","update_time", "pay_time", "consign_time", "receive_time", "timeout_action_time", "end_time", "hand_cancel_time", "submit_time", "warehouse_order_code"});
+        expData = DefaultColumnFilter.excludedColumnsTable(expData, new String[]{"id","create_operator","create_time","update_time", "pay_time", "consign_time", "receive_time", "timeout_action_time", "end_time", "hand_cancel_time", "submit_time", "warehouse_order_code"});
         //比较查询结果集字段长度
         junit.framework.Assert.assertEquals(expData.getRowCount(), actData.getRowCount());
         DefaultColumnFilter.includedColumnsTable(actData, expData.getTableMetaData().getColumns());

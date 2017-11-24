@@ -1,11 +1,11 @@
 package org.trc.biz.liangyou;
 
 import org.trc.domain.config.SkuListForm;
-import org.trc.form.liangyou.CheckStockDO;
-import org.trc.form.liangyou.GoodsInfoDO;
-import org.trc.form.liangyou.LiangYouOrderDO;
-import org.trc.form.liangyou.LiangYouTorderDO;
+import org.trc.domain.order.OrderItem;
+import org.trc.form.liangyou.*;
+import org.trc.util.Pagenation;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -67,6 +67,23 @@ public interface ILiangYouBiz {
      * @throws Exception
      */
     GoodsInfoDO getGoodsInfo(String sku) throws Exception;
+
+    /**
+     * 分页查询粮油报表
+     * @param form
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    Pagenation<LyStatement> LyStatementPage(LyStatementForm form,Pagenation<OrderItem> page) throws Exception;
+
+    /**
+     * 粮油代发报表导出
+     * @param form
+     * @return
+     * @throws Exception
+     */
+    Response exportStatement(LyStatementForm form) throws Exception;
 
 
 }

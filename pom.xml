@@ -66,6 +66,8 @@
         <httpcore.version>4.4.4</httpcore.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
 
+        <jcraft.jsch.version>0.1.53</jcraft.jsch.version>
+
 
         <javax.servlet.version>2.5</javax.servlet.version>
         <javassist.version>3.21.0-GA</javassist.version>
@@ -327,6 +329,11 @@
                 <version>${elasticsearch.client.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>${jcraft.jsch.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -343,6 +350,39 @@
                 <artifactId>log4j-web</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+
+            <!--奇门接口-->
+            <dependency>
+                <groupId>com.taobao</groupId>
+                <artifactId>open</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.taobao</groupId>
+                <artifactId>open-source</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+
+
+            <!--分布式Session-->
+            <dependency>
+                <groupId>org.springframework.session</groupId>
+                <artifactId>spring-session</artifactId>
+                <version>1.0.2.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-redis</artifactId>
+                <version>1.4.1.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>2.5.2</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
