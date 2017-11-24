@@ -775,6 +775,10 @@ public class SupplyConstants {
         public static final String SKU_INNER = "0";
         //表示一件代发的商品
         public static final String SKU_OUTERER = "1";
+        //异常订单
+        public static final String EXCEPTION_ORDER = "CDYC";
+        //异常订单编码长度
+        public static final Integer EXCEPTION_ORDER_LENGTH = 6;
 
 
         //序列号查询路径
@@ -964,6 +968,24 @@ public class SupplyConstants {
         //根据拆单异常订单编码查询拆单异常订单详情路径
         public static final String EXCEPTION_ORDER_DETAIL = "exceptionOrder/exceptionOrderCode";
     }
+
+    /**
+     * 异常订单管理
+     */
+    public static final class ExceptionOrder {
+
+        //找不到满足发货数量的仓库
+        public final static String ALL_WAREHOUSE_STOCK_LESS = "找不到满足发货数量的仓库";
+        //供应商反馈库存不足
+        public final static String SUPPLIER_STOCK_LESS = "供应商反馈库存不足";
+        //指定仓库“XX仓库名称”库存不足
+        public final static String WAREHOUSE_STOCK_LESS = "指定仓库“%s”库存不足";
+        //同一仓库/供应商中存在库存不足的sku
+        public final static String SKU_STOCK_LESS_OF_WAREHOUSE = "同一仓库/供应商中存在库存不足的sku";
+
+
+    }
+
 
     /**
      * api

@@ -29,6 +29,7 @@ import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
+import org.trc.domain.goods.SkuStock;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
@@ -45,11 +46,14 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
+import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
+import org.trc.service.goods.ISkuStockService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.order.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
@@ -60,7 +64,6 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.xml.ws.Response;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -161,6 +164,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IExceptionOrderService exceptionOrderService;
     @Autowired
     private IExceptionOrderItemService exceptionOrderItemService;
+    @Autowired
+    private ISkusService skusService;
+    @Autowired
+    private ISkuStockService skuStockService;
+    @Autowired
+    private IWarehouseService warehouseService;
+
 
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
@@ -1498,6 +1508,76 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
+//    @Override
+//    @CacheEvit
+//    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+//    public ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo) {
+//        AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
+//        JSONObject orderObj = getChannelOrder(orderInfo);
+//        //订单检查
+//        orderCheck(orderObj);
+//        //获取平台订单信息
+//        PlatformOrder platformOrder = getPlatformOrder(orderObj);
+//        JSONArray shopOrderArray = getShopOrdersArray(orderObj);
+//        //获取店铺订单
+//        List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPlatformType(), platformOrder.getPayTime());
+//        //拆分自采和代发商品
+//        List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
+//        List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
+//        List<OrderItem> supplierOrderItemList = new ArrayList<>();//一件代发
+//        for(ShopOrder shopOrder: shopOrderList){
+//            for (OrderItem orderItem : shopOrder.getOrderItems()) {
+//                tmpOrderItemList.add(orderItem);
+//                if (orderItem.getSkuCode().startsWith(SP0)) {
+//                    selfPurcharseOrderItemList.add(orderItem);
+//                }
+//                if (orderItem.getSkuCode().startsWith(SP1)) {
+//                    supplierOrderItemList.add(orderItem);
+//                }
+//            }
+//        }
+//        //校验商品是否从供应链新增
+//        isScmItems(tmpOrderItemList, platformOrder.getChannelCode());
+//        //校验代发商品
+//        checkSupplierItems(supplierOrderItemList);
+//        //校验自采商品
+//        checkItems(selfPurcharseOrderItemList, platformOrder.getChannelCode());
+//        //拆分仓库订单
+//        List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
+//        for (ShopOrder shopOrder : shopOrderList) {
+//            warehouseOrderList.addAll(dealShopOrder(shopOrder));
+//        }
+//        //订单商品明细
+//        List<OrderItem> orderItemList = new ArrayList<OrderItem>();
+//        for (WarehouseOrder warehouseOrder : warehouseOrderList) {
+//            orderItemList.addAll(warehouseOrder.getOrderItemList());
+//        }
+//        //校验订单金额
+//        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
+//            orderMoneyCheck(platformOrder, shopOrderList, warehouseOrderList, orderItemList);
+//        }
+//        //保存幂等流水
+//        saveIdempotentFlow(shopOrderList);
+//        //保存商品明细
+//        orderItemService.insertList(orderItemList);
+//        //保存仓库订单
+//        warehouseOrderService.insertList(warehouseOrderList);
+//        //保存商铺订单
+//        shopOrderService.insertList(shopOrderList);
+//        //保存平台订单
+//        platformOrderService.insert(platformOrder);
+//        //创建订单日志
+//        createOrderLog(warehouseOrderList);
+//        //获取粮油仓库订单
+//        List<WarehouseOrder> lyWarehouseOrders = new ArrayList<WarehouseOrder>();
+//        for(WarehouseOrder warehouseOrder: warehouseOrderList){
+//            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
+//                lyWarehouseOrders.add(warehouseOrder);
+//            }
+//        }
+//        return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", lyWarehouseOrders);
+//    }
+
     @Override
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -1525,7 +1605,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
             orderMoneyCheck(platformOrder, shopOrderList, warehouseOrderList, orderItemList);
         }
-        //校验商品是否不是添加过的供应商商品
+        //校验商品
         checkItems(orderItemList, platformOrder.getChannelCode());
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
@@ -2736,6 +2816,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         shopOrder.setDiscountFee(shopOrderObj.getBigDecimal("discountFee"));//订单优惠总金额
     }
 
+
     /**
      * 获取订单商品明细
      * @param orderItemArray
@@ -2784,6 +2865,122 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return orderItemList;
     }
+
+    /**
+     * 校验是否供应链商品
+     * @param orderItemList
+     * @param channelCode
+     */
+    private void isScmItems(List<OrderItem> orderItemList, String channelCode){
+        Set<String> skuCodes = new HashSet<String>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodes.add(orderItem.getSkuCode());
+        }
+        //查询自采商品
+        Example example = new Example(SkuRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("channelCode", channelCode);
+        List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
+        AssertUtil.notEmpty(skuRelations, String.format("skuCode为[%s]的订单商品在供应链系统无法识别", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
+        StringBuilder sb = new StringBuilder();
+        for(OrderItem orderItem: orderItemList){
+            Boolean flag = false;
+            for(SkuRelation skuRelation: skuRelations){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuRelation.getSkuCode())){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                sb.append(String.format("{skuCode:%s, skuName:%s}", orderItem.getSkuCode(), orderItem.getItemName())).append(",");
+            }
+        }
+        if(sb.length() > 0){
+            String msg = "商品[" + sb.toString()+"]在供应链系统无法识别";
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+    }
+
+
+    /**
+     * 商品参数校验
+     * @param orderItemList
+     */
+    private void checkSupplierItems(List<OrderItem> orderItemList){
+        Set<String> skuCodes = new HashSet<String>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodes.add(orderItem.getSkuCode());
+        }
+        Example example2 = new Example(ExternalItemSku.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("skuCode", skuCodes);
+        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example2);
+        AssertUtil.notEmpty(externalItemSkuList, String.format("根据多个skuCode[%s]查询代发商品列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
+        //校验商品上下架状态
+        List<String> _tmpSkuCodes = new ArrayList<String>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), externalItemSku.getState()))
+                _tmpSkuCodes.add(externalItemSku.getSkuCode());
+        }
+        if(_tmpSkuCodes.size() > 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("代发商品[%s]的供应商商品状态为下架!", CommonUtil.converCollectionToString(_tmpSkuCodes)));
+        }
+        //校验商品最小购买量
+        for(OrderItem orderItem: orderItemList){
+            for(ExternalItemSku externalItemSku: externalItemSkuList){
+                if(StringUtils.equals(orderItem.getSkuCode(), externalItemSku.getSkuCode())){
+                    if(null != externalItemSku.getMinBuyCount() && orderItem.getNum() < externalItemSku.getMinBuyCount()){
+                        throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("代发商品[%s]的购买数量小于供应商要求的最小购买量！",orderItem.getSkuCode()));
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * 校验自采商品
+     * @param orderItemList
+     * @param channelCode
+     */
+    /*private void checkItems(List<OrderItem> orderItemList, String channelCode){
+        Set<String> skuCodes = new HashSet<String>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodes.add(orderItem.getSkuCode());
+        }
+        Example example = new Example(SkuStock.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        //criteria.andEqualTo("channel_code", channelCode);
+        List<SkuStock> skuStockList = skuStockService.selectByExample(example);
+        StringBuilder sb = new StringBuilder();
+        for(OrderItem orderItem: orderItemList){
+            boolean flag = false;
+            long stock = 0;
+            for(SkuStock skuStock: skuStockList){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                    if(!flag){
+                        flag = true;
+                    }
+                    //可用库存
+                    long availableInventory = skuStock.getRealInventory() - skuStock.getFrozenInventory();
+                    stock += availableInventory;
+                }
+            }
+            if(!flag || orderItem.getNum().longValue() > stock){
+                sb.append(String.format("自采商品%s库存不足,购买数量%s,库存%s", orderItem.getSkuCode(), orderItem.getNum(), stock)).append(SupplyConstants.Symbol.COMMA);
+            }
+        }
+        if(sb.length() > 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, sb.toString());
+        }
+
+
+    }*/
+
 
     /**
      * 商品参数校验
@@ -2846,6 +3043,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
     }
+
 
     /**
      * 校验渠道
@@ -2975,15 +3173,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         if(orderItemList1.size() > 0){
-            throw new OrderException(ExceptionEnum.ORDER_ITEMS_ERROR, "自采商品订单暂不受理");
-            // TODO 自采的拆单暂时不做
-            /**
-             如果是一个仓库，这里就不需要继续往下拆
-             入库时多个仓库，这里就需要同一件代发，一样拆出，不同仓库的仓库级订单 --sone21
-             */
+
+
         }
         if(orderItemList2.size() > 0){
-            warehouseOrderList = dealSupplier(orderItemList2, shopOrder);
+            warehouseOrderList.addAll(dealSupplierOrder(orderItemList2, shopOrder));
         }else {
             throw new OrderException(ExceptionEnum.ORDER_ITEMS_ERROR, "订单相关代发商品不能为空");
         }
@@ -2991,9 +3185,191 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
+    /**
+     * 处理自采订单
+     * @param orderItems
+     * @param shopOrder
+     * @return
+     */
+    public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder) {
+        List<String> skuCodeList = new ArrayList<>();
+        for (OrderItem orderItem : orderItems) {
+            skuCodeList.add(orderItem.getSkuCode());
+        }
+        Example example = new Example(SkuStock.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodeList);
+        List<SkuStock> skusStockList = skuStockService.selectByExample(example);
+        //AssertUtil.notEmpty(skusStockList, String.format("根据sku编码列表[%s]查询自采商品为空", CommonUtil.converCollectionToString(skuCodeList)));
+        List<Warehouse> warehouseList = new ArrayList<>();
+        if(!CollectionUtils.isEmpty(skuCodeList)){
+            Set<String> warehouseCodes = new HashSet<>();
+            for(SkuStock skuStock: skusStockList){
+                warehouseCodes.add(skuStock.getWarehouseCode());
+            }
+            Example example2 = new Example(Warehouse.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andIn("code", warehouseCodes);
+            warehouseList = warehouseService.selectByExample(example2);
+            AssertUtil.notEmpty(warehouseList, String.format("根据仓库编码列表[%s]查询仓库为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes))));
+        }
+        List<ExceptionOrderItem> exceptionOrderItemList = new ArrayList<>();//失败的商品
+        for(OrderItem orderItem: orderItems){
+            boolean flag = false;
+            long stock = 0;
+            StringBuilder warehouseCodeSB = new StringBuilder();
+            StringBuilder warehouseNameSB = new StringBuilder();
+            for(SkuStock skuStock: skusStockList){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                    if(!flag){
+                        flag = true;
+                    }
+                    warehouseCodeSB.append(skuStock.getWarehouseCode()).append(SupplyConstants.Symbol.COMMA);
+                    for(Warehouse warehouse: warehouseList){
+                        if(StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())){
+                            warehouseNameSB.append(warehouse.getName()).append(SupplyConstants.Symbol.COMMA);
+                        }
+                    }
+                    //可用库存
+                    long availableInventory = skuStock.getRealInventory() - skuStock.getFrozenInventory();
+                    stock += availableInventory;
+                }
+            }
+            if(!flag || orderItem.getNum().longValue() > stock){
+                ExceptionOrderItem exceptionOrderItem = getExceptionOrderItem(shopOrder, orderItem, SupplyConstants.ExceptionOrder.ALL_WAREHOUSE_STOCK_LESS);
+                if(warehouseCodeSB.length() > 0){
+                    exceptionOrderItem.setSupplierCode(warehouseCodeSB.substring(0, warehouseCodeSB.length()-1));
+                }
+                if(warehouseNameSB.length() > 0){
+                    exceptionOrderItem.setSupplierCode(warehouseNameSB.substring(0, warehouseNameSB.length()-1));
+                }
+                exceptionOrderItemList.add(exceptionOrderItem);
+            }
+        }
 
-    public List<WarehouseOrder> dealSupplier(List<OrderItem> orderItems, ShopOrder shopOrder) {
-        //新建仓库级订单
+
+
+        List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
+
+
+
+
+
+
+//        for (Supplier supplier: supplierList) {
+//            List<OrderItem> orderItemList2 = new ArrayList<OrderItem>();
+//            WarehouseOrder warehouseOrder = new WarehouseOrder();
+//            warehouseOrder.setSupplierCode(supplier.getSupplierInterfaceId());
+//            warehouseOrder.setShopId(shopOrder.getShopId());
+//            warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
+//            warehouseOrder.setShopName(shopOrder.getShopName());
+//            warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
+//            warehouseOrder.setChannelCode(shopOrder.getChannelCode());
+//            warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+//            warehouseOrder.setPlatformType(shopOrder.getPlatformType());
+//            warehouseOrder.setUserId(shopOrder.getUserId());
+//            warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
+//            warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+//            warehouseOrder.setPayTime(shopOrder.getPayTime());
+//            warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+//            //流水号
+//            String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER,
+//                    supplier.getSupplierCode(), ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+//            warehouseOrder.setWarehouseOrderCode(code);
+//            warehouseOrder.setOrderType(ZeroToNineEnum.ONE.getCode());
+//            for (ExternalItemSku externalItemSku : externalItemSkuList) {
+//                if(StringUtils.equals(supplier.getSupplierInterfaceId(), externalItemSku.getSupplierCode())){
+//                    OrderItem orderItem = getWarehouseOrderItems(warehouseOrder,externalItemSku, orderItems);
+//                    orderItem.setSupplierName(supplier.getSupplierName());
+//                    warehouseOrder.setSupplierName(supplier.getSupplierName());
+//                    orderItemList2.add(orderItem);
+//                }
+//            }
+//            setWarehouseOrderFee(warehouseOrder, orderItemList2);
+//            warehouseOrder.setOrderItemList(orderItemList2);
+//            warehouseOrderList.add(warehouseOrder);
+//        }
+
+
+
+        return warehouseOrderList;
+    }
+
+    /**
+     *
+     * @param shopOrder
+     * @param orderItem
+     * @param exceptionReason
+     */
+    private ExceptionOrderItem getExceptionOrderItem(ShopOrder shopOrder, OrderItem orderItem, String exceptionReason){
+        ExceptionOrderItem exceptionOrderItem = new ExceptionOrderItem();
+        exceptionOrderItem.setShopOrderCode(shopOrder.getShopOrderCode());
+        exceptionOrderItem.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+        exceptionOrderItem.setSkuCode(orderItem.getSkuCode());
+        exceptionOrderItem.setItemName(orderItem.getItemName());
+        if (orderItem.getSkuCode().startsWith(SP0)) {
+            exceptionOrderItem.setItemType(GoodsTypeEnum.SELF_PURCHARSE.getCode());
+        }else if(orderItem.getSkuCode().startsWith(SP1)) {
+            exceptionOrderItem.setItemType(GoodsTypeEnum.SUPPLIER.getCode());
+        }
+        exceptionOrderItem.setStatus(ExceptionItemStatusEnum.FINISHED.getCode());//默认已了结
+        exceptionOrderItem.setExceptionReason(exceptionReason);
+        exceptionOrderItem.setItemNum(orderItem.getNum());
+        exceptionOrderItem.setExceptionNum(orderItem.getNum());
+        Date currentDate = Calendar.getInstance().getTime();
+        exceptionOrderItem.setCreateTime(currentDate);
+        exceptionOrderItem.setUpdateTime(currentDate);
+        return exceptionOrderItem;
+    }
+
+    /**
+     * 保存异常单信息
+     * @param platformOrder
+     * @param shopOrder
+     * @param exceptionOrderItemList
+     */
+    private void saveExceptionOrder(PlatformOrder platformOrder, ShopOrder shopOrder, List<ExceptionOrderItem> exceptionOrderItemList){
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.EXCEPTION_ORDER_LENGTH, SupplyConstants.Serial.EXCEPTION_ORDER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        ExceptionOrder exceptionOrder = new ExceptionOrder();
+        exceptionOrder.setChannelCode(shopOrder.getChannelCode());
+        exceptionOrder.setExceptionOrderCode(code);
+        exceptionOrder.setShopOrderCode(shopOrder.getShopOrderCode());
+        exceptionOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+        exceptionOrder.setShopId(shopOrder.getShopId());
+        exceptionOrder.setShopName(shopOrder.getShopName());
+        //exceptionOrder.setStatus();
+        //exceptionOrder.setExceptionType();
+        exceptionOrder.setReceiverName(platformOrder.getReceiverName());
+        exceptionOrder.setReceiverMobile(platformOrder.getReceiverMobile());
+        exceptionOrder.setItemNum(exceptionOrderItemList.size());
+        //TODO
+        //exceptionOrder.setSellCode(shopOrder.getSellCode());
+        Date currentDate = Calendar.getInstance().getTime();
+        exceptionOrder.setCreateTime(currentDate);
+        exceptionOrder.setUpdateTime(currentDate);
+
+        for(ExceptionOrderItem exceptionOrderItem: exceptionOrderItemList){
+            exceptionOrderItem.setExceptionOrderCode(code);
+        }
+
+        exceptionOrderService.insert(exceptionOrder);
+        exceptionOrderItemService.insertList(exceptionOrderItemList);
+
+    }
+
+    private WarehouseOrder getSelfPurcharseWarehouseOrder(ShopOrder shopOrder, OrderItem orderItem, SkuStock skuStock){
+
+        return null;
+    }
+
+
+    /**
+     * 处理代发供应商订单
+     * @param orderItems
+     * @param shopOrder
+     * @return
+     */
+    public List<WarehouseOrder> dealSupplierOrder(List<OrderItem> orderItems, ShopOrder shopOrder) {
         List<String> skuCodeList = new ArrayList<>();
         for (OrderItem orderItem : orderItems) {
             skuCodeList.add(orderItem.getSkuCode());
