@@ -71,8 +71,10 @@ public class PurchaseDetail extends BaseDO{
     @FormParam("skuName")
     private String skuName;//sku名称
     @FormParam("batchCode")
+    @Length(max = 10, message = "批次号字母和数字不能超过20个")
     private String batchCode;//批次号
     @FormParam("produceCode")
+    @Length(max = 10, message = "生产编码字母和数字不能超过20个")
     private String produceCode;//生产编码
     @FormParam("productDate")
     @Length(max = 10, message = "生产日期长度不能超过10个")
@@ -83,7 +85,7 @@ public class PurchaseDetail extends BaseDO{
     @FormParam("shelfLifeDays")
     private Integer shelfLifeDays;//理论保质期限（天）
     @FormParam("warehouseItemInfoId")
-    private Integer warehouseItemInfoId;//仓库商品信息主键
+    private Long warehouseItemInfoId;//仓库商品信息主键
     @FormParam("specNatureInfo")
     private String specNatureInfo;//规格
     @Transient
@@ -283,11 +285,11 @@ public class PurchaseDetail extends BaseDO{
         this.shelfLifeDays = shelfLifeDays;
     }
 
-    public Integer getWarehouseItemInfoId() {
+    public Long getWarehouseItemInfoId() {
         return warehouseItemInfoId;
     }
 
-    public void setWarehouseItemInfoId(Integer warehouseItemInfoId) {
+    public void setWarehouseItemInfoId(Long warehouseItemInfoId) {
         this.warehouseItemInfoId = warehouseItemInfoId;
     }
 }
