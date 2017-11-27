@@ -285,7 +285,7 @@ public class LiangYouBiz implements ILiangYouBiz {
             lyStatement.setShopOrderCode(orderItem.getShopOrderCode());
             lyStatement.setSupplierOrderCode(map.get(orderItem.getWarehouseOrderCode()));
             lyStatement.setPayment(orderItem.getPayment());
-            lyStatement.setCreateTime(DateUtils.formatDateTime(orderItem.getCreateTime()));
+            lyStatement.setCreateTime(DateUtils.formatDateTime(orderItem.getSubmitTime()));
             list.add(lyStatement);
         }
         return list;
@@ -301,7 +301,6 @@ public class LiangYouBiz implements ILiangYouBiz {
                 continue;
             }
             orderItem.setSupplierOrderCode(supplierOrderInfo.getSupplierOrderCode());
-            orderItem.setSubmitTime(supplierOrderInfo.getCreateTime());
         }
         return orderItemList;
     }
