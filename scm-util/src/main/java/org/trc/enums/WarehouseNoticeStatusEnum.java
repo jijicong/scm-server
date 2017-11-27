@@ -16,9 +16,12 @@ public enum WarehouseNoticeStatusEnum {
 
 	WAREHOUSE_NOTICE_RECEIVE("0","待通知收货"),
 	ON_WAREHOUSE_TICKLING("1","待仓库反馈"),
-	ALL_GOODS("2","全部收货"),
-	RECEIVE_GOODS_EXCEPTION("3","收货异常"),
-	CANCELLATION("4","作废");
+	RECEIVE_FAILED("2","仓库接收失败"),
+	ALL_GOODS("3","全部收货"),
+	RECEIVE_GOODS_EXCEPTION("4","收货异常"),
+	PART_OF_THE_RECEIPT("5","部分收货"),
+	CANCELLATION("6","作废"),
+	CANCELLED("7","已取消");
 
 	private String code;
 	private String name;
