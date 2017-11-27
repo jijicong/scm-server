@@ -25,6 +25,7 @@ import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
@@ -554,7 +555,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(purchaseOrder.getCurrencyType(),"币值不能为空!");
         AssertUtil.notBlank(purchaseOrder.getPurchasePersonId(),"采购人不能为空!");
         AssertUtil.notBlank(purchaseOrder.getReceiveAddress(),"收货地址不能为空!");
-        AssertUtil.notBlank(purchaseOrder.getWarehouseCode(),"收货仓库不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getWarehouseInfoId(),"收货仓库不能为空!");
         AssertUtil.notBlank(purchaseOrder.getTransportFeeDestId(),"运输费用承担方不能为空!");
         AssertUtil.notBlank(purchaseOrder.getRequriedReceiveDate(),"要求到货日期不能为空!");
         AssertUtil.notBlank(purchaseOrder.getEndReceiveDate(),"截止到货日期不能为空!");
@@ -1134,7 +1135,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Object obj = aclUserAccreditInfo.getUserId();
         AssertUtil.notNull(obj,"您的用户信息为空");
         warehouseNotice.setCreateOperator((String) obj);
-        assignmentWarehouseNotice(order,warehouseNotice);
+
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setId(Long.parseLong(purchaseOrder.getWarehouseInfoId()));
+        warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(purchaseOrder.getSupplierCode());
+        supplier  = supplierService.selectOne(supplier);
+
+        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo, supplier);
         int count = iWarehouseNoticeService.insert(warehouseNotice);
         if(count == 0){
             String msg = "保存入库通知单数据库操作失败";
@@ -1195,6 +1205,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             //details.setCreateTime(Calendar.getInstance().getTime());
             details.setPurchasePrice(purchaseDetail.getPurchasePrice());//采购价格
             //details.setStorageTime(details.getCreateTime());
+            details.setBarCode(purchaseDetail.getBarCode());
+            details.setSpecInfo(purchaseDetail.getSpecNatureInfo());
+            details.setBatchNo(purchaseDetail.getBatchCode());
+            details.setProductionCode(purchaseDetail.getProduceCode());
+            //--details.setProductionDate(purchaseDetail.getProductDate());
+            //--details.setExpiredDate(purchaseDetail.getExpireDate());
+            details.setExpiredDay(purchaseDetail.getShelfLifeDays());
+            //--details.setSkuStockId();
+            details.setPurchaseAmount(purchaseDetail.getPurchasingQuantity() * purchaseDetail.getPurchasePrice());
+            //--details.setStatus();
+            //--details.setOwnerCode();
+            details.setItemId(purchaseDetail.getWarehouseItemId());
+
             warehouseNoticeDetails.add(details);
         }
         int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
@@ -1208,7 +1231,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     /**赋值入库通知单
      */
-    private void assignmentWarehouseNotice(PurchaseOrder order,WarehouseNotice warehouseNotice){
+    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo, Supplier supplier){
         //'入库通知单编号',流水的长度为5,前缀为CGRKTZ,加时间
         String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         warehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
@@ -1229,6 +1252,21 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setRemark("新增入库通知单");
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
+
+        warehouseNotice.setChannelCode(order.getChannelCode());
+        warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
+        warehouseNotice.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
+        warehouseNotice.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        warehouseNotice.setSender(order.getSender());
+        warehouseNotice.setReceiverNumber(order.getReceiverNumber());
+        warehouseNotice.setReceiver(order.getReceiver());
+        warehouseNotice.setSenderProvince(order.getSenderProvince());
+        warehouseNotice.setSenderCity(order.getSenderCity());
+        warehouseNotice.setSenderAddress(order.getSenderAddress());
+        warehouseNotice.setSenderNumber(order.getSenderNumber());
+        warehouseNotice.setReceiverProvince(supplier.getProvince());
+        warehouseNotice.setSenderCity(supplier.getCity());
+        warehouseNotice.setReceiverAddress(supplier.getAddress());
     }
 
     @Override

@@ -40,15 +40,15 @@
             parameterType="java.util.Map">
         SELECT bssi.spu_code AS spuCode, bssi.sku_code AS skuCode,bssi.sku_name AS skuName,bssi.brand_id AS
         brandId,bssi.category_id AS categoryId,bssi.brand_name AS brandName,c.name AS categoryName,bssi.bar_code AS
-        barCode,bssi.item_no AS itemNo,bssi.spec_nature_info AS specNatureInfo,bssi.warehouseItemInfoId
+        barCode,bssi.item_no AS itemNo,bssi.spec_nature_info AS specNatureInfo,bssi.warehouseItemInfoId,bssi.warehouse_item_id AS warehouseItemId
         FROM category c
         RIGHT JOIN (
             SELECT ssi.spu_code , ssi.sku_code,ssi.sku_name,ssi.brand_id,ssi.category_id,b.name AS brand_name,ssi.bar_code,
-            ssi.item_no,ssi.spec_nature_info,ssi.warehouseItemInfoId
+            ssi.item_no,ssi.spec_nature_info,ssi.warehouseItemInfoId,ssi.warehouse_item_id
             FROM brand b
             INNER JOIN(
                 SELECT skus.sku_code,skus.sku_name,si.brand_id ,si.category_id,si.spu_code,info.bar_code,info.item_no,
-                info.spec_nature_info,info.warehouseItemInfoId
+                info.spec_nature_info,info.warehouseItemInfoId,info.warehouse_item_id
                 FROM skus skus
                 RIGHT JOIN (
                     SELECT i.spu_code, i.brand_id, s.category_id
@@ -65,7 +65,7 @@
                 ON
                     si.spu_code = skus.spu_code
                 RIGHT JOIN (
-                    SELECT iteminfo.sku_code, iteminfo.bar_code, iteminfo.item_no, iteminfo.spec_nature_info,iteminfo.id AS warehouseItemInfoId
+                    SELECT iteminfo.sku_code, iteminfo.bar_code, iteminfo.item_no, iteminfo.spec_nature_info,iteminfo.id AS warehouseItemInfoId, iteminfo.warehouse_item_id
                     FROM warehouse_item_info iteminfo
                     WHERE
                         iteminfo.warehouse_info_id = #{warehouseInfoId}

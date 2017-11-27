@@ -67,7 +67,7 @@ public class WarehouseNoticeDetails {
     //理论保质期限（天）
     private Integer expiredDay;
     //采购总金额, 单位/分
-    private Integer purchaseAmount;
+    private Long purchaseAmount;
     //收货状态
     private Integer status;
     //正品入库数量
@@ -78,6 +78,8 @@ public class WarehouseNoticeDetails {
     private String ownerCode;
     //第三方仓库商品ID
     private String itemId;
+    //库存ID
+    private Long skuStockId;
 
     public String getOwnerCode() {
         return ownerCode;
@@ -151,11 +153,11 @@ public class WarehouseNoticeDetails {
         this.expiredDay = expiredDay;
     }
 
-    public Integer getPurchaseAmount() {
+    public Long getPurchaseAmount() {
         return purchaseAmount;
     }
 
-    public void setPurchaseAmount(Integer purchaseAmount) {
+    public void setPurchaseAmount(Long purchaseAmount) {
         this.purchaseAmount = purchaseAmount;
     }
 
@@ -293,5 +295,13 @@ public class WarehouseNoticeDetails {
 
     public void setStorageTime(Date storageTime) {
         this.storageTime = storageTime;
+    }
+
+    public Long getSkuStockId() {
+        return skuStockId;
+    }
+
+    public void setSkuStockId(Long skuStockId) {
+        this.skuStockId = skuStockId;
     }
 }

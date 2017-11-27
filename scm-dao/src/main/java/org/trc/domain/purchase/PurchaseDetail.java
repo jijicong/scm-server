@@ -88,6 +88,8 @@ public class PurchaseDetail extends BaseDO{
     private Long warehouseItemInfoId;//仓库商品信息主键
     @FormParam("specNatureInfo")
     private String specNatureInfo;//规格
+    @FormParam("warehouseItemId")
+    private String warehouseItemId;
     @Transient
     private BigDecimal totalPurchaseAmountD;
 
@@ -291,6 +293,14 @@ public class PurchaseDetail extends BaseDO{
 
     public void setWarehouseItemInfoId(Long warehouseItemInfoId) {
         this.warehouseItemInfoId = warehouseItemInfoId;
+    }
+
+    public String getWarehouseItemId() {
+        return warehouseItemId;
+    }
+
+    public void setWarehouseItemId(String warehouseItemId) {
+        this.warehouseItemId = warehouseItemId;
     }
 }
 
