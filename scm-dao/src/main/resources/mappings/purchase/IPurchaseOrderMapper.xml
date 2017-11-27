@@ -83,6 +83,14 @@
                         AND skus.sku_name LIKE CONCAT('%', #{skuName}, '%')
                     </if>
 
+                    <if test="barCode != null and barCode != ''">
+                        AND info.bar_code LIKE CONCAT('%', #{barCode}, '%')
+                    </if>
+
+                    <if test="itemNo != null and itemNo != ''">
+                        AND info.item_no LIKE CONCAT('%', #{itemNo}, '%')
+                    </if>
+
                     <if test="skuTemp != null and skuTemp !=''">
                         AND skus.sku_code NOT IN
                         <foreach collection="arrSkus" index="index" item="item" close=")" open="(" separator=",">
