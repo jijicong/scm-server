@@ -120,6 +120,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             log.info("一个奇门仓库编号取到多条数据");
         }
         Warehouse warehouse = list.get(0);
+        if (warehouse.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())){
+            String msg = "仓库已停用";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
         WarehouseInfo warehouseInfo = new WarehouseInfo();
         warehouseInfo.setWarehouseName(warehouse.getName());
         warehouseInfo.setType(warehouse.getWarehouseTypeCode());
@@ -249,8 +254,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             result.setIsDelete(convertDeleteState(warehouseInfo));
             result.setOwnerId(warehouseInfo.getChannelCode());
             result.setOwnerName(warehouseInfo.getOwnerName());
-            result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
-            result.setRemark(warehouseInfo.getRemark());
+            result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId()==null?"":warehouseInfo.getWarehouseOwnerId());
+            result.setRemark(warehouseInfo.getRemark()==null?"":warehouseInfo.getRemark());
             newList.add(result);
         }
 
