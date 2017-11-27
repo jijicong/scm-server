@@ -27,7 +27,7 @@ public class QimenResource {
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces(MediaType.APPLICATION_XML)
-    public Response confirmInvoice(EntryorderConfirmRequest confirmRequest, @Context HttpRequest request) throws Exception{
+    public Response confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest, @Context HttpRequest request) throws Exception{
         logger.info(JSON.toJSONString(confirmRequest.getEntryOrder()));
         logger.info(JSON.toJSONString(confirmRequest.getItems()));
         logger.info(JSON.toJSONString(confirmRequest.getApiMethodName()));
