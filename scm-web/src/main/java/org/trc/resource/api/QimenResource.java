@@ -29,7 +29,7 @@ public class QimenResource {
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces(MediaType.APPLICATION_JSON)
     public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest, @Context HttpRequest request) throws Exception{
-        logger.info(JSON.toJSONString(confirmRequest));
+        logger.info(JSON.toJSONString(confirmRequest.getEntryOrder()));
         logger.info(JSON.toJSONString(request));
         QimenResponse qimenResponse = new QimenResponse() {
             @Override
