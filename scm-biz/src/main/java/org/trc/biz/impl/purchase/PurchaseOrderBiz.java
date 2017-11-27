@@ -18,6 +18,7 @@ import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
+import org.trc.domain.goods.Items;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
@@ -33,6 +34,7 @@ import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.impl.goods.ItemsService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierBrandService;
@@ -89,6 +91,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ISupplierBrandService iSupplierBrandService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private ItemsService itemsService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -385,7 +389,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         List<WarehouseInfo> warehouseInfoList = purchaseOrderService.findWarehousesByChannelCode(channelCode);
         if(warehouseInfoList==null || warehouseInfoList.size() < 1){
             String msg = "无数据，请确认【系统管理-仓库管理】中存在“启用”状态的仓库！";
-            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, msg);
+            LOGGER.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
 
         //校验仓库是否已通知
@@ -396,11 +401,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 warehouseInfoList2.add(info);
             }
         }
-        if(warehouseInfoList2.size() > 0){
-            ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList2);
+        if(warehouseInfoList2.size() < 1){
+            String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
+            LOGGER.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        String msg2 = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
-        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg2, msg2);
+        return ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList2);
     }
 
     //保存采购单
@@ -593,11 +599,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page, String skus)  {
+        //校验商品
+        this.checkItems(supplierCode);
+
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         AssertUtil.notBlank(supplierCode,"根据供应商查询商品信息,供应商编码为空" );
         map.put(SUPPLIER_CODE,supplierCode);
-        map.put("name", form.getName());
+        map.put("skuName", form.getSkuName());
         if(StringUtils.isBlank(skus)){
             map.put("skuTemp",null);
         } else {
@@ -606,12 +615,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         map.put("skuCode", form.getSkuCode());
         map.put("brandName", form.getBrandName());
+        map.put("barCode", form.getBarCode());
+        map.put("itemNo", form.getItemNo());
 
         List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         if(purchaseDetailList.size() == 0){
-            page.setTotalCount(0);
-            page.setResult(purchaseDetailList);
-            return  page;
+            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
@@ -634,6 +645,36 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         return page;
 
+    }
+
+    private void checkItems(String supplierCode){
+        Example example = new Example(Items.class);
+        int count = itemsService.selectCountByExample(example);
+        if(count < 1){
+            String msg = "无数据，请确认【商品管理】中存在商品类型为”自采“的商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
+
+        example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+        count = itemsService.selectCountByExample(example);
+        if(count < 1){
+            String msg = "无数据，请确认【商品管理】中存在“启用”状态的自采商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        AssertUtil.notBlank(supplierCode,"根据供应商查询商品信息,供应商编码为空" );
+        map.put(SUPPLIER_CODE,supplierCode);
+        int count2 = purchaseOrderService.selectCountItemsForSupplier(map);
+        if(count2 < 1){
+            String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
     }
 
     @Override
@@ -1073,7 +1114,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setBrandId(purchaseDetail.getBrandId());
             details.setCategoryId(purchaseDetail.getCategoryId());
             details.setSkuCode(purchaseDetail.getSkuCode());
-            details.setSkuName(purchaseDetail.getItemName());
+            details.setSkuName(purchaseDetail.getSkuName());
             //details.setActualStorageQuantity(0L);//初始化0
             details.setPurchasingQuantity(purchaseDetail.getPurchasingQuantity());
             //details.setCreateTime(Calendar.getInstance().getTime());

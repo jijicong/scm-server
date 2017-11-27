@@ -49,4 +49,10 @@ public class PurchaseOrderService extends BaseService<PurchaseOrder,Long> implem
         return purchaseOrderMapper.findWarehousesByChannelCode(channelCode);
     }
 
+    @Override
+    public int selectCountItemsForSupplier(Map<String, Object> map) {
+        return purchaseOrderMapper.selectCountItemsForSupplier(map);
+    }
+
+
 }
