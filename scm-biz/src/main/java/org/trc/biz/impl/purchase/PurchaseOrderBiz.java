@@ -19,6 +19,7 @@ import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
@@ -34,6 +35,7 @@ import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.ItemsService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
@@ -93,6 +95,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private ItemsService itemsService;
+    @Autowired
+    private ISkusService skusService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -556,6 +560,22 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         BigDecimal totalPrice = new BigDecimal(0);
 
         for (PurchaseDetail purchaseDetail : purchaseDetailList) {
+            String skuCode = purchaseDetail.getSkuCode();
+            if(skuCode == null){
+                String msg = "采购商品保存,数据错误";
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            }
+            Skus skus = new Skus();
+            skus.setSkuCode(skuCode);
+            skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            skus = skusService.selectOne(skus);
+            if(ZeroToNineEnum.ZERO.getCode().equals(skus.getIsValid())){
+                String msg = String.format("商品%s已被停用，请先删除！", skuCode);
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            }
+
             if(purchaseDetail.getTotalPurchaseAmountD() != null){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
                 BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
