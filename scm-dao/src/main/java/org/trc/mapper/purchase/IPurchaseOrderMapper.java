@@ -30,4 +30,6 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
 
 
     List<WarehouseInfo> findWarehousesByChannelCode(String channelCode);
+
+    int selectCountItemsForSupplier(Map<String, Object> map);
 }

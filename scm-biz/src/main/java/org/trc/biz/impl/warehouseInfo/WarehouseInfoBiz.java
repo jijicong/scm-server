@@ -300,6 +300,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         AssertUtil.notNull(id, "仓库商品信息ID不能为空");
         WarehouseItemInfo tmp = new WarehouseItemInfo();
         tmp.setId(id);
+        tmp = warehouseItemInfoService.selectOne(tmp);
+        if(tmp.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.THREE.getCode()) ||
+                tmp.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.FOUR.getCode())){
+            String msg = "只有当通知为“待通知”、“通知失败”、“取消通知”时才允许删除";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
         tmp.setIsDelete(Integer.valueOf(ZeroToNineEnum.ONE.getCode()));
         tmp.setUpdateTime(Calendar.getInstance().getTime());
         int count = warehouseItemInfoService.updateByPrimaryKeySelective(tmp);

@@ -10,11 +10,11 @@ import javax.ws.rs.QueryParam;
  */
 public class ItemForm extends QueryModel{
     /**
-     * 商品名称
+     * sku名称
      */
-    @QueryParam("name")
+    @QueryParam("skuName")
     @Length(max = 128)
-    private String name;
+    private String skuName;
     /**
      * 商品SKU-CODE
      */
@@ -22,19 +22,24 @@ public class ItemForm extends QueryModel{
     @Length(max = 32)
     private String skuCode;
     /**
-     * 商品SKU-CODE
+     * 品牌名称
      */
     @QueryParam("brandName")
     @Length(max = 256)
     private String brandName;
+    /**
+     * 货号
+     */
+    @QueryParam("itemNo")
+    @Length(max = 32)
+    private String itemNo;
+    /**
+     * 条形码
+     */
+    @QueryParam("barCode")
+    @Length(max = 64)
+    private String barCode;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getSkuCode() {
         return skuCode;
@@ -50,5 +55,40 @@ public class ItemForm extends QueryModel{
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
+    }
+
+    public String getItemNo() {
+        return itemNo;
+    }
+
+    public void setItemNo(String itemNo) {
+        this.itemNo = itemNo;
+    }
+
+    public String getBarCode() {
+        return barCode;
+    }
+
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemForm{" +
+                "skuName='" + skuName + '\'' +
+                ", skuCode='" + skuCode + '\'' +
+                ", brandName='" + brandName + '\'' +
+                ", itemNo='" + itemNo + '\'' +
+                ", barCode='" + barCode + '\'' +
+                '}';
     }
 }

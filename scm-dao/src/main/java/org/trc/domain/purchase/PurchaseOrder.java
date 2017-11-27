@@ -57,8 +57,6 @@ public class PurchaseOrder extends BaseDO{
      private String purchaseGroupName;
      @FormParam("warehouseId")
      private Long warehouseId;
-     @Transient
-     private String warehouseName;
      @FormParam("currencyType")
      private String currencyType;
     @Transient
@@ -105,6 +103,32 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("abnormalRemark")
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
      private String abnormalRemark;//入库异常说明*/
+    @FormParam("receiver")
+    @NotEmpty
+    private String receiver;//收货人
+    @FormParam("warehouseInfoId")
+    private String warehouseInfoId;//仓库信息主键
+    @FormParam("warehouseName")
+    @NotEmpty
+    private String warehouseName;//仓库名称
+    @FormParam("receiverNumber")
+    @NotEmpty
+    private String receiverNumber;//收货人手机
+    @FormParam("sender")
+    @NotEmpty
+    private String sender;//发件人
+    @FormParam("senderProvince")
+    @NotEmpty
+    private String senderProvince;//发件所在省
+    @FormParam("senderCity")
+    @NotEmpty
+    private String senderCity;//发件所在城市
+    @FormParam("senderNumber")
+    @NotEmpty
+    private String senderNumber;//发件人手机
+    @FormParam("senderAddress")
+    @NotEmpty
+    private String senderAddress;//发件方详细地址
 
     public String getHandlerPriorityName() {
         return handlerPriorityName;
@@ -176,14 +200,6 @@ public class PurchaseOrder extends BaseDO{
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
-    }
-
-    public String getWarehouseName() {
-        return warehouseName;
-    }
-
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
     }
 
     public String getCurrencyType() {
@@ -411,4 +427,75 @@ public class PurchaseOrder extends BaseDO{
         this.supplierName = supplierName;
     }
 
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    public String getWarehouseInfoId() {
+        return warehouseInfoId;
+    }
+
+    public void setWarehouseInfoId(String warehouseInfoId) {
+        this.warehouseInfoId = warehouseInfoId;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getReceiverNumber() {
+        return receiverNumber;
+    }
+
+    public void setReceiverNumber(String receiverNumber) {
+        this.receiverNumber = receiverNumber;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getSenderProvince() {
+        return senderProvince;
+    }
+
+    public void setSenderProvince(String senderProvince) {
+        this.senderProvince = senderProvince;
+    }
+
+    public String getSenderCity() {
+        return senderCity;
+    }
+
+    public void setSenderCity(String senderCity) {
+        this.senderCity = senderCity;
+    }
+
+    public String getSenderNumber() {
+        return senderNumber;
+    }
+
+    public void setSenderNumber(String senderNumber) {
+        this.senderNumber = senderNumber;
+    }
+
+    public String getSenderAddress() {
+        return senderAddress;
+    }
+
+    public void setSenderAddress(String senderAddress) {
+        this.senderAddress = senderAddress;
+    }
 }
