@@ -112,6 +112,7 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("receiverNumber")
     private String receiverNumber;//收货人手机
     @FormParam("sender")
+    @Length(max = 50, message = "发件人字母和数字不能超过50个")
     private String sender;//发件人
     @FormParam("senderProvince")
     private String senderProvince;//发件所在省
@@ -120,6 +121,7 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("senderNumber")
     private String senderNumber;//发件人手机
     @FormParam("senderAddress")
+    @Length(max = 100, message = "发件方详细地址字母和数字不能超过100个")
     private String senderAddress;//发件方详细地址
 
     public String getHandlerPriorityName() {

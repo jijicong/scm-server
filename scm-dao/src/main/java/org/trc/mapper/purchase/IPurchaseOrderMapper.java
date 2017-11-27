@@ -28,8 +28,5 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
      */
     List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
-
-    List<WarehouseInfo> findWarehousesByChannelCode(String channelCode);
-
     int selectCountItemsForSupplier(Map<String, Object> map);
 }
