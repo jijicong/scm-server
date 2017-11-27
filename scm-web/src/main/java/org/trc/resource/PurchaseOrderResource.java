@@ -180,7 +180,9 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findWarehouses(@Context ContainerRequestContext requestContext)  {
-        String channelCode = (String)requestContext.getProperty(SupplyConstants.Authorization.CHANNEL_CODE);
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo)requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        String channelCode = aclUserAccreditInfo.getChannelCode();
         return purchaseOrderBiz.findWarehousesByChannelCode(channelCode);
     }
+
 }

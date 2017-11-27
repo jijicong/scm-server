@@ -390,27 +390,29 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //获取已启用仓库信息
-        List<WarehouseInfo> warehouseInfoList = purchaseOrderService.findWarehousesByChannelCode(channelCode);
-        if(warehouseInfoList==null || warehouseInfoList.size() < 1){
+        Warehouse warehouse = new Warehouse();
+        warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
+        warehouse.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<Warehouse> warehouseList = warehouseService.select(warehouse);
+
+        if(warehouseList==null || warehouseList.size() < 1){
             String msg = "无数据，请确认【系统管理-仓库管理】中存在“启用”状态的仓库！";
             LOGGER.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
 
         //校验仓库是否已通知
-        List<WarehouseInfo> warehouseInfoList2 = new ArrayList<>();
-        for(WarehouseInfo info : warehouseInfoList){
-            if(StringUtils.isNoneEmpty(info.getOwnerWarehouseState()) &&
-                    ZeroToNineEnum.ONE.getCode().equals(info.getOwnerWarehouseState())){
-                warehouseInfoList2.add(info);
-            }
-        }
-        if(warehouseInfoList2.size() < 1){
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        warehouseInfo.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        warehouseInfo.setChannelCode(channelCode);
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+        if(warehouseInfoList == null || warehouseInfoList.size() < 1){
             String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
             LOGGER.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        return ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList2);
+        return ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList);
     }
 
     //保存采购单
