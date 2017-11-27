@@ -114,6 +114,11 @@ public class OrderItem implements Serializable {
     @Length(max = 32)
     private String channelCode;
 
+    // 销售渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
+
     // 来源平台编码
     @NotEmpty
     @Length(max = 32)
@@ -1401,4 +1406,12 @@ public class OrderItem implements Serializable {
     public void setSubmitTime(Date submitTime) {
         this.submitTime = submitTime;
     }
+
+    /*public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }
