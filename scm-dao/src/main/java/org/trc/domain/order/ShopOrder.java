@@ -77,6 +77,11 @@ public class ShopOrder extends OrderBase {
     @Length(max = 32)
     private String channelCode;
 
+    // 销售渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
+
     // 来源平台编码
     @NotEmpty
     @Length(max = 32)
@@ -774,4 +779,12 @@ public class ShopOrder extends OrderBase {
     public void setSupplierOrderStatus(String supplierOrderStatus) {
         this.supplierOrderStatus = supplierOrderStatus;
     }
+
+    /*public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }

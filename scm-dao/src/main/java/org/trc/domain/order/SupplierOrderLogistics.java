@@ -1,5 +1,7 @@
 package org.trc.domain.order;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
 
 import javax.persistence.GeneratedValue;
@@ -42,6 +44,16 @@ public class SupplierOrderLogistics extends ScmDO{
     private String type;
 
     private String logisticsStatus;
+
+    // 渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String channelCode;
+
+    // 销售渠道编码
+    @NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
 
     public Long getId() {
         return id;
@@ -130,4 +142,20 @@ public class SupplierOrderLogistics extends ScmDO{
     public void setSkus(String skus) {
         this.skus = skus;
     }
+
+    /*public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }

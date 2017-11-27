@@ -120,6 +120,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             log.info("一个奇门仓库编号取到多条数据");
         }
         Warehouse warehouse = list.get(0);
+        if (warehouse.getIsValid().equals(ZeroToNineEnum.ZERO.getCode())){
+            String msg = "仓库已停用";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
         WarehouseInfo warehouseInfo = new WarehouseInfo();
         warehouseInfo.setWarehouseName(warehouse.getName());
         warehouseInfo.setType(warehouse.getWarehouseTypeCode());
@@ -154,6 +159,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             Example example1 = new Example(WarehouseInfo.class);
             Example.Criteria criteria1 = example1.createCriteria();
             criteria1.andEqualTo("code",warehouse.getCode());
+            criteria1.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
             warehouseInfoService.updateByExampleSelective(warehouseInfo,example1);
             return ResultUtil.createSuccessResult("保存仓库成功","success");
         }
@@ -249,8 +255,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             result.setIsDelete(convertDeleteState(warehouseInfo));
             result.setOwnerId(warehouseInfo.getChannelCode());
             result.setOwnerName(warehouseInfo.getOwnerName());
-            result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
-            result.setRemark(warehouseInfo.getRemark());
+            result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId()==null?"":warehouseInfo.getWarehouseOwnerId());
+            result.setRemark(warehouseInfo.getRemark()==null?"":warehouseInfo.getRemark());
             newList.add(result);
         }
 
@@ -440,8 +446,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 list3.add(sku);
             }
         }
-        AssertUtil.isTrue(list2.size()==0,"商品名称不能为空，如下skuName名称为空"+list2);
-        AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空，如下skuCode名称为空"+list3);
+        AssertUtil.isTrue(list2.size()==0,"商品名称不能为空");
+        AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空");
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);

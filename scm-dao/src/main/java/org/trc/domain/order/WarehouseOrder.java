@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
@@ -44,6 +46,11 @@ public class WarehouseOrder implements Serializable {
 
     // 渠道编码
     private String channelCode;
+
+    // 销售渠道编码
+    /*@NotEmpty
+    @Length(max = 32)
+    private String sellCode;*/
 
     // 来源平台编码
     private String platformCode;
@@ -644,4 +651,12 @@ public class WarehouseOrder implements Serializable {
     public void setHandCancelTime(Date handCancelTime) {
         this.handCancelTime = handCancelTime;
     }
+
+    /*public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }*/
 }

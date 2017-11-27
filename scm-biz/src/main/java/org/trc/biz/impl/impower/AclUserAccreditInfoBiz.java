@@ -395,6 +395,17 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
             LOGGER.error("业务线关联信息输入错误!",e);
         }
         AssertUtil.notEmpty(channelSelectMsgList,"业务线关联错误!");
+        boolean isFlag = false;
+        for (ChannelSelectMsg selectMsg : channelSelectMsgList) {
+            if (StringUtils.isBlank(selectMsg.getChannelName())||StringUtils.isBlank(selectMsg.getChannelCode())){
+                isFlag = true;
+            }
+        }
+        if (isFlag){
+            String msg ="请确认您是否选中了销售渠道却未选择业务线!";
+            LOGGER.error(msg);
+            throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACL_EXCEPTION, msg);
+        }
         if (!AssertUtil.collectionIsEmpty(channelSelectMsgList)) {
             List<String> noSelectSellName = new ArrayList<>();
             for (ChannelSelectMsg channelSelectMsg : channelSelectMsgList) {
@@ -427,7 +438,11 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                     noSelectSellName.add( channelSelectMsg.getChannelName());
                 }
             }
-           AssertUtil.isNull(noSelectSellName,"业务线["+StringUtils.join(noSelectSellName,SupplyConstants.Symbol.COMMA)+"]未选择销售渠道!");
+            if (!AssertUtil.collectionIsEmpty(noSelectSellName)){
+                String msg ="业务线["+StringUtils.join(noSelectSellName,SupplyConstants.Symbol.COMMA)+"]未选择销售渠道!";
+                LOGGER.error(msg);
+                throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACL_EXCEPTION, msg);
+            }
         }
 
         return aclUserChannelSellList;
