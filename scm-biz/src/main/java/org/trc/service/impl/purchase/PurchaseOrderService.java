@@ -45,11 +45,6 @@ public class PurchaseOrderService extends BaseService<PurchaseOrder,Long> implem
     }
 
     @Override
-    public List<WarehouseInfo> findWarehousesByChannelCode(String channelCode) {
-        return purchaseOrderMapper.findWarehousesByChannelCode(channelCode);
-    }
-
-    @Override
     public int selectCountItemsForSupplier(Map<String, Object> map) {
         return purchaseOrderMapper.selectCountItemsForSupplier(map);
     }

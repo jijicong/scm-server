@@ -185,4 +185,11 @@ public class PurchaseOrderResource {
         return purchaseOrderBiz.findWarehousesByChannelCode(channelCode);
     }
 
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_ITEM)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findAllPurchaseDetail(@BeanParam PurchaseOrder purchaseOrder, @BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
+        return ResultUtil.createSuccessPageResult(purchaseOrderBiz.findPurchaseDetail(purchaseOrder,form,page,skus));
+    }
+
 }

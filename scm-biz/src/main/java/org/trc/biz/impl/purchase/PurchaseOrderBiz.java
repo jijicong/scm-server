@@ -104,6 +104,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     private final static String SUPPLIER_CODE = "supplierCode";
 
+    private final static String WAREHOUSE_INFO_ID = "warehouseInfoId";
+
     private final static String SKU = "sku";
 
     private final static String CGRKTZ="CGRKTZ";
@@ -415,6 +417,60 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         return ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public Pagenation<PurchaseDetail> findPurchaseDetail(PurchaseOrder purchaseOrder,ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
+        String supplierCode = purchaseOrder.getSupplierCode();
+        String warehouseInfoId = purchaseOrder.getWarehouseInfoId();
+        //校验商品
+        this.checkItems(supplierCode);
+        AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
+        AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
+
+        PageHelper.startPage(page.getPageNo(), page.getPageSize());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(SUPPLIER_CODE, supplierCode);
+        map.put(WAREHOUSE_INFO_ID, warehouseInfoId);
+        map.put("skuName", form.getSkuName());
+        if(StringUtils.isBlank(skus)){
+            map.put("skuTemp",null);
+        } else {
+            map.put("skuTemp",SKU);
+            map.put("arrSkus", skus.split(","));
+        }
+        map.put("skuCode", form.getSkuCode());
+        map.put("brandName", form.getBrandName());
+        map.put("barCode", form.getBarCode());
+        map.put("itemNo", form.getItemNo());
+
+        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        if(purchaseDetailList.size() == 0){
+            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
+        List<Long> categoryIds = new ArrayList<>();
+        //获得所有分类的id 拼接，并且显示name的拼接--brand
+        for (PurchaseDetail purchaseDetail: purchaseDetailList){
+            categoryIds.add(purchaseDetail.getCategoryId());
+        }
+        List<PurchaseDetail> temp = purchaseOrderService.selectAllCategory(categoryIds);
+        //categoryId    allCategoryName    allCategory >>>>>>分类全路径赋值
+        for (PurchaseDetail purchaseDetailTmp: temp) {
+            for (PurchaseDetail purchaseDetail:purchaseDetailList) {
+                if(purchaseDetailTmp.getCategoryId().equals(purchaseDetail.getCategoryId())){
+                    purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
+                    purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
+                }
+            }
+        }
+        int count = purchaseOrderService.selectCountItems(map);
+        page.setTotalCount(count);
+        page.setResult(purchaseDetailList);
+
+        return page;
+    }
+
     //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -621,9 +677,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page, String skus)  {
-        //校验商品
-        this.checkItems(supplierCode);
-
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
         AssertUtil.notBlank(supplierCode,"根据供应商查询商品信息,供应商编码为空" );

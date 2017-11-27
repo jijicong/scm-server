@@ -27,8 +27,6 @@ public interface IPurchaseOrderService extends IBaseService<PurchaseOrder,Long>{
       */
      List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
-     List<WarehouseInfo> findWarehousesByChannelCode(String channelCode);
-
      int selectCountItemsForSupplier(Map<String, Object> map);
 
 }
