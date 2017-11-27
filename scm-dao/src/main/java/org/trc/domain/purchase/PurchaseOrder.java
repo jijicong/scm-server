@@ -104,30 +104,22 @@ public class PurchaseOrder extends BaseDO{
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
      private String abnormalRemark;//入库异常说明*/
     @FormParam("receiver")
-    @NotEmpty
     private String receiver;//收货人
     @FormParam("warehouseInfoId")
     private String warehouseInfoId;//仓库信息主键
     @FormParam("warehouseName")
-    @NotEmpty
     private String warehouseName;//仓库名称
     @FormParam("receiverNumber")
-    @NotEmpty
     private String receiverNumber;//收货人手机
     @FormParam("sender")
-    @NotEmpty
     private String sender;//发件人
     @FormParam("senderProvince")
-    @NotEmpty
     private String senderProvince;//发件所在省
     @FormParam("senderCity")
-    @NotEmpty
     private String senderCity;//发件所在城市
     @FormParam("senderNumber")
-    @NotEmpty
     private String senderNumber;//发件人手机
     @FormParam("senderAddress")
-    @NotEmpty
     private String senderAddress;//发件方详细地址
 
     public String getHandlerPriorityName() {
