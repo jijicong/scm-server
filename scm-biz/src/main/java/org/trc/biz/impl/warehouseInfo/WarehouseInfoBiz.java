@@ -159,6 +159,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             Example example1 = new Example(WarehouseInfo.class);
             Example.Criteria criteria1 = example1.createCriteria();
             criteria1.andEqualTo("code",warehouse.getCode());
+            criteria1.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
             warehouseInfoService.updateByExampleSelective(warehouseInfo,example1);
             return ResultUtil.createSuccessResult("保存仓库成功","success");
         }
