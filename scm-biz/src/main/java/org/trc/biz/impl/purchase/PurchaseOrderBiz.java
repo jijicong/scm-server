@@ -25,6 +25,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
+import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
@@ -43,6 +44,7 @@ import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
@@ -101,6 +103,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ISkusService skusService;
     @Autowired
     private ISkuStockService skuStockService;
+    @Autowired
+    private ILocationUtilService locationUtilService;
+
+
 
     private final static String  SERIALNAME = "CGD";
 
@@ -423,9 +429,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Pagenation<PurchaseDetail> findPurchaseDetail(PurchaseOrder purchaseOrder,ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
-        String supplierCode = purchaseOrder.getSupplierCode();
-        String warehouseInfoId = purchaseOrder.getWarehouseInfoId();
+    public Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
+        String supplierCode = form.getSupplierCode();
+        String warehouseInfoId = form.getWarehouseInfoId();
         //校验商品
         this.checkItems(supplierCode);
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
@@ -798,7 +804,27 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
-
+        //更改入库通知单的状态
+        WarehouseNotice warehouseNotice = new WarehouseNotice();
+        warehouseNotice.setPurchaseOrderCode(purchaseOrder.getPurchaseOrderCode());
+        warehouseNotice = iWarehouseNoticeService.selectOne(warehouseNotice);
+        if(warehouseNotice != null && warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode())){
+            //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
+            WarehouseNotice notice = new WarehouseNotice();
+            notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+            notice.setUpdateTime(Calendar.getInstance().getTime());
+            Example example = new Example(WarehouseNotice.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("id",warehouseNotice.getId());
+            criteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+            int num = iWarehouseNoticeService.updateByExampleSelective(notice,example);
+            if (num == 0) {
+                String msg = String.format("作废%s采购单操作失败,入库通知单已经被执行操作", JSON.toJSONString(warehouseNotice));
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+            }
+            logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId,LogOperationEnum.CANCEL.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
+        }
     }
     //采购单逻辑删除
     private void handleDeleted(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo){
@@ -1237,7 +1263,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             details.setSkuStockId(skuStock.getId());
             details.setPurchaseAmount(purchaseDetail.getPurchasingQuantity() * purchaseDetail.getPurchasePrice());
-            details.setStatus(Integer.parseInt(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode()));
+            details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode()));
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
 
@@ -1276,6 +1302,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
 
+
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
         warehouseNotice.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
@@ -1283,12 +1310,24 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setSender(order.getSender());
         warehouseNotice.setReceiverNumber(order.getReceiverNumber());
         warehouseNotice.setReceiver(order.getReceiver());
-        warehouseNotice.setSenderProvince(order.getSenderProvince());
-        warehouseNotice.setSenderCity(order.getSenderCity());
+        Area area =new Area();
+        area.setCode(order.getSenderProvince());
+        area = locationUtilService.selectOne(area);
+        warehouseNotice.setSenderProvince(area.getProvince());
+        area =new Area();
+        area.setCode(order.getSenderCity());
+        area = locationUtilService.selectOne(area);
+        warehouseNotice.setSenderCity(area.getCity());
         warehouseNotice.setSenderAddress(order.getSenderAddress());
         warehouseNotice.setSenderNumber(order.getSenderNumber());
-        warehouseNotice.setReceiverProvince(supplier.getProvince());
-        warehouseNotice.setSenderCity(supplier.getCity());
+        area =new Area();
+        area.setCode(supplier.getProvince());
+        area = locationUtilService.selectOne(area);
+        warehouseNotice.setReceiverProvince(area.getProvince());
+        area =new Area();
+        area.setCode(supplier.getCity());
+        area = locationUtilService.selectOne(area);
+        warehouseNotice.setSenderCity(area.getCity());
         warehouseNotice.setReceiverAddress(supplier.getAddress());
     }
 

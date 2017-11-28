@@ -97,6 +97,6 @@ public interface IPurchaseOrderBiz {
      * 查询可卖商品
      * @return
      */
-    Pagenation<PurchaseDetail> findPurchaseDetail(PurchaseOrder purchaseOrder,ItemForm form,Pagenation<PurchaseDetail> page, String skus) ;
+    Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form,Pagenation<PurchaseDetail> page, String skus) ;
 
 }

@@ -40,6 +40,14 @@ public class ItemForm extends QueryModel{
     @Length(max = 64)
     private String barCode;
 
+    @QueryParam("supplierCode")
+    private String supplierCode;
+
+    @QueryParam("warehouseInfoId")
+    private String warehouseInfoId;
+
+
+
 
     public String getSkuCode() {
         return skuCode;
@@ -79,6 +87,22 @@ public class ItemForm extends QueryModel{
 
     public void setSkuName(String skuName) {
         this.skuName = skuName;
+    }
+
+    public String getSupplierCode() {
+        return supplierCode;
+    }
+
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
+    }
+
+    public String getWarehouseInfoId() {
+        return warehouseInfoId;
+    }
+
+    public void setWarehouseInfoId(String warehouseInfoId) {
+        this.warehouseInfoId = warehouseInfoId;
     }
 
     @Override
