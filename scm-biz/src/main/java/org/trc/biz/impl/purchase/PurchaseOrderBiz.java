@@ -19,13 +19,13 @@ import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.Items;
+import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
@@ -36,6 +36,7 @@ import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.goods.ItemsService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
@@ -98,6 +99,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ItemsService itemsService;
     @Autowired
     private ISkusService skusService;
+    @Autowired
+    private ISkuStockService skuStockService;
 
     private final static String  SERIALNAME = "CGD";
 
@@ -1123,7 +1126,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
-    public void warahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
+    public void warahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(purchaseOrder,"采购单信息为空,保存入库通知单失败");
         AssertUtil.notNull(purchaseOrder.getId(),"采购单的主键为空,保存入库通知单失败");
@@ -1185,14 +1188,18 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(msg);
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
-        insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());
+
+        insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode(), warehouseInfo.getChannelCode(),
+                Long.parseLong(warehouseInfo.getWarehouseId()), warehouseInfo.getWarehouseOwnerId());
 
     }
 
-    private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode){
+    private void insertWarehouseNoticeDetail(List<PurchaseDetail> purchaseDetailList , String warehouseNoticeCode,
+                                             String channelCode, Long warehouseId, String ownerCode){
 
         List<WarehouseNoticeDetails> warehouseNoticeDetails = new ArrayList<WarehouseNoticeDetails>();
-
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SkuStock skuStock = new SkuStock();
         for (PurchaseDetail purchaseDetail: purchaseDetailList) {
             WarehouseNoticeDetails details = new WarehouseNoticeDetails();
             details.setWarehouseNoticeCode(warehouseNoticeCode);
@@ -1209,13 +1216,29 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setSpecInfo(purchaseDetail.getSpecNatureInfo());
             details.setBatchNo(purchaseDetail.getBatchCode());
             details.setProductionCode(purchaseDetail.getProduceCode());
-            //--details.setProductionDate(purchaseDetail.getProductDate());
-            //--details.setExpiredDate(purchaseDetail.getExpireDate());
+            try{
+                details.setProductionDate(sdf.parse(purchaseDetail.getProductDate()));
+                details.setExpiredDate(sdf.parse(purchaseDetail.getExpireDate()));
+            }catch(Exception e){
+                LOGGER.error("格式化时间错误", e);
+            }
             details.setExpiredDay(purchaseDetail.getShelfLifeDays());
-            //--details.setSkuStockId();
+
+            skuStock.setChannelCode(channelCode);
+            skuStock.setWarehouseId(warehouseId);
+            skuStock.setWarehouseItemId(purchaseDetail.getWarehouseItemId());
+            skuStock.setIsValid(ZeroToNineEnum.ONE.getCode());
+            skuStock.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+            skuStock = skuStockService.selectOne(skuStock);
+            if(skuStock == null){
+                String msg = String.format("采购单详情为%s的没有相应库存",purchaseDetail.getWarehouseItemId());
+                LOGGER.error(msg);
+                throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+            }
+            details.setSkuStockId(skuStock.getId());
             details.setPurchaseAmount(purchaseDetail.getPurchasingQuantity() * purchaseDetail.getPurchasePrice());
-            //--details.setStatus();
-            //--details.setOwnerCode();
+            details.setStatus(Integer.parseInt(WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode()));
+            details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
 
             warehouseNoticeDetails.add(details);
