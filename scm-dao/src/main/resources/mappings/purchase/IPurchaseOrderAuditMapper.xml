@@ -16,7 +16,8 @@
         pao.warehouse_code AS warehouseCode,
         pao.requried_receive_date AS requriedReceiveDate,
         pao.end_receive_date AS endReceiveDate,
-        pao.id
+        pao.id,
+        pao.warehouse_info_id AS warehouseInfoId
     FROM
         supplier s
     RIGHT JOIN (
@@ -32,7 +33,8 @@
             po.warehouse_code,
             po.requried_receive_date,
             po.end_receive_date,
-            po.id
+            po.id,
+            po.warehouse_info_id
         FROM
             apply_for_purchase_order ao
         LEFT JOIN purchase_order po ON ao.purchase_order_code = po.purchase_order_code

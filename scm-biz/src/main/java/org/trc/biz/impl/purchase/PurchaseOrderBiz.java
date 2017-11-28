@@ -1169,11 +1169,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseInfo.setId(Long.parseLong(purchaseOrder.getWarehouseInfoId()));
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
 
-        Supplier supplier = new Supplier();
-        supplier.setSupplierCode(purchaseOrder.getSupplierCode());
-        supplier  = supplierService.selectOne(supplier);
+        Warehouse warehouse = new Warehouse();
+        warehouse.setId(purchaseOrder.getWarehouseId());
+        warehouse  = warehouseService.selectOne(warehouse);
 
-        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo, supplier);
+        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo, warehouse);
         int count = iWarehouseNoticeService.insert(warehouseNotice);
         if(count == 0){
             String msg = "保存入库通知单数据库操作失败";
@@ -1254,7 +1254,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             skuStock.setWarehouseId(warehouseId);
             skuStock.setWarehouseItemId(purchaseDetail.getWarehouseItemId());
             skuStock.setIsValid(ZeroToNineEnum.ONE.getCode());
-            skuStock.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+            skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skuStock = skuStockService.selectOne(skuStock);
             if(skuStock == null){
                 String msg = String.format("采购单详情为%s的没有相应库存",purchaseDetail.getWarehouseItemId());
@@ -1280,7 +1280,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     /**赋值入库通知单
      */
-    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo, Supplier supplier){
+    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo, Warehouse warehouse){
         //'入库通知单编号',流水的长度为5,前缀为CGRKTZ,加时间
         String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         warehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
@@ -1313,22 +1313,26 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Area area =new Area();
         area.setCode(order.getSenderProvince());
         area = locationUtilService.selectOne(area);
+        AssertUtil.notNull(area, "发件人所在省为空");
         warehouseNotice.setSenderProvince(area.getProvince());
         area =new Area();
         area.setCode(order.getSenderCity());
         area = locationUtilService.selectOne(area);
+        AssertUtil.notNull(area, "发件人所在城市为空");
         warehouseNotice.setSenderCity(area.getCity());
         warehouseNotice.setSenderAddress(order.getSenderAddress());
         warehouseNotice.setSenderNumber(order.getSenderNumber());
         area =new Area();
-        area.setCode(supplier.getProvince());
+        area.setCode(warehouse.getProvince());
         area = locationUtilService.selectOne(area);
+        AssertUtil.notNull(area, "收件人所在省为空");
         warehouseNotice.setReceiverProvince(area.getProvince());
         area =new Area();
-        area.setCode(supplier.getCity());
+        area.setCode(warehouse.getCity());
         area = locationUtilService.selectOne(area);
-        warehouseNotice.setSenderCity(area.getCity());
-        warehouseNotice.setReceiverAddress(supplier.getAddress());
+        AssertUtil.notNull(area, "收件人所在城市为空");
+        warehouseNotice.setReceiverCity(area.getCity());
+        warehouseNotice.setReceiverAddress(warehouse.getAddress());
     }
 
     @Override
