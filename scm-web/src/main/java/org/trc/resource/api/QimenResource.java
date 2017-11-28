@@ -8,13 +8,19 @@ import com.qimen.api.request.EntryorderConfirmRequest;
 import org.apache.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.form.QimenUrlRequest;
 import org.trc.form.Response;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.InputStream;
+import java.util.Scanner;
 
 
 /**
@@ -26,19 +32,19 @@ import javax.ws.rs.core.MediaType;
 
 public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
+    @Autowired
+    private IWarehouseNoticeBiz warehouseNoticeBiz;
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    public Response confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest, @Context HttpRequest request) throws Exception{
-        logger.info(JSON.toJSONString(confirmRequest.getEntryOrder()));
-        logger.info(JSON.toJSONString(confirmRequest.getItems()));
-        logger.info(JSON.toJSONString(confirmRequest.getApiMethodName()));
-        logger.info(JSON.toJSONString(confirmRequest.getOrderLines()));
-        logger.info(JSON.toJSONString(confirmRequest.getResponseClass()));
-        logger.info(JSON.toJSONString(confirmRequest.getExtendProps()));
-        logger.info(JSON.toJSONString(request));
+    public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest) throws Exception{
 
+        InputStream is= request.getInputStream();
+        Scanner scanner = new Scanner(is, "UTF-8");
+        String requestText = scanner.useDelimiter("\\A").next();
+        scanner.close();
+        warehouseNoticeBiz.updateInStock(requestText);
         Response qimenResponse = new Response() ;
         qimenResponse.setFlag("success");
         qimenResponse.setCode("0");
