@@ -131,8 +131,16 @@ public class ExternalItemSku implements Serializable{
 
     // 详情图
     @FormParam("detailPictrues")
-    @Length(max = 32, message = "商品图片详情长度不能超过32个")
     private String detailPictrues;
+
+    // 商品主图(七牛存储路径)
+    @FormParam("mainPictrue")
+    @Length(max = 256, message = "商品主图长度不能超过256个")
+    private String mainPictrue2;
+
+    //详情图(七牛存储路径)
+    @FormParam("detailPictrues")
+    private String detailPictrues2;
 
     // 详情
     @FormParam("detail")
@@ -479,5 +487,21 @@ public class ExternalItemSku implements Serializable{
 
     public void setMinBuyCount(Integer minBuyCount) {
         this.minBuyCount = minBuyCount;
+    }
+
+    public String getMainPictrue2() {
+        return mainPictrue2;
+    }
+
+    public void setMainPictrue2(String mainPictrue2) {
+        this.mainPictrue2 = mainPictrue2;
+    }
+
+    public String getDetailPictrues2() {
+        return detailPictrues2;
+    }
+
+    public void setDetailPictrues2(String detailPictrues2) {
+        this.detailPictrues2 = detailPictrues2;
     }
 }

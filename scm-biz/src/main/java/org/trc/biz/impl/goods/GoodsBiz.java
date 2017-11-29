@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.impl.supplier.SupplierBiz;
+import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
@@ -30,7 +32,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
-import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -47,12 +48,10 @@ import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
+import org.trc.service.IQinniuService;
 import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
-import org.trc.service.goods.IExternalItemSkuService;
-import org.trc.service.goods.IItemsService;
-import org.trc.service.goods.ISkuStockService;
-import org.trc.service.goods.ISkusService;
+import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
 import org.trc.service.impl.system.WarehouseService;
@@ -67,6 +66,7 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -75,6 +75,9 @@ import java.util.*;
 public class GoodsBiz implements IGoodsBiz {
 
     private Logger  log = LoggerFactory.getLogger(GoodsBiz.class);
+
+    //线程池线程数量
+    private final static int EXECUTOR_SIZE = 10;
 
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
@@ -102,6 +105,10 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String LY_SUPPLIER_CODE = "LY";
     //代发商品名称中替换&符号的字符串
     private static final String AND_QUOT_REPLACE = "__111__222__";
+    //代发商品图片七牛路径
+    public static final String EXTERNAL_QINNIU_PATH = "external/";
+    //京东原图路径
+    public static final String JING_DONG_PIC_N_12 = "n12/";
 
 
     @Autowired
@@ -135,8 +142,6 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private IExternalItemSkuService externalItemSkuService;
     @Autowired
-    private IConfigBiz configBiz;
-    @Autowired
     private IJDService jdService;
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
@@ -152,6 +157,10 @@ public class GoodsBiz implements IGoodsBiz {
     private ISupplierApplyService supplierApplyService;
     @Autowired
     private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private IQinniuBiz qinniuBiz;
+    @Autowired
+    private IExternalPictureService externalPictureService;
 
 
     @Override
@@ -193,7 +202,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-//    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -777,8 +786,7 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
-            skus2.setSkuName(jbo.getString("skuName")); // sku名称 
-            skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
+            skus2.setSkuName(jbo.getString("skuName")); // sku名称
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skus2.setCreateTime(sysTime);
             skus2.setUpdateTime(sysTime);
@@ -1004,12 +1012,11 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setBarCode(jbo.getString("barCode"));
             skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
-            skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
             skus2.setUpdateTime(sysTime);
             skus2.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            skus2.setSkuName(jbo.getString("skuName")); // sku名称 
+            skus2.setSkuName(jbo.getString("skuName")); // sku名称
             if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), jbo.getString("source"))){//新增的数据
                 String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, SupplyConstants.Serial.SKU_NAME,
                         SupplyConstants.Serial.SKU_INNER, DateUtils.dateToCompactString(sysTime));
@@ -1405,8 +1412,6 @@ public class GoodsBiz implements IGoodsBiz {
         return ResultUtil.createSucssAppResult(String.format("%s商品SPU成功", ValidEnum.getValidEnumByCode(_isValid).getName()), "");
     }
 
-
-
     /**
      * 停用自采商品检查是否存在启用的SKU
      * @param spuCode
@@ -1490,47 +1495,11 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> updateSkus = skusService.select(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         updateSkus.add(skus2);
-        //商品SKU启停用通知仓库商品信息
-        itemsUpdateNoticeWarehouseItemInfo(skus2, _isValid);
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
-    }
-
-    private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {
-        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
-        warehouseItemInfo.setSkuCode(skus.getSkuCode());
-        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
-        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
-        String isValid = _isValid;
-        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
-            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
-            if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
-                int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
-                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
-                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
-                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
-                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
-                }else{
-
-                }
-            }else{
-                Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
-                if(oldNoticeStatus == null){
-                    continue;
-                }
-                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
-                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
-                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
-                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
-                    }
-                    warehouseItemInfo1.setOldNoticeStatus(null);
-                }
-            }
-            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
-        }
     }
 
     /**
@@ -1718,7 +1687,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1732,6 +1701,7 @@ public class GoodsBiz implements IGoodsBiz {
             if (StringUtils.equals(queryModel.getQuerySource(),ZeroToNineEnum.ZERO.getCode())){
             criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
             }
+//            criteria2.andEqualTo("supplierKindCode",SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
             List<String>  supplierInterfaceIdList = new ArrayList<>();
             for (SupplierApply supplierApply:supplierApplyList) {
@@ -1743,11 +1713,7 @@ public class GoodsBiz implements IGoodsBiz {
                     supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
                 }
             }
-            if (!AssertUtil.collectionIsEmpty(supplierInterfaceIdList)){
-                criteria.andIn("supplierCode",supplierInterfaceIdList);
-            }else {
-                return page;
-            }
+            criteria.andIn("supplierCode",supplierInterfaceIdList);
         }
         if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
@@ -1755,11 +1721,8 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
             criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
         }
-       /* if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
             criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
-        }*/
-        if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商sku编号 2.0新增
-            criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
         }
         if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
             criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
@@ -1767,17 +1730,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
-        //2.0新增条件最近更新时间
-        if (!StringUtils.isBlank(queryModel.getStartDate())) {
-            criteria.andGreaterThan("updateTime", queryModel.getStartDate());
-        }
-        if (!StringUtils.isBlank(queryModel.getEndDate())) {
-            criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndDate(),DateUtils.NORMAL_DATE_FORMAT,1)));
-        }
-        //2.0新增供应商商品状态
-        if (StringUtils.isNotBlank(queryModel.getState())) {//条形码
-            criteria.andEqualTo("state",queryModel.getState());
-        }
+
         example.orderBy("updateTime").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
         //setSupplierName(page.getResult());
@@ -1955,20 +1908,117 @@ public class GoodsBiz implements IGoodsBiz {
             supplyItems.add(items);
         }
         List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ZERO.getCode());
-        int count = externalItemSkuService.insertList(externalItemSkuList);
-        if(count == 0){
-            String msg = String.format("保存京东一件代发商品%s到数据库失败", JSON.toJSONString(externalItemSkuList));
-            log.error(msg);
-            throw new GoodsException(ExceptionEnum.GOODS_SAVE_EXCEPTION, msg);
-        }
+        List<ExternalPicture> externalPictureList = setExternalPictureQinniuPath(externalItemSkuList);
+        externalItemSkuService.insertList(externalItemSkuList);
+        externalPictureService.insertList(externalPictureList);
         updateSupplyItemsUsedStatus(externalItemSkuList);
+        //上传代发商品图片到七牛
+        uploadExternalPictureToQinniu(externalPictureList);
+        //记录操作日志
         List<String> newIds = new ArrayList<String>();
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             newIds.add(externalItemSku.getId().toString());
         }
-        //记录操作日志
         logInfoService.recordLogs(new ExternalItemSku(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.ADD.getMessage(), null, null, newIds);
+    }
+
+    /**
+     * 设置代发商品图片的七牛存储路径
+     * @param externalItemSkuList
+     */
+    private List<ExternalPicture> setExternalPictureQinniuPath(List<ExternalItemSku> externalItemSkuList){
+        List<ExternalPicture> externalPictureList = new ArrayList<>();
+        for(ExternalItemSku externalItemSku: externalItemSkuList){
+            if(StringUtils.isNotBlank(externalItemSku.getMainPictrue())){
+                //设置商品主图的七牛路径
+                StringBuilder sb = new StringBuilder();
+                String[] mainPics = externalItemSku.getMainPictrue().split(SupplyConstants.Symbol.COMMA);
+                for(String mainPicUrl: mainPics){
+                    //文件类型
+                    String suffix = mainPicUrl.substring(mainPicUrl.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+                    String fileName = String.format("%s%s%s%s", EXTERNAL_QINNIU_PATH, GuidUtil.getNextUid(String.valueOf(System.nanoTime())), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
+                    sb.append(fileName).append(SupplyConstants.Symbol.COMMA);
+                    externalPictureList.add(getExternalPicture(externalItemSku, fileName, mainPicUrl));
+                }
+                if(sb.length() > 0){
+                    externalItemSku.setMainPictrue2(sb.substring(0, sb.length()-1));
+                }
+                //设置商品详情图的七牛路径
+                StringBuilder sb2 = new StringBuilder();
+                String[] detailPics = externalItemSku.getDetailPictrues().split(SupplyConstants.Symbol.COMMA);
+                for(String detailPicUrl: detailPics){
+                    //文件类型
+                    String suffix = detailPicUrl.substring(detailPicUrl.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+                    String fileName = String.format("%s%s%s%s", EXTERNAL_QINNIU_PATH, GuidUtil.getNextUid(String.valueOf(System.nanoTime())), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
+                    sb2.append(fileName).append(SupplyConstants.Symbol.COMMA);
+                    externalPictureList.add(getExternalPicture(externalItemSku, fileName, detailPicUrl));
+                }
+                if(sb2.length() > 0){
+                    externalItemSku.setDetailPictrues2(sb2.substring(0, sb2.length()-1));
+                }
+            }
+        }
+        return externalPictureList;
+    }
+
+
+    private ExternalPicture getExternalPicture(ExternalItemSku externalItemSku, String fileName, String url){
+        ExternalPicture externalPicture = new ExternalPicture();
+        externalPicture.setSupplierCode(externalItemSku.getSupplierCode());
+        externalPicture.setSkuCode(externalItemSku.getSkuCode());
+        externalPicture.setSupplierSkuCode(externalItemSku.getSupplierSkuCode());
+        externalPicture.setStatus(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, externalItemSku.getSupplierCode())){//粮油代发商品
+            externalPicture.setUrl(url);
+        }else if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_JD_CODE, externalItemSku.getSupplierCode())){//京东代发商品
+            externalPicture.setUrl(String.format("%s%s%s", externalSupplierConfig.getJdPictureUrl(), JING_DONG_PIC_N_12, url));
+        }
+        externalPicture.setFilePath(fileName);
+        Date currentDate = Calendar.getInstance().getTime();
+        externalPicture.setCreateTime(currentDate);
+        externalPicture.setUpdateTime(currentDate);
+        return externalPicture;
+    }
+
+    /**
+     * 上传代发商品图片到七牛
+     * @param externalPictureList
+     */
+    private void uploadExternalPictureToQinniu(List<ExternalPicture> externalPictureList){
+        new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(EXECUTOR_SIZE);
+                        for(ExternalPicture externalPicture: externalPictureList){
+                            Future future = fixedThreadPool.submit(new Callable<Object>() {
+                                @Override
+                                public Object call() throws Exception {
+                                    String key = qinniuBiz.fetch(externalPicture.getUrl(), externalPicture.getFilePath());
+                                    if(StringUtils.isNotBlank(key)){
+                                        externalPicture.setStatus(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+                                        externalPicture.setUpdateTime(Calendar.getInstance().getTime());
+                                        externalPictureService.updateByPrimaryKeySelective(externalPicture);
+                                    }
+                                    return null;
+                                }
+                            });
+                            try {
+                                future.get();
+                            } catch (InterruptedException e) {
+                                log.error("代发商品图片上传七牛线程中断异常", e);
+                            } catch (ExecutionException e) {
+                                log.error("代发商品图片上传七牛线程执行异常", e);
+                            }catch (Exception e) {
+                                log.error("代发商品图片上传七牛线程任务异常", e);
+                            }
+                        }
+                        fixedThreadPool.shutdown();
+                        fixedThreadPool = null;
+                    }
+                }
+        ).start();
     }
 
     /**
@@ -2090,11 +2140,17 @@ public class GoodsBiz implements IGoodsBiz {
             return;
         }
         List<ExternalItemSku> externalItemSkuList = getExternalItemSkus(supplyItems, ZeroToNineEnum.ONE.getCode());
+        List<ExternalPicture> updatePicList = new ArrayList<>();
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             for(ExternalItemSku externalItemSku2: oldExternalItemSkuList){
                 if(StringUtils.equals(externalItemSku.getSupplierCode(), externalItemSku2.getSupplierCode())&&
                         StringUtils.equals(externalItemSku.getSupplierSkuCode(), externalItemSku2.getSupplierSkuCode())){
                     externalItemSku.setSkuCode(externalItemSku2.getSkuCode());
+                    externalItemSku.setMainPictrue2(externalItemSku2.getMainPictrue2());
+                    externalItemSku.setDetailPictrues2(externalItemSku2.getDetailPictrues2());
+                    //更新代发商品图片
+                    List<ExternalPicture> tmpList = updateExternalPicture(externalItemSku, externalItemSku2);
+                    updatePicList.addAll(tmpList);
                 }
             }
             ExternalItemSku oldItemSku =new ExternalItemSku();
@@ -2140,16 +2196,104 @@ public class GoodsBiz implements IGoodsBiz {
                         }
                     }
                 }catch (Exception e){
-                    log.error("日志记录失败");
+                    log.error("日志记录失败", e);
                 }
 
             }
+        }
+        //上传代发商品图片到七牛
+        if(updatePicList.size() > 0){
+            uploadExternalPictureToQinniu(updatePicList);
         }
 
         List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
         AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
         //代发商品更新通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.DAILY_EXTERNAL_ITEMS_UPDATE);
+    }
+
+    /**
+     * 更新代发商品图片
+     * @param externalItemSku 新代发商品对象
+     * @param oldExternalItemSku 就代发商品对象
+     */
+    private List<ExternalPicture> updateExternalPicture(ExternalItemSku externalItemSku, ExternalItemSku oldExternalItemSku){
+        //获取主图需要更新的图片
+        List<ExternalPicture> mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), oldExternalItemSku.getMainPictrue(), externalItemSku);
+        //获取主图需要更新的图片
+        List<ExternalPicture> detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), oldExternalItemSku.getDetailPictrues(), externalItemSku);
+        //保存需要上传七牛的图片信息
+        List<ExternalPicture> updatePicList = new ArrayList<>(mainPicList);
+        updatePicList.addAll(detailPicList);
+        externalPictureService.insertList(updatePicList);
+        //重新设置主图和详情图信息
+        Set<String> urls = new HashSet<>();
+        for(ExternalPicture externalPicture: updatePicList){
+            urls.add(externalPicture.getUrl());
+        }
+        Example example = new Example(ExternalPicture.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("url", urls);
+        List<ExternalPicture> externalPictureList = externalPictureService.selectByExample(example);
+        StringBuilder sbMainPic = new StringBuilder();
+        for(ExternalPicture externalPicture: mainPicList){
+            for(ExternalPicture externalPicture2: externalPictureList){
+                if(StringUtils.equals(externalPicture.getUrl(), externalPicture2.getUrl()) && StringUtils.equals(externalPicture.getSupplierCode(), externalPicture2.getSupplierCode())){
+                    sbMainPic.append(externalPicture.getFilePath()).append(SupplyConstants.Symbol.COMMA);
+                }
+            }
+        }
+        if(sbMainPic.length() > 0){
+            externalItemSku.setMainPictrue2(sbMainPic.substring(0, sbMainPic.length()-1));
+        }
+        StringBuilder sbDetailPic = new StringBuilder();
+        for(ExternalPicture externalPicture: detailPicList){
+            for(ExternalPicture externalPicture2: externalPictureList){
+                if(StringUtils.equals(externalPicture.getUrl(), externalPicture2.getUrl()) && StringUtils.equals(externalPicture.getSupplierCode(), externalPicture2.getSupplierCode())){
+                    sbDetailPic.append(externalPicture.getFilePath()).append(SupplyConstants.Symbol.COMMA);
+                }
+            }
+        }
+        if(sbDetailPic.length() > 0){
+            externalItemSku.setDetailPictrues2(sbDetailPic.substring(0, sbDetailPic.length()-1));
+        }
+        return updatePicList;
+    }
+
+    /**
+     * 获取更新的图片
+     * @param picture
+     * @param oldPicture
+     * @return
+     */
+    private List<ExternalPicture> getUpdateExternalPic(String picture, String oldPicture, ExternalItemSku externalItemSku){
+        List<ExternalPicture> externalPictureList = new ArrayList<>();
+        if(!StringUtils.equals(picture, oldPicture)){
+            String[] mainPics = new String[]{};
+            if(StringUtils.isNotBlank(picture)){
+                mainPics = picture.split(SupplyConstants.Symbol.COMMA);
+            }
+            String[] oldMainPics = new String[]{};
+            if(StringUtils.isNotBlank(oldPicture)){
+                oldMainPics = oldPicture.split(SupplyConstants.Symbol.COMMA);
+            }
+            for(String mainPic: mainPics){
+                boolean flag = false;
+                for(String oldMainPic: oldMainPics){
+                    if(StringUtils.equals(mainPic, oldMainPic)){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    //文件类型
+                    String suffix = mainPic.substring(mainPic.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+                    String fileName = String.format("%s%s%s%s", EXTERNAL_QINNIU_PATH, GuidUtil.getNextUid(String.valueOf(System.nanoTime())), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
+                    externalPictureList.add(getExternalPicture(externalItemSku, fileName, mainPic));
+                }
+            }
+        }
+        return externalPictureList;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.trc.biz.qinniu;
 
+import com.qiniu.storage.model.FetchRet;
 import org.trc.form.FileUrl;
 
 import java.io.InputStream;
@@ -54,5 +55,14 @@ public interface IQinniuBiz {
      * @throws Exception
      */
     Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception;
+
+    /**
+     * 获取远程资源上传到七牛
+     * @param url 文件名称
+     * @param key 七牛路径
+     * @return String 文件路径
+     * @throws Exception
+     */
+    String fetch(String url, String key) throws Exception;
 
 }
