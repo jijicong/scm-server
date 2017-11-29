@@ -220,4 +220,28 @@ public class SkuStock extends ScmDO {
     public void setChannelCode(String channelCode) {
         this.channelCode = channelCode;
     }
+
+    public Long getAvailableDefectiveInventory() {
+        return availableDefectiveInventory;
+    }
+
+    public void setAvailableDefectiveInventory(Long availableDefectiveInventory) {
+        this.availableDefectiveInventory = availableDefectiveInventory;
+    }
+
+    public Long getLockInventory() {
+        return lockInventory;
+    }
+
+    public void setLockInventory(Long lockInventory) {
+        this.lockInventory = lockInventory;
+    }
+
+    public Long getAirInventory() {
+        return airInventory;
+    }
+
+    public void setAirInventory(Long airInventory) {
+        this.airInventory = airInventory;
+    }
 }
