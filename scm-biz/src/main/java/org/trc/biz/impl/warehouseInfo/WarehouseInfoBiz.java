@@ -513,6 +513,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             skuStock.setCreateTime(Calendar.getInstance().getTime());
             skuStock.setUpdateTime(Calendar.getInstance().getTime());
             skuStock.setIsValid(ZeroToNineEnum.ZERO.getCode());
+            skuStock.setAvailableInventory(0L);
+            skuStock.setAvailableDefectiveInventory(0L);
+            skuStock.setLockInventory(0L);
+            skuStock.setAirInventory(0L);
+            skuStock.setFrozenInventory(0L);
+            skuStock.setRealInventory(0L);
+            skuStock.setDefectiveInventory(0L);
             skuStockList.add(skuStock);
         }
         skuStockService.insertList(skuStockList);
