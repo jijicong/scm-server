@@ -18,8 +18,8 @@ public enum PurchaseOrderStatusEnum {
 	AUDIT("3","提交审核"),
 	PASS("2","审核通过"),
 	REJECT("1","审核驳回"),
-	RECEIVE_ALL("4","全部收货"),
-	RECEIVE_EXCEPTION("5","收货异常"),
+//	RECEIVE_ALL("4","全部收货"),
+//	RECEIVE_EXCEPTION("5","收货异常"),
 	FREEZE("6","冻结"),
 	CANCEL("7","作废"),
 	WAREHOUSE_NOTICE("8","入库通知");
