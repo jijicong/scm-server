@@ -48,18 +48,53 @@ public class SkuStock extends ScmDO {
     @NotEmpty
     @Length(max = 32, message = "仓库对应itemId长度不能超过32个")
     private String warehouseItemId;
+
+    /**
+     * 可用正品库存
+     */
     @FormParam("availableInventory")
     @NotEmpty
     private Long availableInventory;
+    /**
+     * 冻结库存
+     */
     @FormParam("frozenInventory")
     @NotEmpty
     private Long frozenInventory;
+
+    /**
+     * 真实库存
+     */
     @FormParam("realInventory")
     @NotEmpty
     private Long realInventory;
+
+    /**
+     *残次品库存
+     */
     @FormParam("defectiveInventory")
     @NotEmpty
     private Long defectiveInventory;
+
+    /**
+     * 可用残次品库存
+     */
+    @FormParam("availableDefectiveInventory")
+    @NotEmpty
+    private Long availableDefectiveInventory;
+
+    /**
+     * 锁定库存
+     */
+    @FormParam("lockInventory")
+    @NotEmpty
+    private Long lockInventory;
+    /**
+     * 在途库存
+     */
+    @FormParam("airInventory")
+    @NotEmpty
+    private Long airInventory;
 
     @FormParam("isValid")
     @NotEmpty
