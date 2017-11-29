@@ -1262,7 +1262,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skuStock = skuStockService.selectOne(skuStock);
             if(skuStock == null){
-                String msg = String.format("采购单详情为%s的没有相应库存",purchaseDetail.getWarehouseItemId());
+                String msg = String.format("商品信息主键为%s的没有相应库存",purchaseDetail.getWarehouseItemId());
                 LOGGER.error(msg);
                 throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
             }
@@ -1271,7 +1271,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode()));
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
-
+            details.setCreateTime(Calendar.getInstance().getTime());
             warehouseNoticeDetails.add(details);
         }
         int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
