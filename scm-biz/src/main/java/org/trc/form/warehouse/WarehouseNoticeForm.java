@@ -8,9 +8,11 @@ import org.trc.util.QueryModel;
 import javax.ws.rs.QueryParam;
 
 /**
- * Created by sone on 2017/5/2.
+ *
+ * @author sone
+ * @date 2017/5/2
  */
-public class WarehouseNoticeForm extends QueryModel{
+public class WarehouseNoticeForm extends QueryModel {
     /**
      * 入库通知单编码
      */
@@ -29,6 +31,13 @@ public class WarehouseNoticeForm extends QueryModel{
     @QueryParam("warehouseNoticeStatus")
     @Length(max = 2)
     private String warehouseNoticeStatus;
+
+    /**
+     * 入库通知单状态
+     */
+    @QueryParam("status")
+    @Length(max = 2)
+    private String status;
 
     @QueryParam("supplierName")
     @Length(max = 64)
@@ -77,5 +86,13 @@ public class WarehouseNoticeForm extends QueryModel{
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
