@@ -26,6 +26,7 @@ import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
 import org.trc.domain.goods.Items;
+import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
@@ -42,6 +43,7 @@ import org.trc.service.System.IWarehouseService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.goods.IItemsService;
+import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
@@ -95,6 +97,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private ICategoryBiz categoryBiz;
     @Autowired
     private IQimenService qimenService;
+    @Autowired
+    private ISkuStockService skuStockService;
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -323,6 +327,23 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         //修改仓库信息sku数量
         this.updateSkuNum(id);
+        //修改库存信息
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(tmp.getWarehouseInfoId());
+        this.deleteSkuStock(tmp, warehouseInfo);
+    }
+
+    private void deleteSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){
+        SkuStock skuStock = new SkuStock();
+        skuStock.setSkuCode(warehouseItemInfo.getSkuCode());
+        skuStock.setWarehouseId(Long.parseLong(warehouseInfo.getWarehouseId()));
+        skuStock.setChannelCode(warehouseInfo.getChannelCode());
+        skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        skuStock = skuStockService.selectOne(skuStock);
+        if(skuStock != null){
+            skuStock.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+            skuStock.setUpdateTime(Calendar.getInstance().getTime());
+            skuStockService.updateByPrimaryKey(skuStock);
+        }
     }
 
     private void updateSkuNum(Long id){
@@ -473,7 +494,28 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         warehouseItemInfoService.insertList(list);
         countSkuNum(warehouseInfoId);
+        //新增库存表信息
+        this.saveSkuStock(list, warehouseInfo);
         return ResultUtil.createSuccessResult("添加新商品成功","success");
+    }
+
+    private void saveSkuStock(List<WarehouseItemInfo> list, WarehouseInfo warehouseInfo){
+        List<SkuStock> skuStockList = new ArrayList<SkuStock>();
+        SkuStock skuStock = null;
+        for(WarehouseItemInfo warehouseItemInfo : list){
+            skuStock = new SkuStock();
+            skuStock.setSpuCode(warehouseItemInfo.getSpuCode());
+            skuStock.setSkuCode(warehouseItemInfo.getSkuCode());
+            skuStock.setChannelCode(warehouseInfo.getChannelCode());
+            skuStock.setWarehouseId(Long.parseLong(warehouseInfo.getWarehouseId()));
+            skuStock.setWarehouseCode(warehouseInfo.getCode());
+            skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            skuStock.setCreateTime(Calendar.getInstance().getTime());
+            skuStock.setUpdateTime(Calendar.getInstance().getTime());
+            skuStock.setIsValid(ZeroToNineEnum.ZERO.getCode());
+            skuStockList.add(skuStock);
+        }
+        skuStockService.insertList(skuStockList);
     }
 
     private void countSkuNum(Long warehouseInfoId) {
@@ -561,7 +603,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @Cacheable(key = "#form.toString()+#page.pageNo+#page.pageSize+#warehouseInfoId", isList = true)
     public Pagenation<ItemsResult> queryWarehouseItemsSku(SkusForm form, Pagenation<Skus> page, Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
@@ -853,11 +894,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     private void updateWarehouseItemInfo(List<String> itemList){
+        WarehouseInfo warehouseInfo = null;
         for(String itemId : itemList){
             WarehouseItemInfo info = new WarehouseItemInfo();
             info.setId(Long.parseLong(itemId));
             info.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.FOUR.getCode()));
             warehouseItemInfoService.updateByPrimaryKeySelective(info);
+            info = warehouseItemInfoService.selectByPrimaryKey(Long.parseLong(itemId));
+            if(warehouseInfo == null){
+                warehouseInfo = warehouseInfoService.selectByPrimaryKey(info.getWarehouseInfoId());
+            }
+            this.updateSkuStock(info, warehouseInfo);
         }
     }
 
@@ -922,6 +969,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private int saveNoticeStatus(List<String> list, String warehouseInfoId) {
         String[] values = null;
         WarehouseItemInfo warehouseItemInfo = null;
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(Long.parseLong(warehouseInfoId));
         int count = 0;
         for (String s : list) {
             values = s.split(SupplyConstants.Symbol.COMMA);
@@ -933,9 +981,24 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setWarehouseItemId(values[1]);
             warehouseItemInfo.setNoticeStatus(Integer.valueOf(ZeroToNineEnum.FOUR.getCode()));
             this.updateWarehouseItemInfo(warehouseItemInfo);
+            //更新库存
+            this.updateSkuStock(warehouseItemInfo, warehouseInfo);
             count++;
         }
         return count;
+    }
+
+    private void updateSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){
+        SkuStock skuStock = new SkuStock();
+        skuStock.setSkuCode(warehouseItemInfo.getSkuCode());
+        skuStock.setWarehouseId(Long.parseLong(warehouseInfo.getWarehouseId()));
+        skuStock.setChannelCode(warehouseInfo.getChannelCode());
+        skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        skuStock = skuStockService.selectOne(skuStock);
+        skuStock.setIsValid(ZeroToNineEnum.ONE.getCode());
+        skuStock.setWarehouseItemId(warehouseItemInfo.getWarehouseItemId());
+        skuStock.setUpdateTime(Calendar.getInstance().getTime());
+        skuStockService.updateByPrimaryKey(skuStock);
     }
 
     private ByteArrayOutputStream saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {
