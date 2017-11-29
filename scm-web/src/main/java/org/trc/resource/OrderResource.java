@@ -74,7 +74,7 @@ public class OrderResource {
             @FormParam("jdAddressCode") String jdAddressCode, @FormParam("jdAddressName") String jdAddressName, @Context ContainerRequestContext requestContext) throws Exception {
         ResponseAck responseAck = scmOrderBiz.submitJingDongOrder(warehouseOrderCode, jdAddressCode, jdAddressName, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            return ResultUtil.createSuccessResult("提交京东订单成功", "");
+            return ResultUtil.createSuccessResult("操作成功", "");
         }else{
             return ResultUtil.createfailureResult(Integer.parseInt(responseAck.getCode()), responseAck.getMessage());
         }

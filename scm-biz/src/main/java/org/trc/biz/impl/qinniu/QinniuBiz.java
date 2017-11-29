@@ -3,6 +3,7 @@ package org.trc.biz.impl.qinniu;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.qiniu.storage.model.DefaultPutRet;
+import com.qiniu.storage.model.FetchRet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.trc.exception.FileException;
 import org.trc.form.FileUrl;
 import org.trc.service.IQinniuService;
 import org.trc.service.impl.QinniuService;
+import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 
 import java.io.InputStream;
@@ -115,6 +117,18 @@ public class QinniuBiz implements IQinniuBiz{
     public Map<String, Object> batchDelete(String[] fileNames, String module) throws Exception {
         BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
         return qinniuService.batchDelete(fileNames, baseThumbnailSize);
+    }
+
+    @Override
+    public String fetch(String url, String key) throws Exception {
+        AssertUtil.notBlank(url, "获取远程资源url不能为空");
+        AssertUtil.notBlank(key, "上传资源七牛路径不能为空");
+        //String suffix = url.substring(url.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+        //String newFileName = String.format("%s%s%s%s%s", module, SupplyConstants.Symbol.XIE_GANG, String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
+        FetchRet fetchRet = qinniuService.fetch(url, key);
+        AssertUtil.notNull(fetchRet, String.format("获取远程资源%s上传到七牛%s失败", url, key));
+        AssertUtil.isTrue(fetchRet.fsize > 0, String.format("获取远程资源%s上传到七牛%s返回文件大小为0", url, key));
+        return fetchRet.key;
     }
 
 

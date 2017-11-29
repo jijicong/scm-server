@@ -2,6 +2,7 @@ package org.trc.service;
 
 import com.qiniu.storage.model.BatchStatus;
 import com.qiniu.storage.model.DefaultPutRet;
+import com.qiniu.storage.model.FetchRet;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 import org.trc.config.BaseThumbnailSize;
@@ -77,5 +78,14 @@ public interface IQinniuService {
      * @throws Exception
      */
     Map<String, Object> batchDelete(String[] fileNames, BaseThumbnailSize baseThumbnailSize) throws Exception;
+
+    /**
+     * 获取远程url资源上传到七牛
+     * @param url 资源url
+     * @param fileName 文件名称
+     * @return
+     * @throws Exception
+     */
+    FetchRet fetch(String url, String fileName) throws Exception;
 
 }
