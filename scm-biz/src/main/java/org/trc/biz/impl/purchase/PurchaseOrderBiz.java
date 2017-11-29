@@ -563,14 +563,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(purchaseOrder.getPurchaseGroupCode(),"采购组不能为空!");
         AssertUtil.notBlank(purchaseOrder.getCurrencyType(),"币值不能为空!");
         AssertUtil.notBlank(purchaseOrder.getPurchasePersonId(),"采购人不能为空!");
-        AssertUtil.notBlank(purchaseOrder.getReceiveAddress(),"收货地址不能为空!");
+        //AssertUtil.notBlank(purchaseOrder.getReceiveAddress(),"收货地址不能为空!");
         AssertUtil.notBlank(purchaseOrder.getWarehouseInfoId(),"收货仓库不能为空!");
         AssertUtil.notBlank(purchaseOrder.getTransportFeeDestId(),"运输费用承担方不能为空!");
         AssertUtil.notBlank(purchaseOrder.getRequriedReceiveDate(),"要求到货日期不能为空!");
         AssertUtil.notBlank(purchaseOrder.getEndReceiveDate(),"截止到货日期不能为空!");
         AssertUtil.notBlank(purchaseOrder.getHandlerPriority(),"处理优先级不能为空!");
         AssertUtil.notBlank(purchaseOrder.getGridValue(),"采购商品不能为空!");
-
+        AssertUtil.notBlank(purchaseOrder.getSupplierCode(),"供应商不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getSender(),"发件人不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getSenderProvince(),"发件方省份不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getSenderCity(),"发件方城市不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getSenderNumber(),"发件方手机不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getSenderAddress(),"发件方详细地址不能为空!");
     }
     /**
      * 保存提交审核的采购信息
