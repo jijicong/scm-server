@@ -58,6 +58,7 @@
     <!--奇门接口调用地址-->
     <bean id="qimenConfig" class="org.trc.form.QimenConfig">
         <property name="qimenItemsSyncUrl" value="${qimen.itemsSync.url}"/>
+        <property name="qimenEntryorderCreateUrl" value="${qimen.entryorderCreate.url}"/>
     </bean>
 
 </beans>

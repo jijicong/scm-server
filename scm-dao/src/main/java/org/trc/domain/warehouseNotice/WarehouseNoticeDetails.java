@@ -1,14 +1,17 @@
 package org.trc.domain.warehouseNotice;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.trc.custom.CustomDateSerializer;
+import java.math.BigDecimal;
+import java.util.Date;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-import java.math.BigDecimal;
-import java.util.Date;
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.MoneySerializer;
+import org.trc.custom.SimpleDateSerializer;
 
 /**
  * Created by sone on 2017/7/11.
@@ -48,9 +51,9 @@ public class WarehouseNoticeDetails {
     //'入库时间,格式yyyy-mm-dd hh:mi:ss',
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date storageTime;
-
+    
     /**
-     * scm2.0新增字段
+     * scm2.0新增字段 
      **/
     //条形码
     private String barCode;
@@ -61,131 +64,154 @@ public class WarehouseNoticeDetails {
     //生产编码
     private String productionCode;
     //生产日期
+    @JsonSerialize(using = SimpleDateSerializer.class)
     private Date productionDate;
     //截止保质日期
-    private Date expiredDate;
+    @JsonSerialize(using = SimpleDateSerializer.class)
+    private Date expiredDate;	
     //理论保质期限（天）
     private Integer expiredDay;
     //采购总金额, 单位/分
+    @JsonSerialize(using = MoneySerializer.class)
     private Long purchaseAmount;
     //收货状态
     private Integer status;
     //正品入库数量
-    private Long normalStorageQuantity;
+    private Integer normalStorageQuantity;
     //残次品入库数量
-    private Long defectiveStorageQuantity;
+    private Integer defectiveStorageQuantity;
     //货主编码
     private String ownerCode;
     //第三方仓库商品ID
     private String itemId;
-    //库存ID
-    private Long skuStockId;
+    //实际入库时间
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date actualInstockTime;	
+    // 入库异常原因
+    private String instockException;
+    
+    
+    public Date getActualInstockTime() {
+		return actualInstockTime;
+	}
 
-    public String getOwnerCode() {
-        return ownerCode;
-    }
+	public void setActualInstockTime(Date actualInstockTime) {
+		this.actualInstockTime = actualInstockTime;
+	}
 
-    public void setOwnerCode(String ownerCode) {
-        this.ownerCode = ownerCode;
-    }
+	public String getInstockException() {
+		return instockException;
+	}
 
-    public String getItemId() {
-        return itemId;
-    }
+	public void setInstockException(String instockException) {
+		this.instockException = instockException;
+	}
 
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
+	public String getOwnerCode() {
+		return ownerCode;
+	}
 
-    public String getBarCode() {
-        return barCode;
-    }
+	public void setOwnerCode(String ownerCode) {
+		this.ownerCode = ownerCode;
+	}
 
-    public void setBarCode(String barCode) {
-        this.barCode = barCode;
-    }
+	public String getItemId() {
+		return itemId;
+	}
 
-    public String getSpecInfo() {
-        return specInfo;
-    }
+	public void setItemId(String itemId) {
+		this.itemId = itemId;
+	}
 
-    public void setSpecInfo(String specInfo) {
-        this.specInfo = specInfo;
-    }
+	public String getBarCode() {
+		return barCode;
+	}
 
-    public String getBatchNo() {
-        return batchNo;
-    }
+	public void setBarCode(String barCode) {
+		this.barCode = barCode;
+	}
 
-    public void setBatchNo(String batchNo) {
-        this.batchNo = batchNo;
-    }
+	public String getSpecInfo() {
+		return specInfo;
+	}
 
-    public String getProductionCode() {
-        return productionCode;
-    }
+	public void setSpecInfo(String specInfo) {
+		this.specInfo = specInfo;
+	}
 
-    public void setProductionCode(String productionCode) {
-        this.productionCode = productionCode;
-    }
+	public String getBatchNo() {
+		return batchNo;
+	}
 
-    public Date getProductionDate() {
-        return productionDate;
-    }
+	public void setBatchNo(String batchNo) {
+		this.batchNo = batchNo;
+	}
 
-    public void setProductionDate(Date productionDate) {
-        this.productionDate = productionDate;
-    }
+	public String getProductionCode() {
+		return productionCode;
+	}
 
-    public Date getExpiredDate() {
-        return expiredDate;
-    }
+	public void setProductionCode(String productionCode) {
+		this.productionCode = productionCode;
+	}
 
-    public void setExpiredDate(Date expiredDate) {
-        this.expiredDate = expiredDate;
-    }
+	public Date getProductionDate() {
+		return productionDate;
+	}
 
-    public Integer getExpiredDay() {
-        return expiredDay;
-    }
+	public void setProductionDate(Date productionDate) {
+		this.productionDate = productionDate;
+	}
 
-    public void setExpiredDay(Integer expiredDay) {
-        this.expiredDay = expiredDay;
-    }
+	public Date getExpiredDate() {
+		return expiredDate;
+	}
 
-    public Long getPurchaseAmount() {
-        return purchaseAmount;
-    }
+	public void setExpiredDate(Date expiredDate) {
+		this.expiredDate = expiredDate;
+	}
 
-    public void setPurchaseAmount(Long purchaseAmount) {
-        this.purchaseAmount = purchaseAmount;
-    }
+	public Integer getExpiredDay() {
+		return expiredDay;
+	}
 
-    public Integer getStatus() {
-        return status;
-    }
+	public void setExpiredDay(Integer expiredDay) {
+		this.expiredDay = expiredDay;
+	}
 
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
+	public Long getPurchaseAmount() {
+		return purchaseAmount;
+	}
 
-    public Long getNormalStorageQuantity() {
-        return normalStorageQuantity;
-    }
+	public void setPurchaseAmount(Long purchaseAmount) {
+		this.purchaseAmount = purchaseAmount;
+	}
 
-    public void setNormalStorageQuantity(Long normalStorageQuantity) {
-        this.normalStorageQuantity = normalStorageQuantity;
-    }
+	public Integer getStatus() {
+		return status;
+	}
 
-    public Long getDefectiveStorageQuantity() {
-        return defectiveStorageQuantity;
-    }
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
 
-    public void setDefectiveStorageQuantity(Long defectiveStorageQuantity) {
-        this.defectiveStorageQuantity = defectiveStorageQuantity;
-    }
+	public Integer getNormalStorageQuantity() {
+		return normalStorageQuantity;
+	}
 
-    public Long getId() {
+	public void setNormalStorageQuantity(Integer normalStorageQuantity) {
+		this.normalStorageQuantity = normalStorageQuantity;
+	}
+
+	public Integer getDefectiveStorageQuantity() {
+		return defectiveStorageQuantity;
+	}
+
+	public void setDefectiveStorageQuantity(Integer defectiveStorageQuantity) {
+		this.defectiveStorageQuantity = defectiveStorageQuantity;
+	}
+
+	public Long getId() {
         return id;
     }
 
@@ -297,11 +323,4 @@ public class WarehouseNoticeDetails {
         this.storageTime = storageTime;
     }
 
-    public Long getSkuStockId() {
-        return skuStockId;
-    }
-
-    public void setSkuStockId(Long skuStockId) {
-        this.skuStockId = skuStockId;
-    }
 }

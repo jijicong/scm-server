@@ -106,155 +106,153 @@ public class WarehouseNotice {
     private Date createTime;
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
-
+    
     /**
-     * scm2.0新增字段
+     * scm2.0新增字段 
      **/
     //仓储系统入库单编码,入库单申请时返回
     private String entryOrderId;
-
     //货主编码
     private String ownerCode;
-
     //奇门仓库编码
     private String qimenWarehouseCode;
-
     //发件人
     private String sender;
-
     //收货人手机
     private String receiverNumber;
-
     //收货人
     private String receiver;
-
     //发件人所在省
     private String senderProvince;
-
     //发件人所在城市
     private String senderCity;
-
     //发件人手机
     private String senderNumber;
-
     //发件方详细地址
     private String senderAddress;
-
     //收件方省份
     private String receiverProvince;
-
     //收件方地址
     private String receiverAddress;
-
     //收件方城市
     private String receiverCity;
+    
+    // 仓库接收失败原因
+    private String failureCause;
 
+    public String getFailureCause() {
+		return failureCause;
+	}
 
-    public String getEntryOrderId() {
-        return entryOrderId;
-    }
+	public void setFailureCause(String failureCause) {
+		this.failureCause = failureCause;
+	}
 
-    public void setEntryOrderId(String entryOrderId) {
-        this.entryOrderId = entryOrderId;
-    }
+	public String getEntryOrderId() {
+		return entryOrderId;
+	}
 
-    public String getOwnerCode() {
-        return ownerCode;
-    }
+	public void setEntryOrderId(String entryOrderId) {
+		this.entryOrderId = entryOrderId;
+	}
 
-    public void setOwnerCode(String ownerCode) {
-        this.ownerCode = ownerCode;
-    }
+	public String getOwnerCode() {
+		return ownerCode;
+	}
 
-    public String getQimenWarehouseCode() {
-        return qimenWarehouseCode;
-    }
+	public void setOwnerCode(String ownerCode) {
+		this.ownerCode = ownerCode;
+	}
 
-    public void setQimenWarehouseCode(String qimenWarehouseCode) {
-        this.qimenWarehouseCode = qimenWarehouseCode;
-    }
+	public String getQimenWarehouseCode() {
+		return qimenWarehouseCode;
+	}
 
-    public String getSender() {
-        return sender;
-    }
+	public void setQimenWarehouseCode(String qimenWarehouseCode) {
+		this.qimenWarehouseCode = qimenWarehouseCode;
+	}
 
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
+	public String getSender() {
+		return sender;
+	}
 
-    public String getReceiverNumber() {
-        return receiverNumber;
-    }
+	public void setSender(String sender) {
+		this.sender = sender;
+	}
 
-    public void setReceiverNumber(String receiverNumber) {
-        this.receiverNumber = receiverNumber;
-    }
+	public String getReceiverNumber() {
+		return receiverNumber;
+	}
 
-    public String getReceiver() {
-        return receiver;
-    }
+	public void setReceiverNumber(String receiverNumber) {
+		this.receiverNumber = receiverNumber;
+	}
 
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
-    }
+	public String getReceiver() {
+		return receiver;
+	}
 
-    public String getSenderProvince() {
-        return senderProvince;
-    }
+	public void setReceiver(String receiver) {
+		this.receiver = receiver;
+	}
 
-    public void setSenderProvince(String senderProvince) {
-        this.senderProvince = senderProvince;
-    }
+	public String getSenderProvince() {
+		return senderProvince;
+	}
 
-    public String getSenderCity() {
-        return senderCity;
-    }
+	public void setSenderProvince(String senderProvince) {
+		this.senderProvince = senderProvince;
+	}
 
-    public void setSenderCity(String senderCity) {
-        this.senderCity = senderCity;
-    }
+	public String getSenderCity() {
+		return senderCity;
+	}
 
-    public String getSenderNumber() {
-        return senderNumber;
-    }
+	public void setSenderCity(String senderCity) {
+		this.senderCity = senderCity;
+	}
 
-    public void setSenderNumber(String senderNumber) {
-        this.senderNumber = senderNumber;
-    }
+	public String getSenderNumber() {
+		return senderNumber;
+	}
 
-    public String getSenderAddress() {
-        return senderAddress;
-    }
+	public void setSenderNumber(String senderNumber) {
+		this.senderNumber = senderNumber;
+	}
 
-    public void setSenderAddress(String senderAddress) {
-        this.senderAddress = senderAddress;
-    }
+	public String getSenderAddress() {
+		return senderAddress;
+	}
 
-    public String getReceiverProvince() {
-        return receiverProvince;
-    }
+	public void setSenderAddress(String senderAddress) {
+		this.senderAddress = senderAddress;
+	}
 
-    public void setReceiverProvince(String receiverProvince) {
-        this.receiverProvince = receiverProvince;
-    }
+	public String getReceiverProvince() {
+		return receiverProvince;
+	}
 
-    public String getReceiverAddress() {
-        return receiverAddress;
-    }
+	public void setReceiverProvince(String receiverProvince) {
+		this.receiverProvince = receiverProvince;
+	}
 
-    public void setReceiverAddress(String receiverAddress) {
-        this.receiverAddress = receiverAddress;
-    }
+	public String getReceiverAddress() {
+		return receiverAddress;
+	}
 
-    public String getReceiverCity() {
-        return receiverCity;
-    }
+	public void setReceiverAddress(String receiverAddress) {
+		this.receiverAddress = receiverAddress;
+	}
 
-    public void setReceiverCity(String receiverCity) {
-        this.receiverCity = receiverCity;
-    }
+	public String getReceiverCity() {
+		return receiverCity;
+	}
 
-    public String getPurchaseGroupName() {
+	public void setReceiverCity(String receiverCity) {
+		this.receiverCity = receiverCity;
+	}
+
+	public String getPurchaseGroupName() {
         return purchaseGroupName;
     }
 
