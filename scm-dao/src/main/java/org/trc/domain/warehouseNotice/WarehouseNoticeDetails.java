@@ -169,8 +169,16 @@ public class WarehouseNoticeDetails {
         this.status = status;
     }
 
+    public Long getNormalStorageQuantity() {
+        return normalStorageQuantity;
+    }
+
     public void setNormalStorageQuantity(Long normalStorageQuantity) {
         this.normalStorageQuantity = normalStorageQuantity;
+    }
+
+    public Long getDefectiveStorageQuantity() {
+        return defectiveStorageQuantity;
     }
 
     public void setDefectiveStorageQuantity(Long defectiveStorageQuantity) {
