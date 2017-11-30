@@ -323,11 +323,4 @@ public class WarehouseNoticeDetails {
         this.storageTime = storageTime;
     }
 
-    public Long getSkuStockId() {
-        return skuStockId;
-    }
-
-    public void setSkuStockId(Long skuStockId) {
-        this.skuStockId = skuStockId;
-    }
 }
