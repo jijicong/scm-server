@@ -71,9 +71,9 @@ public class WarehouseNoticeDetails {
     //收货状态
     private Integer status;
     //正品入库数量
-    private Integer normalStorageQuantity;
+    private Long normalStorageQuantity;
     //残次品入库数量
-    private Integer defectiveStorageQuantity;
+    private Long defectiveStorageQuantity;
     //货主编码
     private String ownerCode;
     //第三方仓库商品ID
@@ -169,19 +169,11 @@ public class WarehouseNoticeDetails {
         this.status = status;
     }
 
-    public Integer getNormalStorageQuantity() {
-        return normalStorageQuantity;
-    }
-
-    public void setNormalStorageQuantity(Integer normalStorageQuantity) {
+    public void setNormalStorageQuantity(Long normalStorageQuantity) {
         this.normalStorageQuantity = normalStorageQuantity;
     }
 
-    public Integer getDefectiveStorageQuantity() {
-        return defectiveStorageQuantity;
-    }
-
-    public void setDefectiveStorageQuantity(Integer defectiveStorageQuantity) {
+    public void setDefectiveStorageQuantity(Long defectiveStorageQuantity) {
         this.defectiveStorageQuantity = defectiveStorageQuantity;
     }
 
