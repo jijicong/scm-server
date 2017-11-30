@@ -675,8 +675,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             purchaseDetail.setPurchaseId(orderId);
             purchaseDetail.setPurchaseOrderCode(code);
             purchaseDetail.setCreateOperator(createOperator);
-            AssertUtil.notNull(purchaseDetail.getWarehouseItemInfoId(), "仓库商品ID不能为空");
-            AssertUtil.notNull(purchaseDetail.getSpecNatureInfo(), "商品规格不能为空");
+            this.checkPurchaseDetail(purchaseDetail);
             ParamsUtil.setBaseDO(purchaseDetail);
         }
         int count = 0;
@@ -687,6 +686,17 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
         return totalPrice;
+    }
+
+    private void checkPurchaseDetail(PurchaseDetail purchaseDetail){
+        AssertUtil.notNull(purchaseDetail.getWarehouseItemInfoId(), "仓库商品ID不能为空");
+        AssertUtil.notNull(purchaseDetail.getSpecNatureInfo(), "商品规格不能为空");
+        AssertUtil.notNull(purchaseDetail.getItemNo(), "商品货号不能为空");
+        AssertUtil.notNull(purchaseDetail.getBarCode(), "商品条形码不能为空");
+        AssertUtil.notNull(purchaseDetail.getBrandName(), "商品品牌名称不能为空");
+        AssertUtil.notNull(purchaseDetail.getAllCategoryName(), "商品分类不能为空");
+        AssertUtil.notNull(purchaseDetail.getSkuCode(), "商品sku编码不能为空");
+        AssertUtil.notNull(purchaseDetail.getSkuName(), "商品sku名称不能为空");
     }
 
     @Override
