@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.trc.mapper.goods.ISkusStockMapper">
+<mapper namespace="org.trc.mapper.goods.ISkuStockMapper">
    
     <update id="batchUpdateStockAirInventory"  parameterType="Object" >
         <foreach collection="detailList" item="sku" index="index" open="" close=";" separator=";">
             update sku_stock
             <set>
-                sku_stock = sku_stock + #{sku.purchasing_quantity}
+                sku_stock = sku_stock + #{sku.purchasingQuantity}
             </set>
             where
               channel_code = #{channelCode} AND warehouse_code = #{warehouseCode} AND sku_code = #{sku.skuCode}
