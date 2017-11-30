@@ -76,10 +76,10 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("takeGoodsNo")
      private String takeGoodsNo; //提运单号
      @FormParam("requriedReceiveDate")
-     @Length(max = 10, message = "开始日期长度不能超过10个")
+     @Length(max = 20, message = "开始日期长度不能超过20个")
      private String requriedReceiveDate;
      @FormParam("endReceiveDate")
-     @Length(max = 10, message = "截止日期长度不能超过10个")
+     @Length(max = 20, message = "截止日期长度不能超过20个")
      private String endReceiveDate;
      @FormParam("handlerPriority")
      private String handlerPriority;//处理优先级

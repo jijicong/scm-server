@@ -120,6 +120,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     private final static String CGRKTZ="CGRKTZ";
 
+    private final static String DATE_EXT = " 23:59:59";
+
     @Resource
     private ISerialUtilService serialUtilService;
 
@@ -517,6 +519,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             purchaseOrder.setPaymentProportion(paymentProportion);
         }
+        //格式化时间
+        this.formatDate(purchaseOrder);
+
         count = purchaseOrderService.insert(purchaseOrder);
         if (count<1){
             String msg = "采购单保存,数据库操作失败";
@@ -549,6 +554,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             savePurchaseOrderAudit(purchaseOrder,aclUserAccreditInfo);
         }
 
+    }
+
+    private void formatDate(PurchaseOrder purchaseOrder){
+        purchaseOrder.setRequriedReceiveDate(purchaseOrder.getRequriedReceiveDate() + DATE_EXT);
+        purchaseOrder.setEndReceiveDate(purchaseOrder.getEndReceiveDate() + DATE_EXT);
     }
 
     /**
@@ -665,6 +675,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             purchaseDetail.setPurchaseId(orderId);
             purchaseDetail.setPurchaseOrderCode(code);
             purchaseDetail.setCreateOperator(createOperator);
+            AssertUtil.notNull(purchaseDetail.getWarehouseItemInfoId(), "仓库商品ID不能为空");
+            AssertUtil.notNull(purchaseDetail.getSpecNatureInfo(), "商品规格不能为空");
             ParamsUtil.setBaseDO(purchaseDetail);
         }
         int count = 0;
