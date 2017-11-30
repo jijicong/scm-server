@@ -57,8 +57,6 @@ public class PurchaseOrder extends BaseDO{
      private String purchaseGroupName;
      @FormParam("warehouseId")
      private Long warehouseId;
-     @Transient
-     private String warehouseName;
      @FormParam("currencyType")
      private String currencyType;
     @Transient
@@ -78,10 +76,10 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("takeGoodsNo")
      private String takeGoodsNo; //提运单号
      @FormParam("requriedReceiveDate")
-     @Length(max = 10, message = "开始日期长度不能超过10个")
+     @Length(max = 20, message = "开始日期长度不能超过20个")
      private String requriedReceiveDate;
      @FormParam("endReceiveDate")
-     @Length(max = 10, message = "截止日期长度不能超过10个")
+     @Length(max = 20, message = "截止日期长度不能超过20个")
      private String endReceiveDate;
      @FormParam("handlerPriority")
      private String handlerPriority;//处理优先级
@@ -105,6 +103,26 @@ public class PurchaseOrder extends BaseDO{
      @FormParam("abnormalRemark")
      @Length(max = 1024, message = "采购单编号字母和数字不能超过1024个,汉字不能超过512个")
      private String abnormalRemark;//入库异常说明*/
+    @FormParam("receiver")
+    private String receiver;//收货人
+    @FormParam("warehouseInfoId")
+    private String warehouseInfoId;//仓库信息主键
+    @FormParam("warehouseName")
+    private String warehouseName;//仓库名称
+    @FormParam("receiverNumber")
+    private String receiverNumber;//收货人手机
+    @FormParam("sender")
+    @Length(max = 50, message = "发件人字母和数字不能超过50个")
+    private String sender;//发件人
+    @FormParam("senderProvince")
+    private String senderProvince;//发件所在省
+    @FormParam("senderCity")
+    private String senderCity;//发件所在城市
+    @FormParam("senderNumber")
+    private String senderNumber;//发件人手机
+    @FormParam("senderAddress")
+    @Length(max = 100, message = "发件方详细地址字母和数字不能超过100个")
+    private String senderAddress;//发件方详细地址
 
     public String getHandlerPriorityName() {
         return handlerPriorityName;
@@ -176,14 +194,6 @@ public class PurchaseOrder extends BaseDO{
 
     public void setWarehouseId(Long warehouseId) {
         this.warehouseId = warehouseId;
-    }
-
-    public String getWarehouseName() {
-        return warehouseName;
-    }
-
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
     }
 
     public String getCurrencyType() {
@@ -411,4 +421,75 @@ public class PurchaseOrder extends BaseDO{
         this.supplierName = supplierName;
     }
 
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    public String getWarehouseInfoId() {
+        return warehouseInfoId;
+    }
+
+    public void setWarehouseInfoId(String warehouseInfoId) {
+        this.warehouseInfoId = warehouseInfoId;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getReceiverNumber() {
+        return receiverNumber;
+    }
+
+    public void setReceiverNumber(String receiverNumber) {
+        this.receiverNumber = receiverNumber;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getSenderProvince() {
+        return senderProvince;
+    }
+
+    public void setSenderProvince(String senderProvince) {
+        this.senderProvince = senderProvince;
+    }
+
+    public String getSenderCity() {
+        return senderCity;
+    }
+
+    public void setSenderCity(String senderCity) {
+        this.senderCity = senderCity;
+    }
+
+    public String getSenderNumber() {
+        return senderNumber;
+    }
+
+    public void setSenderNumber(String senderNumber) {
+        this.senderNumber = senderNumber;
+    }
+
+    public String getSenderAddress() {
+        return senderAddress;
+    }
+
+    public void setSenderAddress(String senderAddress) {
+        this.senderAddress = senderAddress;
+    }
 }

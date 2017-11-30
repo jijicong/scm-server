@@ -222,7 +222,8 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
 
         if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
-                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) && !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode())){
+                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
+                !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
             String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
@@ -241,12 +242,13 @@ public class WarehouseBiz implements IWarehouseBiz {
 
 
 
-    private boolean checkQimenWarehouseCode(String qimenWarehouseCode){
+    private boolean checkQimenWarehouseCode(String qimenWarehouseCode, Long id){
         Example example = new Example(Warehouse.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("qimenWarehouseCode",qimenWarehouseCode);
         List<Warehouse> list = warehouseService.selectByExample(example);
-        if(list == null || list.size() < 1){
+        if(list == null || list.size() < 1 ||
+            (list.size() == 1 && list.get(0).getId() == id)){
             return true;
         }else{
             return false;
@@ -315,7 +317,8 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
 
         if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
-                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) && !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode())){
+                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
+                !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
             String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);

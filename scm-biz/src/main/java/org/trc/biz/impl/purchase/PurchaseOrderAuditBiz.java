@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddAudit;
 import org.trc.domain.purchase.PurchaseOrderAudit;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AuditStatusEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
@@ -30,6 +33,7 @@ import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderAuditService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.util.IUserNameUtilService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
@@ -65,6 +69,9 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
     @Resource
     private IPurchaseOrderBiz purchaseOrderBiz;
+
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
 
 
     /*
@@ -131,10 +138,10 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
             PurchaseGroup entityGroup = purchaseGroupService.selectOne(paramGroup);
             purchaseOrder.setPurchaseGroupName(entityGroup.getName());
             //赋值仓库名称
-            Warehouse warehouse = new Warehouse();
-            warehouse.setCode(purchaseOrder.getWarehouseCode());
-            Warehouse entityWarehouse = warehouseService.selectOne(warehouse);
-            purchaseOrder.setWarehouseName(entityWarehouse.getName());
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setId(Long.parseLong(purchaseOrder.getWarehouseInfoId()));
+            WarehouseInfo entityWarehouse = warehouseInfoService.selectOne(warehouseInfo);
+            purchaseOrder.setWarehouseName(entityWarehouse.getWarehouseName());
 
         }
 

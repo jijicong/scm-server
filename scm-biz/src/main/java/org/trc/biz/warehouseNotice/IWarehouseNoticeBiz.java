@@ -45,4 +45,7 @@ public interface IWarehouseNoticeBiz {
      */
     void  receiptAdviceInfo(WarehouseNotice warehouseNotice,AclUserAccreditInfo aclUserAccreditInfo);
 
+    void updateInStock(String requestText) ;
+
+
 }

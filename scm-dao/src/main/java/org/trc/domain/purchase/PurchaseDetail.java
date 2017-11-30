@@ -3,6 +3,7 @@ package org.trc.domain.purchase;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
 import org.trc.domain.BaseDO;
 
@@ -34,9 +35,6 @@ public class PurchaseDetail extends BaseDO{
     @NotEmpty
     @Length(max = 32, message = "采购的商品SPU编码长度不能超过32个")
     private String spuCode;
-    @FormParam("itemName")
-    @NotEmpty
-    private String itemName;
     @FormParam("skuCode")
     @NotEmpty
     @Length(max = 32, message = "商品的sku名称字母和数字不能超过32个,汉字不能超过16个")
@@ -66,6 +64,32 @@ public class PurchaseDetail extends BaseDO{
     @FormParam("totalPurchaseAmount")
     @JsonSerialize(using = MoneySerializer.class)
     private Long totalPurchaseAmount;//采购总金额
+    @FormParam("barCode")
+    private String barCode;//条形码
+    @FormParam("itemNo")
+    private String itemNo;//商品货号
+    @FormParam("skuName")
+    private String skuName;//sku名称
+    @FormParam("batchCode")
+    @Length(max = 10, message = "批次号字母和数字不能超过20个")
+    private String batchCode;//批次号
+    @FormParam("produceCode")
+    @Length(max = 10, message = "生产编码字母和数字不能超过20个")
+    private String produceCode;//生产编码
+    @FormParam("productDate")
+    @Length(max = 10, message = "生产日期长度不能超过10个")
+    private String productDate;//生产日期
+    @FormParam("expireDate")
+    @Length(max = 10, message = "截止日期长度不能超过10个")
+    private String expireDate;//截止日期
+    @FormParam("shelfLifeDays")
+    private Integer shelfLifeDays;//理论保质期限（天）
+    @FormParam("warehouseItemInfoId")
+    private Long warehouseItemInfoId;//仓库商品信息主键
+    @FormParam("specNatureInfo")
+    private String specNatureInfo;//规格
+    @FormParam("warehouseItemId")
+    private String warehouseItemId;
     @Transient
     private BigDecimal totalPurchaseAmountD;
 
@@ -85,12 +109,36 @@ public class PurchaseDetail extends BaseDO{
         this.totalPurchaseAmountD = totalPurchaseAmountD;
     }
 
-    public String getItemName() {
-        return itemName;
+    public String getBarCode() {
+        return barCode;
     }
 
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
+    }
+
+    public String getItemNo() {
+        return itemNo;
+    }
+
+    public void setItemNo(String itemNo) {
+        this.itemNo = itemNo;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    public String getSpecNatureInfo() {
+        return specNatureInfo;
+    }
+
+    public void setSpecNatureInfo(String specNatureInfo) {
+        this.specNatureInfo = specNatureInfo;
     }
 
     public Long getId() {
@@ -199,5 +247,60 @@ public class PurchaseDetail extends BaseDO{
 
     }
 
+    public String getBatchCode() {
+        return batchCode;
+    }
+
+    public void setBatchCode(String batchCode) {
+        this.batchCode = batchCode;
+    }
+
+    public String getProduceCode() {
+        return produceCode;
+    }
+
+    public void setProduceCode(String produceCode) {
+        this.produceCode = produceCode;
+    }
+
+    public String getProductDate() {
+        return productDate;
+    }
+
+    public void setProductDate(String productDate) {
+        this.productDate = productDate;
+    }
+
+    public String getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(String expireDate) {
+        this.expireDate = expireDate;
+    }
+
+    public Integer getShelfLifeDays() {
+        return shelfLifeDays;
+    }
+
+    public void setShelfLifeDays(Integer shelfLifeDays) {
+        this.shelfLifeDays = shelfLifeDays;
+    }
+
+    public Long getWarehouseItemInfoId() {
+        return warehouseItemInfoId;
+    }
+
+    public void setWarehouseItemInfoId(Long warehouseItemInfoId) {
+        this.warehouseItemInfoId = warehouseItemInfoId;
+    }
+
+    public String getWarehouseItemId() {
+        return warehouseItemId;
+    }
+
+    public void setWarehouseItemId(String warehouseItemId) {
+        this.warehouseItemId = warehouseItemId;
+    }
 }
 

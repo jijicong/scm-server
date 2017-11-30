@@ -2,18 +2,25 @@ package org.trc.resource.api;
 
 
 import com.alibaba.fastjson.JSON;
-import com.qimen.api.QimenResponse;
+import com.qimen.api.DefaultQimenClient;
+import com.qimen.api.QimenClient;
 import com.qimen.api.request.EntryorderConfirmRequest;
 import org.apache.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.form.QimenUrlRequest;
+import org.trc.form.Response;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.io.InputStream;
+import java.util.Scanner;
 
 
 /**
@@ -25,32 +32,28 @@ import javax.ws.rs.core.Response;
 
 public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
+    @Autowired
+    private IWarehouseNoticeBiz warehouseNoticeBiz;
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Produces(MediaType.APPLICATION_JSON)
-    public QimenResponse confirmInvoice(@BeanParam EntryorderConfirmRequest confirmRequest, @Context HttpRequest request) throws Exception{
-        logger.info(JSON.toJSONString(confirmRequest));
-        logger.info(JSON.toJSONString(request));
-        QimenResponse qimenResponse = new QimenResponse() {
-            @Override
-            public void setFlag(String flag) {
-                super.setFlag(flag);
-            }
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest) throws Exception{
 
-            @Override
-            public void setCode(String code) {
-                super.setCode(code);
-            }
-
-            @Override
-            public void setMessage(String message) {
-                super.setMessage(message);
-            }
-        };
+        InputStream is= request.getInputStream();
+        Scanner scanner = new Scanner(is, "UTF-8");
+        String requestText = scanner.useDelimiter("\\A").next();
+        scanner.close();
+        warehouseNoticeBiz.updateInStock(requestText);
+        Response qimenResponse = new Response() ;
         qimenResponse.setFlag("success");
         qimenResponse.setCode("0");
         qimenResponse.setMessage("invalid appkey");
-        qimenResponse.setBody("hello");
         return qimenResponse;
     }
+
+
+
+
+
 }

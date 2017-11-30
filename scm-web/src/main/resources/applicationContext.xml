@@ -75,7 +75,8 @@
     <context:component-scan base-package="org.trc"/>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
 
-    <task:scheduled-tasks>
+    <task:scheduler id="scheduler" pool-size="10" />
+    <task:scheduled-tasks scheduler="scheduler" >
        <!-- <task:scheduled ref="retryBiz" method="brandUpdateNoticeRetry" cron="${retry.brand.start}"/>
         <task:scheduled ref="retryBiz" method="propertyUpdateNoticeRetry" cron="${retry.property.start}"/>
         <task:scheduled ref="retryBiz" method="categoryUpdateNoticeRetry" cron="${retry.category.start}"/>
@@ -85,10 +86,9 @@
         <task:scheduled ref="retryBiz" method="externalItemUpdateNoticeRetry" cron="${retry.externalItem.start}"/>
         <task:scheduled ref="retryBiz" method="channelReceiveOrderSubmitResultRetry" cron="${retry.channelReceive.start}"/>
         <task:scheduled ref="retryBiz" method="sendLogisticsInfoToChannelRetry" cron="${retry.sendLogisticsInfo.start}"/>
-    </task:scheduled-tasks>
+        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="${fetch.logisticsInfo}"/>
+        <task:scheduled ref="externalPictureBiz" method="uploadExternalPic" cron="${retry.external.picture.upload}"/>
 
-    <task:scheduled-tasks>
-        <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="0 */15 * * * ?"/>
     </task:scheduled-tasks>
 
 </beans>

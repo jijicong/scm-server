@@ -43,4 +43,6 @@ public interface IBaseService<T,PK> {
 
     List<T> selectByExample(Object example);
 
+    int selectCountByExample (Object example);
+
 }

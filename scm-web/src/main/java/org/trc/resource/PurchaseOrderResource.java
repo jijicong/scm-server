@@ -180,7 +180,16 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findWarehouses(@Context ContainerRequestContext requestContext)  {
-        String channelCode = (String)requestContext.getProperty(SupplyConstants.Authorization.CHANNEL_CODE);
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo)requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        String channelCode = aclUserAccreditInfo.getChannelCode();
         return purchaseOrderBiz.findWarehousesByChannelCode(channelCode);
     }
+
+    @GET
+    @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_ITEM)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findAllPurchaseDetail(@BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
+        return ResultUtil.createSuccessPageResult(purchaseOrderBiz.findPurchaseDetail(form,page,skus));
+    }
+
 }

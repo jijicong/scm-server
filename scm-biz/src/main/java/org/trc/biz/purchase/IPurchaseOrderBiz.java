@@ -1,14 +1,11 @@
 package org.trc.biz.purchase;
 
-import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierBrandExt;
-import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
 import org.trc.util.Pagenation;
@@ -94,5 +91,12 @@ public interface IPurchaseOrderBiz {
      * @return
      */
     Response findWarehousesByChannelCode(String channelCode);
+
+    /**
+     * 查询可卖商品
+     * 查询可卖商品
+     * @return
+     */
+    Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form,Pagenation<PurchaseDetail> page, String skus) ;
 
 }

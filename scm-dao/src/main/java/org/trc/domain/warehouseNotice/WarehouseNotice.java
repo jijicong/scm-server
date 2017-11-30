@@ -78,6 +78,12 @@ public class WarehouseNotice {
     @NotEmpty
     @Length(max = 32, message = "采购类型字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseType;
+    //货主ID
+    @FormParam("channelCode")
+    private String channelCode;
+    //仓库信息主键
+    @FormParam("warehouseInfoId")
+    private Long warehouseInfoId;
     @Transient
     private String purchaseTypeName;
     //'归属采购人编号',
@@ -106,40 +112,28 @@ public class WarehouseNotice {
      **/
     //仓储系统入库单编码,入库单申请时返回
     private String entryOrderId;
-    
     //货主编码
     private String ownerCode;
-    
     //奇门仓库编码
     private String qimenWarehouseCode;
-    
     //发件人
     private String sender;
-    
     //收货人手机
     private String receiverNumber;
-    
     //收货人
     private String receiver;
-    
     //发件人所在省
     private String senderProvince;
-    
     //发件人所在城市
     private String senderCity;
-    
     //发件人手机
     private String senderNumber;
-    
     //发件方详细地址
     private String senderAddress;
-    
     //收件方省份
     private String receiverProvince;
-    
     //收件方地址
     private String receiverAddress;
-    
     //收件方城市
     private String receiverCity;
     
@@ -456,5 +450,21 @@ public class WarehouseNotice {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
+
+    public Long getWarehouseInfoId() {
+        return warehouseInfoId;
+    }
+
+    public void setWarehouseInfoId(Long warehouseInfoId) {
+        this.warehouseInfoId = warehouseInfoId;
     }
 }
