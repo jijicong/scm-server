@@ -21,6 +21,5 @@
               spu_code = #{skus.spuCode} AND sku_code = #{skus.skuCode}
         </foreach>
     </update>
-
-
+    
 </mapper>

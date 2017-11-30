@@ -83,7 +83,7 @@ public class QimenServiceImpl implements IQimenService {
 	public AppResult entryOrderCreate(EntryorderCreateRequest req) {
 		 String url = qimenConfig.getQimenEntryorderCreateUrl();
 		 Map<String, Object> map = new HashMap<String, Object>();
-		 map.put("entryorderCreateRequest", req);
+		 map.put("entryOrderCreateRequest", JSON.toJSONString(req));
 		 return invokeExternal(map, url);
 	}
 	
@@ -111,12 +111,12 @@ public class QimenServiceImpl implements IQimenService {
             	return ResultUtil.createFailAppResult("调用external奇门接口返回结果为空");
             }
         } catch (Exception e) {
-            log.error("调用external奇门接口:{}异常,错误信息:{},详细:{}", url, e.getMessage(), e);
+            log.error("调用external奇门接口:{}异常,错误信息:{},详细:", url, e.getMessage(), e);
         }
         
 		log.debug("结束调用external奇门接口:{}, 返回结果:{}, 结束时间:{}", url, resStr, 
 				DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
 		
-		return null;
+		return ResultUtil.createFailAppResult("调用external奇门接口失败");
 	}
 }

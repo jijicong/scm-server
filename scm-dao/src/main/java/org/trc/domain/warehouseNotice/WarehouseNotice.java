@@ -142,9 +142,19 @@ public class WarehouseNotice {
     
     //收件方城市
     private String receiverCity;
-
     
-    public String getEntryOrderId() {
+    // 仓库接收失败原因
+    private String failureCause;
+
+    public String getFailureCause() {
+		return failureCause;
+	}
+
+	public void setFailureCause(String failureCause) {
+		this.failureCause = failureCause;
+	}
+
+	public String getEntryOrderId() {
 		return entryOrderId;
 	}
 

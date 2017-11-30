@@ -1,14 +1,17 @@
 package org.trc.domain.warehouseNotice;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.trc.custom.CustomDateSerializer;
+import java.math.BigDecimal;
+import java.util.Date;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-import java.math.BigDecimal;
-import java.util.Date;
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.MoneySerializer;
+import org.trc.custom.SimpleDateSerializer;
 
 /**
  * Created by sone on 2017/7/11.
@@ -61,13 +64,16 @@ public class WarehouseNoticeDetails {
     //生产编码
     private String productionCode;
     //生产日期
+    @JsonSerialize(using = SimpleDateSerializer.class)
     private Date productionDate;
     //截止保质日期
-    private Date expiredDate;
+    @JsonSerialize(using = SimpleDateSerializer.class)
+    private Date expiredDate;	
     //理论保质期限（天）
     private Integer expiredDay;
     //采购总金额, 单位/分
-    private Integer purchaseAmount;
+    @JsonSerialize(using = MoneySerializer.class)
+    private Long purchaseAmount;
     //收货状态
     private Integer status;
     //正品入库数量
@@ -78,8 +84,30 @@ public class WarehouseNoticeDetails {
     private String ownerCode;
     //第三方仓库商品ID
     private String itemId;
+    //实际入库时间
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date actualInstockTime;	
+    // 入库异常原因
+    private String instockException;
     
-    public String getOwnerCode() {
+    
+    public Date getActualInstockTime() {
+		return actualInstockTime;
+	}
+
+	public void setActualInstockTime(Date actualInstockTime) {
+		this.actualInstockTime = actualInstockTime;
+	}
+
+	public String getInstockException() {
+		return instockException;
+	}
+
+	public void setInstockException(String instockException) {
+		this.instockException = instockException;
+	}
+
+	public String getOwnerCode() {
 		return ownerCode;
 	}
 
@@ -151,11 +179,11 @@ public class WarehouseNoticeDetails {
 		this.expiredDay = expiredDay;
 	}
 
-	public Integer getPurchaseAmount() {
+	public Long getPurchaseAmount() {
 		return purchaseAmount;
 	}
 
-	public void setPurchaseAmount(Integer purchaseAmount) {
+	public void setPurchaseAmount(Long purchaseAmount) {
 		this.purchaseAmount = purchaseAmount;
 	}
 
