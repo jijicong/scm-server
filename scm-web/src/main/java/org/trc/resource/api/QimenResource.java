@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.qimen.IQimenBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.form.QimenUrlRequest;
@@ -46,14 +47,16 @@ public class QimenResource {
 
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
+    @Autowired
+    private IQimenBiz qimenBiz;
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Consumes(MediaType.APPLICATION_XML)
+    @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //获取报文
-            String requestText = this.getInfo(request);
+            String requestText = this.getInfo(request,qimenUrlRequest);
 
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
@@ -67,10 +70,11 @@ public class QimenResource {
     }
 
     //获取报文信息
-    private String getInfo(HttpServletRequest request) throws IOException{
+    private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException{
         InputStream is= request.getInputStream();
         Scanner scanner = new Scanner(is, "UTF-8");
         String requestText = scanner.useDelimiter("\\A").next();
+        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
         scanner.close();
         return requestText;
     }
