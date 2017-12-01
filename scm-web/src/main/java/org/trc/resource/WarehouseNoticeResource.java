@@ -18,6 +18,7 @@ import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.enums.ResultEnum;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -43,7 +44,6 @@ public class WarehouseNoticeResource {
     @Path(SupplyConstants.WarehouseNotice.WAREHOUSE_NOTICE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
     public Response warehouseNoticePage(@BeanParam WarehouseNoticeForm form, @BeanParam Pagenation<WarehouseNotice> page,@Context ContainerRequestContext requestContext){
-
         return ResultUtil.createSuccessPageResult(warehouseNoticeBiz.warehouseNoticePage(form,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 
     }

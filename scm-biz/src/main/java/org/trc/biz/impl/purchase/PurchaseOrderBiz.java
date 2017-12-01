@@ -1288,7 +1288,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
             }
-//            details.setSkuStockId(skuStock.getId());
+            details.setSkuStockId(skuStock.getId());
             details.setPurchaseAmount(purchaseDetail.getPurchasingQuantity() * purchaseDetail.getPurchasePrice());
             details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode()));
             details.setOwnerCode(ownerCode);

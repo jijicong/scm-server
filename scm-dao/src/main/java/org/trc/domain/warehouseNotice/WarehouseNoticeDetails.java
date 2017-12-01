@@ -89,9 +89,18 @@ public class WarehouseNoticeDetails {
     private Date actualInstockTime;	
     // 入库异常原因
     private String instockException;
+    // 关联库存表id
+    private Long skuStockId;
     
-    
-    public Date getActualInstockTime() {
+    public Long getSkuStockId() {
+		return skuStockId;
+	}
+
+	public void setSkuStockId(Long skuStockId) {
+		this.skuStockId = skuStockId;
+	}
+
+	public Date getActualInstockTime() {
 		return actualInstockTime;
 	}
 

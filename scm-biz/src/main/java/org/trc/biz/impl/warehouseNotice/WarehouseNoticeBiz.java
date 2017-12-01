@@ -2,6 +2,7 @@ package org.trc.biz.impl.warehouseNotice;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.EntryorderConfirmRequest;
 import com.qiniu.util.Json;
 import net.sf.json.xml.XMLSerializer;
@@ -325,6 +326,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         	throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
         String userId= aclUserAccreditInfo.getUserId();
+        
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, 
+        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
+        
         WarehouseNotice tempNotice =  noticeList.get(0);
         // 调用奇门接口，通知仓库创建入口通知单
         entryOrderCreate(tempNotice, userId);
@@ -339,9 +344,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());*/
         //todo
-        
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, 
-        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
+
 //        logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, 
 //        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
        // purchaseOrderBiz.cacheEvitForPurchaseOrder();
@@ -430,7 +433,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     			 *	 2.更新入库明细表中的商品为待仓库反馈状态
     			 *	 3.更新相应sku的在途库存数
     			 **/
-    			postEntryOrderCreate(notice, detailsList, WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode(), null, true);
+    			postEntryOrderCreate(notice, detailsList, result, true);
     		} else { 
     			// 仓库接收失败
     			try {
@@ -441,8 +444,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     				e.printStackTrace();
     			}
     			
-    			postEntryOrderCreate(notice, detailsList, WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), 
-    					result.getDatabuffer(), false);
+    			postEntryOrderCreate(notice, detailsList, result, false);
     			//throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, result.getDatabuffer());
     		}
     		
@@ -451,17 +453,40 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     	}
 	}
     
+    /**
+     * 创建入库单后处理
+     * @param notice	入库单
+     * @param detailsList 入库单商品明细列表
+     * @param result	external返回结果
+     * @param isSuccess 是否创建成功
+     */
     private void postEntryOrderCreate(WarehouseNotice notice, List<WarehouseNoticeDetails> detailsList, 
-    		String status, String receiveResult, boolean needUpdateStock) {
+    		AppResult<EntryorderCreateResponse> result, boolean isSuccess) {
+    	String status = "";
+    	WarehouseNotice updateNotice = new WarehouseNotice();
+    	if (isSuccess) {
+    		EntryorderCreateResponse orderResp = JSONObject.toJavaObject((JSONObject)result.getResult(), 
+    				EntryorderCreateResponse.class) ;
+    		updateNotice.setEntryOrderId(orderResp.getEntryOrderId()); // 成功时接收仓储系统入库单编码
+    		
+    		status = WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode();
+        	// 仓库接收成功时，更新相应sku的在途库存数(channel_code, warehouse_id, sku_code)
+    		String channelCode = notice.getChannelCode();
+    		String warehouseCode = notice.getWarehouseCode();
+    		// 批量更新在途库存
+    		skuStockService.batchUpdateStockAirInventory(channelCode, warehouseCode, detailsList);
+    	} else {
+    		status = WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode();
+    		updateNotice.setFailureCause(result.getDatabuffer()); // 失败时接收失败原因
+    	}
     	// 更新入库单为待仓库反馈状态
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
         warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
-        WarehouseNotice updateNotice = new WarehouseNotice();
         updateNotice.setStatus(status);
         updateNotice.setUpdateTime(Calendar.getInstance().getTime());
-        updateNotice.setFailureCause(receiveResult); // 接收失败原因
         warehouseNoticeService.updateByExampleSelective(updateNotice,warehouseNoticeExample);
+        
         // 更新入库明细表中的商品为待仓库反馈状态
     	Example detailsExample = new Example(WarehouseNoticeDetails.class);
     	Example.Criteria detailsCriteria = detailsExample.createCriteria();
@@ -469,15 +494,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     	WarehouseNoticeDetails details = new WarehouseNoticeDetails();
     	details.setStatus(Integer.parseInt(status));
     	warehouseNoticeDetailsService.updateByExampleSelective(details, detailsExample);
-    	// 仓库接收成功时，更新相应sku的在途库存数
-    	if (needUpdateStock) {
-    		//channel_code, warehouse_id, sku_code
-    		String channelCode = notice.getOwnerCode();
-    		String warehouseCode = notice.getWarehouseCode();
-    		// 批量更新在途库存
-    		skuStockService.batchUpdateStockAirInventory(channelCode, warehouseCode, detailsList);
-    	}
-    	
     }
     
 	@Override
