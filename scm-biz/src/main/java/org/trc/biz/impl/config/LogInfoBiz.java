@@ -29,6 +29,9 @@ public class LogInfoBiz implements ILogInfoBiz {
     private IAclUserAccreditInfoService aclUserAccreditInfoService;
     public final static String ADMIN_SIGN = "admin";
     public final static String ADMIN="系统";
+    public final static String WAREHOUSE_SIGN = "warehouse";
+    public final static String WAREHOUSE= "仓库";
+
     @Override
     public Pagenation<LogInfo> logInfoPage(LogInfoForm queryModel, Pagenation<LogInfo> page) {
         Example example = new Example(LogInfo.class);
@@ -73,6 +76,9 @@ public class LogInfoBiz implements ILogInfoBiz {
                 }
                 if(logInfo.getOperatorUserid().equals(ADMIN_SIGN)){
                     logInfo.setOperator(ADMIN);
+                }
+                if(logInfo.getOperatorUserid().equals(WAREHOUSE_SIGN)){
+                    logInfo.setOperator(WAREHOUSE);
                 }
             }
         }
