@@ -1,5 +1,8 @@
 package org.trc.domain.order;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -46,7 +49,26 @@ public class OutboundOrder implements Serializable {
 
     private String receiverPhone;
 
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
+
+    private String channelCode;
+
+    private String buyerMessage;
+
+    private String sellerMessage;
+
+    private String status;
+
+    private String platformOrderCode;
+
+    private String remark;
+
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private String payTime;
+
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private String updateTime;
 
     public Long getId() {
         return id;
@@ -182,5 +204,69 @@ public class OutboundOrder implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
+
+    public String getBuyerMessage() {
+        return buyerMessage;
+    }
+
+    public void setBuyerMessage(String buyerMessage) {
+        this.buyerMessage = buyerMessage;
+    }
+
+    public String getSellerMessage() {
+        return sellerMessage;
+    }
+
+    public void setSellerMessage(String sellerMessage) {
+        this.sellerMessage = sellerMessage;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPlatformOrderCode() {
+        return platformOrderCode;
+    }
+
+    public void setPlatformOrderCode(String platformOrderCode) {
+        this.platformOrderCode = platformOrderCode;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getPayTime() {
+        return payTime;
+    }
+
+    public void setPayTime(String payTime) {
+        this.payTime = payTime;
+    }
+
+    public String getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(String updateTime) {
+        this.updateTime = updateTime;
     }
 }

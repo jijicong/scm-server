@@ -13,12 +13,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum OutboundOrderStatusEnum {
 
-	/*0.发送中 1.待仓库反馈 2.全部发货 3.部分发货 4. 已取消*/
-	SENDING("0","发送中"),
-	ON_WAREHOUSE_NOTICE("1","待仓库反馈"),
-	ALL_GOODS("2","全部发货"),
-	PART_OF_SHIPMENT("3","部分发货"),
-	CANCELED("4","已取消");
+	RECEIVE_FAIL("1", "仓库接收失败"),
+	WAITING("2","等待仓库发货"),
+	ON_WAREHOUSE_NOTICE("3","仓库告知的过程中状态"),
+	ALL_GOODS("4","全部发货"),
+	PART_OF_SHIPMENT("5","部分发货"),
+	CANCELED("6","已取消");
 
 	private String code;
 	private String name;

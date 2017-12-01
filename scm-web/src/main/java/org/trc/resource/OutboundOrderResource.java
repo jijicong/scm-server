@@ -6,6 +6,7 @@ import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.util.AppResult;
@@ -16,6 +17,8 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -34,8 +37,8 @@ public class OutboundOrderResource {
     @GET
     @Path(SupplyConstants.OutboundOrder.OUTBOUND_ORDER_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public  Pagenation<OutboundOrder> outboundOrderPage(@BeanParam OutBoundOrderForm form, @BeanParam Pagenation<OutboundOrder> page) throws Exception {
-        return  outBoundOrderBiz.outboundOrderPage(form, page);
+    public  Pagenation<OutboundOrder> outboundOrderPage(@BeanParam OutBoundOrderForm form, @BeanParam Pagenation<OutboundOrder> page, @Context ContainerRequestContext requestContext) throws Exception {
+        return  outBoundOrderBiz.outboundOrderPage(form, page, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @GET

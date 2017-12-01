@@ -746,7 +746,7 @@ public class SupplyConstants {
         public static final String SUPPLIER = "oneAgentSupplier";
         //采购订单的审核状态
         public static final String PURCHASE_ORDER_AUDIT_STATUS = "purchaseOrderAuditStatus";
-        //查询采购订单的状态
+        //查询发货通知的状态
         public static final String OUTBOUND_ORDER_STATUS = "outboundOrderStatus";
     }
 
