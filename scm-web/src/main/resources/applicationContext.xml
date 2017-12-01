@@ -48,6 +48,8 @@
         <property name="password" value="${session.redis.password}"/>
         <property name="poolConfig" ref="jedisPoolConfig" />
         <property name="usePool" value="true" />
+        <property name="timeout" value="${session.redis.timeout}" />
+
     </bean>
 
     <bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
