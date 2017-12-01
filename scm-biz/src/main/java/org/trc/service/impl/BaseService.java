@@ -123,4 +123,5 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     @Override
     public int selectCountByExample (Object example){return mapper.selectCountByExample(example);}
 
+
 }

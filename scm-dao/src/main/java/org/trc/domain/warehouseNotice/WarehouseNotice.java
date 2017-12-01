@@ -136,11 +136,9 @@ public class WarehouseNotice {
     private String receiverAddress;
     //收件方城市
     private String receiverCity;
-    
     // 仓库接收失败原因
     private String failureCause;
-    
-    @Transient //异常原因
+    //异常原因
     private String exceptionCause;
 
     public String getExceptionCause() {
