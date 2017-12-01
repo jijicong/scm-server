@@ -53,16 +53,12 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
 /**
- *
  * @author sone
  * @date 2017/7/12
  */
@@ -100,7 +96,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IPurchaseOrderBiz purchaseOrderBiz;
     @Autowired
     private ISkuStockService skuStockService;
-	@Autowired
+    @Autowired
     private IQimenService qimenService;
 
     private boolean isSection = false;
@@ -109,8 +105,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     /**
      * 入库通知单分页查询
-     * @param form form表单查询条件
-     * @param page 分页查询的条件
+     *
+     * @param form                form表单查询条件
+     * @param page                分页查询的条件
      * @param aclUserAccreditInfo
      * @return
      */
@@ -187,6 +184,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     /**
      * 收到入库通知后,更改库存
+     *
      * @param requestText
      */
     @Override
@@ -195,11 +193,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
         EntryorderConfirmRequest confirmRequest = null;
         try {
-            //创建 XMLSerializer对象
-            XMLSerializer xmlSerializer = new XMLSerializer();
-            //将xml转为json（注：如果是元素的属性，会在json里的key前加一个@标识）
-            String result = xmlSerializer.read(requestText).toString();
-            confirmRequest = JSON.parseObject(result, EntryorderConfirmRequest.class);
+            confirmRequest = (EntryorderConfirmRequest) XmlUtil.xmlStrToBean(requestText, EntryorderConfirmRequest.class);
         } catch (Exception e) {
             logger.error("Bean转换异常!");
         }
@@ -230,7 +224,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             }
                             skuMap.put(itemCode, skuOrderLineList);
                         }
-                        getRequestDate(skuMap,warehouseNotice);
+                        //修改此入库单的库存,并返回库存信息
+                        warehouseNotice.setStatus(getRequestDate(skuMap, warehouseNotice));
                     }
                 }
             }
@@ -239,6 +234,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     /**
      * 处理数据
+     *
      * @param skuMap
      * @param warehouseNotice
      */
@@ -261,21 +257,21 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 }
             }
             //判断收货状态
-            if (defectiveQuantity>0){
+            if (defectiveQuantity > 0) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
-            }else if (normalQuantity<warehouseNoticeDetails.getPurchasingQuantity()){
+            } else if (normalQuantity < warehouseNoticeDetails.getPurchasingQuantity()) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
-            }else if (normalQuantity>warehouseNoticeDetails.getPurchasingQuantity()){
+            } else if (normalQuantity > warehouseNoticeDetails.getPurchasingQuantity()) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
             } else if (normalQuantity.equals(warehouseNoticeDetails.getPurchasingQuantity())) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
-            warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity()+defectiveQuantity);
-            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity()+defectiveQuantity);
+            warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity() + defectiveQuantity);
+            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity() + defectiveQuantity);
             warehouseNoticeDetailsList.add(warehouseNoticeDetails);
             //修改库存
-            SkuStock skuStock =  skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
-            if (null!=skuStock){
+            SkuStock skuStock = skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
+            if (null != skuStock) {
                 //未收货之前的真实正品库存
                 Long realInventory = skuStock.getRealInventory();
                 //收货之后的真实正品库存
@@ -297,91 +293,31 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 skuStock.setAvailableInventory(availableInventory2);
                 skuStock.setDefectiveInventory(defectiveInventory2);
                 skuStock.setAirInventory(airInventory2);
+                skuStockService.updateByPrimaryKey(skuStock);
 
             }
         }
-        if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList)){
-            for (WarehouseNoticeDetails warehouseNoticeDetails:warehouseNoticeDetailsList ) {
-                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
-                    isReceivingError =true;
+        if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList)) {
+            for (WarehouseNoticeDetails warehouseNoticeDetails : warehouseNoticeDetailsList) {
+                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
+                    isReceivingError = true;
                 }
-                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()),WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())){
-                    isSection =true;
+                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())) {
+                    isSection = true;
                 }
             }
         }
-        if (isReceivingError){
+        if (isReceivingError) {
             return WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
-        }else if (isSection){
+        } else if (isSection) {
             return WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode();
         }
-        if (!isReceivingError&&!isSection){
+        if (!isReceivingError && !isSection) {
             return WarehouseNoticeStatusEnum.ALL_GOODS.getCode();
         }
         return "";
     }
 
-    /**
-     * 更新入库通知单详情
-     * @param orderLine
-     * @param nowWarehouseNoticeDetails
-     */
-    private void updateWarehouseNoticeDetails(EntryorderConfirmRequest.OrderLine orderLine, WarehouseNoticeDetails nowWarehouseNoticeDetails,WarehouseNotice warehouseNotice) {
-        //实际入库数量
-            nowWarehouseNoticeDetails.setActualStorageQuantity(orderLine.getActualQty()+nowWarehouseNoticeDetails.getActualStorageQuantity());
-        //商品入库时间
-        if (null!=orderLine.getActualQty()&&orderLine.getActualQty()>0){
-            nowWarehouseNoticeDetails.setStorageTime(Calendar.getInstance().getTime());
-        }
-        nowWarehouseNoticeDetails.setDefectiveStorageQuantity(0L);
-        //正品入库数量
-        nowWarehouseNoticeDetails.setNormalStorageQuantity(Integer.parseInt(String.valueOf(orderLine.getActualQty()))+ nowWarehouseNoticeDetails.getNormalStorageQuantity());
-        //收货状态
-        //判断收货状态
-        if ( nowWarehouseNoticeDetails.getDefectiveStorageQuantity()==0){
-            if (nowWarehouseNoticeDetails.getNormalStorageQuantity().equals(nowWarehouseNoticeDetails.getPurchasingQuantity())){
-                //正品入库数量=采购数量=全部收货
-                nowWarehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
-            }else if (nowWarehouseNoticeDetails.getNormalStorageQuantity()<nowWarehouseNoticeDetails.getPurchasingQuantity()){
-                //正品入库数量<采购数量=部分收货
-                isSection = true;
-                nowWarehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
-            }else {
-                //收货异常,记录日志
-                isReceivingError = true;
-                logInfoService.recordLog(warehouseNotice,String.valueOf(warehouseNotice.getId()),"仓库","","","");
-            }
-        }else {
-            //收货异常,本期暂不处理
-            isReceivingError = true;
-        }
-        //更新入库通知详情表
-        warehouseNoticeDetailsService.updateByPrimaryKeySelective(nowWarehouseNoticeDetails);
-    }
-
-    /**
-     * 更新库存表
-     * @param orderLine
-     * @param nowStock
-     */
-    private void updateStock(EntryorderConfirmRequest.OrderLine orderLine, SkuStock nowStock) {
-        //计算库存
-        //实收=正品入库数量
-        Long actualQtyCount = orderLine.getActualQty()==null?0:orderLine.getActualQty();
-        //本期只考虑正品数量
-        //未收货之前的真实库存
-        Long realInventory = nowStock.getRealInventory();
-        //收货之后的真实库存
-        Long realInventory2 =realInventory+actualQtyCount;
-        //在途库存(当前在途库存-实收数量)
-        Long onTheWayStock  =nowStock.getAirInventory()-actualQtyCount;
-        //在途库存写入
-        nowStock.setAirInventory(onTheWayStock);
-        //真实库存写入
-        nowStock.setRealInventory(realInventory2);
-        nowStock.setAvailableInventory(realInventory2);
-        skuStockService.updateByPrimaryKeySelective(nowStock);
-    }
 
     private void handleTakeGoodsNo(WarehouseNotice warehouseNotice) {
         WarehouseNotice updateWarehouseNotice = new WarehouseNotice();
@@ -413,7 +349,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 是因为，如果该入库通知，在没有执行入库通知入库的条件下，是可以被采购单管理页面给（作废掉），这种情况下，生成的入库通知明细是（无用的）
                 }
           */
-        AssertUtil.notNull(warehouseNotice,"入库通知的信息为空");
+        AssertUtil.notNull(warehouseNotice, "入库通知的信息为空");
 //        PurchaseOrder purchaseOrder = new PurchaseOrder();
 //        purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
 //        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
@@ -422,8 +358,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         criteria.andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
         criteria.andEqualTo("status", PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.selectByExample(example);
-        if(CollectionUtils.isEmpty(purchaseOrders)){
-            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,"查询采购单失败！");
+        if (CollectionUtils.isEmpty(purchaseOrders)) {
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, "查询采购单失败！");
         }
 //        int count = purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
 //
@@ -435,16 +371,16 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
-        warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode",warehouseNotice.getWarehouseNoticeCode());
-        warehouseNoticeCriteria.andEqualTo("status",WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
+        warehouseNoticeCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
         List<WarehouseNotice> noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-        if (CollectionUtils.isEmpty(noticeList)) { 
-        	String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合修改条件,无法进行入库通知的操作",warehouseNotice.getWarehouseNoticeCode());
-        	logger.error(msg);
-        	throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+        if (CollectionUtils.isEmpty(noticeList)) {
+            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合修改条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
+            logger.error(msg);
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
-        String userId= aclUserAccreditInfo.getUserId();
-        WarehouseNotice tempNotice =  noticeList.get(0);
+        String userId = aclUserAccreditInfo.getUserId();
+        WarehouseNotice tempNotice = noticeList.get(0);
         // 调用奇门接口，通知仓库创建入口通知单
         entryOrderCreate(tempNotice, userId);
         
@@ -458,121 +394,122 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());*/
         //todo
-        
-        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),userId, 
-        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
+
+        logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
+                LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
 //        logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, 
 //        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
-       // purchaseOrderBiz.cacheEvitForPurchaseOrder();
+        // purchaseOrderBiz.cacheEvitForPurchaseOrder();
 
     }
 
 
     /**
      * 调用奇门接口，通知仓库创建入库通知单
-     * @param userId 
+     *
+     * @param userId
      * @param notice
      */
     private void entryOrderCreate(WarehouseNotice notice, String userId) {
-    	String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
-    	WarehouseNoticeDetails detail = new WarehouseNoticeDetails();
-    	detail.setWarehouseNoticeCode(noticeCode);
-    	List<WarehouseNoticeDetails> detailsList = warehouseNoticeDetailsService.select(detail);
-    	if (!CollectionUtils.isEmpty(detailsList)) {
-    		EntryorderCreateRequest req = new EntryorderCreateRequest();
-    		/**
-    		 * 入库单信息
-    		 **/
-    		EntryOrder order = new EntryOrder();
-    		order.setEntryOrderCode(notice.getWarehouseNoticeCode());
-    		order.setOwnerCode(notice.getOwnerCode());
-    		order.setPurchaseOrderCode(notice.getPurchaseOrderCode()); //scm采购单编号
-    		order.setWarehouseCode(notice.getQimenWarehouseCode());// 奇门仓库编号
-    		order.setOrderCreateTime(DateUtils.dateToString(notice.getCreateTime(), DateUtils.DATETIME_FORMAT));
-    		order.setOrderType("CGRK"); // 采购入库
-    		order.setExpectStartTime(notice.getRequriedReceiveDate());
-    		order.setExpectEndTime(notice.getEndReceiveDate());
-    		order.setExpressCode(notice.getTakeGoodsNo());
-    		order.setSupplierCode(notice.getSupplierCode());
-    		order.setSupplierName(notice.getSupplierName());
-    		
-    		/**
-    		 * 发件人信息
-    		 **/
-    		SenderInfo sender = new SenderInfo();
-    		sender.setName(notice.getSender()); //发件人
-    		sender.setMobile(notice.getSenderNumber());// 发件方手机
-    		sender.setProvince(notice.getSenderProvince());
-    		sender.setCity(notice.getSenderCity());
-    		sender.setDetailAddress(notice.getSenderAddress());
-    		order.setSenderInfo(sender);
-    		/**
-    		 * 发件人信息
-    		 **/
-    		ReceiverInfo receiver = new ReceiverInfo();
-    		receiver.setName(notice.getReceiver());// 收货人
-    		receiver.setMobile(notice.getReceiverNumber());
-    		receiver.setProvince(notice.getReceiverProvince());
-    		receiver.setCity(notice.getReceiverCity());
-    		receiver.setDetailAddress(notice.getReceiverAddress());
-    		order.setReceiverInfo(receiver);
-    		/**
-    		 * 备注
-    		 **/
-    		order.setRemark(notice.getRemark());
-    		
-    		/**
-    		 * 入库单详情
-    		 **/
-    		List<OrderLine> lines = new ArrayList<>();
-    		for (WarehouseNoticeDetails wnd : detailsList) {
-    			OrderLine line = new OrderLine();
-    			line.setOwnerCode(wnd.getOwnerCode());
-    			line.setItemCode(wnd.getSkuCode());
-    			line.setItemId(wnd.getItemId());
-    			line.setPlanQty(wnd.getPurchasingQuantity());
-    			line.setInventoryType("ZP");
-    			line.setProductDate(DateUtils.dateToNormalString(wnd.getProductionDate()));
-    			line.setExpireDate(DateUtils.dateToNormalString(wnd.getExpiredDate()));
-    			line.setProductCode(wnd.getProductionCode());
-    			line.setBatchCode(wnd.getBatchNo());
-    			lines.add(line);
-    		}
-    		req.setEntryOrder(order);
-    		req.setOrderLines(lines);
-    		String SUCCESS_CODE = "200";
-    		AppResult<EntryorderCreateResponse> result = qimenService.entryOrderCreate(req);
-    		if (StringUtils.equals(result.getAppcode(), SUCCESS_CODE)) { // 成功
-    			/** 
-    			 *   仓库入库通知单接收成功
-    			 *	 1.更新入库单为待仓库反馈状态
-    			 *	 2.更新入库明细表中的商品为待仓库反馈状态
-    			 *	 3.更新相应sku的在途库存数
-    			 **/
-    			postEntryOrderCreate(notice, detailsList, WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode(), null, true);
-    		} else { 
-    			// 仓库接收失败
-    			try {
-    				logInfoService.recordLog(notice,notice.getId().toString(), userId, 
-    						LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), result.getDatabuffer(), null);
-    			} catch (Exception e) {
-    				logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
-    				e.printStackTrace();
-    			}
-    			
-    			postEntryOrderCreate(notice, detailsList, WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(), 
-    					result.getDatabuffer(), false);
-    			//throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, result.getDatabuffer());
-    		}
-    		
-    	} else {
-    		throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION,"商品明细为空!");
-    	}
-	}
-    
-    private void postEntryOrderCreate(WarehouseNotice notice, List<WarehouseNoticeDetails> detailsList, 
-    		String status, String receiveResult, boolean needUpdateStock) {
-    	// 更新入库单为待仓库反馈状态
+        String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
+        WarehouseNoticeDetails detail = new WarehouseNoticeDetails();
+        detail.setWarehouseNoticeCode(noticeCode);
+        List<WarehouseNoticeDetails> detailsList = warehouseNoticeDetailsService.select(detail);
+        if (!CollectionUtils.isEmpty(detailsList)) {
+            EntryorderCreateRequest req = new EntryorderCreateRequest();
+            /**
+             * 入库单信息
+             **/
+            EntryOrder order = new EntryOrder();
+            order.setEntryOrderCode(notice.getWarehouseNoticeCode());
+            order.setOwnerCode(notice.getOwnerCode());
+            order.setPurchaseOrderCode(notice.getPurchaseOrderCode()); //scm采购单编号
+            order.setWarehouseCode(notice.getQimenWarehouseCode());// 奇门仓库编号
+            order.setOrderCreateTime(DateUtils.dateToString(notice.getCreateTime(), DateUtils.DATETIME_FORMAT));
+            order.setOrderType("CGRK"); // 采购入库
+            order.setExpectStartTime(notice.getRequriedReceiveDate());
+            order.setExpectEndTime(notice.getEndReceiveDate());
+            order.setExpressCode(notice.getTakeGoodsNo());
+            order.setSupplierCode(notice.getSupplierCode());
+            order.setSupplierName(notice.getSupplierName());
+
+            /**
+             * 发件人信息
+             **/
+            SenderInfo sender = new SenderInfo();
+            sender.setName(notice.getSender()); //发件人
+            sender.setMobile(notice.getSenderNumber());// 发件方手机
+            sender.setProvince(notice.getSenderProvince());
+            sender.setCity(notice.getSenderCity());
+            sender.setDetailAddress(notice.getSenderAddress());
+            order.setSenderInfo(sender);
+            /**
+             * 发件人信息
+             **/
+            ReceiverInfo receiver = new ReceiverInfo();
+            receiver.setName(notice.getReceiver());// 收货人
+            receiver.setMobile(notice.getReceiverNumber());
+            receiver.setProvince(notice.getReceiverProvince());
+            receiver.setCity(notice.getReceiverCity());
+            receiver.setDetailAddress(notice.getReceiverAddress());
+            order.setReceiverInfo(receiver);
+            /**
+             * 备注
+             **/
+            order.setRemark(notice.getRemark());
+
+            /**
+             * 入库单详情
+             **/
+            List<OrderLine> lines = new ArrayList<>();
+            for (WarehouseNoticeDetails wnd : detailsList) {
+                OrderLine line = new OrderLine();
+                line.setOwnerCode(wnd.getOwnerCode());
+                line.setItemCode(wnd.getSkuCode());
+                line.setItemId(wnd.getItemId());
+                line.setPlanQty(wnd.getPurchasingQuantity());
+                line.setInventoryType("ZP");
+                line.setProductDate(DateUtils.dateToNormalString(wnd.getProductionDate()));
+                line.setExpireDate(DateUtils.dateToNormalString(wnd.getExpiredDate()));
+                line.setProductCode(wnd.getProductionCode());
+                line.setBatchCode(wnd.getBatchNo());
+                lines.add(line);
+            }
+            req.setEntryOrder(order);
+            req.setOrderLines(lines);
+            String SUCCESS_CODE = "200";
+            AppResult<EntryorderCreateResponse> result = qimenService.entryOrderCreate(req);
+            if (StringUtils.equals(result.getAppcode(), SUCCESS_CODE)) { // 成功
+                /**
+                 *   仓库入库通知单接收成功
+                 *	 1.更新入库单为待仓库反馈状态
+                 *	 2.更新入库明细表中的商品为待仓库反馈状态
+                 *	 3.更新相应sku的在途库存数
+                 **/
+                postEntryOrderCreate(notice, detailsList, WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode(), null, true);
+            } else {
+                // 仓库接收失败
+                try {
+                    logInfoService.recordLog(notice, notice.getId().toString(), userId,
+                            LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), result.getDatabuffer(), null);
+                } catch (Exception e) {
+                    logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
+                    e.printStackTrace();
+                }
+
+                postEntryOrderCreate(notice, detailsList, WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode(),
+                        result.getDatabuffer(), false);
+                //throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, result.getDatabuffer());
+            }
+
+        } else {
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, "商品明细为空!");
+        }
+    }
+
+    private void postEntryOrderCreate(WarehouseNotice notice, List<WarehouseNoticeDetails> detailsList,
+                                      String status, String receiveResult, boolean needUpdateStock) {
+        // 更新入库单为待仓库反馈状态
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
         warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
@@ -580,26 +517,26 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         updateNotice.setStatus(status);
         updateNotice.setUpdateTime(Calendar.getInstance().getTime());
         updateNotice.setFailureCause(receiveResult); // 接收失败原因
-        warehouseNoticeService.updateByExampleSelective(updateNotice,warehouseNoticeExample);
+        warehouseNoticeService.updateByExampleSelective(updateNotice, warehouseNoticeExample);
         // 更新入库明细表中的商品为待仓库反馈状态
-    	Example detailsExample = new Example(WarehouseNoticeDetails.class);
-    	Example.Criteria detailsCriteria = detailsExample.createCriteria();
-    	detailsCriteria.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
-    	WarehouseNoticeDetails details = new WarehouseNoticeDetails();
-    	details.setStatus(Integer.parseInt(status));
-    	warehouseNoticeDetailsService.updateByExampleSelective(details, detailsExample);
-    	// 仓库接收成功时，更新相应sku的在途库存数
-    	if (needUpdateStock) {
-    		//channel_code, warehouse_id, sku_code
-    		String channelCode = notice.getOwnerCode();
-    		String warehouseCode = notice.getWarehouseCode();
-    		// 批量更新在途库存
-    		skuStockService.batchUpdateStockAirInventory(channelCode, warehouseCode, detailsList);
-    	}
-    	
+        Example detailsExample = new Example(WarehouseNoticeDetails.class);
+        Example.Criteria detailsCriteria = detailsExample.createCriteria();
+        detailsCriteria.andEqualTo("warehouseNoticeCode", notice.getWarehouseNoticeCode());
+        WarehouseNoticeDetails details = new WarehouseNoticeDetails();
+        details.setStatus(Integer.parseInt(status));
+        warehouseNoticeDetailsService.updateByExampleSelective(details, detailsExample);
+        // 仓库接收成功时，更新相应sku的在途库存数
+        if (needUpdateStock) {
+            //channel_code, warehouse_id, sku_code
+            String channelCode = notice.getOwnerCode();
+            String warehouseCode = notice.getWarehouseCode();
+            // 批量更新在途库存
+            skuStockService.batchUpdateStockAirInventory(channelCode, warehouseCode, detailsList);
+        }
+
     }
-    
-	@Override
+
+    @Override
     public WarehouseNotice findfindWarehouseNoticeById(Long id) {
 
         AssertUtil.notNull(id, "入库通知单的主键id为空,入库通知单查询失败");
@@ -673,26 +610,26 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             warehouseNoticeDetails.setBrandName(brand.getName());
             //为三级分类赋值
             String allCategoryName = categoryService.selectAllCategoryName(warehouseNoticeDetails.getCategoryId());
-            AssertUtil.notBlank(allCategoryName,"获得分类的全路径失败!");
+            AssertUtil.notBlank(allCategoryName, "获得分类的全路径失败!");
             warehouseNoticeDetails.setAllCategoryName(allCategoryName);
             // 采购总金额，价格转化成元
-         //   warehouseNoticeDetails.setPurchasePriceT(new BigDecimal(warehouseNoticeDetails.getPurchaseAmount()).divide(new BigDecimal(100)));
+            //   warehouseNoticeDetails.setPurchasePriceT(new BigDecimal(warehouseNoticeDetails.getPurchaseAmount()).divide(new BigDecimal(100)));
 
         }
 
     }
 
-    private String getItemId(EntryorderConfirmRequest.OrderLine orderLine){
+    private String getItemId(EntryorderConfirmRequest.OrderLine orderLine) {
         //ownerCode 货主编码,itemId 仓储系统商品ID 需要转换成本地对应的YWX,itemId
-       String itemId = orderLine.getItemId();
-       if (!StringUtils.isBlank(itemId)){
-            Warehouse warehouse  = new Warehouse();
+        String itemId = orderLine.getItemId();
+        if (!StringUtils.isBlank(itemId)) {
+            Warehouse warehouse = new Warehouse();
             warehouse.setQimenWarehouseCode(itemId);
             warehouse = warehouseService.selectOne(warehouse);
-           if (null!=warehouse){
-               return warehouse.getCode();
-           }
-       }
+            if (null != warehouse) {
+                return warehouse.getCode();
+            }
+        }
         return "";
     }
 }
