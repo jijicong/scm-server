@@ -1,20 +1,27 @@
 package org.trc.biz.impl.outbound;
 
 import com.qimen.api.request.DeliveryorderConfirmRequest;
+import com.qimen.api.request.EntryorderConfirmRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundDetail;
+import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.enums.OutboundDetailStatusEnum;
 import org.trc.enums.OutboundOrderStatusEnum;
+import org.trc.enums.QimenDeliveryEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.service.outbound.IOutBoundOrderService;
+import org.trc.service.outbound.IOutboundDetailLogisticsService;
+import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
@@ -33,6 +40,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
+    @Autowired
+    private IOutboundDetailService outboundDetailService;
+    @Autowired
+    private IOutboundDetailLogisticsService outboundDetailLogisticsService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -52,11 +63,53 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateOutboundDetail(String requestText) throws Exception {
         AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
         DeliveryorderConfirmRequest confirmRequest = (DeliveryorderConfirmRequest) XmlUtil.xmlStrToBean(requestText, DeliveryorderConfirmRequest.class);
-        if (null != confirmRequest) {
+        //包裹信息
+        List<DeliveryorderConfirmRequest.Package> packageList = confirmRequest.getPackages();
+        //发货单信息
+        DeliveryorderConfirmRequest.DeliveryOrder deliveryOrder = confirmRequest.getDeliveryOrder();
 
+        //获取发货单
+        String outboundOrderCode = deliveryOrder.getDeliveryOrderCode();
+        String status = deliveryOrder.getStatus();
+        AssertUtil.notBlank(outboundOrderCode, "发货单编号不能为空!");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setOutboundOrderCode(outboundOrderCode);
+        outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+
+        //获取所有包裹内商品详情
+
+        if(StringUtils.equals(status, QimenDeliveryEnum.DELIVERED.getCode())){
+
+        }
+    }
+
+    private void updateOutboundDetail(List<DeliveryorderConfirmRequest.Package> packageList, String outboundOrderCode){
+        List<DeliveryorderConfirmRequest.Item> itemList = null;
+        OutboundDetail outboundDetail = null;
+        OutboundDetailLogistics outboundDetailLogistics = null;
+        List<OutboundDetailLogistics> outboundDetailLogisticsList = null;
+        for(DeliveryorderConfirmRequest.Package packageD : packageList){
+            itemList = packageD.getItems();
+            if(itemList != null){
+                for(DeliveryorderConfirmRequest.Item item : itemList){
+                    Long sentNum = item.getQuantity();
+                    outboundDetail = new OutboundDetail();
+                    outboundDetail.setOutboundOrderCode(outboundOrderCode);
+                    outboundDetail.setSkuCode(item.getItemCode());
+                    outboundDetail = outboundDetailService.selectOne(outboundDetail);
+
+                    outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                    outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
+//                    if(){
+//
+//                    }
+                }
+            }
         }
     }
 
