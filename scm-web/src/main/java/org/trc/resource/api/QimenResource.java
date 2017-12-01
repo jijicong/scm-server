@@ -39,7 +39,7 @@ public class QimenResource {
     private static final String SUCCESS = "success";
 
     //发货单确认
-    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.batchconfirm";
+    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.confirm";
 
     //入库单确认
     private static final String ENTRY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
@@ -62,7 +62,7 @@ public class QimenResource {
             return new Response(SUCCESS, "0", "invalid appkey") ;
         }catch(Exception e){
             logger.error("确认失败!", e);
-            return new Response(FAILURE, "0", e.getMessage()) ;
+            return new Response(FAILURE, "sign-check-failure", e.getMessage()) ;
         }
     }
 

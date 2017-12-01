@@ -8,5 +8,10 @@ import org.trc.util.Pagenation;
 import javax.ws.rs.container.ContainerRequestContext;
 
 public interface IOutBoundOrderBiz {
+
+    //发货通知单分页查询
     Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm queryModel, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
+
+    //发货明细更新
+    void updateOutboundDetail(String requestText) throws Exception;
 }

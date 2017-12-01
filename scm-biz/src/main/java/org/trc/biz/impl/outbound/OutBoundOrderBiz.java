@@ -1,6 +1,9 @@
 package org.trc.biz.impl.outbound;
 
+import com.qimen.api.request.DeliveryorderConfirmRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
@@ -15,6 +18,7 @@ import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.XmlUtil;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -24,6 +28,9 @@ import java.util.List;
 
 @Service("outBoundOrderBiz")
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
+
+    private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
+
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
 
@@ -42,6 +49,15 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, form);
 
         return pagenation;
+    }
+
+    @Override
+    public void updateOutboundDetail(String requestText) throws Exception {
+        AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
+        DeliveryorderConfirmRequest confirmRequest = (DeliveryorderConfirmRequest) XmlUtil.xmlStrToBean(requestText, DeliveryorderConfirmRequest.class);
+        if (null != confirmRequest) {
+
+        }
     }
 
     public void setQueryParam(Example example, OutBoundOrderForm form) {
