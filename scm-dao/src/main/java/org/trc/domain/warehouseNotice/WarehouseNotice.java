@@ -139,8 +139,19 @@ public class WarehouseNotice {
     
     // 仓库接收失败原因
     private String failureCause;
+    
+    @Transient //异常原因
+    private String exceptionCause;
 
-    public String getFailureCause() {
+    public String getExceptionCause() {
+		return exceptionCause;
+	}
+
+	public void setExceptionCause(String exceptionCause) {
+		this.exceptionCause = exceptionCause;
+	}
+
+	public String getFailureCause() {
 		return failureCause;
 	}
 

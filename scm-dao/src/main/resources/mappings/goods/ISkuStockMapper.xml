@@ -6,7 +6,7 @@
         <foreach collection="detailList" item="sku" index="index" open="" close=";" separator=";">
             update sku_stock
             <set>
-                sku_stock = sku_stock + #{sku.purchasingQuantity}
+                air_inventory = air_inventory + #{sku.purchasingQuantity}
             </set>
             where
               channel_code = #{channelCode} AND warehouse_code = #{warehouseCode} AND sku_code = #{sku.skuCode}
