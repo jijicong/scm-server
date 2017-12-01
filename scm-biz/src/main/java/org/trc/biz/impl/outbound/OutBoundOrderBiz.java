@@ -111,9 +111,17 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundDetailLogistics = new OutboundDetailLogistics();
                     outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
                     outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
-//                    if(){
-//
-//                    }
+                    boolean flag = true;
+                    for(OutboundDetailLogistics logistics : outboundDetailLogisticsList){
+                        if(StringUtils.equals(logistics.getWaybillNumber(), packageD.getExpressCode())){
+                            flag = false;
+
+                        }
+                    }
+                    if(flag){
+                        outboundDetailLogistics = new OutboundDetailLogistics();
+//                        outboundDetailLogistics.setOutboundDetailId();
+                    }
                 }
             }
         }
