@@ -123,4 +123,9 @@ public class BaseService<T,PK> implements IBaseService<T,PK> {
     @Override
     public int selectCountByExample (Object example){return mapper.selectCountByExample(example);}
 
+	public void recordLog(String reqParams, Integer status, String warehouseCode, String warehouseNoticeCode) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
