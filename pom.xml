@@ -384,6 +384,13 @@
             </dependency>
 
 
+            <dependency>
+                <groupId>org.jvnet.hudson.dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>1.6.1-hudson-3</version>
+            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
