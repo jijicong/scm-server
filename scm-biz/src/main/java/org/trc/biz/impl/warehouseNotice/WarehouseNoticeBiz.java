@@ -4,7 +4,12 @@ package org.trc.biz.impl.warehouseNotice;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.EntryorderConfirmRequest;
-import com.qiniu.util.Json;
+import com.qimen.api.request.EntryorderCreateRequest;
+import com.qimen.api.request.EntryorderCreateRequest.EntryOrder;
+import com.qimen.api.request.EntryorderCreateRequest.OrderLine;
+import com.qimen.api.request.EntryorderCreateRequest.ReceiverInfo;
+import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
+import com.qimen.api.response.EntryorderCreateResponse;
 import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +37,6 @@ import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.PurchaseOrderStatusEnum;
-import org.trc.enums.WarehouseNoticeEnum;
 import org.trc.enums.WarehouseNoticeStatusEnum;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
@@ -54,20 +58,9 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
-import com.github.pagehelper.PageHelper;
-import com.qimen.api.request.EntryorderCreateRequest;
-import com.qimen.api.request.EntryorderCreateRequest.EntryOrder;
-import com.qimen.api.request.EntryorderCreateRequest.OrderLine;
-import com.qimen.api.request.EntryorderCreateRequest.ReceiverInfo;
-import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
-import com.qimen.api.response.EntryorderCreateResponse;
 import tk.mybatis.mapper.entity.Example;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -110,6 +103,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private ISkuStockService skuStockService;
 	@Autowired
     private IQimenService qimenService;
+
+    private boolean isSection = false;
+    private boolean isReceivingError = false;
 
 
     /**
@@ -195,74 +191,197 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param requestText
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateInStock(String requestText) {
-        AssertUtil.notBlank(requestText,"获取奇门返回信息为空!");
+        AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
         EntryorderConfirmRequest confirmRequest = null;
         try {
             //创建 XMLSerializer对象
             XMLSerializer xmlSerializer = new XMLSerializer();
             //将xml转为json（注：如果是元素的属性，会在json里的key前加一个@标识）
             String result = xmlSerializer.read(requestText).toString();
-            confirmRequest = JSON.parseObject(result,EntryorderConfirmRequest.class);
-        }catch (Exception e){
+            confirmRequest = JSON.parseObject(result, EntryorderConfirmRequest.class);
+        } catch (Exception e) {
             logger.error("Bean转换异常!");
         }
-        if (null!=confirmRequest){
-            //获取entryOrder 入库单信息
-            //获取senderInfo 发件人信息
+        if (null != confirmRequest) {
             //获取orderLines 入库单详情
-            List<EntryorderConfirmRequest.OrderLine> orderLineList=confirmRequest.getOrderLines();
-            //修改库存
-            if (!AssertUtil.collectionIsEmpty(orderLineList)){
-                for (EntryorderConfirmRequest.OrderLine orderLine:orderLineList ) {
-                    //入库通知单详情表
-                    WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
-                    //获取业务线,库存表
-                    SkuStock skuStock = new SkuStock();
-                    //货主ID
-                    skuStock.setChannelCode(orderLine.getOwnerCode());
-                    warehouseNoticeDetails.setOwnerCode(orderLine.getOwnerCode());
-                    //获取商品SKU
-                    skuStock.setSkuCode(orderLine.getItemCode());
-                    warehouseNoticeDetails.setSkuCode(orderLine.getItemCode());
-                    //获取仓储系统商品ID
-                    skuStock.setWarehouseItemId(orderLine.getItemId());
-                    warehouseNoticeDetails.setItemId(orderLine.getItemId());
-                    //应收商品数量(采购数量)
-                    warehouseNoticeDetails.setPurchasingQuantity(orderLine.getPlanQty());
-                    //“ZP”，正品,“ZP”，正品
+            List<EntryorderConfirmRequest.OrderLine> orderLineList = confirmRequest.getOrderLines();
+            //获取入库单号
+            String entryOrderCode = confirmRequest.getEntryOrder().getEntryOrderCode();
+            if (StringUtils.isNotBlank(entryOrderCode)) {
+                //查询入库通知单
+                WarehouseNotice warehouseNotice = new WarehouseNotice();
+                warehouseNotice.setWarehouseNoticeCode(entryOrderCode);
+                warehouseNotice = warehouseNoticeService.selectOne(warehouseNotice);
+                Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap = new HashMap<>();
+                if (null != warehouseNotice) {
+                    //获取入库单详细信息
+                    if (!AssertUtil.collectionIsEmpty(orderLineList)) {
+                        for (EntryorderConfirmRequest.OrderLine orderLine : orderLineList) {
+                            skuMap.put(orderLine.getItemCode(), new ArrayList<>());
+                        }
 
-                    //商品生产日期
-                    Date productionDate = DateUtils.parseDate(orderLine.getProductDate());
-                    warehouseNoticeDetails.setProductionDate(productionDate);
-                    //截止保质日期
-                    Date expiredDate = DateUtils.parseDate(orderLine.getExpireDate());
-                    warehouseNoticeDetails.setExpiredDate(expiredDate);
-                    //计算理论保质期
-                    warehouseNoticeDetails.setExpiredDay(DateUtils.differentDays(expiredDate,productionDate));
-                    //produceCode 生产批号,生产编码
-                    warehouseNoticeDetails.setProductionCode(orderLine.getProduceCode());
-                    //批次号
-                    warehouseNoticeDetails.setBatchNo(orderLine.getBatchCode());
-
-                    //计算库存
-                    //获取数据库中当前库存
-                    SkuStock nowStock = new SkuStock();
-                    nowStock.setSkuCode(skuStock.getSkuCode());
-                    nowStock.setChannelCode(skuStock.getChannelCode());
-                    nowStock.setWarehouseCode(getItemId(orderLine));
-                    nowStock = skuStockService.selectOne(nowStock);
-                    if (null!=nowStock){
-                        //计算库存
-                        //采购数量
-                        Long purchaserCount=orderLine.getPlanQty()==null?0:orderLine.getPlanQty();
-                        //实收=正品入库数量
-                        Long actualQtyCount = orderLine.getActualQty()==null?0:orderLine.getActualQty();
-                        //本期只考虑正品数量
+                        for (String itemCode : skuMap.keySet()) {
+                            List<EntryorderConfirmRequest.OrderLine> skuOrderLineList = new ArrayList<>();
+                            for (EntryorderConfirmRequest.OrderLine orderLine : orderLineList) {
+                                if (orderLine.getItemCode().equals(itemCode)) {
+                                    skuOrderLineList.add(orderLine);
+                                }
+                            }
+                            skuMap.put(itemCode, skuOrderLineList);
+                        }
+                        getRequestDate(skuMap,warehouseNotice);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * 处理数据
+     * @param skuMap
+     * @param warehouseNotice
+     */
+    private String getRequestDate(Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap, WarehouseNotice warehouseNotice) {
+        List<WarehouseNoticeDetails> warehouseNoticeDetailsList = new ArrayList<>();
+        for (String itemCode : skuMap.keySet()) {
+            WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
+            warehouseNoticeDetails.setSkuCode(itemCode);
+            warehouseNoticeDetails.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
+            warehouseNoticeDetails = warehouseNoticeDetailsService.selectOne(warehouseNoticeDetails);
+            //残次品入库数量
+            Long defectiveQuantity = 0L;
+            //正品入库数量
+            Long normalQuantity = 0L;
+            for (EntryorderConfirmRequest.OrderLine orderLine : skuMap.get(itemCode)) {
+                if (StringUtils.equals(orderLine.getInventoryType(), "ZP")) {
+                    normalQuantity = normalQuantity + orderLine.getActualQty();
+                } else {
+                    defectiveQuantity = defectiveQuantity + orderLine.getActualQty();
+                }
+            }
+            //判断收货状态
+            if (defectiveQuantity>0){
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+            }else if (normalQuantity<warehouseNoticeDetails.getPurchasingQuantity()){
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+            }else if (normalQuantity>warehouseNoticeDetails.getPurchasingQuantity()){
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+            } else if (normalQuantity.equals(warehouseNoticeDetails.getPurchasingQuantity())) {
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+            }
+            warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity()+defectiveQuantity);
+            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity()+defectiveQuantity);
+            warehouseNoticeDetailsList.add(warehouseNoticeDetails);
+            //修改库存
+            SkuStock skuStock =  skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
+            if (null!=skuStock){
+                //未收货之前的真实正品库存
+                Long realInventory = skuStock.getRealInventory();
+                //收货之后的真实正品库存
+                Long realInventory2 = realInventory + normalQuantity;
+                //收货之前的正品可用库存
+                Long availableInventory = skuStock.getAvailableInventory();
+                //收货之后的正品可用库存
+                Long availableInventory2 = availableInventory + normalQuantity;
+                //收货之前的残次品真实库存
+                Long defectiveInventory = skuStock.getDefectiveInventory();
+                //收货之后的残次品真实库存
+                Long defectiveInventory2 = defectiveInventory + defectiveQuantity;
+                //收货之前的在途库存
+                Long airInventory = skuStock.getAirInventory();
+                //收货之后的在途库存
+                Long airInventory2 = airInventory - realInventory - defectiveInventory2;
+
+                skuStock.setRealInventory(realInventory2);
+                skuStock.setAvailableInventory(availableInventory2);
+                skuStock.setDefectiveInventory(defectiveInventory2);
+                skuStock.setAirInventory(airInventory2);
+
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList)){
+            for (WarehouseNoticeDetails warehouseNoticeDetails:warehouseNoticeDetailsList ) {
+                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
+                    isReceivingError =true;
+                }
+                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()),WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())){
+                    isSection =true;
+                }
+            }
+        }
+        if (isReceivingError){
+            return WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
+        }else if (isSection){
+            return WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode();
+        }
+        if (!isReceivingError&&!isSection){
+            return WarehouseNoticeStatusEnum.ALL_GOODS.getCode();
+        }
+        return "";
+    }
+
+    /**
+     * 更新入库通知单详情
+     * @param orderLine
+     * @param nowWarehouseNoticeDetails
+     */
+    private void updateWarehouseNoticeDetails(EntryorderConfirmRequest.OrderLine orderLine, WarehouseNoticeDetails nowWarehouseNoticeDetails,WarehouseNotice warehouseNotice) {
+        //实际入库数量
+            nowWarehouseNoticeDetails.setActualStorageQuantity(orderLine.getActualQty()+nowWarehouseNoticeDetails.getActualStorageQuantity());
+        //商品入库时间
+        if (null!=orderLine.getActualQty()&&orderLine.getActualQty()>0){
+            nowWarehouseNoticeDetails.setStorageTime(Calendar.getInstance().getTime());
+        }
+        nowWarehouseNoticeDetails.setDefectiveStorageQuantity(0L);
+        //正品入库数量
+        nowWarehouseNoticeDetails.setNormalStorageQuantity(Integer.parseInt(String.valueOf(orderLine.getActualQty()))+ nowWarehouseNoticeDetails.getNormalStorageQuantity());
+        //收货状态
+        //判断收货状态
+        if ( nowWarehouseNoticeDetails.getDefectiveStorageQuantity()==0){
+            if (nowWarehouseNoticeDetails.getNormalStorageQuantity().equals(nowWarehouseNoticeDetails.getPurchasingQuantity())){
+                //正品入库数量=采购数量=全部收货
+                nowWarehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+            }else if (nowWarehouseNoticeDetails.getNormalStorageQuantity()<nowWarehouseNoticeDetails.getPurchasingQuantity()){
+                //正品入库数量<采购数量=部分收货
+                isSection = true;
+                nowWarehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+            }else {
+                //收货异常,记录日志
+                isReceivingError = true;
+                logInfoService.recordLog(warehouseNotice,String.valueOf(warehouseNotice.getId()),"仓库","","","");
+            }
+        }else {
+            //收货异常,本期暂不处理
+            isReceivingError = true;
+        }
+        //更新入库通知详情表
+        warehouseNoticeDetailsService.updateByPrimaryKeySelective(nowWarehouseNoticeDetails);
+    }
+
+    /**
+     * 更新库存表
+     * @param orderLine
+     * @param nowStock
+     */
+    private void updateStock(EntryorderConfirmRequest.OrderLine orderLine, SkuStock nowStock) {
+        //计算库存
+        //实收=正品入库数量
+        Long actualQtyCount = orderLine.getActualQty()==null?0:orderLine.getActualQty();
+        //本期只考虑正品数量
+        //未收货之前的真实库存
+        Long realInventory = nowStock.getRealInventory();
+        //收货之后的真实库存
+        Long realInventory2 =realInventory+actualQtyCount;
+        //在途库存(当前在途库存-实收数量)
+        Long onTheWayStock  =nowStock.getAirInventory()-actualQtyCount;
+        //在途库存写入
+        nowStock.setAirInventory(onTheWayStock);
+        //真实库存写入
+        nowStock.setRealInventory(realInventory2);
+        nowStock.setAvailableInventory(realInventory2);
+        skuStockService.updateByPrimaryKeySelective(nowStock);
     }
 
     private void handleTakeGoodsNo(WarehouseNotice warehouseNotice) {
@@ -355,7 +474,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     /**
      * 调用奇门接口，通知仓库创建入库通知单
      * @param userId 
-     * @param warehouseNotice
+     * @param notice
      */
     private void entryOrderCreate(WarehouseNotice notice, String userId) {
     	String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
