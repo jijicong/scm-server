@@ -4,7 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
+import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundOrder;
+import org.trc.enums.OutboundDetailStatusEnum;
+import org.trc.enums.OutboundOrderStatusEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.util.AssertUtil;
@@ -23,41 +28,105 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IOutBoundOrderService outBoundOrderService;
 
     @Override
-    public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm queryModel, Pagenation<OutboundOrder> page) throws Exception {
-        Example example = new Example(OutboundOrder.class);
-        Example.Criteria criteria = example.createCriteria();
-//        setQueryParam(example, criteria, queryModel);
-        Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, queryModel);
-        List<OutboundOrder> outBoundOrderList = pagenation.getResult();
-        if (AssertUtil.collectionIsEmpty(outBoundOrderList)) {
-            return pagenation;
-        }
+    public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+        AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
+        //获得业务线编码
+        String channelCode = aclUserAccreditInfo.getChannelCode();
+        AssertUtil.notBlank(channelCode, "业务线编码为空!");
 
-        List<OutboundOrder> outboundOrders = new ArrayList<>();
-        pagenation.setResult(outboundOrders);
+        //创建查询条件
+        Example example = new Example(OutboundOrder.class);
+        this.setQueryParam(example, form);
+
+        //查询数据
+        Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, form);
+
         return pagenation;
     }
 
-    public void setQueryParam(Example example, Example.Criteria criteria, OutBoundOrderForm queryModel) {
-        if (!StringUtils.isBlank(queryModel.getOutboundOrderCode())) {
-            criteria.andLike("outboundOrderCode", "%" + queryModel.getOutboundOrderCode() + "%");
+    public void setQueryParam(Example example, OutBoundOrderForm form) {
+        Example.Criteria criteria = example.createCriteria();
+        //发货通知单编号
+        if (!StringUtils.isBlank(form.getOutboundOrderCode())) {
+            criteria.andLike("outboundOrderCode", "%" + form.getOutboundOrderCode() + "%");
+
         }
-        if (!StringUtils.isBlank(queryModel.getWarehouseId())) {
-            criteria.andGreaterThan("warehouseId", queryModel.getWarehouseId());
+        //店铺订单编号
+        if (!StringUtils.isBlank(form.getShopOrderCode())) {
+            criteria.andLike("shopOrderCode", "%" + form.getShopOrderCode() + "%");
+
         }
-        if (!StringUtils.isBlank(queryModel.getReceiverName())) {
-            criteria.andEqualTo("receiverName", "%" + queryModel.getReceiverName() + "%");
+        //发货仓库id
+        if (!StringUtils.isBlank(form.getWarehouseId())) {
+            criteria.andEqualTo("warehouseId", form.getWarehouseId());
         }
-        if (!StringUtils.isBlank(queryModel.getStatus())) {
-            criteria.andLessThan("state", queryModel.getStatus());
+        //状态
+        if (!StringUtils.isBlank(form.getStatus())) {
+            criteria.andEqualTo("status", String.valueOf(form.getStatus()));
         }
-        if (StringUtil.isNotEmpty(queryModel.getStartDate())) {//开始日期
-            criteria.andGreaterThanOrEqualTo("updateTime", DateUtils.parseDate(queryModel.getStartDate()));
+        //收货人
+        if (!StringUtils.isBlank(form.getReceiverName())) {
+            criteria.andLike("receiverName", "%" + form.getReceiverName() + "%");
+
         }
-        if (StringUtil.isNotEmpty(queryModel.getEndDate())) {//截止日期
-            Date endDate = DateUtils.parseDate(queryModel.getEndDate());
-            criteria.andLessThan("updateTime", DateUtils.addDays(endDate, 1));
+        //付款时间
+        if (!StringUtils.isBlank(form.getStartPayDate())) {
+            criteria.andGreaterThan("payTime", form.getStartPayDate());
         }
-        example.orderBy("updateTime").desc();
+        if (!StringUtils.isBlank(form.getEndPayDate())) {
+            criteria.andLessThan("payTime", DateUtils.formatDateTime(DateUtils.addDays(form.getEndPayDate(), DateUtils.NORMAL_DATE_FORMAT, 1)));
+        }
+        //平台订单编号
+        if (!StringUtils.isBlank(form.getPlatformOrderCode())) {
+            criteria.andLike("platformOrderCode", "%" + form.getPlatformOrderCode() + "%");
+
+        }
+        //发货单创建日期
+        if (!StringUtils.isBlank(form.getStartCreateDate())) {
+            criteria.andGreaterThan("createTime", form.getStartCreateDate());
+        }
+        if (!StringUtils.isBlank(form.getEndCreateDate())) {
+            criteria.andLessThan("createTime", DateUtils.formatDateTime(DateUtils.addDays(form.getEndCreateDate(), DateUtils.NORMAL_DATE_FORMAT, 1)));
+        }
+        example.orderBy("status").asc();
+        example.orderBy("createTime").desc();
+    }
+
+    //获取状态
+    private String getOutboundOrderStatusByDetail(List<OutboundDetail> outboundDetailList){
+        int failureNum = 0;//仓库接收失败数
+        int waitDeliverNum = 0;//等待发货数
+        int allDeliverNum = 0;//全部发货数
+        int partsDeliverNum = 0;//部分发货数
+        int cancelNum = 0;//已取消数
+        for(OutboundDetail detail : outboundDetailList){
+            if(StringUtils.equals(OutboundDetailStatusEnum.RECEIVE_FAIL.getCode(), detail.getStatus()))
+                failureNum++;
+            else if(StringUtils.equals(OutboundDetailStatusEnum.WAITING.getCode(), detail.getStatus()))
+                waitDeliverNum++;
+            else if(StringUtils.equals(OutboundDetailStatusEnum.ALL_GOODS.getCode(), detail.getStatus()))
+                allDeliverNum++;
+            else if(StringUtils.equals(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode(), detail.getStatus()))
+                partsDeliverNum++;
+            else if(StringUtils.equals(OutboundDetailStatusEnum.CANCELED.getCode(), detail.getStatus()))
+                cancelNum++;
+        }
+        //已取消：所有商品的发货状态均更新为“已取消”时，发货单的状态就更新为“已取消”；
+        if(cancelNum == outboundDetailList.size()){
+            return OutboundOrderStatusEnum.CANCELED.getCode();
+        }
+        //仓库接收失败：所有商品的发货状态均为“仓库接收失败”时，发货单的状态就为“仓库接收失败”
+        if(failureNum == outboundDetailList.size()){
+            return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode();
+        }
+        //全部发货：所有商品的发货状态均为“全部发货”时，发货单的状态就为“全部发货”
+        if(allDeliverNum == outboundDetailList.size()){
+            return OutboundOrderStatusEnum.ALL_GOODS.getCode();
+        }
+        //部分发货：存在发货状态为“部分发货”的商品或者同时存在待发货和已发货(部分发货或全部发货)的商品，发货单的状态就为“部分发货”
+        if(partsDeliverNum > 0 || (waitDeliverNum > 0 && (partsDeliverNum > 0 || allDeliverNum > 0))){
+            return OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode();
+        }
+        return OutboundOrderStatusEnum.WAITING.getCode();
     }
 }

@@ -1,7 +1,5 @@
 package org.trc.domain.purchase;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 
