@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
@@ -32,28 +33,58 @@ import java.util.Scanner;
 
 public class QimenResource {
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
+
+    private static final String FAILURE = "failure";
+
+    private static final String SUCCESS = "success";
+
+    //发货单确认
+    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.batchconfirm";
+
+    //入库单确认
+    private static final String ENTRY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
+
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest) throws Exception{
+    public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
+        try {
+            //获取报文
+            String requestText = this.getInfo(request);
 
+            //确认逻辑
+            String method = qimenUrlRequest.getMethod();
+            this.confirmMethod(requestText, method);
+
+            return new Response(SUCCESS, "0", "invalid appkey") ;
+        }catch(Exception e){
+            logger.error("确认失败!", e);
+            return new Response(FAILURE, "0", e.getMessage()) ;
+        }
+    }
+
+    //获取报文信息
+    private String getInfo(HttpServletRequest request) throws IOException{
         InputStream is= request.getInputStream();
         Scanner scanner = new Scanner(is, "UTF-8");
         String requestText = scanner.useDelimiter("\\A").next();
         scanner.close();
-        warehouseNoticeBiz.updateInStock(requestText);
-        Response qimenResponse = new Response() ;
-        qimenResponse.setFlag("success");
-        qimenResponse.setCode("0");
-        qimenResponse.setMessage("invalid appkey");
-        return qimenResponse;
+        return requestText;
     }
 
-
-
+    //确认逻辑
+    private void confirmMethod(String requestText, String method){
+        switch (method) {
+            case ENTRY_ORDER_CONFIRM:
+                warehouseNoticeBiz.updateInStock(requestText);
+                break;
+            case DELIVERY_ORDER_CONFIRM:
+                break;
+        }
+    }
 
 
 }

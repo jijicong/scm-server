@@ -124,6 +124,12 @@ public class PurchaseOrder extends BaseDO{
     @Length(max = 100, message = "发件方详细地址字母和数字不能超过100个")
     private String senderAddress;//发件方详细地址
 
+    @Transient
+    private String senderProvinceName;
+
+    @Transient
+    private String senderCityName;
+
     public String getHandlerPriorityName() {
         return handlerPriorityName;
     }
@@ -491,5 +497,21 @@ public class PurchaseOrder extends BaseDO{
 
     public void setSenderAddress(String senderAddress) {
         this.senderAddress = senderAddress;
+    }
+
+    public String getSenderProvinceName() {
+        return senderProvinceName;
+    }
+
+    public void setSenderProvinceName(String senderProvinceName) {
+        this.senderProvinceName = senderProvinceName;
+    }
+
+    public String getSenderCityName() {
+        return senderCityName;
+    }
+
+    public void setSenderCityName(String senderCityName) {
+        this.senderCityName = senderCityName;
     }
 }

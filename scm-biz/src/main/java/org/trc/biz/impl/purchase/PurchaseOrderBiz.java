@@ -885,6 +885,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
 
+    //type 1:查询详情 2:编辑
     @Override
     public PurchaseOrder findPurchaseOrderAddDataById(Long id)  {
 
@@ -954,8 +955,27 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 purchaseOrder.setHandlerPriorityName(dict.getName());
             }
         }
+
+        this.setArea(purchaseOrder);
         return purchaseOrder;
 
+    }
+
+    private void setArea(PurchaseOrder purchaseOrder){
+        String province = "";
+        String city = "";
+        Area area = new Area();
+        area.setCode(purchaseOrder.getSenderProvince());
+        area = locationUtilService.selectOne(area);
+        if(area != null){
+            purchaseOrder.setSenderProvinceName(area.getProvince());
+        }
+        area = new Area();
+        area.setCode(purchaseOrder.getSenderCity());
+        area = locationUtilService.selectOne(area);
+        if(area != null){
+            purchaseOrder.setSenderCityName(area.getCity());
+        }
     }
 
     @Override
