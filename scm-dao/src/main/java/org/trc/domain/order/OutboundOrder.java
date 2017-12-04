@@ -82,6 +82,8 @@ public class OutboundOrder implements Serializable {
 
     private String isCancel;
 
+    private String isTimeOut;
+
     @Transient
     private List<OutboundDetail> outboundDetailList;
 
@@ -331,5 +333,13 @@ public class OutboundOrder implements Serializable {
 
     public void setIsCancel(String isCancel) {
         this.isCancel = isCancel;
+    }
+
+    public String getIsTimeOut() {
+        return isTimeOut;
+    }
+
+    public void setIsTimeOut(String isTimeOut) {
+        this.isTimeOut = isTimeOut;
     }
 }

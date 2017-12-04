@@ -12,4 +12,6 @@ public interface ISkuStockMapper extends BaseMapper<SkuStock>{
 	void batchUpdateStockAirInventory(@Param ("channelCode") String channelCode, @Param ("warehouseCode") String warehouseCode,
 			@Param ("detailList") List<WarehouseNoticeDetails> detailList);
 
+	void batchUpdateStock(List<SkuStock> queryList);
+
 }
