@@ -12,6 +12,17 @@
               channel_code = #{channelCode} AND warehouse_code = #{warehouseCode} AND sku_code = #{sku.skuCode}
         </foreach>
     </update>    
+    
+    <update id="batchUpdateStock"  parameterType="Object" >
+        <foreach collection="List" item="stock" index="index" open="" close=";" separator=";">
+            update sku_stock
+            <set>
+                air_inventory = air_inventory + #{sku.purchasingQuantity}
+            </set>
+            where
+              id = #{stock.id}
+        </foreach>
+    </update>    
 
 
 </mapper>
