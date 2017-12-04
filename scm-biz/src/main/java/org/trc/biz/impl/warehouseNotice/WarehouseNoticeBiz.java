@@ -238,21 +238,23 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         //获取异常入库sku,信息
                         String failureCause = "";
                         if (!AssertUtil.collectionIsEmpty(defectiveSku)) {
+                            //记录残次入库信息
                             failureCause = "SKU[" + StringUtils.join(defectiveSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库。";
                         }
                         if (!AssertUtil.collectionIsEmpty(errorSku)) {
+                            //记录入库异常
                             failureCause = failureCause + "SKU[" + StringUtils.join(errorSku, SupplyConstants.Symbol.COMMA) + "]]正品入库数量大于实际采购数量。";
                         }
                         warehouseNotice.setExceptionCause(failureCause);
                         //记录日志
                         if (warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
-                            logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "WAREHOUSE", "收货异常", failureCause, null);
+                            logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "warehouse", "收货异常", failureCause, null);
                         }
                         if (warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.ALL_GOODS.getCode())) {
-                            logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "WAREHOUSE", "全部收货", "", null);
+                            logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "warehouse", "全部收货", "", null);
                         }
                         if (warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())) {
-                            logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "WAREHOUSE", "部分收货", "", null);
+                            logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "warehouse", "部分收货", "", null);
                         }
                         warehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
 
