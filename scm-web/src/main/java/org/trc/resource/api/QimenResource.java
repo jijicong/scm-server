@@ -57,6 +57,7 @@ public class QimenResource {
         try {
             //获取报文
             String requestText = this.getInfo(request,qimenUrlRequest);
+            logger.info("qimenUrlRequest"+JSON.toJSONString(qimenUrlRequest));
             logger.info("获取奇门报文:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
@@ -71,10 +72,10 @@ public class QimenResource {
 
     //获取报文信息
     private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException{
+        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
         InputStream is= request.getInputStream();
         Scanner scanner = new Scanner(is, "UTF-8");
         String requestText = scanner.useDelimiter("\\A").next();
-        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
         scanner.close();
         return requestText;
     }
@@ -82,8 +83,8 @@ public class QimenResource {
     //确认逻辑
     private void confirmMethod(String requestText, String method){
         switch (method) {
-            case ENTRY_ORDER_CONFIRM:
-                warehouseNoticeBiz.updateInStock(requestText);
+            case ENTRY_ORDER_CONFIRM:warehouseNoticeBiz
+                .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
                 break;
