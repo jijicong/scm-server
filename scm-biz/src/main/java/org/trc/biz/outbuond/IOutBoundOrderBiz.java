@@ -24,4 +24,6 @@ public interface IOutBoundOrderBiz {
      * @throws Exception
      */
     String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
+
+    Response getOutboundOrderDetail(Long id);
 }
