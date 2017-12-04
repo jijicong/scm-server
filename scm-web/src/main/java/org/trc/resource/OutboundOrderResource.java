@@ -46,6 +46,14 @@ public class OutboundOrderResource {
         return ResultUtil.createSucssAppResult("查询有效的仓库成功!", warehouseBiz.findWarehouseValid());
     }
 
+    //发货通知单创建
+    @POST
+    @Path(SupplyConstants.OutboundOrder.DELIVERY_ORDER_CREATE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createOutbound(@FormParam("id") String id,@Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult("重新发送成功",outBoundOrderBiz.createOutbound(id,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    }
+
     /**
      * 取消订单
      */

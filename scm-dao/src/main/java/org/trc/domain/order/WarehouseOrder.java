@@ -48,9 +48,9 @@ public class WarehouseOrder implements Serializable {
     private String channelCode;
 
     // 销售渠道编码
-    /*@NotEmpty
+    @NotEmpty
     @Length(max = 32)
-    private String sellCode;*/
+    private String sellCode;
 
     // 来源平台编码
     private String platformCode;
@@ -652,11 +652,11 @@ public class WarehouseOrder implements Serializable {
         this.handCancelTime = handCancelTime;
     }
 
-    /*public String getSellCode() {
+    public String getSellCode() {
         return sellCode;
     }
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
-    }*/
+    }
 }

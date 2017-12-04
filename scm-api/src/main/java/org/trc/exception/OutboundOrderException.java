@@ -6,6 +6,7 @@ import org.trc.enums.ExceptionEnum;
  * Created by hzcyn on 2017/12/4.
  */
 public class OutboundOrderException extends  RuntimeException  {
+
     /**
      * 异常枚举
      */
@@ -31,6 +32,6 @@ public class OutboundOrderException extends  RuntimeException  {
 
     @Override
     public String getMessage() {
-        return message;
+        return this.message;
     }
 }
