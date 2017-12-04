@@ -1,6 +1,7 @@
 package org.trc.biz.impl.outbound;
 
 import com.qimen.api.request.DeliveryorderConfirmRequest;
+import com.qimen.api.request.DeliveryorderCreateRequest;
 import com.qimen.api.request.EntryorderConfirmRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
+import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundDetailLogistics;
@@ -19,6 +21,7 @@ import org.trc.enums.OutboundOrderStatusEnum;
 import org.trc.enums.QimenDeliveryEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.service.System.IWarehouseService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
@@ -40,6 +43,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
+    @Autowired
+    private IWarehouseService warehouseService;
+
     @Autowired
     private IOutboundDetailService outboundDetailService;
     @Autowired
@@ -122,6 +128,44 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 }
             }
         }
+    }
+
+    @Override
+    public void createOutbound(String outboundOrderId) throws Exception {
+        AssertUtil.notBlank(outboundOrderId,"ID不能为空");
+        //根据id获取到发货通知单
+        OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
+        AssertUtil.notNull(outboundOrder,"根据发货通知单id获取发货通知单记录为空");
+        Long warehouseId = outboundOrder.getWarehouseId();
+        Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
+
+        //参数校验
+        verifyParam(warehouse,outboundOrder);
+        DeliveryorderCreateRequest request = new DeliveryorderCreateRequest();
+        DeliveryorderCreateRequest.DeliveryOrder deliveryOrder =  new DeliveryorderCreateRequest.DeliveryOrder();
+        //request.setDeliveryOrder();
+    }
+
+    private void verifyParam(Warehouse warehouse,OutboundOrder outboundOrder){
+        AssertUtil.notBlank(outboundOrder.getOutboundOrderCode(),"出库通知单编号不能为空");
+        AssertUtil.notBlank(outboundOrder.getOrderType(),"出库单类型不能为空");
+        AssertUtil.notBlank(warehouse.getCode(),"仓库编码不能为空");
+        AssertUtil.notNull(outboundOrder.getCreateTime(),"发货单创建时间不能为空");
+        AssertUtil.notNull(outboundOrder.getPayTime(),"付款时间不能为空");
+        AssertUtil.notBlank(outboundOrder.getShopName(),"店铺名称不能为空");
+        AssertUtil.notBlank(warehouse.getName(),"发货仓库名称不能为空");
+        AssertUtil.notBlank(warehouse.getSenderPhoneNumber(),"运单发件人手机号不能为空");
+        AssertUtil.notBlank(warehouse.getProvince(),"发货仓库省份不能为空");
+        AssertUtil.notBlank(warehouse.getCity(),"发货仓库城市不能为空");
+        AssertUtil.notBlank(warehouse.getAddress(),"发货仓库的详细地址不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverName(),"收件人姓名不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverPhone(),"收件人联系方式不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverProvince(),"收件人省份不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverCity(),"收件人城市不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverAddress(),"收件人详细地址不能为空");
+        AssertUtil.notBlank(outboundOrder.getBuyerMessage(),"买家留言不能为空");
+        AssertUtil.notBlank(outboundOrder.getSellerMessage(),"卖家留言不能为空");
+        //AssertUtil.not
     }
 
     public void setQueryParam(Example example, OutBoundOrderForm form) {
@@ -209,4 +253,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
         return OutboundOrderStatusEnum.WAITING.getCode();
     }
+
+
 }
