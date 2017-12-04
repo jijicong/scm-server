@@ -346,23 +346,22 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         return false;
     }
 
-    private void updateOutboundDetailState(String outboundOrderCode,String state){
     @Override
     public void isTimeOutTimer() {
         logger.info("检查出库通知单是否超过七天的定时任务启动----->");
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("status",OutboundOrderStatusEnum.CANCELED.getCode());
+        criteria.andEqualTo("status", OutboundOrderStatusEnum.CANCELED.getCode());
         List<OutboundOrder> list = outBoundOrderService.selectByExample(example);
-        if (list.size()==0){
+        if (list.size() == 0) {
             logger.info("没有超过七天的出库通知单");
             return;
         }
-        for (OutboundOrder outboundOrder:list){
+        for (OutboundOrder outboundOrder : list) {
             //比较时间是否超过7天
 
             //超过7天的则将is_timeOut更新为1
-            OutboundOrder update =  new OutboundOrder();
+            OutboundOrder update = new OutboundOrder();
 //            update.setIsTimeOut();
 //            outBoundOrderService.updateByPrimaryKeySelective()
 
@@ -471,7 +470,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //处理信息
         if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
             this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
-            this.updateOrderCancelInfo(outboundOrder, remark);
+            this.updateOrderCancelInfo(outboundOrder, remark,false);
             return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
         } else {
             return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
@@ -490,9 +489,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     //修改取消发货单信息
-    private void updateOrderCancelInfo(OutboundOrder outboundOrder, String remark){
+    private void updateOrderCancelInfo(OutboundOrder outboundOrder, String remark, boolean isClose){
         outboundOrder.setStatus(OutboundOrderStatusEnum.CANCELED.getCode());
-        outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        if(isClose){
+            outboundOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
+        }else {
+            outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        }
         outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
         outboundOrder.setRemark(remark);
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
