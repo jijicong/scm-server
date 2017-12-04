@@ -531,17 +531,6 @@ public class SupplyConstants {
      */
     public static final class QinNiu {
 
-        /**
-         * 用到七牛存储的系统功能模块
-         */
-        public static final class Module {
-            //属性管理
-            public static final String PROPERTY = "property";
-            //供应商管理
-            public static final String SUPPLY = "supply";
-        }
-
-
         //根路径
         public static final String ROOT = "qinniu";
         //上传
@@ -554,6 +543,16 @@ public class SupplyConstants {
         public static final String THUMBNAIL = "thumbnail";
         //批量获取url
         public static final String URLS = "urls";
+
+        /**
+         * 用到七牛存储的系统功能模块
+         */
+        public static final class Module {
+            //属性管理
+            public static final String PROPERTY = "property";
+            //供应商管理
+            public static final String SUPPLY = "supply";
+        }
 
     }
 
@@ -925,6 +924,28 @@ public class SupplyConstants {
 
         public static final String WAREHOUSE_LIST = "warehouseList";
 
+        //发货通知单创建路径
+        public static final String DELIVERY_ORDER_CREATE = "deliveryOrderCreate";
+
+        /**
+         * 取消订单
+         */
+        public static final String ORDER_CANCEL = "orderCancel";
+
+        /**
+         * 取消关闭
+         */
+        public static final String CANCEL_CLOSE = "cancelClose";
+
+        /**
+         * 关闭
+         */
+        public static final String CLOSE = "close";
+
+        /**
+         * 获取发货通知单详情
+         */
+        public static final String OUTBOUND_ORDER_DETAIL = "outboundOrderDetail";
     }
 
     /**
@@ -1058,6 +1079,14 @@ public class SupplyConstants {
     public static final class SystemConfigType {
         //对接供应链渠道类型编码
         public final static String CHANNEL = "channel";
+    }
+
+    /**
+     * 订单来源平台编码
+     */
+    public static final class SourcePlatformCodeType {
+        //奇门接口订单来源编码
+        public final static String OTHER = "OTHER";
     }
 
 }

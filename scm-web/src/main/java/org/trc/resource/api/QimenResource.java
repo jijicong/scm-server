@@ -2,27 +2,27 @@ package org.trc.resource.api;
 
 
 import com.alibaba.fastjson.JSON;
-import com.qimen.api.DefaultQimenClient;
-import com.qimen.api.QimenClient;
-import com.qimen.api.request.EntryorderConfirmRequest;
-import org.apache.http.HttpRequest;
+import com.taobao.api.internal.spi.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.trc.biz.qimen.IQimenBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.form.QimenUrlRequest;
 import org.trc.form.Response;
+import org.trc.service.config.IWarehouseNoticeCallbackService;
+import org.trc.util.SpiUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
 
 
 /**
@@ -33,60 +33,58 @@ import java.util.Scanner;
 @Path(SupplyConstants.Qimen.QI_MEN)
 
 public class QimenResource {
-    private Logger logger = LoggerFactory.getLogger(QimenResource.class);
-
     private static final String FAILURE = "failure";
-
     private static final String SUCCESS = "success";
-
     //发货单确认
     private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
-
     //入库单确认
     private static final String ENTRY_ORDER_CONFIRM = "entryorder.confirm";
-
+    private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
     @Autowired
     private IQimenBiz qimenBiz;
 
+    @Value("${qimen.secret}")
+    private String secret;
+    @Autowired
+    private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
+
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
+            //接收到请求,先进行验签
+            logger.info("URL@@@:"+request.getRequestURI());
+            logger.info("URL---:"+request.getContextPath());
+            logger.info("URL+++:"+request.getContentType());
+            logger.info("qimenUrlRequest:"+ JSON.toJSONString(qimenUrlRequest));
+            CheckResult checkResult =  SpiUtils.checkSign(request,secret);
+             if (checkResult.isSuccess()){
+                 logger.info("验签成功!");
+             }else {
+                 logger.info("验签失败!");
+             }
             //获取报文
-            logger.info("qimenUrlRequest"+JSON.toJSONString(qimenUrlRequest));
-            logger.info("ContentType:"+request.getContentType());
-            String requestText = this.getInfo(request,qimenUrlRequest);
-            logger.info("获取奇门报文:"+requestText);
+            String requestText =checkResult.getRequestBody();
+             logger.info("报文信息:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
+            logger.info("请求方法:"+method);
             this.confirmMethod(requestText, method);
-
-            return new Response(SUCCESS, "0", "invalid appkey") ;
+            return new Response(SUCCESS, "0", "接收奇门反馈成功!") ;
         }catch(Exception e){
-            logger.error("确认失败!", e);
-            return new Response(FAILURE, "sign-check-failure", e.getMessage()) ;
+            return new Response(FAILURE, "sign-check-failure", "接收奇门反馈失败!") ;
         }
-    }
-
-    //获取报文信息
-    private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException{
-        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
-        InputStream is= request.getInputStream();
-        Scanner scanner = new Scanner(is, "UTF-8");
-        String requestText = scanner.useDelimiter("\\A").next();
-        scanner.close();
-        return requestText;
     }
 
     //确认逻辑
     private void confirmMethod(String requestText, String method){
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
-                warehouseNoticeBiz
-                        .updateInStock(requestText);
+//                warehouseNoticeBiz
+//                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
                 break;

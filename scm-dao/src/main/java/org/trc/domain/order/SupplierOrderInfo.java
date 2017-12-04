@@ -89,14 +89,14 @@ public class SupplierOrderInfo extends ScmDO{
     private Long payment;
 
     // 渠道编码
-    /*@NotEmpty
+    @NotEmpty
     @Length(max = 32)
     private String channelCode;
 
     // 销售渠道编码
     @NotEmpty
     @Length(max = 32)
-    private String sellCode;*/
+    private String sellCode;
 
     public Long getId() {
         return id;
@@ -298,7 +298,7 @@ public class SupplierOrderInfo extends ScmDO{
         this.payment = payment;
     }
 
-    /*public String getChannelCode() {
+    public String getChannelCode() {
         return channelCode;
     }
 
@@ -312,5 +312,5 @@ public class SupplierOrderInfo extends ScmDO{
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
-    }*/
+    }
 }

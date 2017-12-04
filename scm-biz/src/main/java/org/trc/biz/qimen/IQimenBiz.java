@@ -1,5 +1,7 @@
 package org.trc.biz.qimen;
 
+import com.taobao.api.internal.spi.CheckResult;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -9,5 +11,5 @@ public interface IQimenBiz {
     /**
      * 奇门回调验签
      */
-    void  checkResult( HttpServletRequest request,String targetAppSecret);
+    CheckResult checkResult(HttpServletRequest request, String targetAppSecret);
 }

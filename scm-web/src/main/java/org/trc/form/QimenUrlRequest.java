@@ -20,6 +20,8 @@ public class QimenUrlRequest {
     private String customerId;
     @QueryParam("format")
     private String format;
+    @QueryParam("sign")
+    private String sign;
 
     public String getSign_method() {
         return sign_method;
@@ -75,6 +77,14 @@ public class QimenUrlRequest {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
     }
 }
 
