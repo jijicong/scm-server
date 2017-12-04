@@ -1,6 +1,7 @@
 package org.trc.resource.api;
 
 
+import com.alibaba.fastjson.JSON;
 import com.taobao.api.internal.spi.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class QimenResource {
             logger.info("URL@@@:"+request.getRequestURI());
             logger.info("URL---:"+request.getContextPath());
             logger.info("URL+++:"+request.getContentType());
+            logger.info("qimenUrlRequest:"+ JSON.toJSONString(qimenUrlRequest));
             CheckResult checkResult =  SpiUtils.checkSign(request,secret);
              if (checkResult.isSuccess()){
                  logger.info("验签成功!");
