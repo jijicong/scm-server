@@ -1,7 +1,6 @@
 package org.trc.resource.api;
 
 
-import com.alibaba.fastjson.JSON;
 import com.taobao.api.internal.spi.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 
 
 /**
@@ -56,30 +54,22 @@ public class QimenResource {
     @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
-
+            //接收到请求,先进行验签
+             CheckResult checkResult =  SpiUtils.checkSign(request,secret);
+             if (checkResult.isSuccess()){
+                 logger.info("验签成功!");
+             }
             //获取报文
-            String requestText = this.getInfo(request,qimenUrlRequest);
+            String requestText =checkResult.getRequestBody();
+             logger.info("报文信息:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
+            logger.info("请求方法:"+method);
             this.confirmMethod(requestText, method);
-            return new Response(SUCCESS, "0", "invalid appkey") ;
+            return new Response(SUCCESS, "0", "接收奇门反馈成功!") ;
         }catch(Exception e){
-            logger.error("确认失败!", e);
-            return new Response(FAILURE, "sign-check-failure", e.getMessage()) ;
+            return new Response(FAILURE, "sign-check-failure", "接收奇门反馈失败!") ;
         }
-    }
-
-    //获取报文信息
-    private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException {
-        String requestText = "";
-        CheckResult checkResult = SpiUtils.checkSign(request,secret);
-        if (checkResult.isSuccess()){
-             requestText = checkResult.getRequestBody();
-
-        }else {
-            logger.info(JSON.toJSONString(checkResult.isSuccess()));
-        }
-        return requestText;
     }
 
     //确认逻辑
