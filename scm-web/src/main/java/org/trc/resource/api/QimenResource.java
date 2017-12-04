@@ -52,7 +52,7 @@ public class QimenResource {
 
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //获取报文
