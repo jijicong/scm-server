@@ -27,6 +27,10 @@ public interface IOutBoundOrderBiz {
 
     Response getOutboundOrderDetail(Long id);
 
+    Response close(Long id, String remark);
+
+    Response cancelClose(Long id);
+
     //判读是否超过7天，超过七天则将置为1
     void isTimeOutTimer();
 }

@@ -52,7 +52,6 @@ import java.util.List;
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     public final static String SUCCESS = "200";
-    private static final String SUCCESS_CODE = "200";
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
@@ -272,6 +271,82 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
+    @Override
+    public Response close(Long id, String remark) {
+        try{
+            AssertUtil.notNull(id, "发货单主键不能为空");
+            AssertUtil.notBlank(remark, "关闭不能为空");
+
+            //获取发货单信息
+            OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(id);
+
+            if(!StringUtils.equals(outboundOrder.getStatus(), OutboundOrderStatusEnum.RECEIVE_FAIL.getCode())){
+                String msg = "发货通知单状态必须为仓库接收失败!";
+                logger.error(msg);
+                throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+            }
+
+            //修改状态
+            this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
+            this.updateOrderCancelInfo(outboundOrder, remark, true);
+            return ResultUtil.createSuccessResult("发货通知单关闭成功！", "");
+        }catch(Exception e){
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单关闭失败！", "");
+        }
+    }
+
+    @Override
+    public Response cancelClose(Long id) {
+        try{
+            AssertUtil.notNull(id, "发货单主键不能为空");
+
+            //获取发货单信息
+            OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(id);
+
+            if(!StringUtils.equals(outboundOrder.getIsClose(), ZeroToNineEnum.ONE.getCode())){
+                String msg = "发货通知单没有关闭!";
+                logger.error(msg);
+                throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+            }
+
+            if(this.checkDate(outboundOrder.getUpdateTime())){
+                String msg = "发货通知单已经超过7天，不允许取消关闭!";
+                logger.error(msg);
+                throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+            }
+
+            //修改状态
+            this.updateDetailStatus(OutboundDetailStatusEnum.RECEIVE_FAIL.getCode(), outboundOrder.getOutboundOrderCode());
+            this.updateOrderCancelInfoExt(outboundOrder, true, OutboundOrderStatusEnum.RECEIVE_FAIL.getCode());
+            return ResultUtil.createSuccessResult("取消关闭成功！", "");
+        }catch(Exception e){
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "取消关闭失败！", "");
+        }
+    }
+
+    private void updateOrderCancelInfoExt(OutboundOrder outboundOrder, boolean isClose, String code){
+        outboundOrder.setStatus(code);
+        if(isClose){
+            outboundOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
+        }else{
+            outboundOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        }
+        outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
+        outboundOrder.setRemark("");
+        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+    }
+
+    private boolean checkDate(Date updateTime){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(updateTime);
+        calendar.add(Calendar.DATE, Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()));
+        if(calendar.compareTo(Calendar.getInstance()) > 1){
+            return true;
+        }
+        return false;
+    }
+
+    private void updateOutboundDetailState(String outboundOrderCode,String state){
     @Override
     public void isTimeOutTimer() {
         logger.info("检查出库通知单是否超过七天的定时任务启动----->");
