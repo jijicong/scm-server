@@ -16,13 +16,12 @@ public interface IOutBoundOrderBiz {
     //发货明细更新
     void updateOutboundDetail(String requestText) throws Exception;
 
+    Response orderCancel(Long id, String remark);
+
     /**
      * 发货通知单创建
      * @param outboundOrderId 主键
      * @throws Exception
      */
-    void createOutbound(String outboundOrderId) throws Exception;
-
-    Response orderCancel(Long id, String remark);
     String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 }

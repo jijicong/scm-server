@@ -8,6 +8,13 @@ public enum ExceptionOrderHandlerEnum {
     WAIT_HANDLER(1,"待了结"),HANDLERED(2,"已了结");
 
 
+    private Integer code;
+    private String name;
+    ExceptionOrderHandlerEnum(Integer code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
     public static ExceptionOrderHandlerEnum queryNameByCode(Integer code){
         for(ExceptionOrderHandlerEnum sourceEnum: ExceptionOrderHandlerEnum.values()){
             if (sourceEnum.getCode().equals(code)){
@@ -15,14 +22,6 @@ public enum ExceptionOrderHandlerEnum {
             }
         }
         return null;
-    }
-
-    private Integer code;
-    private String name;
-
-    ExceptionOrderHandlerEnum(Integer code, String name) {
-        this.code = code;
-        this.name = name;
     }
 
     public Integer getCode() {

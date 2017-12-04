@@ -51,8 +51,8 @@ import java.util.List;
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     public final static String SUCCESS = "200";
+    private static final String SUCCESS_CODE = "200";
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
-
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
     @Autowired
@@ -62,14 +62,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Autowired
     private IOutboundDetailLogisticsService outboundDetailLogisticsService;
     @Autowired
-    private IQimenService qimenService;
-    @Autowired
     private ILogInfoService logInfoService;
     @Autowired
     private IQimenService qimenService;
-
-    private static final String SUCCESS_CODE = "200";
-
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -227,6 +222,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode",outboundOrder.getOutboundOrderCode());
         List<OutboundDetail> outboundDetails = outboundDetailService.selectByExample(example);
+        AssertUtil.isTrue(outboundDetails.size()!=0,"发货通知单详情记录不能为空");
         //参数校验
         logger.info("发货通知单验参开始------->");
         verifyParam(warehouse,outboundOrder,outboundDetails);
@@ -277,7 +273,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         deliveryOrder.setOrderType(outboundOrder.getOrderType());
         deliveryOrder.setWarehouseCode(outboundOrder.getWarehouseCode());
         deliveryOrder.setCreateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
-        deliveryOrder.setPlaceOrderTime(outboundOrder.getPayTime());
+        deliveryOrder.setPlaceOrderTime(DateUtils.formatDateTime(outboundOrder.getPayTime()));
         deliveryOrder.setOperateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
         deliveryOrder.setShopNick(outboundOrder.getShopName());
         DeliveryorderCreateRequest.SenderInfo senderInfo = new DeliveryorderCreateRequest.SenderInfo();
@@ -368,7 +364,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
     }
 
-    private void verifyParam(Warehouse warehouse,OutboundOrder outboundOrder){
+    private void verifyParam(Warehouse warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
         AssertUtil.notBlank(outboundOrder.getOutboundOrderCode(),"出库通知单编号不能为空");
         AssertUtil.notBlank(outboundOrder.getOrderType(),"出库单类型不能为空");
         AssertUtil.notBlank(warehouse.getCode(),"仓库编码不能为空");

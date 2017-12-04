@@ -154,7 +154,6 @@ public enum ExceptionEnum{
     TRC_LOGISTIC_EXCEPTION("600110","物流信息请求异常"),
 
     WAREHOUSE_INFO_EXCEPTION("700101","仓库信息管理异常"),
-    OUTBOUND_ORDER_EXCEPTION("800101","发货通知单异常"),
 
     JING_DONG_USE_EXCEPTION("1000101","京东地址更新调用异常"),
     JING_DONG_ORDER_UPDATE_OPERATE_STATE_EXCEPTION("1000102","京东订单明细操作更新异常"),

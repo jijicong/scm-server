@@ -77,36 +77,42 @@ import java.util.concurrent.Executors;
 @Service("scmOrderBiz")
 public class ScmOrderBiz implements IScmOrderBiz {
 
-    private Logger log = LoggerFactory.getLogger(ScmOrderBiz.class);
-
-    //创建线程池
-    private ExecutorService threadPool = Executors.newFixedThreadPool(4);
-
     //京东地址分隔符
     public final static String JING_DONG_ADDRESS_SPLIT = "/";
-
     public final static String FLAG_EXT = "-";
     //html换行符
     public final static String HTML_BR = "<br>";
-
     public final static String F = "F";
-
     public final static String DISTRICT = "区";
     //订单接收时间间隔
     public final static String ORDER_RECEIVE_INTERVAL = "orderReceiveInterval";
-
     //供应商下单接口调用失败重试次数
     public final static int SUBMIT_SUPPLIER_ORDER_FAILURE_TIMES = 3;
-
     //供应商平台取消订单说明
     public final static String SUPPLIER_PLATFORM_CANCEL_ORDER = "供应商平台已取消订单";
-
     //系统操作员
     public final static String SYSTEM = "系统";
-
     public final static String BAR = "-";
     public final static String EXCEL = ".xls";
-
+    //业务类型：交易
+    public final static String BIZ_TYPE_DEAL = "DEAL";
+    //京东下单价格不匹配错误代码
+    public final static String JD_ORDER_SUBMIT_PRICE_ERROR = "3019";
+    //京东下单商品库存不足
+    public final static String JD_ORDER_SUBMIT_STOCK_LESS = "3008";
+    //京东下单余额不足错误代码
+    public final static String JD_BALANCE_NOT_ENOUGH = "3017";
+    //金额为0的常量
+    public final static String ZERO_MONEY_STR = "0.000";
+    //下单成功日志信息
+    public final static String ORDER_SUCCESS_INFO = "下单成功";
+    //下单失败日志信息
+    public final static String ORDER_FAILURE_INFO = "下单失败";
+    //下单成功日志信息
+    public final static String ORDER_CANCEL_INFO = "已取消";
+    private Logger log = LoggerFactory.getLogger(ScmOrderBiz.class);
+    //创建线程池
+    private ExecutorService threadPool = Executors.newFixedThreadPool(4);
     //渠道订单金额校验:1-是,0-否
     @Value("${channel.orderMoneyCheck}")
     private String channelOrderMoneyCheck;
@@ -116,8 +122,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //京东下单方式 0--预占库存方式 1--不是预占库存
     @Value("${jd.submit.state}")
     private String jdSubmitState;
-
-
     @Autowired
     private IShopOrderService shopOrderService;
     @Autowired
@@ -170,37 +174,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private IWarehouseService warehouseService;
-
-
     @Value("{trc.jd.logistic.url}")
     private String TRC_JD_LOGISTIC_URL;
-
     private String SP0 = "SP0";
-
     private String SP1 = "SP1";
-
     private String ONE = "1";
-
     private String ZERO = "0";
-
-    //业务类型：交易
-    public final static String BIZ_TYPE_DEAL = "DEAL";
-
-    //京东下单价格不匹配错误代码
-    public final static String JD_ORDER_SUBMIT_PRICE_ERROR = "3019";
-    //京东下单商品库存不足
-    public final static String JD_ORDER_SUBMIT_STOCK_LESS = "3008";
-    //京东下单余额不足错误代码
-    public final static String JD_BALANCE_NOT_ENOUGH = "3017";
-    //金额为0的常量
-    public final static String ZERO_MONEY_STR = "0.000";
-    //下单成功日志信息
-    public final static String ORDER_SUCCESS_INFO = "下单成功";
-    //下单失败日志信息
-    public final static String ORDER_FAILURE_INFO = "下单失败";
-    //下单成功日志信息
-    public final static String ORDER_CANCEL_INFO = "已取消";
-
 
     @Override
     @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)

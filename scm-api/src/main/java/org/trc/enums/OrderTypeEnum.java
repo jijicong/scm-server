@@ -7,6 +7,13 @@ public enum OrderTypeEnum {
     SELF_PURCHARSE("0","自采"),SUPPLIER("1","代发");
 
 
+    private String code;
+    private String name;
+    OrderTypeEnum(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
     public static OrderTypeEnum queryNameByCode(Integer code){
         for(OrderTypeEnum sourceEnum: OrderTypeEnum.values()){
             if (sourceEnum.getCode().equals(code)){
@@ -14,14 +21,6 @@ public enum OrderTypeEnum {
             }
         }
         return null;
-    }
-
-    private String code;
-    private String name;
-
-    OrderTypeEnum(String code, String name) {
-        this.code = code;
-        this.name = name;
     }
 
     public String getCode() {

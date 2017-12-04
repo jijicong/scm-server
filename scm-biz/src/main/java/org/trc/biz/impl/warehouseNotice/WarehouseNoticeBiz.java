@@ -66,6 +66,7 @@ import java.util.*;
 @Service("warehouseNoticeBiz")
 public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
+    public final static String ZP = "ZP";
     private Logger logger = LoggerFactory.getLogger(PurchaseOrderAuditBiz.class);
     @Autowired
     private IWarehouseNoticeService warehouseNoticeService;
@@ -99,13 +100,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private IQimenService qimenService;
-
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private List<String> defectiveSku = new ArrayList<>();
     private List<String> errorSku = new ArrayList<>();
-    public final static String ZP = "ZP";
-
 
     /**
      * 入库通知单分页查询

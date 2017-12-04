@@ -33,18 +33,13 @@ import java.util.Scanner;
 @Path(SupplyConstants.Qimen.QI_MEN)
 
 public class QimenResource {
-    private Logger logger = LoggerFactory.getLogger(QimenResource.class);
-
     private static final String FAILURE = "failure";
-
     private static final String SUCCESS = "success";
-
     //发货单确认
     private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
-
     //入库单确认
     private static final String ENTRY_ORDER_CONFIRM = "entryorder.confirm";
-
+    private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
     @Autowired
