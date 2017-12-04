@@ -66,7 +66,7 @@ public class QimenResource {
             return new Response(SUCCESS, "0", "invalid appkey") ;
         }catch(Exception e){
             logger.error("确认失败!", e);
-            return new Response(SUCCESS, "0", "invalid appkey") ;
+            return new Response(FAILURE, "sign-check-failure", e.getMessage()) ;
         }
     }
 
