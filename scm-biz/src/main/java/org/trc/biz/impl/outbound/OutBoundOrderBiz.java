@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.cache.CacheEvit;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundDetail;
@@ -343,6 +344,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     private void updateOutboundDetailState(String outboundOrderCode,String state){
+
+    private void updateOutboundDetailState(String outboundOrderCode,String state,Long id){
         logger.info("开始更新发货通知单详情表状态");
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -356,6 +359,15 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
         }
         logger.info("更新仓库详情表状态完成<---------");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setId(id);
+        outboundOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        count = outBoundOrderService.updateByPrimaryKeySelective(outboundOrder);
+        if (count == 0){
+            String msg = String.format("创建发货单%s后，更新发货通知表取消状态失败",outboundOrderCode);
+            logger.error(msg);
+            throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+        }
         //找出发货通知单编号下所有记录，更新出库通知单状态
         List<OutboundDetail> list = outboundDetailService.selectByExample(example);
         getOutboundOrderStatusByDetail(list);
@@ -433,7 +445,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //处理信息
         if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
             this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
-            this.updateOrderCancelInfo(outboundOrder, remark, false);
+            this.updateOrderCancelInfo(outboundOrder, remark);
             return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
         } else {
             return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
@@ -452,13 +464,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     //修改取消发货单信息
-    private void updateOrderCancelInfo(OutboundOrder outboundOrder, String remark, boolean isClose){
+    private void updateOrderCancelInfo(OutboundOrder outboundOrder, String remark){
         outboundOrder.setStatus(OutboundOrderStatusEnum.CANCELED.getCode());
-        if(isClose){
-            outboundOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
-        }else{
-            outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
-        }
+        outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
         outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
         outboundOrder.setRemark(remark);
         outBoundOrderService.updateByPrimaryKey(outboundOrder);

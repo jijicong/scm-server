@@ -91,7 +91,7 @@ public class QimenServiceImpl implements IQimenService {
 
     @Override
     public AppResult<DeliveryorderCreateResponse> deliveryOrderCreate(DeliveryorderCreateRequest req) {
-        String url = qimenConfig.getQimenEntryorderCreateUrl();
+        String url = qimenConfig.getQimenDeliveryOrderCreateUrl();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("deliveryorderCreateRequest", JSON.toJSONString(req));
         return invokeExternal(map, url);

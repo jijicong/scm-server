@@ -1,6 +1,7 @@
 package org.trc.resource.api;
 
 
+import com.alibaba.fastjson.JSON;
 import com.taobao.api.internal.spi.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +56,15 @@ public class QimenResource {
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //接收到请求,先进行验签
-             CheckResult checkResult =  SpiUtils.checkSign(request,secret);
+            logger.info("URL@@@:"+request.getRequestURI());
+            logger.info("URL---:"+request.getContextPath());
+            logger.info("URL+++:"+request.getContentType());
+            logger.info("qimenUrlRequest:"+ JSON.toJSONString(qimenUrlRequest));
+            CheckResult checkResult =  SpiUtils.checkSign(request,secret);
              if (checkResult.isSuccess()){
                  logger.info("验签成功!");
+             }else {
+                 logger.info("验签失败!");
              }
             //获取报文
             String requestText =checkResult.getRequestBody();
@@ -76,8 +83,8 @@ public class QimenResource {
     private void confirmMethod(String requestText, String method){
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
-                warehouseNoticeBiz
-                        .updateInStock(requestText);
+//                warehouseNoticeBiz
+//                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
                 break;
