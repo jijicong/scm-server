@@ -55,9 +55,14 @@ public class QimenResource {
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //接收到请求,先进行验签
-             CheckResult checkResult =  SpiUtils.checkSign(request,secret);
+            logger.info("URL@@@:"+request.getRequestURI());
+            logger.info("URL---:"+request.getContextPath());
+            logger.info("URL+++:"+request.getContentType());
+            CheckResult checkResult =  SpiUtils.checkSign(request,secret);
              if (checkResult.isSuccess()){
                  logger.info("验签成功!");
+             }else {
+                 logger.info("验签失败!");
              }
             //获取报文
             String requestText =checkResult.getRequestBody();
