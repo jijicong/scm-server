@@ -87,6 +87,8 @@ public class QimenResource {
                 break;
             case DELIVERY_ORDER_CONFIRM:
                 break;
+                default:
+                    break;
         }
     }
 
