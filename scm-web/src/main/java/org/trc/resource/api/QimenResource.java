@@ -2,27 +2,28 @@ package org.trc.resource.api;
 
 
 import com.alibaba.fastjson.JSON;
-import com.qimen.api.DefaultQimenClient;
-import com.qimen.api.QimenClient;
-import com.qimen.api.request.EntryorderConfirmRequest;
-import org.apache.http.HttpRequest;
+import com.taobao.api.internal.spi.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.trc.biz.qimen.IQimenBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.form.QimenUrlRequest;
 import org.trc.form.Response;
+import org.trc.service.config.IWarehouseNoticeCallbackService;
+import org.trc.util.SpiUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
 
 
 /**
@@ -45,20 +46,22 @@ public class QimenResource {
     @Autowired
     private IQimenBiz qimenBiz;
 
+    @Value("${qimen.secret}")
+    private String secret;
+    @Autowired
+    private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
+
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
+
             //获取报文
-            logger.info("qimenUrlRequest"+JSON.toJSONString(qimenUrlRequest));
-            logger.info("ContentType:"+request.getContentType());
             String requestText = this.getInfo(request,qimenUrlRequest);
-            logger.info("获取奇门报文:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
             this.confirmMethod(requestText, method);
-
             return new Response(SUCCESS, "0", "invalid appkey") ;
         }catch(Exception e){
             logger.error("确认失败!", e);
@@ -67,12 +70,15 @@ public class QimenResource {
     }
 
     //获取报文信息
-    private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException{
-        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
-        InputStream is= request.getInputStream();
-        Scanner scanner = new Scanner(is, "UTF-8");
-        String requestText = scanner.useDelimiter("\\A").next();
-        scanner.close();
+    private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException {
+        String requestText = "";
+        CheckResult checkResult = SpiUtils.checkSign(request,secret);
+        if (checkResult.isSuccess()){
+             requestText = checkResult.getRequestBody();
+
+        }else {
+            logger.info(JSON.toJSONString(checkResult.isSuccess()));
+        }
         return requestText;
     }
 
