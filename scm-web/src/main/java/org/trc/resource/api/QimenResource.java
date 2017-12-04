@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.biz.qimen.IQimenBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
@@ -49,6 +50,8 @@ public class QimenResource {
     private String secret;
     @Autowired
     private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
+    @Autowired
+    private IOutBoundOrderBiz outBoundOrderBiz;
 
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
@@ -80,13 +83,14 @@ public class QimenResource {
     }
 
     //确认逻辑
-    private void confirmMethod(String requestText, String method){
+    private void confirmMethod(String requestText, String method) throws Exception{
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
 //                warehouseNoticeBiz
 //                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
+                outBoundOrderBiz.updateOutboundDetail(requestText);
                 break;
             default:
                 break;

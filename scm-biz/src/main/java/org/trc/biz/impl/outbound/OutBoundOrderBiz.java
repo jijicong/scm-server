@@ -1,12 +1,10 @@
 package org.trc.biz.impl.outbound;
 
-import com.alibaba.fastjson.JSON;
 import com.qimen.api.request.DeliveryorderConfirmRequest;
 import com.qimen.api.request.DeliveryorderCreateRequest;
 import com.qimen.api.request.OrderCancelRequest;
-import com.qimen.api.response.OrderCancelResponse;
-import com.qimen.api.request.EntryorderConfirmRequest;
 import com.qimen.api.response.DeliveryorderCreateResponse;
+import com.qimen.api.response.OrderCancelResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +22,6 @@ import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
-import org.trc.enums.*;
-import org.trc.exception.GoodsException;
-import org.trc.exception.OutboundOrderException;
-import org.trc.enums.OutboundDetailStatusEnum;
-import org.trc.enums.OutboundOrderStatusEnum;
-import org.trc.enums.QimenDeliveryEnum;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.service.IQimenService;
 import org.trc.service.System.IWarehouseService;
@@ -39,7 +31,6 @@ import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
@@ -79,7 +70,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //查询数据
         Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, form);
-
+        List<OutboundOrder> outboundOrderList = pagenation.getResult();
+        for(OutboundOrder order : outboundOrderList){
+            order.setWarehouseName(warehouseService.selectByPrimaryKey(order.getWarehouseId()).getName());
+        }
         return pagenation;
     }
 
@@ -154,6 +148,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         this.updateOutboundDetail(status, outboundDetailLogistics, outboundDetail, operateTime, sentNum);
                         //保存信息
                         outboundDetailLogisticsService.updateByPrimaryKey(outboundDetailLogistics);
+                        //获取实际到货数量
+                        outboundDetail.setRealSentItemNum(this.getItemNum(outboundDetail.getId()));
                         outboundDetailService.updateByPrimaryKey(outboundDetail);
                     }else{
                         outboundDetailLogistics = new OutboundDetailLogistics();
@@ -168,11 +164,24 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         this.updateOutboundDetail(status, outboundDetailLogistics, outboundDetail, operateTime, sentNum);
                         //保存信息
                         outboundDetailLogisticsService.insert(outboundDetailLogistics);
+                        //获取实际到货数量
+                        outboundDetail.setRealSentItemNum(this.getItemNum(outboundDetail.getId()));
                         outboundDetailService.updateByPrimaryKey(outboundDetail);
                     }
                 }
             }
         }
+    }
+
+    private Long getItemNum(Long outboundDetailId){
+        OutboundDetailLogistics logistics = new OutboundDetailLogistics();
+        logistics.setOutboundDetailId(outboundDetailId);
+        List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsService.select(logistics);
+        long count = 0;
+        for(OutboundDetailLogistics log : logisticsList){
+            count += log.getItemNum();
+        }
+        return count;
     }
 
     //更新发货商品明细
@@ -265,6 +274,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 detail.setOutboundDetailLogisticsList(outboundDetailLogisticsList);
             }
             outboundOrder.setOutboundDetailList(outboundDetailList);
+            outboundOrder.setWarehouseName(warehouseService.selectByPrimaryKey(outboundOrder.getWarehouseId()).getName());
             return ResultUtil.createSuccessResult("获取发货通知单详情成功！", outboundOrder);
         }catch(Exception e){
             return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "获取发货通知单详情失败！", "");
@@ -291,7 +301,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             this.updateOrderCancelInfo(outboundOrder, remark, true);
             return ResultUtil.createSuccessResult("发货通知单关闭成功！", "");
         }catch(Exception e){
-            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单关闭失败！", "");
+            String msg = e.getMessage();
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
         }
     }
 
@@ -320,7 +331,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             this.updateOrderCancelInfoExt(outboundOrder, true, OutboundOrderStatusEnum.RECEIVE_FAIL.getCode());
             return ResultUtil.createSuccessResult("取消关闭成功！", "");
         }catch(Exception e){
-            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "取消关闭失败！", "");
+            String msg = e.getMessage();
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
         }
     }
 
@@ -340,10 +352,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(updateTime);
         calendar.add(Calendar.DATE, Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()));
-        if(calendar.compareTo(Calendar.getInstance()) > 1){
-            return true;
+        if(calendar.compareTo(Calendar.getInstance()) == 1){
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override

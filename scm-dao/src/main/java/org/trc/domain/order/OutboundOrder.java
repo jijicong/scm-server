@@ -87,6 +87,17 @@ public class OutboundOrder implements Serializable {
     @Transient
     private List<OutboundDetail> outboundDetailList;
 
+    @Transient
+    private String warehouseName;
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
     public List<OutboundDetail> getOutboundDetailList() {
         return outboundDetailList;
     }
