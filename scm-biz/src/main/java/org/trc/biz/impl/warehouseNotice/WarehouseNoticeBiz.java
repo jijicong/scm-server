@@ -34,10 +34,7 @@ import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.PurchaseOrderStatusEnum;
-import org.trc.enums.WarehouseNoticeStatusEnum;
+import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.service.IQimenService;
@@ -70,7 +67,6 @@ import java.util.*;
 @Service("warehouseNoticeBiz")
 public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
-    public final static String ZP = "ZP";
     private Logger logger = LoggerFactory.getLogger(PurchaseOrderAuditBiz.class);
     @Autowired
     private IWarehouseNoticeService warehouseNoticeService;
@@ -283,7 +279,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //正品入库数量
             Long normalQuantity = 0L;
             for (EntryorderConfirmRequest.OrderLine orderLine : skuMap.get(itemCode)) {
-                if (StringUtils.equals(orderLine.getInventoryType(), ZP)) {
+                if (StringUtils.equals(orderLine.getInventoryType(), InventoryTypeEnum.ZP.getCode())) {
                     normalQuantity = normalQuantity + orderLine.getActualQty();
                 } else {
                     defectiveQuantity = defectiveQuantity + orderLine.getActualQty();
