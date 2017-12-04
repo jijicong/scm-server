@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.cache.CacheEvit;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundDetail;
@@ -51,6 +52,7 @@ import java.util.List;
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     public final static String SUCCESS = "200";
+    private static final String SUCCESS_CODE = "200";
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
@@ -214,6 +216,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
         OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
+        Long id = outboundOrder.getId();
         AssertUtil.notNull(outboundOrder,"根据发货通知单id获取发货通知单记录为空");
         Long warehouseId = outboundOrder.getWarehouseId();
         Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
@@ -237,11 +240,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),userId,"重新发送",null,null);
         if (StringUtils.equals(code,SUCCESS)){
-            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode());
+            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
         }else {
             //仓库接受失败插入一条日志
             logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),userId,"仓库接收失败",msg,null);
-            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode());
+            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id);
+            logger.error(msg);
+            throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
         }
         return msg;
     }
@@ -267,7 +272,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    private void updateOutboundDetailState(String outboundOrderCode,String state){
+
+    private void updateOutboundDetailState(String outboundOrderCode,String state,Long id){
         logger.info("开始更新发货通知单详情表状态");
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -281,6 +287,15 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
         }
         logger.info("更新仓库详情表状态完成<---------");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setId(id);
+        outboundOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        count = outBoundOrderService.updateByPrimaryKeySelective(outboundOrder);
+        if (count == 0){
+            String msg = String.format("创建发货单%s后，更新发货通知表取消状态失败",outboundOrderCode);
+            logger.error(msg);
+            throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+        }
         //找出发货通知单编号下所有记录，更新出库通知单状态
         List<OutboundDetail> list = outboundDetailService.selectByExample(example);
         getOutboundOrderStatusByDetail(list);
@@ -296,6 +311,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         deliveryOrder.setPlaceOrderTime(DateUtils.formatDateTime(outboundOrder.getPayTime()));
         deliveryOrder.setOperateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
         deliveryOrder.setShopNick(outboundOrder.getShopName());
+        deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
         DeliveryorderCreateRequest.SenderInfo senderInfo = new DeliveryorderCreateRequest.SenderInfo();
         senderInfo.setName(warehouse.getName());
         senderInfo.setMobile(warehouse.getSenderPhoneNumber());
