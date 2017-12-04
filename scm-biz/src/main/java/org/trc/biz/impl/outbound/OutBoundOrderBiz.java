@@ -2,7 +2,6 @@ package org.trc.biz.impl.outbound;
 
 import com.qimen.api.request.DeliveryorderConfirmRequest;
 import com.qimen.api.request.DeliveryorderCreateRequest;
-import com.qimen.api.request.EntryorderConfirmRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,6 @@ import org.trc.domain.order.OutboundOrder;
 import org.trc.enums.OutboundDetailStatusEnum;
 import org.trc.enums.OutboundOrderStatusEnum;
 import org.trc.enums.QimenDeliveryEnum;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.outbound.IOutBoundOrderService;
@@ -30,9 +28,10 @@ import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.XmlUtil;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.util.StringUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -81,50 +80,118 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //获取发货单
         String outboundOrderCode = deliveryOrder.getDeliveryOrderCode();
         String status = deliveryOrder.getStatus();
+        String operateTime = deliveryOrder.getOperateTime();
         AssertUtil.notBlank(outboundOrderCode, "发货单编号不能为空!");
         OutboundOrder outboundOrder = new OutboundOrder();
         outboundOrder.setOutboundOrderCode(outboundOrderCode);
         outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
-        //获取所有包裹内商品详情
+        //更新发货单信息
+        this.updateOutboundDetailAndLogistics(packageList, outboundOrderCode, status, operateTime);
 
-        if(StringUtils.equals(status, QimenDeliveryEnum.DELIVERED.getCode())){
+        //更新发货单状态
+        this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
 
-        }
     }
 
-    private void updateOutboundDetail(List<DeliveryorderConfirmRequest.Package> packageList, String outboundOrderCode){
+    //更新发货单状态
+    private void setOutboundOrderStatus(String outboundOrderCode, OutboundOrder outboundOrder){
+        List<OutboundDetail> outboundDetailList = null;
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setOutboundOrderCode(outboundOrderCode);
+        outboundDetailList = outboundDetailService.select(outboundDetail);
+        String outboundOrderStatus = this.getOutboundOrderStatusByDetail(outboundDetailList);
+        outboundOrder.setStatus(outboundOrderStatus);
+        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+    }
+
+    //更新发货单
+    private void updateOutboundDetailAndLogistics(List<DeliveryorderConfirmRequest.Package> packageList, String outboundOrderCode, String status, String operateTime) throws Exception{
         List<DeliveryorderConfirmRequest.Item> itemList = null;
         OutboundDetail outboundDetail = null;
         OutboundDetailLogistics outboundDetailLogistics = null;
         List<OutboundDetailLogistics> outboundDetailLogisticsList = null;
+        //遍历包裹
         for(DeliveryorderConfirmRequest.Package packageD : packageList){
             itemList = packageD.getItems();
             if(itemList != null){
+                //遍历包裹内商品，更新物流和发货单详情
                 for(DeliveryorderConfirmRequest.Item item : itemList){
                     Long sentNum = item.getQuantity();
+                    //获取发货详情
                     outboundDetail = new OutboundDetail();
                     outboundDetail.setOutboundOrderCode(outboundOrderCode);
                     outboundDetail.setSkuCode(item.getItemCode());
                     outboundDetail = outboundDetailService.selectOne(outboundDetail);
 
+                    //获取当前商品物流
                     outboundDetailLogistics = new OutboundDetailLogistics();
                     outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                    outboundDetailLogistics.setWaybillNumber(packageD.getExpressCode());
                     outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
-                    boolean flag = true;
-                    for(OutboundDetailLogistics logistics : outboundDetailLogisticsList){
-                        if(StringUtils.equals(logistics.getWaybillNumber(), packageD.getExpressCode())){
-                            flag = false;
 
-                        }
-                    }
-                    if(flag){
+                    //判断是否已存储物流信息，如果没有新增
+                    if(outboundDetailLogisticsList != null && outboundDetailLogisticsList.size() > 0){
+                        outboundDetailLogistics = outboundDetailLogisticsList.get(0);
+                        outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                        //更新发货商品详情
+                        this.updateOutboundDetail(status, outboundDetailLogistics, outboundDetail, operateTime, sentNum);
+                        //保存信息
+                        outboundDetailLogisticsService.updateByPrimaryKey(outboundDetailLogistics);
+                        outboundDetailService.updateByPrimaryKey(outboundDetail);
+                    }else{
                         outboundDetailLogistics = new OutboundDetailLogistics();
-//                        outboundDetailLogistics.setOutboundDetailId();
+                        outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                        outboundDetailLogistics.setLogisticsCorporation(packageD.getLogisticsName());
+                        outboundDetailLogistics.setLogisticsCode(packageD.getLogisticsCode());
+                        outboundDetailLogistics.setItemNum(sentNum);
+                        outboundDetailLogistics.setWaybillNumber(packageD.getExpressCode());
+                        outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
+                        outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                        //更新发货商品详情
+                        this.updateOutboundDetail(status, outboundDetailLogistics, outboundDetail, operateTime, sentNum);
+                        //保存信息
+                        outboundDetailLogisticsService.insert(outboundDetailLogistics);
+                        outboundDetailService.updateByPrimaryKey(outboundDetail);
                     }
                 }
             }
         }
+    }
+
+    //更新发货商品明细
+    private void updateOutboundDetail(String status, OutboundDetailLogistics outboundDetailLogistics,
+                                      OutboundDetail outboundDetail, String operateTime, Long sentNum) throws Exception{
+        if(StringUtils.equals(status, QimenDeliveryEnum.DELIVERED.getCode())){
+            if(outboundDetailLogistics.getDeliverTime() == null ||
+                    this.compareDeliverTime(outboundDetailLogistics.getDeliverTime(), operateTime)){
+                outboundDetailLogistics.setDeliverTime(this.getTime(operateTime));
+            }
+            outboundDetail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+            outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+            outboundDetail.setRealSentItemNum(sentNum);
+        }
+        if(StringUtils.equals(status, QimenDeliveryEnum.PARTDELIVERED.getCode())){
+            outboundDetail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());
+            outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+            outboundDetail.setRealSentItemNum(sentNum);
+        }
+    }
+
+    //获取时间
+    private Date getTime(String operateTime) throws Exception{
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.parse(operateTime);
+    }
+
+    //比较时间
+    private boolean compareDeliverTime(Date oldDate, String newTime) throws Exception{
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date newDate = sdf.parse(newTime);
+        if(oldDate.getTime() > newDate.getTime()){
+            return false;
+        }
+        return true;
     }
 
     @Override
