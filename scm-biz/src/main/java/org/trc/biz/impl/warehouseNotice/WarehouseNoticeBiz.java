@@ -45,6 +45,7 @@ import org.trc.service.System.IWarehouseService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
@@ -103,6 +104,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private IQimenService qimenService;
+    @Autowired
+    private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private List<String> defectiveSku = new ArrayList<>();
@@ -203,6 +206,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         String result = xmlSerializer.read(requestText).toString();
         confirmRequest = JSON.parseObject(result, EntryorderConfirmRequest.class);
         if (null != confirmRequest) {
+            //记录流水
+            warehouseNoticeCallbackService.recordCallbackLog(confirmRequest.getEntryOrder().getOutBizCode(),requestText,1,"",confirmRequest.getEntryOrder().getEntryOrderCode());
             //获取orderLines 入库单详情
             List<EntryorderConfirmRequest.OrderLine> orderLineList = confirmRequest.getOrderLines();
             //获取入库单号
@@ -250,6 +255,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "WAREHOUSE", "部分收货", "", null);
                         }
                         warehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
+
+
                     }
                 }
             }
