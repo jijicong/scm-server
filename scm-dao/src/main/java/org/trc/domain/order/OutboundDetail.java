@@ -6,8 +6,10 @@ import org.trc.custom.CustomDateSerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by hzcyn on 2017/12/1.
@@ -33,11 +35,22 @@ public class OutboundDetail implements Serializable {
 
     private String status;
 
+    @Transient
+    private List<OutboundDetailLogistics> outboundDetailLogisticsList;
+
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
+
+    public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
+        return outboundDetailLogisticsList;
+    }
+
+    public void setOutboundDetailLogisticsList(List<OutboundDetailLogistics> outboundDetailLogisticsList) {
+        this.outboundDetailLogisticsList = outboundDetailLogisticsList;
+    }
 
     public Long getId() {
         return id;

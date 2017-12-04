@@ -64,4 +64,13 @@ public class OutboundOrderResource {
         return outBoundOrderBiz.orderCancel(id, remark);
     }
 
+    /**
+     * 获取发货单详情
+     */
+    @GET
+    @Path(SupplyConstants.OutboundOrder.OUTBOUND_ORDER_DETAIL + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOutboundOrderDetail(@PathParam("id") Long id){
+        return outBoundOrderBiz.getOutboundOrderDetail(id);
+    }
 }
