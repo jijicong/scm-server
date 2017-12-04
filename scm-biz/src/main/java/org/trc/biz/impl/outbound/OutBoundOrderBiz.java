@@ -2,6 +2,8 @@ package org.trc.biz.impl.outbound;
 
 import com.qimen.api.request.DeliveryorderConfirmRequest;
 import com.qimen.api.request.DeliveryorderCreateRequest;
+import com.qimen.api.request.OrderCancelRequest;
+import com.qimen.api.response.OrderCancelResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,25 +12,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
+import org.trc.cache.CacheEvit;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
-import org.trc.enums.OutboundDetailStatusEnum;
-import org.trc.enums.OutboundOrderStatusEnum;
-import org.trc.enums.QimenDeliveryEnum;
+import org.trc.enums.*;
+import org.trc.exception.OutboundOrderException;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.service.IQimenService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
-import org.trc.util.XmlUtil;
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -44,11 +45,15 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IOutBoundOrderService outBoundOrderService;
     @Autowired
     private IWarehouseService warehouseService;
-
     @Autowired
     private IOutboundDetailService outboundDetailService;
     @Autowired
     private IOutboundDetailLogisticsService outboundDetailLogisticsService;
+    @Autowired
+    private IQimenService qimenService;
+
+    private static final String SUCCESS_CODE = "200";
+
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -208,6 +213,63 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         DeliveryorderCreateRequest request = new DeliveryorderCreateRequest();
         DeliveryorderCreateRequest.DeliveryOrder deliveryOrder =  new DeliveryorderCreateRequest.DeliveryOrder();
         //request.setDeliveryOrder();
+    }
+
+    @Override
+    @CacheEvit
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public Response orderCancel(Long id, String remark) {
+        AssertUtil.notNull(id, "发货单主键不能为空");
+        AssertUtil.notBlank(remark, "取消原因不能为空");
+
+        //获取发货单信息
+        OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(id);
+
+        if(!StringUtils.equals(outboundOrder.getStatus(), OutboundOrderStatusEnum.WAITING.getCode())){
+            String msg = "发货通知单状态必须为等待仓库发货!";
+            logger.error(msg);
+            throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+        }
+
+        //获取仓库信息
+        Warehouse warehouse =warehouseService.selectByPrimaryKey(outboundOrder.getWarehouseId());
+
+        //组装请求
+        OrderCancelRequest orderCancelRequest = new OrderCancelRequest();
+        orderCancelRequest.setCancelReason(remark);
+        orderCancelRequest.setOrderCode(outboundOrder.getOutboundOrderCode());
+        orderCancelRequest.setWarehouseCode(warehouse.getQimenWarehouseCode());
+
+        //调用奇门接口
+        AppResult<OrderCancelResponse> appResult = qimenService.orderCancel(orderCancelRequest);
+
+        //处理信息
+        if (StringUtils.equals(appResult.getAppcode(), SUCCESS_CODE)) { // 成功
+            this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
+
+            return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
+        } else {
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
+        }
+    }
+
+    //修改详情状态
+    private void updateDetailStatus(String code, String outboundOrderCode){
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setStatus(code);
+        outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+        Example exampleOrder = new Example(OutboundDetail.class);
+        Example.Criteria criteriaOrder = exampleOrder.createCriteria();
+        criteriaOrder.andEqualTo("outboundOrderCode", outboundOrderCode);
+        outboundDetailService.updateByExampleSelective(outboundDetail, exampleOrder);
+    }
+
+    //修改取消发货单信息
+    private void updateOrderCancelInfo(OutboundOrder outboundOrder){
+        outboundOrder.setStatus(OutboundOrderStatusEnum.CANCELED.getCode());
+        outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
+        outBoundOrderService.updateByPrimaryKey(outboundOrder);
     }
 
     private void verifyParam(Warehouse warehouse,OutboundOrder outboundOrder){

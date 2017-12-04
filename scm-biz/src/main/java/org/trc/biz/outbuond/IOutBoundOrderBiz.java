@@ -5,7 +5,8 @@ import org.trc.domain.order.OutboundOrder;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
+
 
 public interface IOutBoundOrderBiz {
 
@@ -21,4 +22,6 @@ public interface IOutBoundOrderBiz {
      * @throws Exception
      */
     void createOutbound(String outboundOrderId) throws Exception;
+
+    Response orderCancel(Long id, String remark);
 }

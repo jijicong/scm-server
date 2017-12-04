@@ -925,6 +925,10 @@ public class SupplyConstants {
 
         public static final String WAREHOUSE_LIST = "warehouseList";
 
+        /**
+         * 取消订单
+         */
+        public static final String ORDER_CANCEL = "orderCancel";
     }
 
     /**
