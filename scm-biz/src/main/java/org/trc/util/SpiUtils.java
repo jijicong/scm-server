@@ -1,5 +1,6 @@
 package org.trc.util;
 
+import com.alibaba.fastjson.JSON;
 import com.taobao.api.internal.spi.CheckResult;
 import com.taobao.api.internal.util.StringUtils;
 import com.taobao.api.internal.util.TaobaoUtils;
@@ -78,6 +79,8 @@ public class SpiUtils {
         String remoteSign = (String)queryMap.get("sign");
         log.info("remoteSign:"+remoteSign);
         String localSign = sign(params, body, secret, charset);
+        log.info(JSON.toJSONString(params));
+        log.info(body);
         log.info("localSign:"+localSign);
         if (localSign.equals(remoteSign)) {
             return true;
