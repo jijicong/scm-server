@@ -26,6 +26,9 @@ public interface ISkuStockService extends IBaseService<SkuStock, Long>{
 	 * 库存更新接口
 	 * @param stockList {@see RequsetUpdateStock}
 	 * @return
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 * @throws Exception 
 	 */
-	void updateSkuStock (List<RequsetUpdateStock> stockList);
+	void updateSkuStock (List<RequsetUpdateStock> stockList) throws Exception;
 }

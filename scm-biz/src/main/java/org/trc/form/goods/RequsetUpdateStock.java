@@ -1,5 +1,6 @@
 package org.trc.form.goods;
 
+
 /**
  * 库存更新请求model
  * @author admin
@@ -37,11 +38,6 @@ public class RequsetUpdateStock {
 	 * 更新数量
 	 */
 	private Long num;
-
-	/**
-	 * 更新类型
-	 */
-	private Integer updateType;
 
 	public String getSkuCode() {
 		return skuCode;
@@ -83,13 +79,5 @@ public class RequsetUpdateStock {
 		this.num = num;
 	}
 
-	public Integer getUpdateType() {
-		return updateType;
-	}
-
-	public void setUpdateType(Integer updateType) {
-		this.updateType = updateType;
-	}
-	
 
 }

@@ -10,6 +10,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.domain.goods.SkuStock;
 import org.trc.mapper.goods.ISkuStockMapper;
 
+import tk.mybatis.mapper.entity.Example;
+
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
 public class TestSql {
@@ -18,8 +20,10 @@ public class TestSql {
 	@Test
 	public void test () {
 		SkuStock record = new SkuStock();
-		record.setSkuCode("SPU2017072500003");
-		List<SkuStock> select = skuStockMapper.select(record);
+		record.setSkuCode("SP0201707250000034");
+		Example ex = new Example(SkuStock.class);
+		ex.createCriteria().andEqualTo("skuCode", "SP0201707240000002");
+		List<SkuStock> select = skuStockMapper.selectByExample(ex);
 		System.err.println(select.size());
 	}
 }

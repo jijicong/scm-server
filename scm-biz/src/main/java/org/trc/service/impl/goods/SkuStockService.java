@@ -1,10 +1,10 @@
 package org.trc.service.impl.goods;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.goods.SkuStock;
@@ -31,22 +31,31 @@ public class SkuStockService extends BaseService<SkuStock, Long> implements ISku
 	}
 
 	@Override
-	public void updateSkuStock(List<RequsetUpdateStock> stockList) {
+	public void updateSkuStock(List<RequsetUpdateStock> updateStockList) throws Exception {
 //		if (CollectionUtils.isEmpty(stockList)) {
 //			return false;
 //		}
-		for (RequsetUpdateStock reqStock : stockList) {
+		List<SkuStock> queryList = new ArrayList<>();
+		for (RequsetUpdateStock reqStock : updateStockList) {
+			SkuStock queryStock = new SkuStock();
+			queryStock.setChannelCode(reqStock.getChannelCode());
+			queryStock.setWarehouseCode(reqStock.getWarehouseCode());
+			queryStock.setSkuCode(reqStock.getSkuCode());
+			List<SkuStock> stockList = skuStockMapper.select(queryStock);
+			SkuStock stock = stockList.get(0);
 			SkuStock tmpStock = new SkuStock();
-			try {
-//				skuStockMapper.selectByExample(example)(record)
-//				Method method = SkuStock.class.getMethod("set" + toUpperFristChar(reqStock.getStockType()));
-//				method.invoke(method, reqStock.getNum());
-//				tmpStock.setSkuCode(reqStock.getSkuCode());
-//				String stockType = reqStock.getSkuCode();
-			} catch (Exception e) {
-				
-			}
+			
+//			Method getMethod = SkuStock.class.getMethod("get" + toUpperFristChar(reqStock.getStockType()));
+//			Long interval = (Long) getMethod.invoke(stock);
+//			interval = interval == null ? 0L: interval;
+			Method setMethod = SkuStock.class.getMethod("set" + toUpperFristChar(reqStock.getStockType()), Long.class);
+			setMethod.invoke(tmpStock, reqStock.getNum());
+//			tmpStock.setAirInventory(airInventory);
+			
+			tmpStock.setId(stock.getId());
+			queryList.add(tmpStock);
 		}
+		skuStockMapper.batchUpdateStock(queryList);
 		
 //		return false;
 	}
