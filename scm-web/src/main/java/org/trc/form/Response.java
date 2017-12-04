@@ -9,6 +9,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class Response {
+    public Response(){
+
+    }
     public Response(String flag, String code, String message) {
         this.flag = flag;
         this.code = code;
