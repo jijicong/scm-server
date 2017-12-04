@@ -23,7 +23,7 @@ public class QimenBiz implements IQimenBiz {
     private String secret;
 
     @Override
-    public void checkResult( HttpServletRequest request,String targetAppSecret) {
+    public CheckResult checkResult( HttpServletRequest request,String targetAppSecret) {
         //这里执行验签逻辑
         CheckResult result = null;
         try {
@@ -32,5 +32,6 @@ public class QimenBiz implements IQimenBiz {
             logger.error("奇门验证签名异常",e);
         }
        logger.info(JSON.toJSONString(result.isSuccess()));
+        return result;
     }
 }
