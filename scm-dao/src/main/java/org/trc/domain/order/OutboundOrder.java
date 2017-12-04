@@ -6,8 +6,10 @@ import org.trc.custom.CustomDateSerializer;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class OutboundOrder implements Serializable {
 
@@ -79,6 +81,17 @@ public class OutboundOrder implements Serializable {
     private String isClose;
 
     private String isCancel;
+
+    @Transient
+    private List<OutboundDetail> outboundDetailList;
+
+    public List<OutboundDetail> getOutboundDetailList() {
+        return outboundDetailList;
+    }
+
+    public void setOutboundDetailList(List<OutboundDetail> outboundDetailList) {
+        this.outboundDetailList = outboundDetailList;
+    }
 
     public Long getId() {
         return id;

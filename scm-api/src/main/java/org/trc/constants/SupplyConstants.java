@@ -931,6 +931,11 @@ public class SupplyConstants {
          * 取消订单
          */
         public static final String ORDER_CANCEL = "orderCancel";
+
+        /**
+         * 获取发货通知单详情
+         */
+        public static final String OUTBOUND_ORDER_DETAIL = "outboundOrderDetail";
     }
 
     /**
