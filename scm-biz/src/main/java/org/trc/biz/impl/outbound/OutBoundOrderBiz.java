@@ -215,6 +215,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
         OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
+        Long id = outboundOrder.getId();
         AssertUtil.notNull(outboundOrder,"根据发货通知单id获取发货通知单记录为空");
         Long warehouseId = outboundOrder.getWarehouseId();
         Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
@@ -238,11 +239,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String userId= aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),userId,"重新发送",null,null);
         if (StringUtils.equals(code,SUCCESS)){
-            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode());
+            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
         }else {
             //仓库接受失败插入一条日志
             logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),userId,"仓库接收失败",msg,null);
-            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode());
+            updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id);
+            logger.error(msg);
+            throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
         }
         return msg;
     }
@@ -343,7 +346,28 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         return false;
     }
 
-    private void updateOutboundDetailState(String outboundOrderCode,String state){
+    @Override
+    public void isTimeOutTimer() {
+        logger.info("检查出库通知单是否超过七天的定时任务启动----->");
+        Example example = new Example(OutboundOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("status", OutboundOrderStatusEnum.CANCELED.getCode());
+        List<OutboundOrder> list = outBoundOrderService.selectByExample(example);
+        if (list.size() == 0) {
+            logger.info("没有超过七天的出库通知单");
+            return;
+        }
+        for (OutboundOrder outboundOrder : list) {
+            //比较时间是否超过7天
+
+            //超过7天的则将is_timeOut更新为1
+            OutboundOrder update = new OutboundOrder();
+//            update.setIsTimeOut();
+//            outBoundOrderService.updateByPrimaryKeySelective()
+
+        }
+    }
+
 
     private void updateOutboundDetailState(String outboundOrderCode,String state,Long id){
         logger.info("开始更新发货通知单详情表状态");
@@ -383,6 +407,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         deliveryOrder.setPlaceOrderTime(DateUtils.formatDateTime(outboundOrder.getPayTime()));
         deliveryOrder.setOperateTime(DateUtils.formatDateTime(outboundOrder.getCreateTime()));
         deliveryOrder.setShopNick(outboundOrder.getShopName());
+        deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
         DeliveryorderCreateRequest.SenderInfo senderInfo = new DeliveryorderCreateRequest.SenderInfo();
         senderInfo.setName(warehouse.getName());
         senderInfo.setMobile(warehouse.getSenderPhoneNumber());
@@ -445,7 +470,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //处理信息
         if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
             this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
-            this.updateOrderCancelInfo(outboundOrder, remark);
+            this.updateOrderCancelInfo(outboundOrder, remark,false);
             return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
         } else {
             return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
@@ -464,9 +489,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     //修改取消发货单信息
-    private void updateOrderCancelInfo(OutboundOrder outboundOrder, String remark){
+    private void updateOrderCancelInfo(OutboundOrder outboundOrder, String remark, boolean isClose){
         outboundOrder.setStatus(OutboundOrderStatusEnum.CANCELED.getCode());
-        outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        if(isClose){
+            outboundOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
+        }else {
+            outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        }
         outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
         outboundOrder.setRemark(remark);
         outBoundOrderService.updateByPrimaryKey(outboundOrder);

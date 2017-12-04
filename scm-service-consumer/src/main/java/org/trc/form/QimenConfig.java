@@ -14,6 +14,9 @@ public class QimenConfig {
     //发货通知单创建接口URL
     private String qimenDeliveryOrderCreateUrl;
 
+    //商品库存查询接口URL
+    private String qimenInventoryQueryUrl;
+
     //单据取消接口URL
     private String qimenOrderCancelUrl;
 
@@ -47,5 +50,13 @@ public class QimenConfig {
 
     public void setQimenOrderCancelUrl(String qimenOrderCancelUrl) {
         this.qimenOrderCancelUrl = qimenOrderCancelUrl;
+    }
+
+    public String getQimenInventoryQueryUrl() {
+        return qimenInventoryQueryUrl;
+    }
+
+    public void setQimenInventoryQueryUrl(String qimenInventoryQueryUrl) {
+        this.qimenInventoryQueryUrl = qimenInventoryQueryUrl;
     }
 }
