@@ -71,10 +71,14 @@ public class OutboundOrder implements Serializable {
     private String remark;
 
     @JsonSerialize(using = CustomDateSerializer.class)
-    private String payTime;
+    private Date payTime;
 
     @JsonSerialize(using = CustomDateSerializer.class)
-    private String updateTime;
+    private Date updateTime;
+
+    private String isClose;
+
+    private String isCancel;
 
     public Long getId() {
         return id;
@@ -260,19 +264,19 @@ public class OutboundOrder implements Serializable {
         this.remark = remark;
     }
 
-    public String getPayTime() {
+    public Date getPayTime() {
         return payTime;
     }
 
-    public void setPayTime(String payTime) {
+    public void setPayTime(Date payTime) {
         this.payTime = payTime;
     }
 
-    public String getUpdateTime() {
+    public Date getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(String updateTime) {
+    public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
 
@@ -300,4 +304,19 @@ public class OutboundOrder implements Serializable {
         this.shopName = shopName;
     }
 
+    public String getIsClose() {
+        return isClose;
+    }
+
+    public void setIsClose(String isClose) {
+        this.isClose = isClose;
+    }
+
+    public String getIsCancel() {
+        return isCancel;
+    }
+
+    public void setIsCancel(String isCancel) {
+        this.isCancel = isCancel;
+    }
 }

@@ -29,6 +29,8 @@ public class OutboundDetail implements Serializable {
 
     private Long realSentItemNum;
 
+    private String inventoryType;//ZP---正品
+
     private String status;
 
     @JsonSerialize(using = CustomDateSerializer.class)
@@ -115,5 +117,13 @@ public class OutboundDetail implements Serializable {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getInventoryType() {
+        return inventoryType;
+    }
+
+    public void setInventoryType(String inventoryType) {
+        this.inventoryType = inventoryType;
     }
 }

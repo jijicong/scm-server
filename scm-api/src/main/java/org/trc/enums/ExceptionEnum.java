@@ -136,6 +136,8 @@ public enum ExceptionEnum{
     ORDER_IS_CANCEL("600119","订单已经是取消状态，不能进行取消操作"),
     ORDER_IS_CLOSE_CANCEL("600120","订单不是取消状态，不能进行关闭取消操作"),
 
+    OUTBOUND_ORDER_EXCEPTION("600121", "发货通知单管理异常"),
+
     USER_BE_FORBIDDEN("900001","用户授权信息不存在或用户已经被禁用!"),
     USER_NOT_LOGIN("900002","用户未登录"),
     USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),
@@ -152,6 +154,7 @@ public enum ExceptionEnum{
     TRC_LOGISTIC_EXCEPTION("600110","物流信息请求异常"),
 
     WAREHOUSE_INFO_EXCEPTION("700101","仓库信息管理异常"),
+    OUTBOUND_ORDER_EXCEPTION("800101","发货通知单异常"),
 
     JING_DONG_USE_EXCEPTION("1000101","京东地址更新调用异常"),
     JING_DONG_ORDER_UPDATE_OPERATE_STATE_EXCEPTION("1000102","京东订单明细操作更新异常"),

@@ -531,17 +531,6 @@ public class SupplyConstants {
      */
     public static final class QinNiu {
 
-        /**
-         * 用到七牛存储的系统功能模块
-         */
-        public static final class Module {
-            //属性管理
-            public static final String PROPERTY = "property";
-            //供应商管理
-            public static final String SUPPLY = "supply";
-        }
-
-
         //根路径
         public static final String ROOT = "qinniu";
         //上传
@@ -554,6 +543,16 @@ public class SupplyConstants {
         public static final String THUMBNAIL = "thumbnail";
         //批量获取url
         public static final String URLS = "urls";
+
+        /**
+         * 用到七牛存储的系统功能模块
+         */
+        public static final class Module {
+            //属性管理
+            public static final String PROPERTY = "property";
+            //供应商管理
+            public static final String SUPPLY = "supply";
+        }
 
     }
 
@@ -925,6 +924,13 @@ public class SupplyConstants {
 
         public static final String WAREHOUSE_LIST = "warehouseList";
 
+        //发货通知单创建路径
+        public static final String DELIVERY_ORDER_CREATE = "deliveryOrderCreate";
+
+        /**
+         * 取消订单
+         */
+        public static final String ORDER_CANCEL = "orderCancel";
     }
 
     /**
