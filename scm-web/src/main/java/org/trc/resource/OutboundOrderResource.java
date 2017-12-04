@@ -13,13 +13,11 @@ import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by sone on 2017/8/10.
@@ -46,6 +44,14 @@ public class OutboundOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult<Warehouse> findValidWarehouseList() {
         return ResultUtil.createSucssAppResult("查询有效的仓库成功!", warehouseBiz.findWarehouseValid());
+    }
+
+    //发货通知单创建
+    @POST
+    @Path(SupplyConstants.OutboundOrder.DELIVERY_ORDER_CREATE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createOutbound(@FormParam("id") String id,@Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult("重新发送成功",outBoundOrderBiz.createOutbound(id,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
 }
