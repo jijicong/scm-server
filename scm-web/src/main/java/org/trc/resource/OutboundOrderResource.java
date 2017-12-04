@@ -55,13 +55,33 @@ public class OutboundOrderResource {
     }
 
     /**
-     * 取消订单
+     * 取消发货
      */
     @PUT
     @Path(SupplyConstants.OutboundOrder.ORDER_CANCEL + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response orderCancel(@PathParam("id") Long id, @FormParam("remark") String remark){
         return outBoundOrderBiz.orderCancel(id, remark);
+    }
+
+    /**
+     * 关闭
+     */
+    @PUT
+    @Path(SupplyConstants.OutboundOrder.CLOSE + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response close(@PathParam("id") Long id, @FormParam("remark") String remark){
+        return outBoundOrderBiz.close(id, remark);
+    }
+
+    /**
+     * 取消关闭
+     */
+    @PUT
+    @Path(SupplyConstants.OutboundOrder.CANCEL_CLOSE + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response cancelClose(@PathParam("id") Long id){
+        return outBoundOrderBiz.cancelClose(id);
     }
 
     /**

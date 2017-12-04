@@ -933,6 +933,16 @@ public class SupplyConstants {
         public static final String ORDER_CANCEL = "orderCancel";
 
         /**
+         * 取消关闭
+         */
+        public static final String CANCEL_CLOSE = "cancelClose";
+
+        /**
+         * 关闭
+         */
+        public static final String CLOSE = "close";
+
+        /**
          * 获取发货通知单详情
          */
         public static final String OUTBOUND_ORDER_DETAIL = "outboundOrderDetail";
