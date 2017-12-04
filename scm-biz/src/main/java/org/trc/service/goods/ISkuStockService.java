@@ -2,9 +2,9 @@ package org.trc.service.goods;
 
 import java.util.List;
 
+import org.trc.common.RequsetUpdateStock;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
-import org.trc.form.goods.RequsetUpdateStock;
 import org.trc.service.IBaseService;
 
 /**
