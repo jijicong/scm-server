@@ -1066,4 +1066,12 @@ public class SupplyConstants {
         public final static String CHANNEL = "channel";
     }
 
+    /**
+     * 订单来源平台编码
+     */
+    public static final class SourcePlatformCodeType {
+        //奇门接口订单来源编码
+        public final static String OTHER = "OTHER";
+    }
+
 }
