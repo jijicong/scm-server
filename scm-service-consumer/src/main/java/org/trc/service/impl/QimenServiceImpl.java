@@ -3,8 +3,10 @@ package org.trc.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.QimenRequest;
+import com.qimen.api.request.DeliveryorderCreateRequest;
 import com.qimen.api.request.EntryorderCreateRequest;
 import com.qimen.api.request.ItemsSynchronizeRequest;
+import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.EntryorderCreateResponse;
 import com.qimen.api.response.ItemsSynchronizeResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -32,16 +34,14 @@ import java.util.Map;
  */
 @Service("qimenService")
 public class QimenServiceImpl implements IQimenService {
+    //接口调用超时时间
+    public final static Integer TIME_OUT = 10000;
+    public final static String SUCCESS_CODE = "200";
     private final static Logger log = LoggerFactory.getLogger(QimenServiceImpl.class);
-
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
     @Autowired
     private QimenConfig qimenConfig;
-
-    //接口调用超时时间
-    public final static Integer TIME_OUT = 10000;
-    public final static String SUCCESS_CODE = "200";
 
     @Override
     public ReturnTypeDO itemsSync(String warehouseCode, String ownerCode, List<ItemsSynchronizeRequest.Item> items) {
@@ -86,8 +86,16 @@ public class QimenServiceImpl implements IQimenService {
 		 map.put("entryOrderCreateRequest", JSON.toJSONString(req));
 		 return invokeExternal(map, url);
 	}
-	
-	private AppResult invokeExternal (Map paramsMap, String url) {
+
+    @Override
+    public AppResult<DeliveryorderCreateResponse> deliveryOrderCreate(DeliveryorderCreateRequest req) {
+        String url = qimenConfig.getQimenEntryorderCreateUrl();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("deliveryorderCreateRequest", JSON.toJSONString(req));
+        return invokeExternal(map, url);
+    }
+
+    private AppResult invokeExternal (Map paramsMap, String url) {
 		String serverUrl = externalSupplierConfig.getScmExternalUrl() + url;
 		String resStr = "";
 		

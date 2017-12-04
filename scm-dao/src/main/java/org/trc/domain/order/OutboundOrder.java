@@ -22,6 +22,10 @@ public class OutboundOrder implements Serializable {
     //店铺订单编号
     private String warehouseOrderCode;
 
+    private Long shopId;
+
+    private String shopName;
+
     private String shopOrderCode;
 
     private Long supplierId;
@@ -31,6 +35,8 @@ public class OutboundOrder implements Serializable {
     private Long warehouseId;
 
     private String warehouseCode;
+
+    private String orderType;
 
     private Integer itemNum;
 
@@ -269,4 +275,29 @@ public class OutboundOrder implements Serializable {
     public void setUpdateTime(String updateTime) {
         this.updateTime = updateTime;
     }
+
+    public String getOrderType() {
+        return orderType;
+    }
+
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
+    }
+
+    public Long getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(Long shopId) {
+        this.shopId = shopId;
+    }
+
+    public String getShopName() {
+        return shopName;
+    }
+
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
+    }
+
 }

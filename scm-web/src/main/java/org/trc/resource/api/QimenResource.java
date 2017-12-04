@@ -40,24 +40,26 @@ public class QimenResource {
     private static final String SUCCESS = "success";
 
     //发货单确认
-    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.confirm";
+    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
 
     //入库单确认
-    private static final String ENTRY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
+    private static final String ENTRY_ORDER_CONFIRM = "entryorder.confirm";
 
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
     @Autowired
     private IQimenBiz qimenBiz;
+
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //获取报文
+            logger.info("qimenUrlRequest"+JSON.toJSONString(qimenUrlRequest));
+            logger.info("ContentType:"+request.getContentType());
             String requestText = this.getInfo(request,qimenUrlRequest);
-
+            logger.info("获取奇门报文:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
             this.confirmMethod(requestText, method);
@@ -71,10 +73,10 @@ public class QimenResource {
 
     //获取报文信息
     private String getInfo(HttpServletRequest request, QimenUrlRequest qimenUrlRequest) throws IOException{
+        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
         InputStream is= request.getInputStream();
         Scanner scanner = new Scanner(is, "UTF-8");
         String requestText = scanner.useDelimiter("\\A").next();
-        qimenBiz.checkResult(request,qimenUrlRequest.getMethod());
         scanner.close();
         return requestText;
     }
@@ -83,9 +85,12 @@ public class QimenResource {
     private void confirmMethod(String requestText, String method){
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
-                warehouseNoticeBiz.updateInStock(requestText);
+                warehouseNoticeBiz
+                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
+                break;
+            default:
                 break;
         }
     }

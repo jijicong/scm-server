@@ -1,28 +1,37 @@
 package org.trc.biz.impl.outbound;
 
 import com.qimen.api.request.DeliveryorderConfirmRequest;
+import com.qimen.api.request.DeliveryorderCreateRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
+import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundDetail;
+import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.enums.OutboundDetailStatusEnum;
 import org.trc.enums.OutboundOrderStatusEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.QimenDeliveryEnum;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.service.System.IWarehouseService;
 import org.trc.service.outbound.IOutBoundOrderService;
+import org.trc.service.outbound.IOutboundDetailLogisticsService;
+import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.XmlUtil;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.util.StringUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +42,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
+    @Autowired
+    private IWarehouseService warehouseService;
+
+    @Autowired
+    private IOutboundDetailService outboundDetailService;
+    @Autowired
+    private IOutboundDetailLogisticsService outboundDetailLogisticsService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -52,12 +68,168 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateOutboundDetail(String requestText) throws Exception {
         AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
         DeliveryorderConfirmRequest confirmRequest = (DeliveryorderConfirmRequest) XmlUtil.xmlStrToBean(requestText, DeliveryorderConfirmRequest.class);
-        if (null != confirmRequest) {
+        //包裹信息
+        List<DeliveryorderConfirmRequest.Package> packageList = confirmRequest.getPackages();
+        //发货单信息
+        DeliveryorderConfirmRequest.DeliveryOrder deliveryOrder = confirmRequest.getDeliveryOrder();
 
+        //获取发货单
+        String outboundOrderCode = deliveryOrder.getDeliveryOrderCode();
+        String status = deliveryOrder.getStatus();
+        String operateTime = deliveryOrder.getOperateTime();
+        AssertUtil.notBlank(outboundOrderCode, "发货单编号不能为空!");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setOutboundOrderCode(outboundOrderCode);
+        outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+
+        //更新发货单信息
+        this.updateOutboundDetailAndLogistics(packageList, outboundOrderCode, status, operateTime);
+
+        //更新发货单状态
+        this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
+
+    }
+
+    //更新发货单状态
+    private void setOutboundOrderStatus(String outboundOrderCode, OutboundOrder outboundOrder){
+        List<OutboundDetail> outboundDetailList = null;
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setOutboundOrderCode(outboundOrderCode);
+        outboundDetailList = outboundDetailService.select(outboundDetail);
+        String outboundOrderStatus = this.getOutboundOrderStatusByDetail(outboundDetailList);
+        outboundOrder.setStatus(outboundOrderStatus);
+        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+    }
+
+    //更新发货单
+    private void updateOutboundDetailAndLogistics(List<DeliveryorderConfirmRequest.Package> packageList, String outboundOrderCode, String status, String operateTime) throws Exception{
+        List<DeliveryorderConfirmRequest.Item> itemList = null;
+        OutboundDetail outboundDetail = null;
+        OutboundDetailLogistics outboundDetailLogistics = null;
+        List<OutboundDetailLogistics> outboundDetailLogisticsList = null;
+        //遍历包裹
+        for(DeliveryorderConfirmRequest.Package packageD : packageList){
+            itemList = packageD.getItems();
+            if(itemList != null){
+                //遍历包裹内商品，更新物流和发货单详情
+                for(DeliveryorderConfirmRequest.Item item : itemList){
+                    Long sentNum = item.getQuantity();
+                    //获取发货详情
+                    outboundDetail = new OutboundDetail();
+                    outboundDetail.setOutboundOrderCode(outboundOrderCode);
+                    outboundDetail.setSkuCode(item.getItemCode());
+                    outboundDetail = outboundDetailService.selectOne(outboundDetail);
+
+                    //获取当前商品物流
+                    outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                    outboundDetailLogistics.setWaybillNumber(packageD.getExpressCode());
+                    outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
+
+                    //判断是否已存储物流信息，如果没有新增
+                    if(outboundDetailLogisticsList != null && outboundDetailLogisticsList.size() > 0){
+                        outboundDetailLogistics = outboundDetailLogisticsList.get(0);
+                        outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                        //更新发货商品详情
+                        this.updateOutboundDetail(status, outboundDetailLogistics, outboundDetail, operateTime, sentNum);
+                        //保存信息
+                        outboundDetailLogisticsService.updateByPrimaryKey(outboundDetailLogistics);
+                        outboundDetailService.updateByPrimaryKey(outboundDetail);
+                    }else{
+                        outboundDetailLogistics = new OutboundDetailLogistics();
+                        outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                        outboundDetailLogistics.setLogisticsCorporation(packageD.getLogisticsName());
+                        outboundDetailLogistics.setLogisticsCode(packageD.getLogisticsCode());
+                        outboundDetailLogistics.setItemNum(sentNum);
+                        outboundDetailLogistics.setWaybillNumber(packageD.getExpressCode());
+                        outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
+                        outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                        //更新发货商品详情
+                        this.updateOutboundDetail(status, outboundDetailLogistics, outboundDetail, operateTime, sentNum);
+                        //保存信息
+                        outboundDetailLogisticsService.insert(outboundDetailLogistics);
+                        outboundDetailService.updateByPrimaryKey(outboundDetail);
+                    }
+                }
+            }
         }
+    }
+
+    //更新发货商品明细
+    private void updateOutboundDetail(String status, OutboundDetailLogistics outboundDetailLogistics,
+                                      OutboundDetail outboundDetail, String operateTime, Long sentNum) throws Exception{
+        if(StringUtils.equals(status, QimenDeliveryEnum.DELIVERED.getCode())){
+            if(outboundDetailLogistics.getDeliverTime() == null ||
+                    this.compareDeliverTime(outboundDetailLogistics.getDeliverTime(), operateTime)){
+                outboundDetailLogistics.setDeliverTime(this.getTime(operateTime));
+            }
+            outboundDetail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+            outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+            outboundDetail.setRealSentItemNum(sentNum);
+        }
+        if(StringUtils.equals(status, QimenDeliveryEnum.PARTDELIVERED.getCode())){
+            outboundDetail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());
+            outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+            outboundDetail.setRealSentItemNum(sentNum);
+        }
+    }
+
+    //获取时间
+    private Date getTime(String operateTime) throws Exception{
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.parse(operateTime);
+    }
+
+    //比较时间
+    private boolean compareDeliverTime(Date oldDate, String newTime) throws Exception{
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date newDate = sdf.parse(newTime);
+        if(oldDate.getTime() > newDate.getTime()){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void createOutbound(String outboundOrderId) throws Exception {
+        AssertUtil.notBlank(outboundOrderId,"ID不能为空");
+        //根据id获取到发货通知单
+        OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
+        AssertUtil.notNull(outboundOrder,"根据发货通知单id获取发货通知单记录为空");
+        Long warehouseId = outboundOrder.getWarehouseId();
+        Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
+
+        //参数校验
+        verifyParam(warehouse,outboundOrder);
+        DeliveryorderCreateRequest request = new DeliveryorderCreateRequest();
+        DeliveryorderCreateRequest.DeliveryOrder deliveryOrder =  new DeliveryorderCreateRequest.DeliveryOrder();
+        //request.setDeliveryOrder();
+    }
+
+    private void verifyParam(Warehouse warehouse,OutboundOrder outboundOrder){
+        AssertUtil.notBlank(outboundOrder.getOutboundOrderCode(),"出库通知单编号不能为空");
+        AssertUtil.notBlank(outboundOrder.getOrderType(),"出库单类型不能为空");
+        AssertUtil.notBlank(warehouse.getCode(),"仓库编码不能为空");
+        AssertUtil.notNull(outboundOrder.getCreateTime(),"发货单创建时间不能为空");
+        AssertUtil.notNull(outboundOrder.getPayTime(),"付款时间不能为空");
+        AssertUtil.notBlank(outboundOrder.getShopName(),"店铺名称不能为空");
+        AssertUtil.notBlank(warehouse.getName(),"发货仓库名称不能为空");
+        AssertUtil.notBlank(warehouse.getSenderPhoneNumber(),"运单发件人手机号不能为空");
+        AssertUtil.notBlank(warehouse.getProvince(),"发货仓库省份不能为空");
+        AssertUtil.notBlank(warehouse.getCity(),"发货仓库城市不能为空");
+        AssertUtil.notBlank(warehouse.getAddress(),"发货仓库的详细地址不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverName(),"收件人姓名不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverPhone(),"收件人联系方式不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverProvince(),"收件人省份不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverCity(),"收件人城市不能为空");
+        AssertUtil.notBlank(outboundOrder.getReceiverAddress(),"收件人详细地址不能为空");
+        AssertUtil.notBlank(outboundOrder.getBuyerMessage(),"买家留言不能为空");
+        AssertUtil.notBlank(outboundOrder.getSellerMessage(),"卖家留言不能为空");
+        //AssertUtil.not
     }
 
     public void setQueryParam(Example example, OutBoundOrderForm form) {
@@ -145,4 +317,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
         return OutboundOrderStatusEnum.WAITING.getCode();
     }
+
+
 }
