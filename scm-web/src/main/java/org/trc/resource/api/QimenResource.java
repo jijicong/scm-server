@@ -43,21 +43,21 @@ public class QimenResource {
     private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
 
     //入库单确认
-    private static final String ENTRY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.confirm";
+    private static final String ENTRY_ORDER_CONFIRM = "entryorder.confirm";
 
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
     @Autowired
     private IQimenBiz qimenBiz;
+
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-//    @Consumes(MediaType.TEXT_XML)
-    @Produces(MediaType.APPLICATION_XML)
+    @Consumes(MediaType.TEXT_PLAIN)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //获取报文
             logger.info("qimenUrlRequest"+JSON.toJSONString(qimenUrlRequest));
-
+            logger.info("ContentType:"+request.getContentType());
             String requestText = this.getInfo(request,qimenUrlRequest);
             logger.info("获取奇门报文:"+requestText);
             //确认逻辑
@@ -84,13 +84,14 @@ public class QimenResource {
     //确认逻辑
     private void confirmMethod(String requestText, String method){
         switch (method) {
-            case ENTRY_ORDER_CONFIRM:warehouseNoticeBiz
-                .updateInStock(requestText);
+            case ENTRY_ORDER_CONFIRM:
+                warehouseNoticeBiz
+                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
                 break;
-                default:
-                    break;
+            default:
+                break;
         }
     }
 
