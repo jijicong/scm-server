@@ -26,11 +26,12 @@ public class WarehouseNoticeCallbackService extends BaseService<WarehouseNoticeC
     
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
-    public void recordCallbackLog(String reqParams, Integer status, String warehouseCode, String warehouseNoticeCode) {
+    public void recordCallbackLog(String requestCode,String reqParams, Integer status, String warehouseCode, String warehouseNoticeCode) {
         try {
         	Date nowDate = Calendar.getInstance().getTime();
         	WarehouseNoticeCallback record = new WarehouseNoticeCallback();
     		record.setCreateTime(nowDate);
+    		record.setRequestCode(requestCode);
     		record.setRequestTime(nowDate);
     		//record.setRequestCode("001");
     		record.setRequestParams(reqParams);
