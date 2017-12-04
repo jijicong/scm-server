@@ -45,6 +45,7 @@ import org.trc.service.System.IWarehouseService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
@@ -54,7 +55,10 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
-import org.trc.util.*;
+import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
+import org.trc.util.DateUtils;
+import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -66,6 +70,7 @@ import java.util.*;
 @Service("warehouseNoticeBiz")
 public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
+    public final static String ZP = "ZP";
     private Logger logger = LoggerFactory.getLogger(PurchaseOrderAuditBiz.class);
     @Autowired
     private IWarehouseNoticeService warehouseNoticeService;
@@ -99,13 +104,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private IQimenService qimenService;
-
+    @Autowired
+    private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private List<String> defectiveSku = new ArrayList<>();
     private List<String> errorSku = new ArrayList<>();
-    public final static String ZP = "ZP";
-
 
     /**
      * 入库通知单分页查询
@@ -202,6 +206,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         String result = xmlSerializer.read(requestText).toString();
         confirmRequest = JSON.parseObject(result, EntryorderConfirmRequest.class);
         if (null != confirmRequest) {
+            //记录流水
+            warehouseNoticeCallbackService.recordCallbackLog(confirmRequest.getEntryOrder().getOutBizCode(),requestText,1,"",confirmRequest.getEntryOrder().getEntryOrderCode());
             //获取orderLines 入库单详情
             List<EntryorderConfirmRequest.OrderLine> orderLineList = confirmRequest.getOrderLines();
             //获取入库单号
@@ -249,6 +255,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "WAREHOUSE", "部分收货", "", null);
                         }
                         warehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
+
+
                     }
                 }
             }

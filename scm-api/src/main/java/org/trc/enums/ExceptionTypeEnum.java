@@ -8,6 +8,13 @@ public enum ExceptionTypeEnum {
     STOCK_LESS_REFUSE(1,"缺货退回"),STOCK_LESS_WAIT(2,"缺货等待");
 
 
+    private Integer code;
+    private String name;
+    ExceptionTypeEnum(Integer code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
     public static ExceptionTypeEnum queryNameByCode(Integer code){
         for(ExceptionTypeEnum sourceEnum: ExceptionTypeEnum.values()){
             if (sourceEnum.getCode().equals(code)){
@@ -15,14 +22,6 @@ public enum ExceptionTypeEnum {
             }
         }
         return null;
-    }
-
-    private Integer code;
-    private String name;
-
-    ExceptionTypeEnum(Integer code, String name) {
-        this.code = code;
-        this.name = name;
     }
 
     public Integer getCode() {

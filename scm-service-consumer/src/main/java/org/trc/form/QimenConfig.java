@@ -14,6 +14,9 @@ public class QimenConfig {
     //发货通知单创建接口URL
     private String qimenDeliveryOrderCreateUrl;
 
+    //单据取消接口URL
+    private String qimenOrderCancelUrl;
+
     public String getQimenItemsSyncUrl() {
         return qimenItemsSyncUrl;
     }
@@ -36,5 +39,13 @@ public class QimenConfig {
 
     public void setQimenDeliveryOrderCreateUrl(String qimenDeliveryOrderCreateUrl) {
         this.qimenDeliveryOrderCreateUrl = qimenDeliveryOrderCreateUrl;
+    }
+
+    public String getQimenOrderCancelUrl() {
+        return qimenOrderCancelUrl;
+    }
+
+    public void setQimenOrderCancelUrl(String qimenOrderCancelUrl) {
+        this.qimenOrderCancelUrl = qimenOrderCancelUrl;
     }
 }

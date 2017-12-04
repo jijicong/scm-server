@@ -3,9 +3,11 @@ package org.trc.service;
 import com.qimen.api.request.DeliveryorderCreateRequest;
 import com.qimen.api.request.EntryorderCreateRequest;
 import com.qimen.api.request.ItemsSynchronizeRequest;
+import com.qimen.api.request.OrderCancelRequest;
 import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.EntryorderCreateResponse;
 
+import com.qimen.api.response.OrderCancelResponse;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.util.AppResult;
 
@@ -25,4 +27,9 @@ public interface IQimenService {
 	AppResult<EntryorderCreateResponse> entryOrderCreate(EntryorderCreateRequest req);
 
     AppResult<DeliveryorderCreateResponse> deliveryOrderCreate(DeliveryorderCreateRequest req);
+
+    /**
+     * 单据取消
+     */
+    AppResult<OrderCancelResponse> orderCancel(OrderCancelRequest req);
 }

@@ -9,6 +9,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class Response {
+    @ApiField("flag")
+    private String flag;
+    @ApiField("code")
+    private String code;
+    @ApiField("message")
+    private String message;
     public Response(){
 
     }
@@ -17,13 +23,6 @@ public class Response {
         this.code = code;
         this.message = message;
     }
-
-    @ApiField("flag")
-    private String flag;
-    @ApiField("code")
-    private String code;
-    @ApiField("message")
-    private String message;
 
     public String getFlag() {
         return flag;

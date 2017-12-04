@@ -12,6 +12,6 @@ public interface IWarehouseNoticeCallbackService extends IBaseService<WarehouseN
 	 * @param warehouseCode  仓库编号
 	 * @param warehouseNoticeCode 入库单编号
 	 */
-	void recordCallbackLog(String reqParams, Integer status, String warehouseCode, String warehouseNoticeCode);
+	void recordCallbackLog(String requestCode,String reqParams, Integer status, String warehouseCode, String warehouseNoticeCode);
 	
 }

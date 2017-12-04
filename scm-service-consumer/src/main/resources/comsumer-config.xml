@@ -60,6 +60,7 @@
         <property name="qimenItemsSyncUrl" value="${qimen.itemsSync.url}"/>
         <property name="qimenEntryorderCreateUrl" value="${qimen.entryorderCreate.url}"/>
         <property name="qimenDeliveryOrderCreateUrl" value="${qimen.deliveryOrderCreate.url}"/>
+        <property name="qimenOrderCancelUrl" value="${qimen.orderCancelUrl.url}"/>
     </bean>
 
 </beans>
