@@ -5,10 +5,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.QimenRequest;
 import com.qimen.api.request.DeliveryorderCreateRequest;
 import com.qimen.api.request.EntryorderCreateRequest;
+import com.qimen.api.request.InventoryQueryRequest;
 import com.qimen.api.request.ItemsSynchronizeRequest;
 import com.qimen.api.request.OrderCancelRequest;
 import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.EntryorderCreateResponse;
+import com.qimen.api.response.InventoryQueryResponse;
 import com.qimen.api.response.ItemsSynchronizeResponse;
 import com.qimen.api.response.OrderCancelResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -16,20 +18,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.enums.ExceptionEnum;
+import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.OrderException;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.QimenConfig;
 import org.trc.service.IQimenService;
-import org.trc.util.AppResult;
-import org.trc.util.DateUtils;
-import org.trc.util.HttpClientUtil;
-import org.trc.util.ResultUtil;
+import org.trc.util.*;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by hzcyn on 2017/11/22.
@@ -58,7 +57,7 @@ public class QimenServiceImpl implements IQimenService {
         ReturnTypeDO returnTypeDO = new ReturnTypeDO();
         returnTypeDO.setSuccess(false);
         String response = null;
-        try{
+            try{
             response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
@@ -105,6 +104,13 @@ public class QimenServiceImpl implements IQimenService {
         return invokeExternal(map, url);
     }
 
+    @Override
+    public AppResult<InventoryQueryResponse> inventoryQuery(InventoryQueryRequest inventoryQueryRequest) {
+        Map<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("request", JSON.toJSONString(inventoryQueryRequest));
+        return invokeExternal_Get(paramsMap, qimenConfig.getQimenInventoryQueryUrl());
+    }
+
     private AppResult invokeExternal (Map paramsMap, String url) {
 		String serverUrl = externalSupplierConfig.getScmExternalUrl() + url;
 		String resStr = "";
@@ -137,4 +143,48 @@ public class QimenServiceImpl implements IQimenService {
 		
 		return ResultUtil.createFailAppResult("调用external奇门接口失败");
 	}
+
+    /**
+     * 调用external服务get方法
+     * 传参说明：url参数
+     * @param paramsMap
+     * @param url
+     * @return
+     */
+	private AppResult invokeExternal_Get(Map<String, Object> paramsMap, String url){
+        String serverUrl = externalSupplierConfig.getScmExternalUrl() + url;
+        StringBuilder sb = new StringBuilder(serverUrl);
+        Set<Map.Entry<String, Object>> entrys = paramsMap.entrySet();
+        if(entrys.size() > 0){
+            sb.append("?");
+            for(Map.Entry<String, Object> entry: entrys){
+                sb.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+            }
+        }
+        log.debug("开始调用奇门接口" + url + ", 参数：" + JSON.toJSONString(paramsMap) +  ". 开始时间" +
+                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+        AppResult appResult = new AppResult();
+        appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
+        try{
+            String response = HttpClientUtil.httpGetRequest(url);
+            log.debug("结束调用奇门接口" + url + ", 返回结果：" + response + ". 结束时间" +
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                appResult = jbo.toJavaObject(AppResult.class);
+            }else {
+                appResult.setDatabuffer("调用奇门接口返回结果为空");
+            }
+        }catch (ClassCastException e) {
+            String msg = String.format("调用奇门接口返回结果格式错误,%s", e.getMessage());
+            log.error(msg, e);
+            appResult.setDatabuffer(msg);
+        }catch (Exception e){
+            String msg = String.format("调用奇门商品库存查询接口异常,%s", e.getMessage());
+            log.error(msg, e);
+            appResult.setDatabuffer(msg);
+        }
+        return appResult;
+    }
+
 }

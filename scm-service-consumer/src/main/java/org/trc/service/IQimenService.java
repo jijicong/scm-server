@@ -7,10 +7,12 @@ import com.qimen.api.request.OrderCancelRequest;
 import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.EntryorderCreateResponse;
 
+import com.qimen.api.response.InventoryQueryResponse;
 import com.qimen.api.response.OrderCancelResponse;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.util.AppResult;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -27,6 +29,15 @@ public interface IQimenService {
 	AppResult<EntryorderCreateResponse> entryOrderCreate(EntryorderCreateRequest req);
 
     AppResult<DeliveryorderCreateResponse> deliveryOrderCreate(DeliveryorderCreateRequest req);
+
+    /**
+     * 商品库存查询接口(批量)
+     * @param inventoryQueryRequest
+     * @return
+     */
+    AppResult<InventoryQueryResponse> inventoryQuery(InventoryQueryRequest inventoryQueryRequest);
+
+
 
     /**
      * 单据取消
