@@ -17,7 +17,7 @@ import java.util.*;
  * @author hzszy
  */
 public class SpiUtils {
-    private static Logger log = LoggerFactory.getLogger(SpiUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(SpiUtils.class);
     private static final String TOP_SIGN_LIST = "top-sign-list";
     private static final String[] HEADER_FIELDS_IP = new String[]{"X-Real-IP", "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"};
 
