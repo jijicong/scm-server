@@ -26,4 +26,7 @@ public interface IOutBoundOrderBiz {
     String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     Response getOutboundOrderDetail(Long id);
+
+    //判读是否超过7天，超过七天则将置为1
+    void isTimeOutTimer();
 }

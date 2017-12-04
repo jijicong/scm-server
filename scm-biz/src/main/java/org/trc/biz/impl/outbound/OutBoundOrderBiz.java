@@ -272,6 +272,28 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
+    @Override
+    public void isTimeOutTimer() {
+        logger.info("检查出库通知单是否超过七天的定时任务启动----->");
+        Example example = new Example(OutboundOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("status",OutboundOrderStatusEnum.CANCELED.getCode());
+        List<OutboundOrder> list = outBoundOrderService.selectByExample(example);
+        if (list.size()==0){
+            logger.info("没有超过七天的出库通知单");
+            return;
+        }
+        for (OutboundOrder outboundOrder:list){
+            //比较时间是否超过7天
+
+            //超过7天的则将is_timeOut更新为1
+            OutboundOrder update =  new OutboundOrder();
+//            update.setIsTimeOut();
+//            outBoundOrderService.updateByPrimaryKeySelective()
+
+        }
+    }
+
 
     private void updateOutboundDetailState(String outboundOrderCode,String state,Long id){
         logger.info("开始更新发货通知单详情表状态");
