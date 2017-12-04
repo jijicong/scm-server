@@ -51,7 +51,7 @@ public class QimenResource {
     private IQimenBiz qimenBiz;
     @POST
     @Path(SupplyConstants.Qimen.QIMEN_CALLBACK)
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
