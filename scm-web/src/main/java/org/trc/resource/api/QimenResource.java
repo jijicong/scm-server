@@ -40,10 +40,10 @@ public class QimenResource {
     private static final String SUCCESS = "success";
 
     //发货单确认
-    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.confirm";
+    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
 
     //入库单确认
-    private static final String ENTRY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
+    private static final String ENTRY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.confirm";
 
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
