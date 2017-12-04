@@ -56,8 +56,9 @@ public class QimenResource {
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //获取报文
-            String requestText = this.getInfo(request,qimenUrlRequest);
             logger.info("qimenUrlRequest"+JSON.toJSONString(qimenUrlRequest));
+
+            String requestText = this.getInfo(request,qimenUrlRequest);
             logger.info("获取奇门报文:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
