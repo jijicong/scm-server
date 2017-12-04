@@ -57,7 +57,7 @@ public class QimenResource {
         try {
             //获取报文
             String requestText = this.getInfo(request,qimenUrlRequest);
-
+            logger.info("获取奇门报文:"+requestText);
             //确认逻辑
             String method = qimenUrlRequest.getMethod();
             this.confirmMethod(requestText, method);
