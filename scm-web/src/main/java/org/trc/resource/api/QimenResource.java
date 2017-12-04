@@ -81,8 +81,8 @@ public class QimenResource {
     private void confirmMethod(String requestText, String method){
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
-                warehouseNoticeBiz
-                        .updateInStock(requestText);
+//                warehouseNoticeBiz
+//                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
                 break;
