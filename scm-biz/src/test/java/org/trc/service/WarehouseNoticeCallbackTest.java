@@ -25,6 +25,6 @@ public class WarehouseNoticeCallbackTest {
 //		record.setState(0);
 //		record.setWarehouseCode("00001");
 //		callbackService.insert(record);
-		callbackService.recordCallbackLog("{test:test}", null, "0012", "2121");
+		//callbackService.recordCallbackLog("{test:test}", null, "0012", "2121");
 	}
 }

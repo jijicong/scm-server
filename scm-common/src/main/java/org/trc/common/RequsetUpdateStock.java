@@ -1,5 +1,7 @@
-package org.trc.form.goods;
+package org.trc.common;
 
+import java.util.List;
+import java.util.Map;
 
 /**
  * 库存更新请求model
@@ -32,7 +34,7 @@ public class RequsetUpdateStock {
 	 * 6.real_inventory 真实库存
 	 * 7.defective_inventory 残次品库存
 	 */
-	private String stockType;
+	private Map<String, String> stockType;
 	
 	/**
 	 * 更新数量
@@ -63,11 +65,11 @@ public class RequsetUpdateStock {
 		this.warehouseCode = warehouseCode;
 	}
 
-	public String getStockType() {
+	public Map<String, String> getStockType() {
 		return stockType;
 	}
 
-	public void setStockType(String stockType) {
+	public void setStockType(Map<String, String> stockType) {
 		this.stockType = stockType;
 	}
 
