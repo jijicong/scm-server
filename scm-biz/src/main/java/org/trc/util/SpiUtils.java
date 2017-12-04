@@ -4,8 +4,8 @@ import com.taobao.api.internal.spi.CheckResult;
 import com.taobao.api.internal.util.StringUtils;
 import com.taobao.api.internal.util.TaobaoUtils;
 import com.taobao.api.internal.util.WebUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.*;
  * @author hzszy
  */
 public class SpiUtils {
-    private static final Log log = LogFactory.getLog(com.taobao.api.internal.spi.SpiUtils.class);
+    private static Logger log = LoggerFactory.getLogger(SpiUtils.class);
     private static final String TOP_SIGN_LIST = "top-sign-list";
     private static final String[] HEADER_FIELDS_IP = new String[]{"X-Real-IP", "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"};
 
@@ -76,7 +76,9 @@ public class SpiUtils {
         }
 
         String remoteSign = (String)queryMap.get("sign");
+        log.info("remoteSign:"+remoteSign);
         String localSign = sign(params, body, secret, charset);
+        log.info("localSign:"+localSign);
         if (localSign.equals(remoteSign)) {
             return true;
         } else {
