@@ -114,7 +114,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     }
                     if(flag){
                         outboundDetailLogistics = new OutboundDetailLogistics();
-//                        outboundDetailLogistics.setOutboundDetailId();
+                        outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                        outboundDetailLogistics.setLogisticsCorporation(packageD.getLogisticsName());
+                        outboundDetailLogistics.setLogisticsCode(packageD.getLogisticsCode());
+                        outboundDetailLogistics.setItemNum(sentNum);
                     }
                 }
             }
