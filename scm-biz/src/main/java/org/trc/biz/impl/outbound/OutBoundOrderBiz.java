@@ -220,7 +220,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
-    public String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
+    public String createOutbound(String outboundOrderId) throws Exception {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
         OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
@@ -245,13 +245,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String code = result.getAppcode();
         String msg = result.getDatabuffer();
         //调用重新发货接口插入一条日志记录
-        String userId= aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),userId,"重新发送",null,null);
+        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),"admin","重新发送",null,null);
         if (StringUtils.equals(code,SUCCESS)){
             updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
         }else {
             //仓库接受失败插入一条日志
-            logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),userId,"仓库接收失败",msg,null);
+            logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),"warehouse","仓库接收失败",msg,null);
             updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id);
             logger.error(msg);
             throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -403,15 +402,16 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         OutboundOrder outboundOrder = new OutboundOrder();
         outboundOrder.setId(id);
         outboundOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        //找出发货通知单编号下所有记录，更新出库通知单状态
+        List<OutboundDetail> list = outboundDetailService.selectByExample(example);
+        String outboundOrderStatus = this.getOutboundOrderStatusByDetail(list);
+        outboundOrder.setStatus(outboundOrderStatus);
         count = outBoundOrderService.updateByPrimaryKeySelective(outboundOrder);
         if (count == 0){
-            String msg = String.format("创建发货单%s后，更新发货通知表取消状态失败",outboundOrderCode);
+            String msg = String.format("创建发货单%s后，更新发货通知表状态失败",outboundOrderCode);
             logger.error(msg);
             throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
         }
-        //找出发货通知单编号下所有记录，更新出库通知单状态
-        List<OutboundDetail> list = outboundDetailService.selectByExample(example);
-        getOutboundOrderStatusByDetail(list);
     }
 
     private DeliveryorderCreateRequest setParam(Warehouse warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
