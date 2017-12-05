@@ -82,6 +82,7 @@ public class OutboundOrder implements Serializable {
 
     private String isCancel;
 
+    @Transient
     private String isTimeOut;
 
     @Transient
