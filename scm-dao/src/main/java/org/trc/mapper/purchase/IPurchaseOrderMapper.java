@@ -29,4 +29,8 @@ public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
     List<PurchaseDetail> selectAllCategory(List<Long> categoryIds);
 
     int selectCountItemsForSupplier(Map<String, Object> map);
+
+    int selectItemsBySupplierCodeCount(Map<String, Object> map);
+
+    List<PurchaseDetail> selectItemsBySupplierCodeCheck(Map<String, Object> map);
 }

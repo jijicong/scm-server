@@ -46,6 +46,7 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.util.UserNameUtilService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseGroupService;
@@ -60,6 +61,8 @@ import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
+
+import javax.annotation.Resource;
 
 /**
  * @author sone
@@ -126,6 +129,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(channelCode, "业务线编码为空!");
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
+        //渠道编号
+        if (!StringUtils.isBlank(channelCode)) { 
+            criteria.andEqualTo("channelCode",channelCode);
+        }
         //采购类型
         if (!StringUtils.isBlank(form.getPurchaseType())) {
             criteria.andEqualTo("purchaseType", form.getPurchaseType());
@@ -156,8 +163,42 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         example.orderBy("status").asc();
         example.orderBy("updateTime").desc();
         Pagenation<WarehouseNotice> pagenation = warehouseNoticeService.pagination(example, page, form);
+        
+        // 设置创建者用户名,供应商名，仓库名
+        setObjectName(pagenation);
+
 
         return page;
+    }
+    
+    private void setObjectName(Pagenation<WarehouseNotice> pagenation) {
+    	if (null != pagenation && !CollectionUtils.isEmpty(pagenation.getResult())) {
+    		for (WarehouseNotice notice : pagenation.getResult()) {
+    			/**
+    			 * 供应商名称 
+    			 * 创建人名称
+    			 * 仓库名称
+    			 **/
+    			AclUserAccreditInfo user = new AclUserAccreditInfo();
+    			user.setUserId(notice.getCreateOperator());
+    			AclUserAccreditInfo tmpUser = userAccreditInfoService.selectOne(user);
+    			AssertUtil.notNull(tmpUser, "创建人名称查询失败");
+    			notice.setCreateOperator(tmpUser.getName());
+    			
+    	        Supplier supplier = new Supplier();
+    	        supplier.setSupplierCode(notice.getSupplierCode());
+    	        supplier = iSupplierService.selectOne(supplier);
+    	        AssertUtil.notNull(supplier, "供应商名称查询失败");
+    	        notice.setSupplierName(supplier.getSupplierName());
+
+    	        Warehouse warehouse = new Warehouse();
+    	        warehouse.setCode(notice.getWarehouseCode());
+    	        warehouse = warehouseService.selectOne(warehouse);
+    	        AssertUtil.notNull(warehouse, "仓库名称查询失败");
+    	        notice.setWarehouseName(warehouse.getName());
+    			
+    		}
+    	}
     }
 
     @Override

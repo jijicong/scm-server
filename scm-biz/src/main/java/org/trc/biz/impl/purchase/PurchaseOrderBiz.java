@@ -439,28 +439,38 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
 
-        PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(SUPPLIER_CODE, supplierCode);
         map.put(WAREHOUSE_INFO_ID, warehouseInfoId);
-        map.put("skuName", form.getSkuName());
+        List<PurchaseDetail>  purchaseDetailListCheck = purchaseOrderService.selectItemsBySupplierCodeCheck(map);
+        if(purchaseDetailListCheck.size() == 0){
+            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
+
         if(StringUtils.isBlank(skus)){
             map.put("skuTemp",null);
         } else {
             map.put("skuTemp",SKU);
             map.put("arrSkus", skus.split(","));
         }
+
+        map.put("skuName", form.getSkuName());
         map.put("skuCode", form.getSkuCode());
         map.put("brandName", form.getBrandName());
         map.put("barCode", form.getBarCode());
         map.put("itemNo", form.getItemNo());
-
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
-        if(purchaseDetailList.size() == 0){
-            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
-            LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
+        if(purchaseDetailListCount < 1){
+            return null;
         }
+        //获取总数
+        page.setTotalCount(purchaseDetailListCount);
+        //获取分页数
+        map.put("start", page.getStart());
+        map.put("pageSize", page.getPageSize());
+        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
@@ -476,8 +486,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 }
             }
         }
-        int count = purchaseOrderService.selectCountItems(map);
-        page.setTotalCount(count);
+
         page.setResult(purchaseDetailList);
 
         return page;
@@ -501,10 +510,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrder.setPurchaseOrderCode(code);
         purchaseOrder.setIsValid(ValidEnum.VALID.getCode());
         purchaseOrder.setStatus(status);//设置状态
-        //如果提交采购单的方式为提交审核--则校验必须的数据
-        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
-            assertArgs(purchaseOrder);
-        }
+//        //如果提交采购单的方式为提交审核--则校验必须的数据
+//        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
+//            assertArgs(purchaseOrder);
+//        }
+        assertArgs(purchaseOrder);
         if(purchaseOrder.getTotalFeeD() != null){
             purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
         }
@@ -566,15 +576,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param purchaseOrder
      */
     private void assertArgs(PurchaseOrderAddData purchaseOrder){
-
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空!");
         AssertUtil.notBlank(purchaseOrder.getPurchaseType(),"采购类型不能为空!");
         AssertUtil.notBlank(purchaseOrder.getPayType(),"付款类型不能为空!");
         AssertUtil.notBlank(purchaseOrder.getPurchaseGroupCode(),"采购组不能为空!");
         AssertUtil.notBlank(purchaseOrder.getCurrencyType(),"币值不能为空!");
         AssertUtil.notBlank(purchaseOrder.getPurchasePersonId(),"采购人不能为空!");
-        //AssertUtil.notBlank(purchaseOrder.getReceiveAddress(),"收货地址不能为空!");
         AssertUtil.notBlank(purchaseOrder.getWarehouseInfoId(),"收货仓库不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getReceiver(),"收货人不能为空!");
+        AssertUtil.notBlank(purchaseOrder.getReceiverNumber(),"收货人手机不能为空!");
         AssertUtil.notBlank(purchaseOrder.getTransportFeeDestId(),"运输费用承担方不能为空!");
         AssertUtil.notBlank(purchaseOrder.getRequriedReceiveDate(),"要求到货日期不能为空!");
         AssertUtil.notBlank(purchaseOrder.getEndReceiveDate(),"截止到货日期不能为空!");
@@ -586,6 +596,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(purchaseOrder.getSenderCity(),"发件方城市不能为空!");
         AssertUtil.notBlank(purchaseOrder.getSenderNumber(),"发件方手机不能为空!");
         AssertUtil.notBlank(purchaseOrder.getSenderAddress(),"发件方详细地址不能为空!");
+        AssertUtil.notNull(purchaseOrder.getTotalFeeD(),"采购总金额不能为空!");
     }
     /**
      * 保存提交审核的采购信息
@@ -649,6 +660,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
+            this.assertDetailArgs(purchaseDetail);
             Skus skus = new Skus();
             skus.setSkuCode(skuCode);
             skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -686,6 +698,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
         return totalPrice;
+    }
+
+    /**
+     * 校验采购单详情信息
+     */
+    private void assertDetailArgs(PurchaseDetail purchaseDetail){
+        AssertUtil.notNull(purchaseDetail.getPurchasePriceD(),"采购商品进价不能为空!");
+        AssertUtil.notNull(purchaseDetail.getPurchasingQuantity(),"采购商品数量不能为空!");
+        AssertUtil.notBlank(purchaseDetail.getBatchCode(),"采购商品批次号不能为空!");
     }
 
     private void checkPurchaseDetail(PurchaseDetail purchaseDetail){
