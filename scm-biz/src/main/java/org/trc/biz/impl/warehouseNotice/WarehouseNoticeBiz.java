@@ -460,10 +460,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 是因为，如果该入库通知，在没有执行入库通知入库的条件下，是可以被采购单管理页面给（作废掉），这种情况下，生成的入库通知明细是（无用的）
                 }
           */
+    	
         AssertUtil.notNull(warehouseNotice, "入库通知的信息为空");
-//        PurchaseOrder purchaseOrder = new PurchaseOrder();
-//        purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
-//        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+        purchaseOrder.setEnterWarehouseNotice(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+        purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(PurchaseOrder.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
@@ -472,13 +473,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (CollectionUtils.isEmpty(purchaseOrders)) {
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, "查询采购单失败！");
         }
-//        int count = purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
-//
-//        if(count != 1){
-//            String msg = String.format("采购单的编码[purchaseOrderCode=%s]的状态已作废,无法进行入库通知的操作",warehouseNotice.getPurchaseOrderCode());
-//            logger.error(msg);
-//            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
-//        }
+        int count = purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
+
+        if(count != 1){
+            String msg = String.format("采购单的编码[purchaseOrderCode=%s]的状态已作废,无法进行入库通知的操作",warehouseNotice.getPurchaseOrderCode());
+            logger.error(msg);
+            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+        }
 
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
@@ -492,8 +493,14 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         String userId = aclUserAccreditInfo.getUserId();
 
-        logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
-                LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
+        try {
+            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
+                    LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
+        } catch (Exception e) {
+            logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());
+            e.printStackTrace();
+        }
+
 
         WarehouseNotice tempNotice = noticeList.get(0);
         // 调用奇门接口，通知仓库创建入口通知单
