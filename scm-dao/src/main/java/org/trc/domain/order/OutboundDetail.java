@@ -2,6 +2,7 @@ package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
+import org.trc.custom.MoneySerializer;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,6 +26,7 @@ public class OutboundDetail implements Serializable {
 
     private String skuCode;
 
+    @JsonSerialize(using = MoneySerializer.class)
     private Long actualAmount;
 
     private Long shouldSentItemNum;
