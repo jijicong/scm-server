@@ -82,7 +82,8 @@ public class QimenResource {
              }
             return new Response(SUCCESS, "0", "接收奇门反馈成功!") ;
         }catch(Exception e){
-            return new Response(FAILURE, "sign-check-failure", "接收奇门反馈失败!") ;
+            logger.error("处理失败",e);
+            return new Response(FAILURE, "sign-check-failure", "接收奇门反馈失败!"+e) ;
         }
     }
 

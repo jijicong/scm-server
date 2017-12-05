@@ -66,6 +66,16 @@
             <artifactId>dom4j</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>xstream</groupId>
+            <artifactId>xstream</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>xpp3</groupId>
+            <artifactId>xpp3_min</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
