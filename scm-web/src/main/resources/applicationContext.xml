@@ -90,7 +90,6 @@
         <task:scheduled ref="retryBiz" method="sendLogisticsInfoToChannelRetry" cron="${retry.sendLogisticsInfo.start}"/>
         <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="${fetch.logisticsInfo}"/>
         <task:scheduled ref="externalPictureBiz" method="uploadExternalPic" cron="${retry.external.picture.upload}"/>
-        <task:scheduled ref="outBoundOrderBiz" method="checkTimeOutTimer" cron="${check.outbound.order.timeOut}"/>
 
     </task:scheduled-tasks>
 
