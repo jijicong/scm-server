@@ -519,7 +519,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 //        logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, 
 //        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
-        // purchaseOrderBiz.cacheEvitForPurchaseOrder();
+         purchaseOrderBiz.cacheEvitForPurchaseOrder();
 
     }
 
