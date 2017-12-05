@@ -23,7 +23,7 @@ public interface IOutBoundOrderBiz {
      * @param outboundOrderId 主键
      * @throws Exception
      */
-    String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
+    String createOutbound(String outboundOrderId) throws Exception;
 
     Response getOutboundOrderDetail(Long id);
 

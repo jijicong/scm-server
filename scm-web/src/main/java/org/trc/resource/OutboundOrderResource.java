@@ -50,8 +50,8 @@ public class OutboundOrderResource {
     @POST
     @Path(SupplyConstants.OutboundOrder.DELIVERY_ORDER_CREATE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createOutbound(@FormParam("id") String id,@Context ContainerRequestContext requestContext) throws Exception {
-        return ResultUtil.createSuccessResult("重新发送成功",outBoundOrderBiz.createOutbound(id,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    public Response createOutbound(@FormParam("id") String id) throws Exception {
+        return ResultUtil.createSuccessResult("重新发送成功",outBoundOrderBiz.createOutbound(id));
     }
 
     /**
