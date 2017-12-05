@@ -1,7 +1,6 @@
 package org.trc.biz.impl.warehouseNotice;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.EntryorderConfirmRequest;
 import com.qimen.api.request.EntryorderCreateRequest;
@@ -11,7 +10,6 @@ import com.qimen.api.request.EntryorderCreateRequest.ReceiverInfo;
 import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
 import com.qimen.api.response.EntryorderCreateResponse;
 import com.thoughtworks.xstream.XStream;
-import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,6 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
-import org.trc.service.impl.util.UserNameUtilService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseGroupService;
@@ -62,8 +59,6 @@ import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
-
-import javax.annotation.Resource;
 
 /**
  * @author sone
