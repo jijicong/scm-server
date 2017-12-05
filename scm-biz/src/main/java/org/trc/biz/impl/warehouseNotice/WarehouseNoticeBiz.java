@@ -10,6 +10,7 @@ import com.qimen.api.request.EntryorderCreateRequest.OrderLine;
 import com.qimen.api.request.EntryorderCreateRequest.ReceiverInfo;
 import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
 import com.qimen.api.response.EntryorderCreateResponse;
+import com.thoughtworks.xstream.XStream;
 import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -236,13 +237,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateInStock(String requestText) {
-        AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
-        EntryorderConfirmRequest confirmRequest = null;
-        //创建 XMLSerializer对象
-        XMLSerializer xmlSerializer = new XMLSerializer();
-        //将xml转为json（注：如果是元素的属性，会在json里的key前加一个@标识）
-        String result = xmlSerializer.read(requestText).toString();
-        confirmRequest = JSON.parseObject(result, EntryorderConfirmRequest.class);
+        EntryorderConfirmRequest confirmRequest;
+        XStream xstream = new XStream();
+        xstream.alias("request", EntryorderConfirmRequest.class);
+        xstream.alias("orderLine", EntryorderConfirmRequest.OrderLine.class);
+        xstream.alias("batch", EntryorderConfirmRequest.Batch.class);
+        confirmRequest = (EntryorderConfirmRequest) xstream.fromXML(requestText);
         if (null != confirmRequest) {
             //记录流水
             warehouseNoticeCallbackService.recordCallbackLog(confirmRequest.getEntryOrder().getOutBizCode(),requestText,1,"",confirmRequest.getEntryOrder().getEntryOrderCode());
@@ -340,7 +340,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
             warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity() + defectiveQuantity);
-            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity() + defectiveQuantity);
+            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity() + normalQuantity);
             warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity()+warehouseNoticeDetails.getNormalStorageQuantity());
             //实际入库时间
             if (normalQuantity > 0 || defectiveQuantity > 0) {
