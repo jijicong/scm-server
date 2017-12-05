@@ -23,6 +23,7 @@ import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
+import org.trc.common.RequsetUpdateStock;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
@@ -308,9 +309,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             warehouseNoticeDetailsList.add(warehouseNoticeDetails);
             //更新采购详情
             warehouseNoticeDetailsService.updateByPrimaryKeySelective(warehouseNoticeDetails);
+
             //修改库存
             SkuStock skuStock = skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
             if (null != skuStock) {
+
                 //未收货之前的真实正品库存
                 Long realInventory = skuStock.getRealInventory();
                 //收货之后的真实正品库存
@@ -332,15 +335,41 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 skuStock.setAvailableInventory(availableInventory2);
                 skuStock.setDefectiveInventory(defectiveInventory2);
                 skuStock.setAirInventory(airInventory2);
-
                 //更新库存表
-               int count =  skuStockService.updateByPrimaryKeySelective(skuStock);
-               if (count==0){
-                    String msg = "更新库存失败!";
-                    logger.error(msg);
-               }
+                List<RequsetUpdateStock> stockList = new ArrayList<RequsetUpdateStock>();
+                RequsetUpdateStock stock = new RequsetUpdateStock();
+                Map<String, String> map = new HashMap<String, String>();
+                //真实库存
+                map.put("real_inventory", String.valueOf(normalQuantity+defectiveQuantity));
+                //可用正品库存
+                map.put("available_inventory",  String.valueOf(normalQuantity));
+                //残次品库存
+                map.put("defective_inventory", String.valueOf(defectiveQuantity));
+                //在途库存
+                if (normalQuantity > warehouseNoticeDetails.getPurchasingQuantity()){
+                    map.put("air_inventory", String.valueOf(0-warehouseNoticeDetails.getPurchasingQuantity()));
+
+                }else {
+                    map.put("air_inventory",String.valueOf(0-normalQuantity - defectiveQuantity));
+                }
+
+                stock.setChannelCode(warehouseNoticeDetails.getOwnerCode());
+                stock.setSkuCode(warehouseNoticeDetails.getSkuCode());
+                stock.setWarehouseCode(warehouseNotice.getWarehouseCode());
+                stock.setStockType(map);
+                stockList.add(stock);
+                //stock.setUpdateType(StockUpdateTypeEnum.MINUS);
+                //stock.setStockType("realInventory");
+                try {
+                    skuStockService.updateSkuStock(stockList);
+                } catch (Exception e) {
+                   logger.error("库存更新异常",e);
+                }
             }
         }
+
+
+        //获取采购单详情状态
         if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList)) {
             for (WarehouseNoticeDetails warehouseNoticeDetails : warehouseNoticeDetailsList) {
                 if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
@@ -351,6 +380,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 }
             }
         }
+
+
         if (isReceivingError) {
             return WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
         } else if (isSection) {
