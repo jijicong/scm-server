@@ -1428,7 +1428,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
-        notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+        notice.setStatus(WarehouseNoticeStatusEnum.DROPPED.getCode());
         notice.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
