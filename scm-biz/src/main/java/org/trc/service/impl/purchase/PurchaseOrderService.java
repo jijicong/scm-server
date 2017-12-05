@@ -49,5 +49,15 @@ public class PurchaseOrderService extends BaseService<PurchaseOrder,Long> implem
         return purchaseOrderMapper.selectCountItemsForSupplier(map);
     }
 
+    @Override
+    public int selectItemsBySupplierCodeCount(Map<String, Object> map) {
+        return purchaseOrderMapper.selectItemsBySupplierCodeCount(map);
+    }
+
+    @Override
+    public List<PurchaseDetail> selectItemsBySupplierCodeCheck(Map<String, Object> map) {
+        return purchaseOrderMapper.selectItemsBySupplierCodeCheck(map);
+    }
+
 
 }

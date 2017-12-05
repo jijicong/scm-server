@@ -79,11 +79,9 @@ public class PurchaseDetail extends BaseDO{
     @Length(max = 10, message = "生产编码字母和数字不能超过20个")
     private String produceCode;//生产编码
     @FormParam("productDate")
-    @JsonSerialize(using = SimpleDateSerializer.class)
     @Length(max = 10, message = "生产日期长度不能超过10个")
     private String productDate;//生产日期
     @FormParam("expireDate")
-    @JsonSerialize(using = SimpleDateSerializer.class)
     @Length(max = 10, message = "截止日期长度不能超过10个")
     private String expireDate;//截止日期
     @FormParam("shelfLifeDays")

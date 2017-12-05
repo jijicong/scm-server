@@ -439,28 +439,38 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
 
-        PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(SUPPLIER_CODE, supplierCode);
         map.put(WAREHOUSE_INFO_ID, warehouseInfoId);
-        map.put("skuName", form.getSkuName());
+        List<PurchaseDetail>  purchaseDetailListCheck = purchaseOrderService.selectItemsBySupplierCodeCheck(map);
+        if(purchaseDetailListCheck.size() == 0){
+            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        }
+
         if(StringUtils.isBlank(skus)){
             map.put("skuTemp",null);
         } else {
             map.put("skuTemp",SKU);
             map.put("arrSkus", skus.split(","));
         }
+
+        map.put("skuName", form.getSkuName());
         map.put("skuCode", form.getSkuCode());
         map.put("brandName", form.getBrandName());
         map.put("barCode", form.getBarCode());
         map.put("itemNo", form.getItemNo());
-
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
-        if(purchaseDetailList.size() == 0){
-            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
-            LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+        int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
+        if(purchaseDetailListCount < 1){
+            return null;
         }
+        //获取总数
+        page.setTotalCount(purchaseDetailListCount);
+        //获取分页数
+        map.put("start", page.getStart());
+        map.put("pageSize", page.getPageSize());
+        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
@@ -476,7 +486,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 }
             }
         }
-        page.setTotalCount(purchaseDetailList.size());
+
         page.setResult(purchaseDetailList);
 
         return page;
