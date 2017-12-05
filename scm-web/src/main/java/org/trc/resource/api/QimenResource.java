@@ -12,6 +12,8 @@ import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.biz.qimen.IQimenBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.enums.ExceptionEnum;
+import org.trc.exception.QimenException;
 import org.trc.form.QimenUrlRequest;
 import org.trc.form.Response;
 import org.trc.service.config.IWarehouseNoticeCallbackService;
@@ -36,9 +38,13 @@ import javax.ws.rs.core.MediaType;
 public class QimenResource {
     private static final String FAILURE = "failure";
     private static final String SUCCESS = "success";
-    //发货单确认
+    /**
+     * 发货单确认
+     */
     private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
-    //入库单确认
+    /**
+     * 入库单确认
+     */
     private static final String ENTRY_ORDER_CONFIRM = "entryorder.confirm";
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @Autowired
@@ -59,38 +65,44 @@ public class QimenResource {
     public Response confirmInvoice(@Context HttpServletRequest request,@BeanParam QimenUrlRequest qimenUrlRequest){
         try {
             //接收到请求,先进行验签
-            logger.info("URL@@@:"+request.getRequestURI());
-            logger.info("URL---:"+request.getContextPath());
-            logger.info("URL+++:"+request.getContentType());
             logger.info("qimenUrlRequest:"+ JSON.toJSONString(qimenUrlRequest));
             CheckResult checkResult =  SpiUtils.checkSign(request,secret);
              if (checkResult.isSuccess()){
                  logger.info("验签成功!");
+                 //获取报文
+                 String requestText =checkResult.getRequestBody();
+                 logger.info("报文信息:"+requestText);
+                 //确认逻辑
+                 String method = qimenUrlRequest.getMethod();
+                 logger.info("请求方法:"+method);
+                 this.confirmMethod(requestText, method);
              }else {
-                 logger.info("验签失败!");
+                 String msg = "验签失败!";
+                 throw new QimenException(ExceptionEnum.SIGN_ERROR, msg);
              }
-            //获取报文
-            String requestText =checkResult.getRequestBody();
-             logger.info("报文信息:"+requestText);
-            //确认逻辑
-            String method = qimenUrlRequest.getMethod();
-            logger.info("请求方法:"+method);
-            this.confirmMethod(requestText, method);
             return new Response(SUCCESS, "0", "接收奇门反馈成功!") ;
         }catch(Exception e){
             return new Response(FAILURE, "sign-check-failure", "接收奇门反馈失败!") ;
         }
     }
 
-    //确认逻辑
-    private void confirmMethod(String requestText, String method) throws Exception{
+    /**
+     * 确认逻辑
+     * @param requestText
+     * @param method
+     */
+    private void confirmMethod(String requestText, String method){
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
-//                warehouseNoticeBiz
-//                        .updateInStock(requestText);
+                warehouseNoticeBiz
+                        .updateInStock(requestText);
                 break;
             case DELIVERY_ORDER_CONFIRM:
-                outBoundOrderBiz.updateOutboundDetail(requestText);
+                try {
+                    outBoundOrderBiz.updateOutboundDetail(requestText);
+                } catch (Exception e) {
+                   logger.error("发货明细更新异常",e);
+                }
                 break;
             default:
                 break;

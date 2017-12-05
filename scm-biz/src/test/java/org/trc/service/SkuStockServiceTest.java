@@ -29,6 +29,7 @@ public class SkuStockServiceTest {
 		RequsetUpdateStock stock = new RequsetUpdateStock();
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("available_inventory", "30");
+		map.put("lock_inventory", "30");
 		stock.setChannelCode("YWX001");
 		stock.setSkuCode("SP0201707240000002");
 		stock.setWarehouseCode("CK00009");
