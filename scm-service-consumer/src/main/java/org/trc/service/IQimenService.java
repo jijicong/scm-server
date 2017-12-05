@@ -1,11 +1,8 @@
 package org.trc.service;
 
 import com.qimen.api.request.*;
-import com.qimen.api.response.DeliveryorderCreateResponse;
-import com.qimen.api.response.EntryorderCreateResponse;
+import com.qimen.api.response.*;
 
-import com.qimen.api.response.InventoryQueryResponse;
-import com.qimen.api.response.OrderCancelResponse;
 import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.util.AppResult;
 
@@ -26,6 +23,13 @@ public interface IQimenService {
 	AppResult<EntryorderCreateResponse> entryOrderCreate(EntryorderCreateRequest req);
 
     AppResult<DeliveryorderCreateResponse> deliveryOrderCreate(DeliveryorderCreateRequest req);
+
+    /**
+     * 创建发货单(批量)
+     * @param req
+     * @return
+     */
+    AppResult<DeliveryorderBatchcreateResponse> deliveryorderBatchcreate(DeliveryorderBatchcreateRequest req);
 
     /**
      * 商品库存查询接口(批量)
