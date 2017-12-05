@@ -29,4 +29,8 @@ public interface IPurchaseOrderService extends IBaseService<PurchaseOrder,Long>{
 
      int selectCountItemsForSupplier(Map<String, Object> map);
 
+     int selectItemsBySupplierCodeCount(Map<String, Object> map);
+
+     List<PurchaseDetail> selectItemsBySupplierCodeCheck(Map<String, Object> map);
+
 }

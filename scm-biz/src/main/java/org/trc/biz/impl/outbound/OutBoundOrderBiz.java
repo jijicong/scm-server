@@ -78,6 +78,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     || StringUtils.equals(order.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
                     this.checkDate(order.getUpdateTime())){
                 order.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            }else{
+                order.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
             }
         }
         return pagenation;
