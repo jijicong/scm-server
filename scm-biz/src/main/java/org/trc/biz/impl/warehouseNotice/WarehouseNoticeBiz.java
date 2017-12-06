@@ -290,8 +290,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "warehouse", "部分收货", "", null);
                         }
                         warehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
-
-
                     }
                 }
             }
@@ -331,12 +329,20 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             } else if (normalQuantity > warehouseNoticeDetails.getPurchasingQuantity()) {
                 errorSku.add(warehouseNoticeDetails.getSkuCode());
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
-            } else if (normalQuantity.equals(warehouseNoticeDetails.getPurchasingQuantity())) {
+            }
+            else if (normalQuantity.equals(warehouseNoticeDetails.getPurchasingQuantity())) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
             warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity() + defectiveQuantity);
             warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity() + normalQuantity);
             warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity()+warehouseNoticeDetails.getNormalStorageQuantity());
+            if(warehouseNoticeDetails.getPurchasingQuantity().equals( warehouseNoticeDetails.getActualStorageQuantity())){
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+            }
+            if(warehouseNoticeDetails.getPurchasingQuantity()<( warehouseNoticeDetails.getActualStorageQuantity())){
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                errorSku.add(warehouseNoticeDetails.getSkuCode());
+            }
             //实际入库时间
             if (normalQuantity > 0 || defectiveQuantity > 0) {
                 warehouseNoticeDetails.setStorageTime(Calendar.getInstance().getTime());
@@ -349,28 +355,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //修改库存
             SkuStock skuStock = skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
             if (null != skuStock) {
-
-                //未收货之前的真实正品库存
-                Long realInventory = skuStock.getRealInventory();
-                //收货之后的真实正品库存
-                Long realInventory2 = realInventory + normalQuantity;
-                //收货之前的正品可用库存
-                Long availableInventory = skuStock.getAvailableInventory();
-                //收货之后的正品可用库存
-                Long availableInventory2 = availableInventory + normalQuantity;
-                //收货之前的残次品真实库存
-                Long defectiveInventory = skuStock.getDefectiveInventory();
-                //收货之后的残次品真实库存
-                Long defectiveInventory2 = defectiveInventory + defectiveQuantity;
-                //收货之前的在途库存
-                Long airInventory = skuStock.getAirInventory();
-                //收货之后的在途库存
-                Long airInventory2 = airInventory - normalQuantity - defectiveQuantity;
-
-                skuStock.setRealInventory(realInventory2);
-                skuStock.setAvailableInventory(availableInventory2);
-                skuStock.setDefectiveInventory(defectiveInventory2);
-                skuStock.setAirInventory(airInventory2);
                 //更新库存表
                 List<RequsetUpdateStock> stockList = new ArrayList<RequsetUpdateStock>();
                 RequsetUpdateStock stock = new RequsetUpdateStock();
@@ -388,14 +372,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 }else {
                     map.put("air_inventory",String.valueOf(0-normalQuantity - defectiveQuantity));
                 }
-
                 stock.setChannelCode(warehouseNoticeDetails.getOwnerCode());
                 stock.setSkuCode(warehouseNoticeDetails.getSkuCode());
                 stock.setWarehouseCode(warehouseNotice.getWarehouseCode());
                 stock.setStockType(map);
                 stockList.add(stock);
-                //stock.setUpdateType(StockUpdateTypeEnum.MINUS);
-                //stock.setStockType("realInventory");
+
                 try {
                     skuStockService.updateSkuStock(stockList);
                 } catch (Exception e) {
@@ -426,6 +408,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!isReceivingError && !isSection) {
             return WarehouseNoticeStatusEnum.ALL_GOODS.getCode();
         }
+
         return "";
     }
 
@@ -519,7 +502,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 //        logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, 
 //        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
-        // purchaseOrderBiz.cacheEvitForPurchaseOrder();
+         purchaseOrderBiz.cacheEvitForPurchaseOrder();
 
     }
 

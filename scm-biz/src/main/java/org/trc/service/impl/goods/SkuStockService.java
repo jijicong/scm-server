@@ -1,10 +1,8 @@
 package org.trc.service.impl.goods;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.common.RequsetUpdateStock;
@@ -32,9 +30,9 @@ public class SkuStockService extends BaseService<SkuStock, Long> implements ISku
 
 	@Override
 	public void updateSkuStock(List<RequsetUpdateStock> updateStockList) throws Exception {
-//		if (CollectionUtils.isEmpty(stockList)) {
-//			return false;
-//		}
+		if (CollectionUtils.isEmpty(updateStockList)) {
+			return;
+		}
 //		List<SkuStock> queryList = new ArrayList<>();
 //		for (RequsetUpdateStock reqStock : updateStockList) {
 //			SkuStock queryStock = new SkuStock();

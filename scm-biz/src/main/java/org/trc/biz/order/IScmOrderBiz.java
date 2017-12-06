@@ -146,4 +146,15 @@ public interface IScmOrderBiz {
     public void setiRealIpService(IRealIpService iRealIpService);
 
     public void setTrcService(ITrcService trcService);
+
+    /**
+     * 处理订单
+     * @param warehouseOrders
+     * @return
+     */
+    ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders);
+
+
+
+
 }
