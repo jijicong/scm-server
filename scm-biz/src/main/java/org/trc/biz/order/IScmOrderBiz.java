@@ -152,7 +152,7 @@ public interface IScmOrderBiz {
      * @param warehouseOrders
      * @return
      */
-    ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders);
+    ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders) throws Exception;
 
 
     /**
