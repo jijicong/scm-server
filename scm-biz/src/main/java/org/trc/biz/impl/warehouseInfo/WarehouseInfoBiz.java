@@ -113,6 +113,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     @CacheEvit
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveWarehouse(String code,AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(code,"奇门仓库编号不能为空");
         log.info("查询符合条件的仓库=====》");
@@ -275,7 +276,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @Cacheable(key = "#form.toString()+#page.pageNo+#page.pageSize+#warehouseInfoId", isList = true)
     public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
         AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
@@ -306,6 +306,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     @CacheEvit
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void deleteWarehouseItemInfoById(Long id) {
         AssertUtil.notNull(id, "仓库商品信息ID不能为空");
         WarehouseItemInfo tmp = new WarehouseItemInfo();
@@ -355,6 +356,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     @CacheEvit
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo) {
         AssertUtil.notNull(warehouseItemInfo.getId(), "仓库商品信息ID不能为空");
         warehouseItemInfo.setUpdateTime(Calendar.getInstance().getTime());
@@ -427,6 +429,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     @CacheEvit
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveWarehouseItemsSku(String items,Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId,"仓库的主键不能为空");
         AssertUtil.notBlank(items,"至少选择一件商品");
@@ -1157,6 +1160,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveOwnerInfo(WarehouseInfo warehouseInfo){
         AssertUtil.notBlank(warehouseInfo.getOwnerName(),"货主姓名不能为空");
         AssertUtil.notNull(warehouseInfo.getId(),"主键不能为空");
@@ -1186,6 +1190,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response deleteWarehouse(String id){
         AssertUtil.notBlank(id,"主键不能为空");
         Example example = new Example(WarehouseInfo.class);
