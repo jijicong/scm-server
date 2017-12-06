@@ -1618,15 +1618,14 @@ public class GoodsBiz implements IGoodsBiz {
                 criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
                 List<SkuStock> skuStocks = skuStockService.selectByExample(example);
                 if(skuStocks.size() > 0){
-                    SkuStock skuStock = skuStocks.get(0);
-                    s.setAvailableInventory(skuStock.getAvailableInventory());
-                    s.setRealInventory(skuStock.getRealInventory());
-                    s.setDefectiveInventory(skuStock.getDefectiveInventory());
-                    Warehouse warehouse = new Warehouse();
-                    warehouse.setCode(skuStock.getWarehouseCode());
-                    warehouse = warehouseService.selectOne(warehouse);
-                    AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
-                    s.setWarehouse(warehouse.getName());
+                    for (SkuStock skuStock : skuStocks) {
+                        Warehouse warehouse = new Warehouse();
+                        warehouse.setCode(skuStock.getWarehouseCode());
+                        warehouse = warehouseService.selectOne(warehouse);
+                        AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
+                        skuStock.setWarehouseName(warehouse.getName());
+                    }
+                    s.setStockList(skuStocks);
                 }
             }
         }
