@@ -7,7 +7,7 @@
         SELECT info.code,info.warehouse_id AS warehouseId, info.warehouse_name AS warehouseName,info.type,
                 info.qimen_warehouse_code AS qimenWarehouseCode, info.sku_num AS skuNum, info.channel_code AS channelCode,
                 info.warehouse_owner_id AS warehouseOwnerId, info.owner_name AS ownerName, info.owner_warehouse_state AS ownerWarehouseState,
-                info.is_delete AS isDelete, info.remark
+                info.is_delete AS isDelete, info.remark, info.id
         FROM warehouse_info info
         RIGHT JOIN warehouse w
         ON info.warehouse_id = w.id
