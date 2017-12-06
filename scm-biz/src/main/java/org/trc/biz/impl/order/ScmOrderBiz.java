@@ -3754,6 +3754,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "订单提交成功", "");
     }
 
+    @Override
+    public ResponseAck outboundConfirmNotice(String warehouseOrderCode) {
+        return null;
+    }
+
 
     public ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrderList) {
         PlatformOrder platformOrder = new PlatformOrder();

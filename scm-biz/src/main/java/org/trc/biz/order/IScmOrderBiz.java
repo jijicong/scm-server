@@ -155,6 +155,12 @@ public interface IScmOrderBiz {
     ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders);
 
 
+    /**
+     *
+     * @param warehouseOrderCode
+     * @return
+     */
+    ResponseAck outboundConfirmNotice(String warehouseOrderCode);
 
 
 }
