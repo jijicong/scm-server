@@ -5,6 +5,7 @@ import com.qimen.api.request.DeliveryorderCreateRequest;
 import com.qimen.api.request.OrderCancelRequest;
 import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.OrderCancelResponse;
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateOutboundDetail(String requestText) throws Exception {
         AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
-        DeliveryorderConfirmRequest confirmRequest = (DeliveryorderConfirmRequest) XmlUtil.xmlStrToBean(requestText, DeliveryorderConfirmRequest.class);
+        DeliveryorderConfirmRequest confirmRequest = null;
+        XStream xstream = new XStream();
+        xstream.alias("request", DeliveryorderConfirmRequest.class);
+        xstream.alias("package", DeliveryorderConfirmRequest.Package.class);
+        xstream.alias("item", DeliveryorderConfirmRequest.Item.class);
+        confirmRequest = (DeliveryorderConfirmRequest) xstream.fromXML(requestText);
         //包裹信息
         List<DeliveryorderConfirmRequest.Package> packageList = confirmRequest.getPackages();
         //发货单信息
@@ -112,9 +118,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
 
         //更新库存
-        skuStockService.updateSkuStock(list);
-
-
+        if(list.size() > 0){
+            skuStockService.updateSkuStock(list);
+        }
 
         //记录日志
         if (outboundOrder.getStatus().equals(OutboundOrderStatusEnum.ALL_GOODS.getCode())) {
@@ -133,8 +139,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
         StringBuffer sb = new StringBuffer("");
         for(OutboundDetail detail : outboundDetailList){
-            sb.append("商品").append(detail.getSkuCode()).append(detail.getShouldSentItemNum()).append("-").
-                    append(detail.getRealSentItemNum()).append("=").append(detail.getShouldSentItemNum() - detail.getRealSentItemNum());
+            sb.append("商品").append(detail.getSkuCode()).append("   差值：").append(detail.getShouldSentItemNum()).append("-").
+                    append(detail.getRealSentItemNum()).append("=").append(detail.getShouldSentItemNum() - detail.getRealSentItemNum()).append("|");
         }
         return sb.toString();
     }
@@ -361,7 +367,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             }
             requsetUpdateStock.setStockType(stockType);
             requsetUpdateStock.setChannelCode(channelCode);
-            requsetUpdateStock.setSkuCode(outboundDetail.getSkuCode());
+            requsetUpdateStock.setSkuCode(detail.getSkuCode());
             requsetUpdateStock.setWarehouseCode(warehouseCode);
             updateStockList.add(requsetUpdateStock);
         }
