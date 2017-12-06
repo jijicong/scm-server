@@ -188,7 +188,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         StringBuffer sb = new StringBuffer("");
         for(OutboundDetail detail : outboundDetailList){
             sb.append("商品").append(detail.getSkuCode()).append(" 实发-应发= ").
-                    append(detail.getShouldSentItemNum() - detail.getRealSentItemNum()).append("|");
+                    append(detail.getShouldSentItemNum() - detail.getRealSentItemNum()).append("<br/>");
         }
         return sb.toString();
     }
