@@ -3,10 +3,12 @@ package org.trc.domain.goods;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
+import org.trc.enums.ZeroToNineEnum;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 
@@ -100,6 +102,24 @@ public class SkuStock extends ScmDO {
     @NotEmpty
     private String isValid;
 
+    /**
+     * 仓库名称
+     */
+    @Transient
+    private String warehouseName;
+    /**
+     * 锁定残品库存
+     */
+    @Transient
+    private String lockDefectiveInventory = null;
+
+    public String getLockDefectiveInventory() {
+        return lockDefectiveInventory;
+    }
+
+    public void setLockDefectiveInventory(String lockDefectiveInventory) {
+        this.lockDefectiveInventory = lockDefectiveInventory;
+    }
 
     public Long getId() {
         return id;
@@ -243,5 +263,13 @@ public class SkuStock extends ScmDO {
 
     public void setAirInventory(Long airInventory) {
         this.airInventory = airInventory;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
     }
 }

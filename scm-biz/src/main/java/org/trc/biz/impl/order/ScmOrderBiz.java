@@ -26,6 +26,7 @@ import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.cache.CacheEvit;
 import org.trc.cache.Cacheable;
+import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
@@ -1556,9 +1557,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SkuStock> skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
         //校验自采商品的可用库存
         checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, selfItemsInventorys);
-        //更新占用库存 TODO
-
-
         //拆分仓库订单
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         for (ShopOrder shopOrder : shopOrderList) {
@@ -1571,6 +1569,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //设置自采库存校验不通过的商品状态
         setFailOrderItemsStatus(orderItemList, selfPurcharseOrderItemList);
+        //更新订单占商品用库存
+
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
         //保存商品明细
@@ -3115,8 +3115,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
-
-
     /**
      * 校验渠道
      * @param channelCode
@@ -3730,7 +3728,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders) {
+    public ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders) throws Exception {
         AssertUtil.notEmpty(warehouseOrders, "处理订单参数不能为空");
         List<WarehouseOrder> lyOrders = new ArrayList<>();//粮油仓库订单
         List<WarehouseOrder> selfPurchaseOrders = new ArrayList<>();//自采仓库订单
@@ -3756,11 +3754,21 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     public ResponseAck outboundConfirmNotice(String warehouseOrderCode) {
+        AssertUtil.notBlank(warehouseOrderCode, "发货通知单发货明细确认通知参数仓库订单编码warehouseOrderCode不能为空");
+        //更新仓库订单供应商订单状态
+        WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrderCode);
+        //更新店铺订单供应商订单状态
+        updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         return null;
     }
 
 
-    public ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrderList) {
+    /**
+     * 提交自采订单
+     * @param warehouseOrderList
+     * @return
+     */
+    public ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrderList) throws Exception {
         PlatformOrder platformOrder = new PlatformOrder();
         platformOrder.setPlatformOrderCode(warehouseOrderList.get(0).getPlatformOrderCode());
         platformOrder = platformOrderService.selectOne(platformOrder);
@@ -3813,9 +3821,38 @@ public class ScmOrderBiz implements IScmOrderBiz {
             OutboundForm outboundForm  = createOutboundOrder(platformOrder, warehouseOrder, _shopOrder, orderItems);
             outboundMap.put(outboundForm.getOutboundOrder().getOutboundOrderCode(), outboundForm);
         }
+        //更新订单商品占用库存
+        frozenOrderInventory(outboundMap);
         //通知仓库发货
         noticeWarehouseSendGoods(platformOrder.getChannelCode(), outboundMap);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交自采订单成功", "");
+    }
+
+    /**
+     * 更新订单商品占用库存
+     */
+    private void frozenOrderInventory(Map<String, OutboundForm> outboundMap) throws Exception {
+        List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
+        Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
+        for(Map.Entry<String, OutboundForm> entry: entries){
+            OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+            List<OutboundDetail> outboundDetailList = entry.getValue().getOutboundDetailList();
+            for(OutboundDetail detail : outboundDetailList){
+                RequsetUpdateStock requsetUpdateStock = new RequsetUpdateStock();
+                Map<String, String> stockType = new HashMap<String, String>();
+                stockType.put("frozen_inventory", String.valueOf((detail.getShouldSentItemNum())));
+                requsetUpdateStock.setStockType(stockType);
+                requsetUpdateStock.setChannelCode(outboundOrder.getChannelCode());
+                requsetUpdateStock.setWarehouseCode(outboundOrder.getWarehouseCode());
+                requsetUpdateStock.setSkuCode(detail.getSkuCode());
+                updateStockList.add(requsetUpdateStock);
+            }
+        }
+        if(updateStockList.size() > 0){
+            //更新库存
+            skuStockService.updateSkuStock(updateStockList);
+        }
+
     }
 
     /**

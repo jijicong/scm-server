@@ -1,6 +1,5 @@
 package org.trc.domain.goods;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.domain.util.ScmDO;
@@ -12,6 +11,8 @@ import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
+import java.util.List;
+
 //@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Skus extends ScmDO {
 
@@ -147,6 +148,10 @@ public class Skus extends ScmDO {
      */   
     @FormParam("specInfo")
     private String specInfo;
+
+
+    @Transient
+    private List<SkuStock> stockList;
 
     public String getName() {
 		return name;
@@ -427,5 +432,12 @@ public class Skus extends ScmDO {
 	public void setSpecInfo(String specInfo) {
 		this.specInfo = specInfo;
 	}
-    
+
+    public List<SkuStock> getStockList() {
+        return stockList;
+    }
+
+    public void setStockList(List<SkuStock> stockList) {
+        this.stockList = stockList;
+    }
 }
