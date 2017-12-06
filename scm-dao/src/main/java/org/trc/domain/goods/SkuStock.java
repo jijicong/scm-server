@@ -111,7 +111,7 @@ public class SkuStock extends ScmDO {
      * 锁定残品库存
      */
     @Transient
-    private String lockDefectiveInventory = null;
+    private String lockDefectiveInventory = ZeroToNineEnum.ZERO.getCode();
 
     public String getLockDefectiveInventory() {
         return lockDefectiveInventory;
