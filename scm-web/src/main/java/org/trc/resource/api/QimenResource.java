@@ -41,7 +41,7 @@ public class QimenResource {
     /**
      * 发货单确认
      */
-    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.entryorder.confirm";
+    private static final String DELIVERY_ORDER_CONFIRM = "taobao.qimen.deliveryorder.confirm";
     /**
      * 入库单确认
      */
@@ -92,7 +92,7 @@ public class QimenResource {
      * @param requestText
      * @param method
      */
-    private void confirmMethod(String requestText, String method){
+    private void confirmMethod(String requestText, String method) throws Exception{
         switch (method) {
             case ENTRY_ORDER_CONFIRM:
                 warehouseNoticeBiz
@@ -103,6 +103,7 @@ public class QimenResource {
                     outBoundOrderBiz.updateOutboundDetail(requestText);
                 } catch (Exception e) {
                    logger.error("发货明细更新异常",e);
+                   throw new Exception("发货明细更新异常");
                 }
                 break;
             default:
