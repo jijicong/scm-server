@@ -3,16 +3,8 @@ package org.trc.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.QimenRequest;
-import com.qimen.api.request.DeliveryorderCreateRequest;
-import com.qimen.api.request.EntryorderCreateRequest;
-import com.qimen.api.request.InventoryQueryRequest;
-import com.qimen.api.request.ItemsSynchronizeRequest;
-import com.qimen.api.request.OrderCancelRequest;
-import com.qimen.api.response.DeliveryorderCreateResponse;
-import com.qimen.api.response.EntryorderCreateResponse;
-import com.qimen.api.response.InventoryQueryResponse;
-import com.qimen.api.response.ItemsSynchronizeResponse;
-import com.qimen.api.response.OrderCancelResponse;
+import com.qimen.api.request.*;
+import com.qimen.api.response.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +85,14 @@ public class QimenServiceImpl implements IQimenService {
         String url = qimenConfig.getQimenDeliveryOrderCreateUrl();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("deliveryorderCreateRequest", JSON.toJSONString(req));
+        return invokeExternal(map, url);
+    }
+
+    @Override
+    public AppResult<DeliveryorderBatchcreateResponse> deliveryorderBatchcreate(DeliveryorderBatchcreateRequest req) {
+        String url = qimenConfig.getQimenDeliveryOrderCreateUrl();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("deliveryorderBatchcreateRequest", JSON.toJSONString(req));
         return invokeExternal(map, url);
     }
 

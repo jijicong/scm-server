@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -416,11 +417,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         //校验仓库是否已通知
-        WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
-        warehouseInfo.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
-        warehouseInfo.setChannelCode(channelCode);
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("channelCode", channelCode);
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectWarehouseInfo(map);
         if(warehouseInfoList == null || warehouseInfoList.size() < 1){
             String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
             LOGGER.error(msg);
@@ -1438,7 +1437,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
-        notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+        notice.setStatus(WarehouseNoticeStatusEnum.DROPPED.getCode());
         notice.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();

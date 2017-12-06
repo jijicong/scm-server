@@ -61,6 +61,9 @@ public class WarehouseOrder implements Serializable {
     // 所在仓库id
     private Long warehouseId;
 
+    //所在仓库编码
+    private String warehouseCode;
+
     // 所在仓库名称
     private String warehouseName;
 
@@ -658,5 +661,13 @@ public class WarehouseOrder implements Serializable {
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
+    }
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
     }
 }

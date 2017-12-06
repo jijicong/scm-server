@@ -138,6 +138,11 @@ public enum ExceptionEnum{
 
     OUTBOUND_ORDER_EXCEPTION("600121", "发货通知单管理异常"),
 
+
+    QIMEN_INVENTORY_QUERY_EXCEPTION("600122", "奇门库存查询接口调用异常"),
+    QIMEN_DELIVER_ORDER_BATCH_CREATE_EXCEPTION("600123", "奇门批量创建发货单接口调用异常"),
+
+
     USER_BE_FORBIDDEN("900001","用户授权信息不存在或用户已经被禁用!"),
     USER_NOT_LOGIN("900002","用户未登录"),
     USER_NOT_HAVE_PERMISSION("900003","用户无此权限"),

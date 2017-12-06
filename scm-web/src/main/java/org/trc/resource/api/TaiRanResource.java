@@ -203,10 +203,10 @@ public class TaiRanResource {
         ResponseAck responseAck = null;
         try{
             responseAck = scmOrderBiz.reciveChannelOrder(orderInfo);
-            List<WarehouseOrder> lyWarehouseOrders = (List<WarehouseOrder>)responseAck.getData();
-            if(lyWarehouseOrders.size() > 0){
+            List<WarehouseOrder> warehouseOrders = (List<WarehouseOrder>)responseAck.getData();
+            if(warehouseOrders.size() > 0){
                 //粮油下单
-                scmOrderBiz.submitLiangYouOrders(lyWarehouseOrders);
+                scmOrderBiz.handlerOrder(warehouseOrders);
             }
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);

@@ -778,6 +778,10 @@ public class SupplyConstants {
         public static final String EXCEPTION_ORDER = "CDYC";
         //异常订单编码长度
         public static final Integer EXCEPTION_ORDER_LENGTH = 6;
+        //发货通知单
+        public static final String OUTBOUND_ORDER = "CDYC";
+        //发货通知单编码长度
+        public static final Integer OUTBOUND_ORDER_LENGTH = 5;
 
 
         //序列号查询路径
@@ -1087,6 +1091,14 @@ public class SupplyConstants {
     public static final class SourcePlatformCodeType {
         //奇门接口订单来源编码
         public final static String OTHER = "OTHER";
+    }
+
+    /**
+     * 奇门物流公司编码
+     */
+    public static final class QimenLogisticsCompanyCode {
+        //圆通
+        public final static String YTO = "YTO";
     }
 
 }
