@@ -37,42 +37,14 @@ public class QimenServiceImpl implements IQimenService {
     private QimenConfig qimenConfig;
 
     @Override
-    public ReturnTypeDO itemsSync(String warehouseCode, String ownerCode, List<ItemsSynchronizeRequest.Item> items) {
-        String url = externalSupplierConfig.getScmExternalUrl()+qimenConfig.getQimenItemsSyncUrl();
+    public AppResult<ItemsSynchronizeResponse> itemsSync(ItemsSynchronizeRequest req) {
+        String url = qimenConfig.getQimenItemsSyncUrl();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("warehouseCode", warehouseCode);
-        map.put("ownerCode", ownerCode);
-        map.put("items", JSON.toJSONString(items));
-        log.debug("开始调用奇门商品同步接口" + url + ", 参数：warehouseCode=" + warehouseCode + "," +
-                " ownerCode=" + ownerCode + ", items=" + JSON.toJSONString(items) + ". 开始时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
-        returnTypeDO.setSuccess(false);
-        String response = null;
-            try{
-            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
-            if(StringUtils.isNotBlank(response)){
-                JSONObject jbo = JSONObject.parseObject(response);
-                AppResult appResult = jbo.toJavaObject(AppResult.class);
-                if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
-                    returnTypeDO.setSuccess(true);
-                    returnTypeDO.setResult(appResult.getResult());
-                }
-                returnTypeDO.setResultMessage(appResult.getDatabuffer());
-            }else {
-                returnTypeDO.setResultMessage("调用奇门商品同步接口返回结果为空");
-            }
-        }catch (Exception e){
-            String msg = String.format("调用奇门商品同步接口异常,错误信息:%s", e.getMessage());
-            log.error(msg, e);
-            returnTypeDO.setResultMessage(msg);
-        }
-        log.debug("结束调用奇门商品同步接口" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
-                DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-        return returnTypeDO;
+        map.put("itemsSyncRequest", JSON.toJSONString(req));
+        return invokeExternal(map, url);
     }
 
-	@Override
+    @Override
 	public AppResult entryOrderCreate(EntryorderCreateRequest req) {
 		 String url = qimenConfig.getQimenEntryorderCreateUrl();
 		 Map<String, Object> map = new HashMap<String, Object>();
