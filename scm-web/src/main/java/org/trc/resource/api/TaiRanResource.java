@@ -206,7 +206,7 @@ public class TaiRanResource {
             List<WarehouseOrder> warehouseOrders = (List<WarehouseOrder>)responseAck.getData();
             if(warehouseOrders.size() > 0){
                 //粮油下单
-                scmOrderBiz.handlerOrder(warehouseOrders);
+                scmOrderBiz.submitLiangYouOrders(warehouseOrders);
             }
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
