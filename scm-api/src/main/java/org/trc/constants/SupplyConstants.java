@@ -782,6 +782,10 @@ public class SupplyConstants {
         public static final String OUTBOUND_ORDER = "CDYC";
         //发货通知单编码长度
         public static final Integer OUTBOUND_ORDER_LENGTH = 5;
+        //仓库订单
+        public static final String WAREHOUSE_ORDER_CODE = "CKDD";
+        //仓库订单编码长度
+        public static final Integer WAREHOUSE_ORDER_CODE_LENGTH = 7;
 
 
         //序列号查询路径

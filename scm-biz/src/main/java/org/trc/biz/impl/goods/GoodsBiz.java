@@ -9,16 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
-import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.impl.config.LogInfoBiz;
-import org.trc.biz.impl.supplier.SupplierBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.cache.CacheEvit;
@@ -26,12 +23,12 @@ import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
-import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -40,7 +37,6 @@ import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.JDModel.SkuDO;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.SupplyItemsExt;
-import org.trc.form.config.DictForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
@@ -48,7 +44,6 @@ import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
-import org.trc.service.IQinniuService;
 import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.*;
@@ -1497,11 +1492,47 @@ public class GoodsBiz implements IGoodsBiz {
         List<Skus> updateSkus = skusService.select(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         updateSkus.add(skus2);
+        //商品SKU启停用通知仓库商品信息
+        itemsUpdateNoticeWarehouseItemInfo(skus2, _isValid);
         //商品SKU启停用通知渠道
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.ITEMS_SKU_IS_VALID);
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),aclUserAccreditInfo.getUserId(),
                 LogOperationEnum.UPDATE.getMessage(),String.format("SKU[%s]状态更新为%s", skus2.getSkuCode(), ValidEnum.getValidEnumByCode(_isValid).getName()), null);
+    }
+
+    private void itemsUpdateNoticeWarehouseItemInfo(Skus skus, String _isValid) {
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setSkuCode(skus.getSkuCode());
+        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        String isValid = _isValid;
+        for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
+            warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
+            if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
+                int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
+                warehouseItemInfo1.setOldNoticeStatus(oldNoticeStatus);
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    warehouseItemInfo1.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
+                }else{
+
+                }
+            }else{
+                Integer oldNoticeStatus = warehouseItemInfo1.getOldNoticeStatus();
+                if(oldNoticeStatus == null){
+                    continue;
+                }
+                if(oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                    if(warehouseItemInfo1.getOldNoticeStatus() != null){
+                        warehouseItemInfo1.setNoticeStatus(warehouseItemInfo1.getOldNoticeStatus());
+                    }
+                    warehouseItemInfo1.setOldNoticeStatus(null);
+                }
+            }
+            warehouseItemInfoService.updateByPrimaryKey(warehouseItemInfo1);
+        }
     }
 
     /**
@@ -1688,7 +1719,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1702,7 +1733,6 @@ public class GoodsBiz implements IGoodsBiz {
             if (StringUtils.equals(queryModel.getQuerySource(),ZeroToNineEnum.ZERO.getCode())){
             criteria2.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
             }
-//            criteria2.andEqualTo("supplierKindCode",SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
             List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
             List<String>  supplierInterfaceIdList = new ArrayList<>();
             for (SupplierApply supplierApply:supplierApplyList) {
@@ -1714,7 +1744,11 @@ public class GoodsBiz implements IGoodsBiz {
                     supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
                 }
             }
-            criteria.andIn("supplierCode",supplierInterfaceIdList);
+            if (!AssertUtil.collectionIsEmpty(supplierInterfaceIdList)){
+                criteria.andIn("supplierCode",supplierInterfaceIdList);
+            }else {
+                return page;
+            }
         }
         if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
             criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
@@ -1722,8 +1756,11 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getItemName())) {//商品名称
             criteria.andLike("itemName", "%" + queryModel.getItemName() + "%");
         }
-        if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
+       /* if (StringUtils.isNotBlank(queryModel.getWarehouse())) {//仓库名称
             criteria.andLike("warehouse", "%" + queryModel.getWarehouse() + "%");
+        }*/
+        if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商sku编号 2.0新增
+            criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
         }
         if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
             criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
@@ -1731,7 +1768,17 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
         }
-
+        //2.0新增条件最近更新时间
+        if (!StringUtils.isBlank(queryModel.getStartDate())) {
+            criteria.andGreaterThan("updateTime", queryModel.getStartDate());
+        }
+        if (!StringUtils.isBlank(queryModel.getEndDate())) {
+            criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(queryModel.getEndDate(),DateUtils.NORMAL_DATE_FORMAT,1)));
+        }
+        //2.0新增供应商商品状态
+        if (StringUtils.isNotBlank(queryModel.getState())) {//条形码
+            criteria.andEqualTo("state",queryModel.getState());
+        }
         example.orderBy("updateTime").desc();
         page = externalItemSkuService.pagination(example, page, queryModel);
         //setSupplierName(page.getResult());

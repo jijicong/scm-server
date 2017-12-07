@@ -64,7 +64,7 @@ public class QimenServiceImpl implements IQimenService {
     public AppResult<DeliveryorderBatchcreateResponse> deliveryorderBatchcreate(DeliveryorderBatchcreateRequest req) {
         String url = qimenConfig.getQimenDeliveryOrderCreateUrl();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("deliveryorderBatchcreateRequest", JSON.toJSONString(req));
+        map.put("deliveryorderBatchcreate", JSON.toJSONString(req));
         return invokeExternal(map, url);
     }
 
@@ -87,7 +87,7 @@ public class QimenServiceImpl implements IQimenService {
 		String serverUrl = externalSupplierConfig.getScmExternalUrl() + url;
 		String resStr = "";
 		
-		log.debug("开始调用external奇门接口:{}, 参数:{}, 开始时间:{}", url, JSON.toJSONString(paramsMap), 
+		log.debug("开始调用external奇门接口:{}, 参数:{}, 开始时间:{}", serverUrl, JSON.toJSONString(paramsMap),
 				DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         try {
         	resStr = HttpClientUtil.httpPostRequest(serverUrl, paramsMap, TIME_OUT);
@@ -107,10 +107,10 @@ public class QimenServiceImpl implements IQimenService {
             	return ResultUtil.createFailAppResult("调用external奇门接口返回结果为空");
             }
         } catch (Exception e) {
-            log.error("调用external奇门接口:{}异常,错误信息:{},详细:", url, e.getMessage(), e);
+            log.error("调用external奇门接口:{}异常,错误信息:{},详细:", serverUrl, e.getMessage(), e);
         }
         
-		log.debug("结束调用external奇门接口:{}, 返回结果:{}, 结束时间:{}", url, resStr, 
+		log.debug("结束调用external奇门接口:{}, 返回结果:{}, 结束时间:{}", serverUrl, resStr,
 				DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
 		
 		return ResultUtil.createFailAppResult("调用external奇门接口失败");
