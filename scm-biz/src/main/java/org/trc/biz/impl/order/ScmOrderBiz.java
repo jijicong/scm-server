@@ -1,15 +1,29 @@
 package org.trc.biz.impl.order;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.qimen.api.request.DeliveryorderBatchcreateRequest;
-import com.qimen.api.request.InventoryQueryRequest;
-import com.qimen.api.response.DeliveryorderBatchcreateResponse;
-import com.qimen.api.response.InventoryQueryResponse;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.curator.retry.RetryUntilElapsed;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,27 +45,96 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.config.LogInfo;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.order.*;
+import org.trc.domain.order.DeliverPackageForm;
+import org.trc.domain.order.ExceptionOrder;
+import org.trc.domain.order.ExceptionOrderItem;
+import org.trc.domain.order.OrderBase;
+import org.trc.domain.order.OrderExt;
+import org.trc.domain.order.OrderFlow;
+import org.trc.domain.order.OrderItem;
+import org.trc.domain.order.OutboundDetail;
+import org.trc.domain.order.OutboundOrder;
+import org.trc.domain.order.PlatformOrder;
+import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.SupplierOrderInfo;
+import org.trc.domain.order.SupplierOrderLogistics;
+import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.enums.*;
+import org.trc.enums.CancelStatusEnum;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ExceptionItemStatusEnum;
+import org.trc.enums.ExceptionOrderHandlerEnum;
+import org.trc.enums.ExceptionTypeEnum;
+import org.trc.enums.GoodsTypeEnum;
+import org.trc.enums.InventoryTypeEnum;
+import org.trc.enums.ItemNoticeStateEnum;
+import org.trc.enums.ItemTypeEnum;
+import org.trc.enums.JdInvoiceStateEnum;
+import org.trc.enums.JdInvoiceTitleEnum;
+import org.trc.enums.JdInvoiceTypeEnum;
+import org.trc.enums.JdPaymentTypeEnum;
+import org.trc.enums.LogOperationEnum;
+import org.trc.enums.LogsticsTypeEnum;
+import org.trc.enums.OrderDeliverStatusEnum;
+import org.trc.enums.OrderItemDeliverStatusEnum;
+import org.trc.enums.OrderTypeEnum;
+import org.trc.enums.OutboundDetailStatusEnum;
+import org.trc.enums.OutboundOrderStatusEnum;
+import org.trc.enums.OwnerWarehouseStateEnum;
+import org.trc.enums.QimenOrderTypeEnum;
+import org.trc.enums.RequestFlowStatusEnum;
+import org.trc.enums.RequestFlowTypeEnum;
+import org.trc.enums.SuccessFailureEnum;
+import org.trc.enums.SupplierLogisticsEnum;
+import org.trc.enums.SupplierOrderDeliverStatusEnum;
+import org.trc.enums.SupplierOrderStatusEnum;
+import org.trc.enums.SupplierOrderTypeEnum;
+import org.trc.enums.TrcActionTypeEnum;
+import org.trc.enums.WarehouseOrderLogisticsStatusEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OrderException;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.QimenException;
 import org.trc.exception.SignException;
-import org.trc.form.*;
-import org.trc.form.JDModel.*;
+import org.trc.form.ChannelOrderResponse;
+import org.trc.form.Logistic;
+import org.trc.form.LogisticForm;
+import org.trc.form.LogisticInfo;
+import org.trc.form.LogisticNoticeForm;
+import org.trc.form.LogisticNoticeForm2;
+import org.trc.form.OrderSubmitResult;
+import org.trc.form.SkuInfo;
+import org.trc.form.SupplierOrderReturn;
+import org.trc.form.TrcConfig;
+import org.trc.form.TrcParam;
+import org.trc.form.JDModel.ExternalSupplierConfig;
+import org.trc.form.JDModel.JdSku;
+import org.trc.form.JDModel.JingDongSupplierOrder;
+import org.trc.form.JDModel.OrderPriceSnap;
+import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.JDModel.SupplyItemsUpdate;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.form.liangyou.OutOrderGoods;
-import org.trc.form.order.*;
+import org.trc.form.order.ExceptionOrderForm;
+import org.trc.form.order.InventoryQueryItemDO;
+import org.trc.form.order.OutboundForm;
+import org.trc.form.order.PlatformOrderForm;
+import org.trc.form.order.ShopOrderForm;
+import org.trc.form.order.SkuWarehouseDO;
+import org.trc.form.order.SupplierOrderCancelForm;
+import org.trc.form.order.SupplierOrderCancelInfo;
+import org.trc.form.order.SupplierOrderCancelNotify;
+import org.trc.form.order.WarehouseOrderForm;
+import org.trc.form.order.WarehouseOwernSkuDO;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
@@ -64,8 +147,16 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkuStockService;
-import org.trc.service.impl.outbound.OutboundDetailService;
-import org.trc.service.order.*;
+import org.trc.service.impl.outbound.OutBoundOrderService;
+import org.trc.service.order.IExceptionOrderItemService;
+import org.trc.service.order.IExceptionOrderService;
+import org.trc.service.order.IOrderFlowService;
+import org.trc.service.order.IOrderItemService;
+import org.trc.service.order.IPlatformOrderService;
+import org.trc.service.order.IShopOrderService;
+import org.trc.service.order.ISupplierOrderInfoService;
+import org.trc.service.order.ISupplierOrderLogisticsService;
+import org.trc.service.order.IWarehouseOrderService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.supplier.ISupplierService;
@@ -73,18 +164,32 @@ import org.trc.service.util.IRealIpService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
-import org.trc.util.*;
+import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
+import org.trc.util.CellDefinition;
+import org.trc.util.CommonUtil;
+import org.trc.util.DateUtils;
+import org.trc.util.ExceptionUtil;
+import org.trc.util.ExportExcel;
+import org.trc.util.GuidUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ParamsUtil;
+import org.trc.util.QueryModel;
+import org.trc.util.ResponseAck;
+import org.trc.util.ResultUtil;
+import org.trc.util.SHAEncrypt;
+import org.trc.util.ValidateUtil;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.DeliveryorderBatchcreateRequest;
+import com.qimen.api.request.InventoryQueryRequest;
+import com.qimen.api.response.DeliveryorderBatchcreateResponse;
+import com.qimen.api.response.InventoryQueryResponse;
+
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -1789,7 +1894,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param warehouseOrder
      * @param channelOrderResponse
      */
-    private void noticeChannelOrderResult(WarehouseOrder warehouseOrder, ChannelOrderResponse channelOrderResponse){
+    private void noticeChannelOrderResult(Object warehouseOrder, ChannelOrderResponse channelOrderResponse){
         //设置请求渠道的签名
         TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SUBMIT_ORDER_NOTICE);
         BeanUtils.copyProperties(trcParam, channelOrderResponse);
@@ -3818,7 +3923,112 @@ public class ScmOrderBiz implements IScmOrderBiz {
         frozenOrderInventory(outboundMap);
         //通知仓库发货
         noticeWarehouseSendGoods(platformOrder.getChannelCode(), outboundMap);
+        
+        //通知渠道发货结果 .....
+        
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交自采订单成功", "");
+    }
+    
+    /**
+     * 自采商品发货结果通知渠道
+     * @param shopOrderCodes 店铺订单列表
+     * @param warehouseOrderList 仓库级订单列表
+     */
+    private void notifyChannelSelfPurchaseSubmitOrderResult(Set<String> shopOrderCodes, List<WarehouseOrder> warehouseOrderList) {
+    	
+    	// 渠道平台订单编码
+    	String platformOrderCode = warehouseOrderList.get(0).getPlatformOrderCode();
+    	
+    	for (String shopOrderCode : shopOrderCodes) {
+    		try {
+    			/** 
+    			 * 根据shopOrderCode筛选出warehouseOrderList
+    			 **/
+    			List<WarehouseOrder> filterList = warehouseOrderList.stream()
+    					.filter(order -> shopOrderCode.equals(order.getShopOrderCode())).collect(Collectors.toList());
+    			/** 
+    			 * 通知渠道数据封装 
+    			 * channelOrderResponse
+    			 **/
+    			ChannelOrderResponse orderRes = new ChannelOrderResponse();
+    			orderRes.setPlatformOrderCode(platformOrderCode);
+    			orderRes.setShopOrderCode(shopOrderCode);
+    			orderRes.setOrderType(SupplierOrderTypeEnum.ZC.getCode());
+    			
+    			List<SupplierOrderReturn> orderList = new ArrayList<>();
+    			for (WarehouseOrder order : filterList) {
+    				OutboundOrder queryBoundOrder = new OutboundOrder();
+    				queryBoundOrder.setWarehouseOrderCode(order.getWarehouseOrderCode());
+    				OutboundOrder boundOrder = outBoundOrderService.selectOne(queryBoundOrder);
+    				SupplierOrderReturn returnOrder = new SupplierOrderReturn();
+    				returnOrder.setSupplyOrderCode(boundOrder.getOutboundOrderCode());
+    				returnOrder.setState(getOutBundStatus(boundOrder.getStatus()));
+    				Map<String, String> returnMsgMap = new HashMap<>();
+    				returnOrder.setSkus(generateSkuList(order.getWarehouseOrderCode(), shopOrderCode, returnMsgMap));
+    				if (StringUtils.isNotBlank(returnMsgMap.get("retMsg"))) {
+    					returnOrder.setMessage(returnMsgMap.get("retMsg"));
+    				}
+    				orderList.add(returnOrder);
+    				orderRes.setOrder(orderList);	        
+    			}
+    			noticeChannelOrderResult(warehouseOrderList, orderRes);
+    			
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    			log.error("店铺订单: {}, 自采商品发货结果通知渠道异常:{}", shopOrderCode, e.getMessage());
+    		}
+    	}
+
+    }
+    
+    private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, Map<String, String> returnMsgMap) {
+		List<OutboundDetail> detailList = outboundDetailService.selectByWarehouseOrderCode(warehouseOrderCode);
+//		AssertUtil.notEmpty(detailList, 
+//				String.format("根据仓库订单编码[%s]查询出货订单详情信息为空", warehouseOrderCode));
+		List<SkuInfo> infoList = new ArrayList<>();
+    	/** 
+    	 * 正常skus
+    	 **/
+		if (!CollectionUtils.isEmpty(detailList)) {
+			for (OutboundDetail item : detailList) {
+				SkuInfo info = new SkuInfo();
+				info.setSkuCode(item.getSkuCode());
+				info.setNum(item.getShouldSentItemNum().intValue());
+				info.setSkuName(item.getSkuName());
+				infoList.add(info);
+			}
+		}
+    	/** 
+    	 * 异常skus
+    	 **/
+    	ExceptionOrderItem queryItem = new ExceptionOrderItem();
+    	queryItem.setShopOrderCode(shopOrderCode);
+    	List<ExceptionOrderItem> itemList = exceptionOrderItemService.select(queryItem);
+    	if (!CollectionUtils.isEmpty(itemList)) {
+    		StringBuilder msg = new StringBuilder();
+    		for (ExceptionOrderItem item : itemList) {
+    			SkuInfo info = new SkuInfo();
+    			info.setSkuCode(item.getSkuCode());
+    			info.setNum(item.getItemNum());
+    			info.setSkuName(item.getItemName());
+    			msg.append(item.getSkuCode());
+    			msg.append(":");
+    			msg.append(item.getExceptionReason());
+    			msg.append(",");
+    			infoList.add(info);
+    		}
+    	  	/** 
+        	 * 异常信息组装
+        	 **/
+    		String reMsg = msg.toString();
+    		reMsg = reMsg.substring(0, reMsg.length() - 1); 
+    		returnMsgMap.put("retMsg", reMsg);
+    	}
+		return infoList;
+    }
+    
+    private String getOutBundStatus(String originStaus) {
+    	return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode().equals(originStaus) ? "0":"200";
     }
 
     /**
