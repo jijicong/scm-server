@@ -125,21 +125,21 @@ public class QimenServiceImpl implements IQimenService {
      */
 	private AppResult invokeExternal_Get(Map<String, Object> paramsMap, String url){
         String serverUrl = externalSupplierConfig.getScmExternalUrl() + url;
-        StringBuilder sb = new StringBuilder(serverUrl);
+        /*StringBuilder sb = new StringBuilder(serverUrl);
         Set<Map.Entry<String, Object>> entrys = paramsMap.entrySet();
         if(entrys.size() > 0){
             sb.append("?");
             for(Map.Entry<String, Object> entry: entrys){
                 sb.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
             }
-        }
-        log.debug("开始调用奇门接口" + url + ", 参数：" + JSON.toJSONString(paramsMap) +  ". 开始时间" +
+        }*/
+        log.debug("开始调用奇门接口" + serverUrl + ", 参数：" + JSON.toJSONString(paramsMap) +  ". 开始时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         AppResult appResult = new AppResult();
         appResult.setAppcode(SuccessFailureEnum.FAILURE.getCode());
         try{
-            String response = HttpClientUtil.httpGetRequest(url);
-            log.debug("结束调用奇门接口" + url + ", 返回结果：" + response + ". 结束时间" +
+            String response = HttpClientUtil.httpGetRequest(serverUrl, paramsMap);
+            log.debug("结束调用奇门接口" + serverUrl + ", 返回结果：" + response + ". 结束时间" +
                     DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);

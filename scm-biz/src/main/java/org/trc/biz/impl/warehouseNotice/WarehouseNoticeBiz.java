@@ -372,7 +372,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 }else {
                     map.put("air_inventory",String.valueOf(0-normalQuantity - defectiveQuantity));
                 }
-                stock.setChannelCode(warehouseNoticeDetails.getOwnerCode());
+                stock.setChannelCode(warehouseNotice.getChannelCode());
                 stock.setSkuCode(warehouseNoticeDetails.getSkuCode());
                 stock.setWarehouseCode(warehouseNotice.getWarehouseCode());
                 stock.setStockType(map);
