@@ -145,20 +145,22 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     //更新itemOrder
     private void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode){
         List<OutboundDetail> outboundDetailList = this.getOutboundDetailListByOutboundOrderCode(outboundOrderCode, null);
-        String status = null;
+//        String status = null;
         OrderItem orderItem = null;
         for(OutboundDetail outboundDetail : outboundDetailList){
             orderItem = this.getOrderItemByWarehouseOrderCodeAnd(warehouseOrderCode, outboundDetail.getSkuCode());
             AssertUtil.notNull(orderItem, String.format("未查询到要更新的订单信息,仓库订单编码为：%s,SKU编码为：%s",
                     warehouseOrderCode, outboundDetail.getSkuCode()));
-            status = outboundDetail.getStatus();
-            if(StringUtils.equals(status, OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
-                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
-                orderItemService.updateByPrimaryKey(orderItem);
-            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
-                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
-                orderItemService.updateByPrimaryKey(orderItem);
-            }
+//            status = outboundDetail.getStatus();
+//            if(StringUtils.equals(status, OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
+//                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
+//                orderItemService.updateByPrimaryKey(orderItem);
+//            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
+//                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
+//                orderItemService.updateByPrimaryKey(orderItem);
+//            }
+            orderItem.setSupplierOrderStatus(outboundDetail.getStatus());
+            orderItemService.updateByPrimaryKey(orderItem);
         }
         scmOrderBiz.outboundConfirmNotice(warehouseOrderCode);
     }
@@ -301,6 +303,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public String createOutbound(String outboundOrderId) throws Exception {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
@@ -341,6 +344,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             logger.error(msg);
             throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
         }
+
+        //更新订单信息
+        this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+
         return msg;
     }
 
@@ -368,6 +375,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response close(Long id, String remark) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
@@ -389,6 +397,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             //更新库存
             skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                     outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
+
+            //更新订单信息
+            this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
             //仓库接受失败插入一条日志
             logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"warehouse","关闭", remark,null);
@@ -425,6 +436,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response cancelClose(Long id) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
@@ -451,6 +463,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             //更新库存
             skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                     outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), true));
+
+            //更新订单信息
+            this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
             logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"warehouse","取消关闭", "",null);
             return ResultUtil.createSuccessResult("取消关闭成功！", "");
@@ -621,6 +636,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
                 logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"warehouse","取消订单", remark,null);
+
+                //更新订单信息
+                this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
                 return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
             } else {
                 return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
