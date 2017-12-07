@@ -575,10 +575,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     //TODO 这里以后可能会发起重新下单逻辑
                     responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
                     log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
-                }else {
-                    /*responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
-                    log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
-                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), supplierOrderReturn.getMessage(),null);*/
                 }
             }else{
                 log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
@@ -1604,7 +1600,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo) {
+    public ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo) throws Exception {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
@@ -1663,8 +1659,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //设置自采库存校验不通过的商品状态
         setFailOrderItemsStatus(orderItemList, selfPurcharseOrderItemList);
-        //更新订单占商品用库存
-
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
         //保存商品明细
@@ -1675,18 +1669,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
         shopOrderService.insertList(shopOrderList);
         //保存平台订单
         platformOrderService.insert(platformOrder);
-        //创建订单日志w
+        //创建订单日志
         createOrderLog(warehouseOrderList);
         //获取粮油或者自采仓库订单
-        List<WarehouseOrder> warehouseOrders = new ArrayList<WarehouseOrder>();
+        List<WarehouseOrder> lyWarehouseOrders = new ArrayList<WarehouseOrder>();
+        List<WarehouseOrder> selfPurchaseOrders = new ArrayList<WarehouseOrder>();
         for(WarehouseOrder warehouseOrder: warehouseOrderList){
-            //粮油订单或者自采订单
-            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode()) ||
-                StringUtils.equals(OrderTypeEnum.SELF_PURCHARSE.getCode(), warehouseOrder.getOrderType())){
-                warehouseOrders.add(warehouseOrder);
+            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){
+                lyWarehouseOrders.add(warehouseOrder);
+            }
+            if(StringUtils.equals(OrderTypeEnum.SELF_PURCHARSE.getCode(), warehouseOrder.getOrderType())){
+                selfPurchaseOrders.add(warehouseOrder);
             }
         }
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", warehouseOrders);
+        //提交自采订单
+        if(selfPurchaseOrders.size() > 0){
+            submitSelfPurchaseOrder(selfPurchaseOrders);
+            //更新订单状态
+        }
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", lyWarehouseOrders);
     }
 
     /**
@@ -3115,7 +3116,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         request.setCriteriaList(criteriaList);
         AppResult appResult = qimenService.inventoryQuery(request);
-        if(!StringUtils.equals(appResult.getAppcode(), SuccessFailureEnum.SUCCESS.getCode())){
+        if(!StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("调用奇门库存查询接口失败, %s", appResult.getDatabuffer()));
         }
         AssertUtil.notNull(appResult.getResult(), "调用奇门库存查询接口返回结果数据为空");
@@ -3357,8 +3358,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(orderItemList2.size() > 0){
             warehouseOrderList.addAll(dealSupplierOrder(orderItemList2, shopOrder));
-        }else {
-            throw new OrderException(ExceptionEnum.ORDER_ITEMS_ERROR, "订单相关代发商品不能为空");
         }
         return warehouseOrderList;
     }
@@ -3399,11 +3398,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 String skuCode = entry.getKey();
                 if(StringUtils.equals(orderItem.getSkuCode(), skuCode)){
                     flag = true;
+                    List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
+                    for(SkuWarehouseDO skuWarehouseDO: skuWarehouseDOList){
+                        warehouses.add(skuWarehouseDO.getWarehouseCode());
+                    }
                     break;
-                }
-                List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
-                for(SkuWarehouseDO skuWarehouseDO: skuWarehouseDOList){
-                    warehouses.add(skuWarehouseDO.getWarehouseCode());
                 }
             }
             if(!flag){
@@ -3433,6 +3432,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             for(Warehouse warehouse: warehouseList3){
                 List<OrderItem> warehouseOrderItemList = new ArrayList<>();
+                entries = warehouseSkuMap.entrySet().iterator();
                 while (entries.hasNext()){
                     Map.Entry<String, List<SkuWarehouseDO>> entry = entries.next();
                     List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
@@ -3480,11 +3480,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         warehouseOrder.setPayTime(shopOrder.getPayTime());
         warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+        warehouseOrder.setOrderType(OrderTypeEnum.SELF_PURCHARSE.getCode());//自采
         //流水号
         String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER,
-                warehouse.getCode(), ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+                SupplyConstants.Serial.WAREHOUSE_ORDER_CODE, ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         warehouseOrder.setWarehouseOrderCode(code);
-        warehouseOrder.setOrderType(OrderTypeEnum.SELF_PURCHARSE.getCode());//自采
         setWarehouseOrderFee(warehouseOrder, orderItems);
         warehouseOrder.setOrderItemList(orderItems);
         return warehouseOrder;
@@ -3508,8 +3508,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if (StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())) {
                     //可用库存
                     long availableInventory = skuStock.getRealInventory() - skuStock.getFrozenInventory();
-                    if (orderItem.getNum().longValue() == availableInventory) {
-                        stock += availableInventory;
+                    if (orderItem.getNum().longValue() <= availableInventory) {
+                        stock = availableInventory;
                         SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                         skuWarehouseDO.setSkuCode(orderItem.getSkuCode());
                         skuWarehouseDO.setItemNum(availableInventory);
@@ -3702,6 +3702,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         BigDecimal discountCouponPlatform = new BigDecimal(0);//平台优惠卷分摊总金额
         BigDecimal discountFee = new BigDecimal(0);//促销优惠金额
         for(OrderItem orderItem: orderItemList){
+            orderItem.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
             itemsNum += orderItem.getNum();
             totalFee = totalFee.add(orderItem.getTotalFee());
             payment = payment.add(orderItem.getPayment());
@@ -3827,27 +3828,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     @Override
     public ResponseAck handlerOrder(List<WarehouseOrder> warehouseOrders) throws Exception {
-        AssertUtil.notEmpty(warehouseOrders, "处理订单参数不能为空");
-        List<WarehouseOrder> lyOrders = new ArrayList<>();//粮油仓库订单
-        List<WarehouseOrder> selfPurchaseOrders = new ArrayList<>();//自采仓库订单
-        for(WarehouseOrder warehouseOrder: warehouseOrders){
-            if(StringUtils.equals(OrderTypeEnum.SELF_PURCHARSE.getCode(), warehouseOrder.getOrderType())){//自采订单
-                selfPurchaseOrders.add(warehouseOrder);
-            }else {
-                if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){//粮油订单
-                    lyOrders.add(warehouseOrder);
-                }
-            }
+        if(CollectionUtils.isEmpty(warehouseOrders)){
+            //提交粮油订单
+            submitLiangYouOrders(warehouseOrders);
         }
-        //提交粮油订单
-        if(lyOrders.size() > 0){
-            submitLiangYouOrders(lyOrders);
-        }
-        //提交自采订单
-        if(selfPurchaseOrders.size() > 0){
-            submitSelfPurchaseOrder(selfPurchaseOrders);
-        }
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "订单提交成功", "");
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "粮油订单提交成功", "");
     }
 
     @Override
@@ -3857,7 +3842,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrderCode);
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
-        return null;
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "通知接收成功", "");
     }
 
 
@@ -4071,12 +4056,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String code = serialUtilService.generateRandomCode(SupplyConstants.Serial.OUTBOUND_ORDER_LENGTH, SupplyConstants.Serial.OUTBOUND_ORDER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         outboundOrder.setChannelCode(platformOrder.getChannelCode());
         outboundOrder.setOutboundOrderCode(code);
-        outboundOrder.setWarehouseCode(warehouseOrder.getWarehouseOrderCode());
+        outboundOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
+        outboundOrder.setWarehouseCode(warehouseOrder.getWarehouseCode());
         outboundOrder.setShopId(shopOrder.getShopId());
         outboundOrder.setShopName(shopOrder.getShopName());
         outboundOrder.setShopOrderCode(shopOrder.getShopOrderCode());
         outboundOrder.setWarehouseId(warehouseOrder.getWarehouseId());
-        outboundOrder.setWarehouseCode(warehouseOrder.getWarehouseCode());
         outboundOrder.setOrderType(QimenOrderTypeEnum.JYCK.getCode());
         outboundOrder.setStatus(OutboundOrderStatusEnum.WAITING.getCode());
         int itemNum = 0;
@@ -4089,6 +4074,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         outboundOrder.setReceiverProvince(platformOrder.getReceiverProvince());
         outboundOrder.setReceiverCity(platformOrder.getReceiverCity());
         outboundOrder.setReceiverDistrict(platformOrder.getReceiverDistrict());
+        outboundOrder.setReceiverAddress(platformOrder.getReceiverAddress());
         outboundOrder.setReceiverZip(platformOrder.getReceiverZip());
         outboundOrder.setReceiverName(platformOrder.getReceiverName());
         outboundOrder.setReceiverPhone(platformOrder.getReceiverPhone());
@@ -4262,7 +4248,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         DeliveryorderBatchcreateRequest request = new DeliveryorderBatchcreateRequest();
         request.setOrders(orderList);
         AppResult appResult = qimenService.deliveryorderBatchcreate(request);
-        if(!StringUtils.equals(appResult.getAppcode(), SuccessFailureEnum.SUCCESS.getCode())){
+        if(!StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("调用奇门创建发货单接口(批量)接口失败, %s", appResult.getDatabuffer()));
         }
         AssertUtil.notNull(appResult.getResult(), "调用奇门创建发货单接口(批量)接口返回结果数据为空");
@@ -4287,6 +4273,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private DeliveryorderBatchcreateRequest.DeliveryOrder getDeliveryOrder(OutboundOrder outboundOrder, List<Warehouse> warehouseList){
         //发货单信息
         DeliveryorderBatchcreateRequest.DeliveryOrder deliveryOrder = new DeliveryorderBatchcreateRequest.DeliveryOrder();
+        deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
         deliveryOrder.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());
         deliveryOrder.setOrderType(QimenOrderTypeEnum.JYCK.getCode());
         deliveryOrder.setWarehouseCode(outboundOrder.getWarehouseCode());
@@ -4349,48 +4336,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
-
-
-
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public ResponseAck submitSelfPurchaseOrder2(String warehouseOrderCode) {
-        AssertUtil.notBlank(warehouseOrderCode, "提交订单粮油订单仓库订单编码不能为空");
-        //获取供应链订单数据
-        Map<String, Object> scmOrderMap = getScmOrderMap(warehouseOrderCode);
-        PlatformOrder platformOrder = (PlatformOrder)scmOrderMap.get("platformOrder");
-        WarehouseOrder warehouseOrder = (WarehouseOrder)scmOrderMap.get("warehouseOrder");
-        List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
-        //获取粮油订单对象
-        LiangYouSupplierOrder liangYouOrder = getLiangYouOrder(warehouseOrder, platformOrder, orderItemList);
-        //调用粮油下单服务接口
-        ResponseAck responseAck = invokeSubmitSuuplierOrder(liangYouOrder);
-        //保存请求流水
-        requestFlowBiz.saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, responseAck, RequestFlowConstant.GYL);
-        //保存粮油订单信息
-        List<SupplierOrderInfo> supplierOrderInfoList = saveSupplierOrderInfo(warehouseOrder, responseAck, orderItemList, new String[0], new String[0], ZeroToNineEnum.ZERO.getCode());
-        //更新订单商品供应商订单状态
-        updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderInfoList);
-        //更新仓库订单供应商订单状态
-        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
-        //更新店铺订单供应商订单状态
-        updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
-        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            log.info(responseAck.getMessage());
-            //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), SYSTEM, LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
-        }
-        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            log.info(String.format("调用粮油下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
-        }else{
-            log.error(String.format("调用粮油下单接口提交仓库订单%s失败,错误信息:%s", JSONObject.toJSON(warehouseOrder), responseAck.getMessage()));
-        }
-        if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            String msg = String.format("提交仓库级订单编码为[%s]的粮油订单下单失败。粮油下单接口返回错误信息:%s",
-                    warehouseOrderCode, responseAck.getMessage());
-            log.error(msg);
-        }
-        return responseAck;
-    }
 
 
 
