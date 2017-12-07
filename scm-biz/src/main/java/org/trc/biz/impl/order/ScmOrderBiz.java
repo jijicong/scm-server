@@ -3954,8 +3954,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     					returnOrder.setMessage(returnMsgMap.get("retMsg"));
     				}
     				orderList.add(returnOrder);
-    				orderRes.setOrder(orderList);	        
     			}
+    			orderRes.setOrder(orderList);	        
     			noticeChannelOrderResult(warehouseOrderList, orderRes);
     			
     		} catch (Exception e) {
