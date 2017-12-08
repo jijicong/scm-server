@@ -4061,7 +4061,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //通知仓库发货
         noticeWarehouseSendGoods(platformOrder.getChannelCode(), outboundMap);
         
-        //通知渠道发货结果 .....
+        //通知渠道发货结果 ......
+        notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
         
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交自采订单成功", "");
     }
@@ -4072,6 +4073,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param warehouseOrderList 仓库级订单列表
      */
     private void notifyChannelSelfPurchaseSubmitOrderResult(Set<String> shopOrderCodes, List<WarehouseOrder> warehouseOrderList) {
+    	if (CollectionUtils.isEmpty(shopOrderCodes) 
+    			|| CollectionUtils.isEmpty(warehouseOrderList)) {
+    		log.error("自采商品发货结果通知渠道异常:shopOrderCodeList或者warehouseOrderList为空");
+    		return;
+    	}
     	// 渠道平台订单编码
     	String platformOrderCode = warehouseOrderList.get(0).getPlatformOrderCode();
     	for (String shopOrderCode : shopOrderCodes) {
