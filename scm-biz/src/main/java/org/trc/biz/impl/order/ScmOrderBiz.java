@@ -3762,6 +3762,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         exceptionOrderService.insert(exceptionOrder);
         exceptionOrderItemService.insertList(exceptionOrderItemList);
 
+        //记录操作日志
+        logInfoService.recordLog(exceptionOrder,exceptionOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), String.format("创建原因：缺货退回"),null);
+
     }
 
 
@@ -4297,6 +4300,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
         outBoundOrderService.insert(outboundOrder);
         outboundDetailService.insertList(outboundDetailList);
+
+        //记录操作日志
+        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), null,null);
 
         OutboundForm outboundForm = new OutboundForm();
         outboundForm.setOutboundOrder(outboundOrder);
