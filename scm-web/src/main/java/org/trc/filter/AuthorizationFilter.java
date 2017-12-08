@@ -13,20 +13,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.impower.AclResourceBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Channel;
-import org.trc.domain.System.SellChannel;
-import org.trc.domain.config.SystemConfig;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
-import org.trc.enums.ZeroToNineEnum;
-import org.trc.service.System.IChannelService;
-import org.trc.service.System.ISellChannelService;
-import org.trc.service.config.ISystemConfigService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
-import org.trc.util.StringUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -40,9 +32,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -78,6 +68,8 @@ public class AuthorizationFilter implements ContainerRequestFilter {
      */
     private final static String  CHANNEL_QUERY= "api/jurisdictionUserChannel";
     private final static String  CHANNEL_CONFIRM= "api/confirmUser";
+
+
     @Context private HttpServletRequest request;
     @Context
     private  HttpServletResponse response;
@@ -152,7 +144,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
             }
         }
-
         /**
          * 获取userId用于查询当前用户下的业务线
          */
@@ -224,6 +215,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         }
         return token;
     }
+
 
     private String _getCookieChannelCode(ContainerRequestContext requestContext) {
 

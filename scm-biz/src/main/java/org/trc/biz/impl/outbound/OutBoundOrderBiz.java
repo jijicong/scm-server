@@ -1,14 +1,20 @@
 package org.trc.biz.impl.outbound;
 
-import com.qimen.api.request.DeliveryorderConfirmRequest;
-import com.qimen.api.request.DeliveryorderCreateRequest;
-import com.qimen.api.request.OrderCancelRequest;
-import com.qimen.api.response.DeliveryorderCreateResponse;
-import com.qimen.api.response.OrderCancelResponse;
-import com.thoughtworks.xstream.XStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -17,30 +23,62 @@ import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.cache.CacheEvit;
 import org.trc.common.RequsetUpdateStock;
+import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.Warehouse;
+import org.trc.domain.config.RequestFlow;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
-import org.trc.enums.*;
+import org.trc.enums.ExceptionEnum;
+import org.trc.enums.LogsticsTypeEnum;
+import org.trc.enums.OutboundDetailStatusEnum;
+import org.trc.enums.OutboundOrderStatusEnum;
+import org.trc.enums.RequestFlowStatusEnum;
+import org.trc.enums.RequestFlowTypeEnum;
+import org.trc.enums.SuccessFailureEnum;
+import org.trc.enums.TrcActionTypeEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.OutboundOrderException;
+import org.trc.form.Logistic;
+import org.trc.form.LogisticNoticeForm;
+import org.trc.form.SkuInfo;
+import org.trc.form.TrcConfig;
+import org.trc.form.TrcParam;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.model.ToGlyResultDO;
 import org.trc.service.IQimenService;
 import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
+import org.trc.service.impl.TrcService;
+import org.trc.service.impl.config.RequestFlowService;
+import org.trc.service.impl.system.LogisticsCompanyService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
-import org.trc.util.*;
-import tk.mybatis.mapper.entity.Example;
+import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
+import org.trc.util.CommonUtil;
+import org.trc.util.DateUtils;
+import org.trc.util.Pagenation;
+import org.trc.util.ParamsUtil;
+import org.trc.util.ResultUtil;
 
-import javax.ws.rs.core.Response;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.DeliveryorderConfirmRequest;
+import com.qimen.api.request.DeliveryorderConfirmRequest.Item;
+import com.qimen.api.request.DeliveryorderCreateRequest;
+import com.qimen.api.request.OrderCancelRequest;
+import com.qimen.api.response.DeliveryorderCreateResponse;
+import com.qimen.api.response.OrderCancelResponse;
+import com.thoughtworks.xstream.XStream;
+
+import tk.mybatis.mapper.entity.Example;
 
 @Service("outBoundOrderBiz")
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
@@ -65,6 +103,24 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IScmOrderBiz scmOrderBiz;
     @Autowired
     private IOrderItemService orderItemService;
+    @Autowired
+    private TrcConfig trcConfig;
+    @Autowired
+    private TrcService trcService;
+    @Autowired
+    private RequestFlowService requestFlowService;
+    @Autowired
+    private LogisticsCompanyService logisticsCompanyService;
+    
+    private static final Map<String, String> statusMap = new HashMap<String, String>();
+    
+    static {
+    	// 状态转换
+    	statusMap.put(SuccessFailureEnum.FAILURE.getCode(), RequestFlowStatusEnum.SEND_FAILED.getCode());
+    	statusMap.put(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+    	statusMap.put(SuccessFailureEnum.SUCCESS.getCode(), RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+    	statusMap.put(SuccessFailureEnum.ERROR.getCode(), RequestFlowStatusEnum.SEND_ERROR.getCode());
+    }
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -140,9 +196,104 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //更新订单信息
         this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
+        
+        // 发货单确认结果通知渠道
+        deliveryOrderConfirmNotice(outboundOrder, packageList);
+        
     }
+    
+    private void deliveryOrderConfirmNotice(OutboundOrder outboundOrder, 
+    		List<DeliveryorderConfirmRequest.Package> packageList) {
+    	try {
+    		LogisticNoticeForm noitce = new LogisticNoticeForm();
+    		//设置请求渠道的签名
+    		TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
+    		BeanUtils.copyProperties(trcParam, noitce);
+    		
+    		// 获取店铺级订单号
+    		noitce.setShopOrderCode(outboundOrder.getShopOrderCode());
+    		
+    		// 信息类型 0-物流单号,1-配送信息
+    		noitce.setType(LogsticsTypeEnum.WAYBILL_NUMBER.getCode());
+    		
+    		// 包裹信息列表
+    		List<Logistic> logisticList = new ArrayList<>();
+    		if (!CollectionUtils.isEmpty(packageList)) {
+    			packageList.forEach(pack -> {
+    				Logistic lsc = new Logistic();
+    				lsc.setSupplierOrderCode(outboundOrder.getOutboundOrderCode());
+    				lsc.setWaybillNumber(pack.getExpressCode());
+    				// 物流公司名称
+    				lsc.setLogisticsCorporation(pack.getLogisticsName());
+    				// 物流公司编码
+    				lsc.setLogisticsCorporationCode(generateLogisticsCode(pack.getLogisticsCode(), outboundOrder.getChannelCode()));
+    				/**
+    				 * 包裹对应商品信息 
+    				 **/
+    				List<SkuInfo> skuList = new ArrayList<>();
+    				List<Item> items = pack.getItems();
+    				if (!CollectionUtils.isEmpty(items)) {
+    					items.forEach(item -> {
+    						SkuInfo sku = new SkuInfo();
+    						sku.setSkuCode(item.getItemCode());
+    						sku.setNum(item.getQuantity().intValue());
+    						/**
+    						 * 获取skuName 
+    						 **/
+    						OutboundDetail detail = new OutboundDetail();
+    						detail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+    						detail.setSkuCode(item.getItemCode());
+    						OutboundDetail od = outboundDetailService.selectOne(detail);
+    						sku.setSkuName(od.getSkuName());
+    						skuList.add(sku);
+    					});
+    				}
+    				lsc.setSkus(skuList);
+    				logisticList.add(lsc);
+    			});
+    			noitce.setLogistics(logisticList);
+    		}
+    		//物流信息同步给渠道
+    		String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, 
+    				RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(), 
+    				RequestFlowStatusEnum.SEND_INITIAL.getCode(), JSONObject.toJSONString(noitce));
+    		ToGlyResultDO toGlyResultDO = trcService.sendLogisticInfoNotice(noitce);
+    		RequestFlow requestFlowUpdate = new RequestFlow();
+    		requestFlowUpdate.setRequestNum(reqNum);
+    		requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
+    		requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getStatus()));
+    		requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
+    		
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		logger.error("发货单号:{},物流信息通知渠道异常：{}", 
+    				outboundOrder.getOutboundOrderCode(), e.getMessage());
+    	}	
+    	
+    }
+    
+    private String generateLogisticsCode(String logisticsCode, String channelCode) {
+    	String retMsg = "物流公司编码未找到";
+    	if (StringUtils.isBlank(logisticsCode)) {
+    		return retMsg;
+    	}
+    	LogisticsCompany queryLc = new LogisticsCompany();
+    	queryLc.setType("QIMEN");
+    	queryLc.setCompanyCode(logisticsCode);
+        LogisticsCompany lc = logisticsCompanyService.selectOne(queryLc);
+        if (null == lc) {
+        	return retMsg;
+        }
+        queryLc.setType(channelCode);
+        queryLc.setCompanyName(lc.getCompanyName());
+        LogisticsCompany lctmp = logisticsCompanyService.selectOne(queryLc);
+        if (null == lctmp) {
+        	return retMsg;
+        }
+		return lctmp.getCompanyCode();
+	}
 
-    //更新itemOrder
+	//更新itemOrder
     private void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode){
         List<OutboundDetail> outboundDetailList = this.getOutboundDetailListByOutboundOrderCode(outboundOrderCode, null);
 //        String status = null;
