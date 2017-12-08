@@ -174,4 +174,11 @@ public interface ITrcBiz {
 
     void checkChannelCode(String channelCode) throws Exception;
 
+    /**
+     * 校验渠道
+     * @param sellCode
+     * @throws Exception
+     */
+    void checkSellCode(String sellCode) throws Exception;
+
 }
