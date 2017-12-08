@@ -63,7 +63,6 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkuStockService;
-<<<<<<< HEAD
 import org.trc.service.impl.order.OrderItemService;
 import org.trc.service.impl.outbound.OutBoundOrderService;
 import org.trc.service.order.IExceptionOrderItemService;
@@ -75,9 +74,6 @@ import org.trc.service.order.IShopOrderService;
 import org.trc.service.order.ISupplierOrderInfoService;
 import org.trc.service.order.ISupplierOrderLogisticsService;
 import org.trc.service.order.IWarehouseOrderService;
-=======
-import org.trc.service.order.*;
->>>>>>> 481aa0da583d62e18b46a26efbea7233a3de6576
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
@@ -4061,16 +4057,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         frozenOrderInventory(outboundMap);
         //通知仓库发货
         noticeWarehouseSendGoods(platformOrder.getChannelCode(), outboundMap);
-<<<<<<< HEAD
         
         //通知渠道发货结果 ......
         notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
         
-=======
-
-        //通知渠道发货结果 .....
-
->>>>>>> 481aa0da583d62e18b46a26efbea7233a3de6576
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交自采订单成功", "");
     }
 
@@ -4128,14 +4118,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     	}
 
     }
-<<<<<<< HEAD
     
     private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, 
     		String platformOrderCode, Map<String, String> returnMsgMap) {
-=======
 
-    private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, Map<String, String> returnMsgMap) {
->>>>>>> 481aa0da583d62e18b46a26efbea7233a3de6576
 		List<OutboundDetail> detailList = outboundDetailService.selectByWarehouseOrderCode(warehouseOrderCode);
 //		AssertUtil.notEmpty(detailList,
 //				String.format("根据仓库订单编码[%s]查询出货订单详情信息为空", warehouseOrderCode));
@@ -4180,7 +4166,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     	List<ExceptionOrderItem> itemList = exceptionOrderItemService.select(queryItem);
     	if (!CollectionUtils.isEmpty(itemList)) {
     		StringBuilder msg = new StringBuilder();
-<<<<<<< HEAD
 			for (ExceptionOrderItem item : itemList) {
 				if (skuCodeList.contains(item.getSkuCode())) {
 					SkuInfo info = new SkuInfo();
@@ -4194,23 +4179,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
 					infoList.add(info);
 				}
 			}
-    	  	/** 
-=======
-    		for (ExceptionOrderItem item : itemList) {
-    			SkuInfo info = new SkuInfo();
-    			info.setSkuCode(item.getSkuCode());
-    			info.setNum(item.getItemNum());
-    			info.setSkuName(item.getItemName());
-    			msg.append(item.getSkuCode());
-    			msg.append(":");
-    			msg.append(item.getExceptionReason());
-    			msg.append(",");
-    			infoList.add(info);
-    		}
-    	  	/**
->>>>>>> 481aa0da583d62e18b46a26efbea7233a3de6576
-        	 * 异常信息组装
-        	 **/
     		String reMsg = msg.toString();
     		reMsg = reMsg.substring(0, reMsg.length() - 1);
     		returnMsgMap.put("retMsg", reMsg);
