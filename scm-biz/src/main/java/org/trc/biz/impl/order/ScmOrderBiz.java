@@ -146,6 +146,7 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkuStockService;
+import org.trc.service.impl.order.OrderItemService;
 import org.trc.service.impl.outbound.OutBoundOrderService;
 import org.trc.service.order.IExceptionOrderItemService;
 import org.trc.service.order.IExceptionOrderService;
@@ -4105,7 +4106,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     				returnOrder.setSupplyOrderCode(boundOrder.getOutboundOrderCode());
     				returnOrder.setState(getOutBundStatus(boundOrder.getStatus()));
     				Map<String, String> returnMsgMap = new HashMap<>();
-    				returnOrder.setSkus(generateSkuList(order.getWarehouseOrderCode(), shopOrderCode, returnMsgMap));
+    				returnOrder.setSkus(generateSkuList(order.getWarehouseOrderCode(), shopOrderCode, platformOrderCode, returnMsgMap));
     				if (StringUtils.isNotBlank(returnMsgMap.get("retMsg"))) {
     					returnOrder.setMessage(returnMsgMap.get("retMsg"));
     				}
@@ -4122,7 +4123,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     }
     
-    private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, Map<String, String> returnMsgMap) {
+    private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, 
+    		String platformOrderCode, Map<String, String> returnMsgMap) {
 		List<OutboundDetail> detailList = outboundDetailService.selectByWarehouseOrderCode(warehouseOrderCode);
 //		AssertUtil.notEmpty(detailList, 
 //				String.format("根据仓库订单编码[%s]查询出货订单详情信息为空", warehouseOrderCode));
@@ -4137,27 +4139,49 @@ public class ScmOrderBiz implements IScmOrderBiz {
 				info.setNum(item.getShouldSentItemNum().intValue());
 				info.setSkuName(item.getSkuName());
 				infoList.add(info);
+				
 			}
 		}
     	/** 
     	 * 异常skus
     	 **/
+		OrderItem queryOrderItem = new OrderItem();
+		queryOrderItem.setPlatformOrderCode(platformOrderCode);
+		queryOrderItem.setShopOrderCode(shopOrderCode);
+		List<OrderItem> orderItemList = orderItemService.select(queryOrderItem);
+		List<String> skuCodeList = new ArrayList<>();
+		for (OrderItem one : orderItemList) {
+			if (!CollectionUtils.isEmpty(detailList)) {
+				for (OutboundDetail detail : detailList) {
+					if (StringUtils.equals(detail.getSkuCode(),one.getSkuCode())) {
+						break;
+					}
+					skuCodeList.add(one.getSkuCode());
+				}
+			} else {
+				skuCodeList.add(one.getSkuCode());
+			}
+		}
+		
     	ExceptionOrderItem queryItem = new ExceptionOrderItem();
     	queryItem.setShopOrderCode(shopOrderCode);
+    	queryItem.setPlatformOrderCode(platformOrderCode);
     	List<ExceptionOrderItem> itemList = exceptionOrderItemService.select(queryItem);
     	if (!CollectionUtils.isEmpty(itemList)) {
     		StringBuilder msg = new StringBuilder();
-    		for (ExceptionOrderItem item : itemList) {
-    			SkuInfo info = new SkuInfo();
-    			info.setSkuCode(item.getSkuCode());
-    			info.setNum(item.getItemNum());
-    			info.setSkuName(item.getItemName());
-    			msg.append(item.getSkuCode());
-    			msg.append(":");
-    			msg.append(item.getExceptionReason());
-    			msg.append(",");
-    			infoList.add(info);
-    		}
+			for (ExceptionOrderItem item : itemList) {
+				if (skuCodeList.contains(item.getSkuCode())) {
+					SkuInfo info = new SkuInfo();
+					info.setSkuCode(item.getSkuCode());
+					info.setNum(item.getItemNum());
+					info.setSkuName(item.getItemName());
+					msg.append(item.getSkuCode());
+					msg.append(":");
+					msg.append(item.getExceptionReason());
+					msg.append(",");
+					infoList.add(info);
+				}
+			}
     	  	/** 
         	 * 异常信息组装
         	 **/
