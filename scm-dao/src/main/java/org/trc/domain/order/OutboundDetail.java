@@ -4,9 +4,11 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Date;
@@ -15,34 +17,48 @@ import java.util.List;
 /**
  * Created by hzcyn on 2017/12/1.
  */
+@Table(name = "outbound_detail")
 public class OutboundDetail implements Serializable {
-    @Id
+	
+	private static final long serialVersionUID = 5954865299939357741L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "outbound_order_code")
     private String outboundOrderCode;
 
+    @Column(name = "sku_name")
     private String skuName;
 
+    @Column(name = "sku_code")
     private String skuCode;
 
+    @Column(name = "actual_amount")
     @JsonSerialize(using = MoneySerializer.class)
     private Long actualAmount;
 
+    @Column(name = "should_sent_item_num")
     private Long shouldSentItemNum;
 
+    @Column(name = "real_sent_item_num")
     private Long realSentItemNum;
 
+    @Column(name = "inventory_type")
     private String inventoryType;//ZP---正品
 
+    @Column(name = "status")
     private String status;
 
     @Transient
     private List<OutboundDetailLogistics> outboundDetailLogisticsList;
 
+    @Column(name = "create_time")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
+    @Column(name = "update_time")
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
