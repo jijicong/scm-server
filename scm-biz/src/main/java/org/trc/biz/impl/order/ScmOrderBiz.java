@@ -31,7 +31,6 @@ import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.Warehouse;
-import org.trc.domain.config.LogInfo;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
@@ -64,9 +63,9 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkuStockService;
-import org.trc.service.impl.outbound.OutboundDetailService;
 import org.trc.service.order.*;
 import org.trc.service.outbound.IOutBoundOrderService;
+import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
@@ -197,6 +196,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IOutBoundOrderService outBoundOrderService;
     @Autowired
     private IOutboundDetailService outboundDetailService;
+    @Autowired
+    private IOutboundDetailLogisticsService outboundDetailLogisticsService;
 
 
 
@@ -1295,6 +1296,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if(StringUtils.equals(orderItem.getWarehouseOrderCode(), warehouseOrder2.getWarehouseOrderCode())){
                     if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())){
                         //自采发货仓库名称 TODO
+                        orderItem.setWarehouseName(warehouseOrder2.getWarehouseName());
+
                     }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderItem.getItemType())){
                         orderItem.setWarehouseName(warehouseOrder2.getSupplierName());
                     }
@@ -1307,6 +1310,86 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(WarehouseOrder warehouseOrder2: warehouseOrderList){
             warehouseOrderCodes.add(warehouseOrder2.getWarehouseOrderCode());
         }
+        //设置供应商订单信息
+        querySupplierOrderLogistics(orderItemList, warehouseOrderCodes);
+        //设置自营订单信息
+        queryOutOrderLogistics(orderItemList, warehouseOrderCodes);
+
+    }
+
+    private void queryOutOrderLogistics(List<OrderItem> orderItemList, Set<String> warehouseOrderCodes) {
+        //通过warehouseOrderCode查询发货通知单
+        Example example2 = new Example(OutboundOrder.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("warehouseOrderCode", warehouseOrderCodes);
+        List<OutboundOrder> outboundOrderList = outBoundOrderService.selectByExample(example2);
+        if (!AssertUtil.collectionIsEmpty(outboundOrderList)) {
+            Map<String, OutboundOrder> outboundOrderMap = new HashMap<>();
+            Set<String> outboundOrderCodeSet = new HashSet<>();
+            for (OutboundOrder outboundOrder : outboundOrderList) {
+                outboundOrderCodeSet.add(outboundOrder.getOutboundOrderCode());
+                outboundOrderMap.put(outboundOrder.getWarehouseCode(), outboundOrder);
+            }
+            //通过outboundOrderCode查询发货通知单详情
+            Example example3 = new Example(OutboundDetail.class);
+            Example.Criteria criteria3 = example3.createCriteria();
+            criteria3.andIn("outboundOrderCode", outboundOrderCodeSet);
+            List<OutboundDetail> outboundDetailList = outboundDetailService.selectByExample(example3);
+            if (!AssertUtil.collectionIsEmpty(outboundDetailList)) {
+                Set<Long> outboundDetailIds = new HashSet<>();
+                Map<String, OutboundDetail> outboundDetailMap = new HashMap<>();
+                for (OutboundDetail outboundDetail : outboundDetailList) {
+                    outboundDetailIds.add(outboundDetail.getId());
+                    outboundDetailMap.put(outboundDetail.getOutboundOrderCode(), outboundDetail);
+                }
+                //查询发货通知单物流信息
+                Example example4 = new Example(OutboundDetailLogistics.class);
+                Example.Criteria criteria4 = example4.createCriteria();
+                criteria4.andIn("outboundDetailId", outboundDetailIds);
+                List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.selectByExample(example4);
+                Map<Long, List<OutboundDetailLogistics>> outboundDetailLogisticsMap = new HashMap<>();
+                if (!AssertUtil.collectionIsEmpty(outboundDetailLogisticsList)) {
+                    for (Long detailId : outboundDetailIds) {
+                        List<OutboundDetailLogistics> detailLogisticsList = new ArrayList<>();
+                        for (OutboundDetailLogistics outboundDetailLogistics : outboundDetailLogisticsList) {
+                            if (detailId.equals(outboundDetailLogistics.getOutboundDetailId())) {
+                                detailLogisticsList.add(outboundDetailLogistics);
+                            }
+                        }
+                        outboundDetailLogisticsMap.put(detailId, detailLogisticsList);
+                    }
+                    //组装物流信息, //设置自采订单、物流信息
+                    for (OrderItem orderItem : orderItemList) {
+                        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())) {
+                            //实发商品数量
+                            OutboundOrder outboundOrder = outboundOrderMap.get(orderItem.getWarehouseOrderCode());
+                            OutboundDetail outboundDetail = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
+                            orderItem.setDeliverNum(Integer.parseInt(String.valueOf(outboundDetail.getRealSentItemNum())));
+                            //物流信息
+                            List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(outboundDetail.getId());
+                            //物流详细
+                            List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
+                            if (!AssertUtil.collectionIsEmpty(logisticsList)){
+                                for (OutboundDetailLogistics outboundDetailLogistics:logisticsList ) {
+                                    //物流信息
+                                    DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
+                                    deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
+                                    deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
+                                    deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                                    deliverPackageFormList.add(deliverPackageForm);
+                                }
+                                orderItem.setDeliverPackageFormList(deliverPackageFormList);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    private void querySupplierOrderLogistics(List<OrderItem> orderItemList, Set<String> warehouseOrderCodes) {
         Example example2 = new Example(SupplierOrderLogistics.class);
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("warehouseOrderCode", warehouseOrderCodes);
@@ -1314,54 +1397,56 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(!CollectionUtils.isEmpty(supplierOrderLogisticsList)){
             //设置商品供应商订单、物流信息
             for (OrderItem orderItem : orderItemList) {
-                StringBuilder sb = new StringBuilder();//供应商订单编码
-                int deliverNum = 0;//实发商品数量
-                List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
-                Set<String> supplierSkus = new HashSet<>();
-                for(SupplierOrderLogistics supplierOrderLogistics2: supplierOrderLogisticsList){
-                    List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderLogistics2.getSkus(), SkuInfo.class);
-                    if(!CollectionUtils.isEmpty(skuInfoList)){
-                        for(SkuInfo skuInfo: skuInfoList){
-                            if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
-                                deliverNum += skuInfo.getNum();
-                                if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
-                                    sb.append(supplierOrderLogistics2.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
+                if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderItem.getItemType())) {
+                    StringBuilder sb = new StringBuilder();//供应商订单编码
+                    int deliverNum = 0;//实发商品数量
+                    List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
+                    Set<String> supplierSkus = new HashSet<>();
+                    for (SupplierOrderLogistics supplierOrderLogistics2 : supplierOrderLogisticsList) {
+                        List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderLogistics2.getSkus(), SkuInfo.class);
+                        if (!CollectionUtils.isEmpty(skuInfoList)) {
+                            for (SkuInfo skuInfo : skuInfoList) {
+                                if (StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())) {
+                                    deliverNum += skuInfo.getNum();
+                                    if (StringUtils.isBlank(orderItem.getSupplierOrderCode())) {
+                                        sb.append(supplierOrderLogistics2.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
+                                    }
+                                    supplierSkus.add(skuInfo.getSkuCode());
+                                    DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
+                                    deliverPackageForm.setSkuCode(skuInfo.getSkuCode());
+                                    deliverPackageForm.setSkuNum(skuInfo.getNum());
+                                    deliverPackageForm.setLogisticsCorporation(supplierOrderLogistics2.getLogisticsCorporation());
+                                    deliverPackageForm.setWaybillNumber(supplierOrderLogistics2.getWaybillNumber());
+                                    deliverPackageFormList.add(deliverPackageForm);
                                 }
-                                supplierSkus.add(skuInfo.getSkuCode());
-                                DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
-                                deliverPackageForm.setSkuCode(skuInfo.getSkuCode());
-                                deliverPackageForm.setSkuNum(skuInfo.getNum());
-                                deliverPackageForm.setLogisticsCorporation(supplierOrderLogistics2.getLogisticsCorporation());
-                                deliverPackageForm.setWaybillNumber(supplierOrderLogistics2.getWaybillNumber());
-                                deliverPackageFormList.add(deliverPackageForm);
                             }
                         }
                     }
-                }
-                if(sb.length() > 0){
-                    orderItem.setSupplierOrderCode(sb.substring(0, sb.length()-1));
-                }
-                if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), orderItem.getSupplierOrderStatus()) ||
-                        StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus()) ||
-                        StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), orderItem.getSupplierOrderStatus())){
-                    orderItem.setDeliverNum(null);
-                }else {
-                    orderItem.setDeliverNum(deliverNum);
-                }
-                if(supplierSkus.size() > 0){
-                    Example example3 = new Example(ExternalItemSku.class);
-                    Example.Criteria criteria3 = example3.createCriteria();
-                    criteria3.andIn("supplierSkuCode", supplierSkus);
-                    List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example3);
-                    for(DeliverPackageForm deliverPackageForm: deliverPackageFormList){
-                        for(ExternalItemSku externalItemSku: externalItemSkuList){
-                            if(StringUtils.equals(deliverPackageForm.getSkuCode(), externalItemSku.getSupplierSkuCode())){
-                                deliverPackageForm.setSkuCode(externalItemSku.getSkuCode());
+                    if (sb.length() > 0) {
+                        orderItem.setSupplierOrderCode(sb.substring(0, sb.length() - 1));
+                    }
+                    if (StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), orderItem.getSupplierOrderStatus()) ||
+                            StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus()) ||
+                            StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
+                        orderItem.setDeliverNum(null);
+                    } else {
+                        orderItem.setDeliverNum(deliverNum);
+                    }
+                    if (supplierSkus.size() > 0) {
+                        Example example3 = new Example(ExternalItemSku.class);
+                        Example.Criteria criteria3 = example3.createCriteria();
+                        criteria3.andIn("supplierSkuCode", supplierSkus);
+                        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example3);
+                        for (DeliverPackageForm deliverPackageForm : deliverPackageFormList) {
+                            for (ExternalItemSku externalItemSku : externalItemSkuList) {
+                                if (StringUtils.equals(deliverPackageForm.getSkuCode(), externalItemSku.getSupplierSkuCode())) {
+                                    deliverPackageForm.setSkuCode(externalItemSku.getSkuCode());
+                                }
                             }
                         }
                     }
+                    orderItem.setDeliverPackageFormList(deliverPackageFormList);
                 }
-                orderItem.setDeliverPackageFormList(deliverPackageFormList);
             }
         }
         Example example = new Example(SupplierOrderInfo.class);
@@ -1370,24 +1455,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
             for (OrderItem orderItem : orderItemList) {
-                StringBuilder sb = new StringBuilder();//供应商订单编码
-                for(SupplierOrderInfo SupplierOrderInfo: supplierOrderInfoList){
-                    List<SkuInfo> skuInfoList = JSONArray.parseArray(SupplierOrderInfo.getSkus(), SkuInfo.class);
-                    for(SkuInfo skuInfo: skuInfoList){
-                        if(StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())){
-                            if(StringUtils.isBlank(orderItem.getSupplierOrderCode())){
-                                if(!StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
-                                    sb.append(SupplierOrderInfo.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
+                if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderItem.getItemType())) {
+                    StringBuilder sb = new StringBuilder();//供应商订单编码
+                    for (SupplierOrderInfo SupplierOrderInfo : supplierOrderInfoList) {
+                        List<SkuInfo> skuInfoList = JSONArray.parseArray(SupplierOrderInfo.getSkus(), SkuInfo.class);
+                        for (SkuInfo skuInfo : skuInfoList) {
+                            if (StringUtils.equals(orderItem.getSupplierSkuCode(), skuInfo.getSkuCode())) {
+                                if (StringUtils.isBlank(orderItem.getSupplierOrderCode())) {
+                                    if (!StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())) {
+                                        sb.append(SupplierOrderInfo.getSupplierOrderCode()).append(SupplyConstants.Symbol.COMMA);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())){
-                    orderItem.setSupplierOrderCode(null);
-                }else{
-                    if(sb.length() > 0){
-                        orderItem.setSupplierOrderCode(sb.substring(0, sb.length()-1));
+                    if (StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus())) {
+                        orderItem.setSupplierOrderCode(null);
+                    } else {
+                        if (sb.length() > 0) {
+                            orderItem.setSupplierOrderCode(sb.substring(0, sb.length() - 1));
+                        }
                     }
                 }
             }
