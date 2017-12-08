@@ -8,7 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.domain.goods.SkuStock;
+import org.trc.domain.order.OutboundDetail;
 import org.trc.mapper.goods.ISkuStockMapper;
+import org.trc.mapper.outbound.IOutboundDetailMapper;
+
+import com.alibaba.fastjson.JSON;
 
 import tk.mybatis.mapper.entity.Example;
 
@@ -17,13 +21,19 @@ import tk.mybatis.mapper.entity.Example;
 public class TestSql {
 	@Autowired
 	ISkuStockMapper skuStockMapper;
+	@Autowired
+	private IOutboundDetailMapper outboundDetailMapper;
 	@Test
 	public void test () {
-		SkuStock record = new SkuStock();
-		record.setSkuCode("SP0201707250000034");
-		Example ex = new Example(SkuStock.class);
-		ex.createCriteria().andEqualTo("skuCode", "SP0201707240000002");
-		List<SkuStock> select = skuStockMapper.selectByExample(ex);
-		System.err.println(select.size());
+//		SkuStock record = new SkuStock();
+//		record.setSkuCode("SP0201707250000034");
+//		Example ex = new Example(SkuStock.class);
+//		ex.createCriteria().andEqualTo("skuCode", "SP0201707240000002");
+//		List<SkuStock> select = skuStockMapper.selectByExample(ex);
+//		System.err.println(select.size());
+		
+		List<OutboundDetail> detail = outboundDetailMapper.selectByWarehouseOrderCode("003");
+		System.out.println(JSON.toJSONString(detail));
+		
 	}
 }

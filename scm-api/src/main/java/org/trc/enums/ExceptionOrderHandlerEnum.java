@@ -5,7 +5,7 @@ package org.trc.enums;
  * 异常订单处理状态枚举
  */
 public enum ExceptionOrderHandlerEnum {
-    WAIT_HANDLER(1,"待了结"),HANDLERED(2,"已了结");
+    WAIT_HANDLER(10,"待了结"),HANDLERED(11,"已了结");
 
 
     private Integer code;
