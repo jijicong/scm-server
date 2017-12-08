@@ -64,12 +64,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     private AclResourceBiz jurisdictionBiz;
     @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
-    @Autowired
-    private ISystemConfigService systemConfigService;
-    @Autowired
-    private IChannelService channelService;
-    @Autowired
-    private ISellChannelService sellChannelService;
     //对外提供api路径
     private final static String PASS_API_URL = "api";
     //渠道访问路径
@@ -84,15 +78,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
      */
     private final static String  CHANNEL_QUERY= "api/jurisdictionUserChannel";
     private final static String  CHANNEL_CONFIRM= "api/confirmUser";
-
-    private static final String CHANNEL_CODE_CHECK = "channelCodeCheck";
-
-    private static final String SELL_CODE_CHECK = "sellCodeCheck";
-
-    private static final String CHANNEL_CODE = "channelCode";
-
-    private static final String SELL_CODE = "sellCode";
-
     @Context private HttpServletRequest request;
     @Context
     private  HttpServletResponse response;
@@ -169,47 +154,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         }
 
         /**
-         * 泰然城路径校验
-         */
-        if(url.startsWith(PASS_TAI_RAN_URL)){
-            String queryString = ((ContainerRequest) requestContext).getRequestUri().getQuery();
-            if (StringUtils.isEmpty(queryString)) {
-                this.setContext("路径错误，请重新发送请求!", requestContext);
-            }
-
-            //获取参数
-            Map<String, String> params = this.getParams(queryString);
-
-            //校验业务线参数
-            if(StringUtils.equals(this.getSwitchValue(CHANNEL_CODE_CHECK), ZeroToNineEnum.ONE.getCode())){
-                if(params.containsKey(CHANNEL_CODE)){
-                    Channel channel = new Channel();
-                    channel.setCode(params.get(CHANNEL_CODE));
-                    channel=  channelService.selectOne(channel);
-                    if(channel == null){
-                        this.setContext("业务线编码对应的业务线不存在!", requestContext);
-                    }
-                }else{
-                    this.setContext("channelCode不能为空!", requestContext);
-                }
-            }
-
-            //校验渠道参数
-            if(StringUtils.equals(this.getSwitchValue(SELL_CODE_CHECK), ZeroToNineEnum.ONE.getCode())){
-                if(params.containsKey(SELL_CODE)){
-                    SellChannel sellChannel = new SellChannel();
-                    sellChannel.setSellCode(params.get(SELL_CODE));
-                    sellChannel=  sellChannelService.selectOne(sellChannel);
-                    if(sellChannel == null){
-                        this.setContext("渠道编码对应的渠道不存在!", requestContext);
-                    }
-                }else{
-                    this.setContext("sellCode不能为空!", requestContext);
-                }
-            }
-        }
-
-        /**
          * 获取userId用于查询当前用户下的业务线
          */
         if (url.startsWith(CHANNEL_QUERY)) {
@@ -279,40 +223,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
             token = cookie.getValue();
         }
         return token;
-    }
-
-    private void setContext(String msg, ContainerRequestContext requestContext){
-        log.warn(msg);
-        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), msg, null);
-        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-    }
-
-    /**
-     * 获取所有参数
-     * @return
-     */
-    private Map<String, String> getParams(String queryString){
-        Map<String, String> map = new HashMap<String, String>();
-        String[] keyValues = StringUtils.split(queryString, SupplyConstants.Symbol.AND);
-        for(String keyValue : keyValues){
-            String[] values = StringUtils.split(keyValue, SupplyConstants.Symbol.EQUAL);
-            if(values.length == 2){
-                map.put(values[0].trim(), values[1].trim());
-            }
-        }
-        return map;
-    }
-
-    /**
-     * 获取开关值
-     * @param key
-     * @return
-     */
-    private String getSwitchValue(String key){
-        SystemConfig systemConfig = new SystemConfig();
-        systemConfig.setCode(key);
-        systemConfig = systemConfigService.selectOne(systemConfig);
-        return systemConfig.getContent();
     }
 
     private String _getCookieChannelCode(ContainerRequestContext requestContext) {
