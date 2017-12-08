@@ -32,7 +32,6 @@ public class RequestFlowService extends BaseService<RequestFlow,Long> implements
         return requestFlowMapper.changeState(requestFlow);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)
     public int updateRequestFlowByRequestNum(RequestFlow requestFlow){
         return requestFlowMapper.updateRequestFlowByRequestNum(requestFlow);
     }

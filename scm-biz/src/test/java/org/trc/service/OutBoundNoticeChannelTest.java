@@ -17,7 +17,7 @@ public class OutBoundNoticeChannelTest {
 //	private 
 	@Test
 	public void testNotice () throws Exception {
-		String reqStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><packages><package><expressCode>Y12323</expressCode><logisticsCode>SF</logisticsCode><logisticsName>顺丰</logisticsName><items><item><quantity>7</quantity><itemCode>111</itemCode></item><item><quantity>7</quantity><itemCode>110</itemCode></item></items></package></packages><deliveryOrder><deliveryOrderCode>FHTZ2017111112345</deliveryOrderCode><warehouseCode></warehouseCode><orderType>JYCK</orderType><operateTime>2017-11-11 11:11:11</operateTime></deliveryOrder></request>";
+		String reqStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><packages><package><expressCode>Y12323</expressCode><logisticsCode>AMAZON</logisticsCode><logisticsName>亚马逊</logisticsName><items><item><quantity>7</quantity><itemCode>111</itemCode></item><item><quantity>7</quantity><itemCode>110</itemCode></item></items></package></packages><deliveryOrder><deliveryOrderCode>FHTZ2017111112345</deliveryOrderCode><warehouseCode></warehouseCode><orderType>JYCK</orderType><operateTime>2017-11-11 11:11:11</operateTime></deliveryOrder></request>";
 	
 		biz.updateOutboundDetail(reqStr);
 	}

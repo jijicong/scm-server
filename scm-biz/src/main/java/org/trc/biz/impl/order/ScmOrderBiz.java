@@ -71,7 +71,6 @@ import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.CancelStatusEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ExceptionItemStatusEnum;
 import org.trc.enums.ExceptionOrderHandlerEnum;
 import org.trc.enums.ExceptionTypeEnum;
 import org.trc.enums.GoodsTypeEnum;

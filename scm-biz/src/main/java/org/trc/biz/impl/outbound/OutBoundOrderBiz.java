@@ -195,7 +195,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
 
         //更新订单信息
-       // this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
+        this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
         
         // 发货单确认结果通知渠道
         deliveryOrderConfirmNotice(outboundOrder, packageList);
@@ -261,7 +261,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     		RequestFlow requestFlowUpdate = new RequestFlow();
     		requestFlowUpdate.setRequestNum(reqNum);
     		requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
-    		requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getMsg()));
+    		requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getStatus()));
     		requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
     		
     	} catch (Exception e) {
@@ -275,7 +275,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private String generateLogisticsCode(String logisticsCode, String channelCode) {
     	String retMsg = "物流公司编码未找到";
     	if (StringUtils.isBlank(logisticsCode)) {
-    		return StringUtils.EMPTY;
+    		return retMsg;
     	}
     	LogisticsCompany queryLc = new LogisticsCompany();
     	queryLc.setType("QIMEN");
@@ -290,7 +290,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         if (null == lctmp) {
         	return retMsg;
         }
-		return StringUtils.EMPTY;
+		return lctmp.getCompanyCode();
 	}
 
 	//更新itemOrder
