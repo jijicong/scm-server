@@ -104,7 +104,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                             }else {
                                 AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "查询用户信息为空,请尝试重新登录!", null);
                                 requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-//                                return;
+                                return;
                             }
 
                         if (aclUserAccreditInfo == null) {

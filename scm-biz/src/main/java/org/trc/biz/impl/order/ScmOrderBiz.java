@@ -4303,13 +4303,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
     				SupplierOrderReturn returnOrder = new SupplierOrderReturn();
     				returnOrder.setSupplyOrderCode(boundOrder.getOutboundOrderCode());
     				returnOrder.setState(getOutBundStatus(boundOrder.getStatus()));
-    				Map<String, String> returnMsgMap = new HashMap<>();
-    				returnOrder.setSkus(generateSkuList(order.getWarehouseOrderCode(), shopOrderCode, platformOrderCode, returnMsgMap));
-    				if (StringUtils.isNotBlank(returnMsgMap.get("retMsg"))) {
-    					returnOrder.setMessage(returnMsgMap.get("retMsg"));
-    				}
+    				//Map<String, String> returnMsgMap = new HashMap<>();
+    				returnOrder.setSkus(generateSkuList(order.getWarehouseOrderCode(), shopOrderCode, platformOrderCode));
+//    				if (StringUtils.isNotBlank(returnMsgMap.get("retMsg"))) {
+//    					returnOrder.setMessage(returnMsgMap.get("retMsg"));
+//    				}
     				orderList.add(returnOrder);
     			}
+    			
+    	    	/**
+    	    	 * 获取异常skus，以单独一个异常订单通知给渠道
+    	    	 **/
+    			generateExceptionOrder(shopOrderCode, platformOrderCode, orderList);
+
     			orderRes.setOrder(orderList);
     			noticeChannelOrderResult(warehouseOrderList, orderRes);
 
@@ -4321,8 +4327,53 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     }
     
-    private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, 
-    		String platformOrderCode, Map<String, String> returnMsgMap) {
+    /**
+     * 获取异常skus，以单独一个异常订单通知给渠道
+     * @param shopOrderCode 店铺级订单
+     * @param platformOrderCode 渠道过来的平台订单
+     * @param orderList  返回的订单列表-包括异常订单
+     */
+    private void generateExceptionOrder(String shopOrderCode, String platformOrderCode,
+			List<SupplierOrderReturn> orderList) {
+    	ExceptionOrderItem queryItem = new ExceptionOrderItem();
+    	queryItem.setShopOrderCode(shopOrderCode);
+    	queryItem.setPlatformOrderCode(platformOrderCode);
+    	List<ExceptionOrderItem> itemList = exceptionOrderItemService.select(queryItem);
+    	/**
+    	 * 存在异常订单时，将所有sku的异常原因拼接到message字段中，返回给渠道
+    	 */
+    	if (!CollectionUtils.isEmpty(itemList)) {
+    		List<SkuInfo> infoList = new ArrayList<>();
+    		StringBuilder msg = new StringBuilder();
+    		String exceptionOrderCode = "";
+			for (ExceptionOrderItem item : itemList) {
+				SkuInfo info = new SkuInfo();
+				info.setSkuCode(item.getSkuCode());
+				info.setNum(item.getItemNum());
+				info.setSkuName(item.getItemName());
+				exceptionOrderCode = item.getExceptionOrderCode();
+				msg.append(item.getSkuCode());
+				msg.append(":");
+				msg.append(item.getExceptionReason());
+				msg.append(",");
+				infoList.add(info);
+			}
+    		String reMsg = msg.toString();
+    		reMsg = reMsg.substring(0, reMsg.length() - 1);
+    		
+			SupplierOrderReturn returnOrder = new SupplierOrderReturn();
+			// 异常订单code
+			returnOrder.setSupplyOrderCode(exceptionOrderCode);
+			returnOrder.setState(NoticeChannelStatusEnum.FAILED.getCode());
+			// 拼接后的异常信息
+    		returnOrder.setMessage(reMsg);
+    		returnOrder.setSkus(infoList);
+    		orderList.add(returnOrder);
+    	}
+	}
+
+	private List<SkuInfo> generateSkuList(String warehouseOrderCode, String shopOrderCode, 
+    		String platformOrderCode) {
 
 		List<OutboundDetail> detailList = outboundDetailService.selectByWarehouseOrderCode(warehouseOrderCode);
 //		AssertUtil.notEmpty(detailList,
@@ -4341,55 +4392,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
 				
 			}
 		}
-    	/**
-    	 * 异常skus
-    	 **/
-		OrderItem queryOrderItem = new OrderItem();
-		queryOrderItem.setPlatformOrderCode(platformOrderCode);
-		queryOrderItem.setShopOrderCode(shopOrderCode);
-		List<OrderItem> orderItemList = orderItemService.select(queryOrderItem);
-		List<String> skuCodeList = new ArrayList<>();
-		for (OrderItem one : orderItemList) {
-			if (!CollectionUtils.isEmpty(detailList)) {
-				for (OutboundDetail detail : detailList) {
-					if (StringUtils.equals(detail.getSkuCode(),one.getSkuCode())) {
-						break;
-					}
-					skuCodeList.add(one.getSkuCode());
-				}
-			} else {
-				skuCodeList.add(one.getSkuCode());
-			}
-		}
-		
-    	ExceptionOrderItem queryItem = new ExceptionOrderItem();
-    	queryItem.setShopOrderCode(shopOrderCode);
-    	queryItem.setPlatformOrderCode(platformOrderCode);
-    	List<ExceptionOrderItem> itemList = exceptionOrderItemService.select(queryItem);
-    	if (!CollectionUtils.isEmpty(itemList)) {
-    		StringBuilder msg = new StringBuilder();
-			for (ExceptionOrderItem item : itemList) {
-				if (skuCodeList.contains(item.getSkuCode())) {
-					SkuInfo info = new SkuInfo();
-					info.setSkuCode(item.getSkuCode());
-					info.setNum(item.getItemNum());
-					info.setSkuName(item.getItemName());
-					msg.append(item.getSkuCode());
-					msg.append(":");
-					msg.append(item.getExceptionReason());
-					msg.append(",");
-					infoList.add(info);
-				}
-			}
-    		String reMsg = msg.toString();
-    		reMsg = reMsg.substring(0, reMsg.length() - 1);
-    		returnMsgMap.put("retMsg", reMsg);
-    	}
+
 		return infoList;
     }
 
     private String getOutBundStatus(String originStaus) {
-    	return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode().equals(originStaus) ? "0":"200";
+    	return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode().equals(originStaus) ? 
+    			NoticeChannelStatusEnum.FAILED.getCode() : NoticeChannelStatusEnum.SUCCESS.getCode();
     }
 
     /**
