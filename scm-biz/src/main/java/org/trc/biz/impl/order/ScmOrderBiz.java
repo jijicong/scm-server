@@ -1470,7 +1470,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             Set<String> outboundOrderCodeSet = new HashSet<>();
             for (OutboundOrder outboundOrder : outboundOrderList) {
                 outboundOrderCodeSet.add(outboundOrder.getOutboundOrderCode());
-                outboundOrderMap.put(outboundOrder.getWarehouseCode(), outboundOrder);
+                outboundOrderMap.put(outboundOrder.getWarehouseOrderCode(), outboundOrder);
             }
             //通过outboundOrderCode查询发货通知单详情
             Example example3 = new Example(OutboundDetail.class);
@@ -1505,22 +1505,27 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())) {
                             //实发商品数量
                             OutboundOrder outboundOrder = outboundOrderMap.get(orderItem.getWarehouseOrderCode());
-                            OutboundDetail outboundDetail = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
-                            orderItem.setDeliverNum(Integer.parseInt(String.valueOf(outboundDetail.getRealSentItemNum())));
-                            //物流信息
-                            List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(outboundDetail.getId());
-                            //物流详细
-                            List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
-                            if (!AssertUtil.collectionIsEmpty(logisticsList)){
-                                for (OutboundDetailLogistics outboundDetailLogistics:logisticsList ) {
-                                    //物流信息
-                                    DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
-                                    deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
-                                    deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
-                                    deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
-                                    deliverPackageFormList.add(deliverPackageForm);
+                            if (null != outboundOrder && null != outboundOrder.getOutboundOrderCode()) {
+                                OutboundDetail outboundDetail = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
+                                if (null != outboundDetail && null != outboundDetail.getRealSentItemNum()) {
+                                    orderItem.setDeliverNum(Integer.parseInt(String.valueOf(outboundDetail.getRealSentItemNum())));
                                 }
-                                orderItem.setDeliverPackageFormList(deliverPackageFormList);
+
+                                //物流信息
+                                List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(outboundDetail.getId());
+                                //物流详细
+                                List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
+                                if (!AssertUtil.collectionIsEmpty(logisticsList)) {
+                                    for (OutboundDetailLogistics outboundDetailLogistics : logisticsList) {
+                                        //物流信息
+                                        DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
+                                        deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
+                                        deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
+                                        deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                                        deliverPackageFormList.add(deliverPackageForm);
+                                    }
+                                    orderItem.setDeliverPackageFormList(deliverPackageFormList);
+                                }
                             }
                         }
                     }
