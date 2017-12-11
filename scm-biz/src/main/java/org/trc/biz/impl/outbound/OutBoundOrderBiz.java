@@ -674,8 +674,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         AssertUtil.notBlank(outboundOrder.getReceiverProvince(),"收件人省份不能为空");
         AssertUtil.notBlank(outboundOrder.getReceiverCity(),"收件人城市不能为空");
         AssertUtil.notBlank(outboundOrder.getReceiverAddress(),"收件人详细地址不能为空");
-        AssertUtil.notBlank(outboundOrder.getBuyerMessage(),"买家留言不能为空");
-        AssertUtil.notBlank(outboundOrder.getSellerMessage(),"卖家留言不能为空");
+        //AssertUtil.notBlank(outboundOrder.getBuyerMessage(),"买家留言不能为空");
+        //AssertUtil.notBlank(outboundOrder.getSellerMessage(),"卖家留言不能为空");
         AssertUtil.notBlank(outboundOrder.getChannelCode(),"业务线编码不能为空");
         for (OutboundDetail outboundDetail : outboundDetails){
             AssertUtil.notBlank(outboundDetail.getSkuCode(),"商品sku编号不能为空");
