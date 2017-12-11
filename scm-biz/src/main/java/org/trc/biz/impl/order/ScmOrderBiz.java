@@ -4132,14 +4132,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
     
     /**
      * 获取异常skus，以单独一个异常订单通知给渠道
-     **/
+     * @param shopOrderCode 店铺级订单
+     * @param platformOrderCode 渠道过来的平台订单
+     * @param orderList  返回的订单列表-包括异常订单
+     */
     private void generateExceptionOrder(String shopOrderCode, String platformOrderCode,
 			List<SupplierOrderReturn> orderList) {
     	ExceptionOrderItem queryItem = new ExceptionOrderItem();
     	queryItem.setShopOrderCode(shopOrderCode);
     	queryItem.setPlatformOrderCode(platformOrderCode);
     	List<ExceptionOrderItem> itemList = exceptionOrderItemService.select(queryItem);
-    	// 存在异常订单
+    	/**
+    	 * 存在异常订单时，将所有sku的异常原因拼接到message字段中，返回给渠道
+    	 */
     	if (!CollectionUtils.isEmpty(itemList)) {
     		List<SkuInfo> infoList = new ArrayList<>();
     		StringBuilder msg = new StringBuilder();
@@ -4162,7 +4167,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 			SupplierOrderReturn returnOrder = new SupplierOrderReturn();
 			// 异常订单code
 			returnOrder.setSupplyOrderCode(exceptionOrderCode);
-			returnOrder.setState("0");
+			returnOrder.setState(NoticeChannelStatusEnum.FAILED.getCode());
+			// 拼接后的异常信息
     		returnOrder.setMessage(reMsg);
     		returnOrder.setSkus(infoList);
     		orderList.add(returnOrder);
@@ -4194,7 +4200,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     private String getOutBundStatus(String originStaus) {
-    	return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode().equals(originStaus) ? "0":"200";
+    	return OutboundOrderStatusEnum.RECEIVE_FAIL.getCode().equals(originStaus) ? 
+    			NoticeChannelStatusEnum.FAILED.getCode() : NoticeChannelStatusEnum.SUCCESS.getCode();
     }
 
     /**
