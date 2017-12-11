@@ -19,6 +19,7 @@ import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.category.*;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
@@ -45,6 +46,7 @@ import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.ITrcService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.category.IPropertyService;
 import org.trc.service.category.IPropertyValueService;
@@ -111,6 +113,8 @@ public class TrcBiz implements ITrcBiz {
     private IItemSalesProperyService itemSalesProperyService;
     @Autowired
     private ISystemConfigService systemConfigService;
+    @Autowired
+    private ISellChannelService sellChannelService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -1577,6 +1581,22 @@ public class TrcBiz implements ITrcBiz {
                 Channel channel = new Channel();
                 channel.setCode(channelCode);
                 channel=  channelService.selectOne(channel);
+                AssertUtil.notNull(channel,"渠道编码对应的渠道不存在");
+            }
+        }
+    }
+
+    @Override
+    public void checkSellCode(String sellCode) throws Exception {
+        SystemConfig systemConfig = new SystemConfig();
+        systemConfig.setCode("sellCodeCheck");
+        systemConfig=systemConfigService.selectOne(systemConfig);
+        if (StringUtils.equals(systemConfig.getContent(), ZeroToNineEnum. ONE.getCode())){
+            AssertUtil.notBlank(sellCode,"sellCode不能为空!");
+            if (StringUtils.isNotBlank(sellCode)){
+                SellChannel channel = new SellChannel();
+                channel.setSellCode(sellCode);
+                channel=  sellChannelService.selectOne(channel);
                 AssertUtil.notNull(channel,"渠道编码对应的渠道不存在");
             }
         }

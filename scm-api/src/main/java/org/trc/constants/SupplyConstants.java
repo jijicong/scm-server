@@ -777,11 +777,15 @@ public class SupplyConstants {
         //异常订单
         public static final String EXCEPTION_ORDER = "CDYC";
         //异常订单编码长度
-        public static final Integer EXCEPTION_ORDER_LENGTH = 6;
+        public static final Integer EXCEPTION_ORDER_LENGTH = 5;
         //发货通知单
-        public static final String OUTBOUND_ORDER = "CDYC";
+        public static final String OUTBOUND_ORDER = "FHTZ";
         //发货通知单编码长度
         public static final Integer OUTBOUND_ORDER_LENGTH = 5;
+        //仓库订单
+        public static final String WAREHOUSE_ORDER_CODE = "CKDD";
+        //仓库订单编码长度
+        public static final Integer WAREHOUSE_ORDER_CODE_LENGTH = 7;
 
 
         //序列号查询路径

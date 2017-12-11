@@ -18,7 +18,7 @@ public interface IQimenService {
      * 商品同步接口 (批量)
      * @return
      */
-    ReturnTypeDO itemsSync(String warehouseCode, String ownerCode, List<ItemsSynchronizeRequest.Item> items);
+    AppResult<ItemsSynchronizeResponse> itemsSync(ItemsSynchronizeRequest req);
 
 	AppResult<EntryorderCreateResponse> entryOrderCreate(EntryorderCreateRequest req);
 

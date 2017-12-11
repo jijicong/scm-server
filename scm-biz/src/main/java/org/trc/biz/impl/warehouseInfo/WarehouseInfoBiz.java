@@ -68,6 +68,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     //错误信息
     public final static String BAR = "-";
+    private static final String SUCCESS = "200";
     //错误信息
     public final static String EXCEL = ".xls";
     private static final String TITLE_ONE = "商品SKU编号";
@@ -867,13 +868,18 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         //调用奇门接口
-        ReturnTypeDO returnTypeDO = qimenService.itemsSync(warehouseInfo.getQimenWarehouseCode(),
-                warehouseInfo.getWarehouseOwnerId(), itemsSynList);
+        ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
+        request.setItems(itemsSynList);
+        request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
+        request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        request.setActionType("add");
+        AppResult<ItemsSynchronizeResponse> appResult = qimenService.itemsSync(request);
 
         //解析接口
-        if(returnTypeDO.getSuccess()){
-            ItemsSynchronizeResponse res = ((JSONObject)returnTypeDO.getResult()).toJavaObject(ItemsSynchronizeResponse.class);
-            if("200".equals(res.getCode())){
+        if(org.apache.commons.lang3.StringUtils.equals(appResult.getAppcode(), SUCCESS)){
+            ItemsSynchronizeResponse res = JSONObject.toJavaObject((JSONObject) appResult.getResult(),
+                    ItemsSynchronizeResponse.class);
+            if(SUCCESS.equals(res.getCode())){
                 this.updateWarehouseItemInfo(itemList);
                 return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
             }else{
@@ -884,7 +890,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), res.getMessage(), res.getItems());
             }
         }
-        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), returnTypeDO.getResultMessage(), "");
+        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), appResult.getDatabuffer(), "");
     }
 
     private List<String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ItemsSynchronizeResponse.BatchItemSynItem> batchItemSynItems){

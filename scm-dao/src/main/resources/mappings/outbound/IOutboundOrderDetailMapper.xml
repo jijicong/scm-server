@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.outbound.IOutboundDetailMapper">
+  <resultMap id="BaseResultMap" type="org.trc.domain.order.OutboundDetail">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="outbound_order_code" jdbcType="VARCHAR" property="outboundOrderCode" />
+    <result column="sku_name" jdbcType="VARCHAR" property="skuName" />
+    <result column="sku_code" jdbcType="VARCHAR" property="skuCode" />
+    <result column="actual_amount" jdbcType="BIGINT" property="actualAmount" />
+    <result column="should_sent_item_num" jdbcType="BIGINT" property="shouldSentItemNum" />
+    <result column="real_sent_item_num" jdbcType="BIGINT" property="realSentItemNum" />
+    <result column="inventory_type" jdbcType="VARCHAR" property="inventoryType" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+
+    <select id="selectByWarehouseOrderCode" resultMap="BaseResultMap">
+		select * from outbound_detail
+		 	where outbound_order_code = 
+		 		(select outbound_order_code from outbound_order where warehouse_order_code = #{warehouseOrderCode});
+    </select>
+    
+</mapper>

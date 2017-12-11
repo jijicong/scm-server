@@ -5,7 +5,7 @@ package org.trc.enums;
  * Created by hzqph on 2017/5/16.
  */
 public enum SupplierOrderTypeEnum {
-    JD("0","京东"),LY("1","粮油");
+    JD("0","京东"),LY("1","粮油"),ZC("2","自采");
 
     public static SupplierOrderTypeEnum queryNameByCode(String code){
         for(SupplierOrderTypeEnum auditStatusEnum: SupplierOrderTypeEnum.values()){
