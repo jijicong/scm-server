@@ -22,6 +22,8 @@
             message="子订单下单成功"
             supplier_order_status="3"
             old_supplier_order_status=""
+            channel_code="QD001"
+            sell_code="QD001"
     />
 
     <supplier_order_info
@@ -46,6 +48,8 @@
             message="子订单下单成功"
             supplier_order_status="3"
             old_supplier_order_status=""
+            channel_code="QD001"
+            sell_code="QD001"
     />
 
 

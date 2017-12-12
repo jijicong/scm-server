@@ -381,8 +381,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
             supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
             supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
-            supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
-            if(null != supplierOrderInfo){
+            List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+            if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
+                supplierOrderInfo = supplierOrderInfoList.get(0);
                 StringBuilder sb = new StringBuilder();
                 if(StringUtils.isNotBlank(supplierOrderInfo.getJdProvince()))
                     sb.append(supplierOrderInfo.getJdProvince());
@@ -3681,6 +3682,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setShopName(shopOrder.getShopName());
         warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
         warehouseOrder.setChannelCode(shopOrder.getChannelCode());
+        warehouseOrder.setSellCode(shopOrder.getSellCode());
         warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
         warehouseOrder.setPlatformType(shopOrder.getPlatformType());
         warehouseOrder.setUserId(shopOrder.getUserId());
@@ -3874,6 +3876,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             warehouseOrder.setShopName(shopOrder.getShopName());
             warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
             warehouseOrder.setChannelCode(shopOrder.getChannelCode());
+            warehouseOrder.setSellCode(shopOrder.getSellCode());
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
@@ -4062,6 +4065,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             _supplierOrderInfo.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
             _supplierOrderInfo.setSupplierCode(supplierOrderInfo.getSupplierCode());
             _supplierOrderInfo.setSupplierOrderCode(order.getSupplyOrderCode());
+            _supplierOrderInfo.setJdCityCode(supplierOrderInfo.getJdCityCode());
+            _supplierOrderInfo.setJdDistrictCode(supplierOrderInfo.getJdDistrictCode());
+            _supplierOrderInfo.setJdProvinceCode(supplierOrderInfo.getJdProvinceCode());
+            _supplierOrderInfo.setJdTownCode(supplierOrderInfo.getJdTownCode());
+            _supplierOrderInfo.setJdCity(supplierOrderInfo.getJdCity());
+            _supplierOrderInfo.setJdDistrict(supplierOrderInfo.getJdDistrict());
+            _supplierOrderInfo.setJdProvince(supplierOrderInfo.getJdProvince());
+            _supplierOrderInfo.setJdTown(supplierOrderInfo.getJdTown());
             _supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
             _supplierOrderInfo.setStatus(order.getState());
             if(StringUtils.equals(ResponseAck.SUCCESS_CODE, order.getState())){//供应商下单接口下单成功
@@ -4072,6 +4083,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             _supplierOrderInfo.setMessage(order.getMessage());
             _supplierOrderInfo.setSkus(JSON.toJSONString(order.getSkus()));
             ParamsUtil.setBaseDO(_supplierOrderInfo);
+            _supplierOrderInfo.setCreateTime(supplierOrderInfo.getCreateTime());
             newSupplierOrderInfoList.add(_supplierOrderInfo);
         }
         supplierOrderInfoService.insertList(newSupplierOrderInfoList);

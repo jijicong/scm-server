@@ -106,7 +106,19 @@ public class TrcOrderItem {
     // 渠道编码
     private String channelCode;
 
+    // 销售渠道编码
+    private String sellCode;
+
     // 来源平台编码
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }
+
     private String platformCode;
 
     // 所在仓库id
