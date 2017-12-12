@@ -3991,6 +3991,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //数据处理
         SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
         supplierOrderInfo.setWarehouseOrderCode(jdOrderSplitParam.getWarehouseOrderCode());
+        supplierOrderInfo.setStatus(ResponseAck.SUCCESS_CODE);
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
         //处理订单物流信息
         if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
@@ -4018,61 +4019,62 @@ public class ScmOrderBiz implements IScmOrderBiz {
         supplierOrderInfo.setWarehouseOrderCode(orderSubmitResult.getWarehouseOrderCode());
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
         AssertUtil.notEmpty(supplierOrderInfoList, String.format("查询仓库编码为%s的仓库订单相关供应商订单信息为空", orderSubmitResult.getWarehouseOrderCode()));
-        boolean flag = false;
-        if(StringUtils.equals(SupplierOrderTypeEnum.JD.getCode(), orderSubmitResult.getOrderType())){//京东订单
-            //注意：每个京东订单只有一个供应商订单
-            SupplierOrderInfo jdSupplierOrderInfo = supplierOrderInfoList.get(0);
-            SupplierOrderReturn supplierOrderReturn = supplierOrderReturnList.get(0);
-            //更新供应商订单状态
-            flag = updateSupplierOrderInfo(jdSupplierOrderInfo, supplierOrderReturn);
-        }else if(StringUtils.equals(SupplierOrderTypeEnum.LY.getCode(), orderSubmitResult.getOrderType())){//粮油订单
-            //注意：每个粮油订单下单失败时只有一个供应商订单
-            SupplierOrderInfo lySupplierOrderInfo = supplierOrderInfoList.get(0);
-            if(supplierOrderInfoList.size() == 1 && !StringUtils.equals(lySupplierOrderInfo.getStatus(), ResponseAck.SUCCESS_CODE)){//下单失败
-                if(supplierOrderReturnList.size() == 1){
-                    SupplierOrderReturn supplierOrderReturn = supplierOrderReturnList.get(0);
-                    //更新供应商订单状态
-                    flag = updateSupplierOrderInfo(lySupplierOrderInfo, supplierOrderReturn);
-                }else {//拆分了子订单
-                    flag = updateMultiSupplierOrderInfo(warehouseOrder, supplierOrderReturnList, lySupplierOrderInfo, orderSubmitResult.getOrderType());
-                }
+        boolean success = false;
+        for(SupplierOrderInfo supplierOrderInfo1: supplierOrderInfoList){
+            if(StringUtils.equals(supplierOrderInfo1.getStatus(), ResponseAck.SUCCESS_CODE)) {//下单成功
+                success = true;
+                break;
             }
         }
-        if(flag){
-            SupplierOrderInfo _supplierOrderInfo = new SupplierOrderInfo();
-            _supplierOrderInfo.setWarehouseOrderCode(orderSubmitResult.getWarehouseOrderCode());
-            List<SupplierOrderInfo> _supplierOrderInfoList = supplierOrderInfoService.select(_supplierOrderInfo);
-            AssertUtil.notEmpty(_supplierOrderInfoList, String.format("查询仓库编码为%s的仓库订单相关供应商订单信息为空", orderSubmitResult.getWarehouseOrderCode()));
-            //更新订单商品供应商订单状态
-            updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), _supplierOrderInfoList);
-            //更新仓库订单供应商订单状态
-            warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
-            //更新店铺订单供应商订单状态
-            updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
+        if(success){
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收供应商订单下单结果通知成功", "");
         }
+        //更新供应商订单状态
+        updateSupplierOrderInfo(supplierOrderInfoList,  supplierOrderReturnList);
+        SupplierOrderInfo _supplierOrderInfo = new SupplierOrderInfo();
+        _supplierOrderInfo.setWarehouseOrderCode(orderSubmitResult.getWarehouseOrderCode());
+        List<SupplierOrderInfo> _supplierOrderInfoList = supplierOrderInfoService.select(_supplierOrderInfo);
+        AssertUtil.notEmpty(_supplierOrderInfoList, String.format("查询仓库编码为%s的仓库订单相关供应商订单信息为空", orderSubmitResult.getWarehouseOrderCode()));
+        //更新订单商品供应商订单状态
+        updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), _supplierOrderInfoList);
+        //更新仓库订单供应商订单状态
+        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+        //更新店铺订单供应商订单状态
+        updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收供应商订单下单结果通知成功", "");
     }
 
     /**
      * 更新供应商订单状态
-     * @param supplierOrderInfo
-     * @param supplierOrderReturn
+     * @param supplierOrderInfoList
+     * @param supplierOrderReturnList
      */
-    private Boolean updateSupplierOrderInfo(SupplierOrderInfo supplierOrderInfo, SupplierOrderReturn supplierOrderReturn){
-        if(!StringUtils.equals(supplierOrderInfo.getStatus(), ResponseAck.SUCCESS_CODE)){//下单失败
-            supplierOrderInfo.setSupplierOrderCode(supplierOrderReturn.getSupplyOrderCode());
-            supplierOrderInfo.setStatus(supplierOrderReturn.getState());
-            supplierOrderInfo.setMessage(supplierOrderReturn.getMessage());
-            if(StringUtils.equals(supplierOrderReturn.getState(), ResponseAck.SUCCESS_CODE)){
-                supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());//等待供应商发货
-            }else{
-                supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
-            }
-            supplierOrderInfo.setUpdateTime(Calendar.getInstance().getTime());
-            supplierOrderInfoService.updateByPrimaryKeySelective(supplierOrderInfo);
-            return true;
+    private void updateSupplierOrderInfo(List<SupplierOrderInfo> supplierOrderInfoList, List<SupplierOrderReturn> supplierOrderReturnList){
+        //先删除历史子订单数据
+        for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
+            supplierOrderInfoService.deleteByPrimaryKey(supplierOrderInfo.getId());
         }
-        return false;
+        //插入新返回的下单结果信息
+        List<SupplierOrderInfo> newSupplierOrderInfoList = new ArrayList<>();
+        SupplierOrderInfo supplierOrderInfo = supplierOrderInfoList.get(0);
+        for(SupplierOrderReturn order: supplierOrderReturnList){
+            SupplierOrderInfo _supplierOrderInfo = new SupplierOrderInfo();
+            _supplierOrderInfo.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
+            _supplierOrderInfo.setSupplierCode(supplierOrderInfo.getSupplierCode());
+            _supplierOrderInfo.setSupplierOrderCode(order.getSupplyOrderCode());
+            _supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
+            _supplierOrderInfo.setStatus(order.getState());
+            if(StringUtils.equals(ResponseAck.SUCCESS_CODE, order.getState())){//供应商下单接口下单成功
+                _supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());//待发货
+            }else{
+                _supplierOrderInfo.setSupplierOrderStatus(SupplierOrderStatusEnum.ORDER_FAILURE.getCode());//下单失败
+            }
+            _supplierOrderInfo.setMessage(order.getMessage());
+            _supplierOrderInfo.setSkus(JSON.toJSONString(order.getSkus()));
+            ParamsUtil.setBaseDO(_supplierOrderInfo);
+            newSupplierOrderInfoList.add(_supplierOrderInfo);
+        }
+        supplierOrderInfoService.insertList(newSupplierOrderInfoList);
     }
 
 
