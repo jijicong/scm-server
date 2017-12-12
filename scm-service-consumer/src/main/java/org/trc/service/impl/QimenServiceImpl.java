@@ -80,7 +80,7 @@ public class QimenServiceImpl implements IQimenService {
     public AppResult<InventoryQueryResponse> inventoryQuery(InventoryQueryRequest inventoryQueryRequest) {
         Map<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("request", JSON.toJSONString(inventoryQueryRequest));
-        return invokeExternal_Get(paramsMap, qimenConfig.getQimenInventoryQueryUrl());
+        return invokeExternal(paramsMap, qimenConfig.getQimenInventoryQueryUrl());
     }
 
     private AppResult invokeExternal (Map paramsMap, String url) {
