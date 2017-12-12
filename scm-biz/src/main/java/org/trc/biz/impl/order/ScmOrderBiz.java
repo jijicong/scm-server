@@ -891,7 +891,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(cancelNum == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_CANCEL.getCode();
             //供应商下单异常: 同时存在供应商下单失败和等待供应商发货的商品，或同时存在供应商下单失败或已取消的商品），供应商订单的状态就为“供应商下单异常”
-            if((failureNum > 0 && waitDeliverNum > 0) || (failureNum > 0 && cancelNum > 0) )
+            if(failureNum > 0 &&  failureNum < orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//店铺级订单
             //已取消：订单中全部商品的发货状态均为“已取消”时，订单就更新为“已取消”
