@@ -44,6 +44,8 @@ public class WarehouseInfoResult {
 
     private Integer isNoticeSuccess;
 
+    private Integer isNoticeWarehouseItems;
+
     //备注
     private String remark;
 
@@ -157,6 +159,14 @@ public class WarehouseInfoResult {
 
     public void setIsNoticeSuccess(Integer isNoticeSuccess) {
         this.isNoticeSuccess = isNoticeSuccess;
+    }
+
+    public Integer getIsNoticeWarehouseItems() {
+        return isNoticeWarehouseItems;
+    }
+
+    public void setIsNoticeWarehouseItems(Integer isNoticeWarehouseItems) {
+        this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 
     public String getRemark() {
