@@ -93,7 +93,7 @@ public interface IScmOrderBiz {
      * @param orderInfo
      * @return
      */
-    ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo);
+    ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo) throws Exception;
 
     /**
      * 查询京东物流信息
@@ -161,6 +161,21 @@ public interface IScmOrderBiz {
      * @return
      */
     ResponseAck outboundConfirmNotice(String warehouseOrderCode);
+
+
+    /**
+     * 京东订单拆分子订单通知
+     * @param orderInfo
+     * @return
+     */
+    ResponseAck jdOrderSplitNotice(String orderInfo);
+
+    /**
+     * 订单下单结果通知
+     * @param orderInfo
+     * @return
+     */
+    ResponseAck orderSubmitResultNotice(String orderInfo);
 
 
 }

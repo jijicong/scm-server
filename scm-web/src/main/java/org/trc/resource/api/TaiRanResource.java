@@ -76,8 +76,9 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.BRAND_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Brand>> queryBrand(@BeanParam BrandForm2 form, @BeanParam Pagenation<Brand> page,@QueryParam("channelCode") String channelCode) throws Exception{
+    public ResponseAck<Pagenation<Brand>> queryBrand(@BeanParam BrandForm2 form, @BeanParam Pagenation<Brand> page,@QueryParam("channelCode") String channelCode, @QueryParam("sellCode") String sellCode) throws Exception{
         trcBiz.checkChannelCode(channelCode);
+        trcBiz.checkSellCode(sellCode);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "品牌查询成功", trcBiz.brandList(form, page));
     }
 
@@ -92,8 +93,10 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SUPPLIER_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public ResponseAck<Pagenation<Supplier>> supplierPage(@BeanParam Pagenation<Supplier> page, @Context ContainerRequestContext requestContext, @BeanParam SupplierForm form,@QueryParam("channelCode") String channelCode) throws Exception {
+    public ResponseAck<Pagenation<Supplier>> supplierPage(@BeanParam Pagenation<Supplier> page, @Context ContainerRequestContext requestContext,
+                                                          @BeanParam SupplierForm form,@QueryParam("channelCode") String channelCode,@QueryParam("sellCode") String sellCode) throws Exception {
         trcBiz.checkChannelCode(channelCode);
+        trcBiz.checkSellCode(sellCode);
         try {
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "供应商分页查询成功", trcBiz.supplierPage(form,page,channelCode));
         } catch (Exception e) {
@@ -112,9 +115,11 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Object> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page,@QueryParam("channelCode") String channelCode){
+    public ResponseAck<Object> queryProperty(@BeanParam PropertyFormForTrc form, @BeanParam Pagenation<Property> page,@QueryParam("channelCode") String channelCode,
+                                             @QueryParam("sellCode") String sellCode){
         try {
             trcBiz.checkChannelCode(channelCode);
+            trcBiz.checkSellCode(sellCode);
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "属性查询成功", trcBiz.propertyPage(form, page));
         } catch (Exception e) {
             logger.error("查询列表信息报错", e);
@@ -134,8 +139,10 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Category>> queryCategory(@BeanParam CategoryForm2 categoryForm, @BeanParam Pagenation<Category> page,@QueryParam("channelCode") String channelCode) throws Exception {
+    public ResponseAck<Pagenation<Category>> queryCategory(@BeanParam CategoryForm2 categoryForm, @BeanParam Pagenation<Category> page,@QueryParam("channelCode") String channelCode,
+                                                           @QueryParam("sellCode") String sellCode) throws Exception {
         trcBiz.checkChannelCode(channelCode);
+        trcBiz.checkSellCode(sellCode);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类查询成功", trcBiz.categoryPage(categoryForm, page));
     }
 
@@ -148,8 +155,10 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_BRAND_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") @Length(max = 20, message = "分类ID长度不能超过20个") Long categoryId,@QueryParam("channelCode") String channelCode) throws Exception {
+    public ResponseAck<List<CategoryBrand>> queryCategoryBrand(@QueryParam("categoryId") @Length(max = 20, message = "分类ID长度不能超过20个") Long categoryId,@QueryParam("channelCode") String channelCode,
+                                                               @QueryParam("sellCode") String sellCode) throws Exception {
         trcBiz.checkChannelCode(channelCode);
+        trcBiz.checkSellCode(sellCode);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类品牌查询成功", categoryBiz.queryBrands(categoryId));
     }
 
@@ -162,8 +171,10 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.CATEGORY_PROPERTY_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId,@QueryParam("channelCode") String channelCode) throws Exception {
+    public ResponseAck<List<CategoryProperty>> queryCategoryProperty(@QueryParam("categoryId") Long categoryId,@QueryParam("channelCode") String channelCode,
+                                                                     @QueryParam("sellCode") String sellCode) throws Exception {
         trcBiz.checkChannelCode(channelCode);
+        trcBiz.checkSellCode(sellCode);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "分类属性查询成功", categoryBiz.queryProperties(categoryId));
     }
 
@@ -176,9 +187,11 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKU_INFORMATION)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Object> getSpuInformations(@QueryParam("skuCode") String skuCode,@QueryParam("channelCode") String channelCode) throws Exception{
+    public ResponseAck<Object> getSpuInformations(@QueryParam("skuCode") String skuCode,@QueryParam("channelCode") String channelCode,
+                                                  @QueryParam("sellCode") String sellCode) throws Exception{
         trcBiz.checkChannelCode(channelCode);
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode));
+        trcBiz.checkSellCode(sellCode);
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode, channelCode));
     }
 
     /**
@@ -190,8 +203,10 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.EXTERNAL_SKU_INFORMATION)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Object> getExternalSkuInformations(@QueryParam("skuCode") String skuCode,@QueryParam("channelCode") String channelCode) throws Exception {
+    public ResponseAck<Object> getExternalSkuInformations(@QueryParam("skuCode") String skuCode,@QueryParam("channelCode") String channelCode,
+                                                          @QueryParam("sellCode") String sellCode) throws Exception {
         trcBiz.checkChannelCode(channelCode);
+        trcBiz.checkSellCode(sellCode);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getExternalSkuInformation(skuCode,channelCode));
     }
 
@@ -206,7 +221,7 @@ public class TaiRanResource {
             List<WarehouseOrder> warehouseOrders = (List<WarehouseOrder>)responseAck.getData();
             if(warehouseOrders.size() > 0){
                 //粮油下单
-                scmOrderBiz.handlerOrder(warehouseOrders);
+                scmOrderBiz.submitLiangYouOrders(warehouseOrders);
             }
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
@@ -250,10 +265,12 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.ITEM_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Items>> itemList(@BeanParam ItemsForm2 form, @BeanParam Pagenation<Items> page,@QueryParam("channelCode") String channelCode) throws Exception {
+    public ResponseAck<Pagenation<Items>> itemList(@BeanParam ItemsForm2 form, @BeanParam Pagenation<Items> page,@QueryParam("channelCode") String channelCode,
+                                                   @QueryParam("sellCode") String sellCode) throws Exception {
         try {
             trcBiz.checkChannelCode(channelCode);
-            return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page));
+            trcBiz.checkSellCode(sellCode);
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page, channelCode));
         } catch (Exception e) {
             logger.error("自采商品查询报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
@@ -266,10 +283,12 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.SKUS_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<Skus2>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation,@QueryParam("channelCode") String channelCode) {
+    public ResponseAck<Pagenation<Skus2>> skusList(@BeanParam SkusForm skusForm, @BeanParam Pagenation<Skus> pagenation,@QueryParam("channelCode") String channelCode,
+                                                   @QueryParam("sellCode") String sellCode) {
         try {
             trcBiz.checkChannelCode(channelCode);
-            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation));
+            trcBiz.checkSellCode(sellCode);
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation, channelCode));
         } catch (Exception e) {
             logger.error("查询sku列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
@@ -282,9 +301,11 @@ public class TaiRanResource {
     @GET
     @Path(SupplyConstants.TaiRan.EXTERNALITEMSKU_LIST)
     @Produces("application/json;charset=utf-8")
-    public ResponseAck<Pagenation<ExternalItemSku>> externalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page,@QueryParam("channelCode") String channelCode) {
+    public ResponseAck<Pagenation<ExternalItemSku>> externalItemSkus(@BeanParam ExternalItemSkuForm form, @BeanParam Pagenation<ExternalItemSku> page,@QueryParam("channelCode") String channelCode,
+                                                                     @QueryParam("sellCode") String sellCode) {
         try {
             trcBiz.checkChannelCode(channelCode);
+            trcBiz.checkSellCode(sellCode);
             return new ResponseAck(ResponseAck.SUCCESS_CODE, "代发sku列表信息查询成功", trcBiz.externalItemSkuPage(form, page,channelCode));
         } catch (Exception e) {
             logger.error("查询externalItemSku列表信息报错", e);

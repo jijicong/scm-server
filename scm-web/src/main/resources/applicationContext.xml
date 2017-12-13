@@ -34,11 +34,12 @@
 
     <!-- redis -->
     <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
-        <property name="maxTotal" value="500" />
-        <property name="maxIdle" value="256" />
-        <property name="maxWaitMillis" value="10000" />
-        <property name="testOnBorrow" value="true" />
-        <property name="testOnReturn" value="false" />
+        <property name="maxTotal" value="${session.pool.maxTotal}" />
+        <property name="maxIdle" value="${session.pool.maxIdle}" />
+        <property name="minIdle" value="${session.pool.minIdle}" />
+        <property name="maxWaitMillis" value="${session.pool.maxWaitMillis}" />
+        <property name="testOnBorrow" value="${session.pool.testOnBorrow}" />
+        <property name="testOnReturn" value="${session.pool.testOnReturn}" />
     </bean>
 
     <bean id="jedisConnectionFactory"
@@ -49,6 +50,8 @@
         <property name="poolConfig" ref="jedisPoolConfig" />
         <property name="usePool" value="true" />
         <property name="timeout" value="${session.redis.timeout}" />
+        <property name="database" value="${session.redis.database}" />
+
 
     </bean>
 
