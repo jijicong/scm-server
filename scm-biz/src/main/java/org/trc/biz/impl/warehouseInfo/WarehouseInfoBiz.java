@@ -868,6 +868,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }
 
+        if(!StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.ONE.getCode())){
+            String msg = "货主仓库状态还不是通知成功";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+
         //调用奇门接口
         ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
         request.setItems(itemsSynList);
