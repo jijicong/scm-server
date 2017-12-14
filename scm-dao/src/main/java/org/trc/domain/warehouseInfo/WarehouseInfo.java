@@ -77,10 +77,6 @@ public class WarehouseInfo {
     @FormParam("isDelete")
     private Integer isDelete;
 
-    //是否删除 0--未删除 1--已删除
-    @FormParam("isNoticeWarehouseItems")
-    private Integer isNoticeWarehouseItems;
-
     //备注
     @FormParam("code")
     private String code;
@@ -200,14 +196,6 @@ public class WarehouseInfo {
 
     public void setRemark(String remark) {
         this.remark = remark;
-    }
-
-    public Integer getIsNoticeWarehouseItems() {
-        return isNoticeWarehouseItems;
-    }
-
-    public void setIsNoticeWarehouseItems(Integer isNoticeWarehouseItems) {
-        this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 
     public String getCode() {
