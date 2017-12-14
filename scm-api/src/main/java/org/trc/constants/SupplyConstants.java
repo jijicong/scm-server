@@ -1038,6 +1038,12 @@ public class SupplyConstants {
          * 清除session
          */
         public static final String CLEAR_SESSION = "clearSession";
+
+        //京东订单拆分子订单通知
+        public final static String JD_ORDER_SPLIT_NOTICE = "jdOrderSplitNotice";
+        //订单下单结果通知
+        public final static String ORDER_SUBMIT_RESULT_NOTICE = "orderSubmitResultNotice";
+
     }
 
     /**

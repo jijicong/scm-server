@@ -65,4 +65,19 @@ public class ScmApiResource {
         request.getSession().invalidate();
         return ResultUtil.createSuccessResult("设置Session失效成功!","");
     }
+
+    @POST
+    @Path(SupplyConstants.Api.JD_ORDER_SPLIT_NOTICE)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> jdOrderSplitNotice(String orderInfo) {
+        return scmOrderBiz.jdOrderSplitNotice(orderInfo);
+    }
+
+    @POST
+    @Path(SupplyConstants.Api.ORDER_SUBMIT_RESULT_NOTICE)
+    @Produces("application/json;charset=utf-8")
+    public ResponseAck<String> orderSubmitResultNotice(String orderInfo) {
+        return scmOrderBiz.orderSubmitResultNotice(orderInfo);
+    }
+
 }

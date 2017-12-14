@@ -191,7 +191,7 @@ public class TaiRanResource {
                                                   @QueryParam("sellCode") String sellCode) throws Exception{
         trcBiz.checkChannelCode(channelCode);
         trcBiz.checkSellCode(sellCode);
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode));
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode, channelCode));
     }
 
     /**
@@ -270,7 +270,7 @@ public class TaiRanResource {
         try {
             trcBiz.checkChannelCode(channelCode);
             trcBiz.checkSellCode(sellCode);
-            return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page));
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "自采商品查询成功", trcBiz.itemsPage(form, page, channelCode));
         } catch (Exception e) {
             logger.error("自采商品查询报错", e);
             String code = ExceptionUtil.getErrorInfo(e);
@@ -288,7 +288,7 @@ public class TaiRanResource {
         try {
             trcBiz.checkChannelCode(channelCode);
             trcBiz.checkSellCode(sellCode);
-            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation));
+            return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku列表查询信息成功", trcBiz.skusPage(skusForm, pagenation, channelCode));
         } catch (Exception e) {
             logger.error("查询sku列表信息报错", e);
             String code = ExceptionUtil.getErrorInfo(e);

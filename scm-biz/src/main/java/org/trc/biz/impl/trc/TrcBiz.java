@@ -3,6 +3,8 @@ package org.trc.biz.impl.trc;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.InventoryQueryRequest;
+import com.qimen.api.response.InventoryQueryResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.goods.GoodsBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.impl.trc.model.SkusProperty;
@@ -29,8 +32,10 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
+import org.trc.exception.QimenException;
 import org.trc.exception.TrcException;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
@@ -45,6 +50,7 @@ import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
 import org.trc.model.ToGlyResultDO;
+import org.trc.service.IQimenService;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.category.ICategoryService;
@@ -58,6 +64,7 @@ import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -115,6 +122,12 @@ public class TrcBiz implements ITrcBiz {
     private ISystemConfigService systemConfigService;
     @Autowired
     private ISellChannelService sellChannelService;
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IQimenService qimenService;
+    @Autowired
+    private ISkuRelationBiz skuRelationBiz;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -800,7 +813,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page) {
+    public Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page, String channelCode) {
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(form.getSpuCode())){
@@ -822,8 +835,11 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("spuCode").desc();
         page = skusService.pagination(example,page,form);
+
+//        setSkuStock(page.getResult());
         //设置库存
-        setSkuStock(page.getResult());
+        skuRelationBiz.setStock(page.getResult(), channelCode);
+
         Pagenation<Skus2> page2 = new Pagenation<Skus2>();
         BeanUtils.copyProperties(page, page2,"result");
         List<Skus2> skus2List = new ArrayList<>();
@@ -841,7 +857,14 @@ public class TrcBiz implements ITrcBiz {
         return page2;
 
     }
-    
+
+    private List<String> getSkuCodes(List<Skus> skusList){
+        List<String> skuCodeList = new ArrayList<String>();
+        for(Skus s : skusList){
+            skuCodeList.add(s.getSkuCode());
+        }
+        return skuCodeList;
+    }
     
 
     /**
@@ -1105,7 +1128,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
-    public Pagenation<Items> itemsPage(ItemsForm2 queryModel, Pagenation<Items> page){
+    public Pagenation<Items> itemsPage(ItemsForm2 queryModel, Pagenation<Items> page, String channelCode){
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
         if (org.apache.commons.lang.StringUtils.isNotBlank(queryModel.getSpuCode())){
@@ -1128,7 +1151,7 @@ public class TrcBiz implements ITrcBiz {
         }
         example.orderBy("updateTime").desc();
         page = itemsService.pagination(example, page, queryModel);
-        setItemsSkus(page.getResult());
+        setItemsSkus(page.getResult(), channelCode);
         return page;
     }
 
@@ -1136,7 +1159,7 @@ public class TrcBiz implements ITrcBiz {
      * 设置商品相关SKU信息
      * @param itemsList
      */
-    private void setItemsSkus(List<Items> itemsList){
+    private void setItemsSkus(List<Items> itemsList, String channelCode){
         StringBuilder sb = new StringBuilder();
         for(Items items: itemsList){
             sb.append("\"").append(items.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
@@ -1149,7 +1172,9 @@ public class TrcBiz implements ITrcBiz {
             criteria.andCondition(condition);
             List<Skus> skusList = skusService.selectByExample(example);
             if(skusList.size() > 0){
-                setSkuStock(skusList);
+//                setSkuStock(skusList);
+                //设置库存
+                skuRelationBiz.setStock(skusList, channelCode);
             }
             for(Items items: itemsList){
                 List<Skus> records = new ArrayList<Skus>();
@@ -1673,8 +1698,5 @@ public class TrcBiz implements ITrcBiz {
             criteria.andIn("id",Arrays.asList(propertyIdStrs));
         }
     }
-
-
-
 
 }

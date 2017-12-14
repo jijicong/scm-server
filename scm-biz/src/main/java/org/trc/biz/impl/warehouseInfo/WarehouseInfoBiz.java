@@ -68,9 +68,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     //错误信息
     public final static String BAR = "-";
-    private static final String SUCCESS = "200";
     //错误信息
     public final static String EXCEL = ".xls";
+    private static final String SUCCESS = "200";
     private static final String TITLE_ONE = "商品SKU编号";
     private static final String TITLE_TWO = "仓库商品ID";
     private static final String TITLE_THREE = "异常说明";
@@ -255,6 +255,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if (noticeSuccess == null){
                 noticeSuccess=0;
             }
+            result.setIsNoticeWarehouseItems(warehouseInfo.getIsNoticeWarehouseItems());
             result.setIsNoticeSuccess(noticeSuccess);
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));

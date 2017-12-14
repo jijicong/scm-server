@@ -163,4 +163,19 @@ public interface IScmOrderBiz {
     ResponseAck outboundConfirmNotice(String warehouseOrderCode);
 
 
+    /**
+     * 京东订单拆分子订单通知
+     * @param orderInfo
+     * @return
+     */
+    ResponseAck jdOrderSplitNotice(String orderInfo);
+
+    /**
+     * 订单下单结果通知
+     * @param orderInfo
+     * @return
+     */
+    ResponseAck orderSubmitResultNotice(String orderInfo);
+
+
 }

@@ -17,7 +17,7 @@ public interface ISkuRelationBiz {
      * @param skuCode
      * @return
      */
-    List<Skus> getSkuInformation(String skuCode);
+    List<Skus> getSkuInformation(String skuCode, String channelCode);
 
     /**
      * 查询代发商品SKU信息
@@ -25,4 +25,11 @@ public interface ISkuRelationBiz {
      * @return
      */
     List<ExternalItemSku> getExternalSkuInformation(String skuCode,String channelCode);
+
+    /**
+     * 设置库存
+     * @param skusList
+     * @param channelCode
+     */
+    void setStock(List<Skus> skusList, String channelCode);
 }

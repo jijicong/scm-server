@@ -3,17 +3,16 @@ package org.trc.biz.impl.impower;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.qiniu.util.Json;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.domain.impower.*;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.UserTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.JurisdictionException;
@@ -182,6 +181,12 @@ public class AclResourceBiz implements IAclResourceBiz {
         JSONArray jsonArray = new JSONArray();
         for (AclUserAccreditInfo userAccreditInfo:aclUserAccreditInfoList) {
             JSONObject object= new JSONObject();
+            if (StringUtils.equals(userAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
+                object.put("userType",userAccreditInfo.getUserType());
+                jsonArray.add(object);
+                return jsonArray;
+            }
+            object.put("userType",userAccreditInfo.getUserType());
             object.put("channelCode",userAccreditInfo.getChannelCode());
             object.put("channelName",userAccreditInfo.getChannelName());
             jsonArray.add(object);

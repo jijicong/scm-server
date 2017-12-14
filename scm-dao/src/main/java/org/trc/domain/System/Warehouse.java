@@ -60,6 +60,9 @@ public class Warehouse extends BaseDO {
     @FormParam("isNoticeSuccess")
     private Integer isNoticeSuccess;
 
+    @FormParam("isNoticeWarehouseItems")
+    private String isNoticeWarehouseItems;
+
     public void setQimenWarehouseCode(String qimenWarehouseCode) {
         this.qimenWarehouseCode = qimenWarehouseCode;
     }
@@ -237,5 +240,13 @@ public class Warehouse extends BaseDO {
 
     public void setIsNoticeSuccess(Integer isNoticeSuccess) {
         this.isNoticeSuccess = isNoticeSuccess;
+    }
+
+    public String getIsNoticeWarehouseItems() {
+        return isNoticeWarehouseItems;
+    }
+
+    public void setIsNoticeWarehouseItems(String isNoticeWarehouseItems) {
+        this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 }

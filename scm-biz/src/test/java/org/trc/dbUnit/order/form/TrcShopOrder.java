@@ -67,6 +67,17 @@ public class TrcShopOrder {
     // 渠道编码
     private String channelCode;
 
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }
+
+    // 销售渠道编码
+    private String sellCode;
+
     // 来源平台编码
     private String platformCode;
 

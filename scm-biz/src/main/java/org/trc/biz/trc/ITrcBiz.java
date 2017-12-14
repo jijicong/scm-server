@@ -132,7 +132,7 @@ public interface ITrcBiz {
      * @param page
      * @return
      */
-    Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page);
+    Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page, String channelCode);
 
     /**
      * 自采商品分页查询
@@ -141,7 +141,7 @@ public interface ITrcBiz {
      * @return
      * @throws Exception
      */
-    Pagenation<Items> itemsPage(ItemsForm2 form, Pagenation<Items> page);
+    Pagenation<Items> itemsPage(ItemsForm2 form, Pagenation<Items> page, String channelCode);
 
     /**
      * for channel's propertyPage  //Pagenation<Property>
