@@ -255,7 +255,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if (noticeSuccess == null){
                 noticeSuccess=0;
             }
-            result.setIsNoticeWarehouseItems(warehouseInfo.getIsNoticeWarehouseItems());
+            Warehouse warehouse1 = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
+            result.setIsNoticeWarehouseItems(warehouse1.getIsNoticeWarehouseItems()!=null?warehouse1.getIsNoticeWarehouseItems():"");
             result.setIsNoticeSuccess(noticeSuccess);
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));

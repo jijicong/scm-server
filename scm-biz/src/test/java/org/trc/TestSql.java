@@ -32,8 +32,12 @@ public class TestSql {
 //		List<SkuStock> select = skuStockMapper.selectByExample(ex);
 //		System.err.println(select.size());
 		
-		List<OutboundDetail> detail = outboundDetailMapper.selectByWarehouseOrderCode("003");
-		System.out.println(JSON.toJSONString(detail));
+		//List<OutboundDetail> detail = outboundDetailMapper.selectByWarehouseOrderCode("003");
+		//System.out.println(JSON.toJSONString(detail));
+		OutboundDetail record = new OutboundDetail();
+		record.setId(24L);
+		OutboundDetail selectOne = outboundDetailMapper.selectOne(record);
+		System.out.println(JSON.toJSONString(selectOne));
 		
 	}
 }
