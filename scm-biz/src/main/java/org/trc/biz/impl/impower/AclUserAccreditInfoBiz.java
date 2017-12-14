@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.System.ChannelExt;
@@ -231,7 +230,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
-    @Cacheable(isList = true)
     public List<ChannelExt> findChannel() {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
@@ -422,7 +420,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
                         sellChannel.setSellName(selectSellMsg.getSellChannelName());
                         sellChannel.setSellCode(selectSellMsg.getSellChannelCode());
                         sellChannel = sellChannelService.selectOne(sellChannel);
-                        AssertUtil.notNull(sellChannel, "销售渠道" + selectSellMsg.getSellChannelName() + "不存在!");
+                        AssertUtil.notNull(sellChannel, "销售渠道[" + selectSellMsg.getSellChannelName() + "]不存在!");
                         //校验业务线与业务线是否关联
                         ChannelSellChannel channelSellChannel = new ChannelSellChannel();
                         channelSellChannel.setChannelCode(channel.getCode());

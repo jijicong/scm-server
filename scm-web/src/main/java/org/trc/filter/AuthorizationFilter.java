@@ -16,6 +16,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
+import org.trc.enums.UserTypeEnum;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
@@ -94,18 +95,24 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                     if (null != beegoToken) {
                         String userId = beegoToken.getUserId();
                         String channelCode = _getCookieChannelCode(requestContext);
-                        List<AclUserAccreditInfo> accreditInfoList = userAccreditInfoService.selectUserListByUserId(userId,channelCode);
-                            if (!AssertUtil.collectionIsEmpty(accreditInfoList)){
-                                for (AclUserAccreditInfo accreditInfo:accreditInfoList ) {
-                                    if (StringUtils.equals(channelCode,accreditInfo.getChannelCode())){
-                                        aclUserAccreditInfo = accreditInfo;
-                                    }
-                                }
-                            }else {
-                                AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "查询用户信息为空,请尝试重新登录!", null);
-                                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                                return;
+                        if (StringUtils.isBlank(channelCode)){
+                            aclUserAccreditInfo =  userAccreditInfoService.selectOneById(userId);
+                            if (!StringUtils.equals(aclUserAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
+                                aclUserAccreditInfo =null;
                             }
+                        }
+                        List<AclUserAccreditInfo> accreditInfoList = userAccreditInfoService.selectUserListByUserId(userId,channelCode);
+                        if (!AssertUtil.collectionIsEmpty(accreditInfoList)) {
+                            for (AclUserAccreditInfo accreditInfo : accreditInfoList) {
+                                if (StringUtils.equals(channelCode, accreditInfo.getChannelCode())) {
+                                    aclUserAccreditInfo = accreditInfo;
+                                }
+                            }
+                        } else if (AssertUtil.collectionIsEmpty(accreditInfoList)&&null==aclUserAccreditInfo){
+                            AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "查询用户信息为空,请尝试重新登录!", null);
+                            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
+                            return;
+                        }
 
                         if (aclUserAccreditInfo == null) {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
