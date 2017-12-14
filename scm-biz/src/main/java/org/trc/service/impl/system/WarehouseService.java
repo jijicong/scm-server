@@ -24,4 +24,9 @@ public class WarehouseService extends BaseService<Warehouse,Long> implements IWa
     public List<Warehouse> selectWarehouseNames(String strs[]) {
         return warehouseMapper.selectWarehouseNames(strs);
     }
+
+    @Override
+    public List<Warehouse> findNotConfigWarehouse() {
+        return warehouseMapper.findNotConfigWarehouse();
+    }
 }

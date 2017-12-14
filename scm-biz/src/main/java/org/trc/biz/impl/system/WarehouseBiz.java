@@ -23,6 +23,7 @@ import org.trc.cache.Cacheable;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.Area;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
@@ -33,6 +34,7 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
@@ -78,6 +80,9 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Autowired
     private ILocationUtilService locationUtilService;
+
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
 
 
     @Override
@@ -180,6 +185,44 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateWarehouseConfig(Warehouse warehouse) {
+        AssertUtil.notNull(warehouse, "修改仓库配置失败，仓库信息为空");
+        AssertUtil.notNull(warehouse.getId(), "根据ID修改仓库参数ID为空");
+
+        warehouse.setUpdateTime(Calendar.getInstance().getTime());
+        Warehouse _warehouse = warehouseService.selectByPrimaryKey(warehouse.getId());
+        AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
+
+        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
+                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
+                !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
+            String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
+        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
+            warehouse.setQimenWarehouseCode("");
+            warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+            warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
+        }
+
+        int count = warehouseService.updateByPrimaryKeySelective(warehouse);
+        if (count == 0) {
+            String msg = String.format("修改仓库%s数据库操作失败", JSON.toJSONString(warehouse));
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
+        }
+
+    }
+
+    @Override
+    public List<Warehouse> findNotConfigWarehouse() {
+        return warehouseService.findNotConfigWarehouse();
+    }
+
+    @Override
     @Cacheable(isList = true)
     public List<Warehouse> findWarehouseValid() {
         Warehouse warehouse = new Warehouse();
@@ -216,14 +259,6 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
         if (Pattern.matches(REGEX_MOBILE, warehouse.getSenderPhoneNumber())) {
             String msg = "运单发件人手机号格式错误," + warehouse.getSenderPhoneNumber();
-            logger.error(msg);
-            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
-        }
-
-        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
-                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
-                !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
-            String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
@@ -305,6 +340,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @CacheEvit(key = { "#warehouse.id"} )
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse.getId(), "根据ID修改仓库参数ID为空");
@@ -313,14 +349,6 @@ public class WarehouseBiz implements IWarehouseBiz {
             if (!tmp.getId().equals(warehouse.getId())) {
                 throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, "其它的仓库已经使用该仓库名称");
             }
-        }
-
-        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
-                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
-                !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
-            String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
-            logger.error(msg);
-            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
         warehouse.setUpdateTime(Calendar.getInstance().getTime());
@@ -340,6 +368,17 @@ public class WarehouseBiz implements IWarehouseBiz {
                 remark = remarkEnum.VALID_OFF.getMessage();
             }
         }
+
+        //遍历仓库信息，并修改
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseId", warehouse.getId().toString());
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setWarehouseName(warehouse.getName());
+        warehouseInfo.setQimenWarehouseCode(warehouse.getQimenWarehouseCode());
+        warehouseInfo.setType(warehouse.getWarehouseTypeCode());
+        warehouseInfoService.updateByExampleSelective(warehouseInfo, example);
+
         String userId = aclUserAccreditInfo.getUserId();
         logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
 

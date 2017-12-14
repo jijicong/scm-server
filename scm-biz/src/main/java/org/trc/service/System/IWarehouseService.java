@@ -17,4 +17,9 @@ public interface IWarehouseService extends IBaseService<Warehouse,Long>{
      */
     List<Warehouse> selectWarehouseNames(String strs[]);
 
+    /**
+     * 获取仓库信息
+     * @return
+     */
+    List<Warehouse> findNotConfigWarehouse();
 }
