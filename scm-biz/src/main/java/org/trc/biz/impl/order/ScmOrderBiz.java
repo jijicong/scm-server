@@ -381,8 +381,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
             supplierOrderInfo.setWarehouseOrderCode(warehouseOrderCode);
             supplierOrderInfo.setSupplierCode(warehouseOrder.getSupplierCode());
-            supplierOrderInfo = supplierOrderInfoService.selectOne(supplierOrderInfo);
-            if(null != supplierOrderInfo){
+            List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
+            if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
+                supplierOrderInfo = supplierOrderInfoList.get(0);
                 StringBuilder sb = new StringBuilder();
                 if(StringUtils.isNotBlank(supplierOrderInfo.getJdProvince()))
                     sb.append(supplierOrderInfo.getJdProvince());
@@ -890,7 +891,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(cancelNum == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_CANCEL.getCode();
             //供应商下单异常: 同时存在供应商下单失败和等待供应商发货的商品，或同时存在供应商下单失败或已取消的商品），供应商订单的状态就为“供应商下单异常”
-            if((failureNum > 0 && waitDeliverNum > 0) || (failureNum > 0 && cancelNum > 0) )
+            if(failureNum > 0 &&  failureNum < orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//店铺级订单
             //已取消：订单中全部商品的发货状态均为“已取消”时，订单就更新为“已取消”
@@ -3681,6 +3682,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setShopName(shopOrder.getShopName());
         warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
         warehouseOrder.setChannelCode(shopOrder.getChannelCode());
+        warehouseOrder.setSellCode(shopOrder.getSellCode());
         warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
         warehouseOrder.setPlatformType(shopOrder.getPlatformType());
         warehouseOrder.setUserId(shopOrder.getUserId());
@@ -3874,6 +3876,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             warehouseOrder.setShopName(shopOrder.getShopName());
             warehouseOrder.setPlatformCode(shopOrder.getPlatformCode());
             warehouseOrder.setChannelCode(shopOrder.getChannelCode());
+            warehouseOrder.setSellCode(shopOrder.getSellCode());
             warehouseOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             warehouseOrder.setPlatformType(shopOrder.getPlatformType());
             warehouseOrder.setUserId(shopOrder.getUserId());
@@ -4062,6 +4065,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             _supplierOrderInfo.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
             _supplierOrderInfo.setSupplierCode(supplierOrderInfo.getSupplierCode());
             _supplierOrderInfo.setSupplierOrderCode(order.getSupplyOrderCode());
+            _supplierOrderInfo.setJdCityCode(supplierOrderInfo.getJdCityCode());
+            _supplierOrderInfo.setJdDistrictCode(supplierOrderInfo.getJdDistrictCode());
+            _supplierOrderInfo.setJdProvinceCode(supplierOrderInfo.getJdProvinceCode());
+            _supplierOrderInfo.setJdTownCode(supplierOrderInfo.getJdTownCode());
+            _supplierOrderInfo.setJdCity(supplierOrderInfo.getJdCity());
+            _supplierOrderInfo.setJdDistrict(supplierOrderInfo.getJdDistrict());
+            _supplierOrderInfo.setJdProvince(supplierOrderInfo.getJdProvince());
+            _supplierOrderInfo.setJdTown(supplierOrderInfo.getJdTown());
             _supplierOrderInfo.setLogisticsStatus(WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());//未完成
             _supplierOrderInfo.setStatus(order.getState());
             if(StringUtils.equals(ResponseAck.SUCCESS_CODE, order.getState())){//供应商下单接口下单成功
@@ -4072,6 +4083,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             _supplierOrderInfo.setMessage(order.getMessage());
             _supplierOrderInfo.setSkus(JSON.toJSONString(order.getSkus()));
             ParamsUtil.setBaseDO(_supplierOrderInfo);
+            _supplierOrderInfo.setCreateTime(supplierOrderInfo.getCreateTime());
             newSupplierOrderInfoList.add(_supplierOrderInfo);
         }
         supplierOrderInfoService.insertList(newSupplierOrderInfoList);
