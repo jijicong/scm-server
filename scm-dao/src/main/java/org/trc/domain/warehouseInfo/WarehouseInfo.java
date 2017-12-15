@@ -82,7 +82,7 @@ public class WarehouseInfo {
     private String code;
 
     //备注
-    @FormParam("warehouseOwnerId")
+    @FormParam("remark")
     @Length(max = 100, message = "仓库货主ID的编码字母和数字不能超过100个,汉字不能超过50个")
     private String remark;
 
