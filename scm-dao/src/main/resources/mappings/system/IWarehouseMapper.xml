@@ -9,4 +9,9 @@
         </foreach>
     </select>
 
+    <select id="findNotConfigWarehouse" resultType="org.trc.domain.System.Warehouse">
+        SELECT `code`,`name`,is_through_qimen AS isThroughQimen, qimen_warehouse_code AS qimenWarehouseCode,
+        is_notice_success AS isNoticeSuccess, is_notice_warehouse_items AS isNoticeWarehouseItems, id
+        from warehouse
+    </select>
 </mapper>

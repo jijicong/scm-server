@@ -19,6 +19,15 @@ public class QimenConfig {
 
     //单据取消接口URL
     private String qimenOrderCancelUrl;
+    
+    //退货入库单创建接口URL
+    private String qimenReturnOrderCreateUrl;
+    
+    //出库单创建接口URL
+    private String qimenStockoutCreateUrl;
+    
+    //单据挂起（恢复）接口URL
+    private String qimenOrderPendingUrl;
 
     public String getQimenItemsSyncUrl() {
         return qimenItemsSyncUrl;
@@ -59,4 +68,29 @@ public class QimenConfig {
     public void setQimenInventoryQueryUrl(String qimenInventoryQueryUrl) {
         this.qimenInventoryQueryUrl = qimenInventoryQueryUrl;
     }
+
+	public String getQimenReturnOrderCreateUrl() {
+		return qimenReturnOrderCreateUrl;
+	}
+
+	public void setQimenReturnOrderCreateUrl(String qimenReturnOrderCreateUrl) {
+		this.qimenReturnOrderCreateUrl = qimenReturnOrderCreateUrl;
+	}
+
+	public String getQimenStockoutCreateUrl() {
+		return qimenStockoutCreateUrl;
+	}
+
+	public void setQimenStockoutCreateUrl(String qimenStockoutCreateUrl) {
+		this.qimenStockoutCreateUrl = qimenStockoutCreateUrl;
+	}
+
+	public String getQimenOrderPendingUrl() {
+		return qimenOrderPendingUrl;
+	}
+
+	public void setQimenOrderPendingUrl(String qimenOrderPendingUrl) {
+		this.qimenOrderPendingUrl = qimenOrderPendingUrl;
+	}
+    
 }

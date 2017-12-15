@@ -255,7 +255,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if (noticeSuccess == null){
                 noticeSuccess=0;
             }
-            result.setIsNoticeWarehouseItems(warehouseInfo.getIsNoticeWarehouseItems());
+            Warehouse warehouse1 = warehouseService.selectByPrimaryKey(Long.valueOf(warehouseInfo.getWarehouseId()));
+            result.setIsNoticeWarehouseItems(warehouse1.getIsNoticeWarehouseItems()!=null?warehouse1.getIsNoticeWarehouseItems():"");
             result.setIsNoticeSuccess(noticeSuccess);
             result.setCreateTime(DateUtils.formatDateTime(warehouseInfo.getCreateTime()));
             result.setUpdateTime(DateUtils.formatDateTime(warehouseInfo.getUpdateTime()));
@@ -864,6 +865,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         WarehouseInfo warehouseInfo = this.getWarehouseInfo(warehouseItemInfoList.get(0).getWarehouseInfoId());
         if(warehouseInfo == null){
             String msg = "仓库信息不存在";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+
+        if(!StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.ONE.getCode())){
+            String msg = "货主仓库状态还不是通知成功";
             log.error(msg);
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }

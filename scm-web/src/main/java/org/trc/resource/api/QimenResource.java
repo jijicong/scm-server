@@ -46,6 +46,23 @@ public class QimenResource {
      * 入库单确认
      */
     private static final String ENTRY_ORDER_CONFIRM = "entryorder.confirm";
+    /**
+     * 出库单确认
+     */
+    private static final String STOCKOUT_CONFIRM = "taobao.qimen.stockout.confirm";
+    /**
+     * 退货入库单确认
+     */
+    private static final String RETURNORDER_CONFIRM = "taobao.qimen.returnorder.confirm";
+    /**
+     * 订单流水通知
+     */
+    private static final String ORDERPROCESS_REPORT = "taobao.qimen.orderprocess.report";
+    /**
+     * 库存盘点通知
+     */
+    private static final String INVENTORY_REPORT = "taobao.qimen.inventory.report";
+
     private Logger logger = LoggerFactory.getLogger(QimenResource.class);
     @Autowired
     private IWarehouseNoticeBiz warehouseNoticeBiz;
@@ -105,6 +122,14 @@ public class QimenResource {
                    logger.error("发货明细更新异常",e);
                    throw new Exception("发货明细更新异常");
                 }
+                break;
+            case STOCKOUT_CONFIRM:
+                break;
+            case RETURNORDER_CONFIRM:
+                break;
+            case ORDERPROCESS_REPORT:
+                break;
+            case INVENTORY_REPORT:
                 break;
             default:
                 break;

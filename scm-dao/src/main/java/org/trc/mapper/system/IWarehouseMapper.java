@@ -13,4 +13,6 @@ public interface IWarehouseMapper extends BaseMapper<Warehouse>{
 
     List<Warehouse> selectWarehouseNames(String strs[]);
 
+    List<Warehouse> findNotConfigWarehouse();
+
 }

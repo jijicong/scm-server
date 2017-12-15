@@ -26,11 +26,9 @@ public class Warehouse extends BaseDO {
     @Length(max = 32, message = "仓库编码字母和数字不能超过32个,汉字不能超过16个")
     private String code;
     @FormParam("name")
-    @NotEmpty
     @Length(max = 64, message = "仓库名称字母和数字不能超过64个,汉字不能超过32个")
     private String name;
     @FormParam("warehouseTypeCode")
-    @NotEmpty
     @Length(max = 32, message = "仓库类型字母和数字不能超过32个,汉字不能超过16个")
     private String warehouseTypeCode;   //仓库类型 1.保税仓 2.海外仓 3.普通仓
 
@@ -38,7 +36,6 @@ public class Warehouse extends BaseDO {
     private Integer isCustomsClearance; //是否支持清关 0.不支持 1. 支持  null.无   只用保税仓，才会有清关 ，其它为null
 
     @FormParam("isThroughQimen")
-    @NotNull
     private Integer isThroughQimen; // 是否通过奇门对接：0-不通过 1-通过
 
     @FormParam("qimenWarehouseCode")
@@ -59,6 +56,9 @@ public class Warehouse extends BaseDO {
 
     @FormParam("isNoticeSuccess")
     private Integer isNoticeSuccess;
+
+    @FormParam("isNoticeWarehouseItems")
+    private String isNoticeWarehouseItems;
 
     public void setQimenWarehouseCode(String qimenWarehouseCode) {
         this.qimenWarehouseCode = qimenWarehouseCode;
@@ -237,5 +237,13 @@ public class Warehouse extends BaseDO {
 
     public void setIsNoticeSuccess(Integer isNoticeSuccess) {
         this.isNoticeSuccess = isNoticeSuccess;
+    }
+
+    public String getIsNoticeWarehouseItems() {
+        return isNoticeWarehouseItems;
+    }
+
+    public void setIsNoticeWarehouseItems(String isNoticeWarehouseItems) {
+        this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 }

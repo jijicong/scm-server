@@ -83,4 +83,21 @@ public class WarehouseResource {
     public Response findWarehouseValid() {
         return ResultUtil.createSuccessResult("查询有效的仓库成功",warehouseBiz.findWarehouseValid());
     }
+
+    //修改仓库信息配置
+    @PUT
+    @Path(SupplyConstants.Warehouse.WAREHOUSE_CONFIG+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateWarehouseConfig(@BeanParam Warehouse warehouse) {
+        warehouseBiz.updateWarehouseConfig(warehouse);
+        return ResultUtil.createSuccessResult("修改仓库信息配置成功！", "");
+    }
+
+    //获取仓库仓库
+    @GET
+    @Path(SupplyConstants.Warehouse.WAREHOUSE_CONFIG)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findNotConfigWarehouse() {
+        return ResultUtil.createSuccessResult("查询有效的仓库成功",warehouseBiz.findNotConfigWarehouse());
+    }
 }
