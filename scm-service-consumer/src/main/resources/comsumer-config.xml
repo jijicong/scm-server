@@ -62,6 +62,10 @@
         <property name="qimenDeliveryOrderCreateUrl" value="${qimen.deliveryOrderCreate.url}"/>
         <property name="qimenInventoryQueryUrl" value="${qimen.inventoryQuery.url}"/>
         <property name="qimenOrderCancelUrl" value="${qimen.orderCancelUrl.url}"/>
+        
+        <property name="qimenReturnOrderCreateUrl" value="${qimen.returnOrderCreate.url}"/>
+        <property name="qimenStockoutCreateUrl" value="${qimen.stockoutCreate.url}"/>
+        <property name="qimenOrderPendingUrl" value="${qimen.orderPending.url}"/>
     </bean>
 
 </beans>

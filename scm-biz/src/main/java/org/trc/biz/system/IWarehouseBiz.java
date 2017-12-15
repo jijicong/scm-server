@@ -66,4 +66,16 @@ public interface IWarehouseBiz {
      * 模糊查询
      */
     Pagenation<Warehouse> warehousePageEs(WarehouseForm form, Pagenation<Warehouse> page);
+
+    /**
+     * 修改仓库信息配置
+     * @param warehouse
+     */
+    void updateWarehouseConfig(Warehouse warehouse);
+
+    /**
+     * 获取仓库信息
+     * @return
+     */
+    List<Warehouse> findNotConfigWarehouse();
 }

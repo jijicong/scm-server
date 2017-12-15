@@ -319,6 +319,8 @@ public class SupplyConstants {
         public static final String UPDATE_STATE = "warehouse/updateState";
         //查询可用仓库
         public static final String WAREHOUSE_VALID = "wharehouses";
+        //仓库信息配置
+        public static final String WAREHOUSE_CONFIG = "warehouseConfig";
     }
 
     /**

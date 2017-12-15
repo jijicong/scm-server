@@ -38,10 +38,30 @@ public interface IQimenService {
      */
     AppResult<InventoryQueryResponse> inventoryQuery(InventoryQueryRequest inventoryQueryRequest);
 
-
-
     /**
      * 单据取消
      */
-    AppResult<OrderCancelResponse> orderCancel(OrderCancelRequest req);
+    AppResult<OrderCancelResponse> orderCancel(OrderCancelRequest req); 
+    
+    /**
+     * 退货入库单创建
+     * @param req
+     * @return
+     */
+    AppResult<ReturnorderCreateResponse> returnOrderCreate(ReturnorderCreateRequest req);
+    
+    /**
+     * 出库单创建
+     * @param req
+     * @return
+     */
+    AppResult<StockoutCreateResponse> stockoutCreate(StockoutCreateRequest req);
+    
+    /**
+     * 单据挂起（恢复）
+     * 出库单创建
+     * @param req
+     * @return
+     */
+    AppResult<OrderPendingResponse> orderPending(OrderPendingRequest req);
 }
