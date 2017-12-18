@@ -1,4 +1,4 @@
-package org.trc.lock;
+package org.trc.util.lock;
 
 /**
  * Created by liuyang on 2017/4/20.

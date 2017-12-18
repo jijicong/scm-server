@@ -748,4 +748,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         return "";
     }
+
+	public void setQimenService(IQimenService service) {
+		this.qimenService = service;
+		
+	}
 }

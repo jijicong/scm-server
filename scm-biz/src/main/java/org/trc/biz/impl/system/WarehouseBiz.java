@@ -263,6 +263,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
+        warehouse.setIsThroughQimen(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+
         int count = warehouseService.insert(warehouse);
         if (count == 0) {
             String msg = "仓库保存,数据库操作失败";
