@@ -3,6 +3,7 @@ package org.trc.util.lock;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.trc.framework.core.spring.SpringContextHolder;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -14,7 +15,7 @@ import javax.annotation.PostConstruct;
 @Component
 public class Service {
 
-    private JedisPool pool = null;
+    private static JedisPool pool = null;
 
     @Value("${mall.redis.host}")
     private String host;
@@ -50,6 +51,12 @@ public class Service {
 
    /* @Autowired
     private RedisDistrbuteLockUtil redisDistrbuteLockUtil;*/
+
+    /*static {
+        jedisPool = (JedisPool) SpringContextHolder.getBean("jedisPool");
+    }
+
+    DistributedLock lock = new DistributedLock(jedisPool);*/
 
     int n = 500;
 
