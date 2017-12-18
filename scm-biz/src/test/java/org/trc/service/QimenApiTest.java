@@ -3,6 +3,8 @@ package org.trc.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.qimen.api.request.ItemsSynchronizeRequest;
+import com.qimen.api.response.ItemsSynchronizeResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +130,30 @@ public class QimenApiTest {
 	}
 
 
+	/**
+	 * 商品同步接口
+	 */
+	@Test
+	public void itemsSync(){
+		ItemsSynchronizeRequest req = new ItemsSynchronizeRequest();
 
+		List<ItemsSynchronizeRequest.Item> itemList = new ArrayList<>();
+		ItemsSynchronizeRequest.Item item = new ItemsSynchronizeRequest.Item();
+		item.setItemCode("skuCode");
+		item.setGoodsCode("itemId");
+		item.setItemName("itemName");
+		item.setBarCode("barCode");
+		item.setSkuProperty("specNatureInfo");
+		item.setItemType("itemType");
+		itemList.add(item);
+
+		req.setItems(itemList);
+		req.setOwnerCode("ownerCode");
+		req.setWarehouseCode("warehouseCode");
+		req.setActionType("add");
+
+		AppResult<ItemsSynchronizeResponse> ret = qimenService.itemsSync(req);
+		System.out.println(JSON.toJSONString(ret));
+	}
 
 }
