@@ -1,33 +1,22 @@
-package org.trc.util;
+package org.trc.util.lock;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisException;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * redis分布式锁工具类
+ * Created by liuyang on 2017/4/20.
  */
-@Component
-public class RedisDistrbuteLockUtil {
+public class DistributedLock {
+    private final JedisPool jedisPool;
 
-    private final static String LOCK_PREFIX = "scm-lock";
-
-    @Autowired
-    private JedisPool jedisPool;
-
-    /*Jedis conn = null;
-
-    @PostConstruct
-    protected void initConn(){
-        conn = jedisPool.getResource();
-    }*/
+    public DistributedLock(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
+    }
 
     /**
      * 加锁
@@ -43,11 +32,10 @@ public class RedisDistrbuteLockUtil {
         try {
             // 获取连接
             conn = jedisPool.getResource();
-            conn.select(7);
             // 随机生成一个value
             String identifier = UUID.randomUUID().toString();
             // 锁名，即key值
-            String lockKey = LOCK_PREFIX + locaName;
+            String lockKey = "lock:" + locaName;
             // 超时时间，上锁后超过此时间则自动释放锁
             int lockExpire = (int)(timeout / 1000);
 
@@ -64,17 +52,13 @@ public class RedisDistrbuteLockUtil {
                 if (conn.ttl(lockKey) == -1) {
                     conn.expire(lockKey, lockExpire);
                 }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+
             }
         } catch (JedisException e) {
             e.printStackTrace();
         } finally {
             if (conn != null) {
-                conn.close();
+                //conn.close();
             }
         }
         return retIdentifier;
@@ -88,11 +72,10 @@ public class RedisDistrbuteLockUtil {
      */
     public boolean releaseLock(String lockName, String identifier) {
         Jedis conn = null;
-        String lockKey = LOCK_PREFIX + lockName;
+        String lockKey = "lock:" + lockName;
         boolean retFlag = false;
         try {
             conn = jedisPool.getResource();
-            conn.select(7);
             while (true) {
                 // 监视lock，准备开始事务
                 conn.watch(lockKey);
@@ -113,11 +96,9 @@ public class RedisDistrbuteLockUtil {
             e.printStackTrace();
         } finally {
             if (conn != null) {
-                conn.close();
+                //conn.close();
             }
         }
         return retFlag;
     }
-
-
 }
