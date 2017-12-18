@@ -1712,11 +1712,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     warehouseOrder.setShowCancel(ZeroToNineEnum.ZERO.getCode());
                 }
             }else{
-                int days = DateUtils.getDaysBetween(warehouseOrder.getPayTime(), Calendar.getInstance().getTime());
-                if(days <= 7){
-                    warehouseOrder.setShowCancel(ZeroToNineEnum.ONE.getCode());
-                }else {
+                if(null == warehouseOrder.getPayTime()){
                     warehouseOrder.setShowCancel(ZeroToNineEnum.ZERO.getCode());
+                }else{
+                    int days = DateUtils.getDaysBetween(warehouseOrder.getPayTime(), Calendar.getInstance().getTime());
+                    if(days <= 7){
+                        warehouseOrder.setShowCancel(ZeroToNineEnum.ONE.getCode());
+                    }else {
+                        warehouseOrder.setShowCancel(ZeroToNineEnum.ZERO.getCode());
+                    }
                 }
             }
         }else{
