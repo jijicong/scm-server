@@ -1097,6 +1097,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 exceptionContent.put(key, value);
                 continue;
             }
+            if(this.isExeistsQimenItemId(Long.valueOf(warehouseInfoId), values[1])){
+                flag = false;
+                value += ",该仓库商品ID已存在！";
+                exceptionContent.put(key, value);
+                continue;
+            }
             if (StringUtils.isNotEmpty(values[0])) {
                 skuCode = values[0];
                 warehouseItemInfo = new WarehouseItemInfo();
@@ -1126,6 +1132,18 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         returnMap.put("count", count);
         returnMap.put("flag", flag);
         return returnMap;
+    }
+
+    //是否存在重复
+    private boolean isExeistsQimenItemId(Long warehouseInfoId, String warehouseItemId){
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
+        warehouseItemInfo.setWarehouseItemId(warehouseItemId);
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        if(warehouseItemInfoList != null && warehouseItemInfoList.size() > 0){
+            return true;
+        }
+        return false;
     }
 
     private Map<String, Object> checkTitle(String[] titleResult) {
