@@ -17,46 +17,46 @@ public class Service {
 
     private static JedisPool pool = null;
 
-    @Value("${mall.redis.host}")
-    private String host;
-    @Value("${mall.redis.port}")
-    private Integer port;
-    @Value("${redis.pool.maxTotal}")
-    private Integer maxToal;
-    @Value("${redis.pool.maxIdle}")
-    private Integer maxIdle;
-    @Value("${mall.redis.timeout}")
-    private Integer timeout;
-    @Value("${redis.pool.testOnBorrow}")
-    private Boolean testOnBorrow;
-    @Value("${mall.redis.password}")
-    private String password;
-    @Value("${mall.redis.database}")
-    private Integer database;
-
-
-    @PostConstruct
-    public void init(){
-        JedisPoolConfig config = new JedisPoolConfig();
-        // 设置最大连接数
-        config.setMaxTotal(maxToal);
-        // 设置最大空闲数
-        config.setMaxIdle(maxIdle);
-        // 设置最大等待时间
-        config.setMaxWaitMillis(timeout);
-        // 在borrow一个jedis实例时，是否需要验证，若为true，则所有jedis实例均是可用的
-        config.setTestOnBorrow(true);
-        pool = new JedisPool(config, host, port, timeout, password, database);
-    }
+//    @Value("${mall.redis.host}")
+//    private String host;
+//    @Value("${mall.redis.port}")
+//    private Integer port;
+//    @Value("${redis.pool.maxTotal}")
+//    private Integer maxToal;
+//    @Value("${redis.pool.maxIdle}")
+//    private Integer maxIdle;
+//    @Value("${mall.redis.timeout}")
+//    private Integer timeout;
+//    @Value("${redis.pool.testOnBorrow}")
+//    private Boolean testOnBorrow;
+//    @Value("${mall.redis.password}")
+//    private String password;
+//    @Value("${mall.redis.database}")
+//    private Integer database;
+//
+//
+//    @PostConstruct
+//    public void init(){
+//        JedisPoolConfig config = new JedisPoolConfig();
+//        // 设置最大连接数
+//        config.setMaxTotal(maxToal);
+//        // 设置最大空闲数
+//        config.setMaxIdle(maxIdle);
+//        // 设置最大等待时间
+//        config.setMaxWaitMillis(timeout);
+//        // 在borrow一个jedis实例时，是否需要验证，若为true，则所有jedis实例均是可用的
+//        config.setTestOnBorrow(true);
+//        pool = new JedisPool(config, host, port, timeout, password, database);
+//    }
 
    /* @Autowired
     private RedisDistrbuteLockUtil redisDistrbuteLockUtil;*/
 
-    /*static {
-        jedisPool = (JedisPool) SpringContextHolder.getBean("jedisPool");
+    static {
+    	pool = (JedisPool) SpringContextHolder.getBean("jedisPool");
     }
 
-    DistributedLock lock = new DistributedLock(jedisPool);*/
+   /* DistributedLock lock = new DistributedLock(jedisPool);*/
 
     int n = 500;
 
