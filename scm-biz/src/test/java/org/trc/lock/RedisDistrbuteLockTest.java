@@ -14,13 +14,16 @@ public class RedisDistrbuteLockTest extends BaseTest {
     private RedisDistrbuteLockUtil redisDistrbuteLockUtil;*/
 
     @Test
-    public void lockTest(){
-        for (int i = 0; i < 50; i++) {
-            ThreadA threadA = new ThreadA(service);
-            threadA.start();
-            /*ThreadB threadB = new ThreadB(redisDistrbuteLockUtil);
-            threadB.start();*/
-        }
+    public void lockTest() throws Exception{
+        ThreadA threadA = new ThreadA(service);
+        threadA.start();
+//        for (int i = 0; i < 50; i++) {
+//            ThreadA threadA = new ThreadA(service);
+//            threadA.start();
+//            threadA.join();
+//            /*ThreadB threadB = new ThreadB(redisDistrbuteLockUtil);
+//            threadB.start();*/
+//        }
     }
 
 }
