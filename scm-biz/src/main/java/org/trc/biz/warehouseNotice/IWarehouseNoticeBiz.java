@@ -4,6 +4,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.warehouse.WarehouseNoticeForm;
+import org.trc.service.IQimenService;
 import org.trc.util.Pagenation;
 
 import java.util.List;
@@ -46,6 +47,8 @@ public interface IWarehouseNoticeBiz {
     void  receiptAdviceInfo(WarehouseNotice warehouseNotice,AclUserAccreditInfo aclUserAccreditInfo);
 
     void updateInStock(String requestText) ;
+
+	void setQimenService(IQimenService service);
 
 
 }

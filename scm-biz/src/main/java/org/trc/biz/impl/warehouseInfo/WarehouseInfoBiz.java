@@ -449,10 +449,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         //验证仓库是否通知成功
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouseInfoId);
-        if (!warehouseInfo.getOwnerWarehouseState().equals(ZeroToNineEnum.ONE.getCode())){
-            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"仓库状态为非通知成功状态");
-
-        }
+//        if (!warehouseInfo.getOwnerWarehouseState().equals(ZeroToNineEnum.ONE.getCode())){
+//            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"仓库状态为非通知成功状态");
+//
+//        }
         List<WarehouseItemInfo> list = new ArrayList<>();
         List<String> skuList = new ArrayList<>();
         for (Skus sku:itemsList){
@@ -1097,6 +1097,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 exceptionContent.put(key, value);
                 continue;
             }
+            if(this.isExeistsQimenItemId(Long.valueOf(warehouseInfoId), values[1])){
+                flag = false;
+                value += ",该仓库商品ID已存在！";
+                exceptionContent.put(key, value);
+                continue;
+            }
             if (StringUtils.isNotEmpty(values[0])) {
                 skuCode = values[0];
                 warehouseItemInfo = new WarehouseItemInfo();
@@ -1126,6 +1132,18 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         returnMap.put("count", count);
         returnMap.put("flag", flag);
         return returnMap;
+    }
+
+    //是否存在重复
+    private boolean isExeistsQimenItemId(Long warehouseInfoId, String warehouseItemId){
+        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+        warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
+        warehouseItemInfo.setWarehouseItemId(warehouseItemId);
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+        if(warehouseItemInfoList != null && warehouseItemInfoList.size() > 0){
+            return true;
+        }
+        return false;
     }
 
     private Map<String, Object> checkTitle(String[] titleResult) {

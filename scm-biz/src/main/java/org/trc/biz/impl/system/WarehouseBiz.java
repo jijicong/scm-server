@@ -209,6 +209,10 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
 
         int count = warehouseService.updateByPrimaryKeySelective(warehouse);
+
+        //遍历仓库信息，并修改
+        this.updateWarehouseInfo(warehouse);
+
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败", JSON.toJSONString(warehouse));
             logger.error(msg);
@@ -262,6 +266,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
+
+        warehouse.setIsThroughQimen(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
 
         int count = warehouseService.insert(warehouse);
         if (count == 0) {
@@ -370,6 +376,15 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
 
         //遍历仓库信息，并修改
+        this.updateWarehouseInfo(warehouse);
+
+        String userId = aclUserAccreditInfo.getUserId();
+        logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
+
+    }
+
+    //遍历仓库信息，并修改
+    private void updateWarehouseInfo(Warehouse warehouse){
         Example example = new Example(WarehouseInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("warehouseId", warehouse.getId().toString());
@@ -378,10 +393,6 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouseInfo.setQimenWarehouseCode(warehouse.getQimenWarehouseCode());
         warehouseInfo.setType(warehouse.getWarehouseTypeCode());
         warehouseInfoService.updateByExampleSelective(warehouseInfo, example);
-
-        String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(warehouse, warehouse.getId().toString(), userId, LogOperationEnum.UPDATE.getMessage(), remark, null);
-
     }
 
 }

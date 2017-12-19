@@ -1,4 +1,6 @@
-package org.trc.lock;
+package org.trc.util.lock;
+
+import org.trc.framework.core.spring.SpringContextHolder;
 
 /**
  * Created by liuyang on 2017/4/20.

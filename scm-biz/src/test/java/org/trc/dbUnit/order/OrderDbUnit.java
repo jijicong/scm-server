@@ -1,20 +1,28 @@
 package org.trc.dbUnit.order;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.dbUnit.order.form.*;
+import org.trc.dbUnit.order.form.TrcOrderForm;
+import org.trc.dbUnit.order.form.TrcOrderItem;
+import org.trc.dbUnit.order.form.TrcPlatformOrder;
+import org.trc.dbUnit.order.form.TrcShopOrder;
+import org.trc.dbUnit.order.form.TrcShopOrderForm;
 import org.trc.domain.order.WarehouseOrder;
-import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.LogisticNoticeForm;
+import org.trc.form.JDModel.ReturnTypeDO;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.BaseTest;
@@ -26,9 +34,8 @@ import org.trc.util.AssertUtil;
 import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
 
-import java.util.ArrayList;
-import java.util.List;
-import static org.mockito.Mockito.*;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 
 /**
  * Created by hzwdx on 2017/8/29.
