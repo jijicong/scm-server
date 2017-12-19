@@ -12,19 +12,14 @@ public class RedisDistrbuteLockTest extends BaseTest {
 
     @Autowired
     private Service service;
-    /*@Autowired
-    private RedisDistrbuteLockUtil redisDistrbuteLockUtil;*/
 
     @Test
     public void lockTest() throws IOException, InterruptedException{
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1000; i++) {
             ThreadA threadA = new ThreadA(service);
             threadA.start();
             threadA.join();
-            /*ThreadB threadB = new ThreadB(redisDistrbuteLockUtil);
-            threadB.start();*/
         }
-//        System.in.read();
     }
 
 }
