@@ -48,6 +48,7 @@ public class DistributedLock {
                     retIdentifier = identifier;
                     return retIdentifier;
                 }
+                
                 // 返回-1代表key没有设置超时时间，为key设置一个超时时间
                 if (conn.ttl(lockKey) == -1) {
                     conn.expire(lockKey, lockExpire);
@@ -57,6 +58,7 @@ public class DistributedLock {
         } catch (JedisException e) {
             e.printStackTrace();
         } finally {
+        	jedisPool.returnResource(conn);
             if (conn != null) {
                 //conn.close();
             }
@@ -95,6 +97,7 @@ public class DistributedLock {
         } catch (JedisException e) {
             e.printStackTrace();
         } finally {
+        	jedisPool.returnResource(conn);
             if (conn != null) {
                 //conn.close();
             }
