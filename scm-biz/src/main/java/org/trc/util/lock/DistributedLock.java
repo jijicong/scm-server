@@ -12,6 +12,9 @@ import java.util.UUID;
  * Created by liuyang on 2017/4/20.
  */
 public class DistributedLock {
+
+    private final static String LOCK_LABEL = "LOCK_";
+
     private final JedisPool jedisPool;
 
     public DistributedLock(JedisPool jedisPool) {
@@ -35,7 +38,7 @@ public class DistributedLock {
             // 随机生成一个value
             String identifier = UUID.randomUUID().toString();
             // 锁名，即key值
-            String lockKey = "lock:" + locaName;
+            String lockKey = LOCK_LABEL + locaName;
             // 超时时间，上锁后超过此时间则自动释放锁
             int lockExpire = (int)(timeout / 1000);
 
@@ -54,6 +57,11 @@ public class DistributedLock {
                     conn.expire(lockKey, lockExpire);
                 }
 
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         } catch (JedisException e) {
             e.printStackTrace();
@@ -74,7 +82,7 @@ public class DistributedLock {
      */
     public boolean releaseLock(String lockName, String identifier) {
         Jedis conn = null;
-        String lockKey = "lock:" + lockName;
+        String lockKey = LOCK_LABEL + lockName;
         boolean retFlag = false;
         try {
             conn = jedisPool.getResource();
