@@ -176,16 +176,22 @@ public class AclResourceBiz implements IAclResourceBiz {
     @Override
     public JSONArray queryChannelList(String userId) {
         AssertUtil.notBlank(userId,"用户UserId为空,请检查用户");
+
+        AclUserAccreditInfo aclUserAccreditInfo =new  AclUserAccreditInfo();
+        aclUserAccreditInfo.setUserId(userId);
+        aclUserAccreditInfo =  userAccreditInfoService.selectOne(aclUserAccreditInfo);
+        AssertUtil.notNull(aclUserAccreditInfo,"查询用户信息为空");
+        JSONArray jsonArray = new JSONArray();
+        if (StringUtils.equals(aclUserAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
+            JSONObject object= new JSONObject();
+            object.put("userType",aclUserAccreditInfo.getUserType());
+            jsonArray.add(object);
+            return jsonArray;
+        }
         List<AclUserAccreditInfo> aclUserAccreditInfoList = userAccreditInfoService.selectUserListByUserId2(userId);
         AssertUtil.notEmpty(aclUserAccreditInfoList,"当前用户没有相关的销售渠道,请确认该用户是否已经授权!");
-        JSONArray jsonArray = new JSONArray();
         for (AclUserAccreditInfo userAccreditInfo:aclUserAccreditInfoList) {
             JSONObject object= new JSONObject();
-            if (StringUtils.equals(userAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
-                object.put("userType",userAccreditInfo.getUserType());
-                jsonArray.add(object);
-                return jsonArray;
-            }
             object.put("userType",userAccreditInfo.getUserType());
             object.put("channelCode",userAccreditInfo.getChannelCode());
             object.put("channelName",userAccreditInfo.getChannelName());
