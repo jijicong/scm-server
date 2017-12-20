@@ -34,27 +34,21 @@ import java.util.List;
  */
 @Service("iJingDongBiz")
 public class JingDongBizImpl implements IJingDongBiz {
-    private Logger log = LoggerFactory.getLogger(JingDongBizImpl.class);
-    @Autowired
-    IJDService ijdService;
-
-    @Autowired
-    ICommonService commonService;
-
-    @Autowired
-    ITableMappingService tableMappingService;
-
-    @Autowired
-    JingDongUtil jingDongUtil;
-
-    @Autowired
-    IRequestFlowService requestFlowService;
-
     //错误信息
     public final static String BAR = "-";
-
     //错误信息
     public final static String EXCEL = ".xls";
+    @Autowired
+    IJDService ijdService;
+    @Autowired
+    ICommonService commonService;
+    @Autowired
+    ITableMappingService tableMappingService;
+    @Autowired
+    JingDongUtil jingDongUtil;
+    @Autowired
+    IRequestFlowService requestFlowService;
+    private Logger log = LoggerFactory.getLogger(JingDongBizImpl.class);
 
     /*public Pagenation<JdBalanceDetail> checkBalanceDetail(BalanceDetailDO queryModel, Pagenation<JdBalanceDetail> page) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
@@ -293,6 +287,21 @@ public class JingDongBizImpl implements IJingDongBiz {
         }catch (Exception e){
             log.error("京东获取订单明细操作状态异常"+e.getMessage(),e);
             return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_STATISTICS_EXCEPTION.getCode()),ExceptionEnum.JING_DONG_STATISTICS_EXCEPTION.getMessage());
+        }
+    }
+
+    @Override
+    public Response reportCompensate(String date) throws Exception {
+        try{
+            AssertUtil.notBlank(date,"调用external接口不数据，时间不能为空");
+            ReturnTypeDO result = ijdService.reportCompensate(date);
+            if (!result.getSuccess()){
+                return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_COMPLETION_ORDER_EXCEPTION.getCode()),result.getResultMessage());
+            }
+            return ResultUtil.createSuccessResult("调用外部京东对账数据补偿接口成功",result.getResult());
+        }catch (Exception e){
+            log.error("调用外部京东对账数据补偿接口异常"+e.getMessage(),e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.JING_DONG_COMPLETION_ORDER_EXCEPTION.getCode()),ExceptionEnum.JING_DONG_STATISTICS_EXCEPTION.getMessage());
         }
     }
 

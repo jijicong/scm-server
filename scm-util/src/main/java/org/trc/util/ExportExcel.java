@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,45 +24,39 @@ import java.util.UUID;
 public class ExportExcel {
 
     /***
+     * 标题行开始位置
+     */
+    private static final int TITLE_START_POSITION = 0;
+    /***
+     * 时间行开始位置
+     */
+    private static final int DATEHEAD_START_POSITION = 1;
+    /***
+     * 表头行开始位置
+     */
+    private static final int HEAD_START_POSITION = 2;
+    /***
+     * 文本行开始位置
+     */
+    private static final int CONTENT_START_POSITION = 3;
+    /***
+     * 工作簿
+     */
+    private static HSSFWorkbook workbook;
+    /***
+     * sheet
+     */
+    private static HSSFSheet sheet;
+    private static HSSFCellStyle headCellStyle;
+    private static HSSFCellStyle titleCellStyle;
+    private static HSSFCellStyle contentCellStyle;
+
+    /***
      * 构造方法
      */
     private ExportExcel() {
 
     }
-
-    /***
-     * 工作簿
-     */
-    private static HSSFWorkbook workbook;
-
-    /***
-     * sheet
-     */
-    private static HSSFSheet sheet;
-
-    private static HSSFCellStyle headCellStyle;
-
-    private static HSSFCellStyle titleCellStyle;
-
-    /***
-     * 标题行开始位置
-     */
-    private static final int TITLE_START_POSITION = 0;
-
-    /***
-     * 时间行开始位置
-     */
-    private static final int DATEHEAD_START_POSITION = 1;
-
-    /***
-     * 表头行开始位置
-     */
-    private static final int HEAD_START_POSITION = 2;
-
-    /***
-     * 文本行开始位置
-     */
-    private static final int CONTENT_START_POSITION = 3;
 
     /**
      * @param dataList  对象集合
@@ -201,7 +196,11 @@ public class ExportExcel {
         titleCellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
         titleCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 居中
         titleCellStyle.setWrapText(true);
-
+        contentCellStyle = workbook.createCellStyle();
+        contentCellStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);
+        contentCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+        contentCellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+        contentCellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
     }
 
 
@@ -350,6 +349,7 @@ public class ExportExcel {
                     Object object = m.invoke(obj, null);
                     String value = null!=object?object.toString():"";
                     HSSFCell textcell = textRow.createCell(j);
+                    textcell.setCellStyle(contentCellStyle);
                     if(CellDefinition.TEXT.equals(cellDefinition.getFormat())){
                         textcell.setCellValue(value.toString());
                     } else if(CellDefinition.DATE.equals(cellDefinition.getFormat())){
@@ -376,7 +376,7 @@ public class ExportExcel {
                             format.setMaximumFractionDigits(2);//setMaximumFractionDigits(int) 设置数值的小数部分允许的最大位数。  
                             format.setMaximumIntegerDigits(20);//setMaximumIntegerDigits(int)  设置数值的整数部分允许的最大位数。   
                             format.setMinimumIntegerDigits(0);//setMinimumIntegerDigits(int)  设置数值的整数部分允许的最小位数.   
-                            textcell.setCellValue(format.format(object));
+                            textcell.setCellValue(Double.parseDouble(object.toString()));
                         }
                     } else{
                         if(StringUtils.isNotBlank(value)) {

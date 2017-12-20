@@ -16,6 +16,7 @@ import org.trc.form.external.OperateForm;
 import org.trc.form.external.OrderDetail;
 import org.trc.form.external.OrderDetailForm;
 import org.trc.util.AppResult;
+import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -180,6 +181,14 @@ public class JingDongResource {
     public Response getStatisticsRecord(@BeanParam BalanceDetailDO queryModel) throws Exception {
         log.info("进入订单明操作查询接口======>");
         return iJingDongBiz.statisticsRecord(queryModel);
+    }
+
+    @POST
+    @Path(SupplyConstants.JingDongOrder.COMPLETION_ORDER)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response completionOrder(@FormParam("date") String date) throws Exception {
+        log.info("进入订单明操作查询接口======>");
+        return iJingDongBiz.reportCompensate(date);
     }
 
 }
