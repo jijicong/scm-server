@@ -462,7 +462,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("itemNo", form.getItemNo());
         int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
         if(purchaseDetailListCount < 1){
-            return null;
+            return new Pagenation<PurchaseDetail>();
         }
         //获取总数
         page.setTotalCount(purchaseDetailListCount);
@@ -1463,7 +1463,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
 
-        List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrands(supplierCode);
+        List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrandNames(supplierCode);
 
         return supplierBrandExts;
     }

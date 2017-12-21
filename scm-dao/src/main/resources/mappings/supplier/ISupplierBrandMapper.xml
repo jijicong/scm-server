@@ -60,6 +60,19 @@
         sb.supplier_code = #{supplierCode} and sb.is_deleted = '0'
     </select>
 
+    <select id="selectSupplierBrandNames" resultMap="supplierBrandExtMap">
+        SELECT
+        distinct(b. NAME) AS brand_name
+        FROM
+        supplier_brand sb
+        LEFT JOIN
+        category c ON sb.category_id = c.id
+        LEFT JOIN
+        brand b ON sb.brand_id = b.id
+        WHERE
+        sb.supplier_code = #{supplierCode} and sb.is_deleted = '0'
+    </select>
+
     <update id="updateSupplerBrand"  parameterType="java.util.List" >
         <foreach collection="list" item="supplerBrand" index="index" open="" close=";" separator=";">
             update supplier_brand
