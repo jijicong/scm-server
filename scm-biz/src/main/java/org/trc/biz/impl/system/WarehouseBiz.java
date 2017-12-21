@@ -185,6 +185,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @CacheEvit(key = { "#warehouse.id"} )
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouseConfig(Warehouse warehouse) {
         AssertUtil.notNull(warehouse, "修改仓库配置失败，仓库信息为空");
