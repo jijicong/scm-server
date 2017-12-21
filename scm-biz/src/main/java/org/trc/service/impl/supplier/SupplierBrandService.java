@@ -30,6 +30,11 @@ public class SupplierBrandService extends BaseService<SupplierBrand, Long> imple
     }
 
     @Override
+    public List<SupplierBrandExt> selectSupplierBrandNames(String supplierCode) throws Exception{
+        return supplierBrandMapper.selectSupplierBrandNames(supplierCode);
+    }
+
+    @Override
     public Integer updateSupplerBrand(List<SupplierBrand> list) throws Exception {
         return supplierBrandMapper.updateSupplerBrand(list);
     }

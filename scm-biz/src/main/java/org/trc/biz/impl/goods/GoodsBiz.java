@@ -669,16 +669,19 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
         AssertUtil.notBlank(skus.getSkusInfo(), "提交商品信息SKU信息不能为空");
+        //用于更新仓库商品信息
+        Map<String, Object> warehouseItemInfoMap = new HashMap<>();
+
         String userId = aclUserAccreditInfo.getUserId();
         checkSkuInfo(skus);//检查sku参数
         //保存sku信息
         skus.setItemId(items.getId());
         skus.setSpuCode(items.getSpuCode());
-        List<Skus> updateSkus = updateSkus(skus, userId);
+        List<Skus> updateSkus = updateSkus(skus, userId, warehouseItemInfoMap);
         //根据sku启停用状态设置商品启停用状态
         //boolean isValidUpdate = setItemsIsValidBySkuStatus(items);
         //保存商品基础信息
-        updateItemsBase(items);
+        updateItemsBase(items, warehouseItemInfoMap);
         //保存自然属性信息
         itemNaturePropery.setItemId(items.getId());
         itemNaturePropery.setSpuCode(items.getSpuCode());
@@ -692,6 +695,12 @@ public class GoodsBiz implements IGoodsBiz {
         /*if(isValidUpdate)
             remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());*/
         logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),remark, null);
+    }
+
+    private void updateWarehouseItemInfo(Items items, Skus skus){
+        boolean flag = false;
+
+
     }
 
     /**
@@ -971,10 +980,14 @@ public class GoodsBiz implements IGoodsBiz {
      * @throws Exception
      */
     @CacheEvit(key = { "#items.id"} )
-    private void updateItemsBase(Items items) throws Exception{
+    private void updateItemsBase(Items items, Map<String, Object> map) throws Exception{
         AssertUtil.notNull(items.getId(), "商品ID不能为空");
         items.setUpdateTime(Calendar.getInstance().getTime());
         checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
+        Items items1 = itemsService.selectByPrimaryKey(items.getId());
+        if(!StringUtils.equals(items1.getItemNo(), items.getItemNo())){
+            map.put("itemNo", items.getItemNo());
+        }
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){
             String msg = CommonUtil.joinStr("修改商品基础信息",JSON.toJSONString(items),"数据库操作失败").toString();
@@ -991,7 +1004,7 @@ public class GoodsBiz implements IGoodsBiz {
         return null;
     }
 
-    private List<Skus> updateSkus(Skus skus, String userId) throws Exception{
+    private List<Skus> updateSkus(Skus skus, String userId, Map<String, Object> map) throws Exception{
         AssertUtil.notBlank(skus.getSpuCode(), "更新SKU信息商品SPU编码不能为空");
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         List<Skus> addlist = new ArrayList<Skus>();
@@ -1035,7 +1048,9 @@ public class GoodsBiz implements IGoodsBiz {
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
             }
+            map.put("updateSkus", updatelist);
         }
+
         if(addlist.size() > 0){
             count = skusService.insertList(addlist);
             if (count == 0) {
