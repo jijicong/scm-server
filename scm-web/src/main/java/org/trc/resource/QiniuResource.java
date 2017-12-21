@@ -100,6 +100,7 @@ public class QiniuResource {
     @Path(SupplyConstants.QinNiu.URLS)
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult urls(@QueryParam("fileNames") String fileNames, @QueryParam("thumbnail") String thumbnail) throws Exception {
+        AssertUtil.notBlank(fileNames, "批量获取多个文件的url参数fileNames不能为空");
         String[] fileNames2 = fileNames.split(DOU_HAO);
         return ResultUtil.createSucssAppResult("批量获取url成功",qinniuBiz.batchGetFileUrl(fileNames2, thumbnail));
     }
@@ -113,9 +114,9 @@ public class QiniuResource {
     @Path(SupplyConstants.QinNiu.DELETE+"/{module}")
     @Produces(MediaType.APPLICATION_JSON)
     public AppResult delete(@QueryParam("fileNames") String fileNames, @PathParam("module") String module) throws Exception {
+        AssertUtil.notBlank(fileNames, "批量删除多个文件参数fileNames不能为空");
         String[] fileNames2 = fileNames.split(DOU_HAO);
         return ResultUtil.createSucssAppResult("删除成功",qinniuBiz.batchDelete(fileNames2, module));
     }
-
 
 }

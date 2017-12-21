@@ -234,15 +234,23 @@
     <!-- 供应商提供的商品 -->
     <select id="selectCountItemsForSupplier" resultType="java.lang.Integer" parameterType="java.util.Map">
         SELECT count(*) count
+        FROM skus skus
+        RIGHT JOIN (
+        SELECT i.spu_code
         from items i
         inner join supplier_brand s
         ON
-        s.brand_id = i.brand_id
-        AND s.category_id = i.category_id
+        s.brand_id = i.brand_id AND
+        s.category_id = i.category_id
         WHERE
         s.supplier_code=#{supplierCode}
         AND s.is_valid='1'
         AND i.is_valid='1'
+        ) si
+        ON
+        si.spu_code = skus.spu_code
+        WHERE
+        skus.is_valid='1'
     </select>
 
     <!--查询某供应商下对应的可卖商品的总数量-->

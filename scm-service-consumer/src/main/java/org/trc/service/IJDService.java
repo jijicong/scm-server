@@ -124,4 +124,7 @@ public interface IJDService {
     //余额明细统计接口
     ReturnTypeDO statisticsRecord(BalanceDetailDO queryModel);
 
+    //京东报表补偿
+    ReturnTypeDO reportCompensate(String date);
+
 }

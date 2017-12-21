@@ -58,4 +58,8 @@ public interface IJingDongBiz {
     //根据查询条件统计数据
     Response statisticsRecord(BalanceDetailDO queryModel)throws Exception;
 
+    //京东报表数据补偿
+    Response reportCompensate(String date)throws Exception;
+
+
 }

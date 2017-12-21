@@ -834,6 +834,8 @@ public class SupplyConstants {
         public static final String GET_OPERATE = "getOperate";
         //统计余额明细
         public static final String GET_STATISTIC_BALANCE = "statisticsBalance";
+        //针对某天账单进行补对
+        public static final String COMPLETION_ORDER = "completionOrder";
 
     }
 
