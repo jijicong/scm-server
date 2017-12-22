@@ -56,6 +56,7 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.lock.StockLock;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -102,10 +103,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IQimenService qimenService;
     @Autowired
     private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
+    @Autowired
+    private StockLock stockLock;
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private List<String> defectiveSku = new ArrayList<>();
     private List<String> errorSku = new ArrayList<>();
+    private final static String STOCK = "stock_";
 
     /**
      * 入库通知单分页查询
@@ -289,6 +293,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         if (warehouseNotice.getStatus().equals(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())) {
                             logInfoService.recordLog(warehouseNotice, String.valueOf(warehouseNotice.getId()), "warehouse", "部分收货", "", null);
                         }
+                        warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
                         warehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
                     }
                 }
@@ -352,9 +357,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //更新采购详情
             warehouseNoticeDetailsService.updateByPrimaryKeySelective(warehouseNoticeDetails);
 
+
+            //冻结库存表
+            String identifier = stockLock.Lock(STOCK + warehouseNoticeDetails.getSkuStockId());
             //修改库存
             SkuStock skuStock = skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
             if (null != skuStock) {
+
                 //更新库存表
                 List<RequsetUpdateStock> stockList = new ArrayList<RequsetUpdateStock>();
                 RequsetUpdateStock stock = new RequsetUpdateStock();
@@ -366,12 +375,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 //残次品库存
                 map.put("defective_inventory", String.valueOf(defectiveQuantity));
                 //在途库存
-                if (normalQuantity > warehouseNoticeDetails.getPurchasingQuantity()){
-                    map.put("air_inventory", String.valueOf(0-warehouseNoticeDetails.getPurchasingQuantity()));
-
-                }else {
-                    map.put("air_inventory",String.valueOf(0-normalQuantity - defectiveQuantity));
+                Long airInventory = skuStock.getAirInventory() - normalQuantity - defectiveQuantity;
+                if (airInventory < 0) {
+                    airInventory = skuStock.getAirInventory();
+                } else {
+                    airInventory = normalQuantity + defectiveQuantity;
                 }
+                map.put("air_inventory", String.valueOf(0-airInventory));
                 stock.setChannelCode(warehouseNotice.getChannelCode());
                 stock.setSkuCode(warehouseNoticeDetails.getSkuCode());
                 stock.setWarehouseCode(warehouseNotice.getWarehouseCode());
@@ -380,8 +390,16 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                 try {
                     skuStockService.updateSkuStock(stockList);
+
                 } catch (Exception e) {
                    logger.error("库存更新异常",e);
+                }finally {
+                    //释放锁
+                    if (stockLock.releaseLock(STOCK+warehouseNoticeDetails.getSkuStockId(),identifier)){
+                        logger.info(STOCK+warehouseNoticeDetails.getSkuStockId()+"已释放！");
+                    }else {
+                        logger.error(STOCK+warehouseNoticeDetails.getSkuStockId()+"解锁失败！");
+                    }
                 }
             }
         }
