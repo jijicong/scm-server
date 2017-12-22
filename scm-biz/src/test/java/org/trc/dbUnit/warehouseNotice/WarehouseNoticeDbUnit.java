@@ -33,12 +33,42 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 	
     // private static final String WAREHOUSE_NOTICE = "warehouse_notice";
 	static ClassLoader loader = Thread.currentThread().getContextClassLoader();
+	
 	/**
-	 * 入库单通知收货-成功
+	 * 数据准备
+	 * @param arr  测试数据源文件名数组
+	 * @throws Exception
+	 */
+	private void preTest (String... arr) throws Exception {
+
+		execSql(conn,"delete from purchase_order"); // 采购单
+		execSql(conn,"delete from warehouse_notice"); // 入库通知单
+		execSql(conn,"delete from warehouse_notice_details"); // 入库明细表
+		execSql(conn,"delete from sku_stock"); // 库存表
+		
+		if (null != arr && arr.length > 0) {
+			for (int i = 0; i < 4; i++) {
+				prepareData(conn, "warehouseNotice/pre/" + arr[i] + ".xml");
+			}
+		}
+		
+	}
+	
+	private void resultCompare () {
+		
+	}
+	
+	/**
+	 * case 1
+	 * 入库单通知收货-仓库接收成功
 	 * @throws Exception 
 	 */
 	@Test
 	public void receiptAdvice_success () throws Exception {
+		
+		preTest("case1/preWarehouseNotice","case1/prePurchaseOrder","case1/preSkuStock",
+				"case1/preWarehouseNoticeDetails");
+		
 		/**  入库通知成功  **/
 		mockQimenEntryOrderCreate();
 		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
@@ -46,21 +76,21 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 		/**
 		 * 采购单状态修改为 已通知
 		 **/
-        ReplacementDataSet expResult = createDataSet(loader.getResourceAsStream("warehouseNotice/expPurchaseOrder.xml"));
+        ReplacementDataSet expResult = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expPurchaseOrder.xml"));
         expResult.addReplacementObject("null", null);
         assertDataSet("purchase_order","select * from purchase_order where id = 365",expResult,conn);
         
         /**
-         * 更新入库单为 待仓库反馈状态 
+         * 更新入库通知单为 待仓库反馈状态 
          **/
-        ReplacementDataSet expResult1 = createDataSet(loader.getResourceAsStream("warehouseNotice/expWarehouseNoticeData.xml"));
+        ReplacementDataSet expResult1 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expWarehouseNotice.xml"));
         expResult1.addReplacementObject("null", null);
         assertDataSet("warehouse_notice","select * from warehouse_notice where id = 35",expResult1,conn);
         
 		/**
 		 * 更新入库明细表中的商品为 待仓库反馈状态
 		 **/
-        ReplacementDataSet expResult3 = createDataSet(loader.getResourceAsStream("warehouseNotice/expWarehouseNoticeDetailsData.xml"));
+        ReplacementDataSet expResult3 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expWarehouseNoticeDetails.xml"));
         expResult3.addReplacementObject("null", null);
         assertDataSet("warehouse_notice_details",
         		"select * from warehouse_notice_details where warehouse_notice_code = 'CGRKTZ2017120500166'",expResult3,conn);
@@ -68,19 +98,51 @@ public class WarehouseNoticeDbUnit extends BaseTest {
         /**
          * 更新相应sku的在途库存数
          **/
-        ReplacementDataSet expResult4 = createDataSet(loader.getResourceAsStream("warehouseNotice/expSkuStock.xml"));
+        ReplacementDataSet expResult4 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expSkuStock.xml"));
         expResult4.addReplacementObject("null", null);
         assertDataSet("sku_stock","select * from sku_stock where id = 8",expResult4,conn);
 		
 	}
 	
 	/**
+	 * case 2
+	 * 入库单通知收货-入库通知单为空
+	 * @throws Exception 
+	 */
+	@Test
+	public void receiptAdvice_warehouseNoticeNull () throws Exception {
+		mockQimenEntryOrderCreate();
+		warehouseNoticeBiz.receiptAdvice(null, createAclUserAccreditInfo());
+	}
+	
+	/**
+	 * case 3
 	 * 入库单通知收货-查询采购单失败(采购单状态不合法)
 	 * @throws Exception 
 	 */
 	@Test
 	public void receiptAdvice_purchaseOrderStatusErr () throws Exception {
 		
+		preTest("case3/preWarehouseNotice","case3/prePurchaseOrder","case3/preSkuStock",
+				"case3/preWarehouseNoticeDetails");
+		
+		mockQimenEntryOrderCreate();
+		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
+	}
+	
+	/**
+	 * case 4
+	 * 入库单通知收货-入库单通知状态不符合修改条件,无法进行入库通知的操作
+	 * @throws Exception 
+	 */
+	@Test
+	public void receiptAdvice_warehouseNoticeOrderStatusErr () throws Exception {
+		
+		preTest("case4/preWarehouseNotice","case4/prePurchaseOrder","case4/preSkuStock",
+				"case4/preWarehouseNoticeDetails");
+		
+		mockQimenEntryOrderCreate();
+		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
