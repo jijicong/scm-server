@@ -173,12 +173,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    public Response selectWarehouseNotInLocation() {
+    public Response selectWarehouseNotInLocation(AclUserAccreditInfo aclUserAccreditInfo) {
         //1、首先查出本地存在的仓库
         log.info("查询符合条件的仓库===》");
         Example example1 = new Example(WarehouseInfo.class);
         Example.Criteria criteria1 = example1.createCriteria();
         criteria1.andEqualTo("isDelete",ZeroToNineEnum.ZERO.getCode());
+        criteria1.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
         List<WarehouseInfo> resultList = warehouseInfoService.selectByExample(example1);
         List<String> codeList = new ArrayList<>();
         for (WarehouseInfo warehouseInfo:resultList){
@@ -224,7 +225,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    public Pagenation<WarehouseInfoResult> selectWarehouseInfoByPage(WarehouseInfoForm query, Pagenation<WarehouseInfo> page) {
+    public Pagenation<WarehouseInfoResult> selectWarehouseInfoByPage(WarehouseInfoForm query, Pagenation<WarehouseInfo> page,AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(page.getPageNo(),"分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(),"分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(),"分页查询参数start不能为空");
@@ -234,6 +235,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         if(!StringUtils.isBlank(query.getWarehouseName())){
             criteria.andLike("warehouseName","%"+query.getWarehouseName()+"%");
         }
+        criteria.andEqualTo("channelCode",aclUserAccreditInfo.getChannelCode());
         criteria.andEqualTo("isDelete",ZeroToNineEnum.ZERO.getCode());
         example.orderBy("createTime").desc();
         Pagenation<WarehouseInfo> pagenation = warehouseInfoService.pagination(example,page,query);
