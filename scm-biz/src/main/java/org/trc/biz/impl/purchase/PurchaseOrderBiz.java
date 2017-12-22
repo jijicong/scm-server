@@ -443,7 +443,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put(WAREHOUSE_INFO_ID, warehouseInfoId);
         List<PurchaseDetail>  purchaseDetailListCheck = purchaseOrderService.selectItemsBySupplierCodeCheck(map);
         if(purchaseDetailListCheck.size() == 0){
-            String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
+            String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
@@ -462,7 +462,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("itemNo", form.getItemNo());
         int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
         if(purchaseDetailListCount < 1){
-            return null;
+            return new Pagenation<PurchaseDetail>();
         }
         //获取总数
         page.setTotalCount(purchaseDetailListCount);
@@ -803,7 +803,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put(SUPPLIER_CODE,supplierCode);
         int count2 = purchaseOrderService.selectCountItemsForSupplier(map);
         if(count2 < 1){
-            String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的商品！";
+            String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
@@ -1463,7 +1463,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
 
-        List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrands(supplierCode);
+        List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrandNames(supplierCode);
 
         return supplierBrandExts;
     }

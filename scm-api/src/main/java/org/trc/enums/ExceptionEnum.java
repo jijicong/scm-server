@@ -168,12 +168,14 @@ public enum ExceptionEnum{
     JING_DONG_BALANCE_INFO_EXCEPTION("1000106","京东账户余额信息查询异常"),
     JING_DONG_REMARK_NOT_NULL_EXCEPTION("1000107","了结时必填"),
     JING_DONG_STATISTICS_EXCEPTION("1000108","余额明细统计查询异常"),
+    JING_DONG_COMPLETION_ORDER_EXCEPTION("1000109","京东报表补偿异常"),
 
     LIANG_YOU_EXPORT_EXCEPTION("1000109","粮油代发报表导出异常"),
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),
     REMOTE_INVOKE_TIMEOUT_EXCEPTION("4000102","外部接口调用超时"),
     SIGN_ERROR("4000103","签名错误"),
+    ENPYTY_RESPONSE("4000104","外部接口返回空数据"),
     NOVALID("0","停用");
 
     private String code;

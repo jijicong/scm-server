@@ -32,13 +32,13 @@ import java.util.*;
  */
 @Service("jDService")
 public class JDServiceImpl implements IJDService {
-    private final static Logger log = LoggerFactory.getLogger(JDServiceImpl.class);
-    @Autowired
-    private ExternalSupplierConfig externalSupplierConfig;
     //接口调用超时时间
     public final static Integer TIME_OUT = 10000;
     //接口重试次数
     public final static Integer RETRY_TIMES = 3;
+    private final static Logger log = LoggerFactory.getLogger(JDServiceImpl.class);
+    @Autowired
+    private ExternalSupplierConfig externalSupplierConfig;
 
     @Override
     public ReturnTypeDO<Pagenation<SupplyItemsExt>> skuPage(SupplyItemsExt form, Pagenation<SupplyItemsExt> page) throws Exception {
@@ -502,6 +502,7 @@ public class JDServiceImpl implements IJDService {
         return returnTypeDO;
     }
 
+    @Override
     public ReturnTypeDO getOperateState(Long id){
         ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         Map<String, Object> map = new HashedMap();
@@ -533,6 +534,7 @@ public class JDServiceImpl implements IJDService {
     }
 
 
+    @Override
     public ReturnTypeDO statisticsRecord(BalanceDetailDO queryModel){
         ReturnTypeDO<JSONObject> returnTypeDO = new ReturnTypeDO<JSONObject>();
         returnTypeDO.setSuccess(false);
@@ -555,6 +557,35 @@ public class JDServiceImpl implements IJDService {
             }
         }catch (Exception e){
             String msg = String.format("调用余额明细统计接口异常,错误信息:%s", e.getMessage());
+            log.error(msg, e);
+            returnTypeDO.setResultMessage(msg);
+        }
+        return returnTypeDO;
+    }
+
+    @Override
+    public ReturnTypeDO reportCompensate(String date) {
+        AssertUtil.notBlank(date, "调用外部京东对账数据补偿接口date不能为空");
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(false);
+        String response = null;
+        try{
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("date", date);
+            String url = externalSupplierConfig.getScmExternalUrl()+externalSupplierConfig.getReportCompensateUrl();
+            response = HttpClientUtil.httpPostRequest(url, map, TIME_OUT);
+            if(StringUtils.isNotBlank(response)){
+                JSONObject jbo = JSONObject.parseObject(response);
+                if(StringUtils.equals(jbo.getString("code"), "200")){
+                    returnTypeDO.setSuccess(true);
+                }
+                returnTypeDO.setResultMessage(jbo.getString("message"));
+                returnTypeDO.setResult(jbo.getString("data"));
+            }else {
+                returnTypeDO.setResultMessage("调用外部京东对账数据补偿接口返回结果为空");
+            }
+        }catch (Exception e){
+            String msg = String.format("调用外部京东对账数据补偿接口异常,错误信息:%s", e.getMessage());
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }
