@@ -62,6 +62,8 @@ public abstract class BaseTest extends AbstractTransactionalJUnit4SpringContextT
         //config database as MySql
         DatabaseConfig dbConfig = conn.getConfig();
         dbConfig.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY,  new MySqlDataTypeFactory());
+        // 允许空字符串
+        dbConfig.setProperty(DatabaseConfig.FEATURE_ALLOW_EMPTY_FIELDS, true);
 
     }
 

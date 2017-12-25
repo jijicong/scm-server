@@ -30,7 +30,7 @@ public interface IWarehouseInfoBiz {
      *
      * @return
      */
-    Response selectWarehouseNotInLocation();
+    Response selectWarehouseNotInLocation(AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 查询仓库名
@@ -46,7 +46,7 @@ public interface IWarehouseInfoBiz {
      * @param page  分页
      * @return
      */
-    Pagenation<WarehouseInfoResult> selectWarehouseInfoByPage(WarehouseInfoForm query, Pagenation<WarehouseInfo> page);
+    Pagenation<WarehouseInfoResult> selectWarehouseInfoByPage(WarehouseInfoForm query, Pagenation<WarehouseInfo> page,AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 保存货主信息
