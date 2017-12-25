@@ -672,12 +672,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             pagenation.setPageNo(pageTem.getPageNo());
             pagenation.setResult(newList);
             log.info("补全数据结束，返回结果");
-        }else {
-            pagenation.setStart(pageTem.getStart());
-            pagenation.setTotalCount(pageTem.getTotalCount());
-            pagenation.setPageSize(pageTem.getPageSize());
-            pagenation.setPageNo(pageTem.getPageNo());
-            pagenation.setResult(null);
         }
         return pagenation;
     }

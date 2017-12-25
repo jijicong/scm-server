@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <sku_stock 
+  	id="8"
+	spu_code="SPU2017072400001"
+	sku_code="SP0201707240000002"
+	channel_code="YWX001"
+	warehouse_id="14"
+	warehouse_code="CK00014"
+	warehouse_item_id="32"
+	available_inventory="20"
+	available_defective_inventory="0"
+	lock_inventory="0"
+	air_inventory="82"
+	frozen_inventory="0"
+	real_inventory="20"
+	defective_inventory="0"
+	is_deleted="0"
+	create_time="2017-11-28 19:19:04.0"
+	update_time="2017-12-14 03:28:19.0"
+	is_valid="1"
+	/>
+</dataset>
