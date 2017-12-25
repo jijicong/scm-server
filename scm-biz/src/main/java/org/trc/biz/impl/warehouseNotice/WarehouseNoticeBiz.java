@@ -408,7 +408,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 }
 
             }else {
-                logger.error("未获取到锁！");
+                logger.error("库存ID:"+warehouseNoticeDetails.getSkuStockId()+"未获取到锁！/n真实库存新增："+(normalQuantity + defectiveQuantity)
+                +"/n可用正品库新增："+normalQuantity+"/n残次品库存新增："+defectiveQuantity);
             }
         }
 
