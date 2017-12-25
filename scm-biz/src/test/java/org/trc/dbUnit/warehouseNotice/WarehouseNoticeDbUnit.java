@@ -9,7 +9,10 @@ import java.util.List;
 
 import org.dbunit.dataset.ReplacementDataSet;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
 import org.trc.biz.impl.warehouseNotice.WarehouseNoticeBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -54,10 +57,40 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 		
 	}
 	
-	private void resultCompare () {
-		
+	private void resultCompare (String caseString) throws Exception {
+		/**
+		 * 采购单状态修改为 已通知
+		 **/
+        ReplacementDataSet expResult = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/" + 
+        		caseString + "/expPurchaseOrder.xml"));
+        expResult.addReplacementObject("null", null);
+        assertDataSet("purchase_order","select * from purchase_order where id = 365",expResult,conn);
+        
+        /**
+         * 更新入库通知单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
+         **/
+        ReplacementDataSet expResult1 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/" + 
+        		caseString + "/expWarehouseNotice.xml"));
+        expResult1.addReplacementObject("null", null);
+        assertDataSet("warehouse_notice","select * from warehouse_notice where id = 35",expResult1,conn);
+        
+		/**
+		 * 更新入库明细表中的商品为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
+		 **/
+        ReplacementDataSet expResult3 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/" + 
+        		caseString + "/expWarehouseNoticeDetails.xml"));
+        expResult3.addReplacementObject("null", null);
+        assertDataSet("warehouse_notice_details",
+        		"select * from warehouse_notice_details where warehouse_notice_code = 'CGRKTZ2017120500166'",expResult3,conn);
+       
+        /**
+         * 成功则更新相应sku的在途库存数
+         **/
+        ReplacementDataSet expResult4 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/" +
+        		caseString + "/expSkuStock.xml"));
+        expResult4.addReplacementObject("null", null);
+        assertDataSet("sku_stock","select * from sku_stock where id = 8",expResult4,conn);
 	}
-	
 	/**
 	 * case 1
 	 * 入库单通知收货-仓库接收成功
@@ -70,37 +103,10 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 				"case1/preWarehouseNoticeDetails");
 		
 		/**  入库通知成功  **/
-		mockQimenEntryOrderCreate();
+		mockQimenEntryOrderCreate(true);
 		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
 		
-		/**
-		 * 采购单状态修改为 已通知
-		 **/
-        ReplacementDataSet expResult = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expPurchaseOrder.xml"));
-        expResult.addReplacementObject("null", null);
-        assertDataSet("purchase_order","select * from purchase_order where id = 365",expResult,conn);
-        
-        /**
-         * 更新入库通知单为 待仓库反馈状态 
-         **/
-        ReplacementDataSet expResult1 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expWarehouseNotice.xml"));
-        expResult1.addReplacementObject("null", null);
-        assertDataSet("warehouse_notice","select * from warehouse_notice where id = 35",expResult1,conn);
-        
-		/**
-		 * 更新入库明细表中的商品为 待仓库反馈状态
-		 **/
-        ReplacementDataSet expResult3 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expWarehouseNoticeDetails.xml"));
-        expResult3.addReplacementObject("null", null);
-        assertDataSet("warehouse_notice_details",
-        		"select * from warehouse_notice_details where warehouse_notice_code = 'CGRKTZ2017120500166'",expResult3,conn);
-       
-        /**
-         * 更新相应sku的在途库存数
-         **/
-        ReplacementDataSet expResult4 = createDataSet(loader.getResourceAsStream("warehouseNotice/exp/expSkuStock.xml"));
-        expResult4.addReplacementObject("null", null);
-        assertDataSet("sku_stock","select * from sku_stock where id = 8",expResult4,conn);
+		resultCompare("case1");
 		
 	}
 	
@@ -111,7 +117,7 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 	 */
 	@Test
 	public void receiptAdvice_warehouseNoticeNull () throws Exception {
-		mockQimenEntryOrderCreate();
+		mockQimenEntryOrderCreate(true);
 		warehouseNoticeBiz.receiptAdvice(null, createAclUserAccreditInfo());
 	}
 	
@@ -126,7 +132,7 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 		preTest("case3/preWarehouseNotice","case3/prePurchaseOrder","case3/preSkuStock",
 				"case3/preWarehouseNoticeDetails");
 		
-		mockQimenEntryOrderCreate();
+		mockQimenEntryOrderCreate(true);
 		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
 	}
 	
@@ -141,18 +147,42 @@ public class WarehouseNoticeDbUnit extends BaseTest {
 		preTest("case4/preWarehouseNotice","case4/prePurchaseOrder","case4/preSkuStock",
 				"case4/preWarehouseNoticeDetails");
 		
-		mockQimenEntryOrderCreate();
+		mockQimenEntryOrderCreate(true);
 		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
 	}
 	
+	
+	/**
+	 * case 5
+	 * 入库单通知收货-仓库接收失败
+	 * @throws Exception 
+	 */
+	@Test
+	public void receiptAdvice_fail () throws Exception {
+		
+		preTest("case1/preWarehouseNotice","case1/prePurchaseOrder","case1/preSkuStock",
+				"case1/preWarehouseNoticeDetails");
+		
+		/**  入库通知失败  **/
+		mockQimenEntryOrderCreate(false);
+		warehouseNoticeBiz.receiptAdvice(createWarehouseNotice(), createAclUserAccreditInfo());
+		
+		resultCompare("case5");
+		
+	}
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void mockQimenEntryOrderCreate() {
+	private void mockQimenEntryOrderCreate(Boolean isSucc) {
 		
 		IQimenService qimenService = mock(IQimenService.class);
 		warehouseNoticeBiz.setQimenService(qimenService);
 		AppResult ret = new AppResult();
-		ret.setAppcode("200");
-		ret.setDatabuffer("入库单创建成功");
+		if (isSucc) {
+			ret.setAppcode("200");
+			ret.setDatabuffer("入库单创建成功");
+		} else {
+			ret.setAppcode("0");
+			ret.setDatabuffer("mock测试，入库单创建失败");
+		}
 		String body = "{\"flag\":\"success\",\"code\":\"200\",\"success\":true,\"entryOrderId\":\"WMS-CGRKTZ2017120500166\",\"message\":\"入库单创建成功\",\"body\":\"<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?><response>   <flag>success</flag>    <code>200</code>    <message>入库货单创建成功</message>    <entryOrderId>dbtest001</entryOrderId> </response>\"}";
 		ret.setResult(JSON.parseObject(body));
 		when(qimenService.entryOrderCreate(any(EntryorderCreateRequest.class))).thenReturn(ret);	
