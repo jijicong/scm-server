@@ -433,6 +433,14 @@
                 <jvm.opt.args>-server -Xms2048m -Xmx3072m -Xmn1152m -XX:MetaspaceSize=256m</jvm.opt.args>
             </properties>
         </profile>
+        <profile>
+            <!-- 预发环境 -->
+            <id>pre</id>
+            <properties>
+                <package.environment>pre</package.environment>
+                <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
