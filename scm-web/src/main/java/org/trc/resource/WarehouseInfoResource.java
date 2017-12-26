@@ -54,9 +54,9 @@ public class WarehouseInfoResource {
     @GET
     @Path(SupplyConstants.WarehouseInfo.SELECT_WAREHOUSE_NAME_NOT_LOCATION)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryWarehouseNameNotLocation() throws Exception{
+    public Response queryWarehouseNameNotLocation(@Context ContainerRequestContext requestContext) throws Exception{
         logger.info("开始查询未添加的仓库名称=========》");
-        return warehouseInfoBiz.selectWarehouseNotInLocation();
+        return warehouseInfoBiz.selectWarehouseNotInLocation((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @GET
@@ -70,9 +70,9 @@ public class WarehouseInfoResource {
     @GET
     @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_INFO_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Pagenation<WarehouseInfoResult> queryWarehouseName(@BeanParam WarehouseInfoForm query, @BeanParam Pagenation<WarehouseInfo> page) throws Exception{
+    public Pagenation<WarehouseInfoResult> queryWarehouseName(@BeanParam WarehouseInfoForm query, @BeanParam Pagenation<WarehouseInfo> page,@Context ContainerRequestContext requestContext) throws Exception{
         logger.info("开始分页查询仓库信息，请求参数分别为：query="+ JSON.toJSONString(query)+",page="+JSON.toJSONString(page));
-        return warehouseInfoBiz.selectWarehouseInfoByPage(query,page);
+        return warehouseInfoBiz.selectWarehouseInfoByPage(query,page,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @PUT

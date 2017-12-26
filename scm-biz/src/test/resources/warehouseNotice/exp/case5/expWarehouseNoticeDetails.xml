@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <warehouse_notice_details 
+  defective_storage_quantity="null" 
+  actual_instock_time="null" 
+  instock_exception="null" 
+  storage_time="null"
+  id="24" warehouse_notice_code="CGRKTZ2017120500166" sku_name="ww" sku_code="SP0201707240000002" brand_id="8" category_id="13" purchase_price="100" purchasing_quantity="2" actual_storage_quantity="90" bar_code="00000001" spec_info="&#35268;&#26684;" batch_no="123456" production_code="123456" production_date="2017-12-05 00:00:00.0" expired_date="2017-12-19 08:44:54.0" expired_day="12" sku_stock_id="8" purchase_amount="100" status="1" normal_storage_quantity="90" owner_code="123" item_id="32" create_time="2017-12-05 17:21:37.0"/>
+</dataset>

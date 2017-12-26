@@ -10,6 +10,7 @@
             </set>
             where
               channel_code = #{channelCode} AND warehouse_code = #{warehouseCode} AND sku_code = #{sku.skuCode}
+              AND is_deleted = '0' AND is_valid = '1'
         </foreach>
     </update>    
     
@@ -23,6 +24,7 @@
    			</foreach> 
             where
               channel_code = #{stock.channelCode} AND warehouse_code = #{stock.warehouseCode} AND sku_code = #{stock.skuCode}
+              AND is_deleted = '0' AND is_valid = '1'
         </foreach>
     </update>    
 
