@@ -363,46 +363,53 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //冻结库存表
             String identifier = stockLock.Lock(STOCK + warehouseNoticeDetails.getSkuStockId());
             //修改库存
-            SkuStock skuStock = skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
-            if (null != skuStock) {
+            if (StringUtils.isNotBlank(identifier)){
 
-                //更新库存表
-                List<RequsetUpdateStock> stockList = new ArrayList<RequsetUpdateStock>();
-                RequsetUpdateStock stock = new RequsetUpdateStock();
-                Map<String, String> map = new HashMap<String, String>();
-                //真实库存
-                map.put("real_inventory", String.valueOf(normalQuantity+defectiveQuantity));
-                //可用正品库存
-                map.put("available_inventory",  String.valueOf(normalQuantity));
-                //残次品库存
-                map.put("defective_inventory", String.valueOf(defectiveQuantity));
-                //在途库存
-                Long airInventory = skuStock.getAirInventory() - normalQuantity - defectiveQuantity;
-                if (airInventory < 0) {
-                    airInventory = skuStock.getAirInventory();
-                } else {
-                    airInventory = normalQuantity + defectiveQuantity;
-                }
-                map.put("air_inventory", String.valueOf(0-airInventory));
-                stock.setChannelCode(warehouseNotice.getChannelCode());
-                stock.setSkuCode(warehouseNoticeDetails.getSkuCode());
-                stock.setWarehouseCode(warehouseNotice.getWarehouseCode());
-                stock.setStockType(map);
-                stockList.add(stock);
+                SkuStock skuStock = skuStockService.selectByPrimaryKey(warehouseNoticeDetails.getSkuStockId());
+                if (null != skuStock) {
 
-                try {
-                    skuStockService.updateSkuStock(stockList);
+                    //更新库存表
+                    List<RequsetUpdateStock> stockList = new ArrayList<RequsetUpdateStock>();
+                    RequsetUpdateStock stock = new RequsetUpdateStock();
+                    Map<String, String> map = new HashMap<String, String>();
+                    //真实库存
+                    map.put("real_inventory", String.valueOf(normalQuantity + defectiveQuantity));
+                    //可用正品库存
+                    map.put("available_inventory", String.valueOf(normalQuantity));
+                    //残次品库存
+                    map.put("defective_inventory", String.valueOf(defectiveQuantity));
+                    //在途库存
+                    Long airInventory = skuStock.getAirInventory() - normalQuantity - defectiveQuantity;
+                    if (airInventory < 0) {
+                        airInventory = skuStock.getAirInventory();
+                    } else {
+                        airInventory = normalQuantity + defectiveQuantity;
+                    }
+                    map.put("air_inventory", String.valueOf(0 - airInventory));
+                    stock.setChannelCode(warehouseNotice.getChannelCode());
+                    stock.setSkuCode(warehouseNoticeDetails.getSkuCode());
+                    stock.setWarehouseCode(warehouseNotice.getWarehouseCode());
+                    stock.setStockType(map);
+                    stockList.add(stock);
 
-                } catch (Exception e) {
-                   logger.error("库存更新异常",e);
-                }finally {
-                    //释放锁
-                    if (stockLock.releaseLock(STOCK+warehouseNoticeDetails.getSkuStockId(),identifier)){
-                        logger.info(STOCK+warehouseNoticeDetails.getSkuStockId()+"已释放！");
-                    }else {
-                        logger.error(STOCK+warehouseNoticeDetails.getSkuStockId()+"解锁失败！");
+                    try {
+                        skuStockService.updateSkuStock(stockList);
+
+                    } catch (Exception e) {
+                        logger.error("库存更新异常", e);
+                    } finally {
+                        //释放锁
+                        if (stockLock.releaseLock(STOCK + warehouseNoticeDetails.getSkuStockId(), identifier)) {
+                            logger.info(STOCK + warehouseNoticeDetails.getSkuStockId() + "已释放！");
+                        } else {
+                            logger.error(STOCK + warehouseNoticeDetails.getSkuStockId() + "解锁失败！");
+                        }
                     }
                 }
+
+            }else {
+                logger.error("库存ID:"+warehouseNoticeDetails.getSkuStockId()+"未获取到锁！/n真实库存新增："+(normalQuantity + defectiveQuantity)
+                +"/n可用正品库新增："+normalQuantity+"/n残次品库存新增："+defectiveQuantity);
             }
         }
 
