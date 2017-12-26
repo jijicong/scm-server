@@ -1369,6 +1369,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
 
+        warehouseNotice.setNormalStorageQuantity(0L);
+        warehouseNotice.setDefectiveStorageQuantity(0L);
 
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
