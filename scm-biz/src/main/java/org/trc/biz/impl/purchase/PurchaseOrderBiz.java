@@ -1334,6 +1334,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
             details.setCreateTime(Calendar.getInstance().getTime());
+            details.setNormalStorageQuantity(0L);
+            details.setDefectiveStorageQuantity(0L);
             warehouseNoticeDetails.add(details);
         }
         int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
@@ -1368,9 +1370,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setRemark("新增入库通知单");
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
-
-        warehouseNotice.setNormalStorageQuantity(0L);
-        warehouseNotice.setDefectiveStorageQuantity(0L);
 
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
