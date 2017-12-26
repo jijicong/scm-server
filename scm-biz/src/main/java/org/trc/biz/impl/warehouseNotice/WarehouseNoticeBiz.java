@@ -316,9 +316,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             warehouseNoticeDetails.setSkuCode(itemCode);
             warehouseNoticeDetails.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
             warehouseNoticeDetails = warehouseNoticeDetailsService.selectOne(warehouseNoticeDetails);
+            warehouseNotice.setFailureCause(StringUtils.EMPTY);
             if (null==warehouseNoticeDetails){
                 warehouseNotice.setFailureCause("根据SKU:"+itemCode+",入库通知单编号:"+warehouseNotice.getWarehouseNoticeCode()+".查询入库通知单详情为空");
-             return    WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode();
+             return    WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
             }
 
             //残次品入库数量
