@@ -25,7 +25,7 @@ import org.trc.util.lock.StockLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
-public class StocklTest {
+public class StocklTest extends AbstractTransactionalJUnit4SpringContextTests {
 
     @Autowired
     private StockLock stockLock;
@@ -50,14 +50,11 @@ public class StocklTest {
     }
     
     @Test
-    @Transactional(transactionManager = "transactionManager")
-    @Rollback(value = false)
     public void airStockTest () {
     	WarehouseNoticeDetails record = new WarehouseNoticeDetails();
     	record.setId(24l);
-    	record.setSkuName("henhao.5555");
+    	record.setSkuName("henhao.6666");
 		detail.updateByPrimaryKeySelective(record);
-		throw new RuntimeException("212");
     }
 
 }
