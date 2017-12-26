@@ -106,11 +106,6 @@ public class WarehouseNotice {
     private Date createTime;
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
-    //正品入库数量
-    private Long normalStorageQuantity;
-    //残次品入库数量
-    private Long defectiveStorageQuantity;
-    
     /**
      * scm2.0新增字段 
      **/
@@ -479,21 +474,5 @@ public class WarehouseNotice {
 
     public void setWarehouseInfoId(Long warehouseInfoId) {
         this.warehouseInfoId = warehouseInfoId;
-    }
-
-    public Long getNormalStorageQuantity() {
-        return normalStorageQuantity;
-    }
-
-    public void setNormalStorageQuantity(Long normalStorageQuantity) {
-        this.normalStorageQuantity = normalStorageQuantity;
-    }
-
-    public Long getDefectiveStorageQuantity() {
-        return defectiveStorageQuantity;
-    }
-
-    public void setDefectiveStorageQuantity(Long defectiveStorageQuantity) {
-        this.defectiveStorageQuantity = defectiveStorageQuantity;
     }
 }
