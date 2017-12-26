@@ -4,40 +4,33 @@ package org.trc.service;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
+import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.service.System.IChannelSellChannelService;
 import org.trc.service.System.IChannelService;
 import org.trc.service.System.ISellChannelService;
+import org.trc.service.impl.warehouseNotice.WarehouseNoticeDetailsService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.impower.IAclUserChannelSellService;
 import org.trc.util.lock.StockLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
-@TestExecutionListeners(TransactionalTestExecutionListener.class)
-//@Transactional
-public class StocklTest extends AbstractJUnit4SpringContextTests {
+public class StocklTest {
 
-    @Autowired
-    private IAclUserChannelSellService aclUserChannelSellService;
-
-    @Autowired
-    private IAclUserAccreditInfoService aclUserAccreditInfoService;
-    @Autowired
-    private IChannelService channelService;
-    @Autowired
-    private IChannelSellChannelService channelSellChannelService;
-    @Autowired
-    private ISellChannelService sellChannelService;
-    @Autowired
-    private IAclUserAccreditInfoBiz userAccreditInfoBiz;
     @Autowired
     private StockLock stockLock;
+    @Autowired
+    private WarehouseNoticeDetailsService detail;
 
 
     @Test
@@ -54,6 +47,17 @@ public class StocklTest extends AbstractJUnit4SpringContextTests {
             }).start();
         }
         System.in.read();
+    }
+    
+    @Test
+    @Transactional(transactionManager = "transactionManager")
+    @Rollback(value = false)
+    public void airStockTest () {
+    	WarehouseNoticeDetails record = new WarehouseNoticeDetails();
+    	record.setId(24l);
+    	record.setSkuName("henhao.5555");
+		detail.updateByPrimaryKeySelective(record);
+		throw new RuntimeException("212");
     }
 
 }
