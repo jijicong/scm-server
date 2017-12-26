@@ -312,8 +312,10 @@ public class GoodsBiz implements IGoodsBiz {
         //查询SKU相关库存信息
         Example example4 = new Example(SkuStock.class);
         Example.Criteria criteria4 = example4.createCriteria();
-        criteria4.andIn("spuCode", skuCodeList);
+        criteria4.andIn("skuCode", skuCodeList);
         criteria4.andEqualTo("channelCode", channelCode);
+        criteria4.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+        criteria4.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
         List<SkuStock> skuStockList = skuStockService.selectByExample(example4);
         /*AssertUtil.notEmpty(skuStockList, String.format("根据多个SKU编码[%s]查询SKU库存信息为空",
                 CommonUtil.converCollectionToString(Arrays.asList(skuCodeList))));*/
@@ -1820,19 +1822,19 @@ public class GoodsBiz implements IGoodsBiz {
                         AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
                         skuStock.setWarehouseName(warehouse.getName());*/
                     }
-                    Example exampleWarehouse = new Example(Warehouse.class);
+                    Example exampleWarehouse = new Example(WarehouseInfo.class);
                     Example.Criteria criteriaWarehouse = exampleWarehouse.createCriteria();
-                    criteriaWarehouse.andEqualTo("isNoticeSuccess", 1);
-                    criteriaWarehouse.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
-                    List<Warehouse> warehouseList = warehouseService.selectByExample(exampleWarehouse);
+                    criteriaWarehouse.andEqualTo("ownerWarehouseState", 1);
+//                    criteriaWarehouse.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                    List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(exampleWarehouse);
                     List<SkuStock> skuStockList = new ArrayList<>();
 
                     if (!AssertUtil.collectionIsEmpty(warehouseList)) {
                         for (SkuStock skuStock : skuStocks) {
                             boolean isFlag = false;
-                            for (Warehouse warehouse : warehouseList) {
+                            for (WarehouseInfo warehouse : warehouseList) {
                                 if (StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())) {
-                                    skuStock.setWarehouseName(warehouse.getName());
+                                    skuStock.setWarehouseName(warehouse.getWarehouseName());
                                     isFlag = true;
                                 }
                             }
