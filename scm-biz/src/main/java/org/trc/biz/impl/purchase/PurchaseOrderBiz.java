@@ -53,7 +53,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -431,15 +430,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Response findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
+    public Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
         String supplierCode = form.getSupplierCode();
         String warehouseInfoId = form.getWarehouseInfoId();
         //校验商品
-        String notFoundMsg = this.checkItems(supplierCode);
-        if(notFoundMsg != null){
-            AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), notFoundMsg, new Pagenation<PurchaseDetail>());
-            return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
-        }
+        this.checkItems(supplierCode);
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
 
@@ -450,9 +445,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(purchaseDetailListCheck.size() == 0){
             String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！";
             LOGGER.error(msg);
-            AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), msg, new Pagenation<PurchaseDetail>());
-            return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
-            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
         if(StringUtils.isBlank(skus)){
@@ -469,7 +462,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("itemNo", form.getItemNo());
         int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
         if(purchaseDetailListCount < 1){
-            return ResultUtil.createSuccessPageResult(new Pagenation<PurchaseDetail>());
+            return new Pagenation<PurchaseDetail>();
         }
         //获取总数
         page.setTotalCount(purchaseDetailListCount);
@@ -495,7 +488,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         page.setResult(purchaseDetailList);
 
-        return ResultUtil.createSuccessPageResult(page);
+        return page;
     }
 
     private Pagenation<PurchaseDetail> getPage(String msg){
@@ -796,14 +789,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
 
-    private String checkItems(String supplierCode){
+    private void checkItems(String supplierCode){
         Example example = new Example(Items.class);
         int count = itemsService.selectCountByExample(example);
         if(count < 1){
             String msg = "无数据，请确认【商品管理】中存在商品类型为”自采“的商品！";
             LOGGER.error(msg);
-            return msg;
-            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
         example = new Example(Items.class);
@@ -813,8 +805,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(count < 1){
             String msg = "无数据，请确认【商品管理】中存在“启用”状态的自采商品！";
             LOGGER.error(msg);
-            return msg;
-            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
         Map<String, Object> map = new HashMap<>();
@@ -824,10 +815,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(count2 < 1){
             String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品";
             LOGGER.error(msg);
-            return msg;
-            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
-        return null;
     }
 
     @Override

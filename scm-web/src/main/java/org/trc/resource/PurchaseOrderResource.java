@@ -189,7 +189,7 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.PURCHASE_ORDER_ITEM)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findAllPurchaseDetail(@BeanParam ItemForm form, @BeanParam Pagenation<PurchaseDetail> page,@QueryParam("skus") String skus) {
-        return purchaseOrderBiz.findPurchaseDetail(form,page,skus);
+        return ResultUtil.createSuccessPageResult(purchaseOrderBiz.findPurchaseDetail(form,page,skus));
     }
 
 }
