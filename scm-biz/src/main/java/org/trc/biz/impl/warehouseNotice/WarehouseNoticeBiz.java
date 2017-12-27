@@ -10,7 +10,6 @@ import com.qimen.api.request.EntryorderCreateRequest.OrderLine;
 import com.qimen.api.request.EntryorderCreateRequest.ReceiverInfo;
 import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
 import com.qimen.api.response.EntryorderCreateResponse;
-import com.qiniu.util.Json;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -246,7 +245,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         confirmRequest = (EntryorderConfirmRequest) xstream.fromXML(requestText);
         if (null != confirmRequest) {
             //记录流水
-            warehouseNoticeCallbackService.recordCallbackLog(confirmRequest.getEntryOrder().getOutBizCode(),requestText,1,"",confirmRequest.getEntryOrder().getEntryOrderCode());
+            warehouseNoticeCallbackService.recordCallbackLog(confirmRequest.getEntryOrder().getOutBizCode(), requestText, 1, "", confirmRequest.getEntryOrder().getEntryOrderCode());
             //获取orderLines 入库单详情
             List<EntryorderConfirmRequest.OrderLine> orderLineList = confirmRequest.getOrderLines();
             //获取入库单号
@@ -255,6 +254,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 //查询入库通知单
                 WarehouseNotice warehouseNotice = new WarehouseNotice();
                 warehouseNotice.setWarehouseNoticeCode(entryOrderCode);
+                warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
                 warehouseNotice = warehouseNoticeService.selectOne(warehouseNotice);
                 Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap = new HashMap<>();
                 if (null != warehouseNotice) {
@@ -298,6 +298,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
                         warehouseNoticeService.updateByPrimaryKeySelective(warehouseNotice);
                     }
+                } else {
+                    throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_QUERY_EXCEPTION, "未查询到已经通知仓库收货的编号为" + entryOrderCode + "的入库通知单!");
                 }
             }
         }
@@ -346,6 +348,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             else if (normalQuantity.equals(warehouseNoticeDetails.getPurchasingQuantity())) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
+            //设置入库通知的详情的入库信息.
             Long warehouseNoticeDetailDefectiveStorageQuantity = warehouseNoticeDetails.getDefectiveStorageQuantity()==null?0:warehouseNoticeDetails.getDefectiveStorageQuantity();
             Long warehouseNoticeDetailNormalStorageQuantity = warehouseNoticeDetails.getNormalStorageQuantity()==null?0:warehouseNoticeDetails.getNormalStorageQuantity();
             warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetailDefectiveStorageQuantity + defectiveQuantity);
