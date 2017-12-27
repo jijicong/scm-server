@@ -346,9 +346,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             else if (normalQuantity.equals(warehouseNoticeDetails.getPurchasingQuantity())) {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
-            warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity() + defectiveQuantity);
-            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity()+ normalQuantity);
-            warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity()+warehouseNoticeDetails.getNormalStorageQuantity());
+            Long warehouseNoticeDetailDefectiveStorageQuantity = warehouseNoticeDetails.getDefectiveStorageQuantity()==null?0:warehouseNoticeDetails.getDefectiveStorageQuantity();
+            Long warehouseNoticeDetailNormalStorageQuantity = warehouseNoticeDetails.getNormalStorageQuantity()==null?0:warehouseNoticeDetails.getNormalStorageQuantity();
+            warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetailDefectiveStorageQuantity + defectiveQuantity);
+            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetailNormalStorageQuantity+ normalQuantity);
+            warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetailDefectiveStorageQuantity+warehouseNoticeDetailNormalStorageQuantity);
             if(warehouseNoticeDetails.getPurchasingQuantity().equals( warehouseNoticeDetails.getActualStorageQuantity())){
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
