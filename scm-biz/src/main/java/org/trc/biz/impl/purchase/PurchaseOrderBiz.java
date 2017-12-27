@@ -430,11 +430,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
+    public Response findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
         String supplierCode = form.getSupplierCode();
         String warehouseInfoId = form.getWarehouseInfoId();
         //校验商品
-        this.checkItems(supplierCode);
+        String notFoundMsg = this.checkItems(supplierCode);
+        if(notFoundMsg != null){
+            return ResultUtil.createfailureResult(Response.Status.NOT_FOUND.getStatusCode(), notFoundMsg);
+        }
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
 
@@ -445,7 +448,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(purchaseDetailListCheck.size() == 0){
             String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！";
             LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            return ResultUtil.createfailureResult(Response.Status.NOT_FOUND.getStatusCode(), msg);
+            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
         if(StringUtils.isBlank(skus)){
@@ -462,7 +466,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("itemNo", form.getItemNo());
         int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
         if(purchaseDetailListCount < 1){
-            return new Pagenation<PurchaseDetail>();
+            return ResultUtil.createSuccessPageResult(new Pagenation<PurchaseDetail>());
         }
         //获取总数
         page.setTotalCount(purchaseDetailListCount);
@@ -488,6 +492,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         page.setResult(purchaseDetailList);
 
+        return ResultUtil.createSuccessPageResult(page);
+    }
+
+    private Pagenation<PurchaseDetail> getPage(String msg){
+        Pagenation<PurchaseDetail> page = new Pagenation<PurchaseDetail>();
+        List<PurchaseDetail> list = new ArrayList<>();
+        PurchaseDetail detail = new PurchaseDetail();
+        detail.setSkuName(msg);
+        list.add(detail);
+        page.setResult(list);
         return page;
     }
 
@@ -779,13 +793,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     }
 
-    private void checkItems(String supplierCode){
+    private String checkItems(String supplierCode){
         Example example = new Example(Items.class);
         int count = itemsService.selectCountByExample(example);
         if(count < 1){
             String msg = "无数据，请确认【商品管理】中存在商品类型为”自采“的商品！";
             LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            return msg;
+            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
         example = new Example(Items.class);
@@ -795,7 +810,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(count < 1){
             String msg = "无数据，请确认【商品管理】中存在“启用”状态的自采商品！";
             LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            return msg;
+            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
         Map<String, Object> map = new HashMap<>();
@@ -805,8 +821,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(count2 < 1){
             String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品";
             LOGGER.error(msg);
-            throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            return msg;
+            //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
+        return null;
     }
 
     @Override
