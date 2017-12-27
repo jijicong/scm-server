@@ -53,6 +53,7 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -436,7 +437,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //校验商品
         String notFoundMsg = this.checkItems(supplierCode);
         if(notFoundMsg != null){
-            return ResultUtil.createfailureResult(Response.Status.NOT_FOUND.getStatusCode(), notFoundMsg);
+            AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), notFoundMsg, new Pagenation<PurchaseDetail>());
+            return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
         }
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询的可采购商品失败,供应商编码为空");
         AssertUtil.notBlank(warehouseInfoId,"根据仓库信息查询的可采购商品失败,仓库信息主键为空");
@@ -448,7 +450,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(purchaseDetailListCheck.size() == 0){
             String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！";
             LOGGER.error(msg);
-            return ResultUtil.createfailureResult(Response.Status.NOT_FOUND.getStatusCode(), msg);
+            AppResult appResult = new AppResult(ResultEnum.SUCCESS.getCode(), msg, new Pagenation<PurchaseDetail>());
+            return Response.status(Response.Status.OK).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build();
             //throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
         }
 
