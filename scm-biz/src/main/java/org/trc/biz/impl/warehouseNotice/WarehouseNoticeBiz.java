@@ -316,6 +316,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             warehouseNoticeDetails.setSkuCode(itemCode);
             warehouseNoticeDetails.setWarehouseNoticeCode(warehouseNotice.getWarehouseNoticeCode());
             warehouseNoticeDetails = warehouseNoticeDetailsService.selectOne(warehouseNoticeDetails);
+            warehouseNotice.setFailureCause(StringUtils.EMPTY);
+            if (null==warehouseNoticeDetails){
+                warehouseNotice.setFailureCause("根据SKU:"+itemCode+",入库通知单编号:"+warehouseNotice.getWarehouseNoticeCode()+".查询入库通知单详情为空");
+             return    WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
+            }
+
             //残次品入库数量
             Long defectiveQuantity = 0L;
             //正品入库数量
@@ -341,7 +347,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
             warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity() + defectiveQuantity);
-            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity() + normalQuantity);
+            warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity()+ normalQuantity);
             warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetails.getDefectiveStorageQuantity()+warehouseNoticeDetails.getNormalStorageQuantity());
             if(warehouseNoticeDetails.getPurchasingQuantity().equals( warehouseNoticeDetails.getActualStorageQuantity())){
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
@@ -426,7 +432,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
         }
 
-
+        //入库通知单状态设置,直接返回.
         if (isReceivingError) {
             return WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
         } else if (isSection) {
