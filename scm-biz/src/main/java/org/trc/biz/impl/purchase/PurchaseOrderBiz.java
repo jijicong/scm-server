@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.github.pagehelper.PageHelper;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1302,8 +1301,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         List<WarehouseNoticeDetails> warehouseNoticeDetails = new ArrayList<WarehouseNoticeDetails>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        SkuStock skuStock = new SkuStock();
         for (PurchaseDetail purchaseDetail: purchaseDetailList) {
+            SkuStock skuStock = new SkuStock();
             WarehouseNoticeDetails details = new WarehouseNoticeDetails();
             details.setWarehouseNoticeCode(warehouseNoticeCode);
             details.setBrandId(purchaseDetail.getBrandId());
