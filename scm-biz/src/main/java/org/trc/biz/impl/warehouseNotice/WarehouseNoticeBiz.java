@@ -254,7 +254,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 //查询入库通知单
                 WarehouseNotice warehouseNotice = new WarehouseNotice();
                 warehouseNotice.setWarehouseNoticeCode(entryOrderCode);
-                warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
                 warehouseNotice = warehouseNoticeService.selectOne(warehouseNotice);
                 Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap = new HashMap<>();
                 if (null != warehouseNotice) {
@@ -353,7 +352,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             Long warehouseNoticeDetailNormalStorageQuantity = warehouseNoticeDetails.getNormalStorageQuantity()==null?0:warehouseNoticeDetails.getNormalStorageQuantity();
             warehouseNoticeDetails.setDefectiveStorageQuantity(warehouseNoticeDetailDefectiveStorageQuantity + defectiveQuantity);
             warehouseNoticeDetails.setNormalStorageQuantity(warehouseNoticeDetailNormalStorageQuantity+ normalQuantity);
-            warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetailDefectiveStorageQuantity+warehouseNoticeDetailNormalStorageQuantity);
+            warehouseNoticeDetails.setActualStorageQuantity(warehouseNoticeDetails.getNormalStorageQuantity()+warehouseNoticeDetails.getDefectiveStorageQuantity());
             if(warehouseNoticeDetails.getPurchasingQuantity().equals( warehouseNoticeDetails.getActualStorageQuantity())){
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
             }
