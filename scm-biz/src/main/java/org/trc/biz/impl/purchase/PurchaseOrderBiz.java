@@ -491,6 +491,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         return page;
     }
 
+    private Pagenation<PurchaseDetail> getPage(String msg){
+        Pagenation<PurchaseDetail> page = new Pagenation<PurchaseDetail>();
+        List<PurchaseDetail> list = new ArrayList<>();
+        PurchaseDetail detail = new PurchaseDetail();
+        detail.setSkuName(msg);
+        list.add(detail);
+        page.setResult(list);
+        return page;
+    }
+
     //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
