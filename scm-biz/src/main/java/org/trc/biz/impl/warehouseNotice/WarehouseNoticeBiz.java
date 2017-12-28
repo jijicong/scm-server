@@ -108,8 +108,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private StockLock stockLock;
     private boolean isSection = false;
     private boolean isReceivingError = false;
-    private List<String> defectiveSku = new ArrayList<>();
-    private List<String> errorSku = new ArrayList<>();
+    private List<String> defectiveSku;
+    private List<String> errorSku ;
     private final static String STOCK = "stock_";
 
     /**
@@ -272,6 +272,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             }
                             skuMap.put(itemCode, skuOrderLineList);
                         }
+                        errorSku = new ArrayList<>();
+                        defectiveSku = new ArrayList<>();
                         warehouseNotice.setStatus(getRequestDate(skuMap, warehouseNotice, defectiveSku, errorSku));
                         //获取异常入库sku,信息
                         String failureCause = "";
