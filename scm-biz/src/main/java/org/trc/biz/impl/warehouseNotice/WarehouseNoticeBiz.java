@@ -494,7 +494,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
         warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
-        warehouseNoticeCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        //warehouseNoticeCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
+        		WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
+        warehouseNoticeCriteria.andIn("status", statusList);
         List<WarehouseNotice> noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
         if (CollectionUtils.isEmpty(noticeList)) {
             String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合修改条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
