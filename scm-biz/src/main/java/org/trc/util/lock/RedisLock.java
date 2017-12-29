@@ -4,19 +4,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StockLock extends LockBaseService{
+public class RedisLock extends LockBaseService{
 
     /**
      * 锁
      * @param resourceId
      * @return
      */
-    public String Lock(String resourceId) {
+    public String Lock(String resourceId, long acquireTimeout, long timeout) {
         DistributedLock lock = new DistributedLock(pool);
         String identifier="";
         // 返回锁的value值，供释放锁时候进行判断
         if (StringUtils.isNotBlank(resourceId)){
-            identifier = lock.lockWithTimeout(resourceId, 500, 1000);
+            identifier = lock.lockWithTimeout(resourceId, acquireTimeout, timeout);
         }
         return identifier;
     }
@@ -35,11 +35,5 @@ public class StockLock extends LockBaseService{
         }
         return isFlag;
     }
-    @Override
-    public void updateStock() {
-        DistributedLock lock = new DistributedLock(pool);
-        String identifier="";
 
-
-    }
 }
