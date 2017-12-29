@@ -430,6 +430,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
         //获取京东订单对象
         JingDongSupplierOrder jingDongOrder = getJingDongOrder(warehouseOrder, platformOrder, orderItemList, jdAddressCodes);
+        //记录操作日志
+        logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         //调用京东下单服务接口
         responseAck = invokeSubmitSuuplierOrder(jingDongOrder);
         ResponseAck responseAck2 = null;
@@ -487,16 +489,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     //TODO 这里以后可能会发起重新下单逻辑
                     responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
                     log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
-                }else {
-                    /*responseAck2 = new ResponseAck(supplierOrderReturn.getState(), supplierOrderReturn.getMessage(), "");
-                    log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), supplierOrderReturn.getMessage()));
-                    logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_FAILURE.getMessage(), supplierOrderReturn.getMessage(),null);*/
                 }
             }else{
                 log.info(String.format("调用京东下单接口提交订单%s成功", JSONObject.toJSON(jingDongOrder)));
             }
-            //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT_JINGDONG_ORDER.getMessage(), null,null);
         }else{
             responseAck2 = responseAck;
             log.error(String.format("调用京东下单接口提交订单%s失败,错误信息:%s", JSONObject.toJSON(jingDongOrder), responseAck.getMessage()));

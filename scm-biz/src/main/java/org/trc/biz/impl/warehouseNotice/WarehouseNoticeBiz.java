@@ -57,7 +57,7 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
-import org.trc.util.lock.StockLock;
+import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -105,12 +105,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     @Autowired
     private IWarehouseNoticeCallbackService warehouseNoticeCallbackService;
     @Autowired
-    private StockLock stockLock;
+    private RedisLock redisLock;
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private List<String> defectiveSku;
     private List<String> errorSku ;
-    private final static String STOCK = "stock_";
 
     /**
      * 入库通知单分页查询
@@ -373,7 +372,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 
             //冻结库存表
-            String identifier = stockLock.Lock(STOCK + warehouseNoticeDetails.getSkuStockId());
+            String identifier = redisLock.Lock(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + warehouseNoticeDetails.getSkuStockId(), 500, 1000);
             //修改库存
             if (StringUtils.isNotBlank(identifier)){
 
@@ -411,10 +410,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         logger.error("库存更新异常", e);
                     } finally {
                         //释放锁
-                        if (stockLock.releaseLock(STOCK + warehouseNoticeDetails.getSkuStockId(), identifier)) {
-                            logger.info(STOCK + warehouseNoticeDetails.getSkuStockId() + "已释放！");
+                        if (redisLock.releaseLock(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + warehouseNoticeDetails.getSkuStockId(), identifier)) {
+                            logger.info(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + warehouseNoticeDetails.getSkuStockId() + "已释放！");
                         } else {
-                            logger.error(STOCK + warehouseNoticeDetails.getSkuStockId() + "解锁失败！");
+                            logger.error(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + warehouseNoticeDetails.getSkuStockId() + "解锁失败！");
                         }
                     }
                 }
@@ -676,7 +675,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             for (WarehouseNoticeDetails detail : detailsList) {
             	Long skuStockId = detail.getSkuStockId();
             	try  {
-            		identifier = stockLock.Lock(STOCK + skuStockId);
+            		identifier = redisLock.Lock(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + skuStockId, 500, 3000);
             		if (StringUtils.isNotBlank(identifier)) {
             			List<RequsetUpdateStock> stockList = new ArrayList<RequsetUpdateStock>();
             			Map<String, String> map = new HashMap<>();
@@ -700,7 +699,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             		logger.error("通知单商品:{} 发送入库通知单后，更新在途库存失败，skuStockId:{}，identifier:{}, err:{}", 
             				JSON.toJSONString(detail), skuStockId, identifier, e.getMessage());
             	} finally {
-            		if (stockLock.releaseLock(STOCK + skuStockId, identifier)) {
+            		if (redisLock.releaseLock(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + skuStockId, identifier)) {
             			logger.info("skuStockId:{} 入库通知单发送，解锁成功，identifier:{}", skuStockId, identifier);
             		} else {
             			logger.info("skuStockId:{} 入库通知单发送，解锁失败，identifier:{}", skuStockId, identifier);
