@@ -11,6 +11,4 @@ public abstract class LockBaseService {
         pool = (JedisPool) SpringContextHolder.getBean("jedisPool");
     }
 
-    abstract void updateStock();
-
 }

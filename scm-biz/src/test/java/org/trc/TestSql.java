@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.mapper.goods.ISkuStockMapper;
 import org.trc.mapper.outbound.IOutboundDetailMapper;
-import org.trc.util.lock.StockLock;
+import org.trc.util.lock.RedisLock;
 
 import com.alibaba.fastjson.JSON;
 
@@ -23,7 +23,7 @@ public class TestSql {
 	@Autowired
 	private IOutboundDetailMapper outboundDetailMapper;
 	@Autowired
-	private StockLock stockLock;
+	private RedisLock redisLock;
 	@Test
 	public void test () {
 //		SkuStock record = new SkuStock();
@@ -49,10 +49,10 @@ public class TestSql {
 	            new Thread(new Runnable() {
 	                @Override
 	                public void run() {
-	                	String identifier = stockLock.Lock("XXXXX");
+	                	String identifier = redisLock.Lock("XXXXX", 300, 1000);
 	                	if (StringUtils.isNotBlank(identifier)) {
 	                		System.out.println(Thread.currentThread().getName() + "------"+count++);
-	                		stockLock.releaseLock("XXXXX",identifier);
+	                		redisLock.releaseLock("XXXXX",identifier);
 	                	} else {
 	                		
 	                	}
