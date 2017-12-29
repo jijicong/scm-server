@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.github.pagehelper.PageHelper;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -488,6 +487,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         page.setResult(purchaseDetailList);
 
+        return page;
+    }
+
+    private Pagenation<PurchaseDetail> getPage(String msg){
+        Pagenation<PurchaseDetail> page = new Pagenation<PurchaseDetail>();
+        List<PurchaseDetail> list = new ArrayList<>();
+        PurchaseDetail detail = new PurchaseDetail();
+        detail.setSkuName(msg);
+        list.add(detail);
+        page.setResult(list);
         return page;
     }
 
@@ -1292,8 +1301,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         List<WarehouseNoticeDetails> warehouseNoticeDetails = new ArrayList<WarehouseNoticeDetails>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        SkuStock skuStock = new SkuStock();
         for (PurchaseDetail purchaseDetail: purchaseDetailList) {
+            SkuStock skuStock = new SkuStock();
             WarehouseNoticeDetails details = new WarehouseNoticeDetails();
             details.setWarehouseNoticeCode(warehouseNoticeCode);
             details.setBrandId(purchaseDetail.getBrandId());
@@ -1334,6 +1343,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
             details.setCreateTime(Calendar.getInstance().getTime());
+            details.setNormalStorageQuantity(0L);
+            details.setDefectiveStorageQuantity(0L);
             warehouseNoticeDetails.add(details);
         }
         int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
@@ -1369,6 +1380,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
 
+        warehouseNotice.setFailureCause("无");
+        warehouseNotice.setExceptionCause("无");
 
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());

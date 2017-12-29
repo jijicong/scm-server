@@ -784,6 +784,19 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         boolean flag = true;
         WarehouseItemInfoExceptionResult result = new WarehouseItemInfoExceptionResult();
         try {
+            //获取仓库信息详情
+            WarehouseInfo warehouseInfo = this.getWarehouseInfo(Long.parseLong(warehouseInfoId));
+            if(warehouseInfo == null){
+                String msg = "仓库信息不存在";
+                log.error(msg);
+                throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+            }
+            if(!StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.ONE.getCode())){
+                String msg = "货主仓库状态还不是通知成功";
+                log.error(msg);
+                throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+            }
+
             //检测是否是excel
             String suffix = fileName.substring(fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT) + 1);
             if (!(suffix.toLowerCase().equals(XLSX) || suffix.toLowerCase().equals(XLS))) {

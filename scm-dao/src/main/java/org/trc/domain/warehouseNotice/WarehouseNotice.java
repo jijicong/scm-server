@@ -106,7 +106,6 @@ public class WarehouseNotice {
     private Date createTime;
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
-    
     /**
      * scm2.0新增字段 
      **/
