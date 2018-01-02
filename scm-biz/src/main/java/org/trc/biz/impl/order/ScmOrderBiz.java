@@ -4533,7 +4533,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         outboundOrder.setReceiverAddress(platformOrder.getReceiverAddress());
         outboundOrder.setReceiverZip(platformOrder.getReceiverZip());
         outboundOrder.setReceiverName(platformOrder.getReceiverName());
-        outboundOrder.setReceiverPhone(platformOrder.getReceiverPhone());
+        if(StringUtils.isNotBlank(platformOrder.getReceiverMobile())){
+            outboundOrder.setReceiverPhone(platformOrder.getReceiverMobile());
+        }
+        if(StringUtils.isBlank(outboundOrder.getReceiverPhone()) && StringUtils.isNotBlank(platformOrder.getReceiverPhone())){
+            outboundOrder.setReceiverPhone(platformOrder.getReceiverPhone());
+        }
         outboundOrder.setBuyerMessage(shopOrder.getBuyerMessage());
         outboundOrder.setSellerMessage(shopOrder.getShopMemo());
         Date currentTime = Calendar.getInstance().getTime();
