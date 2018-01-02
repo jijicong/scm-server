@@ -151,7 +151,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         //供应商名称
         if (!StringUtils.isBlank(form.getSupplierName())) {
-            criteria.andLike("supplierName", "%" + form.getSupplierName() + "%");
+            List<String> supplierCodeList = getSupplier(form.getSupplierName());
+            if (!AssertUtil.collectionIsEmpty(supplierCodeList)) {
+                criteria.andIn("supplierCode", supplierCodeList);
+            }else {
+                criteria.andEqualTo("id", 0);
+            }
         }
         //最近更新日期
         if (!StringUtils.isBlank(form.getStartDate())) {
@@ -170,7 +175,22 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
         return page;
     }
-    
+
+    private List<String> getSupplier(String supplierName){
+        Example example = new Example(Supplier.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andLike("supplierName", "%" + supplierName + "%");
+        List<Supplier> supplierList = iSupplierService.selectByExample(example);
+        List<String> supplierCodeList =  new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(supplierList)){
+            for (Supplier supplier:supplierList ) {
+                supplierCodeList.add(supplier.getSupplierCode());
+            }
+            return  supplierCodeList;
+        }
+        return  null;
+    }
+
     private void setObjectName(Pagenation<WarehouseNotice> pagenation) {
     	if (null != pagenation && !CollectionUtils.isEmpty(pagenation.getResult())) {
     		for (WarehouseNotice notice : pagenation.getResult()) {
