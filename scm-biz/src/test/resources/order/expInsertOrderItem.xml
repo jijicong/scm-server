@@ -71,6 +71,7 @@
             supplier_order_status="1"
             old_supplier_order_status="*"
             submit_time="2016/7/15 15:36"
+            order_item_code="3333"
 
     />
 
@@ -145,6 +146,7 @@
             supplier_order_status="1"
             old_supplier_order_status="*"
             submit_time="2016/7/15 15:36"
+            order_item_code="4444"
     />
 
     <order_item
@@ -218,6 +220,7 @@
             supplier_order_status="1"
             old_supplier_order_status="*"
             submit_time="2016/7/15 15:36"
+            order_item_code="1111"
     />
 
     <order_item
@@ -291,6 +294,6 @@
             supplier_order_status="1"
             old_supplier_order_status="*"
             submit_time="2016/7/15 15:36"
-
+            order_item_code="2222"
     />
 </dataset>

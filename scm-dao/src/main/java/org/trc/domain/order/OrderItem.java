@@ -21,6 +21,12 @@ public class OrderItem implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // 渠道商品订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String orderItemCode;
+
     // 仓库订单编码
     @NotEmpty
     @Length(max = 32)
@@ -1340,5 +1346,13 @@ public class OrderItem implements Serializable {
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
+    }
+
+    public String getOrderItemCode() {
+        return orderItemCode;
+    }
+
+    public void setOrderItemCode(String orderItemCode) {
+        this.orderItemCode = orderItemCode;
     }
 }
