@@ -437,6 +437,9 @@ public class JDServiceImpl implements IJDService {
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     JSONArray json = jbo.getJSONArray("result");
+                    if (json==null){
+                        return new ArrayList<BalanceDetailDTO>();
+                    }
                     return json.toJavaList(BalanceDetailDTO.class);
                 }
             }
@@ -462,6 +465,9 @@ public class JDServiceImpl implements IJDService {
                 AppResult appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(appResult.getAppcode(), ZeroToNineEnum.ONE.getCode())){
                     JSONArray json = jbo.getJSONArray("result");
+                    if (json==null){
+                        return new ArrayList<OrderDetailDTO>();
+                    }
                     return json.toJavaList(OrderDetailDTO.class);
                 }
             }
