@@ -33,7 +33,6 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("supplierId")
     private Long supplierId;//
     @FormParam("supplierCode")
-    @NotEmpty
     private String supplierCode;
     @Transient
     private String supplierName;
