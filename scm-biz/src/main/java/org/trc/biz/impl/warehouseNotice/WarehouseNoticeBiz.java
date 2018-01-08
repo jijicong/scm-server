@@ -381,11 +381,16 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
                 errorSku.add(warehouseNoticeDetails.getSkuCode());
             }
+            if((warehouseNoticeDetails.getDefectiveStorageQuantity()==null? 0: warehouseNoticeDetails.getDefectiveStorageQuantity())>0){
+                warehouseNoticeDetails.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                defectiveSku.add(warehouseNoticeDetails.getSkuCode());
+            }
             //实际入库时间
             if (normalQuantity > 0 || defectiveQuantity > 0) {
                 warehouseNoticeDetails.setStorageTime(Calendar.getInstance().getTime());
             }
             warehouseNoticeDetails.setStorageTime(Calendar.getInstance().getTime());
+
             warehouseNoticeDetailsList.add(warehouseNoticeDetails);
             //更新采购详情
             warehouseNoticeDetailsService.updateByPrimaryKeySelective(warehouseNoticeDetails);
@@ -448,7 +453,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //获取采购单详情状态
         if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList)) {
             for (WarehouseNoticeDetails warehouseNoticeDetails : warehouseNoticeDetailsList) {
-                if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
+                if ((warehouseNoticeDetails.getDefectiveStorageQuantity()==null? 0: warehouseNoticeDetails.getDefectiveStorageQuantity())>0) {
                     isReceivingError = true;
                 }
                 if (StringUtils.equals(String.valueOf(warehouseNoticeDetails.getStatus()), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())) {
