@@ -88,6 +88,17 @@ public class SupplyConstants {
          */
         public static final String QIMEN_CALLBACK = "QimenCallback";
 
+        /**
+         * 奇门接口返回成功标志
+         */
+        public static final String QIMEN_RESPONSE_SUCCESS_FLAG = "success";
+
+        /**
+         * 奇门接口返回失败标志
+         */
+        public static final String QIMEN_RESPONSE_FAILURE_FLAG = "failure";
+
+
     }
 
         /**
