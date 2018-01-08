@@ -135,7 +135,7 @@ public enum ExceptionEnum{
     SUBMIT_LY_ORDER("600118","调用京东下单服务异常"),
     ORDER_IS_CANCEL("600119","订单已经是取消状态，不能进行取消操作"),
     ORDER_IS_CLOSE_CANCEL("600120","订单不是取消状态，不能进行关闭取消操作"),
-
+    ORDER_REPAT_SUBMIT("600121","订单重复提交"),
     OUTBOUND_ORDER_EXCEPTION("600121", "发货通知单管理异常"),
 
 
@@ -176,6 +176,7 @@ public enum ExceptionEnum{
     REMOTE_INVOKE_TIMEOUT_EXCEPTION("4000102","外部接口调用超时"),
     SIGN_ERROR("4000103","签名错误"),
     ENPYTY_RESPONSE("4000104","外部接口返回空数据"),
+    RQUEST_TIMEOUT("408","请求超时"),
     NOVALID("0","停用");
 
     private String code;

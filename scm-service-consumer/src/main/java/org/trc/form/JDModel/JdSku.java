@@ -20,6 +20,8 @@ public class JdSku {
     private JSONArray yanbao;
     //用户实付金额
     private BigDecimal payment;
+    //渠道商品订单号
+    private String orderItemCode;
 
     public String getSkuId() {
         return skuId;
@@ -67,5 +69,13 @@ public class JdSku {
 
     public void setPayment(BigDecimal payment) {
         this.payment = payment;
+    }
+
+    public String getOrderItemCode() {
+        return orderItemCode;
+    }
+
+    public void setOrderItemCode(String orderItemCode) {
+        this.orderItemCode = orderItemCode;
     }
 }

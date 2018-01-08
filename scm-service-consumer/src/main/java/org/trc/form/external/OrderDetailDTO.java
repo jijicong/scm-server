@@ -58,6 +58,10 @@ public class OrderDetailDTO {
     //备注
     private String remark;
 
+    private String shopOrderCode;
+
+    private String orderItemCode;
+
     public Long getId() {
         return id;
     }
@@ -264,5 +268,21 @@ public class OrderDetailDTO {
 
     public void setActualPay(BigDecimal actualPay) {
         this.actualPay = actualPay;
+    }
+
+    public String getShopOrderCode() {
+        return shopOrderCode;
+    }
+
+    public void setShopOrderCode(String shopOrderCode) {
+        this.shopOrderCode = shopOrderCode;
+    }
+
+    public String getOrderItemCode() {
+        return orderItemCode;
+    }
+
+    public void setOrderItemCode(String orderItemCode) {
+        this.orderItemCode = orderItemCode;
     }
 }

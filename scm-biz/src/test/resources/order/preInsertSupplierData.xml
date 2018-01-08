@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <supplier id="1" supplier_code="GYS000001" supplier_name="&#20140;&#19996;" supplier_kind_code="oneAgentSelling" supplier_type_code="internalSupplier" supplier_interface_id="JD" contact="&#23609;&#28059;" phone="18069826052" province="aa" city="aa" area="aa" address="&#26477;&#24030;&#19979;&#27801;&#19996;&#37096;&#22269;&#38469;&#21830;&#21153;&#20013;&#24515;&#19996;&#23792;1202" certificate_type_id="normalThreeCertificate" remark="ssss" is_valid="1" is_deleted="0" create_operator="69F6541AF10E4759BB395246CF4BC0D1" create_time="2017-09-18 20:03:44.0" update_time="2017-12-22 08:39:52.0"/>
+  <supplier id="2" supplier_code="GYS000002" supplier_name="&#31918;&#27833;" supplier_kind_code="oneAgentSelling" supplier_type_code="internalSupplier" supplier_interface_id="LY" contact="&#38543;&#20415;" phone="13245678900" province="aa" city="aa" area="aa" address="&#27993;&#27743;&#26477;&#24030;" certificate_type_id="normalThreeCertificate" remark="ssss" is_valid="1" is_deleted="0" create_operator="69F6541AF10E4759BB395246CF4BC0D1" create_time="2017-09-18 20:10:36.0" update_time="2017-09-18 20:10:36.0"/>
+</dataset>

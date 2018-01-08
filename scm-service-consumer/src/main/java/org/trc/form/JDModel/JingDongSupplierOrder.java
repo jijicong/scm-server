@@ -14,6 +14,8 @@ public class JingDongSupplierOrder extends SupplierOrderBase {
     private String platformOrderCode;
     //仓库订单编码
     private String warehouseOrderCode;
+    //店铺订单号
+    private String shopOrderCode;
     //第三方的订单单号
     private String thirdOrder;
     //商品sku列表
@@ -389,5 +391,13 @@ public class JingDongSupplierOrder extends SupplierOrderBase {
 
     public void setOrderSubmitTime(Date orderSubmitTime) {
         this.orderSubmitTime = orderSubmitTime;
+    }
+
+    public String getShopOrderCode() {
+        return shopOrderCode;
+    }
+
+    public void setShopOrderCode(String shopOrderCode) {
+        this.shopOrderCode = shopOrderCode;
     }
 }
