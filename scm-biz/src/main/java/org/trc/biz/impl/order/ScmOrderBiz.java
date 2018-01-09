@@ -4650,7 +4650,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         request.setOrders(orderList);
         AppResult appResult = qimenService.deliveryorderBatchcreate(request);
         //更新发货单状态
-        updateOutboudOrderStatus(outboundMap2, appResult);
+        updateOutboudOrderStatus(outboundMap2, appResult, warehouseList);
     }
 
     /**
@@ -4658,7 +4658,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param outboundMap
      * @param appResult
      */
-    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult){
+    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult, List<Warehouse> warehouseList){
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
         List<String> outboundCodes = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
@@ -4715,6 +4715,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, order.getDeliveryOrderCode(), order.getMessage());
             }
         }
+        String operator = SYSTEM;
         //记录操作日志
         if(failureOutboundCodes.size() > 0){
             //失败日志
@@ -4723,16 +4724,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 for(Map.Entry<String, OutboundForm> entry: entries){
                     if(StringUtils.equals(order.getDeliveryOrderCode(), entry.getKey())){
                         OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
+                        for(Warehouse warehouse: warehouseList){
+                            if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
+                                operator = warehouse.getName();
+                            }
+                        }
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
                     }
                 }
             }
         }
         //成功日志
-        if(successOutboundCodes.size() == 0){
+        if(successOutboundCodes.size() > 0){
             for(Map.Entry<String, OutboundForm> entry: entries){
                 OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
+                for(Warehouse warehouse: warehouseList){
+                    if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
+                        operator = warehouse.getName();
+                    }
+                }
+                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
             }
         }
     }
