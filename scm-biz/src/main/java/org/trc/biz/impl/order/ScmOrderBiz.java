@@ -4645,52 +4645,72 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderList.add(order);
         }
         //调用奇门创建发货单接口(批量)
-        DeliveryorderBatchcreateResponse deliveryorderBatchcreateResponse = invokeDeliveryorderBatchcreate(orderList);
+        DeliveryorderBatchcreateRequest request = new DeliveryorderBatchcreateRequest();
+        request.setOrders(orderList);
+        AppResult appResult = qimenService.deliveryorderBatchcreate(request);
         //更新发货单状态
-        updateOutboudOrderStatus(outboundMap2, deliveryorderBatchcreateResponse);
+        updateOutboudOrderStatus(outboundMap2, appResult);
     }
 
     /**
      * 更新发货单状态
      * @param outboundMap
-     * @param deliveryorderBatchcreateResponse
+     * @param appResult
      */
-    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, DeliveryorderBatchcreateResponse deliveryorderBatchcreateResponse){
+    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult){
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
         List<String> outboundCodes = new ArrayList<>();
+        for(Map.Entry<String, OutboundForm> entry: entries){
+            outboundCodes.add(entry.getKey());
+        }
+        DeliveryorderBatchcreateResponse deliveryorderBatchcreateResponse = null;
+        if(StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
+            if(null != appResult.getResult() && StringUtils.isBlank(appResult.getResult().toString())){
+                try{
+                    deliveryorderBatchcreateResponse = JSON.parseObject(appResult.getResult().toString()).toJavaObject(DeliveryorderBatchcreateResponse.class);
+                }catch (ClassCastException e) {
+                    String msg = String.format("调用奇门创建发货单接口(批量)接口返回库存结果信息格式错误,%s", e.getMessage());
+                    log.error(msg, e);
+                    deliveryorderBatchcreateResponse = getFailureDeliveryorderBatchcreateResponse(outboundCodes, msg);
+                }
+            }else{
+                deliveryorderBatchcreateResponse = getFailureDeliveryorderBatchcreateResponse(outboundCodes, "调用奇门创建发货单接口(批量)接口返回结果数据为空");
+            }
+        }else{
+            deliveryorderBatchcreateResponse = getFailureDeliveryorderBatchcreateResponse(outboundCodes, appResult.getDatabuffer());
+        }
+        List<String> successOutboundCodes = new ArrayList<>();//成功的发货单编码
+        List<String> failureOutboundCodes = new ArrayList<>();//失败的发货单编码
         if(deliveryorderBatchcreateResponse.isSuccess()){
-            List<DeliveryorderBatchcreateResponse.Order> orderList = deliveryorderBatchcreateResponse.getOrders();
-            if(!CollectionUtils.isEmpty(orderList)){
-                for(DeliveryorderBatchcreateResponse.Order order: orderList){
-                    outboundCodes.add(order.getDeliveryOrderCode());
+            if(!CollectionUtils.isEmpty(deliveryorderBatchcreateResponse.getOrders())){
+                for(DeliveryorderBatchcreateResponse.Order order: deliveryorderBatchcreateResponse.getOrders()){
+                    failureOutboundCodes.add(order.getDeliveryOrderCode());
+                }
+            }
+            for(String outboundCode: outboundCodes){
+                boolean flag = false;
+                for(String failureOutboundCode: failureOutboundCodes){
+                    if(outboundCode.equals(failureOutboundCode)){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    successOutboundCodes.add(outboundCode);
                 }
             }
         }else {
-            for(Map.Entry<String, OutboundForm> entry: entries){
-                outboundCodes.add(entry.getKey());
+            if(!CollectionUtils.isEmpty(deliveryorderBatchcreateResponse.getOrders())){
+                for(DeliveryorderBatchcreateResponse.Order order: deliveryorderBatchcreateResponse.getOrders()){
+                    failureOutboundCodes.add(order.getDeliveryOrderCode());
+                }
             }
         }
-        if(outboundCodes.size() > 0){
-            Date currentTime = Calendar.getInstance().getTime();
-            //更新发货通知单状态
-            Example example = new Example(OutboundOrder.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andIn("outboundOrderCode", outboundCodes);
-            OutboundOrder outboundOrder = new OutboundOrder();
-            outboundOrder.setStatus(OutboundOrderStatusEnum.RECEIVE_FAIL.getCode());
-            outboundOrder.setUpdateTime(currentTime);
-            outBoundOrderService.updateByExampleSelective(outboundOrder, example);
-            //更新发货通知单明细状态
-            Example example2 = new Example(OutboundDetail.class);
-            Example.Criteria criteria2 = example2.createCriteria();
-            criteria2.andIn("outboundOrderCode", outboundCodes);
-            OutboundDetail outboundDetail = new OutboundDetail();
-            outboundDetail.setStatus(OutboundDetailStatusEnum.RECEIVE_FAIL.getCode());
-            outboundDetail.setUpdateTime(currentTime);
-            outboundDetailService.updateByExampleSelective(outboundDetail, example2);
+        if(failureOutboundCodes.size() > 0){
+            updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, failureOutboundCodes);
         }
         //记录操作日志
-        if(outboundCodes.size() > 0){
+        if(failureOutboundCodes.size() > 0){
             //失败日志
             List<DeliveryorderBatchcreateResponse.Order> orderList = deliveryorderBatchcreateResponse.getOrders();
             for(DeliveryorderBatchcreateResponse.Order order: orderList){
@@ -4703,24 +4723,61 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         //成功日志
-        for(Map.Entry<String, OutboundForm> entry: entries){
-            for(String outboundCode: outboundCodes){
-                boolean flag = false;
-                if(StringUtils.equals(entry.getKey(), outboundCode)){
-                    flag = true;
-                    break;
-                }
-                if(!flag){
+        if(successOutboundCodes.size() == 0){
+            for(Map.Entry<String, OutboundForm> entry: entries){
+                for(String outboundCode: successOutboundCodes){
                     OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
                 }
             }
-
         }
-
-
     }
 
+    /**
+     * 调用奇门接口创建发货通知单后更新发货通知单状态
+     * @param outboundOrderStatusEnum
+     * @param outboundOrderCodes
+     */
+    private void updateOutboundOrderAfterCreate(OutboundOrderStatusEnum outboundOrderStatusEnum, List<String> outboundOrderCodes){
+        Date currentTime = Calendar.getInstance().getTime();
+        //更新发货通知单状态
+        Example example = new Example(OutboundOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("outboundOrderCode", outboundOrderCodes);
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setStatus(outboundOrderStatusEnum.getCode());
+        outboundOrder.setUpdateTime(currentTime);
+        outBoundOrderService.updateByExampleSelective(outboundOrder, example);
+        //更新发货通知单明细状态
+        Example example2 = new Example(OutboundDetail.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("outboundOrderCode", outboundOrderCodes);
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setStatus(outboundOrderStatusEnum.getCode());
+        outboundDetail.setUpdateTime(currentTime);
+        outboundDetailService.updateByExampleSelective(outboundDetail, example2);
+    }
+
+    /**
+     *获取调用奇门批量创建发货单接口失败结果信息
+     * @param outboundOrderCodes
+     * @param failureMsg
+     * @return
+     */
+    DeliveryorderBatchcreateResponse getFailureDeliveryorderBatchcreateResponse(List<String> outboundOrderCodes, String failureMsg){
+        DeliveryorderBatchcreateResponse response = new DeliveryorderBatchcreateResponse();
+        response.setFlag(SupplyConstants.Qimen.QIMEN_RESPONSE_FAILURE_FLAG);
+        response.setMessage(failureMsg);
+        List<DeliveryorderBatchcreateResponse.Order> orders = new ArrayList<>();
+        for(String outboundOrderCode: outboundOrderCodes){
+            DeliveryorderBatchcreateResponse.Order order = new DeliveryorderBatchcreateResponse.Order();
+            order.setDeliveryOrderCode(outboundOrderCode);
+            order.setMessage(failureMsg);
+            orders.add(order);
+        }
+        response.setOrders(orders);
+        return response;
+    }
 
 
 
@@ -4735,11 +4792,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         DeliveryorderBatchcreateRequest request = new DeliveryorderBatchcreateRequest();
         request.setOrders(orderList);
         AppResult appResult = qimenService.deliveryorderBatchcreate(request);
-        if(!StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
+        /*if(!StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("调用奇门创建发货单接口(批量)接口失败, %s", appResult.getDatabuffer()));
         }
         AssertUtil.notNull(appResult.getResult(), "调用奇门创建发货单接口(批量)接口返回结果数据为空");
-        AssertUtil.notBlank(appResult.getResult().toString(), "调用奇门创建发货单接口(批量)接口返回结果数据为空");
+        AssertUtil.notBlank(appResult.getResult().toString(), "调用奇门创建发货单接口(批量)接口返回结果数据为空");*/
+        if(!StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
+            return null;
+        }
         DeliveryorderBatchcreateResponse deliveryorderBatchcreateResponse = null;
         try{
             deliveryorderBatchcreateResponse = JSON.parseObject(appResult.getResult().toString()).toJavaObject(DeliveryorderBatchcreateResponse.class);
