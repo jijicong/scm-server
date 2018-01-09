@@ -123,34 +123,25 @@ public class QimenServiceImpl implements IQimenService {
 				DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         try {
         	resStr = HttpClientUtil.httpPostRequest(serverUrl, paramsMap, TIME_OUT);
+            log.debug("结束调用external奇门接口:{}, 返回结果:{}, 结束时间:{}", serverUrl, resStr,
+                    DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
             if (StringUtils.isNotBlank(resStr)) {
-            	AppResult appResult = JSON.parseObject(resStr, AppResult.class);
-            	String msgDesc = "正常";
-                if (!StringUtils.equals(appResult.getAppcode(), SUCCESS_CODE)) {
-                	msgDesc = "异常";
-                }
-            	log.info(serverUrl + ":调用external奇门接口" + msgDesc + "返回:" +
-            			appResult.getAppcode() + "," + appResult.getDatabuffer());
-            	return appResult;
+            	return JSON.parseObject(resStr, AppResult.class);
             } else {
             	/**
             	 *  return code = "0"
             	 **/
-            	return ResultUtil.createFailAppResult("调用external奇门接口返回结果为空");
+            	return ResultUtil.createFailAppResult(String.format("调用external奇门接口%s返回结果为空", serverUrl));
             }
         } catch (Exception e) {
             log.error("调用external奇门接口:{}异常,错误信息:{},详细:", serverUrl, e.getMessage(), e);
+            return ResultUtil.createFailAppResult(String.format("调用external奇门接口%s异常:%s", serverUrl, e.getMessage()));
         }
-        
-		log.debug("结束调用external奇门接口:{}, 返回结果:{}, 结束时间:{}", serverUrl, resStr,
-				DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-		
-		return ResultUtil.createFailAppResult("调用external奇门接口失败");
 	}
     
     /**
      * 反射获取url地址
-     * @param fileName
+     * @param filedName
      * @param obj
      * @return
      */
