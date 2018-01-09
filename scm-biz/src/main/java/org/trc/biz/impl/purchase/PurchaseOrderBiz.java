@@ -577,10 +577,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     private void formatDate(PurchaseOrder purchaseOrder){
-        if(StringUtils.isNotEmpty(purchaseOrder.getRequriedReceiveDate())){
+        if(StringUtils.isNotEmpty(purchaseOrder.getRequriedReceiveDate()) && purchaseOrder.getRequriedReceiveDate().length() < 15){
             purchaseOrder.setRequriedReceiveDate(purchaseOrder.getRequriedReceiveDate() + DATE_EXT);
         }
-        if(StringUtils.isNotEmpty(purchaseOrder.getEndReceiveDate() )){
+        if(StringUtils.isNotEmpty(purchaseOrder.getEndReceiveDate()) && purchaseOrder.getEndReceiveDate().length() < 15){
             purchaseOrder.setEndReceiveDate(purchaseOrder.getEndReceiveDate() + DATE_EXT);
         }
     }
