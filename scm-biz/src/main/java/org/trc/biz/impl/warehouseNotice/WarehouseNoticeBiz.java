@@ -349,10 +349,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //正品入库数量
             Long normalQuantity = 0L;
             for (EntryorderConfirmRequest.OrderLine orderLine : skuMap.get(itemCode)) {
-                if (StringUtils.equals(orderLine.getInventoryType(), InventoryTypeEnum.ZP.getCode())) {
+                if (AssertUtil.collectionIsEmpty(orderLine.getBatchs())) {
                     normalQuantity = normalQuantity + orderLine.getActualQty();
                 } else {
-                    defectiveQuantity = defectiveQuantity + orderLine.getActualQty();
+                    List<EntryorderConfirmRequest.Batch> batchList = orderLine.getBatchs();
+                    for (EntryorderConfirmRequest.Batch batch:batchList) {
+                        if (StringUtils.equals(batch.getInventoryType(),InventoryTypeEnum.ZP.getCode())){
+                            normalQuantity = normalQuantity + batch.getActualQty();
+                        }else {
+                            defectiveQuantity = defectiveQuantity+batch.getActualQty();
+                        }
+                    }
                 }
             }
             //判断收货状态
@@ -409,7 +416,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     RequsetUpdateStock stock = new RequsetUpdateStock();
                     Map<String, String> map = new HashMap<String, String>();
                     //真实库存
-                    map.put("real_inventory", String.valueOf(normalQuantity + defectiveQuantity));
+                    map.put("real_inventory", String.valueOf(normalQuantity));
                     //可用正品库存
                     map.put("available_inventory", String.valueOf(normalQuantity));
                     //残次品库存
