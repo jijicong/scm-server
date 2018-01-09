@@ -506,6 +506,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @CacheEvit
     public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
+        String supplierCode = purchaseOrder.getSupplierCode();
+        AssertUtil.notBlank(supplierCode, "供应商为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
         //根据用户的id查询渠道
@@ -518,11 +520,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrder.setPurchaseOrderCode(code);
         purchaseOrder.setIsValid(ValidEnum.VALID.getCode());
         purchaseOrder.setStatus(status);//设置状态
-//        //如果提交采购单的方式为提交审核--则校验必须的数据
-//        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
-//            assertArgs(purchaseOrder);
-//        }
-        assertArgs(purchaseOrder);
+        //如果提交采购单的方式为提交审核--则校验必须的数据
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
+            assertArgs(purchaseOrder);
+        }
+//        assertArgs(purchaseOrder);
         if(purchaseOrder.getTotalFeeD() != null){
             purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
         }
@@ -575,8 +577,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     private void formatDate(PurchaseOrder purchaseOrder){
-        purchaseOrder.setRequriedReceiveDate(purchaseOrder.getRequriedReceiveDate() + DATE_EXT);
-        purchaseOrder.setEndReceiveDate(purchaseOrder.getEndReceiveDate() + DATE_EXT);
+        if(StringUtils.isNotEmpty(purchaseOrder.getRequriedReceiveDate())){
+            purchaseOrder.setRequriedReceiveDate(purchaseOrder.getRequriedReceiveDate() + DATE_EXT);
+        }
+        if(StringUtils.isNotEmpty(purchaseOrder.getEndReceiveDate() )){
+            purchaseOrder.setEndReceiveDate(purchaseOrder.getEndReceiveDate() + DATE_EXT);
+        }
     }
 
     /**
@@ -994,16 +1000,20 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String province = "";
         String city = "";
         Area area = new Area();
-        area.setCode(purchaseOrder.getSenderProvince());
-        area = locationUtilService.selectOne(area);
-        if(area != null){
-            purchaseOrder.setSenderProvinceName(area.getProvince());
+        if(StringUtils.isNotEmpty(purchaseOrder.getSenderProvince())){
+            area.setCode(purchaseOrder.getSenderProvince());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                purchaseOrder.setSenderProvinceName(area.getProvince());
+            }
         }
-        area = new Area();
-        area.setCode(purchaseOrder.getSenderCity());
-        area = locationUtilService.selectOne(area);
-        if(area != null){
-            purchaseOrder.setSenderCityName(area.getCity());
+        if(StringUtils.isNotEmpty(purchaseOrder.getSenderCity())){
+            area = new Area();
+            area.setCode(purchaseOrder.getSenderCity());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                purchaseOrder.setSenderCityName(area.getCity());
+            }
         }
     }
 
@@ -1085,6 +1095,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             purchaseOrder.setPaymentProportion(paymentProportion);
         }
+
+        //如果提交采购单的方式为提交审核--则校验必须的数据
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){
+            assertArgs(purchaseOrderAddData);
+        }
+
+        //格式化时间
+        this.formatDate(purchaseOrder);
+
         int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
         if (count == 0) {
             String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
