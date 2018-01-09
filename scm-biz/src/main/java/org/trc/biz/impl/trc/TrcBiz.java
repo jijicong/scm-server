@@ -32,6 +32,7 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
+import org.trc.domain.util.ScmDO;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
@@ -577,10 +578,33 @@ public class TrcBiz implements ITrcBiz {
                return page;
             }
         }
-
-        if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
-            criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
+        List<SkuRelation> skuRelationList = getSkuRelation(GoodsTypeEnum.SUPPLIER.getCode().intValue());
+        if (StringUtils.isNotBlank(queryModel.getSkuRelationStatus())){
+            List<String> relationSkus = new ArrayList<>();
+            if(!CollectionUtils.isEmpty(skuRelationList)){
+                for(SkuRelation skuRelation: skuRelationList){
+                    relationSkus.add(skuRelation.getSkuCode());
+                }
+            }
+            if(StringUtils.equals(SkuRelationStatusEnum.RELATION.getCode(), queryModel.getSkuRelationStatus())){//已关联
+                if(CollectionUtils.isEmpty(relationSkus)){
+                    return page;
+                }
+                criteria.andIn("skuCode", relationSkus);
+            }else if(StringUtils.equals(SkuRelationStatusEnum.NOT_RELATION.getCode(), queryModel.getSkuRelationStatus())){//未关联
+                if(!CollectionUtils.isEmpty(relationSkus)){
+                    criteria.andNotIn("skuCode", relationSkus);
+                }
+            }
+            if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
+                criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
+            }
+        }else{
+            if (StringUtils.isNotBlank(queryModel.getSkuCode())) {//商品SKU编号
+                criteria.andLike("skuCode", "%" + queryModel.getSkuCode() + "%");
+            }
         }
+
         if (StringUtils.isNotBlank(queryModel.getSupplierSkuCode())) {//供应商SKU编号
             criteria.andLike("supplierSkuCode", "%" + queryModel.getSupplierSkuCode() + "%");
         }
@@ -592,6 +616,9 @@ public class TrcBiz implements ITrcBiz {
         }
         if (StringUtils.isNotBlank(queryModel.getBrand())) {//品牌
             criteria.andLike("brand", "%" + queryModel.getBrand() + "%");
+        }
+        if (StringUtils.isNotBlank(queryModel.getCategory())) {//分类
+            criteria.andLike("category", "%" + queryModel.getCategory() + "%");
         }
         if (StringUtils.isNotBlank(queryModel.getBarCode())) {//条形码
             criteria.andLike("barCode", "%" + queryModel.getBarCode() + "%");
@@ -621,6 +648,13 @@ public class TrcBiz implements ITrcBiz {
         if(!CollectionUtils.isEmpty(page.getResult())){
             setMoneyWeight(page.getResult());
             setSupplierInfo(page.getResult());
+            if(StringUtils.isNotBlank(queryModel.getSkuRelationStatus())) {
+                //设置sku的关联状态
+                setSkuRelationStatus(queryModel.getSkuRelationStatus(), skuRelationList, page.getResult());
+            }else {
+                //设置sku的关联状态
+                setSkuRelationStatus(null, skuRelationList, page.getResult());
+            }
         }
         return page;
     }
@@ -814,14 +848,42 @@ public class TrcBiz implements ITrcBiz {
 
     @Override
     public Pagenation<Skus2> skusPage(SkusForm form, Pagenation<Skus> page, String channelCode) {
+        Pagenation<Skus2> page2 = new Pagenation<Skus2>();
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
-        if (StringUtils.isNotBlank(form.getSpuCode())){
-            criteria.andEqualTo("spuCode",form.getSpuCode());
+        List<SkuRelation> skuRelationList = getSkuRelation(GoodsTypeEnum.SELF_PURCHARSE.getCode().intValue());
+        if (StringUtils.isNotBlank(form.getSkuRelationStatus())){
+            List<String> relationSkus = new ArrayList<>();
+            if(!CollectionUtils.isEmpty(skuRelationList)){
+                for(SkuRelation skuRelation: skuRelationList){
+                    relationSkus.add(skuRelation.getSkuCode());
+                }
+            }
+            if(StringUtils.equals(SkuRelationStatusEnum.RELATION.getCode(), form.getSkuRelationStatus())){//已关联
+                if(CollectionUtils.isEmpty(relationSkus)){
+                    return page2;
+                }
+                criteria.andIn("skuCode", relationSkus);
+            }else if(StringUtils.equals(SkuRelationStatusEnum.NOT_RELATION.getCode(), form.getSkuRelationStatus())){//未关联
+                if(!CollectionUtils.isEmpty(relationSkus)){
+                    criteria.andNotIn("skuCode", relationSkus);
+                }
+            }
+            if (StringUtils.isNotBlank(form.getSpuCode())){
+                criteria.andEqualTo("spuCode",form.getSpuCode());
+            }
+            if (StringUtils.isNotBlank(form.getSkuCode())){
+                criteria.andEqualTo("skuCode",form.getSkuCode());
+            }
+        }else{
+            if (StringUtils.isNotBlank(form.getSpuCode())){
+                criteria.andEqualTo("spuCode",form.getSpuCode());
+            }
+            if (StringUtils.isNotBlank(form.getSkuCode())){
+                criteria.andEqualTo("skuCode",form.getSkuCode());
+            }
         }
-        if (StringUtils.isNotBlank(form.getSkuCode())){
-            criteria.andEqualTo("skuCode",form.getSkuCode());
-        }
+
         if (StringUtils.isNotBlank(form.getIsValid())){
             criteria.andEqualTo("isValid",form.getIsValid());
         }
@@ -836,11 +898,10 @@ public class TrcBiz implements ITrcBiz {
         example.orderBy("spuCode").desc();
         page = skusService.pagination(example,page,form);
 
-//        setSkuStock(page.getResult());
+        //setSkuStock(page.getResult());
         //设置库存
-        skuRelationBiz.setStock(page.getResult(), channelCode);
+        setStock(page.getResult(), channelCode);
 
-        Pagenation<Skus2> page2 = new Pagenation<Skus2>();
         BeanUtils.copyProperties(page, page2,"result");
         List<Skus2> skus2List = new ArrayList<>();
         for(Skus skus: page.getResult()){
@@ -853,6 +914,16 @@ public class TrcBiz implements ITrcBiz {
         setSpuInfo(skus2List);
         //设置SKU属性信息
         setSkuPropertyInfo(skus2List);
+        /**
+         * sku数据剔除及关联状态设置
+         */
+        if(StringUtils.isNotBlank(form.getSkuRelationStatus())) {
+            //设置sku的关联状态
+            setSkuRelationStatus(form.getSkuRelationStatus(), skuRelationList, skus2List);
+        }else {
+            //设置sku的关联状态
+            setSkuRelationStatus(null, skuRelationList, skus2List);
+        }
         page2.setResult(skus2List);
         return page2;
 
@@ -865,7 +936,7 @@ public class TrcBiz implements ITrcBiz {
         }
         return skuCodeList;
     }
-    
+
 
     /**
      *设置品牌名称
@@ -886,6 +957,7 @@ public class TrcBiz implements ITrcBiz {
             for(Brand c : brands){
                 if(items2.getBrandId().longValue() == c.getId().longValue()){
                     items2.setBrandName(c.getName());
+                    items2.setBrandCode(c.getBrandCode());
                     break;
                 }
             }
@@ -921,6 +993,12 @@ public class TrcBiz implements ITrcBiz {
         Map<Long, String> map = getThirdCategoryFullPathName(thridCategories, categories);
         for(Items items2 : items){
             items2.setCategoryName(map.get(items2.getCategoryId()));
+            for(Category category: thridCategories){
+                if(items2.getCategoryId().longValue() == category.getId().longValue()){
+                    items2.setCategoryCode(category.getCategoryCode());
+                    break;
+                }
+            }
         }
     }
 
@@ -998,10 +1076,13 @@ public class TrcBiz implements ITrcBiz {
      * 设置SPU信息
      * @param skusList
      */
-    private void setSpuInfo(List<Skus2> skusList){
+    private void setSpuInfo(List<?> skusList){
         StringBuilder sb = new StringBuilder();
-        for(Skus2 skus: skusList){
-            sb.append("\"").append(skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+        for(Object skus: skusList){
+            if(skus instanceof Skus){
+                Skus _skus = (Skus) skus;
+                sb.append("\"").append(_skus.getSpuCode()).append("\"").append(SupplyConstants.Symbol.COMMA);
+            }
         }
         if(sb.length() > 0){
             Example example = new Example(Items.class);
@@ -1015,24 +1096,31 @@ public class TrcBiz implements ITrcBiz {
                 setBrandName(itemsList);
                 //设置分类名称
                 setCategoryName(itemsList);
-                for(Skus2 skus: skusList){
+                for(Object skus: skusList){
+                    Skus _skus = (Skus) skus;
                     for(Items items: itemsList){
-                        if(StringUtils.equals(skus.getSpuCode(), items.getSpuCode())){
-                            //skus.setName(items.getName());
-                            skus.setBrandId(items.getBrandId());
-                            skus.setBrandName(items.getBrandName());
-                            skus.setCategoryId(items.getCategoryId());
-                            skus.setCategoryName(items.getCategoryName());
-                            skus.setItemNo(items.getItemNo());
-                            skus.setProducer(items.getProducer());
-                            skus.setTradeType(items.getTradeType());
-                            skus.setMainPicture(items.getMainPicture());// 设置spu主图信息
+                        if(StringUtils.equals(_skus.getSpuCode(), items.getSpuCode())){
+                            _skus.setName(items.getName());
+                            _skus.setBrandCode(items.getBrandCode());
+                            _skus.setBrandName(items.getBrandName());
+                            _skus.setCategoryCode(items.getCategoryCode());
+                            _skus.setCategoryName(items.getCategoryName());
+                            _skus.setMainPicture(items.getMainPicture());// 设置spu主图信息
+                            if(skus instanceof Skus2){
+                                ((Skus2)_skus).setCategoryId(items.getCategoryId());
+                                ((Skus2)_skus).setBrandId(items.getBrandId());
+                                ((Skus2)_skus).setItemNo(items.getItemNo());
+                                ((Skus2)_skus).setProducer(items.getProducer());
+                                ((Skus2)_skus).setTradeType(items.getTradeType());
+                            }
                         }
                     }
                 }
             }
         }
     }
+
+
 
     /**
      * 设置自采商品SKU库存
@@ -1058,6 +1146,104 @@ public class TrcBiz implements ITrcBiz {
                     }
                 }
             }
+        }
+    }
+
+    public void setStock(List<Skus> skusList, String channelCode){
+        //通过奇门获取库存信息
+        List<InventoryQueryResponse.Item> itemList = this.getQimenStockByskuCode(this.getSkuCodes(skusList), channelCode);
+        //合并同skuCode库存
+        Map<String, Long> map = this.getSkuMap(itemList);
+        //赋值stock
+        this.setSkuStock(skusList, map);
+    }
+
+    //赋值stock
+    private void setSkuStock(List<Skus> skusList, Map<String, Long> map){
+        for(Skus skus : skusList){
+            String skuCode = skus.getSkuCode();
+            if(map.containsKey(skuCode)){
+                skus.setStock(map.get(skuCode));
+            }else{
+                skus.setStock(0L);
+            }
+        }
+    }
+
+    /**
+     * 整合sku库存信息
+     * @param itemList
+     * @return
+     */
+    private Map<String, Long> getSkuMap(List<InventoryQueryResponse.Item> itemList){
+        Map<String, Long> skuMap = new HashMap<String, Long>();
+        for(InventoryQueryResponse.Item item : itemList){
+            String skuCode = item.getItemCode();
+            Long stockNum = item.getQuantity();
+            if(skuMap.containsKey(skuCode)){
+                skuMap.put(skuCode, stockNum + skuMap.get(skuCode));
+            }else{
+                skuMap.put(skuCode, stockNum);
+            }
+        }
+        return skuMap;
+    }
+
+    /**
+     * 根据业务线获取所有仓库信息
+     * @param channelCode
+     * @return
+     */
+    private List<WarehouseInfo> getWharehouseInfoListByChannelCode(String channelCode){
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        if(StringUtils.isNotEmpty(channelCode)){
+            warehouseInfo.setChannelCode(channelCode);
+        }
+        warehouseInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        warehouseInfo.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        return warehouseInfoService.select(warehouseInfo);
+    }
+
+    /**
+     * 根据skuCode和业务线获取奇门库存
+     * @return
+     */
+    private List<InventoryQueryResponse.Item> getQimenStockByskuCode(List<String> skuCodes, String channelCode){
+        //根据业务线获取所有仓库信息
+        List<WarehouseInfo> warehouseInfoList = this.getWharehouseInfoListByChannelCode(channelCode);
+        AssertUtil.notNull(warehouseInfoList,"当前业务线没有对应的库存仓库信息!");
+
+        //调用奇门库存查询接口校验绑定过商品的库存
+        InventoryQueryRequest request = new InventoryQueryRequest();
+        InventoryQueryRequest.Criteria criteria = new InventoryQueryRequest.Criteria();
+        List<InventoryQueryRequest.Criteria> criteriaList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoList){
+            String warehouseOwnerId = info.getWarehouseOwnerId();
+            for(String skuCode : skuCodes){
+                criteria.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
+                criteria.setItemCode(skuCode);
+                criteria.setOwnerCode(warehouseOwnerId);
+                criteriaList.add(criteria);
+            }
+        }
+        request.setCriteriaList(criteriaList);
+        AppResult appResult = qimenService.inventoryQuery(request);
+        if(!StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("调用奇门库存查询接口失败, %s", appResult.getDatabuffer()));
+        }
+        AssertUtil.notNull(appResult.getResult(), "调用奇门库存查询接口返回结果数据为空");
+        AssertUtil.notBlank(appResult.getResult().toString(), "调用奇门库存查询接口返回结果数据为空");
+        InventoryQueryResponse inventoryQueryResponse = null;
+        try{
+            inventoryQueryResponse = JSON.parseObject(appResult.getResult().toString()).toJavaObject(InventoryQueryResponse.class);
+        }catch (ClassCastException e) {
+            String msg = String.format("调用奇门库存查询接口返回库存结果信息格式错误,%s", e.getMessage());
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        if(inventoryQueryResponse.isSuccess()){
+            return inventoryQueryResponse.getItems();
+        }else {
+            throw new QimenException(ExceptionEnum.QIMEN_INVENTORY_QUERY_EXCEPTION, inventoryQueryResponse.getMessage());
         }
     }
 
@@ -1131,8 +1317,31 @@ public class TrcBiz implements ITrcBiz {
     public Pagenation<Items> itemsPage(ItemsForm2 queryModel, Pagenation<Items> page, String channelCode){
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
-        if (org.apache.commons.lang.StringUtils.isNotBlank(queryModel.getSpuCode())){
-            criteria.andLike("spuCode","%" + queryModel.getSpuCode() + "%");
+        List<SkuRelation> skuRelationList = getSkuRelation(GoodsTypeEnum.SELF_PURCHARSE.getCode().intValue());
+        if (StringUtils.isNotBlank(queryModel.getSkuRelationStatus())){
+            List<String> relationSpus = new ArrayList<>();
+            if(!CollectionUtils.isEmpty(skuRelationList)){
+                for(SkuRelation skuRelation: skuRelationList){
+                    relationSpus.add(skuRelation.getSpuCode());
+                }
+            }
+            if(StringUtils.equals(SkuRelationStatusEnum.RELATION.getCode(), queryModel.getSkuRelationStatus())){//已关联
+                if(CollectionUtils.isEmpty(relationSpus)){
+                    return page;
+                }
+                criteria.andIn("spuCode", relationSpus);
+            }else if(StringUtils.equals(SkuRelationStatusEnum.NOT_RELATION.getCode(), queryModel.getSkuRelationStatus())){//未关联
+                if(!CollectionUtils.isEmpty(relationSpus)){
+                    criteria.andNotIn("spuCode", relationSpus);
+                }
+            }
+            if (org.apache.commons.lang.StringUtils.isNotBlank(queryModel.getSpuCode())){
+                criteria.andLike("spuCode","%" + queryModel.getSpuCode() + "%");
+            }
+        }else{
+            if (org.apache.commons.lang.StringUtils.isNotBlank(queryModel.getSpuCode())){
+                criteria.andLike("spuCode","%" + queryModel.getSpuCode() + "%");
+            }
         }
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
@@ -1156,6 +1365,66 @@ public class TrcBiz implements ITrcBiz {
     }
 
     /**
+     *设置sku的关联状态
+     * @param skuRelationStatus sku关联状态: 0-未关联,1-已关联
+     * @param skuRelationList
+     * @param skuList
+     */
+    private void setSkuRelationStatus(String skuRelationStatus, List<SkuRelation> skuRelationList, List<?> skuList){
+        List<Skus> skusList = null;
+        List<ExternalItemSku> externalItemSkuList = null;
+        for(Object obj: skuList){
+            if(obj instanceof Skus){
+                skusList = (List<Skus>)skuList;
+                break;
+            }
+            if(obj instanceof ExternalItemSku){
+                externalItemSkuList = (List<ExternalItemSku>)skuList;
+                break;
+            }
+        }
+        if(StringUtils.isNotBlank(skuRelationStatus)){
+            if(null != skusList){
+                for(Skus skus: skusList){
+                    skus.setSkuRelationStatus(skuRelationStatus);
+                }
+            }
+            if(null != externalItemSkuList){
+                for(ExternalItemSku skus: externalItemSkuList){
+                    skus.setSkuRelationStatus(skuRelationStatus);
+                }
+            }
+        }else{
+            if(null != skusList){
+                for(Skus skus: skusList){
+                    skus.setSkuRelationStatus(SkuRelationStatusEnum.NOT_RELATION.getCode());
+                    if(!CollectionUtils.isEmpty(skuRelationList)){
+                        for(SkuRelation skuRelation: skuRelationList){
+                            if(StringUtils.equals(skus.getSkuCode(), skuRelation.getSkuCode())){
+                                skus.setSkuRelationStatus(SkuRelationStatusEnum.RELATION.getCode());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if(null != externalItemSkuList){
+                for(ExternalItemSku skus: externalItemSkuList){
+                    skus.setSkuRelationStatus(SkuRelationStatusEnum.NOT_RELATION.getCode());
+                    if(!CollectionUtils.isEmpty(skuRelationList)){
+                        for(SkuRelation skuRelation: skuRelationList){
+                            if(StringUtils.equals(skus.getSkuCode(), skuRelation.getSkuCode())){
+                                skus.setSkuRelationStatus(SkuRelationStatusEnum.RELATION.getCode());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * 设置商品相关SKU信息
      * @param itemsList
      */
@@ -1172,9 +1441,8 @@ public class TrcBiz implements ITrcBiz {
             criteria.andCondition(condition);
             List<Skus> skusList = skusService.selectByExample(example);
             if(skusList.size() > 0){
-//                setSkuStock(skusList);
-                //设置库存
-                skuRelationBiz.setStock(skusList, channelCode);
+                //setSkuStock(skusList);
+                setStock(skusList, channelCode);
             }
             for(Items items: itemsList){
                 List<Skus> records = new ArrayList<Skus>();
@@ -1183,6 +1451,8 @@ public class TrcBiz implements ITrcBiz {
                         records.add(skus);
                     }
                 }
+                //设置SPU商品信息
+                setSpuInfo(records);
                 items.setRecords(records);
             }
         }
@@ -1698,5 +1968,98 @@ public class TrcBiz implements ITrcBiz {
             criteria.andIn("id",Arrays.asList(propertyIdStrs));
         }
     }
+
+
+
+    /**
+     * 根据业务线变获取已经建立关联关系的sku
+     * @param flag :1-自采, 2-代发
+     * @return
+     */
+    private List<SkuRelation> getSkuRelation(int flag){
+        Example example = new Example(SkuRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(GoodsTypeEnum.SELF_PURCHARSE.getCode().intValue() == flag){//自采
+            criteria.andCondition("supplier_code is null or supplier_code = ''");
+        }else if(GoodsTypeEnum.SUPPLIER.getCode().intValue() == flag){//代发
+            criteria.andCondition("supplier_code is not null and supplier_code != ''");
+        }
+        return skuRelationService.selectByExample(example);
+    }
+
+
+    @Override
+    public List<Skus> getSkuInformation(String skuCode, String channelCode) {
+        AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
+        AssertUtil.isTrue(skuCode.indexOf(TrcBiz.COMMA_ZH) == -1, "分隔多个sku编码必须是英文逗号");
+        String[] skuCodes = skuCode.split(SupplyConstants.Symbol.COMMA);
+        for(String _skuCode: skuCodes) {
+            AssertUtil.isTrue(_skuCode.startsWith(SupplyConstants.Goods.SKU_PREFIX), String.format("skuCode[%s]不是自采商品", _skuCode));
+        }
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", Arrays.asList(skuCodes));
+        List<Skus> skusList = skusService.selectByExample(example);
+        //setSkuStock(skusList);
+        //设置库存
+        setStock(skusList, channelCode);
+        setSpuInfo(skusList); // 将spu里面的相关信息设置到sku中，例如：spu商品主图mainPicture字段
+        //设置sku关联状态
+        List<SkuRelation> skuRelationList = getSkuRelation(GoodsTypeEnum.SELF_PURCHARSE.getCode().intValue());
+        setSkuRelationStatus(null, skuRelationList, skusList);
+        return skusList;
+    }
+
+
+    @Override
+    public List<ExternalItemSku> getExternalSkuInformation(String skuCode, String channelCode) {
+        AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
+        AssertUtil.isTrue(skuCode.indexOf(TrcBiz.COMMA_ZH) == -1, "分隔多个sku编码必须是英文逗号");
+        String[] skuCodes = skuCode.split(SupplyConstants.Symbol.COMMA);
+        for(String _skuCode: skuCodes){
+            AssertUtil.isTrue(_skuCode.startsWith(SupplyConstants.Goods.EXTERNAL_SKU_PREFIX), String.format("skuCode[%s]不是代发商品", _skuCode));
+        }
+        Example example = new Example(ExternalItemSku.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", Arrays.asList(skuCodes));
+        criteria.andEqualTo("isValid", ValidEnum.VALID.getCode());
+        if (StringUtils.isNotBlank(channelCode)){
+            //查询到当前渠道下审核通过的一件代发供应商
+            Example example2 = new Example(SupplierApply.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andEqualTo("status", ZeroToNineEnum.TWO.getCode());
+            criteria2.andEqualTo("channelCode",channelCode);
+            List<SupplierApply> supplierApplyList = supplierApplyService.selectByExample(example2);
+            AssertUtil.notEmpty(supplierApplyList,"当前渠道没有一件代发供应商!");
+            List<String>  supplierInterfaceIdList = new ArrayList<>();
+            for (SupplierApply supplierApply:supplierApplyList) {
+                Supplier supplier = new Supplier();
+                supplier.setSupplierCode(supplierApply.getSupplierCode());
+                supplier.setSupplierKindCode(SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);
+                supplier=  supplierService.selectOne(supplier);
+                if (null!=supplier){
+                    supplierInterfaceIdList.add(supplier.getSupplierInterfaceId());
+                }
+            }
+            criteria.andIn("supplierCode",supplierInterfaceIdList);
+        }
+        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(externalItemSkuList)){
+            setMoneyWeight(externalItemSkuList);
+            setSupplierInfo(externalItemSkuList);
+            //设置sku关联状态
+            List<SkuRelation> skuRelationList = getSkuRelation(GoodsTypeEnum.SUPPLIER.getCode().intValue());
+            setSkuRelationStatus(null, skuRelationList, externalItemSkuList);
+        }
+        return externalItemSkuList;
+    }
+
+
+
+
+
+
+
+
 
 }

@@ -181,4 +181,18 @@ public interface ITrcBiz {
      */
     void checkSellCode(String sellCode) throws Exception;
 
+    /**
+     * 查询自采商品SKU信息
+     * @param skuCode
+     * @return
+     */
+    List<Skus> getSkuInformation(String skuCode, String channelCode);
+
+    /**
+     * 查询代发商品SKU信息
+     * @param skuCode
+     * @return
+     */
+    List<ExternalItemSku> getExternalSkuInformation(String skuCode, String channelCode);
+
 }

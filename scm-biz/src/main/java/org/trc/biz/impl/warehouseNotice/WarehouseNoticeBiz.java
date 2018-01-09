@@ -108,8 +108,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private RedisLock redisLock;
     private boolean isSection = false;
     private boolean isReceivingError = false;
-    private List<String> defectiveSku;
-    private List<String> errorSku ;
+    private Set<String> defectiveSku;
+    private Set<String> errorSku ;
 
     /**
      * 入库通知单分页查询
@@ -291,8 +291,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             }
                             skuMap.put(itemCode, skuOrderLineList);
                         }
-                        errorSku = new ArrayList<>();
-                        defectiveSku = new ArrayList<>();
+                        errorSku = new HashSet();
+                        defectiveSku = new HashSet<>();
                         warehouseNotice.setStatus(getRequestDate(skuMap, warehouseNotice, defectiveSku, errorSku));
                         //获取异常入库sku,信息
                         String failureCause = "";
@@ -331,7 +331,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param skuMap
      * @param warehouseNotice
      */
-    private String getRequestDate(Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap, WarehouseNotice warehouseNotice, List<String> defectiveSku, List<String> errorSku) {
+    private String getRequestDate(Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap, WarehouseNotice warehouseNotice, Set<String> defectiveSku, Set<String> errorSku) {
         List<WarehouseNoticeDetails> warehouseNoticeDetailsList = new ArrayList<>();
         for (String itemCode : skuMap.keySet()) {
             WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
@@ -349,10 +349,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //正品入库数量
             Long normalQuantity = 0L;
             for (EntryorderConfirmRequest.OrderLine orderLine : skuMap.get(itemCode)) {
-                if (StringUtils.equals(orderLine.getInventoryType(), InventoryTypeEnum.ZP.getCode())) {
+                if (AssertUtil.collectionIsEmpty(orderLine.getBatchs())) {
                     normalQuantity = normalQuantity + orderLine.getActualQty();
                 } else {
-                    defectiveQuantity = defectiveQuantity + orderLine.getActualQty();
+                    List<EntryorderConfirmRequest.Batch> batchList = orderLine.getBatchs();
+                    for (EntryorderConfirmRequest.Batch batch:batchList) {
+                        if (StringUtils.equals(batch.getInventoryType(),InventoryTypeEnum.ZP.getCode())){
+                            normalQuantity = normalQuantity + batch.getActualQty();
+                        }else {
+                            defectiveQuantity = defectiveQuantity+batch.getActualQty();
+                        }
+                    }
                 }
             }
             //判断收货状态
@@ -409,7 +416,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     RequsetUpdateStock stock = new RequsetUpdateStock();
                     Map<String, String> map = new HashMap<String, String>();
                     //真实库存
-                    map.put("real_inventory", String.valueOf(normalQuantity + defectiveQuantity));
+                    map.put("real_inventory", String.valueOf(normalQuantity));
                     //可用正品库存
                     map.put("available_inventory", String.valueOf(normalQuantity));
                     //残次品库存

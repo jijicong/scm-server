@@ -153,6 +153,15 @@ public class Skus extends ScmDO {
     @Transient
     private List<SkuStock> stockList;
 
+    //sku关联状态: 1-已关联,0-未关联
+    @Transient
+    private String skuRelationStatus;
+
+    @Transient
+    private String categoryCode;
+    @Transient
+    private String brandCode;
+
     public String getName() {
 		return name;
 	}
@@ -439,5 +448,29 @@ public class Skus extends ScmDO {
 
     public void setStockList(List<SkuStock> stockList) {
         this.stockList = stockList;
+    }
+
+    public String getSkuRelationStatus() {
+        return skuRelationStatus;
+    }
+
+    public void setSkuRelationStatus(String skuRelationStatus) {
+        this.skuRelationStatus = skuRelationStatus;
+    }
+
+    public String getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
+    }
+
+    public String getBrandCode() {
+        return brandCode;
+    }
+
+    public void setBrandCode(String brandCode) {
+        this.brandCode = brandCode;
     }
 }
