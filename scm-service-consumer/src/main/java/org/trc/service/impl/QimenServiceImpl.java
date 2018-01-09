@@ -71,7 +71,7 @@ public class QimenServiceImpl implements IQimenService {
 
     @Override
     public AppResult<DeliveryorderBatchcreateResponse> deliveryorderBatchcreate(DeliveryorderBatchcreateRequest req) {
-        return invokeExternal("deliveryorderBatchcreate", req, "qimenDeliveryOrderCreateUrl");
+        return invokeExternal("deliveryOrderBatchCreate", req, "qimenDeliveryOrderBatchCreateUrl");
     }
 
     @Override
