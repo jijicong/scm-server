@@ -3329,11 +3329,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOList = entry.getValue();
         //调用奇门库存查询接口校验绑定过商品的库存
         InventoryQueryRequest request = new InventoryQueryRequest();
-        InventoryQueryRequest.Criteria criteria = new InventoryQueryRequest.Criteria();
+        InventoryQueryRequest.Criteria criteria = null;
         List<InventoryQueryRequest.Criteria> criteriaList = new ArrayList<>();
         for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
             WarehouseInfo warehouseInfo = warehouseOwernSkuDO.getWarehouseInfo();
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
+                criteria = new InventoryQueryRequest.Criteria();
                 criteria.setItemCode(warehouseItemInfo.getSkuCode());
                 criteria.setItemId(warehouseItemInfo.getWarehouseItemId());
                 criteria.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
