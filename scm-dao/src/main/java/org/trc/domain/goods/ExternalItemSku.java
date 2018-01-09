@@ -194,6 +194,10 @@ public class ExternalItemSku implements Serializable{
     @FormParam("minBuyCount")
     private Integer minBuyCount;
 
+    //sku关联状态: 1-已关联,0-未关联
+    @Transient
+    private String skuRelationStatus;
+
     public Long getId() {
         return id;
     }
@@ -503,5 +507,13 @@ public class ExternalItemSku implements Serializable{
 
     public void setDetailPictrues2(String detailPictrues2) {
         this.detailPictrues2 = detailPictrues2;
+    }
+
+    public String getSkuRelationStatus() {
+        return skuRelationStatus;
+    }
+
+    public void setSkuRelationStatus(String skuRelationStatus) {
+        this.skuRelationStatus = skuRelationStatus;
     }
 }

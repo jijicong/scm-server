@@ -1,6 +1,8 @@
 package org.trc.domain.goods;
 
-import java.util.List;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,6 +11,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.util.List;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
@@ -67,7 +70,12 @@ public class Items extends BaseDO{
      */
     @Transient
     private List<Skus> records;
-    
+
+    @Transient
+    private String categoryCode;
+    @Transient
+    private String brandCode;
+
     /**
      * SPU商品主图
      */
@@ -209,6 +217,20 @@ public class Items extends BaseDO{
 	public void setMainPicture(String mainPicture) {
 		this.mainPicture = mainPicture == null ? null : mainPicture.trim();
 	}
-    
-    
+
+    public String getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(String categoryCode) {
+        this.categoryCode = categoryCode;
+    }
+
+    public String getBrandCode() {
+        return brandCode;
+    }
+
+    public void setBrandCode(String brandCode) {
+        this.brandCode = brandCode;
+    }
 }

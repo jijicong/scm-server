@@ -8,6 +8,9 @@ import javax.ws.rs.QueryParam;
  * Created by hzwdx on 2017/5/24.
  */
 public class ItemsForm2 extends QueryModel {
+    //业务线编号
+    @QueryParam("channelCode")
+    private String channelCode;
     //商品SPU编号
     @QueryParam("spuCode")
     private String spuCode;
@@ -26,6 +29,10 @@ public class ItemsForm2 extends QueryModel {
     //贸易类型
     @QueryParam("tradeType")
     private String tradeType;
+
+    //sku关联状态: 0-未关联,1-已关联
+    @QueryParam("skuRelationStatus")
+    private String skuRelationStatus;
 
     public String getSpuCode() {
         return spuCode;
@@ -73,5 +80,21 @@ public class ItemsForm2 extends QueryModel {
 
     public void setTradeType(String tradeType) {
         this.tradeType = tradeType;
+    }
+
+    public String getSkuRelationStatus() {
+        return skuRelationStatus;
+    }
+
+    public void setSkuRelationStatus(String skuRelationStatus) {
+        this.skuRelationStatus = skuRelationStatus;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 }

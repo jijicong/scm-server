@@ -28,8 +28,11 @@ public class ExternalItemSkuForm extends QueryModel{
     @Length(max = 32, message = "仓库长度不能超过32个")
     private String warehouse;
     @QueryParam("brand")
-    @Length(max = 32, message = "商品编号长度不能超过32个")
+    @Length(max = 32, message = "商品长度不能超过32个")
     private String brand;
+    @QueryParam("category")
+    @Length(max = 32, message = "分类长度不能超过32个")
+    private String category;
     @QueryParam("barCode")
     @Length(max = 64, message = "条形码长度不能超过64个")
     private String barCode;
@@ -41,6 +44,9 @@ public class ExternalItemSkuForm extends QueryModel{
     @QueryParam("state")
     private String state;//商品状态0-商品下架 1-商品上架
 
+    //sku关联状态: 0-未关联,1-已关联
+    @QueryParam("skuRelationStatus")
+    private String skuRelationStatus;
 
     public String getSupplierCode() {
         return supplierCode;
@@ -120,6 +126,22 @@ public class ExternalItemSkuForm extends QueryModel{
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getSkuRelationStatus() {
+        return skuRelationStatus;
+    }
+
+    public void setSkuRelationStatus(String skuRelationStatus) {
+        this.skuRelationStatus = skuRelationStatus;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     @Override

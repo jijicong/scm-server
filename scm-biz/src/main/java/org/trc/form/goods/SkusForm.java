@@ -34,6 +34,10 @@ public class SkusForm extends QueryModel {
     @QueryParam("skuName")
     private String skuName;
 
+    //sku关联状态: 0-未关联,1-已关联
+    @QueryParam("skuRelationStatus")
+    private String skuRelationStatus;
+
     public String getSpuCode() {
         return spuCode;
     }
@@ -90,4 +94,11 @@ public class SkusForm extends QueryModel {
         this.skuName = skuName;
     }
 
+    public String getSkuRelationStatus() {
+        return skuRelationStatus;
+    }
+
+    public void setSkuRelationStatus(String skuRelationStatus) {
+        this.skuRelationStatus = skuRelationStatus;
+    }
 }
