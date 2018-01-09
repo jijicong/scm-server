@@ -108,8 +108,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private RedisLock redisLock;
     private boolean isSection = false;
     private boolean isReceivingError = false;
-    private List<String> defectiveSku;
-    private List<String> errorSku ;
+    private Set<String> defectiveSku;
+    private Set<String> errorSku ;
 
     /**
      * 入库通知单分页查询
@@ -291,8 +291,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             }
                             skuMap.put(itemCode, skuOrderLineList);
                         }
-                        errorSku = new ArrayList<>();
-                        defectiveSku = new ArrayList<>();
+                        errorSku = new HashSet();
+                        defectiveSku = new HashSet<>();
                         warehouseNotice.setStatus(getRequestDate(skuMap, warehouseNotice, defectiveSku, errorSku));
                         //获取异常入库sku,信息
                         String failureCause = "";
@@ -331,7 +331,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param skuMap
      * @param warehouseNotice
      */
-    private String getRequestDate(Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap, WarehouseNotice warehouseNotice, List<String> defectiveSku, List<String> errorSku) {
+    private String getRequestDate(Map<String, List<EntryorderConfirmRequest.OrderLine>> skuMap, WarehouseNotice warehouseNotice, Set<String> defectiveSku, Set<String> errorSku) {
         List<WarehouseNoticeDetails> warehouseNoticeDetailsList = new ArrayList<>();
         for (String itemCode : skuMap.keySet()) {
             WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
