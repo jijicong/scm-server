@@ -61,8 +61,6 @@ public class TaiRanResource {
     @Resource
     private ITrcBiz trcBiz;
     @Resource
-    private ISkuRelationBiz skuRelationBiz;
-    @Resource
     private IScmOrderBiz scmOrderBiz;
 
 
@@ -191,7 +189,7 @@ public class TaiRanResource {
                                                   @QueryParam("sellCode") String sellCode) throws Exception{
         trcBiz.checkChannelCode(channelCode);
         trcBiz.checkSellCode(sellCode);
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getSkuInformation(skuCode, channelCode));
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", trcBiz.getSkuInformation(skuCode, channelCode));
     }
 
     /**
@@ -207,7 +205,7 @@ public class TaiRanResource {
                                                           @QueryParam("sellCode") String sellCode) throws Exception {
         trcBiz.checkChannelCode(channelCode);
         trcBiz.checkSellCode(sellCode);
-        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", skuRelationBiz.getExternalSkuInformation(skuCode,channelCode));
+        return new ResponseAck(ResponseAck.SUCCESS_CODE, "sku信息查询成功", trcBiz.getExternalSkuInformation(skuCode,channelCode));
     }
 
 
