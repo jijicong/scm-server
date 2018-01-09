@@ -506,6 +506,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @CacheEvit
     public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
+        String supplierCode = purchaseOrder.getSupplierCode();
+        AssertUtil.notBlank(supplierCode, "供应商为空");
         ParamsUtil.setBaseDO(purchaseOrder);
         int count = 0;
         //根据用户的id查询渠道
@@ -518,11 +520,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrder.setPurchaseOrderCode(code);
         purchaseOrder.setIsValid(ValidEnum.VALID.getCode());
         purchaseOrder.setStatus(status);//设置状态
-//        //如果提交采购单的方式为提交审核--则校验必须的数据
-//        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
-//            assertArgs(purchaseOrder);
-//        }
-        assertArgs(purchaseOrder);
+        //如果提交采购单的方式为提交审核--则校验必须的数据
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
+            assertArgs(purchaseOrder);
+        }
+//        assertArgs(purchaseOrder);
         if(purchaseOrder.getTotalFeeD() != null){
             purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
         }
@@ -553,7 +555,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         code = purchaseOrder.getPurchaseOrderCode();
 
         if(StringUtils.isNotBlank(purchaseOrderStrs) && !"[]".equals(purchaseOrderStrs)){
-            BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator());//保存采购商品
+            BigDecimal totalPrice = savePurchaseDetail(purchaseOrderStrs,orderId,code,purchaseOrder.getCreateOperator(),status);//保存采购商品
             if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){//提交审核做金额校验
                 if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
                     String msg = "采购单保存,采购商品的总价与页面的总价不相等";
@@ -575,8 +577,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     private void formatDate(PurchaseOrder purchaseOrder){
-        purchaseOrder.setRequriedReceiveDate(purchaseOrder.getRequriedReceiveDate() + DATE_EXT);
-        purchaseOrder.setEndReceiveDate(purchaseOrder.getEndReceiveDate() + DATE_EXT);
+        if(StringUtils.isNotEmpty(purchaseOrder.getRequriedReceiveDate())){
+            purchaseOrder.setRequriedReceiveDate(purchaseOrder.getRequriedReceiveDate() + DATE_EXT);
+        }
+        if(StringUtils.isNotEmpty(purchaseOrder.getEndReceiveDate() )){
+            purchaseOrder.setEndReceiveDate(purchaseOrder.getEndReceiveDate() + DATE_EXT);
+        }
     }
 
     /**
@@ -642,7 +648,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
      * @param createOperator 创建人
      * @return int 商品的采购总价
      */
-    private BigDecimal savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator) {
+    private BigDecimal savePurchaseDetail(String purchaseOrderStrs,Long orderId,String code,String createOperator,String status) {
 
         if(StringUtils.isBlank(purchaseOrderStrs)){
             String msg = "保存采购商品的信息为空";
@@ -668,7 +674,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
-            this.assertDetailArgs(purchaseDetail);
+
+            if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(status)){
+                this.assertDetailArgs(purchaseDetail);
+            }
+
             Skus skus = new Skus();
             skus.setSkuCode(skuCode);
             skus.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -994,16 +1004,20 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String province = "";
         String city = "";
         Area area = new Area();
-        area.setCode(purchaseOrder.getSenderProvince());
-        area = locationUtilService.selectOne(area);
-        if(area != null){
-            purchaseOrder.setSenderProvinceName(area.getProvince());
+        if(StringUtils.isNotEmpty(purchaseOrder.getSenderProvince())){
+            area.setCode(purchaseOrder.getSenderProvince());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                purchaseOrder.setSenderProvinceName(area.getProvince());
+            }
         }
-        area = new Area();
-        area.setCode(purchaseOrder.getSenderCity());
-        area = locationUtilService.selectOne(area);
-        if(area != null){
-            purchaseOrder.setSenderCityName(area.getCity());
+        if(StringUtils.isNotEmpty(purchaseOrder.getSenderCity())){
+            area = new Area();
+            area.setCode(purchaseOrder.getSenderCity());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                purchaseOrder.setSenderCityName(area.getCity());
+            }
         }
     }
 
@@ -1085,6 +1099,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             purchaseOrder.setPaymentProportion(paymentProportion);
         }
+
+        //如果提交采购单的方式为提交审核--则校验必须的数据
+        if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){
+            assertArgs(purchaseOrderAddData);
+        }
+
+        //格式化时间
+        this.formatDate(purchaseOrder);
+
         int count = purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
         if (count == 0) {
             String msg = String.format("修改采购单%s数据库操作失败",JSON.toJSONString(purchaseOrder));
@@ -1097,7 +1120,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         purchaseOrderAddData.setCreateOperator((String) obj);
 
         if(StringUtils.isNotBlank(purchaseOrderAddData.getGridValue()) && !"[]".equals(purchaseOrderAddData.getGridValue())){
-            BigDecimal totalPrice = savePurchaseDetail(purchaseOrderAddData.getGridValue(),purchaseOrderAddData.getId(),purchaseOrderAddData.getPurchaseOrderCode(),purchaseOrderAddData.getCreateOperator());
+            BigDecimal totalPrice = savePurchaseDetail(purchaseOrderAddData.getGridValue(),purchaseOrderAddData.getId(),purchaseOrderAddData.getPurchaseOrderCode(),purchaseOrderAddData.getCreateOperator(), purchaseOrder.getStatus());
             if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){
                 if(totalPrice.compareTo(purchaseOrder.getTotalFeeD()) != 0){//比较实际采购价格与页面传输的价格是否相等
                     String msg = "采购单修改,采购商品的总价与页面的总价不相等";
