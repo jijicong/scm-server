@@ -1845,12 +1845,33 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
             //校验自采商品的可用库存
-            checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, selfItemsInventorys);
+            List<OrderItem> checkFailureItems = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, selfItemsInventorys);
         }
         //拆分仓库订单
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         for (ShopOrder shopOrder : shopOrderList) {
-            warehouseOrderList.addAll(dealShopOrder(platformOrder, shopOrder, skuStockList));
+            //warehouseOrderList.addAll(dealShopOrder(platformOrder, shopOrder, skuStockList));
+            List<OrderItem> orderItemList = shopOrder.getOrderItems();
+            //分离一件代发和自采商品
+            List<OrderItem> orderItemList1 = new ArrayList<>();//自采商品
+            List<OrderItem> orderItemList2 = new ArrayList<>();//一件代发
+            for (OrderItem orderItem : orderItemList) {
+                if (orderItem.getSkuCode().startsWith(SP0)) {
+                    orderItemList1.add(orderItem);
+                }
+                if (orderItem.getSkuCode().startsWith(SP1)) {
+                    orderItemList2.add(orderItem);
+                }
+            }
+            if(orderItemList1.size() > 0){
+                warehouseOrderList.addAll(dealSelfPurcharseOrder(orderItemList1, platformOrder, shopOrder, skuStockList));
+            }
+            if(orderItemList2.size() > 0){
+                warehouseOrderList.addAll(dealSupplierOrder(orderItemList2, shopOrder));
+            }
+            List<OrderItem> _orderItemList = new ArrayList<>(orderItemList1);
+            _orderItemList.addAll(orderItemList2);
+            shopOrder.setOrderItems(_orderItemList);
         }
         //订单商品明细
         List<OrderItem> orderItemList = new ArrayList<OrderItem>();
@@ -3393,12 +3414,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param skuStockList
      * @return
      */
-    private void checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<InventoryQueryItemDO> inventoryQueryItemDOList){
+    private List<OrderItem> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<InventoryQueryItemDO> inventoryQueryItemDOList){
         List<String> skuCodeList = new ArrayList<>();
         for(OrderItem orderItem: orderItemList){
             skuCodeList.add(orderItem.getSkuCode());
         }
-        boolean flag = false;
+        //校验失败的商品
+        List<OrderItem> checkFailureItems = new ArrayList<>();
         for(OrderItem orderItem: orderItemList){
             boolean _flag = false;
             //本地库存
@@ -3420,26 +3442,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //校验库存,本地库存和奇门库存以小的为准
             if(localStock >= qimenStock){
                 if(qimenStock >= orderItem.getNum().longValue()){
-                    if(!flag){
-                        flag = true;
-                    }
                     _flag = true;
+                }else{
+                    checkFailureItems.add(orderItem);
                 }
             }else{
                 if(localStock >= orderItem.getNum().longValue()){
-                    if(!flag){
-                        flag = true;
-                    }
                     _flag = true;
+                }else{
+                    checkFailureItems.add(orderItem);
                 }
             }
             if(!_flag){
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
             }
         }
-        if(!flag){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("自采商品[%s]库存不足", CommonUtil.converCollectionToString(skuCodeList)));
-        }
+        return  checkFailureItems;
     }
 
 
@@ -4645,6 +4663,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
             order.setOrderLines(getDeliveryOrderLines(outboundOrder, outboundDetailList, warehouseInfoList));
             orderList.add(order);
         }
+        //发货单发送奇门创建日志
+        for(Map.Entry<String, OutboundForm> entry: entries){
+            OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+            logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
+        }
         //调用奇门创建发货单接口(批量)
         DeliveryorderBatchcreateRequest request = new DeliveryorderBatchcreateRequest();
         request.setOrders(orderList);
@@ -4732,18 +4755,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
                     }
                 }
-            }
-        }
-        //成功日志
-        if(successOutboundCodes.size() > 0){
-            for(Map.Entry<String, OutboundForm> entry: entries){
-                OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                for(Warehouse warehouse: warehouseList){
-                    if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
-                        operator = warehouse.getName();
-                    }
-                }
-                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
             }
         }
     }
