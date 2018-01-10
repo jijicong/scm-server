@@ -340,8 +340,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             warehouseNoticeDetails = warehouseNoticeDetailsService.selectOne(warehouseNoticeDetails);
             warehouseNotice.setFailureCause(StringUtils.EMPTY);
             if (null==warehouseNoticeDetails){
-                warehouseNotice.setFailureCause("根据SKU:"+itemCode+",入库通知单编号:"+warehouseNotice.getWarehouseNoticeCode()+".查询入库通知单详情为空");
-             return    WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode();
+                String msg = "根据SKU:"+itemCode+",入库通知单编号:"+warehouseNotice.getWarehouseNoticeCode()+".查询入库通知单详情为空";
+                warehouseNotice.setFailureCause(msg);
+                throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_QUERY_EXCEPTION, msg);
             }
 
             //残次品入库数量
