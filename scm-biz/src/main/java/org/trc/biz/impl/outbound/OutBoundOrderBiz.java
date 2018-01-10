@@ -84,6 +84,16 @@ import tk.mybatis.mapper.entity.Example;
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     public final static String SUCCESS = "200";
+    private static final Map<String, String> statusMap = new HashMap<String, String>();
+
+    static {
+    	// 状态转换
+    	statusMap.put(SuccessFailureEnum.FAILURE.getCode(), RequestFlowStatusEnum.SEND_FAILED.getCode());
+    	statusMap.put(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+    	statusMap.put(SuccessFailureEnum.SUCCESS.getCode(), RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+    	statusMap.put(SuccessFailureEnum.ERROR.getCode(), RequestFlowStatusEnum.SEND_ERROR.getCode());
+    }
+
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
@@ -111,16 +121,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RequestFlowService requestFlowService;
     @Autowired
     private LogisticsCompanyService logisticsCompanyService;
-    
-    private static final Map<String, String> statusMap = new HashMap<String, String>();
-    
-    static {
-    	// 状态转换
-    	statusMap.put(SuccessFailureEnum.FAILURE.getCode(), RequestFlowStatusEnum.SEND_FAILED.getCode());
-    	statusMap.put(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
-    	statusMap.put(SuccessFailureEnum.SUCCESS.getCode(), RequestFlowStatusEnum.SEND_SUCCESS.getCode());
-    	statusMap.put(SuccessFailureEnum.ERROR.getCode(), RequestFlowStatusEnum.SEND_ERROR.getCode());
-    }
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -455,7 +455,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public String createOutbound(String outboundOrderId) throws Exception {
+    public String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
         OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
@@ -485,7 +485,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String code = result.getAppcode();
         String msg = result.getDatabuffer();
         //调用重新发货接口插入一条日志记录
-        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),"admin","重新发送",null,null);
+        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"重新发送",null,null);
         if (StringUtils.equals(code,SUCCESS)){
             updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
         }else {
