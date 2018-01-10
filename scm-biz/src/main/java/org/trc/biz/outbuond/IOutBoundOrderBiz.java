@@ -16,20 +16,20 @@ public interface IOutBoundOrderBiz {
     //发货明细更新
     void updateOutboundDetail(String requestText) throws Exception;
 
-    Response orderCancel(Long id, String remark);
+    Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 发货通知单创建
      * @param outboundOrderId 主键
      * @throws Exception
      */
-    String createOutbound(String outboundOrderId) throws Exception;
+    String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     Response getOutboundOrderDetail(Long id);
 
-    Response close(Long id, String remark);
+    Response close(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo);
 
-    Response cancelClose(Long id);
+    Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     //判读是否超过7天，超过七天则将置为1
     void checkTimeOutTimer();
