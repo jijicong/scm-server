@@ -276,11 +276,12 @@ public class SkuRelationBiz implements ISkuRelationBiz {
 
         //调用奇门库存查询接口校验绑定过商品的库存
         InventoryQueryRequest request = new InventoryQueryRequest();
-        InventoryQueryRequest.Criteria criteria = new InventoryQueryRequest.Criteria();
+        InventoryQueryRequest.Criteria criteria = null;
         List<InventoryQueryRequest.Criteria> criteriaList = new ArrayList<>();
         for(WarehouseInfo info : warehouseInfoList){
             String warehouseOwnerId = info.getWarehouseOwnerId();
             for(String skuCode : skuCodes){
+                criteria = new InventoryQueryRequest.Criteria();
                 criteria.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
                 criteria.setItemCode(skuCode);
                 criteria.setOwnerCode(warehouseOwnerId);

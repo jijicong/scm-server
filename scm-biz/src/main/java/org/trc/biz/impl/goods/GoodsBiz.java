@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.ItemsSynchronizeRequest;
-import com.qimen.api.response.ItemsSynchronizeResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,6 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
@@ -330,7 +328,9 @@ public class GoodsBiz implements IGoodsBiz {
             }
             for(SkuStock skuStock: skuStockList){
                 if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
-                    skus.setAvailableInventory(skuStock.getAvailableInventory());
+                    Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
+                            (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
+                    skus.setAvailableInventory(availableInventory<0?0:availableInventory);
                     skus.setRealInventory(skuStock.getRealInventory());
                     skus.setDefectiveInventory(skuStock.getDefectiveInventory());
                 }
@@ -1839,11 +1839,15 @@ public class GoodsBiz implements IGoodsBiz {
                                 }
                             }
                             if (isFlag){
+                                Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
+                                        (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
+                                skuStock.setAvailableInventory(availableInventory<0?0:availableInventory);
                                 skuStockList.add(skuStock);
                             }
                         }
                     }
                     s.setStockList(skuStockList);
+
                 }
             }
         }

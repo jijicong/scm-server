@@ -3329,11 +3329,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOList = entry.getValue();
         //调用奇门库存查询接口校验绑定过商品的库存
         InventoryQueryRequest request = new InventoryQueryRequest();
-        InventoryQueryRequest.Criteria criteria = new InventoryQueryRequest.Criteria();
+        InventoryQueryRequest.Criteria criteria = null;
         List<InventoryQueryRequest.Criteria> criteriaList = new ArrayList<>();
         for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
             WarehouseInfo warehouseInfo = warehouseOwernSkuDO.getWarehouseInfo();
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
+                criteria = new InventoryQueryRequest.Criteria();
                 criteria.setItemCode(warehouseItemInfo.getSkuCode());
                 criteria.setItemId(warehouseItemInfo.getWarehouseItemId());
                 criteria.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
@@ -4649,7 +4650,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         request.setOrders(orderList);
         AppResult appResult = qimenService.deliveryorderBatchcreate(request);
         //更新发货单状态
-        updateOutboudOrderStatus(outboundMap2, appResult);
+        updateOutboudOrderStatus(outboundMap2, appResult, warehouseList);
     }
 
     /**
@@ -4657,7 +4658,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param outboundMap
      * @param appResult
      */
-    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult){
+    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult, List<Warehouse> warehouseList){
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
         List<String> outboundCodes = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
@@ -4665,7 +4666,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         DeliveryorderBatchcreateResponse deliveryorderBatchcreateResponse = null;
         if(StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
-            if(null != appResult.getResult() && StringUtils.isBlank(appResult.getResult().toString())){
+            if(null != appResult.getResult() && StringUtils.isNotBlank(appResult.getResult().toString())){
                 try{
                     deliveryorderBatchcreateResponse = JSON.parseObject(appResult.getResult().toString()).toJavaObject(DeliveryorderBatchcreateResponse.class);
                 }catch (ClassCastException e) {
@@ -4681,10 +4682,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         List<String> successOutboundCodes = new ArrayList<>();//成功的发货单编码
         List<String> failureOutboundCodes = new ArrayList<>();//失败的发货单编码
+        List<DeliveryorderBatchcreateResponse.Order> failureOrderList = new ArrayList<>();//失败的发货单信息
         if(deliveryorderBatchcreateResponse.isSuccess()){
             if(!CollectionUtils.isEmpty(deliveryorderBatchcreateResponse.getOrders())){
                 for(DeliveryorderBatchcreateResponse.Order order: deliveryorderBatchcreateResponse.getOrders()){
                     failureOutboundCodes.add(order.getDeliveryOrderCode());
+                    failureOrderList.add(order);
                 }
             }
             for(String outboundCode: outboundCodes){
@@ -4703,12 +4706,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(!CollectionUtils.isEmpty(deliveryorderBatchcreateResponse.getOrders())){
                 for(DeliveryorderBatchcreateResponse.Order order: deliveryorderBatchcreateResponse.getOrders()){
                     failureOutboundCodes.add(order.getDeliveryOrderCode());
+                    failureOrderList.add(order);
                 }
             }
         }
         if(failureOutboundCodes.size() > 0){
-            updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, failureOutboundCodes);
+            for(DeliveryorderBatchcreateResponse.Order order: deliveryorderBatchcreateResponse.getOrders()){
+                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, order.getDeliveryOrderCode(), order.getMessage());
+            }
         }
+        String operator = SYSTEM;
         //记录操作日志
         if(failureOutboundCodes.size() > 0){
             //失败日志
@@ -4717,18 +4724,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 for(Map.Entry<String, OutboundForm> entry: entries){
                     if(StringUtils.equals(order.getDeliveryOrderCode(), entry.getKey())){
                         OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
+                        for(Warehouse warehouse: warehouseList){
+                            if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
+                                operator = warehouse.getName();
+                            }
+                        }
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
                     }
                 }
             }
         }
         //成功日志
-        if(successOutboundCodes.size() == 0){
+        if(successOutboundCodes.size() > 0){
             for(Map.Entry<String, OutboundForm> entry: entries){
-                for(String outboundCode: successOutboundCodes){
-                    OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
+                OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+                for(Warehouse warehouse: warehouseList){
+                    if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
+                        operator = warehouse.getName();
+                    }
                 }
+                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
             }
         }
     }
@@ -4736,22 +4751,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 调用奇门接口创建发货通知单后更新发货通知单状态
      * @param outboundOrderStatusEnum
-     * @param outboundOrderCodes
+     * @param outboundOrderCode
      */
-    private void updateOutboundOrderAfterCreate(OutboundOrderStatusEnum outboundOrderStatusEnum, List<String> outboundOrderCodes){
+
+    private void updateOutboundOrderAfterCreate(OutboundOrderStatusEnum outboundOrderStatusEnum, String outboundOrderCode, String message){
         Date currentTime = Calendar.getInstance().getTime();
         //更新发货通知单状态
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("outboundOrderCode", outboundOrderCodes);
+        criteria.andEqualTo("outboundOrderCode", outboundOrderCode);
         OutboundOrder outboundOrder = new OutboundOrder();
         outboundOrder.setStatus(outboundOrderStatusEnum.getCode());
+        outboundOrder.setMessage(message);
         outboundOrder.setUpdateTime(currentTime);
         outBoundOrderService.updateByExampleSelective(outboundOrder, example);
         //更新发货通知单明细状态
         Example example2 = new Example(OutboundDetail.class);
         Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andIn("outboundOrderCode", outboundOrderCodes);
+        criteria2.andEqualTo("outboundOrderCode", outboundOrderCode);
         OutboundDetail outboundDetail = new OutboundDetail();
         outboundDetail.setStatus(outboundOrderStatusEnum.getCode());
         outboundDetail.setUpdateTime(currentTime);
