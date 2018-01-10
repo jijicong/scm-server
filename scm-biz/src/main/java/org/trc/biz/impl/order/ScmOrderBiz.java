@@ -1905,7 +1905,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         orderItemService.insertList(itemList);
         //保存仓库订单
-        warehouseOrderService.insertList(warehouseOrderList);
+        if(warehouseOrderList.size() > 0){
+            warehouseOrderService.insertList(warehouseOrderList);
+        }
         //保存商铺订单
         shopOrderService.insertList(shopOrderList);
         //保存平台订单
