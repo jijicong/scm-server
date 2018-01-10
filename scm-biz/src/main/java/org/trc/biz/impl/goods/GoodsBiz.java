@@ -2387,7 +2387,9 @@ public class GoodsBiz implements IGoodsBiz {
                     externalItemSku.setDetailPictrues2(externalItemSku2.getDetailPictrues2());
                     //更新代发商品图片
                     List<ExternalPicture> tmpList = updateExternalPicture(externalItemSku, externalItemSku2);
-                    updatePicList.addAll(tmpList);
+                    if(!CollectionUtils.isEmpty(tmpList)){
+                        updatePicList.addAll(tmpList);
+                    }
                 }
             }
             ExternalItemSku oldItemSku =new ExternalItemSku();
@@ -2462,6 +2464,9 @@ public class GoodsBiz implements IGoodsBiz {
         //保存需要上传七牛的图片信息
         List<ExternalPicture> updatePicList = new ArrayList<>(mainPicList);
         updatePicList.addAll(detailPicList);
+        if(CollectionUtils.isEmpty(updatePicList)){
+            return null;
+        }
         externalPictureService.insertList(updatePicList);
         //重新设置主图和详情图信息
         Set<String> urls = new HashSet<>();
