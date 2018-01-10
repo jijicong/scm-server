@@ -50,8 +50,8 @@ public class OutboundOrderResource {
     @POST
     @Path(SupplyConstants.OutboundOrder.DELIVERY_ORDER_CREATE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createOutbound(@FormParam("id") String id) throws Exception {
-        return ResultUtil.createSuccessResult("重新发送成功",outBoundOrderBiz.createOutbound(id));
+    public Response createOutbound(@FormParam("id") String id,@Context ContainerRequestContext requestContext) throws Exception {
+        return ResultUtil.createSuccessResult("重新发送成功",outBoundOrderBiz.createOutbound(id,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     /**
@@ -60,8 +60,8 @@ public class OutboundOrderResource {
     @PUT
     @Path(SupplyConstants.OutboundOrder.ORDER_CANCEL + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response orderCancel(@PathParam("id") Long id, @FormParam("remark") String remark){
-        return outBoundOrderBiz.orderCancel(id, remark);
+    public Response orderCancel(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
+        return outBoundOrderBiz.orderCancel(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     /**
@@ -70,8 +70,8 @@ public class OutboundOrderResource {
     @PUT
     @Path(SupplyConstants.OutboundOrder.CLOSE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response close(@PathParam("id") Long id, @FormParam("remark") String remark){
-        return outBoundOrderBiz.close(id, remark);
+    public Response close(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
+        return outBoundOrderBiz.close(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     /**
@@ -80,8 +80,8 @@ public class OutboundOrderResource {
     @PUT
     @Path(SupplyConstants.OutboundOrder.CANCEL_CLOSE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response cancelClose(@PathParam("id") Long id){
-        return outBoundOrderBiz.cancelClose(id);
+    public Response cancelClose(@PathParam("id") Long id,@Context ContainerRequestContext requestContext){
+        return outBoundOrderBiz.cancelClose(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     /**

@@ -1351,7 +1351,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
             skuStock.setChannelCode(channelCode);
             skuStock.setWarehouseId(warehouseId);
-            skuStock.setWarehouseItemId(purchaseDetail.getWarehouseItemId());
+            skuStock.setSkuCode(purchaseDetail.getSkuCode());
             skuStock.setIsValid(ZeroToNineEnum.ONE.getCode());
             skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skuStock = skuStockService.selectOne(skuStock);

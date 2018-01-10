@@ -84,6 +84,16 @@ import tk.mybatis.mapper.entity.Example;
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     public final static String SUCCESS = "200";
+    private static final Map<String, String> statusMap = new HashMap<String, String>();
+
+    static {
+    	// 状态转换
+    	statusMap.put(SuccessFailureEnum.FAILURE.getCode(), RequestFlowStatusEnum.SEND_FAILED.getCode());
+    	statusMap.put(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
+    	statusMap.put(SuccessFailureEnum.SUCCESS.getCode(), RequestFlowStatusEnum.SEND_SUCCESS.getCode());
+    	statusMap.put(SuccessFailureEnum.ERROR.getCode(), RequestFlowStatusEnum.SEND_ERROR.getCode());
+    }
+
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
@@ -111,16 +121,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RequestFlowService requestFlowService;
     @Autowired
     private LogisticsCompanyService logisticsCompanyService;
-    
-    private static final Map<String, String> statusMap = new HashMap<String, String>();
-    
-    static {
-    	// 状态转换
-    	statusMap.put(SuccessFailureEnum.FAILURE.getCode(), RequestFlowStatusEnum.SEND_FAILED.getCode());
-    	statusMap.put(SuccessFailureEnum.SOCKET_TIME_OUT.getCode(), RequestFlowStatusEnum.SEND_TIME_OUT.getCode());
-    	statusMap.put(SuccessFailureEnum.SUCCESS.getCode(), RequestFlowStatusEnum.SEND_SUCCESS.getCode());
-    	statusMap.put(SuccessFailureEnum.ERROR.getCode(), RequestFlowStatusEnum.SEND_ERROR.getCode());
-    }
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -455,7 +455,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public String createOutbound(String outboundOrderId) throws Exception {
+    public String createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
         OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
@@ -485,7 +485,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String code = result.getAppcode();
         String msg = result.getDatabuffer();
         //调用重新发货接口插入一条日志记录
-        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),"admin","重新发送",null,null);
+        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"重新发送",null,null);
         if (StringUtils.equals(code,SUCCESS)){
             updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
         }else {
@@ -527,7 +527,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Response close(Long id, String remark) {
+    public Response close(Long id, String remark,  AclUserAccreditInfo aclUserAccreditInfo) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
             AssertUtil.notBlank(remark, "关闭不能为空");
@@ -553,7 +553,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
             //仓库接受失败插入一条日志
-            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"warehouse","关闭", remark,null);
+            String userId = aclUserAccreditInfo.getUserId();
+            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"关闭", remark,null);
             return ResultUtil.createSuccessResult("发货通知单关闭成功！", "");
         }catch(Exception e){
             String msg = e.getMessage();
@@ -588,7 +589,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Response cancelClose(Long id) {
+    public Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
 
@@ -618,7 +619,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             //更新订单信息
             this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
-            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"warehouse","取消关闭", "",null);
+            String userId = aclUserAccreditInfo.getUserId();
+            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), userId,"取消关闭", "",null);
             return ResultUtil.createSuccessResult("取消关闭成功！", "");
         }catch(Exception e){
             String msg = e.getMessage();
@@ -751,7 +753,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Override
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public Response orderCancel(Long id, String remark) {
+    public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
             AssertUtil.notBlank(remark, "取消原因不能为空");
@@ -786,7 +788,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                         outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
-                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"warehouse","取消订单", remark,null);
+                String userId = aclUserAccreditInfo.getUserId();
+                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"取消订单", remark,null);
 
                 //更新订单信息
                 this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
