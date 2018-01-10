@@ -56,7 +56,6 @@ public class ExternalPictureBiz implements IExternalPictureBiz{
                     log.error("上传代发商品图片到七牛定时任务上传图片异常", e);
                 }
             }
-            System.out.println(JSON.toJSONString(pagenation));
         }while (totalCount > 0);
     }
 }
