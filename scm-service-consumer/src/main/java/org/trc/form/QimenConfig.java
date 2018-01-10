@@ -14,6 +14,9 @@ public class QimenConfig {
     //发货通知单创建接口URL
     private String qimenDeliveryOrderCreateUrl;
 
+    //发货通知单批量创建接口URL
+    private String qimenDeliveryOrderBatchCreateUrl;
+
     //商品库存查询接口URL
     private String qimenInventoryQueryUrl;
 
@@ -92,5 +95,12 @@ public class QimenConfig {
 	public void setQimenOrderPendingUrl(String qimenOrderPendingUrl) {
 		this.qimenOrderPendingUrl = qimenOrderPendingUrl;
 	}
-    
+
+    public String getQimenDeliveryOrderBatchCreateUrl() {
+        return qimenDeliveryOrderBatchCreateUrl;
+    }
+
+    public void setQimenDeliveryOrderBatchCreateUrl(String qimenDeliveryOrderBatchCreateUrl) {
+        this.qimenDeliveryOrderBatchCreateUrl = qimenDeliveryOrderBatchCreateUrl;
+    }
 }
