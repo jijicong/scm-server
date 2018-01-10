@@ -509,6 +509,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String supplierCode = purchaseOrder.getSupplierCode();
         AssertUtil.notBlank(supplierCode, "供应商为空");
         ParamsUtil.setBaseDO(purchaseOrder);
+
+        //校验仓库是否停用
+        this.checkWarehouse(purchaseOrder.getWarehouseId());
+
         int count = 0;
         //根据用户的id查询渠道
         AclUserAccreditInfo user = new AclUserAccreditInfo();
@@ -574,6 +578,21 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             savePurchaseOrderAudit(purchaseOrder,aclUserAccreditInfo);
         }
 
+    }
+
+
+    private void checkWarehouse(Long warehouseId){
+        if(warehouseId != null){
+            Warehouse warehouse = new Warehouse();
+            warehouse.setId(warehouseId);
+            warehouse.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            warehouse = warehouseService.selectOne(warehouse);
+            if(ZeroToNineEnum.ZERO.getCode().equals(warehouse.getIsValid())){
+                String msg = String.format("仓库%s已被停用，请重新选择！", warehouse.getName());
+                LOGGER.error(msg);
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
+            }
+        }
     }
 
     private void formatDate(PurchaseOrder purchaseOrder){
@@ -1086,6 +1105,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         AssertUtil.notNull(purchaseOrderAddData,"修改采购单失败,采购单为空");
         PurchaseOrder purchaseOrder = purchaseOrderAddData;//转型
+
+        //校验仓库是否停用
+        this.checkWarehouse(purchaseOrder.getWarehouseId());
+
         purchaseOrder.setTotalFee(purchaseOrder.getTotalFeeD().multiply(new BigDecimal(100)).longValue());//设置总价格*100
         purchaseOrder.setUpdateTime(Calendar.getInstance().getTime());
         BigDecimal paymentProportion = purchaseOrder.getPaymentProportion();
