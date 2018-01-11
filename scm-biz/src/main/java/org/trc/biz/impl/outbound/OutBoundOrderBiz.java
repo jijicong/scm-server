@@ -117,8 +117,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RequestFlowService requestFlowService;
     @Autowired
     private LogisticsCompanyService logisticsCompanyService;
-    @Autowired
-    private RedisLock redisLock;
 
     @Autowired
     private RedisLock redisLock;
