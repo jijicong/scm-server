@@ -33,15 +33,7 @@ import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogsticsTypeEnum;
-import org.trc.enums.OutboundDetailStatusEnum;
-import org.trc.enums.OutboundOrderStatusEnum;
-import org.trc.enums.RequestFlowStatusEnum;
-import org.trc.enums.RequestFlowTypeEnum;
-import org.trc.enums.SuccessFailureEnum;
-import org.trc.enums.TrcActionTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
 import org.trc.form.Logistic;
 import org.trc.form.LogisticNoticeForm;
@@ -78,6 +70,7 @@ import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.OrderCancelResponse;
 import com.thoughtworks.xstream.XStream;
 
+import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 @Service("outBoundOrderBiz")
@@ -121,6 +114,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RequestFlowService requestFlowService;
     @Autowired
     private LogisticsCompanyService logisticsCompanyService;
+    @Autowired
+    private RedisLock redisLock;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -754,10 +749,18 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
-        try{
-            AssertUtil.notNull(id, "发货单主键不能为空");
-            AssertUtil.notBlank(remark, "取消原因不能为空");
+        AssertUtil.notNull(id, "发货单主键不能为空");
+        AssertUtil.notBlank(remark, "取消原因不能为空");
 
+        //上锁防止重复调用奇门接口
+        String identifier = redisLock.Lock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id, 50000, 100000);
+
+        if (StringUtils.isBlank(identifier)){
+            String msg = "发货单Id为"+id+"未获取到锁！";
+            logger.error(msg);
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
+        }
+        try{
             //获取发货单信息
             OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(id);
 
@@ -777,6 +780,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             orderCancelRequest.setWarehouseCode(warehouse.getQimenWarehouseCode());
 
             //调用奇门接口
+            Thread.sleep(10000);
             AppResult<OrderCancelResponse> appResult = qimenService.orderCancel(orderCancelRequest);
 
             //处理信息
@@ -801,6 +805,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             String msg = e.getMessage();
             logger.error(msg, e);
             return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
+        }finally {
+            //释放锁
+            if (redisLock.releaseLock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id, identifier)) {
+                logger.info(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id + "已释放！");
+            } else {
+                logger.error(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id + "解锁失败！");
+            }
         }
 
     }
