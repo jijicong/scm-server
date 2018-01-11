@@ -105,7 +105,7 @@ public class PurchaseOrder extends BaseDO{
     @FormParam("receiver")
     private String receiver;//收货人
     @FormParam("warehouseInfoId")
-    private String warehouseInfoId;//仓库信息主键
+    private Long warehouseInfoId;//仓库信息主键
     @FormParam("warehouseName")
     private String warehouseName;//仓库名称
     @FormParam("receiverNumber")
@@ -434,11 +434,11 @@ public class PurchaseOrder extends BaseDO{
         this.receiver = receiver;
     }
 
-    public String getWarehouseInfoId() {
+    public Long getWarehouseInfoId() {
         return warehouseInfoId;
     }
 
-    public void setWarehouseInfoId(String warehouseInfoId) {
+    public void setWarehouseInfoId(Long warehouseInfoId) {
         this.warehouseInfoId = warehouseInfoId;
     }
 
