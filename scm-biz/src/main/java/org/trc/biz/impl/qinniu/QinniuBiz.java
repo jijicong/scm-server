@@ -55,6 +55,8 @@ public class QinniuBiz implements IQinniuBiz{
             BaseThumbnailSize baseThumbnailSize = getBaseThumbnailSize(module);
             fileName = module + "/" + fileName;
             defaultPutRet = qinniuService.upload(inputStream, fileName, baseThumbnailSize);
+            //这里挂起500毫秒后返回结果，避免因为七牛那边上传延迟导致返回的图片地址没法显示
+            Thread.sleep(500);
         }catch (Exception e){
             String msg = CommonUtil.joinStr("上传文件",fileName,"异常").toString();
             log.error(msg,e);

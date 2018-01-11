@@ -37,6 +37,7 @@ import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
 import org.trc.domain.goods.SkuRelation;
 import org.trc.domain.goods.SkuStock;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
@@ -64,6 +65,7 @@ import org.trc.service.config.ISystemConfigService;
 import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkuStockService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.order.OrderItemService;
 import org.trc.service.impl.outbound.OutBoundOrderService;
 import org.trc.service.order.IExceptionOrderItemService;
@@ -219,6 +221,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IOutboundDetailLogisticsService outboundDetailLogisticsService;
     @Autowired
     private RedisLock redisLock;
+    @Autowired
+    private ISkusService skusService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1841,6 +1845,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SkuStock> skuStockList = new ArrayList<>();
         List<ExceptionOrderItem> exceptionOrderItemList = new ArrayList<>();//校验失败的商品
         if(selfPurcharseOrderItemList.size() > 0){
+            //设置自采商品spu编码
+            setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
             //获取并校验业务线相关仓储信息
             List<WarehouseInfo> warehouseInfoList = getChannelAndCheckWarehouseInfo(platformOrder.getChannelCode());
             //获取自采商品奇门库存
@@ -1953,6 +1959,29 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
         ).start();
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", lyWarehouseOrders);
+    }
+
+    /**
+     * 设置自采商品spu编码
+     * @param selfPurcharseOrderItemList
+     */
+    private void setSelfPurcharesSpuInfo(List<OrderItem> selfPurcharseOrderItemList){
+        List<String> skuCodes = new ArrayList<>();
+        for(OrderItem orderItem: selfPurcharseOrderItemList){
+            skuCodes.add(orderItem.getSkuCode());
+        }
+        Example example = new Example(Skus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        List<Skus> skusList = skusService.selectByExample(example);
+        for(OrderItem orderItem: selfPurcharseOrderItemList){
+            for(Skus skus: skusList){
+                if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
+                    orderItem.setSpuCode(skus.getSpuCode());
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -3714,12 +3743,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //sku和仓库可用库存关系,一个sku对应多个仓库可用库存
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = getSkuWarehouseRelation(orderItems, skuStockList);
         Set<String> warehouses = new HashSet<>();//所有匹配库存的仓库
-        Iterator<Map.Entry<String, List<SkuWarehouseDO>>> entries = warehouseSkuMap.entrySet().iterator();
         for(OrderItem orderItem: orderItems){
-            while (entries.hasNext()){
-                Map.Entry<String, List<SkuWarehouseDO>> entry = entries.next();
-                String skuCode = entry.getKey();
-                if(StringUtils.equals(orderItem.getSkuCode(), skuCode)){
+            for(Map.Entry<String, List<SkuWarehouseDO>> entry: warehouseSkuMap.entrySet()){
+                if(StringUtils.equals(orderItem.getSkuCode(), entry.getKey())){
                     List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
                     for(SkuWarehouseDO skuWarehouseDO: skuWarehouseDOList){
                         warehouses.add(skuWarehouseDO.getWarehouseCode());
@@ -3746,9 +3772,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             for(Warehouse warehouse: warehouseList3){
                 List<OrderItem> warehouseOrderItemList = new ArrayList<>();
-                entries = warehouseSkuMap.entrySet().iterator();
-                while (entries.hasNext()){
-                    Map.Entry<String, List<SkuWarehouseDO>> entry = entries.next();
+                for(Map.Entry<String, List<SkuWarehouseDO>> entry: warehouseSkuMap.entrySet()){
                     List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
                     for(SkuWarehouseDO skuWarehouseDO: skuWarehouseDOList){
                         if(StringUtils.equals(warehouse.getCode(), skuWarehouseDO.getWarehouseCode())){
