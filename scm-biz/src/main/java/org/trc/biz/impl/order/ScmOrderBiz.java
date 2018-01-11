@@ -3743,12 +3743,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //sku和仓库可用库存关系,一个sku对应多个仓库可用库存
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = getSkuWarehouseRelation(orderItems, skuStockList);
         Set<String> warehouses = new HashSet<>();//所有匹配库存的仓库
-        Iterator<Map.Entry<String, List<SkuWarehouseDO>>> entries = warehouseSkuMap.entrySet().iterator();
         for(OrderItem orderItem: orderItems){
-            while (entries.hasNext()){
-                Map.Entry<String, List<SkuWarehouseDO>> entry = entries.next();
-                String skuCode = entry.getKey();
-                if(StringUtils.equals(orderItem.getSkuCode(), skuCode)){
+            for(Map.Entry<String, List<SkuWarehouseDO>> entry: warehouseSkuMap.entrySet()){
+                if(StringUtils.equals(orderItem.getSkuCode(), entry.getKey())){
                     List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
                     for(SkuWarehouseDO skuWarehouseDO: skuWarehouseDOList){
                         warehouses.add(skuWarehouseDO.getWarehouseCode());
@@ -3775,9 +3772,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             for(Warehouse warehouse: warehouseList3){
                 List<OrderItem> warehouseOrderItemList = new ArrayList<>();
-                entries = warehouseSkuMap.entrySet().iterator();
-                while (entries.hasNext()){
-                    Map.Entry<String, List<SkuWarehouseDO>> entry = entries.next();
+                for(Map.Entry<String, List<SkuWarehouseDO>> entry: warehouseSkuMap.entrySet()){
                     List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
                     for(SkuWarehouseDO skuWarehouseDO: skuWarehouseDOList){
                         if(StringUtils.equals(warehouse.getCode(), skuWarehouseDO.getWarehouseCode())){
