@@ -780,7 +780,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             orderCancelRequest.setWarehouseCode(warehouse.getQimenWarehouseCode());
 
             //调用奇门接口
-            Thread.sleep(10000);
             AppResult<OrderCancelResponse> appResult = qimenService.orderCancel(orderCancelRequest);
 
             //处理信息
