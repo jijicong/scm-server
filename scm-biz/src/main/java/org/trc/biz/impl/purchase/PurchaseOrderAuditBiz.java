@@ -139,7 +139,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
             purchaseOrder.setPurchaseGroupName(entityGroup.getName());
             //赋值仓库名称
             WarehouseInfo warehouseInfo = new WarehouseInfo();
-            warehouseInfo.setId(Long.parseLong(purchaseOrder.getWarehouseInfoId()));
+            warehouseInfo.setId(purchaseOrder.getWarehouseInfoId());
             WarehouseInfo entityWarehouse = warehouseInfoService.selectOne(warehouseInfo);
             purchaseOrder.setWarehouseName(entityWarehouse.getWarehouseName());
 

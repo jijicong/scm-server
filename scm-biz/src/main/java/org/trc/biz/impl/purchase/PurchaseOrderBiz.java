@@ -615,7 +615,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(purchaseOrder.getPurchaseGroupCode(),"采购组不能为空!");
         AssertUtil.notBlank(purchaseOrder.getCurrencyType(),"币值不能为空!");
         AssertUtil.notBlank(purchaseOrder.getPurchasePersonId(),"采购人不能为空!");
-        AssertUtil.notBlank(purchaseOrder.getWarehouseInfoId(),"收货仓库不能为空!");
+        AssertUtil.notNull(purchaseOrder.getWarehouseInfoId(),"收货仓库不能为空!");
         AssertUtil.notBlank(purchaseOrder.getReceiver(),"收货人不能为空!");
         AssertUtil.notBlank(purchaseOrder.getReceiverNumber(),"收货人手机不能为空!");
         AssertUtil.notBlank(purchaseOrder.getTransportFeeDestId(),"运输费用承担方不能为空!");
@@ -1288,7 +1288,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setCreateOperator((String) obj);
 
         WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setId(Long.parseLong(purchaseOrder.getWarehouseInfoId()));
+        warehouseInfo.setId(purchaseOrder.getWarehouseInfoId());
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
 
         Warehouse warehouse = new Warehouse();
