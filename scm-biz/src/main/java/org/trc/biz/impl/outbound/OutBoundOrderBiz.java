@@ -117,6 +117,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RequestFlowService requestFlowService;
     @Autowired
     private LogisticsCompanyService logisticsCompanyService;
+    @Autowired
+    private RedisLock redisLock;
 
     @Autowired
     private RedisLock redisLock;
@@ -784,10 +786,18 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @CacheEvit
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
-        try{
-            AssertUtil.notNull(id, "发货单主键不能为空");
-            AssertUtil.notBlank(remark, "取消原因不能为空");
+        AssertUtil.notNull(id, "发货单主键不能为空");
+        AssertUtil.notBlank(remark, "取消原因不能为空");
 
+        //上锁防止重复调用奇门接口
+        String identifier = redisLock.Lock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id, 50000, 100000);
+
+        if (StringUtils.isBlank(identifier)){
+            String msg = "发货单Id为"+id+"未获取到锁！";
+            logger.error(msg);
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
+        }
+        try{
             //获取发货单信息
             OutboundOrder outboundOrder = outBoundOrderService.selectByPrimaryKey(id);
 
@@ -831,6 +841,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             String msg = e.getMessage();
             logger.error(msg, e);
             return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
+        }finally {
+            //释放锁
+            if (redisLock.releaseLock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id, identifier)) {
+                logger.info(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id + "已释放！");
+            } else {
+                logger.error(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() +"orderCancel"+ id + "解锁失败！");
+            }
         }
 
     }
