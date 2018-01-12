@@ -45,7 +45,7 @@ public interface IPurchaseOrderBiz {
      * 冻结，解冻采购单
      * @param purchaseOrder
      */
-    void  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
+    String  updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) ;
 
     PurchaseOrder findPurchaseOrderAddDataByCode(String purchaseCode);
 
