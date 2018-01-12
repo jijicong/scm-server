@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <warehouse id="1" code="CK00001" name="22" sender_phone_number="15032652362" warehouse_contact_number="15032652362" warehouse_type_code="1" warehouse_contact="&#26446;&#22235;" qimen_warehouse_code="" is_through_qimen="0" is_customs_clearance="1" province="210000" city="210300" area="210301" address="111" is_valid="1" is_deleted="0" create_operator="E2E4BDAD80354EFAB6E70120C271968C" remark="" create_time="2017-07-21 10:12:45.0" update_time="2017-12-21 10:09:23.0" is_notice_success="0" is_notice_warehouse_items="0"/>
+</dataset>

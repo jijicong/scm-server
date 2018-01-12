@@ -6,16 +6,16 @@ package org.trc.enums;
  */
 public enum DistributeLockEnum {
     WAREHOSE_NOTICE_STOCK("stock_","库存更新"),
+    DELIVERY_ORDER_CREATE("deliveryOrderCreate_","发货通知单"),
     SUBMIT_JINGDONG_ORDERßßß("submitJingdongOrder_","提交京东订单")
     ;
 
+    private String code;
+    private String name;
     DistributeLockEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }
-
-    private String code;
-    private String name;
 
     public String getCode() {
         return code;
