@@ -516,7 +516,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 //获取锁失败
                 logger.error("重新发货失败:{} 发货通知单发送，获取锁失败，skuStockId:{}，identifier:{}",
                         JSON.toJSONString(request), outboundOrderCode, identifier);
-                return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION.getCode()),"获取锁失败");
+                return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION.getCode()),"操作失败，请重试");
             }
         }catch (Exception e){
             e.printStackTrace();

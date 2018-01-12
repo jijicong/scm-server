@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <sku_stock id="2" spu_code="SPU2017072500003" sku_code="SP0201707250000034" supplier_id="30" supplier_code="GYS000009" channel_id="24" channel_code="YWX001" warehouse_id="1" warehouse_code="CK00001" warehouse_item_id="2" available_inventory="0" available_defective_inventory="0" lock_inventory="0" air_inventory="10" frozen_inventory="44" real_inventory="90" defective_inventory="0" is_deleted="0" create_time="2017-11-28 06:25:02.0" update_time="2018-01-12 03:08:41.0" is_valid="1"/>
+  <sku_stock id="3" spu_code="SPU2017072400001" sku_code="SP0201707240000002" channel_code="YWX001" warehouse_id="15" warehouse_code="CK00015" warehouse_item_id="2" available_inventory="0" available_defective_inventory="0" lock_inventory="0" air_inventory="10" frozen_inventory="0" real_inventory="90" defective_inventory="0" is_deleted="0" create_time="2017-11-28 10:39:54.0" update_time="2017-12-21 03:26:42.0" is_valid="0"/>
+</dataset>

@@ -419,7 +419,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     //真实库存
                     map.put("real_inventory", String.valueOf(normalQuantity));
                     //可用正品库存
-                    map.put("available_inventory", String.valueOf(normalQuantity));
+//                    map.put("available_inventory", String.valueOf(normalQuantity));
                     //残次品库存
                     map.put("defective_inventory", String.valueOf(defectiveQuantity));
                     //在途库存
@@ -523,6 +523,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
         criteria.andEqualTo("status", PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+        criteria.andEqualTo("enterWarehouseNotice", WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.selectByExample(example);
         if (CollectionUtils.isEmpty(purchaseOrders)) {
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, "查询采购单失败！");
@@ -732,10 +733,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             		logger.error("通知单商品:{} 发送入库通知单后，更新在途库存失败，skuStockId:{}，identifier:{}, err:{}", 
             				JSON.toJSONString(detail), skuStockId, identifier, e.getMessage());
             	} finally {
-            		if (redisLock.releaseLock(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + skuStockId, identifier)) {
-            			logger.info("skuStockId:{} 入库通知单发送，解锁成功，identifier:{}", skuStockId, identifier);
-            		} else {
-            			logger.info("skuStockId:{} 入库通知单发送，解锁失败，identifier:{}", skuStockId, identifier);
+            		try {
+            			if (redisLock.releaseLock(DistributeLockEnum.WAREHOSE_NOTICE_STOCK.getCode() + skuStockId, identifier)) {
+            				logger.info("skuStockId:{} 入库通知单发送，解锁成功，identifier:{}", skuStockId, identifier);
+            			} else {
+            				logger.error("skuStockId:{} 入库通知单发送，解锁失败，identifier:{}", skuStockId, identifier);
+            			}
+            			
+            		} catch (Exception e) {
+            			logger.error("skuStockId:{} 入库通知单发送，解锁失败，identifier:{}, err:{}", 
+            					skuStockId, identifier, e.getMessage());
+            			e.printStackTrace();
             		}
             	}
             }
