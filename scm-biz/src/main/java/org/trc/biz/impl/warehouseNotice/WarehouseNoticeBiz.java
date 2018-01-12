@@ -419,7 +419,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     //真实库存
                     map.put("real_inventory", String.valueOf(normalQuantity));
                     //可用正品库存
-                    map.put("available_inventory", String.valueOf(normalQuantity));
+//                    map.put("available_inventory", String.valueOf(normalQuantity));
                     //残次品库存
                     map.put("defective_inventory", String.valueOf(defectiveQuantity));
                     //在途库存
