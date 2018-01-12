@@ -234,7 +234,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
