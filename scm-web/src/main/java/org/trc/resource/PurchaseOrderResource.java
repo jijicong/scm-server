@@ -160,7 +160,7 @@ public class PurchaseOrderResource {
     }
 
     @PUT
-    @Path(SupplyConstants.PurchaseOrder.FREEZE+"/{id}/{type}")
+    @Path(SupplyConstants.PurchaseOrder.FREEZE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
