@@ -3628,7 +3628,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                 skuWarehouseDO.setSkuCode(maxSkuStock.getSkuCode());
-                skuWarehouseDO.setItemNum(maxSkuStock.getRealInventory() - maxSkuStock.getFrozenInventory());
+                skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
                 skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
                 skuWarehouseDOList.add(skuWarehouseDO);
                 warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
