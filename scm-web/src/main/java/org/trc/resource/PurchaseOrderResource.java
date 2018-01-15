@@ -1,5 +1,6 @@
 package org.trc.resource;
 
+import com.alibaba.druid.util.StringUtils;
 import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
@@ -163,9 +164,12 @@ public class PurchaseOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseStateFreeze(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
 
-        purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult("采购单冻结成功!","");
-
+        String type = purchaseOrderBiz.updatePurchaseStateFreeze(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        if(StringUtils.equals("pass", type)){
+            return ResultUtil.createSuccessResult("采购单解冻成功!","");
+        }else{
+            return ResultUtil.createSuccessResult("采购单冻结成功!","");
+        }
     }
 
     @PUT

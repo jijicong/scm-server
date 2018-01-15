@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<dataset>
+    <system_config
+            id="1"
+            code="QD001"
+            name="泰然城"
+            type="channel"
+            content="[null]"
+            description="[null]"
+            create_operator="sss"
+    />
+
+    <system_config
+            id="2"
+            code="orderReceiveInterval"
+            name="订单接收时间间隔"
+            type="[null]"
+            content="10"
+            description="单位/秒"
+            create_operator="[null]"
+    />
+
+    <system_config
+            id="4"
+            code="channelCodeCheck"
+            name="渠道编码校验"
+            type="[null]"
+            content="1"
+            description="0-不校验,1-校验"
+            create_operator="[null]"
+    />
+
+
+
+</dataset>

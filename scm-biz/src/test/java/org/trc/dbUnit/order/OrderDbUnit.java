@@ -53,7 +53,10 @@ public class OrderDbUnit extends BaseTest{
     private static final String TABLE_WAREHOUSE_ORDER= "warehouse_order";
     private static final String TABLE_SUPPLIER_ORDER_INFO= "supplier_order_info";
 
-
+    /**
+     * 接收代发订单测试
+     * @throws Exception
+     */
     @Test
     public void testReciveChannelOrder() throws Exception{
         //删除原数据
@@ -111,6 +114,69 @@ public class OrderDbUnit extends BaseTest{
         //从数据库中查出数据与期望结果作比较
         assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
     }
+
+    /**
+     * 接收自采订单测试
+     * @throws Exception
+     */
+    @Test
+    public void testReciveChannelOrder_selfPurcharse() throws Exception{
+        //删除原数据
+        execSql(conn,"delete from system_config");
+        execSql(conn,"delete from sku_relation");
+        execSql(conn,"delete from platform_order");
+        execSql(conn,"delete from shop_order");
+        execSql(conn,"delete from supplier");
+        execSql(conn,"delete from order_item");
+        execSql(conn,"delete from warehouse_order");
+        execSql(conn,"delete from supplier_order_info");
+        execSql(conn,"delete from supplier_order_logistics");
+        execSql(conn,"delete from external_item_sku");
+        execSql(conn,"delete from log_information");
+        execSql(conn,"delete from order_flow");
+        //从xml文件读取数据并插入数据库中
+        prepareData(conn, "order/preInsertSupplierData.xml");
+        prepareData(conn, "order/preInsertskuRelation.xml");
+        prepareData(conn, "order/preInsertSystemConfig.xml");
+        prepareData(conn, "order/preInsertExternalItemSku.xml");
+        //测试接收渠道订单
+        ResponseAck<List<WarehouseOrder>> responseAck = scmOrderBiz.reciveChannelOrder(createOrderInfo());
+        List<WarehouseOrder> lyWarehouseOrders = (List<WarehouseOrder>)responseAck.getData();
+        AssertUtil.isTrue(lyWarehouseOrders.size() == 1, "测试方法testReciveChannelOrder返回粮油订单结果不等于1");
+        /**
+         * 校验平台订单数据
+         */
+        ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertPlatformOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_PLATFORM_ORDER,"select * from platform_order",expResult,conn);
+        /**
+         * 校验店铺订单数据
+         */
+        ReplacementDataSet expResult2 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertShopOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult2.addReplacementObject("[null]", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_SHOP_ORDER,"select * from shop_order",expResult2,conn);
+        /**
+         * 校验仓库订单数据
+         */
+        ReplacementDataSet expResult3 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertWarehouseOrder.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult3.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_WAREHOUSE_ORDER,"select * from warehouse_order",expResult3,conn);
+        /**
+         * 校验订单商品数据
+         */
+        ReplacementDataSet expResult4 = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("order/expInsertOrderItem.xml"));
+        //空元素的字段需要一个"[null]"占位符，然后用 replacementDataSet.addReplacementObject("[null]", null) 替换成null,占位符可以自定义
+        expResult4.addReplacementObject("*", null);
+        //从数据库中查出数据与期望结果作比较
+        assertDataSet(TABLE_ORDER_ITEM_ORDER,"select * from order_item",expResult4,conn);
+    }
+
 
     /**
      * 粮油订单下单成功

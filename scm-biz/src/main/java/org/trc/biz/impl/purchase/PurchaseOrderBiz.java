@@ -1058,10 +1058,25 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @CacheEvit
-    public void updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
+    public String updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
+        AssertUtil.notNull(purchaseOrder.getId(),"采购单的主键为空");
+        //根据采购单id,查询采购单的信息
+        PurchaseOrder order = purchaseOrderService.selectByPrimaryKey(purchaseOrder.getId());
+        AssertUtil.notNull(order,"根据主键查询该采购单为空");
         String status = purchaseOrder.getStatus();
+        if(!StringUtils.equals(order.getStatus(), status)){
+            String msg = "";
+            if(StringUtils.equals(status, PurchaseOrderStatusEnum.FREEZE.getCode())){
+                msg = "该订单已解冻！";
+            }else{
+                msg = "该订单已冻结！";
+            }
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
         if(PurchaseOrderStatusEnum.PASS.getCode().equals(status)){ //需冻结
             PurchaseOrder tmp = new PurchaseOrder();
             tmp.setId(purchaseOrder.getId());
@@ -1077,7 +1092,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             PurchaseOrder purchaseOrderLog = new PurchaseOrder();
             purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
             logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.FREEZE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
-            return;
+            return "freeze";
         }
         if(PurchaseOrderStatusEnum.FREEZE.getCode().equals(status)){ //需解冻
             PurchaseOrder tmp = new PurchaseOrder();
@@ -1094,8 +1109,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             PurchaseOrder purchaseOrderLog = new PurchaseOrder();
             purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
             logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UN_FREEZE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
+            return "pass";
         }
-
+        return "";
     }
 
     @Override
@@ -1281,6 +1297,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //根据采购单id,查询采购单的信息
         PurchaseOrder order = purchaseOrderService.selectByPrimaryKey(purchaseOrder.getId());
         AssertUtil.notNull(order,"根据主键查询该采购单为空");
+        if(!StringUtils.equals(order.getStatus(), PurchaseOrderStatusEnum.PASS.getCode())){
+            String msg = "保存入库通知单数据库操作失败,入库单状态不为审核通过！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
         WarehouseNotice warehouseNotice = new WarehouseNotice();
         //这里没有继承commDao类，因此创建人要自己的代码处理
         Object obj = aclUserAccreditInfo.getUserId();
