@@ -853,6 +853,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     public String updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
+        AssertUtil.notNull(purchaseOrder.getId(),"采购订单状态修改失败，采购订单ID为空");
+        purchaseOrder = purchaseOrderService.selectByPrimaryKey(purchaseOrder.getId());
         String status = purchaseOrder.getStatus();
 
         if(PurchaseOrderStatusEnum.HOLD.getCode().equals(status)){ //暂存：的删除操作
@@ -869,8 +871,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
         if(PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode().equals(status)){ //入库通知的（未通知仓储）：的作废操作
             handleCancel(purchaseOrder,aclUserAccreditInfo);
+            return "作废成功!";
         }
-        return "作废成功!";
+        return "操作失败";
     }
     //采购单作废操作
     private void handleCancel(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo) {
