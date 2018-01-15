@@ -523,18 +523,21 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("purchaseOrderCode", warehouseNotice.getPurchaseOrderCode());
         criteria.andEqualTo("status", PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
-        criteria.andEqualTo("enterWarehouseNotice", WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());
+        //criteria.andEqualTo("enterWarehouseNotice", WarehouseNoticeEnum.TO_BE_NOTIFIED.getCode());
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.selectByExample(example);
-        if (CollectionUtils.isEmpty(purchaseOrders)) {
-            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, "查询采购单失败！");
+//        if (CollectionUtils.isEmpty(purchaseOrders)) {
+//            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, "查询采购单失败！");
+//        }
+        // 采购单的状态未置过
+        if (!CollectionUtils.isEmpty(purchaseOrders)) {
+        	int count = purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
         }
-        int count = purchaseOrderService.updateByExampleSelective(purchaseOrder,example);
 
-        if(count != 1){
-            String msg = String.format("采购单的编码[purchaseOrderCode=%s]的状态已作废,无法进行入库通知的操作",warehouseNotice.getPurchaseOrderCode());
-            logger.error(msg);
-            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
-        }
+//        if(count != 1){
+//            String msg = String.format("采购单的编码[purchaseOrderCode=%s]的状态已作废,无法进行入库通知的操作",warehouseNotice.getPurchaseOrderCode());
+//            logger.error(msg);
+//            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
+//        }
 
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
@@ -545,7 +548,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         warehouseNoticeCriteria.andIn("status", statusList);
         List<WarehouseNotice> noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
         if (CollectionUtils.isEmpty(noticeList)) {
-            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合修改条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
+            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合入库条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
             logger.error(msg);
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
