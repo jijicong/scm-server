@@ -1198,7 +1198,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             OrderPriceSnap orderPriceSnap = new OrderPriceSnap();
             orderPriceSnap.setSkuId(Long.parseLong(orderItem2.getSupplierSkuCode()));
-            orderPriceSnap.setPrice(orderItem2.getTransactionPrice());
+            orderPriceSnap.setPrice(orderItem2.getSupplyPrice());
             orderPriceSnapList.add(orderPriceSnap);
         }
         jingDongOrder.setSku(jdSkuList);
@@ -1798,7 +1798,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        //orderCheck(orderObj);
+        orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -1825,9 +1825,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //校验商品是否从供应链新增
         isScmItems(tmpOrderItemList, platformOrder.getChannelCode());
-        //校验代发商品
+
+        List<ExternalItemSku> externalItemSkuList = null;
         if(supplierOrderItemList.size() > 0){
-            checkSupplierItems(supplierOrderItemList);
+            //校验代发商品
+            externalItemSkuList = checkSupplierItems(supplierOrderItemList);
         }
         //自采商品处理
         List<SkuStock> skuStockList = new ArrayList<>();
@@ -1901,6 +1903,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: shopOrderList){
             itemList.addAll(shopOrder.getOrderItems());
         }
+        //设置代发商品供货价
+        setOrderItemSupplyPrice(itemList, externalItemSkuList);
         orderItemService.insertList(itemList);
         //保存仓库订单
         if(warehouseOrderList.size() > 0){
@@ -1952,6 +1956,36 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
         ).start();
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", lyWarehouseOrders);
+    }
+
+    /**
+     * 设置代发商品供货价
+     * @param itemList
+     * @param externalItemSkuList
+     */
+    private void setOrderItemSupplyPrice(List<OrderItem> itemList, List<ExternalItemSku> externalItemSkuList){
+        if(!CollectionUtils.isEmpty(externalItemSkuList)){
+            for(ExternalItemSku externalItemSku: externalItemSkuList){
+                for(OrderItem orderItem: itemList){
+                    if(StringUtils.equals(orderItem.getSkuCode(), externalItemSku.getSkuCode())){
+                        /**
+                         * 设置供货价：
+                         * 1、如果代发商品有供货价，那么就用代发商品供货价
+                         * 2、如果代发商品没有有供货价，并且代发商品有供应商售价，那么就用代发商品有供应商售价
+                         * 3、如果代发商品没有有供货价和供应商售价，那么就用代市场参考价
+                         */
+                        if(null != externalItemSku.getSupplyPrice() && externalItemSku.getSupplyPrice().longValue() > 0){
+                            orderItem.setSupplyPrice(CommonUtil.fenToYuan(externalItemSku.getSupplyPrice()));
+                        }else if(null != externalItemSku.getSupplierPrice() && externalItemSku.getSupplierPrice().longValue() > 0){
+                            orderItem.setSupplyPrice(CommonUtil.fenToYuan(externalItemSku.getSupplierPrice()));
+                        }else if(null != externalItemSku.getMarketReferencePrice() && externalItemSku.getMarketReferencePrice().longValue() > 0){
+                            orderItem.setSupplyPrice(CommonUtil.fenToYuan(externalItemSku.getMarketReferencePrice()));
+                        }
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -3350,7 +3384,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 商品参数校验
      * @param orderItemList
      */
-    private void checkSupplierItems(List<OrderItem> orderItemList){
+    private List<ExternalItemSku> checkSupplierItems(List<OrderItem> orderItemList){
         Set<String> skuCodes = new HashSet<String>();
         for(OrderItem orderItem: orderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -3379,7 +3413,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
-
+        return externalItemSkuList;
     }
 
 
