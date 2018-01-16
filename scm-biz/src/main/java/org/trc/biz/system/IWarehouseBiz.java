@@ -63,6 +63,12 @@ public interface IWarehouseBiz {
     List<Warehouse> findWarehouseValid();
 
     /**
+     * 查询所有仓库
+     * @return
+     */
+    List<Warehouse> findWarehouse();
+
+    /**
      * 模糊查询
      */
     Pagenation<Warehouse> warehousePageEs(WarehouseForm form, Pagenation<Warehouse> page);

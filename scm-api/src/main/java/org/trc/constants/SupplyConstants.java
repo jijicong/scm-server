@@ -947,6 +947,8 @@ public class SupplyConstants {
 
         public static final String WAREHOUSE_LIST = "warehouseList";
 
+        public static final String WAREHOUSE_LIST_ALL = "warehouseListAll";
+
         //发货通知单创建路径
         public static final String DELIVERY_ORDER_CREATE = "deliveryOrderCreate";
 
