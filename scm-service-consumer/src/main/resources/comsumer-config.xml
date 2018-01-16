@@ -38,6 +38,8 @@
         <property name="jdOrderOperateUrl" value="${jd.order.operate.url}"/>
         <property name="jdOperateStateUrl" value="${get.jd.operate.state.url}"/>
         <property name="balancestatisticsUrl" value="${get.jd.statistics.balance.url}"/>
+        <property name="reportCompensateUrl" value="${jd.report.compensate.url}"/>
+        <property name="jdOrderStatusUrl" value="${jd.order.status.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->
