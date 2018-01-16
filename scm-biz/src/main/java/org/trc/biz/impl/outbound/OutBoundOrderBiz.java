@@ -988,5 +988,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         return OutboundOrderStatusEnum.WAITING.getCode();
     }
 
+    public void setQimenService(IQimenService service) {
+        this.qimenService = service;
+
+    }
 
 }

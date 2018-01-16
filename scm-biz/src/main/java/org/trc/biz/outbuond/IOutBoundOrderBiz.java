@@ -3,6 +3,7 @@ package org.trc.biz.outbuond;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.service.IQimenService;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -33,4 +34,6 @@ public interface IOutBoundOrderBiz {
 
     //判读是否超过7天，超过七天则将置为1
     void checkTimeOutTimer();
+
+    void setQimenService(IQimenService service);
 }
