@@ -328,7 +328,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()",isList=true)
+    //@Cacheable(key="#form.toString()",isList=true)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
@@ -3628,7 +3628,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                 skuWarehouseDO.setSkuCode(maxSkuStock.getSkuCode());
-                skuWarehouseDO.setItemNum(maxSkuStock.getRealInventory() - maxSkuStock.getFrozenInventory());
+                skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
                 skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
                 skuWarehouseDOList.add(skuWarehouseDO);
                 warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);

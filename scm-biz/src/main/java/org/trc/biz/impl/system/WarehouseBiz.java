@@ -240,6 +240,17 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @Cacheable(isList = true)
+    public List<Warehouse> findWarehouse() {
+        Warehouse warehouse = new Warehouse();
+        List<Warehouse> warehouseList = warehouseService.select(warehouse);
+        if (warehouseList == null) {
+            warehouseList = new ArrayList<Warehouse>();
+        }
+        return warehouseList;
+    }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @CacheEvit
     public void saveWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {

@@ -46,6 +46,13 @@ public class OutboundOrderResource {
         return ResultUtil.createSucssAppResult("查询有效的仓库成功!", warehouseBiz.findWarehouseValid());
     }
 
+    @GET
+    @Path(SupplyConstants.OutboundOrder.WAREHOUSE_LIST_ALL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AppResult<Warehouse> findWarehouseList() {
+        return ResultUtil.createSucssAppResult("查询仓库成功!", warehouseBiz.findWarehouse());
+    }
+
     //发货通知单创建
     @POST
     @Path(SupplyConstants.OutboundOrder.DELIVERY_ORDER_CREATE)
