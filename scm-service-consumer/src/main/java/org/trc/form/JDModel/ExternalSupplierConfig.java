@@ -54,6 +54,8 @@ public class ExternalSupplierConfig {
     private String lySubmitOrderUrl;
     //京东报表补偿接口地址
     private String reportCompensateUrl;
+    //京东订单状态反查接口地址
+    private String jdOrderStatusUrl;
 
     public String getSkuPageUrl() {
         return skuPageUrl;
@@ -253,5 +255,13 @@ public class ExternalSupplierConfig {
 
     public void setReportCompensateUrl(String reportCompensateUrl) {
         this.reportCompensateUrl = reportCompensateUrl;
+    }
+
+    public String getJdOrderStatusUrl() {
+        return jdOrderStatusUrl;
+    }
+
+    public void setJdOrderStatusUrl(String jdOrderStatusUrl) {
+        this.jdOrderStatusUrl = jdOrderStatusUrl;
     }
 }
