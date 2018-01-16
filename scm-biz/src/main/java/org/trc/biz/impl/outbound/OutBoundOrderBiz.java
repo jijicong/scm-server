@@ -295,21 +295,18 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 	//更新itemOrder
     private void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode){
         List<OutboundDetail> outboundDetailList = this.getOutboundDetailListByOutboundOrderCode(outboundOrderCode, null);
-//        String status = null;
+        String status = null;
         OrderItem orderItem = null;
         for(OutboundDetail outboundDetail : outboundDetailList){
             orderItem = this.getOrderItemByWarehouseOrderCodeAnd(warehouseOrderCode, outboundDetail.getSkuCode());
             AssertUtil.notNull(orderItem, String.format("未查询到要更新的订单信息,仓库订单编码为：%s,SKU编码为：%s",
                     warehouseOrderCode, outboundDetail.getSkuCode()));
-//            status = outboundDetail.getStatus();
-//            if(StringUtils.equals(status, OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
-//                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
-//                orderItemService.updateByPrimaryKey(orderItem);
-//            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
-//                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
-//                orderItemService.updateByPrimaryKey(orderItem);
-//            }
-            orderItem.setSupplierOrderStatus(outboundDetail.getStatus());
+            status = outboundDetail.getStatus();
+            if(StringUtils.equals(status, OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
+            }
             orderItemService.updateByPrimaryKey(orderItem);
         }
         scmOrderBiz.outboundConfirmNotice(warehouseOrderCode);
