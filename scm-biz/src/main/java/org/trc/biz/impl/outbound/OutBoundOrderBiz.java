@@ -306,6 +306,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
             }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.CANCELED.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.WAITING.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_FOR_SUBMIT.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.RECEIVE_FAIL.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());
             }
             orderItemService.updateByPrimaryKey(orderItem);
         }
