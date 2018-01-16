@@ -33,6 +33,12 @@ public class OrderDetailForm extends QueryModel {
     @QueryParam("pageIds")
     private String pageIds;
 
+    @QueryParam("shopOrderCode")
+    private String shopOrderCode;
+
+    @QueryParam("orderItemCode")
+    private String orderItemCode;
+
     public String getChannelPlatformOrder() {
         return channelPlatformOrder;
     }
@@ -95,5 +101,21 @@ public class OrderDetailForm extends QueryModel {
 
     public void setPageIds(String pageIds) {
         this.pageIds = pageIds;
+    }
+
+    public String getShopOrderCode() {
+        return shopOrderCode;
+    }
+
+    public void setShopOrderCode(String shopOrderCode) {
+        this.shopOrderCode = shopOrderCode;
+    }
+
+    public String getOrderItemCode() {
+        return orderItemCode;
+    }
+
+    public void setOrderItemCode(String orderItemCode) {
+        this.orderItemCode = orderItemCode;
     }
 }
