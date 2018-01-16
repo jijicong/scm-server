@@ -12,6 +12,7 @@ import org.trc.form.UploadResponse;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.ResultUtil;
+import org.trc.util.URLAvailability;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -60,6 +61,8 @@ public class QiniuResource {
             uploadResponse.setFileName(fileName);
             //获取图片缩略图url
             String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
+            //检查路径是否可用
+            URLAvailability.isConnect(url);
             uploadResponse.setUrl(url);
         }catch (Exception e){
             String msg = String.format("%s%s%s%s", "上传文件", fileName, "异常,异常信息：",e.getMessage());
