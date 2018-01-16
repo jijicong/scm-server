@@ -328,7 +328,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()",isList=true)
+    //@Cacheable(key="#form.toString()",isList=true)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
