@@ -785,7 +785,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @CacheEvit
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "发货单主键不能为空");
         AssertUtil.notBlank(remark, "取消原因不能为空");
