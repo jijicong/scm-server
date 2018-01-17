@@ -983,8 +983,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //已取消：已了结数 + 已取消数 = 商品应发数量
             if(cancelNum > 0 && (handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_CANCEL.getCode();
-            //供应商下单异常: (仓库接收失败数 > 0 && 等待仓库发货数 > 0) || (仓库接收失败数 > 0 && 已取消数 > 0)
-            if((sendWarehouseFialure > 0 && waitDeliverNum > 0) || (sendWarehouseFialure > 0 && cancelNum > 0) )
+            //供应商下单异常: (仓库接收失败数  > 0 && 等待仓库发货数 > 0) || (仓库接收失败数 > 0 && 已取消数 > 0)
+            if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + cancelNum) > 0)
                 return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//店铺级订单
             //已取消：已取消数 = 商品应发数量
@@ -1819,7 +1819,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
