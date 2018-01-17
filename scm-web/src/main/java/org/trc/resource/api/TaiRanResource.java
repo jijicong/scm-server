@@ -250,6 +250,7 @@ public class TaiRanResource {
         }finally {
             scmOrderBiz.saveChannelOrderRequestFlow(orderInfo, responseAck);
         }
+        responseAck.setData(null);
         return responseAck;
     }
 
