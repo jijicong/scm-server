@@ -306,6 +306,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
             }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.CANCELED.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.WAITING.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.RECEIVE_FAIL.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAREHOUSE_RECIVE_FAILURE.getCode());
             }
             orderItemService.updateByPrimaryKey(orderItem);
         }
@@ -779,7 +785,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @CacheEvit
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "发货单主键不能为空");
         AssertUtil.notBlank(remark, "取消原因不能为空");

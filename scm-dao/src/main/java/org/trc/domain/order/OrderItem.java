@@ -92,15 +92,15 @@ public class OrderItem implements Serializable {
     @NotEmpty
     @Length(max = 128)
     private String itemName;
-    // 商品价格,单位/分
+    // 商品价格,单位/元
     private BigDecimal price;
-    // 市场价,单位/分
+    // 市场价,单位/元
     private BigDecimal marketPrice;
-    // 促销价,单位/分
+    // 促销价,单位/元
     private BigDecimal promotionPrice;
-    // 报关单价,单位/分
+    // 报关单价,单位/元
     private BigDecimal customsPrice;
-    // 成交单价,单位/分
+    // 成交单价,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal transactionPrice;
     // 购买数量
@@ -128,30 +128,30 @@ public class OrderItem implements Serializable {
     // 子订单所在包裹的运单号
     @Length(max = 32)
     private String invoiceNo;
-    // 运费分摊,单位/分
+    // 运费分摊,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal postDiscount;
-    // 促销优惠分摊,单位/分
+    // 促销优惠分摊,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal discountPromotion;
-    // 店铺优惠卷分摊金额,单位/分
+    // 店铺优惠卷分摊金额,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal discountCouponShop;
-    // 平台优惠卷优惠分摊,单位/分
+    // 平台优惠卷优惠分摊,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal discountCouponPlatform;
-    // 子订单级订单优惠金额,单位/分
+    // 子订单级订单优惠金额,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal discountFee;
-    // 应付金额,单位/分
+    // 应付金额,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal totalFee;
-    // 实付金额,单位/分
+    // 实付金额,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal payment;
     // 商品重量,单位/克
     private BigDecimal totalWeight;
-    // 手工调整金额,单位/分
+    // 手工调整金额,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal adjustFee;
     // 订单状态:1-待出库 2-部分出库 3-全部出库
@@ -163,7 +163,7 @@ public class OrderItem implements Serializable {
     // 订单投诉状态
     @Length(max = 32)
     private String complaintsStatus;
-    // 退款金额,单位/分
+    // 退款金额,单位/元
     private BigDecimal refundFee;
     // 商家三级类目签约佣金比例
     private BigDecimal catServiceRate;
@@ -184,7 +184,7 @@ public class OrderItem implements Serializable {
     // 供应商名称
     @Length(max = 80)
     private String supplierName;
-    // 商品税费,单位/分
+    // 商品税费,单位/元
     //@JsonSerialize(using = MoneySerializer.class)
     private BigDecimal priceTax;
     // 订单应用促销标签
@@ -235,6 +235,9 @@ public class OrderItem implements Serializable {
     private List<DeliverPackageForm> deliverPackageFormList;
     //提交供应商时间
     private Date submitTime;
+
+    // 供货价,单位/元
+    private BigDecimal supplyPrice;
 
     public OrderItem(){
 
@@ -580,75 +583,75 @@ public class OrderItem implements Serializable {
     }
 
     /**
-     * 返回商品价格,单位/分
-     * @return 商品价格,单位/分
+     * 返回商品价格,单位/元
+     * @return 商品价格,单位/元
      */
     public BigDecimal getPrice() {
         return price;
     }
 
     /**
-     * 设置商品价格,单位/分
+     * 设置商品价格,单位/元
      */
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
     /**
-     * 返回市场价,单位/分
-     * @return 市场价,单位/分
+     * 返回市场价,单位/元
+     * @return 市场价,单位/元
      */
     public BigDecimal getMarketPrice() {
         return marketPrice;
     }
 
     /**
-     * 设置市场价,单位/分
+     * 设置市场价,单位/元
      */
     public void setMarketPrice(BigDecimal marketPrice) {
         this.marketPrice = marketPrice;
     }
 
     /**
-     * 返回促销价,单位/分
-     * @return 促销价,单位/分
+     * 返回促销价,单位/元
+     * @return 促销价,单位/元
      */
     public BigDecimal getPromotionPrice() {
         return promotionPrice;
     }
 
     /**
-     * 设置促销价,单位/分
+     * 设置促销价,单位/元
      */
     public void setPromotionPrice(BigDecimal promotionPrice) {
         this.promotionPrice = promotionPrice;
     }
 
     /**
-     * 返回报关单价,单位/分
-     * @return 报关单价,单位/分
+     * 返回报关单价,单位/元
+     * @return 报关单价,单位/元
      */
     public BigDecimal getCustomsPrice() {
         return customsPrice;
     }
 
     /**
-     * 设置报关单价,单位/分
+     * 设置报关单价,单位/元
      */
     public void setCustomsPrice(BigDecimal customsPrice) {
         this.customsPrice = customsPrice;
     }
 
     /**
-     * 返回成交单价,单位/分
-     * @return 成交单价,单位/分
+     * 返回成交单价,单位/元
+     * @return 成交单价,单位/元
      */
     public BigDecimal getTransactionPrice() {
         return transactionPrice;
     }
 
     /**
-     * 设置成交单价,单位/分
+     * 设置成交单价,单位/元
      */
     public void setTransactionPrice(BigDecimal transactionPrice) {
         this.transactionPrice = transactionPrice;
@@ -790,105 +793,105 @@ public class OrderItem implements Serializable {
     }
 
     /**
-     * 返回运费分摊,单位/分
-     * @return 运费分摊,单位/分
+     * 返回运费分摊,单位/元
+     * @return 运费分摊,单位/元
      */
     public BigDecimal getPostDiscount() {
         return postDiscount;
     }
 
     /**
-     * 设置运费分摊,单位/分
+     * 设置运费分摊,单位/元
      */
     public void setPostDiscount(BigDecimal postDiscount) {
         this.postDiscount = postDiscount;
     }
 
     /**
-     * 返回促销优惠分摊,单位/分
-     * @return 促销优惠分摊,单位/分
+     * 返回促销优惠分摊,单位/元
+     * @return 促销优惠分摊,单位/元
      */
     public BigDecimal getDiscountPromotion() {
         return discountPromotion;
     }
 
     /**
-     * 设置促销优惠分摊,单位/分
+     * 设置促销优惠分摊,单位/元
      */
     public void setDiscountPromotion(BigDecimal discountPromotion) {
         this.discountPromotion = discountPromotion;
     }
 
     /**
-     * 返回店铺优惠卷分摊金额,单位/分
-     * @return 店铺优惠卷分摊金额,单位/分
+     * 返回店铺优惠卷分摊金额,单位/元
+     * @return 店铺优惠卷分摊金额,单位/元
      */
     public BigDecimal getDiscountCouponShop() {
         return discountCouponShop;
     }
 
     /**
-     * 设置店铺优惠卷分摊金额,单位/分
+     * 设置店铺优惠卷分摊金额,单位/元
      */
     public void setDiscountCouponShop(BigDecimal discountCouponShop) {
         this.discountCouponShop = discountCouponShop;
     }
 
     /**
-     * 返回平台优惠卷优惠分摊,单位/分
-     * @return 平台优惠卷优惠分摊,单位/分
+     * 返回平台优惠卷优惠分摊,单位/元
+     * @return 平台优惠卷优惠分摊,单位/元
      */
     public BigDecimal getDiscountCouponPlatform() {
         return discountCouponPlatform;
     }
 
     /**
-     * 设置平台优惠卷优惠分摊,单位/分
+     * 设置平台优惠卷优惠分摊,单位/元
      */
     public void setDiscountCouponPlatform(BigDecimal discountCouponPlatform) {
         this.discountCouponPlatform = discountCouponPlatform;
     }
 
     /**
-     * 返回子订单级订单优惠金额,单位/分
-     * @return 子订单级订单优惠金额,单位/分
+     * 返回子订单级订单优惠金额,单位/元
+     * @return 子订单级订单优惠金额,单位/元
      */
     public BigDecimal getDiscountFee() {
         return discountFee;
     }
 
     /**
-     * 设置子订单级订单优惠金额,单位/分
+     * 设置子订单级订单优惠金额,单位/元
      */
     public void setDiscountFee(BigDecimal discountFee) {
         this.discountFee = discountFee;
     }
 
     /**
-     * 返回应付金额,单位/分
-     * @return 应付金额,单位/分
+     * 返回应付金额,单位/元
+     * @return 应付金额,单位/元
      */
     public BigDecimal getTotalFee() {
         return totalFee;
     }
 
     /**
-     * 设置应付金额,单位/分
+     * 设置应付金额,单位/元
      */
     public void setTotalFee(BigDecimal totalFee) {
         this.totalFee = totalFee;
     }
 
     /**
-     * 返回实付金额,单位/分
-     * @return 实付金额,单位/分
+     * 返回实付金额,单位/元
+     * @return 实付金额,单位/元
      */
     public BigDecimal getPayment() {
         return payment;
     }
 
     /**
-     * 设置实付金额,单位/分
+     * 设置实付金额,单位/元
      */
     public void setPayment(BigDecimal payment) {
         this.payment = payment;
@@ -910,15 +913,15 @@ public class OrderItem implements Serializable {
     }
 
     /**
-     * 返回手工调整金额,单位/分
-     * @return 手工调整金额,单位/分
+     * 返回手工调整金额,单位/元
+     * @return 手工调整金额,单位/元
      */
     public BigDecimal getAdjustFee() {
         return adjustFee;
     }
 
     /**
-     * 设置手工调整金额,单位/分
+     * 设置手工调整金额,单位/元
      */
     public void setAdjustFee(BigDecimal adjustFee) {
         this.adjustFee = adjustFee;
@@ -970,15 +973,15 @@ public class OrderItem implements Serializable {
     }
 
     /**
-     * 返回退款金额,单位/分
-     * @return 退款金额,单位/分
+     * 返回退款金额,单位/元
+     * @return 退款金额,单位/元
      */
     public BigDecimal getRefundFee() {
         return refundFee;
     }
 
     /**
-     * 设置退款金额,单位/分
+     * 设置退款金额,单位/元
      */
     public void setRefundFee(BigDecimal refundFee) {
         this.refundFee = refundFee;
@@ -1090,15 +1093,15 @@ public class OrderItem implements Serializable {
     }
 
     /**
-     * 返回商品税费,单位/分
-     * @return 商品税费,单位/分
+     * 返回商品税费,单位/元
+     * @return 商品税费,单位/元
      */
     public BigDecimal getPriceTax() {
         return priceTax;
     }
 
     /**
-     * 设置商品税费,单位/分
+     * 设置商品税费,单位/元
      */
     public void setPriceTax(BigDecimal priceTax) {
         this.priceTax = priceTax;
@@ -1354,5 +1357,13 @@ public class OrderItem implements Serializable {
 
     public void setOrderItemCode(String orderItemCode) {
         this.orderItemCode = orderItemCode;
+    }
+
+    public BigDecimal getSupplyPrice() {
+        return supplyPrice;
+    }
+
+    public void setSupplyPrice(BigDecimal supplyPrice) {
+        this.supplyPrice = supplyPrice;
     }
 }

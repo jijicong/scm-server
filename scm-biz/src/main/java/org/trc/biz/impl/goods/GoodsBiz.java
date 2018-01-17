@@ -1804,16 +1804,31 @@ public class GoodsBiz implements IGoodsBiz {
                 s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));
             }
             if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
+                //sku库存查询
                 Example example = new Example(SkuStock.class);
                 Example.Criteria criteria = example.createCriteria();
                 criteria.andEqualTo("skuCode", skuCode);
                 criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
                 criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
                 List<SkuStock> skuStocks = skuStockService.selectByExample(example);
-                List<String> warehouseCodeList = new ArrayList<>();
-                if(skuStocks.size() > 0){
-                    for (SkuStock skuStock : skuStocks) {
-                        warehouseCodeList.add(skuStock.getWarehouseCode());
+
+                //sku通知状态
+                Example exampleWarehouseItemInfo = new Example(WarehouseItemInfo.class);
+                Example.Criteria criteriaWarehouseItemInfo = exampleWarehouseItemInfo.createCriteria();
+                criteriaWarehouseItemInfo.andEqualTo("skuCode", skuCode);
+                criteriaWarehouseItemInfo.andEqualTo("noticeStatus", WarehouseItemInfoNoticeStateEnum.NOTICE_SUCCESS.getCode());
+                List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(exampleWarehouseItemInfo);
+                List<Long> warehouseItemInfoIds = new ArrayList<>();
+
+                if (!AssertUtil.collectionIsEmpty(warehouseItemInfoList)){
+                    for (WarehouseItemInfo warehouseItemInfo:warehouseItemInfoList ) {
+                        warehouseItemInfoIds.add(warehouseItemInfo.getWarehouseInfoId());
+                    }
+
+                    List<String> warehouseCodeList = new ArrayList<>();
+                    if(skuStocks.size() > 0){
+                        for (SkuStock skuStock : skuStocks) {
+                            warehouseCodeList.add(skuStock.getWarehouseCode());
                        /*
                         Warehouse warehouse = new Warehouse();
                         warehouse.setCode(skuStock.getWarehouseCode());
@@ -1821,32 +1836,35 @@ public class GoodsBiz implements IGoodsBiz {
                         warehouse = warehouseService.selectOne(warehouse);
                         AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
                         skuStock.setWarehouseName(warehouse.getName());*/
-                    }
-                    Example exampleWarehouse = new Example(WarehouseInfo.class);
-                    Example.Criteria criteriaWarehouse = exampleWarehouse.createCriteria();
-                    criteriaWarehouse.andEqualTo("ownerWarehouseState", 1);
+                        }
+                        Example exampleWarehouse = new Example(WarehouseInfo.class);
+                        Example.Criteria criteriaWarehouse = exampleWarehouse.createCriteria();
+                        criteriaWarehouse.andEqualTo("ownerWarehouseState", 1);
+                        criteriaWarehouse.andIn("id", warehouseItemInfoIds);
 //                    criteriaWarehouse.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
-                    List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(exampleWarehouse);
-                    List<SkuStock> skuStockList = new ArrayList<>();
+                        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(exampleWarehouse);
+                        List<SkuStock> skuStockList = new ArrayList<>();
 
-                    if (!AssertUtil.collectionIsEmpty(warehouseList)) {
-                        for (SkuStock skuStock : skuStocks) {
-                            boolean isFlag = false;
-                            for (WarehouseInfo warehouse : warehouseList) {
-                                if (StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())) {
-                                    skuStock.setWarehouseName(warehouse.getWarehouseName());
-                                    isFlag = true;
+                        if (!AssertUtil.collectionIsEmpty(warehouseList)) {
+                            for (SkuStock skuStock : skuStocks) {
+                                boolean isFlag = false;
+                                for (WarehouseInfo warehouse : warehouseList) {
+                                    if (StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())) {
+                                        skuStock.setWarehouseName(warehouse.getWarehouseName());
+                                        isFlag = true;
+                                    }
+                                }
+                                if (isFlag){
+                                    Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
+                                            (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
+                                    skuStock.setAvailableInventory(availableInventory<0?0:availableInventory);
+                                    skuStockList.add(skuStock);
                                 }
                             }
-                            if (isFlag){
-                                Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
-                                        (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
-                                skuStock.setAvailableInventory(availableInventory<0?0:availableInventory);
-                                skuStockList.add(skuStock);
-                            }
                         }
-                    }
-                    s.setStockList(skuStockList);
+                        s.setStockList(skuStockList);
+
+                }
 
                 }
             }
