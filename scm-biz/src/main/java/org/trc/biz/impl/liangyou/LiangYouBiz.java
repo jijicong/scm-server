@@ -377,10 +377,10 @@ public class LiangYouBiz implements ILiangYouBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("supplierCode",SUPPLIER_LY_CODE);
         if (!StringUtils.isBlank(form.getStartDate())){
-            criteria.andGreaterThanOrEqualTo("createTime",form.getStartDate());
+            criteria.andGreaterThanOrEqualTo("createTime",form.getStartDate()+" 00:00:00");
         }
         if (!StringUtils.isBlank(form.getEndDate())){
-            criteria.andLessThanOrEqualTo("createTime",form.getEndDate());
+            criteria.andLessThanOrEqualTo("createTime",form.getEndDate()+" 23:59:59");
         }
         if (!StringUtils.isBlank(form.getSupplierOrderCode())){
             criteria.andLike("supplierOrderCode","%"+form.getSupplierOrderCode()+"%");
