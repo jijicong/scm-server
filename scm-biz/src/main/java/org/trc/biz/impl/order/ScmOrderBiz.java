@@ -718,6 +718,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         PlatformOrder platformOrder = (PlatformOrder)scmOrderMap.get("platformOrder");
         WarehouseOrder warehouseOrder = (WarehouseOrder)scmOrderMap.get("warehouseOrder");
         List<OrderItem> orderItemList = (List<OrderItem>)scmOrderMap.get("orderItemList");
+        //设置订单提交时间
+        setOrderSubmitTime(orderItemList);
         //获取粮油订单对象
         LiangYouSupplierOrder liangYouOrder = getLiangYouOrder(warehouseOrder, platformOrder, orderItemList);
         //调用粮油下单服务接口
@@ -748,6 +750,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
             log.error(msg);
         }
         return responseAck;
+    }
+
+    /**
+     * 设置订单提交时间
+     * @param orderItemList
+     */
+    private void setOrderSubmitTime(List<OrderItem> orderItemList){
+        Date currentTime = Calendar.getInstance().getTime();
+        List<Long> ids = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            ids.add(orderItem.getId());
+        }
+        OrderItem orderItem = new OrderItem();
+        orderItem.setSubmitTime(currentTime);
+        orderItem.setUpdateTime(currentTime);
+        Example example = new Example(OrderItem.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", ids);
+        orderItemService.updateByExampleSelective(orderItem, example);
     }
 
     /**
