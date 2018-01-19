@@ -407,7 +407,7 @@ public class LiangYouBiz implements ILiangYouBiz {
         try{
             List<LyStatement> result = queryOrderForExport(form);
             CellDefinition spuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 4000);
-            CellDefinition skuCode = new CellDefinition("supplierSkuCode", "粮油商品SKU", CellDefinition.TEXT, 4000);
+            CellDefinition skuCode = new CellDefinition("supplierSkuCode", "粮油商品SKU编号", CellDefinition.TEXT, 4000);
             CellDefinition itemName = new CellDefinition("itemName", "粮油商品名称", CellDefinition.TEXT, 8000);
             CellDefinition num = new CellDefinition("num", "交易数量", CellDefinition.NUM_0_00, 2000);
             CellDefinition platformOrderCode = new CellDefinition("platformOrderCode", "平台订单号", CellDefinition.TEXT, 4000);
