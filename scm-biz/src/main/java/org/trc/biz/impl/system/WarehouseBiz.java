@@ -196,6 +196,13 @@ public class WarehouseBiz implements IWarehouseBiz {
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
 
         if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
+                StringUtils.isEmpty(warehouse.getQimenWarehouseCode())){
+            String msg = "奇门仓库编码不能为空！" ;
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
+        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
                 StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
                 !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
             String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
