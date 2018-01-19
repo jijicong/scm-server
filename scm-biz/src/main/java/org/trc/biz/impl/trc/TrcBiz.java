@@ -1014,17 +1014,22 @@ public class TrcBiz implements ITrcBiz {
             String[] tmps = c.getFullPathId().split("\\"+GoodsBiz.CATEGORY_ID_SPLIT_SYMBOL);
             StringBuilder sb = new StringBuilder();
             //第一级分类名称
-            for(Category c2 : categories){
-                if(Long.parseLong(tmps[0]) == c2.getId()){
-                    sb.append(c2.getName());
-                    break;
+            if (tmps.length > 0) {
+                //第一级分类名称
+                for (Category c2 : categories) {
+                    if (Long.parseLong(tmps[0]) == c2.getId()) {
+                        sb.append(c2.getName());
+                        break;
+                    }
                 }
             }
-            //第二级分类名称
-            for(Category c2 : categories){
-                if(Long.parseLong(tmps[1]) == c2.getId()){
-                    sb.append(GoodsBiz.CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
-                    break;
+            if (tmps.length > 1) {
+                //第二级分类名称
+                for (Category c2 : categories) {
+                    if (Long.parseLong(tmps[1]) == c2.getId()) {
+                        sb.append(GoodsBiz.CATEGORY_NAME_SPLIT_SYMBOL).append(c2.getName());
+                        break;
+                    }
                 }
             }
             //第三级分类名称
