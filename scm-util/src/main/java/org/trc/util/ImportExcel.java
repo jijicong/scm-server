@@ -53,7 +53,7 @@ public class ImportExcel {
      *
      * @return Map 包含单元格数据内容的Map对象
      */
-    public static Map<String, String> readExcelContent(InputStream is, String separator) {
+    public static Map<String, String> readExcelContent(InputStream is, String separator) throws Exception {
         Map<String, String> content = new HashMap<String, String>();
         String str = "";
         try {
@@ -75,6 +75,9 @@ public class ImportExcel {
             while (j < colNum) {
                 // 每个单元格的数据内容用"-"分割开，以后需要时用String类的replace()方法还原数据
                 // 也可以将每个单元格的数据设置到一个javabean的属性中，此时需要新建一个javabean
+                if(row.getCell((short) j) == null){
+                    throw new Exception("表格内容不能为空");
+                }
                 str += getStringCellValue(row.getCell((short) j)).trim() + separator;
                 // "-";
                 //str += getCellFormatValue(row.getCell((short) j)).trim() + "    ";
@@ -92,7 +95,7 @@ public class ImportExcel {
      * @param cell Excel单元格
      * @return String 单元格数据内容
      */
-    private static String getStringCellValue(HSSFCell cell) {
+    private static String getStringCellValue(HSSFCell cell){
         String strCell = "";
         switch (cell.getCellType()) {
             case HSSFCell.CELL_TYPE_STRING:
