@@ -60,16 +60,14 @@ import java.util.List;
 @Service("channelBiz")
 public class ChannelBiz implements IChannelBiz {
 
-    private Logger logger = LoggerFactory.getLogger(ChannelBiz.class);
-
     /**
      * 原渠道修该为业务线,流水编码方式修改
      * private final static String SERIALNAME = "QD";
      */
-    private final static String SERIALNAME ="YWX";
-
+    //private final static String SERIALNAME ="YWX";
+    private final static String SERIALNAME = "QD";
     private final static Integer LENGTH = 3;
-
+    private Logger logger = LoggerFactory.getLogger(ChannelBiz.class);
     @Autowired
     private IChannelService channelService;
 
