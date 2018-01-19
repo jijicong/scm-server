@@ -2422,6 +2422,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             return;
         }
         for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
+            if(!StringUtils.equals(supplierOrderInfo.getWarehouseOrderCode(), "GYS0000561201801190000656")){
+                continue;
+            }
             try{
                 handlerOrderLogisticsInfo(supplierOrderInfo);
             }catch (Exception e){
@@ -2435,6 +2438,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param supplierOrderInfo
      */
     private void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo){
+        supplierOrderInfo = supplierOrderInfoService.selectByPrimaryKey(supplierOrderInfo.getId());
+        AssertUtil.notNull(supplierOrderInfo, String.format("定时查询物流信息根据主键ID[%s]查询供应商订单信息为空", supplierOrderInfo.getId()));
+        if(StringUtils.equals(SupplierOrderDeliverStatusEnum.COMPLETE.getCode(), supplierOrderInfo.getLogisticsStatus())){//供应商订单已经全部发货
+            return;
+        }
         WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setWarehouseOrderCode(supplierOrderInfo.getWarehouseOrderCode());
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
@@ -2862,8 +2870,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
 
-        //在这里剔除已经通知了的物流信息
-        for(SupplierOrderLogistics supplierOrderLogistics: oldSupplierOrderLogisticsList){
+        //在这里剔除已经发货完成并通知了渠道的物流信息
+        /*for(SupplierOrderLogistics supplierOrderLogistics: oldSupplierOrderLogisticsList){
             List<Logistic> logistics = logisticForm.getLogistics();
             for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
                 Logistic logistic = it.next();
@@ -2871,7 +2879,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     it.remove();
                 }
             }
+        }*/
+
+        List<Logistic> logistics = logisticForm.getLogistics();
+        for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
+            Logistic logistic = it.next();
+            if (StringUtils.equals(supplierOrderInfo.getSupplierOrderCode(),logistic.getSupplierOrderCode()) &&
+                    StringUtils.equals(SupplierOrderDeliverStatusEnum.COMPLETE.getCode(),supplierOrderInfo.getLogisticsStatus())) {
+                it.remove();
+            }
         }
+
 
         List<SupplierOrderLogistics> supplierOrderLogisticsList = new ArrayList<SupplierOrderLogistics>();
         boolean flag = false;//用来区分京东订单是否拆成子订单的标记
