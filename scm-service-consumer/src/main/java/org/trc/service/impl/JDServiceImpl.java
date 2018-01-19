@@ -161,9 +161,8 @@ public class JDServiceImpl implements IJDService {
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }
-        log.debug("结束调用物流查询" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+        log.debug("结束调用物流查询" + url + ", 返回结果：" + response + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
-
         return returnTypeDO;
     }
 
@@ -195,7 +194,7 @@ public class JDServiceImpl implements IJDService {
             log.error(msg, e);
             returnTypeDO.setResultMessage(msg);
         }
-        log.debug("结束调用京东sku价格查询服务" + url + ", 返回结果：" + JSONObject.toJSON(returnTypeDO) + ". 结束时间" +
+        log.debug("结束调用京东sku价格查询服务" + url + ", 返回结果：" + response + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return returnTypeDO;
     }
@@ -226,7 +225,7 @@ public class JDServiceImpl implements IJDService {
             log.error(msg, e);
             responseAck = new ResponseAck(ExceptionEnum.SYSTEM_EXCEPTION, "");
         }
-        log.debug("结束调用提交订单服务" + url + ", 返回结果：" + JSONObject.toJSON(responseAck) + ". 结束时间" +
+        log.debug("结束调用提交订单服务" + url + ", 返回结果：" + response + ". 结束时间" +
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT));
         return responseAck;
     }

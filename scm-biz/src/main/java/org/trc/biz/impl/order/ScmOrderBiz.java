@@ -1005,7 +1005,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(cancelNum > 0 && (handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_CANCEL.getCode();
             //供应商下单异常: (仓库接收失败数  > 0 && 等待仓库发货数 > 0) || (仓库接收失败数 > 0 && 已取消数 > 0)
-            if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + cancelNum) > 0)
+            if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum) > 0)
                 return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//店铺级订单
             //已取消：已取消数 = 商品应发数量
@@ -1018,7 +1018,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(allDeliverNum > 0 && (allDeliverNum + cancelNum) == orderItemList.size())
                 return OrderDeliverStatusEnum.ALL_DELIVER.getCode();
         }
-        return OrderItemDeliverStatusEnum.WAIT_FOR_SUBMIT.getCode();
+        return null;
     }
 
     /**
@@ -2422,9 +2422,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             return;
         }
         for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
-            if(!StringUtils.equals(supplierOrderInfo.getWarehouseOrderCode(), "GYS0000561201801190000656")){
-                continue;
-            }
             try{
                 handlerOrderLogisticsInfo(supplierOrderInfo);
             }catch (Exception e){
