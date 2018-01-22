@@ -280,6 +280,21 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return resultPagenation;
     }
 
+    private void modifyWarehouseInfoItem(Pagenation<WarehouseItemInfo> page){
+        if(page == null || page.getResult() == null || page.getResult().size() < 1){
+            return;
+        }
+        List<WarehouseItemInfo> list = page.getResult();
+        for(WarehouseItemInfo info : list){
+            String status = info.getNoticeStatus().toString();
+            if(StringUtils.isEquals(status, ZeroToNineEnum.TWO.getCode()) ||
+                    StringUtils.isEquals(status, ZeroToNineEnum.THREE.getCode()) ||
+                    StringUtils.isEquals(status, ZeroToNineEnum.FOUR.getCode())){
+                info.setDisabled("true");
+            }
+        }
+    }
+
     @Override
     public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
@@ -306,6 +321,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         example.orderBy("updateTime").desc();
         page = warehouseItemInfoService.pagination(example, page, form);
         log.info("《==========查询结束，开始组装返回结果");
+        this.modifyWarehouseInfoItem(page);
         return page;
     }
 
