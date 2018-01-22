@@ -306,26 +306,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         example.orderBy("updateTime").desc();
         page = warehouseItemInfoService.pagination(example, page, form);
         log.info("《==========查询结束，开始组装返回结果");
-        this.modifyWarehouseInfoItem(page);
         return page;
     }
 
-    private void modifyWarehouseInfoItem(Pagenation<WarehouseItemInfo> page){
-        if(page == null || page.getResult() == null || page.getResult().size() < 1){
-            return;
-        }
-        List<WarehouseItemInfo> list = page.getResult();
-        for(WarehouseItemInfo info : list){
-            String status = info.getNoticeStatus().toString();
-            if(StringUtils.isEquals(status, ZeroToNineEnum.TWO.getCode()) ||
-                    StringUtils.isEquals(status, ZeroToNineEnum.THREE.getCode()) ||
-                    StringUtils.isEquals(status, ZeroToNineEnum.FOUR.getCode())){
-                info.setIsAllowNotice(ZeroToNineEnum.ONE.getCode());
-            }else{
-                info.setIsAllowNotice(ZeroToNineEnum.ZERO.getCode());
-            }
-        }
-    }
 
     @Override
     @CacheEvit

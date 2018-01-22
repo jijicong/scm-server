@@ -59,9 +59,6 @@ public class WarehouseItemInfo implements Serializable{
     private String spuCode;
     //原始通知状态
     private Integer oldNoticeStatus;
-    //是否允许通知
-    @Transient
-    private String isAllowNotice;
 
     public Long getId() {
         return id;
@@ -197,14 +194,6 @@ public class WarehouseItemInfo implements Serializable{
 
     public void setOldNoticeStatus(Integer oldNoticeStatus) {
         this.oldNoticeStatus = oldNoticeStatus;
-    }
-
-    public String getIsAllowNotice() {
-        return isAllowNotice;
-    }
-
-    public void setIsAllowNotice(String isAllowNotice) {
-        this.isAllowNotice = isAllowNotice;
     }
 
     @Override
