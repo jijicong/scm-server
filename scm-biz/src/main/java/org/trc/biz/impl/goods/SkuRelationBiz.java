@@ -94,6 +94,9 @@ public class SkuRelationBiz implements ISkuRelationBiz {
     }
 
     public void setStock(List<Skus> skusList, String channelCode){
+        if(skusList == null || skusList.size() < 1){
+            return;
+        }
         //通过奇门获取库存信息
         List<InventoryQueryResponse.Item> itemList = this.getQimenStockByskuCode(this.getSkuCodes(skusList), channelCode);
         //合并同skuCode库存
