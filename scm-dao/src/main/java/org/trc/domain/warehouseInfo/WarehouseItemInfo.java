@@ -59,6 +59,9 @@ public class WarehouseItemInfo implements Serializable{
     private String spuCode;
     //原始通知状态
     private Integer oldNoticeStatus;
+    //是否显示
+    @Transient
+    private String disabled;
 
     public Long getId() {
         return id;
@@ -194,6 +197,14 @@ public class WarehouseItemInfo implements Serializable{
 
     public void setOldNoticeStatus(Integer oldNoticeStatus) {
         this.oldNoticeStatus = oldNoticeStatus;
+    }
+
+    public String getDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(String disabled) {
+        this.disabled = disabled;
     }
 
     @Override
