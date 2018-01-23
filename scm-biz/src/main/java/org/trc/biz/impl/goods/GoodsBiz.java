@@ -2463,8 +2463,8 @@ public class GoodsBiz implements IGoodsBiz {
             uploadExternalPictureToQinniu(updatePicList);
         }
 
-        List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
-        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
+        /*List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
+        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));*/
         //代发商品更新通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.DAILY_EXTERNAL_ITEMS_UPDATE);
     }
@@ -2476,9 +2476,16 @@ public class GoodsBiz implements IGoodsBiz {
      */
     private List<ExternalPicture> updateExternalPicture(ExternalItemSku externalItemSku, ExternalItemSku oldExternalItemSku){
         //获取主图需要更新的图片
-        List<ExternalPicture> mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), oldExternalItemSku.getMainPictrue(), externalItemSku);
+        List<ExternalPicture> mainPicList = new ArrayList<>();
         //获取主图需要更新的图片
-        List<ExternalPicture> detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), oldExternalItemSku.getDetailPictrues(), externalItemSku);
+        List<ExternalPicture> detailPicList = new ArrayList<>();
+        if(StringUtils.isBlank(oldExternalItemSku.getMainPictrue2()) && StringUtils.isBlank(oldExternalItemSku.getDetailPictrues2())){//渠道已经添加但未上传过七牛
+            mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), externalItemSku.getMainPictrue2(), externalItemSku);
+            detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), externalItemSku.getDetailPictrues2(), externalItemSku);
+        }else{//渠道已经添加且上传过七牛
+            mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), oldExternalItemSku.getMainPictrue(), externalItemSku);
+            detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), oldExternalItemSku.getDetailPictrues(), externalItemSku);
+        }
         //保存需要上传七牛的图片信息
         List<ExternalPicture> updatePicList = new ArrayList<>(mainPicList);
         updatePicList.addAll(detailPicList);
