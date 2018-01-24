@@ -49,6 +49,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
+import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -105,6 +106,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ISkuStockService skuStockService;
     @Autowired
     private ILocationUtilService locationUtilService;
+    @Autowired
+    private RedisLock redisLock;
 
 
 
@@ -1297,6 +1300,14 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         AssertUtil.notNull(purchaseOrder,"采购单信息为空,保存入库通知单失败");
         AssertUtil.notNull(purchaseOrder.getId(),"采购单的主键为空,保存入库通知单失败");
+
+        String identifier = redisLock.Lock(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId(), 500, 3000);
+        if (StringUtils.isBlank(identifier)){
+            String msg = "采购单Id为"+purchaseOrder.getId()+"未获取到锁！";
+            LOGGER.error(msg);
+            throw new PurchaseOrderException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+        }
+
         //根据采购单id,查询采购单的信息
         PurchaseOrder order = purchaseOrderService.selectByPrimaryKey(purchaseOrder.getId());
         AssertUtil.notNull(order,"根据主键查询该采购单为空");
@@ -1364,6 +1375,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode(), warehouseInfo.getChannelCode(),
                 Long.parseLong(warehouseInfo.getWarehouseId()), warehouseInfo.getWarehouseOwnerId());
+
+        //释放锁
+        if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId(), identifier)) {
+            LOGGER.info(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId()+ "已释放！");
+        } else {
+            LOGGER.error(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId() + "解锁失败！");
+        }
 
     }
 
