@@ -534,13 +534,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String msg = String.format("仓库级订单编码为[%s]的京东订单下单异常,异常信息:%s",
                     warehouseOrderCode, e.getMessage());
             log.error(msg, e);
+            return new ResponseAck(ExceptionEnum.SUBMIT_JING_DONG_ORDER.getCode(), e.getMessage(), "");
         }finally {
             boolean flag = redisLock.releaseLock(DistributeLockEnum.SUBMIT_JINGDONG_ORDERßßß.getCode() + warehouseOrderCode, identifier);
             if(!flag){
                 log.error(String.format("仓库级订单编码为[%s]的京东订单下单释放redis锁失败", warehouseOrderCode));
             }
         }
-        return null;
     }
 
     /**
