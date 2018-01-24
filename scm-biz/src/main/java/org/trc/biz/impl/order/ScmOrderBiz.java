@@ -534,13 +534,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String msg = String.format("仓库级订单编码为[%s]的京东订单下单异常,异常信息:%s",
                     warehouseOrderCode, e.getMessage());
             log.error(msg, e);
+            return new ResponseAck(ExceptionEnum.SUBMIT_JING_DONG_ORDER.getCode(), e.getMessage(), "");
         }finally {
             boolean flag = redisLock.releaseLock(DistributeLockEnum.SUBMIT_JINGDONG_ORDERßßß.getCode() + warehouseOrderCode, identifier);
             if(!flag){
                 log.error(String.format("仓库级订单编码为[%s]的京东订单下单释放redis锁失败", warehouseOrderCode));
             }
         }
-        return null;
     }
 
     /**
@@ -581,7 +581,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
-                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(SupplyConstants.Symbol.COMMA).append(HTML_BR);
                 }
             }
         }
@@ -1818,8 +1818,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             StringBuilder sb = new StringBuilder();
             for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
-                if(StringUtils.isNotBlank(supplierOrderInfo2.getMessage())){
-                    sb.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON);
+                if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, supplierOrderInfo2.getStatus())){
+                    if(StringUtils.isNotBlank(supplierOrderInfo2.getMessage())){
+                        sb.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON).append("  ");
+                    }
+                }else {
+                    if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo2.getSupplierOrderStatus())){
+                        sb.append(SupplierOrderStatusEnum.ORDER_CANCEL.getName()).append(SupplyConstants.Symbol.SEMICOLON).append("  ");
+                    }
                 }
             }
             if(sb.length() > 0)
@@ -1975,48 +1981,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("warehouseOrderList", warehouseOrderList);
         map.put("skuWarehouseMap", skuWarehouseMap);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", map);
-
-
-        //获取粮油或者自采仓库订单
-        /*List<WarehouseOrder> lyWarehouseOrders = new ArrayList<WarehouseOrder>();
-        List<WarehouseOrder> selfPurchaseOrders = new ArrayList<WarehouseOrder>();
-        for(WarehouseOrder warehouseOrder: warehouseOrderList){
-            if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){
-                lyWarehouseOrders.add(warehouseOrder);
-            }
-            if(StringUtils.equals(OrderTypeEnum.SELF_PURCHARSE.getCode(), warehouseOrder.getOrderType())){
-                selfPurchaseOrders.add(warehouseOrder);
-            }
-        }
-        boolean finalSelfSkuAllException = selfSkuAllException;
-        Map<String, List<SkuWarehouseDO>> finalSkuWarehouseMap = skuWarehouseMap;
-        new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        //提交自采订单
-                        if(selfPurchaseOrders.size() > 0){
-                            try {
-                                submitSelfPurchaseOrder(selfPurchaseOrders, finalSkuWarehouseMap);
-                            } catch (Exception e) {
-                                log.error("提交自采订单异常", e);
-                            }
-                            //更新订单状态
-                            updateOrderStatusByOutboundOrder(selfPurchaseOrders, itemList);
-                        }
-                        //如果自采sku全部异常，那么直接通知渠道
-                        if(finalSelfSkuAllException){
-                            ExceptionOrder exceptionOrder = new ExceptionOrder();
-                            exceptionOrder.setPlatformOrderCode(platformOrder.getPlatformOrderCode());
-                            List<ExceptionOrder> exceptionOrderList = exceptionOrderService.select(exceptionOrder);
-                            for(ExceptionOrder exceptionOrder2: exceptionOrderList){
-                                notifyChannelSubmitOrderResult(exceptionOrder2);
-                            }
-                        }
-                    }
-                }
-        ).start();*/
-
     }
 
     /**
