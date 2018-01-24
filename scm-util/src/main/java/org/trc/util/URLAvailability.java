@@ -2,7 +2,6 @@ package org.trc.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.trc.resource.QiniuResource;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -14,7 +13,7 @@ import java.net.URL;
  */
 public class URLAvailability {
 
-    private static Logger log = LoggerFactory.getLogger(QiniuResource.class);
+    private static Logger log = LoggerFactory.getLogger(URLAvailability.class);
 
     private static URL url;
     private static HttpURLConnection con;
@@ -63,8 +62,42 @@ public class URLAvailability {
         return flag;
     }
 
+    /**
+     * 检查url路径是否有效
+     * @param urlStr
+     * @return
+     */
+    public static synchronized boolean checkUrl(String urlStr) {
+        boolean flag = false;
+        if (urlStr == null || urlStr.length() <= 0) {
+            return flag;
+        }
+        try {
+            url = new URL(urlStr);
+            con = (HttpURLConnection) url.openConnection();
+            state = con.getResponseCode();
+            if (state == 200) {
+                flag = true;
+                log.info(String.format("url路径%s 可用", urlStr));
+            }else{
+                log.error(String.format("url路径%s 不可用", urlStr));
+            }
+        }catch (Exception ex) {
+            log.error("URL不可用", ex);
+            try {
+                Thread.sleep(WAIT_SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return flag;
+    }
+
     public static void main(String args[]){
-        boolean flag = isConnect("https://scm.trc.com/property%2F3427960537367.png");
+        /*boolean flag = isConnect("https://scm.trc.com/property%2F3427960537367.png");
+        System.out.println(flag);*/
+
+        boolean flag = checkUrl("https://scm.trc.com/property%2F3427960537367.png");
         System.out.println(flag);
     }
 
