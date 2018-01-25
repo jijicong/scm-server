@@ -23,9 +23,9 @@ public class PurchaseOrderService extends BaseService<PurchaseOrder,Long> implem
     private IPurchaseOrderMapper purchaseOrderMapper;
 
     @Override
-    public List<Supplier> findSuppliersByUserId(String userId) {
+    public List<Supplier> findSuppliersByChannelCode(String channelCode) {
 
-        return purchaseOrderMapper.findSuppliersByUserId(userId);
+        return purchaseOrderMapper.findSuppliersByChannelCode(channelCode);
 
     }
 
