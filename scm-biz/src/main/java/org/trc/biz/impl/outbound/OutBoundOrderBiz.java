@@ -130,7 +130,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //创建查询条件
         Example example = new Example(OutboundOrder.class);
-        this.setQueryParam(example, form);
+        this.setQueryParam(example, form, channelCode);
 
         //查询数据
         Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, form);
@@ -905,11 +905,16 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    public void setQueryParam(Example example, OutBoundOrderForm form) {
+    public void setQueryParam(Example example, OutBoundOrderForm form, String channelCode) {
         Example.Criteria criteria = example.createCriteria();
         //发货通知单编号
         if (!StringUtils.isBlank(form.getOutboundOrderCode())) {
             criteria.andLike("outboundOrderCode", "%" + form.getOutboundOrderCode() + "%");
+
+        }
+        //业务线
+        if (!StringUtils.isBlank(channelCode)) {
+            criteria.andEqualTo("channelCode", channelCode);
 
         }
         //店铺订单编号

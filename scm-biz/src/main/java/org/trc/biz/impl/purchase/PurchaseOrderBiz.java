@@ -144,7 +144,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#channelCode",isList=true)
     public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
         AssertUtil.notBlank(channelCode,"未获得授权");
@@ -518,10 +517,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         int count = 0;
         //根据用户的id查询渠道
-        AclUserAccreditInfo user = new AclUserAccreditInfo();
-        user.setUserId(purchaseOrder.getCreateOperator());
-        user = userAccreditInfoService.selectOne(user);//查询用户对应的渠道
-        purchaseOrder.setChannelCode(user.getChannelCode());
+        purchaseOrder.setChannelCode(aclUserAccreditInfo.getChannelCode());
         String code = serialUtilService.generateCode(LENGTH,SERIALNAME, DateUtils.dateToCompactString(purchaseOrder.getCreateTime()));
         AssertUtil.notBlank(code,"获取编码失败");
         purchaseOrder.setPurchaseOrderCode(code);
