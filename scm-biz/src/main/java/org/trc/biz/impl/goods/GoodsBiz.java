@@ -1149,12 +1149,14 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setSpuCode(skus.getSpuCode());
             skus2.setSkuCode(jbo.getString("skuCode"));
 
-            Skus skus1 = new Skus();
-            skus1.setSkuCode(jbo.getString("skuCode"));
-            skus1 = skusService.selectOne(skus1);
-            if(!StringUtils.equals(skus1.getBarCode(), jbo.getString("barCode")) ||
-                    !StringUtils.equals(skus1.getSkuName(), jbo.getString("skuName"))){
-                flag = true;
+            if(StringUtils.isNotEmpty(jbo.getString("skuCode"))){
+                Skus skus1 = new Skus();
+                skus1.setSkuCode(jbo.getString("skuCode"));
+                skus1 = skusService.selectOne(skus1);
+                if(!StringUtils.equals(skus1.getBarCode(), jbo.getString("barCode")) ||
+                        !StringUtils.equals(skus1.getSkuName(), jbo.getString("skuName"))){
+                    flag = true;
+                }
             }
 
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
