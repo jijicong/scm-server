@@ -221,7 +221,7 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         if (StringUtil.isNotEmpty(queryModel.getSkuName())) {//skuName
-            criteria.andEqualTo("skuName", queryModel.getSkuName());
+            criteria.andLike("skuName", "%" + queryModel.getSkuName() + "%");
         }
 
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
