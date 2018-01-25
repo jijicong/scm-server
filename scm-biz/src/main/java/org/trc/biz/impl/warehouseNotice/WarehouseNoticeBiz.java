@@ -558,7 +558,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     				WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
     		warehouseNoticeCriteria.andIn("status", statusList);
     		noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-    		System.out.println("+++++++++++++++" + JSON.toJSONString(noticeList));
+    		//System.out.println("+++++++++++++++" + JSON.toJSONString(noticeList));
     		if (CollectionUtils.isEmpty(noticeList)) {
     			String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合入库条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
     			logger.error(msg);
