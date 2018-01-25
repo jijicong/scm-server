@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public interface IPurchaseOrderService extends IBaseService<PurchaseOrder,Long>{
 
-     List<Supplier> findSuppliersByUserId(String userId);
+     List<Supplier> findSuppliersByChannelCode(String channelCode);
 
      List<PurchaseDetail> selectItemsBySupplierCode(Map<String, Object> map);
 

@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public interface IPurchaseOrderMapper extends BaseMapper<PurchaseOrder>{
 
-    List<Supplier> findSuppliersByUserId(String userId);
+    List<Supplier> findSuppliersByChannelCode(String channelCode);
 
     List<PurchaseDetail> selectItemsBySupplierCode(Map<String, Object> map);
 

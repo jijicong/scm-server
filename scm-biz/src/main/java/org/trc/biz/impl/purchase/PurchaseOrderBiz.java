@@ -381,15 +381,15 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    public List<Supplier> findSuppliersByUserId(String userId)  {
+    public List<Supplier> findSuppliersByChannelCode(String channelCode)  {
         //根据渠道用户查询对应的供应商
-        AssertUtil.notBlank(userId ,"获取用户id失败");
-        if (StringUtils.isBlank(userId)) {
-            String msg = "根据userId查询供应商的参数userId为空";
+        AssertUtil.notBlank(channelCode ,"获取渠道编号失败");
+        if (StringUtils.isBlank(channelCode)) {
+            String msg = "根据渠道编号查询供应商的参数渠道编号为空";
             LOGGER.error(msg);
             throw  new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
-        List<Supplier> supplierList = purchaseOrderService.findSuppliersByUserId(userId);
+        List<Supplier> supplierList = purchaseOrderService.findSuppliersByChannelCode(channelCode);
         if(supplierList==null){
             supplierList = new ArrayList<Supplier>();
         }
