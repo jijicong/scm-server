@@ -44,24 +44,33 @@ public class DistributedLock {
 
             // 获取锁的超时时间，超过这个时间则放弃获取锁
             long end = System.currentTimeMillis() + acquireTimeout;
-            while (System.currentTimeMillis() < end) {
-                if (conn.setnx(lockKey, identifier) == 1) {
-                    conn.expire(lockKey, lockExpire);
-                    // 返回value值，用于释放锁时间确认
-                    retIdentifier = identifier;
-                    return retIdentifier;
-                }
-                
-                // 返回-1代表key没有设置超时时间，为key设置一个超时时间
-                if (conn.ttl(lockKey) == -1) {
-                    conn.expire(lockKey, lockExpire);
-                }
-
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            if (acquireTimeout > 0) {
+            	while (System.currentTimeMillis() < end) {
+            		if (conn.setnx(lockKey, identifier) == 1) {
+            			conn.expire(lockKey, lockExpire);
+            			// 返回value值，用于释放锁时间确认
+            			retIdentifier = identifier;
+            			return retIdentifier;
+            		}
+            		
+            		// 返回-1代表key没有设置超时时间，为key设置一个超时时间
+            		if (conn.ttl(lockKey) == -1) {
+            			conn.expire(lockKey, lockExpire);
+            		}
+            		
+            		try {
+            			Thread.sleep(10);
+            		} catch (InterruptedException e) {
+            			Thread.currentThread().interrupt();
+            		}
+            	}
+            } else {
+        		if (conn.setnx(lockKey, identifier) == 1) {
+        			conn.expire(lockKey, lockExpire);
+        			// 返回value值，用于释放锁时间确认
+        			retIdentifier = identifier;
+        			return retIdentifier;
+        		}
             }
         } catch (JedisException e) {
             e.printStackTrace();

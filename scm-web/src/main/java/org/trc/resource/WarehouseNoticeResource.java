@@ -1,5 +1,8 @@
 package org.trc.resource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Resource;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
@@ -13,15 +16,24 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.impl.warehouseNotice.WarehouseNoticeBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
+import org.trc.enums.DistributeLockEnum;
+import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ResultEnum;
+import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
+import org.trc.util.lock.RedisLock;
 
 /**
  * Created by sone on 2017/7/11.
@@ -29,8 +41,13 @@ import org.trc.util.ResultUtil;
 @Component
 @Path(SupplyConstants.WarehouseNotice.ROOT)
 public class WarehouseNoticeResource {
+	
+	private Logger logger = LoggerFactory.getLogger(WarehouseNoticeResource.class);
+	
     @Resource
     private IWarehouseNoticeBiz warehouseNoticeBiz;
+    @Autowired
+    private RedisLock redisLock;
 
 
     /**
@@ -58,8 +75,30 @@ public class WarehouseNoticeResource {
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response receiptAdvice(@BeanParam WarehouseNotice warehouseNotice, @Context ContainerRequestContext requestContext){
-
-        warehouseNoticeBiz.receiptAdvice(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        String identifier = "";
+    	identifier = redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() + 
+    			warehouseNotice.getWarehouseNoticeCode(), 0, 10000);
+    	if (StringUtils.isBlank(identifier)) {
+    		throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, "请不要重复操作!");
+    	}
+    	try {
+    		warehouseNoticeBiz.receiptAdvice(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    	} finally {
+        	String noticeCode = warehouseNotice.getWarehouseNoticeCode();
+    		try {
+    			if (redisLock.releaseLock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() 
+    					+ noticeCode, identifier)) {
+    				logger.info("warehouseNoticeCode:{} 入库通知，解锁成功，identifier:{}", noticeCode, identifier);
+    			} else {
+    				logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}", noticeCode, identifier);
+    			}
+    			
+    		} catch (Exception e) {
+    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", 
+    					noticeCode, identifier, e.getMessage());
+    			e.printStackTrace();
+    		}
+    	}
         return ResultUtil.createSuccessResult("发送通知收货成功","");
 
     }
@@ -74,8 +113,31 @@ public class WarehouseNoticeResource {
     @Path(SupplyConstants.WarehouseNotice.RECEIPT_ADVICE_INFO+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response receiptAdviceInfo(@BeanParam WarehouseNotice warehouseNotice,@Context ContainerRequestContext requestContext){
-        //入库通知单详情页的入库通知操作
-        warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        String identifier = "";
+    	identifier = redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() + 
+    			warehouseNotice.getWarehouseNoticeCode(), 0, 10000);
+    	if (StringUtils.isBlank(identifier)) {
+    		throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, "请不要重复操作!");
+    	}
+    	try {
+    		//入库通知单详情页的入库通知操作
+    		warehouseNoticeBiz.receiptAdviceInfo(warehouseNotice,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    	} finally {
+        	String noticeCode = warehouseNotice.getWarehouseNoticeCode();
+    		try {
+    			if (redisLock.releaseLock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() 
+    					+ noticeCode, identifier)) {
+    				logger.info("warehouseNoticeCode:{} 入库通知，解锁成功，identifier:{}", noticeCode, identifier);
+    			} else {
+    				logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}", noticeCode, identifier);
+    			}
+    			
+    		} catch (Exception e) {
+    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", 
+    					noticeCode, identifier, e.getMessage());
+    			e.printStackTrace();
+    		}
+    	}
         return ResultUtil.createSuccessResult("发送通知收货成功","");
 
     }
