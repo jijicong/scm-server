@@ -12,6 +12,7 @@ import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
 import com.qimen.api.response.EntryorderCreateResponse;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,7 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
@@ -69,7 +71,7 @@ import java.util.*;
 @Service("warehouseNoticeBiz")
 public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
-    private Logger logger = LoggerFactory.getLogger(PurchaseOrderAuditBiz.class);
+    private Logger logger = LoggerFactory.getLogger(WarehouseNoticeBiz.class);
     @Autowired
     private IWarehouseNoticeService warehouseNoticeService;
     @Autowired
@@ -538,36 +540,46 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 //            logger.error(msg);
 //            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
 //        }
-
-        Example warehouseNoticeExample = new Example(WarehouseNotice.class);
-        Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
-        warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
-        //warehouseNoticeCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
-        List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
-        		WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
-        warehouseNoticeCriteria.andIn("status", statusList);
-        List<WarehouseNotice> noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-        if (CollectionUtils.isEmpty(noticeList)) {
-            String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合入库条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
-            logger.error(msg);
-            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
-        }
-        String userId = aclUserAccreditInfo.getUserId();
-
-        try {
-            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
-                    LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
-        } catch (Exception e) {
-            logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());
-            e.printStackTrace();
-        }
-
-
-        WarehouseNotice tempNotice = noticeList.get(0);
-        // 调用奇门接口，通知仓库创建入口通知单
-        entryOrderCreate(tempNotice, userId);
+//        String identifier = "";
         
-        /*PurchaseDetail purchaseDetail = new PurchaseDetail();
+    	List<WarehouseNotice> noticeList = new ArrayList<>();
+//    	identifier = redisLock.Lock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() + 
+//    			warehouseNotice.getWarehouseNoticeCode(), 0, 10000);
+//    	if (StringUtils.isBlank(identifier)) {
+//    		throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_EXCEPTION, "请不要重复操作!");
+//    	}
+//    	System.out.println("加锁成功："+ identifier + "" +warehouseNotice.getWarehouseNoticeCode());
+//        try {
+    		Example warehouseNoticeExample = new Example(WarehouseNotice.class);
+    		Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
+    		warehouseNoticeCriteria.andEqualTo("warehouseNoticeCode", warehouseNotice.getWarehouseNoticeCode());
+    		//warehouseNoticeCriteria.andEqualTo("status", WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+    		List<String> statusList = Arrays.asList(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode(),
+    				WarehouseNoticeStatusEnum.WAREHOUSE_RECEIVE_FAILED.getCode());
+    		warehouseNoticeCriteria.andIn("status", statusList);
+    		noticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
+    		//System.out.println("+++++++++++++++" + JSON.toJSONString(noticeList));
+    		if (CollectionUtils.isEmpty(noticeList)) {
+    			String msg = String.format("入库通知的编码[warehouseNoticeCode=%s]的状态已不符合入库条件,无法进行入库通知的操作", warehouseNotice.getWarehouseNoticeCode());
+    			logger.error(msg);
+    			throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+    		}
+        	String userId = aclUserAccreditInfo.getUserId();
+        	
+        	try {
+        		logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
+        				LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
+        	} catch (Exception e) {
+        		logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());
+        		e.printStackTrace();
+        	}
+        	
+        	
+        	WarehouseNotice tempNotice = noticeList.get(0);
+        	// 调用奇门接口，通知仓库创建入口通知单
+        	entryOrderCreate(tempNotice, userId);
+        	
+        	/*PurchaseDetail purchaseDetail = new PurchaseDetail();
         purchaseDetail.setPurchaseOrderCode(warehouseNotice.getPurchaseOrderCode());
         List<PurchaseDetail> purchaseDetails = purchaseDetailService.select(purchaseDetail);
         if(CollectionUtils.isEmpty(purchaseDetails)){
@@ -576,12 +588,27 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION,msg);
         }
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode());*/
-        //todo
-
+        	//todo
+        	
 //        logInfoService.recordLog(purchaseOrder,purchaseOrders.get(0).getId().toString(),userId, 
 //        		LogOperationEnum.NOTICE_RECEIVE.getMessage(),null,null);
-         purchaseOrderBiz.cacheEvitForPurchaseOrder();
-
+        	purchaseOrderBiz.cacheEvitForPurchaseOrder();
+//        } finally {
+//        	String noticeCode = warehouseNotice.getWarehouseNoticeCode();
+//    		try {
+//    			if (redisLock.releaseLock(DistributeLockEnum.WAREHOUSE_NOTICE_CREATE.getCode() 
+//    					+ noticeCode, identifier)) {
+//    				logger.info("warehouseNoticeCode:{} 入库通知，解锁成功，identifier:{}", noticeCode, identifier);
+//    			} else {
+//    				logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}", noticeCode, identifier);
+//    			}
+//    			
+//    		} catch (Exception e) {
+//    			logger.error("warehouseNoticeCode:{} 入库通知，解锁失败，identifier:{}, err:{}", 
+//    					noticeCode, identifier, e.getMessage());
+//    			e.printStackTrace();
+//    		}
+//        }
     }
 
 
