@@ -221,7 +221,7 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         if (StringUtil.isNotEmpty(queryModel.getSkuName())) {//skuName
-            criteria.andEqualTo("skuName", queryModel.getSkuName());
+            criteria.andLike("skuName", "%" + queryModel.getSkuName() + "%");
         }
 
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
@@ -1149,12 +1149,14 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setSpuCode(skus.getSpuCode());
             skus2.setSkuCode(jbo.getString("skuCode"));
 
-            Skus skus1 = new Skus();
-            skus1.setSkuCode(jbo.getString("skuCode"));
-            skus1 = skusService.selectOne(skus1);
-            if(!StringUtils.equals(skus1.getBarCode(), jbo.getString("barCode")) ||
-                    !StringUtils.equals(skus1.getSkuName(), jbo.getString("skuName"))){
-                flag = true;
+            if(StringUtils.isNotEmpty(jbo.getString("skuCode"))){
+                Skus skus1 = new Skus();
+                skus1.setSkuCode(jbo.getString("skuCode"));
+                skus1 = skusService.selectOne(skus1);
+                if(!StringUtils.equals(skus1.getBarCode(), jbo.getString("barCode")) ||
+                        !StringUtils.equals(skus1.getSkuName(), jbo.getString("skuName"))){
+                    flag = true;
+                }
             }
 
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
@@ -1804,16 +1806,31 @@ public class GoodsBiz implements IGoodsBiz {
                 s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));
             }
             if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
+                //sku库存查询
                 Example example = new Example(SkuStock.class);
                 Example.Criteria criteria = example.createCriteria();
                 criteria.andEqualTo("skuCode", skuCode);
                 criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
                 criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
                 List<SkuStock> skuStocks = skuStockService.selectByExample(example);
-                List<String> warehouseCodeList = new ArrayList<>();
-                if(skuStocks.size() > 0){
-                    for (SkuStock skuStock : skuStocks) {
-                        warehouseCodeList.add(skuStock.getWarehouseCode());
+
+                //sku通知状态
+                Example exampleWarehouseItemInfo = new Example(WarehouseItemInfo.class);
+                Example.Criteria criteriaWarehouseItemInfo = exampleWarehouseItemInfo.createCriteria();
+                criteriaWarehouseItemInfo.andEqualTo("skuCode", skuCode);
+                criteriaWarehouseItemInfo.andEqualTo("noticeStatus", WarehouseItemInfoNoticeStateEnum.NOTICE_SUCCESS.getCode());
+                List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(exampleWarehouseItemInfo);
+                List<Long> warehouseItemInfoIds = new ArrayList<>();
+
+                if (!AssertUtil.collectionIsEmpty(warehouseItemInfoList)){
+                    for (WarehouseItemInfo warehouseItemInfo:warehouseItemInfoList ) {
+                        warehouseItemInfoIds.add(warehouseItemInfo.getWarehouseInfoId());
+                    }
+
+                    List<String> warehouseCodeList = new ArrayList<>();
+                    if(skuStocks.size() > 0){
+                        for (SkuStock skuStock : skuStocks) {
+                            warehouseCodeList.add(skuStock.getWarehouseCode());
                        /*
                         Warehouse warehouse = new Warehouse();
                         warehouse.setCode(skuStock.getWarehouseCode());
@@ -1821,32 +1838,35 @@ public class GoodsBiz implements IGoodsBiz {
                         warehouse = warehouseService.selectOne(warehouse);
                         AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
                         skuStock.setWarehouseName(warehouse.getName());*/
-                    }
-                    Example exampleWarehouse = new Example(WarehouseInfo.class);
-                    Example.Criteria criteriaWarehouse = exampleWarehouse.createCriteria();
-                    criteriaWarehouse.andEqualTo("ownerWarehouseState", 1);
+                        }
+                        Example exampleWarehouse = new Example(WarehouseInfo.class);
+                        Example.Criteria criteriaWarehouse = exampleWarehouse.createCriteria();
+                        criteriaWarehouse.andEqualTo("ownerWarehouseState", 1);
+                        criteriaWarehouse.andIn("id", warehouseItemInfoIds);
 //                    criteriaWarehouse.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
-                    List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(exampleWarehouse);
-                    List<SkuStock> skuStockList = new ArrayList<>();
+                        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(exampleWarehouse);
+                        List<SkuStock> skuStockList = new ArrayList<>();
 
-                    if (!AssertUtil.collectionIsEmpty(warehouseList)) {
-                        for (SkuStock skuStock : skuStocks) {
-                            boolean isFlag = false;
-                            for (WarehouseInfo warehouse : warehouseList) {
-                                if (StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())) {
-                                    skuStock.setWarehouseName(warehouse.getWarehouseName());
-                                    isFlag = true;
+                        if (!AssertUtil.collectionIsEmpty(warehouseList)) {
+                            for (SkuStock skuStock : skuStocks) {
+                                boolean isFlag = false;
+                                for (WarehouseInfo warehouse : warehouseList) {
+                                    if (StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())) {
+                                        skuStock.setWarehouseName(warehouse.getWarehouseName());
+                                        isFlag = true;
+                                    }
+                                }
+                                if (isFlag){
+                                    Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
+                                            (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
+                                    skuStock.setAvailableInventory(availableInventory<0?0:availableInventory);
+                                    skuStockList.add(skuStock);
                                 }
                             }
-                            if (isFlag){
-                                Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
-                                        (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
-                                skuStock.setAvailableInventory(availableInventory<0?0:availableInventory);
-                                skuStockList.add(skuStock);
-                            }
                         }
-                    }
-                    s.setStockList(skuStockList);
+                        s.setStockList(skuStockList);
+
+                }
 
                 }
             }
@@ -2445,8 +2465,8 @@ public class GoodsBiz implements IGoodsBiz {
             uploadExternalPictureToQinniu(updatePicList);
         }
 
-        List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
-        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));
+        /*List<ExternalItemSku> oldExternalItemSkuList2 = externalItemSkuService.selectByExample(example2);
+        AssertUtil.notEmpty(oldExternalItemSkuList2, String.format("根据多个供应商skuCode[%s]查询代发商品为空", CommonUtil.converCollectionToString(supplySkuList)));*/
         //代发商品更新通知渠道
         externalItemsUpdateNoticeChannel(oldExternalItemSkuList, externalItemSkuList, TrcActionTypeEnum.DAILY_EXTERNAL_ITEMS_UPDATE);
     }
@@ -2458,9 +2478,16 @@ public class GoodsBiz implements IGoodsBiz {
      */
     private List<ExternalPicture> updateExternalPicture(ExternalItemSku externalItemSku, ExternalItemSku oldExternalItemSku){
         //获取主图需要更新的图片
-        List<ExternalPicture> mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), oldExternalItemSku.getMainPictrue(), externalItemSku);
+        List<ExternalPicture> mainPicList = new ArrayList<>();
         //获取主图需要更新的图片
-        List<ExternalPicture> detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), oldExternalItemSku.getDetailPictrues(), externalItemSku);
+        List<ExternalPicture> detailPicList = new ArrayList<>();
+        if(StringUtils.isBlank(oldExternalItemSku.getMainPictrue2()) && StringUtils.isBlank(oldExternalItemSku.getDetailPictrues2())){//渠道已经添加但未上传过七牛
+            mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), externalItemSku.getMainPictrue2(), externalItemSku);
+            detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), externalItemSku.getDetailPictrues2(), externalItemSku);
+        }else{//渠道已经添加且上传过七牛
+            mainPicList = getUpdateExternalPic(externalItemSku.getMainPictrue(), oldExternalItemSku.getMainPictrue(), externalItemSku);
+            detailPicList = getUpdateExternalPic(externalItemSku.getDetailPictrues(), oldExternalItemSku.getDetailPictrues(), externalItemSku);
+        }
         //保存需要上传七牛的图片信息
         List<ExternalPicture> updatePicList = new ArrayList<>(mainPicList);
         updatePicList.addAll(detailPicList);

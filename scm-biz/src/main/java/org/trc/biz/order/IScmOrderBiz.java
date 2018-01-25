@@ -15,6 +15,7 @@ import org.trc.util.ResponseAck;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -93,7 +94,7 @@ public interface IScmOrderBiz {
      * @param orderInfo
      * @return
      */
-    ResponseAck<List<WarehouseOrder>> reciveChannelOrder(String orderInfo) throws Exception;
+    ResponseAck<Map<String, Object>> reciveChannelOrder(String orderInfo) throws Exception;
 
     /**
      * 查询京东物流信息
@@ -176,6 +177,13 @@ public interface IScmOrderBiz {
      * @return
      */
     ResponseAck orderSubmitResultNotice(String orderInfo);
+
+    /**
+     *提交自采订单
+     * @param warehouseOrders
+     * @return
+     */
+    ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap);
 
 
 }

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <outbound_detail
+          id="29"
+          outbound_order_code="FHTZ2018011000018"
+          sku_name="&#35746;&#21333;&#27979;&#35797;&#45;&#119;&#120;&#106;&#45;&#21035;&#21160;&#21834;&#21834;&#21834;"
+          sku_code="SP0201801020001358"
+          inventory_type="ZP"
+          actual_amount="200"
+          real_sent_item_num="0"
+          should_sent_item_num="1"
+          status="6"
+          create_time="2018-01-16 16:22:14.0"
+          update_time="2018-01-16 16:22:14.0"
+  />
+</dataset>

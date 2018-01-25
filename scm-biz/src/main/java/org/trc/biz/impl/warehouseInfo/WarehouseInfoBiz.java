@@ -280,6 +280,21 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return resultPagenation;
     }
 
+    private void modifyWarehouseInfoItem(Pagenation<WarehouseItemInfo> page){
+        if(page == null || page.getResult() == null || page.getResult().size() < 1){
+            return;
+        }
+        List<WarehouseItemInfo> list = page.getResult();
+        for(WarehouseItemInfo info : list){
+            String status = info.getNoticeStatus().toString();
+            if(StringUtils.isEquals(status, ZeroToNineEnum.TWO.getCode()) ||
+                    StringUtils.isEquals(status, ZeroToNineEnum.THREE.getCode()) ||
+                    StringUtils.isEquals(status, ZeroToNineEnum.FOUR.getCode())){
+                info.setDisabled("true");
+            }
+        }
+    }
+
     @Override
     public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
@@ -306,8 +321,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         example.orderBy("updateTime").desc();
         page = warehouseItemInfoService.pagination(example, page, form);
         log.info("《==========查询结束，开始组装返回结果");
+        this.modifyWarehouseInfoItem(page);
         return page;
     }
+
 
     @Override
     @CacheEvit
@@ -783,6 +800,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         AssertUtil.notBlank(warehouseInfoId, "仓库信息id不能为空");
         boolean flag = true;
         WarehouseItemInfoExceptionResult result = new WarehouseItemInfoExceptionResult();
+
         try {
             //获取仓库信息详情
             WarehouseInfo warehouseInfo = this.getWarehouseInfo(Long.parseLong(warehouseInfoId));
@@ -792,7 +810,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
             }
             if(!StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.ONE.getCode())){
-                String msg = "货主仓库状态还不是通知成功";
+                String msg = "无法通知，“货主仓库状态”还不是“通知成功”！";
                 log.error(msg);
                 throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
             }
@@ -836,7 +854,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             result = new WarehouseItemInfoExceptionResult(url, String.valueOf(successCount), String.valueOf(failCount));
 
         } catch (Exception e) {
-            String msg = String.format("%s%s%s%s", "上传文件", fileName, "异常,异常信息：", e.getMessage());
+            String msg = e.getMessage();
             log.error(msg, e);
             return ResultUtil.createfailureResult(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), msg, "");
         }
@@ -879,7 +897,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         if(!StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.ONE.getCode())){
-            String msg = "货主仓库状态还不是通知成功";
+            String msg = "无法通知，“货主仓库状态”还不是“通知成功”！";
             log.error(msg);
             throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
         }

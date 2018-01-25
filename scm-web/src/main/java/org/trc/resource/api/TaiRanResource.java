@@ -3,6 +3,7 @@ package org.trc.resource.api;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +24,13 @@ import org.trc.domain.order.WarehouseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.OrderTypeEnum;
 import org.trc.exception.OrderException;
 import org.trc.form.OrderSubmitResult;
 import org.trc.form.category.CategoryForm;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.form.order.SkuWarehouseDO;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.BrandForm2;
 import org.trc.form.trc.CategoryForm2;
@@ -44,7 +47,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 对泰然城开放接口
@@ -216,10 +221,27 @@ public class TaiRanResource {
         ResponseAck responseAck = null;
         try{
             responseAck = scmOrderBiz.reciveChannelOrder(orderInfo);
-            List<WarehouseOrder> warehouseOrders = (List<WarehouseOrder>)responseAck.getData();
-            if(warehouseOrders.size() > 0){
+            Map<String, Object> map = (Map<String, Object>)responseAck.getData();
+            List<WarehouseOrder> warehouseOrderList = (List<WarehouseOrder>)map.get("warehouseOrderList");
+            Map<String, List<SkuWarehouseDO>> skuWarehouseMap = (Map<String, List<SkuWarehouseDO>>)map.get("skuWarehouseMap");
+            //获取粮油或者自采仓库订单
+            List<WarehouseOrder> lyWarehouseOrders = new ArrayList<WarehouseOrder>();
+            List<WarehouseOrder> selfPurchaseOrders = new ArrayList<WarehouseOrder>();
+            for(WarehouseOrder warehouseOrder: warehouseOrderList){
+                if(StringUtils.equals(SupplyConstants.Order.SUPPLIER_LY_CODE, warehouseOrder.getSupplierCode())){
+                    lyWarehouseOrders.add(warehouseOrder);
+                }
+                if(StringUtils.equals(OrderTypeEnum.SELF_PURCHARSE.getCode(), warehouseOrder.getOrderType())){
+                    selfPurchaseOrders.add(warehouseOrder);
+                }
+            }
+            if(lyWarehouseOrders.size() > 0){
                 //粮油下单
-                scmOrderBiz.submitLiangYouOrders(warehouseOrders);
+                scmOrderBiz.submitLiangYouOrders(lyWarehouseOrders);
+            }
+            if(selfPurchaseOrders.size() > 0){
+                //自采下单
+                scmOrderBiz.submitSelfPurchaseOrder(selfPurchaseOrders, skuWarehouseMap);
             }
         }catch (Exception e){
             String code = ExceptionUtil.getErrorInfo(e);
@@ -228,6 +250,7 @@ public class TaiRanResource {
         }finally {
             scmOrderBiz.saveChannelOrderRequestFlow(orderInfo, responseAck);
         }
+        responseAck.setData(null);
         return responseAck;
     }
 

@@ -295,21 +295,24 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 	//更新itemOrder
     private void updateItemOrderSupplierOrderStatus(String outboundOrderCode, String warehouseOrderCode){
         List<OutboundDetail> outboundDetailList = this.getOutboundDetailListByOutboundOrderCode(outboundOrderCode, null);
-//        String status = null;
+        String status = null;
         OrderItem orderItem = null;
         for(OutboundDetail outboundDetail : outboundDetailList){
             orderItem = this.getOrderItemByWarehouseOrderCodeAnd(warehouseOrderCode, outboundDetail.getSkuCode());
             AssertUtil.notNull(orderItem, String.format("未查询到要更新的订单信息,仓库订单编码为：%s,SKU编码为：%s",
                     warehouseOrderCode, outboundDetail.getSkuCode()));
-//            status = outboundDetail.getStatus();
-//            if(StringUtils.equals(status, OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
-//                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
-//                orderItemService.updateByPrimaryKey(orderItem);
-//            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
-//                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
-//                orderItemService.updateByPrimaryKey(orderItem);
-//            }
-            orderItem.setSupplierOrderStatus(outboundDetail.getStatus());
+            status = outboundDetail.getStatus();
+            if(StringUtils.equals(status, OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.PARTS_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ALL_GOODS.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.CANCELED.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCEL.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.WAITING.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.RECEIVE_FAIL.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAREHOUSE_RECIVE_FAILURE.getCode());
+            }
             orderItemService.updateByPrimaryKey(orderItem);
         }
         scmOrderBiz.outboundConfirmNotice(warehouseOrderCode);
@@ -339,7 +342,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
         StringBuffer sb = new StringBuffer("");
         for(OutboundDetail detail : outboundDetailList){
-            sb.append("商品").append(detail.getSkuCode()).append(" 实发-应发= ").
+            sb.append("商品").append(detail.getSkuCode()).append(" 应发-实发= ").
                     append(detail.getShouldSentItemNum() - detail.getRealSentItemNum()).append("<br/>");
         }
         return sb.toString();
@@ -782,7 +785,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @CacheEvit
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "发货单主键不能为空");
         AssertUtil.notBlank(remark, "取消原因不能为空");

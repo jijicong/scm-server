@@ -153,10 +153,15 @@ public class PurchaseOrderResource {
     @Path(SupplyConstants.PurchaseOrder.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePurchaseState(@BeanParam PurchaseOrder purchaseOrder, @Context ContainerRequestContext requestContext) {
-
-       String msg = purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-        return ResultUtil.createSuccessResult(msg,"");
-
+        AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
+        AssertUtil.notNull(purchaseOrder.getStatus(),"采购单的状态为空");
+        if(StringUtils.equals(purchaseOrder.getStatus(), PurchaseOrderStatusEnum.WAREHOUSE_NOTICE.getCode())){
+            purchaseOrderBiz.cancelWarahouseAdvice(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+            return ResultUtil.createSuccessResult("入库通知作废成功！","");
+        }else{
+            String msg = purchaseOrderBiz.updatePurchaseOrderState(purchaseOrder,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+            return ResultUtil.createSuccessResult(msg,"");
+        }
     }
 
     @PUT

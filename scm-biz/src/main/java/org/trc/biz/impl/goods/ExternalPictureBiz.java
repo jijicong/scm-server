@@ -14,7 +14,11 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.goods.ExternalPictureForm;
 import org.trc.service.goods.IExternalPictureService;
 import org.trc.util.Pagenation;
+import org.trc.util.URLAvailability;
 import tk.mybatis.mapper.entity.Example;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Calendar;
 
 @Service("externalPictureBiz")
@@ -46,16 +50,23 @@ public class ExternalPictureBiz implements IExternalPictureBiz{
             totalCount = pagenation.getTotalCount() - pagenation.getResult().size();
             for(ExternalPicture externalPicture: pagenation.getResult()){
                 try {
-                    String key = qinniuBiz.fetch(externalPicture.getUrl(), externalPicture.getFilePath());
-                    if(StringUtils.isNotBlank(key)){
-                        externalPicture.setStatus(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
-                        externalPicture.setUpdateTime(Calendar.getInstance().getTime());
-                        externalPictureService.updateByPrimaryKeySelective(externalPicture);
+                    boolean isUrlValid = URLAvailability.checkUrl(externalPicture.getUrl());
+                    if(isUrlValid){
+                        String key = qinniuBiz.fetch(externalPicture.getUrl(), externalPicture.getFilePath());
+                        if(StringUtils.isNotBlank(key)){
+                            externalPicture.setStatus(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+                        }
+                    }else{
+                        externalPicture.setStatus(Integer.parseInt(ZeroToNineEnum.TWO.getCode()));
+                        log.error(String.format("代发商品%s图片%s无效", externalPicture.getSkuCode(), externalPicture.getUrl()));
                     }
+                    externalPicture.setUpdateTime(Calendar.getInstance().getTime());
+                    externalPictureService.updateByPrimaryKeySelective(externalPicture);
                 } catch (Exception e) {
                     log.error("上传代发商品图片到七牛定时任务上传图片异常", e);
                 }
             }
         }while (totalCount > 0);
     }
+
 }
