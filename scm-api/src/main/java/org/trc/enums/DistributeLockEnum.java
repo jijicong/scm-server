@@ -7,8 +7,8 @@ package org.trc.enums;
 public enum DistributeLockEnum {
     WAREHOSE_NOTICE_STOCK("stock_","库存更新"),
     DELIVERY_ORDER_CREATE("deliveryOrderCreate_","发货通知单"),
-    SUBMIT_JINGDONG_ORDERßßß("submitJingdongOrder_","提交京东订单")
-    ;
+    SUBMIT_JINGDONG_ORDERßßß("submitJingdongOrder_","提交京东订单"),
+    WAREHOUSE_NOTICE_CREATE("warehouseNoticeCreate_","入库通知");
 
     private String code;
     private String name;
