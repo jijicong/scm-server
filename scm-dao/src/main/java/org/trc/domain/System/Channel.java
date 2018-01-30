@@ -26,7 +26,7 @@ public class Channel extends BaseDO{
     private String code;
     @FormParam("name")
     @NotEmpty
-    @Length(max = 64, message = "渠道名称字母和数字不能超过64个,汉字不能超过32个")
+    @Length(max = 256, message = "渠道名称字母和数字不能超过256个,汉字不能超过128个")
     private String name;
     @FormParam("remark")
     @Length(max = 1024,message = "渠道备注字母和数字不能超过1024个,汉字不能超过512个")
