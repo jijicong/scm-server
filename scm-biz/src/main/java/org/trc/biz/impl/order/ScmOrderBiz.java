@@ -437,7 +437,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //检查供应商订单状态
             boolean orderStatus = checkSupplierOrderStatus(warehouseOrderCode);
             if(orderStatus){
-                throw new OrderException(ExceptionEnum.ORDER_REPAT_SUBMIT, "订单已经下单成功,请刷新页面查看最订单信息!");
+                throw new OrderException(ExceptionEnum.ORDER_REPAT_SUBMIT, "订单已经下单成功,请刷新页面查看最新订单信息!");
             }
             ResponseAck responseAck = null;
             //获取供应链订单数据
