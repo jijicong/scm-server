@@ -5129,6 +5129,23 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
+
+        if(successOutboundCodes.size() > 0){
+            //成功日志
+            for(String successOutboundCode: successOutboundCodes){
+                for(Map.Entry<String, OutboundForm> entry: entries){
+                    if(StringUtils.equals(successOutboundCode, entry.getKey())){
+                        OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+                        for(Warehouse warehouse: warehouseList){
+                            if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
+                                operator = warehouse.getName();
+                            }
+                        }
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_SUCCESS.getMessage(), "",null);
+                    }
+                }
+            }
+        }
     }
 
     /**
