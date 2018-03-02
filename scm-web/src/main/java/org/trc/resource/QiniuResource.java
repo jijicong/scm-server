@@ -51,21 +51,23 @@ public class QiniuResource {
                             @FormDataParam("Filedata") FormDataContentDisposition disposition,
                             @PathParam("module") String module, @FormDataParam("fileName") String fileName) throws Exception {
         UploadResponse uploadResponse = new UploadResponse(true);
+        String _fileName = null;
         try{
             AssertUtil.notBlank(disposition.getFileName(), "上传文件名称不能为空");
-            AssertUtil.notBlank(fileName, "上传文件名称不能为空");
-            String suffix = fileName.substring(fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
+            //AssertUtil.notBlank(fileName, "上传文件名称不能为空");
+            _fileName = disposition.getFileName();
+            String suffix = _fileName.substring(_fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT)+1);
             String newFileName = String.format("%s%s%s", String.valueOf(System.nanoTime()), SupplyConstants.Symbol.FILE_NAME_SPLIT, suffix);
             String key = qinniuBiz.upload(fileInputStream, newFileName, module);
             uploadResponse.setKey(key);
-            uploadResponse.setFileName(fileName);
+            uploadResponse.setFileName(_fileName);
             //获取图片缩略图url
             String url = qinniuBiz.getThumbnail(key, WIDTH, HEIGHT);
             //检查路径是否可用
             URLAvailability.isConnect(url);
             uploadResponse.setUrl(url);
         }catch (Exception e){
-            String msg = String.format("%s%s%s%s", "上传文件", fileName, "异常,异常信息：",e.getMessage());
+            String msg = String.format("%s%s%s%s", "上传文件", _fileName, "异常,异常信息：",e.getMessage());
             log.error(msg, e);
             uploadResponse.setSuccess(false);
             uploadResponse.setErrorMsg(msg);
