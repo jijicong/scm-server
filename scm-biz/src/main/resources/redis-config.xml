@@ -50,7 +50,7 @@
     <!-- spring自己的缓存管理器，这里定义了缓存位置名称 ，即注解中的value -->
     <bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager">
         <constructor-arg name="template" ref="redisTemplate"/>
-        <property name="defaultExpiration" value="3600"></property><!--默认1个小时过期-->
+        <property name="defaultExpiration" value="36000"></property><!--默认10个小时过期-->
         <!--<property name="cacheNames">
             <set>
                 <bean class="com.cn.util.RedisCache">
