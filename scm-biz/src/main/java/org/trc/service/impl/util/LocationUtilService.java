@@ -3,7 +3,6 @@ package org.trc.service.impl.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.trc.cache.Cacheable;
 import org.trc.domain.util.Area;
 import org.trc.domain.util.AreaTreeNode;
 import org.trc.mapper.util.ILocationMapper;
@@ -31,7 +30,6 @@ public class LocationUtilService extends BaseService<Area,Long> implements ILoca
     private Long areaId;
 
     @Override
-    @Cacheable(key = "#record")
     public Area selectOne(Area record) {
         return mapper.selectOne(record);
     }

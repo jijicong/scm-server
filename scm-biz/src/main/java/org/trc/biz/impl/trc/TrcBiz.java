@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -565,6 +566,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS_QUERY)
     public Pagenation<ExternalItemSku> externalItemSkuPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,String channelCode) throws Exception {
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -792,6 +794,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page,String channelCode) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1712,6 +1715,7 @@ public class TrcBiz implements ITrcBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PROPERTY)
     public Object propertyPage(PropertyFormForTrc queryModel, Pagenation<Property> page) throws Exception {
         boolean bool = false;
         String flag = queryModel.getFlag();
@@ -1811,6 +1815,7 @@ public class TrcBiz implements ITrcBiz {
 
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public Pagenation<Brand> brandList(BrandForm2 queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1822,6 +1827,7 @@ public class TrcBiz implements ITrcBiz {
 
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public Pagenation<Category> categoryPage(CategoryForm2 queryModel, Pagenation<Category> page) throws Exception {
 
         //为字符串‘1’or '0'
@@ -2023,6 +2029,7 @@ public class TrcBiz implements ITrcBiz {
 
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS_QUERY)
     public List<ExternalItemSku> getExternalSkuInformation(String skuCode, String channelCode) {
         AssertUtil.notBlank(skuCode,"查询SKU信息sckCode不能为空");
         AssertUtil.isTrue(skuCode.indexOf(TrcBiz.COMMA_ZH) == -1, "分隔多个sku编码必须是英文逗号");

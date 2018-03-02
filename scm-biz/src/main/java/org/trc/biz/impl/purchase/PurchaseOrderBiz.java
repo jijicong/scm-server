@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.Items;
@@ -49,6 +50,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
+import org.trc.util.cache.PurchaseOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
@@ -144,6 +146,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
         AssertUtil.notBlank(channelCode,"未获得授权");
@@ -380,6 +383,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<Supplier> findSuppliersByChannelCode(String channelCode)  {
         //根据渠道用户查询对应的供应商
         AssertUtil.notBlank(channelCode ,"获取渠道编号失败");
@@ -430,7 +434,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
         String supplierCode = form.getSupplierCode();
         String warehouseInfoId = form.getWarehouseInfoId();
@@ -505,7 +509,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     //保存采购单
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public void savePurchaseOrder(PurchaseOrderAddData purchaseOrder, String status,AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseOrder,"采购单对象为空");
         String supplierCode = purchaseOrder.getSupplierCode();
@@ -757,6 +761,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode)  {
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询所有的可采购商品失败,供应商编码为空");
         Map<String, Object> map = new HashMap<>();
@@ -769,7 +774,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseDetail> findPurchaseDetailBySupplierCode(String supplierCode, ItemForm form, Pagenation<PurchaseDetail> page, String skus)  {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -848,7 +853,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public String updatePurchaseOrderState(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
@@ -947,6 +952,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     //type 1:查询详情 2:编辑
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public PurchaseOrder findPurchaseOrderAddDataById(Long id)  {
 
         AssertUtil.notNull(id,"根据采购订单id查询采购单失败，采购订单id为空");
@@ -1043,7 +1049,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public PurchaseOrder findPurchaseOrderAddDataByCode(String purchaseCode) {
 
         AssertUtil.notBlank(purchaseCode,"采购单的编码为空!");
@@ -1059,7 +1065,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public String updatePurchaseStateFreeze(PurchaseOrder purchaseOrder,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrder,"采购订单状态修改失败，采购订单信息为空");
@@ -1118,7 +1124,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public void updatePurchaseOrder(PurchaseOrderAddData purchaseOrderAddData,AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseOrderAddData,"修改采购单失败,采购单为空");
@@ -1291,7 +1297,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public void warahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo){
 
         AssertUtil.notNull(purchaseOrder,"采购单信息为空,保存入库通知单失败");
@@ -1502,7 +1508,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public void cancelWarahouseAdvice(PurchaseOrder purchaseOrder, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(purchaseOrder,"采购单的信息为空");
@@ -1571,6 +1577,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
 
@@ -1580,7 +1587,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @CacheEvit
+    @PurchaseOrderCacheEvict
     public void cacheEvitForPurchaseOrder() {}
 
 }

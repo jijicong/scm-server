@@ -12,7 +12,8 @@ public enum LogOperationEnum {
     ORDER_FAILURE("供应商下单失败"),PARTS_DELIVER("部分发货"),ORDER_CANCEL("已取消"),ORDER_CLOSE("关闭"),ORDER_REOPEN("取消关闭"),
 
     OUTBOUND_RECEIVE_FAIL("仓库接收失败"),OUTBOUND_WAITING("等待仓库发货"),OUTBOUND_ON_WAREHOUSE_NOTICE("仓库告知的过程中状态"),
-    OUTBOUND_ALL_GOODS("全部发货"),OUTBOUND_PART_OF_SHIPMENT("部分发货"),OUTBOUND_CANCELED("已取消"),OUTBOUND_SEND("发送");
+    OUTBOUND_ALL_GOODS("全部发货"),OUTBOUND_PART_OF_SHIPMENT("部分发货"),OUTBOUND_CANCELED("已取消"),OUTBOUND_SEND("发送"),OUTBOUND_RECEIVE_SUCCESS("仓库接收成功"),
+    SEND("发货");
 
     private String message;
 

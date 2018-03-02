@@ -14,12 +14,12 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IChannelBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.System.ChannelExt;
@@ -44,6 +44,7 @@ import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import org.trc.util.TransportClientUtil;
+import org.trc.util.cache.ChannelCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -90,7 +91,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
-    @Cacheable(key = "#form+#page.pageNo+#page.pageSize", isList = true)
+    @Cacheable(value = SupplyConstants.Cache.CHANNEL)
     public Pagenation<Channel> channelPage(ChannelForm form, Pagenation<Channel> page) {
         Example example = new Example(Channel.class);
         Example.Criteria criteria = example.createCriteria();
@@ -139,6 +140,7 @@ public class ChannelBiz implements IChannelBiz {
 
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CHANNEL)
     public Channel findChannelByName(String name) {
 
         AssertUtil.notBlank(name, "根据业务线名称查询业务线的参数name为空");
@@ -149,7 +151,8 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    @Cacheable(key = "#channelForm", isList = true)
+    //@Cacheable(key = "#channelForm", isList = true)
+    @Cacheable(value = SupplyConstants.Cache.CHANNEL)
     public List<Channel> queryChannels(ChannelForm channelForm) {//查询有效的渠道
         Channel channel = new Channel();
         if (StringUtils.isEmpty(channelForm.getIsValid())) {
@@ -161,7 +164,7 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @ChannelCacheEvict
     public void saveChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
        List<SellChannel> sellChannelList =  checkSellChannel(channel);
         AssertUtil.notNull(channel, "业务线信息为空");
@@ -186,7 +189,7 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key = {"#channel.id"})
+    @ChannelCacheEvict
     public void updateChannel(Channel channel, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(channel.getId(), "修改业务线参数ID为空");
@@ -246,7 +249,8 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    @Cacheable(key = "#id")
+    //@Cacheable(key = "#id")
+    @Cacheable(value = SupplyConstants.Cache.CHANNEL)
     public Channel findChannelById(Long id) {
 
         AssertUtil.notNull(id, "根据ID查询业务线明细,参数ID不能为空");
@@ -259,7 +263,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
-    @CacheEvit(key = {"#channel.id"})
+    @ChannelCacheEvict
     public void updateChannelState(Channel channel) {
 
         AssertUtil.notNull(channel, "业务线管理模块修改业务线信息失败，业务线信息为空");
@@ -281,6 +285,7 @@ public class ChannelBiz implements IChannelBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CHANNEL)
     public List<SellChannel> selectLinkSellChannelById(Long channelId) {
         AssertUtil.notNull(channelId,"查询条件业务线主键Id不能为空!");
         findChannelById(channelId);

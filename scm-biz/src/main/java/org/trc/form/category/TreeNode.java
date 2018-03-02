@@ -1,11 +1,12 @@
 package org.trc.form.category;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by hzszy on 2017/5/5.
  */
-public class TreeNode {
+public class TreeNode implements Serializable{
 
     private String id;
 

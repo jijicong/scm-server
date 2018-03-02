@@ -17,8 +17,8 @@ import org.trc.util.RedisUtil;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.lang.reflect.Method;
 
-@Component
-@Aspect
+//@Component
+//@Aspect
 public class CacheEvitInterceptor {
 
 	private Logger LOGGER = LoggerFactory.getLogger(CacheEvitInterceptor.class);

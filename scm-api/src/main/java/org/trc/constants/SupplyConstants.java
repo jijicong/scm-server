@@ -1128,4 +1128,64 @@ public class SupplyConstants {
         public final static String YTO = "YTO";
     }
 
+    /**
+     * 缓存key
+     */
+    public static final class Cache {
+        //供应链用户
+        public final static String SCM_USER = "scm_user";
+        //供应链资源
+        public final static String SCM_RESOURCE = "scm_resource";
+        //店铺订单
+        public final static String SHOP_ORDER = "shopOrder";
+        //供应商订单
+        public final static String SUPPLIER_ORDER = "supplierOrder";
+        //发货通知单
+        public final static String OUTBOUND_ORDER = "outboundOrder";
+
+        //字典
+        public final static String DICT = "dict";
+        //品牌
+        public final static String BRAND = "brand";
+        //属性
+        public final static String PROPERTY = "property";
+        //分类
+        public final static String CATEGORY = "category";
+
+        //自采商品
+        public final static String GOODS = "goods";
+        //代发商品
+        public final static String OUT_GOODS = "outGoods";
+        //商品查询
+        public final static String GOODS_QUERY = "goodsQuery";
+        //代发商品查询
+        public final static String OUT_GOODS_QUERY = "outGoodsQuery";
+
+        //供应商
+        public final static String SUPPLIER = "supplier";
+
+        //采购组
+        public final static String PURCHASE_GROUP = "purchase_group";
+        //采购单
+        public final static String PURCHASE_ORDER = "purchase_order";
+        //采购单审核
+        public final static String PURCHASE_ORDER_AUDIT = "purchase_order_audit";
+        //入库通知
+        public final static String WAREHOUSE_NOTICE = "warehouse_notice";
+
+        //仓库
+        public final static String WAREHOUSE = "warehouse";
+        //渠道
+        public final static String CHANNEL = "channel";
+        //销售渠道
+        public final static String SELL_CHANNEL = "sell_channel";
+
+        //地址
+        public final static String ADDRESS = "address";
+        //京东地址
+        public final static String JD_ADDRESS = "jd_address";
+
+    }
+
+
 }

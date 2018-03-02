@@ -62,6 +62,9 @@ public class OutboundDetail implements Serializable {
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
+    @Column(name = "spec_nature_info")
+    private String specNatureInfo;
+
     public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
         return outboundDetailLogisticsList;
     }
@@ -156,5 +159,13 @@ public class OutboundDetail implements Serializable {
 
     public void setInventoryType(String inventoryType) {
         this.inventoryType = inventoryType;
+    }
+
+    public String getSpecNatureInfo() {
+        return specNatureInfo;
+    }
+
+    public void setSpecNatureInfo(String specNatureInfo) {
+        this.specNatureInfo = specNatureInfo;
     }
 }
