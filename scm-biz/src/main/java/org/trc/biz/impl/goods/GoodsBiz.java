@@ -2063,7 +2063,6 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS)
     public Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm queryModel, Pagenation<SupplyItemsExt> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");

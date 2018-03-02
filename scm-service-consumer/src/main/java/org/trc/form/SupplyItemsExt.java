@@ -1,12 +1,13 @@
 package org.trc.form;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * Created by hzszy on 2017/6/19.
  */
-public class SupplyItemsExt {
+public class SupplyItemsExt implements Serializable{
     private Long id; //主键ID
     private String supplierCode; //供应商编码
     private String supplyName; //供应商名称
