@@ -40,7 +40,6 @@ public class MetadataBiz implements IMetadataBiz {
     private IJDService ijdService;
 
     @Override
-    //@Cacheable(isList = true, expireTime = 14400)
     @Cacheable(value = SupplyConstants.Cache.DICT)
     public List<Dict> queryDict() {
         List<Dict> dictList = null;
@@ -85,7 +84,7 @@ public class MetadataBiz implements IMetadataBiz {
     }
 
     @Override
-    @CachePut(value = SupplyConstants.Cache.JD_ADDRESS)
+    @CacheEvict(value = SupplyConstants.Cache.JD_ADDRESS)
     public AppResult jDAddressUpdate() {
         try{
             //调用查询京东地址方法使缓存更新最新地址

@@ -3440,14 +3440,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example2);
         AssertUtil.notEmpty(externalItemSkuList, String.format("根据多个skuCode[%s]查询代发商品列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         //校验商品上下架状态
-        List<String> _tmpSkuCodes = new ArrayList<String>();
+        /*List<String> _tmpSkuCodes = new ArrayList<String>();
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), externalItemSku.getState()))
                 _tmpSkuCodes.add(externalItemSku.getSkuCode());
         }
         if(_tmpSkuCodes.size() > 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("代发商品[%s]的供应商商品状态为下架!", CommonUtil.converCollectionToString(_tmpSkuCodes)));
-        }
+        }*/
         //校验商品最小购买量
         for(OrderItem orderItem: orderItemList){
             for(ExternalItemSku externalItemSku: externalItemSkuList){
