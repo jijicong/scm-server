@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impower.IAclResourceBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.*;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.UserTypeEnum;
@@ -19,6 +21,7 @@ import org.trc.exception.JurisdictionException;
 import org.trc.form.impower.JurisdictionTreeNode;
 import org.trc.service.impower.*;
 import org.trc.util.AssertUtil;
+import org.trc.util.cache.UserCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -222,6 +225,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public Boolean authCheck(String userId, String url, String method) {
         /*
         * 1.查询用户授权信息表
@@ -277,6 +281,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public Boolean urlCheck(String url) {
         Example example = new Example(AclResource.class);
         List<AclResource> list = jurisdictionService.selectByExample(example);

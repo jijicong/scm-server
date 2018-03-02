@@ -6,10 +6,12 @@ import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.trc.biz.system.IMetadataBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.util.AreaTreeNode;
 import org.trc.form.JDModel.ReturnTypeDO;
@@ -38,7 +40,8 @@ public class MetadataBiz implements IMetadataBiz {
     private IJDService ijdService;
 
     @Override
-    @Cacheable(isList = true, expireTime = 14400)
+    //@Cacheable(isList = true, expireTime = 14400)
+    @Cacheable(value = SupplyConstants.Cache.DICT)
     public List<Dict> queryDict() {
         List<Dict> dictList = null;
         try{
@@ -52,7 +55,7 @@ public class MetadataBiz implements IMetadataBiz {
     }
 
     @Override
-    @Cacheable(isList = true, expireTime = 14400)
+    @Cacheable(value = SupplyConstants.Cache.ADDRESS)
     public List<AreaTreeNode> queryAddress() {
         List<AreaTreeNode> areaTreeNodes = null;
         try {
@@ -65,7 +68,7 @@ public class MetadataBiz implements IMetadataBiz {
     }
 
     @Override
-    @Cacheable(isList = true, expireTime = 14400)
+    @Cacheable(value = SupplyConstants.Cache.JD_ADDRESS)
     public List<AreaTreeNode> queryJDAddress() {
         List<AreaTreeNode> areaTreeNodes = null;
         try {
@@ -82,7 +85,7 @@ public class MetadataBiz implements IMetadataBiz {
     }
 
     @Override
-    @CacheEvit
+    @CachePut(value = SupplyConstants.Cache.JD_ADDRESS)
     public AppResult jDAddressUpdate() {
         try{
             //调用查询京东地址方法使缓存更新最新地址

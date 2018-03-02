@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.StringUtil;
+import org.trc.util.cache.UserCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -118,6 +121,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      * @throws Exception
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public Pagenation<AclUserAddPageDate> userAccreditInfoPage(UserAccreditInfoForm form, Pagenation<AclUserAddPageDate> page) {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -143,7 +147,6 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     public List<AclUserAccreditInfo> findPurchase(AclUserAccreditInfo aclUserAccreditInfo) {
         String channelCode = aclUserAccreditInfo.getChannelCode();
         return userAccreditInfoService.findPurchase(channelCode);
-
     }
 
     @Override
@@ -178,7 +181,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     }
 
     @Override
-    @CacheEvit
+    @UserCacheEvict
     public void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo, AclUserAccreditInfo aclUserAccreditInfoContext) {
         AssertUtil.notNull(aclUserAccreditInfo, "授权管理模块修改授权信息失败，授权信息为空");
         AclUserAccreditInfo updateAclUserAccreditInfo = new AclUserAccreditInfo();
@@ -302,7 +305,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @UserCacheEvict
     public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
         checkUserAddPageDate(userAddPageDate);
         if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
@@ -558,7 +561,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @UserCacheEvict
     public void updateUserAccredit(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
         //非空校验
         AssertUtil.notBlank(userAddPageDate.getName(), "用户姓名未输入");

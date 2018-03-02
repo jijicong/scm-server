@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +72,7 @@ import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.OrderCancelResponse;
 import com.thoughtworks.xstream.XStream;
 
+import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
@@ -122,6 +124,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RedisLock redisLock;
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.OUTBOUND_ORDER)
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
         //获得业务线编码
@@ -149,6 +152,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @OutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateOutboundDetail(String requestText) throws Exception {
         AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
@@ -469,6 +473,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @OutboundOrderCacheEvict
     public Response createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
@@ -573,6 +578,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @OutboundOrderCacheEvict
     public Response close(Long id, String remark,  AclUserAccreditInfo aclUserAccreditInfo) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
@@ -634,6 +640,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @OutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
         try{
@@ -698,6 +705,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @OutboundOrderCacheEvict
     public void checkTimeOutTimer() {
         logger.info("检查出库通知单是否超过七天的定时任务启动----->");
         Example example = new Example(OutboundOrder.class);
@@ -797,7 +805,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
-    @CacheEvit
+    @OutboundOrderCacheEvict
     @Transactional(rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "发货单主键不能为空");

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,6 @@ import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
@@ -60,6 +59,8 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
+import org.trc.util.cache.GoodsCacheEvict;
+import org.trc.util.cache.OutGoodsCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -167,7 +168,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.GOODS)
     public Pagenation<Items> itemsPage(ItemsForm queryModel, Pagenation<Items> page) throws Exception {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
@@ -205,7 +206,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.channelCode+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.GOODS_QUERY)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -608,7 +609,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @CacheEvit
+    @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery) throws Exception {
         AssertUtil.notBlank(itemSalesPropery.getSalesPropertys(), "提交商品信息采购属性不能为空");
@@ -675,7 +676,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @CacheEvit
+    @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateItems(Items items, Skus skus, ItemNaturePropery itemNaturePropery, ItemSalesPropery itemSalesPropery, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(items.getSpuCode(), "提交商品信息自然属性不能为空");
@@ -1109,7 +1110,6 @@ public class GoodsBiz implements IGoodsBiz {
      * @param items
      * @throws Exception
      */
-    @CacheEvit(key = { "#items.id"} )
     private void updateItemsBase(Items items, Map<String, Object> map) throws Exception{
         AssertUtil.notNull(items.getId(), "商品ID不能为空");
         items.setUpdateTime(Calendar.getInstance().getTime());
@@ -1523,7 +1523,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @CacheEvit
+    @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public AppResult updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "商品启用/停用操作参数id不能为空");
@@ -1617,7 +1617,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @CacheEvit
+    @GoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSkusValid(Long id, String spuCode, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "SKU启用/停用操作参数ID不能为空");
@@ -1776,7 +1776,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    //@Cacheable(key="#spuCode+#skuCode+#aclUserAccreditInfo.channelCode",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.GOODS)
     public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
@@ -1905,7 +1905,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    //@Cacheable(key="#spuCode+#categoryId",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.GOODS)
     public List<CategoryProperty> queryItemsCategoryProperty(String spuCode, Long categoryId) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品分类属性spuCode为空");
         AssertUtil.notNull(categoryId, "查询商品分类属性categoryId为空");
@@ -1928,7 +1928,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-//    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS_QUERY)
     public Pagenation<ExternalItemSku> externalGoodsPage(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1998,7 +1998,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS)
     public List<ExternalItemSku> queryExternalItems(ExternalItemSkuForm form) {
         AssertUtil.notNull(form, "查询代发商品参数不能为空");
         ExternalItemSku externalItemSku = new ExternalItemSku();
@@ -2063,6 +2063,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS)
     public Pagenation<SupplyItemsExt> externalGoodsPage2(SupplyItemsForm queryModel, Pagenation<SupplyItemsExt> page,AclUserAccreditInfo aclUserAccreditInfo) throws Exception{
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
@@ -2145,7 +2146,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @CacheEvit
+    @OutGoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveExternalItems(String supplySkus, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(supplySkus, "新增代发商品不能为空");
@@ -2307,7 +2308,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @CacheEvit
+    @OutGoodsCacheEvict
     public void updateExternalItemsValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "代发商品启用/停用操作参数id不能为空");
         AssertUtil.notBlank(isValid, "代发商品启用/停用操作参数isValid不能为空");
@@ -2340,7 +2341,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @CacheEvit
+    @OutGoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateExternalItems(ExternalItemSku externalItemSku, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(externalItemSku, "更新代发商品不能为空");
@@ -2366,7 +2367,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @CacheEvit
+    @OutGoodsCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void supplierSkuUpdateNotice(String updateSupplierSkus) {
          AssertUtil.notBlank(updateSupplierSkus, "根据供应商sku更新通知更新一件代发商品供应商更新的sku参数updateSupplierSkus不能为空");
@@ -2580,7 +2581,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-//    @Cacheable(key="#supplierForm.toString()",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.OUT_GOODS)
     public List<Supplier> querySuppliers(SupplierForm supplierForm,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(supplierForm, supplier);

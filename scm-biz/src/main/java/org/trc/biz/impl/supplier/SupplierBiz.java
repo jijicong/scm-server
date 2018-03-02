@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +27,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.supplier.ISupplierBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Channel;
 import org.trc.domain.category.Brand;
@@ -52,6 +51,7 @@ import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.*;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
+import org.trc.util.cache.SupplierCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -101,7 +101,7 @@ public class SupplierBiz implements ISupplierBiz {
     private IPageNationService pageNationService;
 
     @Override
-    //@Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public Pagenation<Supplier> supplierPage(SupplierForm queryModel, Pagenation<Supplier> page) throws Exception {
         Example example = new Example(Supplier.class);
         Example.Criteria criteria = example.createCriteria();
@@ -210,6 +210,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public Pagenation<Supplier> supplierPage(Pagenation<Supplier> page, AclUserAccreditInfo aclUserAccreditInfo, SupplierForm form) throws Exception {
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
         Map<String, Object> map = new HashMap<>();
@@ -314,7 +315,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @Cacheable(key="#supplierForm.toString()",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<Supplier> querySuppliers(SupplierForm supplierForm) throws Exception {
         Supplier supplier = new Supplier();
         BeanUtils.copyProperties(supplierForm, supplier);
@@ -354,7 +355,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @CacheEvit
+    @SupplierCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                              SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -423,7 +424,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @CacheEvit
+    @SupplierCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateSupplier(Supplier supplier, Certificate certificate, SupplierCategory supplierCategory, SupplierBrand supplierBrand,
                                SupplierFinancialInfo supplierFinancialInfo, SupplierAfterSaleInfo supplierAfterSaleInfo, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -1164,7 +1165,7 @@ public class SupplierBiz implements ISupplierBiz {
 
 
     @Override
-    @Cacheable(key="#supplierCode", isList = true)
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<SupplierCategoryExt> querySupplierCategory(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理分类供应商编码不能为空");
         List<SupplierCategoryExt> supplierCategoryExtList = supplierCategoryService.selectSupplierCategorys(supplierCode);
@@ -1178,7 +1179,7 @@ public class SupplierBiz implements ISupplierBiz {
 
 
     @Override
-    @Cacheable(key="#supplierCode", isList = true)
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<SupplierBrandExt> querySupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商代理品牌供应商编码不能为空");
         List<SupplierBrandExt> supplierBrandExtList = supplierBrandService.selectSupplierBrands(supplierCode);
@@ -1191,6 +1192,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public SupplierExt querySupplierInfo(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode, "查询供应商信息供应商编码不能为空");
         SupplierExt supplierExt = new SupplierExt();
@@ -1230,7 +1232,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<SupplierChannelRelationExt> queryChannelRelation(SupplierChannelRelationForm form) throws Exception {
         AssertUtil.notNull(form, "查询供应商渠道关系参数SupplierChannelRelationForm不能为空");
         if (null == form.getSupplierId() && StringUtils.isBlank(form.getSupplierCode()) &&
@@ -1253,7 +1255,7 @@ public class SupplierBiz implements ISupplierBiz {
     }
 
     @Override
-    @CacheEvit
+    @SupplierCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateValid(Long id, String isValid, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(id, "供应商启用/停用操作供应商ID不能为空");

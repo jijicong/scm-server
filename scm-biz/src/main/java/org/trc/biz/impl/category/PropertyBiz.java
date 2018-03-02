@@ -13,14 +13,14 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -38,6 +38,7 @@ import org.trc.service.goods.IItemNatureProperyService;
 import org.trc.service.goods.IItemSalesProperyService;
 import org.trc.service.impl.impower.AclUserAccreditInfoService;
 import org.trc.util.*;
+import org.trc.util.cache.PropertyCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -75,7 +76,7 @@ public class PropertyBiz implements IPropertyBiz {
     private IPageNationService pageNationService;
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.PROPERTY)
     public Pagenation<Property> propertyPage(PropertyForm queryModel, Pagenation<Property> page) throws Exception {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();
@@ -178,7 +179,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PropertyCacheEvict
     public void saveProperty(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property, "属性管理模块保存属性信息失败，属性信息为空");
         ParamsUtil.setBaseDO(property);
@@ -237,7 +238,7 @@ public class PropertyBiz implements IPropertyBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key = {"#property.id"})
+    @PropertyCacheEvict
     public void updateProperty(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property.getId(), "根据ID更新属性信息参数ID为空");
         //先判断用户更新信息时是否有改变属性值类型如：图片--->文字，并删除之前的数据
@@ -374,7 +375,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
-    @Cacheable(key = "#propertyId",isList = true)
+    @Cacheable(value = SupplyConstants.Cache.PROPERTY)
     public List<PropertyValue> queryListByPropertyId(Long propertyId) throws Exception {
         AssertUtil.notNull(propertyId, "属性管理模块属性值查询失败propertyId：" + propertyId);
         Example example = new Example(PropertyValue.class);
@@ -386,7 +387,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
-    @Cacheable(key = "#id")
+    @Cacheable(value = SupplyConstants.Cache.PROPERTY)
     public Property findPropertyById(Long id) throws Exception {
         AssertUtil.notNull(id, "根据ID查询属性明细参数ID为空");
         Property property = new Property();
@@ -402,7 +403,7 @@ public class PropertyBiz implements IPropertyBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key = {"#property.id"})
+    @PropertyCacheEvict
     public void updatePropertyStatus(Property property, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(property.getId(), "根据属性ID更新属性状态，属性信息为空");
         //查询变更属性
@@ -455,6 +456,7 @@ public class PropertyBiz implements IPropertyBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PROPERTY)
     public List<PropertyValue> queryPropertyValueByPropertyIds(String propertyIds) throws Exception {
         AssertUtil.notBlank(propertyIds, "根据属性ID批量查询属性值参数属性ID不能为空");
         String[] tmpIds = propertyIds.split(MULTI_PRRPERTY_ID_SPLIT);
@@ -476,6 +478,7 @@ public class PropertyBiz implements IPropertyBiz {
      * @throws Exception
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PROPERTY)
     public List<Property> searchProperty(String queryString) throws Exception {
         Example example = new Example(Property.class);
         Example.Criteria criteria = example.createCriteria();

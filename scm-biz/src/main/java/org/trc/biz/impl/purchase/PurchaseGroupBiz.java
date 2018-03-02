@@ -5,12 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
@@ -29,6 +28,7 @@ import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
+import org.trc.util.cache.PurchaseGroupCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -58,7 +58,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private ILogInfoService logInfoService;
 
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize+#aclUserAccreditInfo.channelCode",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public Pagenation<PurchaseGroup> purchaseGroupPage(PurchaseGroupForm form, Pagenation<PurchaseGroup> page, AclUserAccreditInfo aclUserAccreditInfo)  {
 
         Example example = new Example(PurchaseGroup.class);
@@ -78,6 +78,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode)  {
 
         AssertUtil.notBlank(purchaseGroupCode,"根据采购组编码查询采购组人员的参数code为空");
@@ -87,7 +88,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    @Cacheable(isList = true)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public List<PurchaseGroup> findPurchaseGroupList(AclUserAccreditInfo aclUserAccreditInfo)  {
 
         PurchaseGroup purchaseGroup = new PurchaseGroup();
@@ -103,6 +104,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public List<AclUserAccreditInfo> findPurchaseGroupMemberStateById(Long id)  {//查询该组id下的无效状态的用户
 
         AssertUtil.notNull(id,"采购组id为空，查询采购组对应的无效状态的用户失败");
@@ -111,7 +113,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    @Cacheable(key = "#code")
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public PurchaseGroup findPurchaseGroupByCode(String code)  {
 
         AssertUtil.notBlank(code,"根据采购组编码查询采购组的参数code为空");
@@ -124,7 +126,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key = {"#purchaseGroup.code","#purchaseGroup.id"})
+    @PurchaseGroupCacheEvict
     public void updatePurchaseStatus(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseGroup,"采购组信息为空，修改采购组状态失败");
         PurchaseGroup updatePurchaseGroup = new PurchaseGroup();
@@ -156,6 +158,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public PurchaseGroup findPurchaseByName(String name)  {
 
         AssertUtil.notBlank(name,"根据采购组名称查询采购组的参数name为空");
@@ -167,7 +170,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key = {"#purchaseGroup.code","#purchaseGroup.id"})
+    @PurchaseGroupCacheEvict
     public void updatePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
         AssertUtil.notNull(purchaseGroup,"根据采购组信息修改采购组失败,采购信息为null");
         PurchaseGroup tmp = findPurchaseByName(purchaseGroup.getName());
@@ -209,7 +212,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @PurchaseGroupCacheEvict
     public void savePurchaseGroup(PurchaseGroup purchaseGroup, AclUserAccreditInfo aclUserAccreditInfo)  {
 
         AssertUtil.notNull(purchaseGroup,"采购组管理模块保存采购组信息失败，采购组信息为空");
@@ -291,7 +294,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    @Cacheable(key = "#id")
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public PurchaseGroup findPurchaseById(Long id)  {
 
         AssertUtil.notNull(id,"采购组管理模块根据id查询采购组失败，采购组信息为空");
