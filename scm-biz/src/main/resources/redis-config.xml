@@ -24,7 +24,7 @@
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
         <property name="hostName" value="${session.redis.host}"/>
         <property name="port" value="${session.redis.port}"/>
-        <property name="password" value="${session.redis.password}"/>
+        <!--<property name="password" value="${session.redis.password}"/>-->
         <property name="poolConfig" ref="jedisPoolConfig" />
         <property name="usePool" value="true" />
         <property name="timeout" value="${session.redis.timeout}" />
@@ -50,16 +50,13 @@
     <!-- spring自己的缓存管理器，这里定义了缓存位置名称 ，即注解中的value -->
     <bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager">
         <constructor-arg name="template" ref="redisTemplate"/>
-        <property name="defaultExpiration" value="36000"></property><!--默认10个小时过期-->
-        <!--<property name="cacheNames">
-            <set>
-                <bean class="com.cn.util.RedisCache">
-                    <property name="redisTemplate" ref="redisTemplate" />
-                    <property name="name" value="common"/>
-                    &lt;!&ndash; common名称要在类或方法的注解中使用 &ndash;&gt;
-                </bean>
-            </set>
-        </property>-->
+        <property name="defaultExpiration" value="3600000"></property><!--默认1000个小时过期-->
+        <property name="expires">
+            <map>
+                <entry key="address" value="36000000"></entry><!--地址10000个小时过期-->
+                <entry key="jd_address" value="36000000"></entry><!--京东地址10000个小时过期-->
+            </map>
+        </property>
     </bean>
 
     <bean id="redisCacheConfig" class="org.trc.util.RedisCacheConfig">
