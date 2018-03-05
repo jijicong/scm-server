@@ -5,7 +5,7 @@ package org.trc.enums;
  * Created by hzqph on 2017/5/16.
  */
 public enum OrderDeliverStatusEnum {
-    WAIT_FOR_DELIVER("1","待发货"),ALL_DELIVER("4","全部发货"),PARTS_DELIVER("6","部分发货"),ORDER_CANCEL("7","已取消");
+    WAIT_FOR_DELIVER("1","待发货"),DELIVER_EXCEPTION("2","发货异常"),ALL_DELIVER("4","全部发货"),PARTS_DELIVER("6","部分发货"),ORDER_CANCEL("7","已取消");
     public static OrderDeliverStatusEnum queryNameByCode(String code){
         for(OrderDeliverStatusEnum auditStatusEnum: OrderDeliverStatusEnum.values()){
             if (auditStatusEnum.getCode().equals(code)){

@@ -727,6 +727,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         LiangYouSupplierOrder liangYouOrder = getLiangYouOrder(warehouseOrder, platformOrder, orderItemList);
         //调用粮油下单服务接口
         ResponseAck responseAck = invokeSubmitSuuplierOrder(liangYouOrder);
+        /**
+         * 记录发送日志 
+         ***/
+//        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
+            log.info(responseAck.getMessage());
+            //记录操作日志
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), SYSTEM, LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
+//        }
+        
         //保存请求流水
         requestFlowBiz.saveRequestFlow(JSONObject.toJSON(liangYouOrder).toString(), RequestFlowConstant.GYL, RequestFlowConstant.LY, RequestFlowTypeEnum.LY_SUBMIT_ORDER, responseAck, RequestFlowConstant.GYL);
         //保存粮油订单信息
@@ -737,11 +746,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
-        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
-            log.info(responseAck.getMessage());
-            //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), SYSTEM, LogOperationEnum.SUBMIT_ORDER.getMessage(), null,null);
-        }
+
         if(StringUtils.equals(ResponseAck.SUCCESS_CODE, responseAck.getCode())){
             log.info(String.format("调用粮油下单接口提交仓库订单%s成功", JSONObject.toJSON(warehouseOrder)));
         }else{
@@ -998,6 +1003,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //等待供应商发货：（等待供应商发货数 + 等待仓库发货数）> 0 && (等待供应商发货数 + 等待仓库发货数 + 已了结数 + 已取消) = 商品应发数量
             if((waitDeliverNum + waitWarehouseDeliverNum) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
+            //供应商下单异常: (仓库接收失败数  > 0 && 等待仓库发货数 > 0) || (仓库接收失败数 > 0 && 已取消数 > 0)
+            if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum) > 0)
+            	return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
             //部分发货：部分发货数 > 0
             if(partsDeliverNum > 0)
                 return SupplierOrderStatusEnum.PARTS_DELIVER.getCode();
@@ -1007,19 +1015,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //已取消：已了结数 + 已取消数 = 商品应发数量
             if(cancelNum > 0 && (handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_CANCEL.getCode();
-            //供应商下单异常: (仓库接收失败数  > 0 && 等待仓库发货数 > 0) || (仓库接收失败数 > 0 && 已取消数 > 0)
-            if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum) > 0)
-                return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//店铺级订单
             //已取消：已取消数 = 商品应发数量
             if(cancelNum == orderItemList.size())
                 return OrderDeliverStatusEnum.ORDER_CANCEL.getCode();
+            //发货异常: 供应商下单失败数 > 0 || 仓库接收失败数 > 0 || 缺货数  > 0
+            if(sendSupplierFialure > 0 || sendWarehouseFialure > 0 || handlerNum > 0)
+            	return OrderDeliverStatusEnum.DELIVER_EXCEPTION.getCode();
             //部分发货数 > 0 || (等待仓库发货数 > 0 && (部分发货数 > 0 || 全部发货数 > 0))
             if(partsDeliverNum > 0)
                 return OrderDeliverStatusEnum.PARTS_DELIVER.getCode();
             //全部发货：全部发货数 + 已取消数 = 商品应发数量
             if(allDeliverNum > 0 && (allDeliverNum + cancelNum) == orderItemList.size())
                 return OrderDeliverStatusEnum.ALL_DELIVER.getCode();
+            
         }
         return null;
     }
@@ -1822,13 +1831,31 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             StringBuilder sb = new StringBuilder();
             for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
+            	List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo2.getSkus(), SkuInfo.class);
+                
                 if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, supplierOrderInfo2.getStatus())){
                     if(StringUtils.isNotBlank(supplierOrderInfo2.getMessage())){
-                        sb.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON).append("  ");
+                        if (skuInfoList != null && !skuInfoList.isEmpty()) {
+                        	// eg: 001:供应商平台已取消订单
+                        	for (SkuInfo sku : skuInfoList) {
+//                        		sb.append(sku.getSkuCode()).append(":").append(SUPPLIER_PLATFORM_CANCEL_ORDER)
+//                        			.append(HTML_BR);
+                        		sb.append(sku.getSkuCode()).append(":")
+                        			.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
+                        	}
+                        }
                     }
                 }else {
                     if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo2.getSupplierOrderStatus())){
-                        sb.append(SupplierOrderStatusEnum.ORDER_CANCEL.getName()).append(SupplyConstants.Symbol.SEMICOLON).append("  ");
+                        if (skuInfoList != null && !skuInfoList.isEmpty()) {
+                        	// eg: 001:供应商平台已取消订单
+                        	for (SkuInfo sku : skuInfoList) {
+//                        		sb.append(sku.getSkuCode()).append(":").append(SUPPLIER_PLATFORM_CANCEL_ORDER)
+//                        			.append(HTML_BR);
+                        		sb.append(sku.getSkuCode()).append(":")
+                        			.append(SupplierOrderStatusEnum.ORDER_CANCEL.getName()).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
+                        	}
+                        }
                     }
                 }
             }
@@ -2562,7 +2589,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 //更新店铺订单供应商订单状态
                 updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
                 //记录操作日志
-                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_CANCEL.getMessage(), SUPPLIER_PLATFORM_CANCEL_ORDER,null);
+                List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
+                StringBuilder sb_remark = new StringBuilder();
+                if (skuInfoList != null && !skuInfoList.isEmpty()) {
+                	// eg: 001:供应商平台已取消订单
+                	for (SkuInfo sku : skuInfoList) {
+                		sb_remark.append(sku.getSkuCode()).append(":").append(SUPPLIER_PLATFORM_CANCEL_ORDER)
+                			.append(HTML_BR);
+                	}
+                }
+                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), 
+                		LogOperationEnum.ORDER_CANCEL.getMessage(), sb_remark.toString(), null);
                 //通知泰然城
                 supplierOrderCancelNotifyChannel(warehouseOrder, supplierOrderInfo, orderItemList);
             }
