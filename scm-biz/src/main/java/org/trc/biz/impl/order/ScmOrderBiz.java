@@ -1827,13 +1827,31 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
             StringBuilder sb = new StringBuilder();
             for(SupplierOrderInfo supplierOrderInfo2: supplierOrderInfoList){
+            	List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo2.getSkus(), SkuInfo.class);
+                
                 if(!StringUtils.equals(ResponseAck.SUCCESS_CODE, supplierOrderInfo2.getStatus())){
                     if(StringUtils.isNotBlank(supplierOrderInfo2.getMessage())){
-                        sb.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON).append("  ");
+                        if (skuInfoList != null && !skuInfoList.isEmpty()) {
+                        	// eg: 001:供应商平台已取消订单
+                        	for (SkuInfo sku : skuInfoList) {
+//                        		sb.append(sku.getSkuCode()).append(":").append(SUPPLIER_PLATFORM_CANCEL_ORDER)
+//                        			.append(HTML_BR);
+                        		sb.append(sku.getSkuCode()).append(":")
+                        			.append(supplierOrderInfo2.getMessage()).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
+                        	}
+                        }
                     }
                 }else {
                     if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo2.getSupplierOrderStatus())){
-                        sb.append(SupplierOrderStatusEnum.ORDER_CANCEL.getName()).append(SupplyConstants.Symbol.SEMICOLON).append("  ");
+                        if (skuInfoList != null && !skuInfoList.isEmpty()) {
+                        	// eg: 001:供应商平台已取消订单
+                        	for (SkuInfo sku : skuInfoList) {
+//                        		sb.append(sku.getSkuCode()).append(":").append(SUPPLIER_PLATFORM_CANCEL_ORDER)
+//                        			.append(HTML_BR);
+                        		sb.append(sku.getSkuCode()).append(":")
+                        			.append(SupplierOrderStatusEnum.ORDER_CANCEL.getName()).append(SupplyConstants.Symbol.SEMICOLON).append(HTML_BR);
+                        	}
+                        }
                     }
                 }
             }
