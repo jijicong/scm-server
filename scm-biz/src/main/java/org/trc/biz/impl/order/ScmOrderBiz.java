@@ -2566,7 +2566,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 //更新店铺订单供应商订单状态
                 updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
                 //记录操作日志
-                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), LogOperationEnum.ORDER_CANCEL.getMessage(), SUPPLIER_PLATFORM_CANCEL_ORDER,null);
+                List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
+                StringBuilder sb_remark = new StringBuilder();
+                if (skuInfoList != null && !skuInfoList.isEmpty()) {
+                	// eg: 001:供应商平台已取消订单
+                	for (SkuInfo sku : skuInfoList) {
+                		sb_remark.append(sku.getSkuCode()).append(":").append(SUPPLIER_PLATFORM_CANCEL_ORDER)
+                			.append(HTML_BR);
+                	}
+                }
+                logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), 
+                		LogOperationEnum.ORDER_CANCEL.getMessage(), sb_remark.toString(), null);
                 //通知泰然城
                 supplierOrderCancelNotifyChannel(warehouseOrder, supplierOrderInfo, orderItemList);
             }
