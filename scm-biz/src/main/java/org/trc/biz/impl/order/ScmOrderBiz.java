@@ -955,7 +955,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     /**
-     *根据订单商品状态获取订单状态(自采)
+     * 根据订单商品状态获取订单状态(自采)
      * @param orderItemList
      * @param flag：0-仓库级订单,1-店铺级订单
      * @return
