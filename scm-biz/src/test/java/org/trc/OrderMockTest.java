@@ -1,5 +1,11 @@
 package org.trc;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +22,12 @@ import org.trc.dbUnit.order.form.TrcOrderItem;
 import org.trc.dbUnit.order.form.TrcPlatformOrder;
 import org.trc.dbUnit.order.form.TrcShopOrder;
 import org.trc.dbUnit.order.form.TrcShopOrderForm;
+import org.trc.form.LogisticNoticeForm;
+import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.model.ToGlyResultDO;
+import org.trc.service.IJDService;
+import org.trc.service.ITrcService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.SHAEncrypt;
 
 import com.alibaba.fastjson.JSON;
@@ -23,17 +35,38 @@ import com.alibaba.fastjson.JSONArray;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
-public class TestOrderLog {
+public class OrderMockTest {
 	@Autowired 
 	private IScmOrderBiz scmOrderBiz;
 	
 	/**
-	 * 生成日志
+	 * 接收订单，粮油提交直接通过postman请求接口完成下单
 	 * @throws Exception
 	 */
 	@Test
-	public void testSupplierLog () throws Exception {	
+	public void reciveChannelOrder () throws Exception {	
 		scmOrderBiz.reciveChannelOrder(createOrderInfo());
+		
+	}
+	
+	/**
+	 * 京东就收完订单之后，提交订单
+	 * @throws Exception
+	 */
+	@Test
+	public void submitJdOrder () throws Exception {
+        mockQueryLogistics(scmOrderBiz);
+		//scmOrderBiz.submitJingDongOrder();
+		
+	}
+	/**
+	 * 接收物流信息
+	 * @throws Exception
+	 */
+	@Test
+	public void testLogisticsInfo () throws Exception {
+		mockQueryLogistics(scmOrderBiz);
+		scmOrderBiz.fetchLogisticsInfo();
 		
 	}
 	
@@ -45,6 +78,100 @@ public class TestOrderLog {
 		String orderInfo = "{\"orderType\":\"1\",\"order\":[{\"warehouseOrderCode\":\"GYS0000571201803050000691\",\"supplierParentOrderCode\":\"\",\"supplyOrderCode\":\"33333xxxxxxxxx0000016\",\"cancelReason\":\"人为取消\"}]}";
 		scmOrderBiz.supplierCancelOrder(orderInfo);
 	}
+	
+    /**
+     * mock调用外部接口查询供应商订单物流信息
+     * @param scmOrderBiz
+     */
+    private void mockQueryLogistics(IScmOrderBiz scmOrderBiz){
+        IJDService ijdService = mock(IJDService.class);
+        scmOrderBiz.setIjdService(ijdService);
+        ReturnTypeDO returnTypeDO = new ReturnTypeDO();
+        returnTypeDO.setSuccess(true);
+        String result = "{\n" +
+                "        \"logistics\": [\n" +
+                "            {\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\n" +
+                "                        \"num\": \"2\",\n" +
+                "                        \"skuCode\": \"1241479\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"22222222-test\",\n" +
+                "                \"logisticsCorporation\": \"京东快递\",\n" +
+                "                \"logisticInfo\": [\n" +
+                "                    {\n" +
+                "                        \"msgTime\": \"2017-09-21 22:42:04\",\n" +
+                "                        \"content\": \"您提交了订单，请等待系统确认\",\n" +
+                "                        \"operator\": \"客户\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"msgTime\": \"2017-09-21 22:42:17\",\n" +
+                "                        \"content\": \"您的订单预计9月22日送达您手中\",\n" +
+                "                        \"operator\": \"系统\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"supplierOrderCode\": \"22222222-test\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"type\": \"0\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201710180000529\"\n" +
+                "    }";
+        returnTypeDO.setResult(result);
+
+        ReturnTypeDO returnTypeDO2 = new ReturnTypeDO();
+        returnTypeDO2.setSuccess(true);
+        String result2 = "{\n" +
+                "        \"logistics\": [\n" +
+                "            {\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
+                "                        \"num\": \"2\",\n" +
+                "                        \"skuCode\": \"310516625460002590\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"logisticsCorporation\": \"圆通速递\",\n" +
+                "                \"logisticInfo\": [],\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            },\n" +
+                "\t\t\t{\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\n" +
+                "                        \"num\": \"1\",\n" +
+                "                        \"skuCode\": \"1075510226\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"logisticsCorporation\": \"圆通速递\",\n" +
+                "                \"logisticInfo\": [],\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
+                "                \"logisticsStatus\": \"1\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"type\": \"1\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201710180000530\"\n" +
+                "    }";
+        returnTypeDO2.setResult(result2);
+        when(ijdService.getLogisticsInfo(anyString(), eq("0"))).thenReturn(returnTypeDO);
+        when(ijdService.getLogisticsInfo(anyString(), eq("1"))).thenReturn(returnTypeDO2);
+
+        IRealIpService iRealIpService = mock(IRealIpService.class);
+        scmOrderBiz.setiRealIpService(iRealIpService);
+        when(iRealIpService.isRealTimerService()).thenReturn(true);
+
+        ITrcService trcService = mock(ITrcService.class);
+        scmOrderBiz.setTrcService(trcService);
+        ToGlyResultDO resultDO = new ToGlyResultDO();
+        resultDO.setStatus("1");
+        resultDO.setMsg("发送物流信息给泰然城成功");
+        when(trcService.sendLogisticInfoNotice(any(LogisticNoticeForm.class))).thenReturn(resultDO);
+    }
 	
     private String createOrderInfo(){
         TrcOrderForm orderForm  = new TrcOrderForm();
