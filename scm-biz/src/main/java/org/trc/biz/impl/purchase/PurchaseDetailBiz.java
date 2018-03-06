@@ -1,8 +1,10 @@
 package org.trc.biz.impl.purchase;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
@@ -34,6 +36,7 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
     private IBrandService iBrandService;
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> purchaseDetailListByPurchaseCode(String purchaseOrderCode) throws Exception{
 
         AssertUtil.notBlank(purchaseOrderCode,"采购单的编码为空!");
@@ -49,6 +52,7 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> purchaseDetailList(Long purchaseId) throws Exception {
 
         AssertUtil.notNull(purchaseId,"采购单id为空,采购明细查询失败");

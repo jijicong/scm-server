@@ -1,7 +1,9 @@
 package org.trc.service.impl.impower;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.mapper.impower.AclUserAccreditInfoMapper;
@@ -52,6 +54,7 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public AclUserAccreditInfo selectOneById(String userId){
         return aclUserAccreditInfoMapper.selectOneById(userId);
     }
@@ -84,6 +87,7 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public List<AclUserAccreditInfo> selectUserListByUserId(String userId,String channelCodeString) {
         //根据userId查询用户业务线销售渠道关联表,只需要关联的业务线条数,所以要去重
         List<AclUserAccreditInfo> aclUserAccreditInfoList =  aclUserAccreditInfoMapper.selectUserListByUserId(userId,channelCodeString);

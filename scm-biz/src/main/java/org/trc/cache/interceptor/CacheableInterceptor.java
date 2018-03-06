@@ -20,8 +20,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
-@Component
-@Aspect
+//@Component
+//@Aspect
 public class CacheableInterceptor {
 
     private Logger LOGGER = LoggerFactory.getLogger(CacheableInterceptor.class);

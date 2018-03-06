@@ -11,13 +11,14 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 入库通知单信息
  * Created by sone on 2017/7/10.
  */
-public class WarehouseNotice {
+public class WarehouseNotice implements Serializable{
 
     @Id
     @PathParam("id")

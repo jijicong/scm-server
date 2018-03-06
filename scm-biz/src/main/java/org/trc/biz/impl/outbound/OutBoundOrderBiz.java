@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +72,7 @@ import com.qimen.api.response.DeliveryorderCreateResponse;
 import com.qimen.api.response.OrderCancelResponse;
 import com.thoughtworks.xstream.XStream;
 
+import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
@@ -122,6 +124,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RedisLock redisLock;
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.OUTBOUND_ORDER)
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
         //获得业务线编码
@@ -149,6 +152,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @OutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateOutboundDetail(String requestText) throws Exception {
         AssertUtil.notBlank(requestText, "获取奇门返回信息为空!");
@@ -184,20 +188,19 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             skuStockService.updateSkuStock(list);
         }
 
-        //记录日志
-        if (outboundOrder.getStatus().equals(OutboundOrderStatusEnum.ALL_GOODS.getCode())) {
-            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), "warehouse", "全部收货", "", null);
-        }
-        if (outboundOrder.getStatus().equals(OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode())) {
-            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), "warehouse", "部分收货",
-                    this.getPartSkuInfo(outboundOrder.getOutboundOrderCode()), null);
-        }
+        //获取仓库名称
+        Long warehouseId = outboundOrder.getWarehouseId();
+        Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
 
         //更新订单信息
         this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
         
         // 发货单确认结果通知渠道
         deliveryOrderConfirmNotice(outboundOrder, packageList);
+
+        //记录日志
+        logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getName(),
+                LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
         
     }
     
@@ -335,15 +338,28 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     //拼接部分发货明细
-    private String getPartSkuInfo(String outboundOrderCode){
-        OutboundDetail outboundDetail = new OutboundDetail();
-        outboundDetail.setOutboundOrderCode(outboundOrderCode);
-        outboundDetail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());
-        List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
+    private String getPartSkuInfo(List<RequsetUpdateStock> list, String outboundOrderCode){
+        if(list.size() < 1){
+            return "";
+        }
+        List<String> skuCodes = new ArrayList<>();
+        for(RequsetUpdateStock stock : list ){
+            skuCodes.add(stock.getSkuCode());
+        }
+
+        Example example = new Example(OutboundDetail.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("outboundOrderCode", outboundOrderCode);
+        List<OutboundDetail> outboundDetailList = outboundDetailService.selectByExample(example);
         StringBuffer sb = new StringBuffer("");
         for(OutboundDetail detail : outboundDetailList){
-            sb.append("商品").append(detail.getSkuCode()).append(" 应发-实发= ").
-                    append(detail.getShouldSentItemNum() - detail.getRealSentItemNum()).append("<br/>");
+            if(StringUtils.equals(detail.getStatus(), OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode())){
+                sb.append(detail.getSkuCode()).append(":").append("部分发货").append("<br/>");
+            }
+            if(StringUtils.equals(detail.getStatus(), OutboundDetailStatusEnum.ALL_GOODS.getCode())){
+                sb.append(detail.getSkuCode()).append(":").append("全部发货").append("<br/>");
+            }
         }
         return sb.toString();
     }
@@ -457,6 +473,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @OutboundOrderCacheEvict
     public Response createOutbound(String outboundOrderId,AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(outboundOrderId,"ID不能为空");
         //根据id获取到发货通知单
@@ -501,12 +518,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 String code = result.getAppcode();
                 msg = result.getDatabuffer();
                 //调用重新发货接口插入一条日志记录
-                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"重新发送",null,null);
+                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
+                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getName(),"仓库接收成功","",null);
                 }else {
                     //仓库接受失败插入一条日志
-                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),"warehouse","仓库接收失败",msg,null);
+                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getName(),"仓库接收失败",msg,null);
                     updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id);
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -560,6 +578,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @OutboundOrderCacheEvict
     public Response close(Long id, String remark,  AclUserAccreditInfo aclUserAccreditInfo) {
         try{
             AssertUtil.notNull(id, "发货单主键不能为空");
@@ -587,7 +606,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
             //仓库接受失败插入一条日志
             String userId = aclUserAccreditInfo.getUserId();
-            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"关闭", remark,null);
+            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"手工关闭", remark,null);
             return ResultUtil.createSuccessResult("发货通知单关闭成功！", "");
         }catch(Exception e){
             String msg = e.getMessage();
@@ -621,6 +640,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @OutboundOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
         try{
@@ -685,6 +705,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
+    @OutboundOrderCacheEvict
     public void checkTimeOutTimer() {
         logger.info("检查出库通知单是否超过七天的定时任务启动----->");
         Example example = new Example(OutboundOrder.class);
@@ -784,7 +805,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     @Override
-    @CacheEvit
+    @OutboundOrderCacheEvict
     @Transactional(rollbackFor = Exception.class)
     public Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "发货单主键不能为空");
@@ -830,7 +851,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
                 String userId = aclUserAccreditInfo.getUserId();
-                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"取消订单", remark,null);
+                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"取消发货", remark,null);
 
                 //更新订单信息
                 this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());

@@ -7,13 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -29,6 +28,7 @@ import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import org.trc.util.StringUtil;
+import org.trc.util.cache.CategoryCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -76,7 +76,7 @@ public class CategoryBiz implements ICategoryBiz {
     private ILogInfoService logInfoService;
 
     @Override
-    @Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize", isList = true)
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public Pagenation<Category> categoryPage(CategoryForm queryModel, Pagenation<Category> page) throws Exception {
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
@@ -105,7 +105,7 @@ public class CategoryBiz implements ICategoryBiz {
 
 
     @Override
-    //@Cacheable(key = "#queryModel+#page.pageNo+#page.pageSize",isList = true,cls = "Brand")
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public Pagenation<Brand> brandListCategory(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
@@ -158,7 +158,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @return
      */
     @Override
-//    @Cacheable(key = "#parentId+#isRecursive", isList = true)
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<TreeNode> getNodes(Long parentId, boolean isRecursive) throws Exception {
         //查询所有分类
             Example example = new Example(Category.class);
@@ -231,7 +231,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    @CacheEvit
+    @CategoryCacheEvict
     public void updateCategory(Category category, boolean isSave, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
 
@@ -301,7 +301,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @CategoryCacheEvict
     public void saveCategory(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         checkSaveCategory(category);
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
@@ -379,8 +379,8 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public int isLeaf(Long id) throws Exception {
-
         AssertUtil.notNull(id, "根据分类ID查询分类的参数id为空");
         Example example = new Example(Category.class);
         Example.Criteria criteria = example.createCriteria();
@@ -392,6 +392,7 @@ public class CategoryBiz implements ICategoryBiz {
      * 更新是否叶子节点
      */
     @Override
+    @CategoryCacheEvict
     public void updateIsLeaf(Category category) throws Exception {
         AssertUtil.notNull(category.getParentId(), "根据分类ID查询分类父节点的参数id为空");
         Category categoryParent = new Category();
@@ -406,6 +407,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
         AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
 //        categoryLevel(Long.parseLong(categoryBrandForm.getCategoryId()));
@@ -418,6 +420,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public Long queryPathId(Long parentId) throws Exception {
         AssertUtil.notNull(parentId, "根据parentId查询父级分类,参数parentId为空");
         Category category = new Category();
@@ -432,7 +435,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
-    @CacheEvit
+    @CategoryCacheEvict
     public void updateSort(String sortDate) throws Exception {
         AssertUtil.notBlank(sortDate, "排序信息为空");
         List<Category> categoryList = JSON.parseArray(sortDate, Category.class);
@@ -463,7 +466,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @CategoryCacheEvict
     public void updateState(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(category.getId(), "类目管理模块修改分类信息失败，分类信息为空");
         Category updateCategory = new Category();
@@ -513,6 +516,7 @@ public class CategoryBiz implements ICategoryBiz {
      *校验起停用
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public Integer checkCategoryIsValid(Long categoryId) throws Exception {
         //查询到需要改变分类状态的分类
         Category category = new Category();
@@ -537,6 +541,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<Category> queryCategorys(CategoryForm categoryForm) throws Exception {
         Category category = new Category();
         BeanUtils.copyProperties(categoryForm, category);
@@ -550,7 +555,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @param parentId
      * @throws Exception
      */
-    @CacheEvit
+    @CategoryCacheEvict
     private void updateLastCategory(Long parentId) throws Exception {
 
         Category category = new Category();
@@ -581,6 +586,7 @@ public class CategoryBiz implements ICategoryBiz {
      * 根据ID查询三级分类的全路径名称，用于品牌，属性的接入
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<String> queryCategoryNamePath(Long id) throws Exception {
         List<String> categoryName = new ArrayList<>();
         AssertUtil.notNull(id, "根据ID查询分类参数为空");
@@ -603,6 +609,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<CategoryBrand> queryBrands(Long categoryId) throws Exception {
         AssertUtil.notNull(categoryId, "根据分类Id查询关联品牌,参数categoryId为空");
         categoryLevel(categoryId);
@@ -612,6 +619,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<CategoryProperty> queryProperties(Long categoryId) {
         AssertUtil.notNull(categoryId, "根据分类Id查询关联属性,参数categoryId为空");
         categoryLevel(categoryId);
@@ -648,6 +656,7 @@ public class CategoryBiz implements ICategoryBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @CategoryCacheEvict
     public void linkCategoryBrands(Long categoryId, String brandIds, String delRecord, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联品牌categoryId为空");
         categoryLevel(categoryId);
@@ -761,6 +770,7 @@ public class CategoryBiz implements ICategoryBiz {
      * 查询已经关联的属性
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<CategoryProperty> queryCategoryProperty(Long categoryId) throws Exception {
         AssertUtil.notNull(categoryId, "查询分类关联属性categoryId为空");
         categoryLevel(categoryId);
@@ -799,6 +809,7 @@ public class CategoryBiz implements ICategoryBiz {
      * @throws Exception
      */
     @Override
+    @CategoryCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void linkCategoryProperties(Long categoryId, String jsonDate, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(categoryId, "分类关联属性categoryId为空");
@@ -987,7 +998,7 @@ public class CategoryBiz implements ICategoryBiz {
     }
 
     @Override
-    @Cacheable(key = "#categoryId")
+    @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public String getCategoryName(Long categoryId) throws Exception {
         List<String> categoryNames = queryCategoryNamePath(categoryId);
         AssertUtil.notEmpty(categoryNames, String.format("根据分类ID[%s]查询分类全路径名称为空", categoryId.toString()));

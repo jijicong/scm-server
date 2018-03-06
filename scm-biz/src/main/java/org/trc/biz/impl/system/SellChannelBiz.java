@@ -5,12 +5,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.ISellChannelBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
@@ -25,6 +26,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
+import org.trc.util.cache.SellChannelCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Calendar;
@@ -63,7 +65,8 @@ public class SellChannelBiz implements ISellChannelBiz{
      * @return
      */
     @Override
-    @Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#form.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SELL_CHANNEL)
     public Pagenation<SellChannel> sellChannelPage(SellChannelFrom form, Pagenation<SellChannel> page) {
         Example example = new Example(SellChannel.class);
         Example.Criteria criteria = example.createCriteria();
@@ -90,7 +93,7 @@ public class SellChannelBiz implements ISellChannelBiz{
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @SellChannelCacheEvict
     public void saveSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo) {
         SellChannel tmp =selectSellChannelByName(null,sellChannel.getSellName());
         if (null!=tmp){
@@ -118,7 +121,7 @@ public class SellChannelBiz implements ISellChannelBiz{
     }
 
     @Override
-    @CacheEvit(key = {"#sellChannel.id"})
+    @SellChannelCacheEvict
     public void updateSellChannel(SellChannel sellChannel, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(sellChannel.getId(), "修改销售渠道参数ID为空");
         SellChannel tmp = selectSellChannelByName(null,sellChannel.getSellName());
@@ -145,6 +148,7 @@ public class SellChannelBiz implements ISellChannelBiz{
      * @return
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SELL_CHANNEL)
     public SellChannel selectSellChannelByName(Long id,String sellName) {
         SellChannel sellChannel = new SellChannel();
         sellChannel.setSellName(sellName);
@@ -158,6 +162,7 @@ public class SellChannelBiz implements ISellChannelBiz{
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SELL_CHANNEL)
     public SellChannel selectSellChannelById(Long id) {
         AssertUtil.notNull(id, "根据Id查询销售渠道,参数Id不能为空");
         SellChannel sellChannel = sellChannelService.selectByPrimaryKey(id);

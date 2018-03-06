@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
-import org.trc.cache.Cacheable;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -37,6 +37,7 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.cache.PurchaseOrderCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -78,6 +79,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
     采购单审核表 与 采购单表 左关联
      */
     @Override
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseOrderAddAudit> purchaseOrderAuditPage(PurchaseOrderAuditForm form, Pagenation<PurchaseOrderAddAudit> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
 
         PageHelper.startPage(page.getPageNo(), page.getPageSize());
@@ -196,6 +198,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @PurchaseOrderCacheEvict
     public void auditPurchaseOrder(PurchaseOrderAudit purchaseOrderAudit, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         //根据采购订单的编码审核采购单
         AssertUtil.notNull(purchaseOrderAudit,"根据采购订单的编码审核采购单,审核信息为空");

@@ -1,5 +1,6 @@
 package org.trc.domain.warehouseNotice;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -16,7 +17,7 @@ import org.trc.custom.SimpleDateSerializer;
 /**
  * Created by sone on 2017/7/11.
  */
-public class WarehouseNoticeDetails {
+public class WarehouseNoticeDetails implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

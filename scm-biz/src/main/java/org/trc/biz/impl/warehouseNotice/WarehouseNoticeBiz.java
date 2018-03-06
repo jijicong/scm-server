@@ -16,6 +16,7 @@ import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +60,7 @@ import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
+import org.trc.util.cache.WarehouseNoticeCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
@@ -122,7 +124,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -225,6 +227,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @WarehouseNoticeCacheEvict
     public void receiptAdviceInfo(WarehouseNotice warehouseNotice, AclUserAccreditInfo aclUserAccreditInfo) {
         //提运单号可能会修改
         AssertUtil.notNull(warehouseNotice, "入库通知单的信息为空!");
@@ -257,6 +260,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @WarehouseNoticeCacheEvict
     public void updateInStock(String requestText) {
         EntryorderConfirmRequest confirmRequest;
         XStream xstream = new XStream();
@@ -504,6 +508,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @WarehouseNoticeCacheEvict
     public void receiptAdvice(WarehouseNotice warehouseNotice, AclUserAccreditInfo aclUserAccreditInfo) {
         /*
         执行通知收货，关联的操作
@@ -800,6 +805,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public WarehouseNotice findfindWarehouseNoticeById(Long id) {
 
         AssertUtil.notNull(id, "入库通知单的主键id为空,入库通知单查询失败");
@@ -842,6 +848,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public List<WarehouseNoticeDetails> warehouseNoticeDetailList(Long warehouseNoticeId) {
 
         AssertUtil.notNull(warehouseNoticeId, "入库通知的id为空");

@@ -13,14 +13,15 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.category.IBrandBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
@@ -37,6 +38,7 @@ import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.util.*;
+import org.trc.util.cache.BrandCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -71,7 +73,7 @@ public class BrandBiz implements IBrandBiz {
     private IPageNationService pageNationService;
 
     @Override
-    @Cacheable(key="#queryModel.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public Pagenation<Brand> brandPage(BrandForm queryModel, Pagenation<Brand> page) throws Exception {
         Example example = new Example(Brand.class);
         Example.Criteria criteria = example.createCriteria();
@@ -212,7 +214,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    @Cacheable(key="#brandForm.toString()" ,isList = true)
+    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
         Brand brand = new Brand();
         if (StringUtils.isEmpty(brandForm.getIsValid())) {
@@ -224,7 +226,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @BrandCacheEvict
     public void saveBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
         //初始化信息
@@ -254,7 +256,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    @Cacheable(key = "#id")
+    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public Brand findBrandById(Long id) throws Exception {
         AssertUtil.notNull(id, "根据ID查询品牌明细,参数ID不能为空");
         Brand brand = new Brand();
@@ -270,7 +272,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key={"#brand.id"})
+    @BrandCacheEvict
     public void updateBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
         String remark=null;
@@ -310,7 +312,7 @@ public class BrandBiz implements IBrandBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit(key={"#brand.id"})
+    @BrandCacheEvict
     public void updateBrandStatus(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "需要更新品牌状态时，品牌不能为空");
         Brand selectBrand=brandService.selectOneById(brand.getId());
@@ -351,6 +353,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public List<Brand> findBrandsByName(String name) throws Exception {
         if (StringUtils.isBlank(name)) {
             String msg = CommonUtil.joinStr("根据品牌名称查询品牌明细参数name为空").toString();

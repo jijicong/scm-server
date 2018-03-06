@@ -14,12 +14,12 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.system.IWarehouseBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.Area;
@@ -39,6 +39,7 @@ import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import org.trc.util.TransportClientUtil;
+import org.trc.util.cache.WarehouseCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
 
     @Override
-    @Cacheable(key="#form+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
     public Pagenation<Warehouse> warehousePage(WarehouseForm form, Pagenation<Warehouse> page) {
 
         Example example = new Example(Warehouse.class);
@@ -185,7 +186,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @CacheEvit(key = { "#warehouse.id"} )
+    @WarehouseCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouseConfig(Warehouse warehouse) {
         AssertUtil.notNull(warehouse, "修改仓库配置失败，仓库信息为空");
@@ -235,7 +236,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @Cacheable(isList = true)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
     public List<Warehouse> findWarehouseValid() {
         Warehouse warehouse = new Warehouse();
         warehouse.setIsValid(ValidEnum.VALID.getCode());
@@ -247,7 +248,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @Cacheable(isList = true)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
     public List<Warehouse> findWarehouse() {
         Warehouse warehouse = new Warehouse();
         List<Warehouse> warehouseList = warehouseService.select(warehouse);
@@ -259,7 +260,7 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @CacheEvit
+    @WarehouseCacheEvict
     public void saveWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(warehouse, "仓库管理模块保存仓库信息失败，仓库信息为空");
         Warehouse tmp = findWarehouseByName(warehouse.getName());
@@ -315,6 +316,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
     public Warehouse findWarehouseByName(String name) {
 
         AssertUtil.notBlank(name, "根据渠道名称查询渠道的参数name为空");
@@ -325,7 +327,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @CacheEvit(key = { "#warehouse.id"} )
+    @WarehouseCacheEvict
     public void updateWarehouseState(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(warehouse, "仓库管理模块修改仓库信息失败，仓库信息为空");
@@ -351,7 +353,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @Cacheable(key = "#id")
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
     public Warehouse findWarehouseById(Long id) {
 
         AssertUtil.notNull(id, "根据ID查询仓库参数ID为空");
@@ -364,7 +366,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     }
 
     @Override
-    @CacheEvit(key = { "#warehouse.id"} )
+    @WarehouseCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouse(Warehouse warehouse, AclUserAccreditInfo aclUserAccreditInfo) {
 

@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,8 +27,6 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
-import org.trc.cache.CacheEvit;
-import org.trc.cache.Cacheable;
 import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -84,6 +84,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
+import org.trc.util.cache.SupplierOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -232,7 +233,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    //@Cacheable(key="#queryModel.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
@@ -275,7 +276,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    //@Cacheable(key="#form+#aclUserAccreditInfo+#page.pageNo+#page.pageSize",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER_ORDER)
     public Pagenation<WarehouseOrder> warehouseOrderPage(WarehouseOrderForm form, Pagenation<WarehouseOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         AssertUtil.notNull(form, "查询供应商订单分页参数不能为空");
@@ -326,7 +327,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    //@Cacheable(key="#form.toString()",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
@@ -359,6 +360,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SUPPLIER_ORDER)
     public WarehouseOrder queryWarehouseOrdersDetail(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "查询仓库订单明细参数仓库订单编码不能为空");
         WarehouseOrder warehouseOrder = new WarehouseOrder();
@@ -407,7 +409,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(key="#form.toString()",isList=true)
+    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public List<PlatformOrder> queryPlatformOrders(PlatformOrderForm form) {
         AssertUtil.notNull(form, "查询平台订单列表参数对象不能为空");
         PlatformOrder platformOrder = new PlatformOrder();
@@ -416,7 +418,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @CacheEvit
+    @SupplierOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck submitJingDongOrder(String warehouseOrderCode, String jdAddressCode, String jdAddressName, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单京东订单仓库订单编码不能为空");
@@ -710,6 +712,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck submitLiangYouOrder(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "提交订单粮油订单仓库订单编码不能为空");
@@ -1107,6 +1110,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
+    @SupplierOrderCacheEvict
     public void submitLiangYouOrders(List<WarehouseOrder> warehouseOrders) {
         for(WarehouseOrder warehouseOrder: warehouseOrders){
             threadPool.execute(new Runnable() {
@@ -1867,7 +1871,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    @CacheEvit
+    @SupplierOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck<Map<String, Object>> reciveChannelOrder(String orderInfo) throws Exception {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
@@ -2528,6 +2532,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public String cancelHandler(SupplierOrderCancelForm form, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户信息不能为空");
@@ -3472,14 +3477,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example2);
         AssertUtil.notEmpty(externalItemSkuList, String.format("根据多个skuCode[%s]查询代发商品列表为空", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         //校验商品上下架状态
-        List<String> _tmpSkuCodes = new ArrayList<String>();
+        /*List<String> _tmpSkuCodes = new ArrayList<String>();
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), externalItemSku.getState()))
                 _tmpSkuCodes.add(externalItemSku.getSkuCode());
         }
         if(_tmpSkuCodes.size() > 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("代发商品[%s]的供应商商品状态为下架!", CommonUtil.converCollectionToString(_tmpSkuCodes)));
-        }
+        }*/
         //校验商品最小购买量
         for(OrderItem orderItem: orderItemList){
             for(ExternalItemSku externalItemSku: externalItemSkuList){
@@ -4396,6 +4401,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck orderSubmitResultNotice(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "供应商订单下单结果通知信息为空");
@@ -4482,7 +4488,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    @Cacheable(key="#form.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
+    //@Cacheable(key="#form.toString()+#aclUserAccreditInfo.toString()+#page.pageNo+#page.pageSize",isList=true)
     public Pagenation<ExceptionOrder> exceptionOrderPage(ExceptionOrderForm form, Pagenation<ExceptionOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         AssertUtil.notNull(form, "查询拆单异常订单信息分页参数不能为空");
@@ -4566,6 +4572,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     public ResponseAck outboundConfirmNotice(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "发货通知单发货明细确认通知参数仓库订单编码warehouseOrderCode不能为空");
         //更新仓库订单供应商订单状态
@@ -4576,6 +4583,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     public ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap) {
         new Thread(
                 new Runnable() {
@@ -5161,6 +5169,23 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             }
                         }
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
+                    }
+                }
+            }
+        }
+
+        if(successOutboundCodes.size() > 0){
+            //成功日志
+            for(String successOutboundCode: successOutboundCodes){
+                for(Map.Entry<String, OutboundForm> entry: entries){
+                    if(StringUtils.equals(successOutboundCode, entry.getKey())){
+                        OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+                        for(Warehouse warehouse: warehouseList){
+                            if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
+                                operator = warehouse.getName();
+                            }
+                        }
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_SUCCESS.getMessage(), "",null);
                     }
                 }
             }
