@@ -2,6 +2,7 @@ package org.trc.resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.system.IMetadataBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.dict.Dict;
@@ -44,7 +45,12 @@ public class MetadataResource {
     @Path(SupplyConstants.Metadata.JD_ADDRESS)
     @Produces("application/json;charset=utf-8")
     public List<AreaTreeNode> queryJdAddress(){
-        return metadataBiz.queryJDAddress();
+        List<AreaTreeNode> areaTreeNodes = metadataBiz.queryJDAddress();
+        if(CollectionUtils.isEmpty(areaTreeNodes)){
+            metadataBiz.jDAddressUpdate();
+            areaTreeNodes = metadataBiz.queryJDAddress();
+        }
+        return areaTreeNodes;
     }
 
     @POST

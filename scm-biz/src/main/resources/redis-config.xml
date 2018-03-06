@@ -16,7 +16,7 @@
         <property name="testOnReturn" value="${session.pool.testOnReturn}" />
     </bean>
 
-    <bean id="jedisPool" class="redis.clients.jedis.JedisPool" destroy-method="destroy">
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
         <constructor-arg name="poolConfig" ref="jedisPoolConfig"/>
         <constructor-arg name="host" value="${session.redis.host}"/>
         <constructor-arg name="port" value="${session.redis.port}"/>

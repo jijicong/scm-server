@@ -88,7 +88,7 @@ public class MetadataBiz implements IMetadataBiz {
     public AppResult jDAddressUpdate() {
         try{
             //调用查询京东地址方法使缓存更新最新地址
-            queryJDAddress();
+            //queryJDAddress();
         }catch (Exception e){
             logger.error("查询京东地址异常", e);
         }
