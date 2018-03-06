@@ -998,16 +998,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//仓库级订单
             //下单失败：(发送供应商失败数 + 仓库接收失败数) > 0 && (发送供应商失败数 + 仓库接收失败数 + 已了结数 + 已取消) = 商品应发数量
-            if((sendSupplierFialure + sendWarehouseFialure)  > 0 && (sendSupplierFialure + sendWarehouseFialure + handlerNum + cancelNum) == orderItemList.size())
+            if((sendSupplierFialure + sendWarehouseFialure) > 0 && (sendSupplierFialure + sendWarehouseFialure + handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_FAILURE.getCode();
             //等待供应商发货：（等待供应商发货数 + 等待仓库发货数）> 0 && (等待供应商发货数 + 等待仓库发货数 + 已了结数 + 已取消) = 商品应发数量
             if((waitDeliverNum + waitWarehouseDeliverNum) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
             //供应商下单异常: (仓库接收失败数  > 0 && 等待仓库发货数 > 0) || (仓库接收失败数 > 0 && 已取消数 > 0)
             if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum) > 0)
-            	return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
+              return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
             //部分发货：部分发货数 > 0
-            if(partsDeliverNum > 0)
+            if(partsDeliverNum > 0 || ((waitDeliverNum + waitWarehouseDeliverNum)> 0 && allDeliverNum > 0))
                 return SupplierOrderStatusEnum.PARTS_DELIVER.getCode();
             //全部发货：全部发货数 + 已了结数 + 已取消数 = 商品应发数量
             if(allDeliverNum > 0 && (allDeliverNum + handlerNum + cancelNum) == orderItemList.size())
@@ -1021,14 +1021,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return OrderDeliverStatusEnum.ORDER_CANCEL.getCode();
             //发货异常: 供应商下单失败数 > 0 || 仓库接收失败数 > 0 || 缺货数  > 0
             if(sendSupplierFialure > 0 || sendWarehouseFialure > 0 || handlerNum > 0)
-            	return OrderDeliverStatusEnum.DELIVER_EXCEPTION.getCode();
-            //部分发货数 > 0 || (等待仓库发货数 > 0 && (部分发货数 > 0 || 全部发货数 > 0))
-            if(partsDeliverNum > 0)
-                return OrderDeliverStatusEnum.PARTS_DELIVER.getCode();
+              return OrderDeliverStatusEnum.DELIVER_EXCEPTION.getCode();
             //全部发货：全部发货数 + 已取消数 = 商品应发数量
             if(allDeliverNum > 0 && (allDeliverNum + cancelNum) == orderItemList.size())
                 return OrderDeliverStatusEnum.ALL_DELIVER.getCode();
-            
+            //部分发货数 > 0 || (等待仓库发货数 > 0 && (部分发货数 > 0 || 全部发货数 > 0))
+            if(partsDeliverNum > 0 || ((waitDeliverNum + waitWarehouseDeliverNum)> 0 && allDeliverNum > 0))
+                return OrderDeliverStatusEnum.PARTS_DELIVER.getCode();
         }
         return null;
     }
