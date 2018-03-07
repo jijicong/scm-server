@@ -289,6 +289,11 @@ public class OrderMockTest {
 //        System.out.println(JSON.toJSONString(orderForm));
         return JSON.toJSONString(orderForm);
     }
+    
+    @Test
+    public void testUpdateWarehouseOrder () {
+    	//scmOrderBiz.updateWarehouseOrderSupplierOrderStatus("GYS0000571201710200000541");
+    }
 	
 	
 }

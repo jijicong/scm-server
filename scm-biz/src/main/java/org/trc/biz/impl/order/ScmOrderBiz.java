@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.impl.config.LogInfoBiz;
+import org.trc.biz.order.IOrderExtBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.common.RequsetUpdateStock;
@@ -139,6 +140,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String ZERO_MONEY_STR = "0.000";
     //下单成功日志信息
     public final static String ORDER_SUCCESS_INFO = "下单成功";
+    //下单成功日志信息
+    public final static String ORDER_PART_INFO = "部分发货";
+    //下单成功日志信息
+    public final static String ORDER_ALL_INFO = "全部发货";
     //下单失败日志信息
     public final static String ORDER_FAILURE_INFO = "下单失败";
     //下单成功日志信息
@@ -222,6 +227,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private RedisLock redisLock;
     @Autowired
     private ISkusService skusService;
+    @Autowired
+    private IOrderExtBiz orderExtBiz;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -571,15 +578,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         StringBuilder sb = new StringBuilder();
         for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
             List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
-            if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
-                    StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
-                    StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+            if (StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())) {
                 for(SkuInfo skuInfo: skuInfoList){
                     sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_SUCCESS_INFO).append(HTML_BR);
                 }
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+            } else if (StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())) {
                 for(SkuInfo skuInfo: skuInfoList){
-                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_FAILURE_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_PART_INFO).append(HTML_BR);
+                }
+            } else if (StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())) {
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_ALL_INFO).append(HTML_BR);
+                }
+            } else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_FAILURE_INFO)
+                    	.append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
                 }
             }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
@@ -871,15 +885,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(null != logOperationEnum){
             String remark = "";
-            if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus()) ||
-                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+//            if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus()) ||
+//                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
                 SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
                 supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
                 List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
                 if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
                     remark = getOrderExceptionMessage(supplierOrderInfoList);
                 }
-            }
+//            }
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), logOperationEnum.getMessage(), remark,null);
         }
@@ -2874,16 +2888,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
 
         //在这里剔除已经发货完成并通知了渠道的物流信息
-        /*for(SupplierOrderLogistics supplierOrderLogistics: oldSupplierOrderLogisticsList){
-            List<Logistic> logistics = logisticForm.getLogistics();
-            for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
-                Logistic logistic = it.next();
-                if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderLogistics.getSupplierOrderCode())) {
-                    it.remove();
-                }
-            }
-        }*/
-
         List<Logistic> logistics = logisticForm.getLogistics();
         for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
             Logistic logistic = it.next();
@@ -2940,6 +2944,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode());
             //更新店铺订单供应商订单状态
             updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
+            //清除订单缓存
+            orderExtBiz.cleanOrderCache();
         }
     }
 
@@ -4365,6 +4371,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     public ResponseAck jdOrderSplitNotice(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "京东订单拆分通知信息为空");
         JdOrderSplitParam jdOrderSplitParam = null;
