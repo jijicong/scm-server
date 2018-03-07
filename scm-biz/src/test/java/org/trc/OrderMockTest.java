@@ -59,7 +59,7 @@ public class OrderMockTest {
 	 */
 	@Test
 	public void submitJdOrder () throws Exception {
-        mockQueryLogistics(scmOrderBiz);
+		mockSubmitJDOrder(scmOrderBiz);
 		scmOrderBiz.submitJingDongOrder("GYS0000561201803050000690", "address", "sub_address", createAclUserAccreditInfo());
 		
 	}
@@ -118,9 +118,9 @@ public class OrderMockTest {
                 "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
                 "                \"skus\": [\n" +
                 "                    {\n" +
-                "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
+                "                        \"skuName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\n" +
                 "                        \"num\": 2,\n" +
-                "                        \"skuCode\": \"310516625460002590\"\n" +
+                "                        \"skuCode\": \"1241479\"\n" +
                 "                    }\n" +
                 "                ],\n" +
                 "                \"state\": \"200\",\n" +
@@ -130,9 +130,9 @@ public class OrderMockTest {
                 "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
                 "                \"skus\": [\n" +
                 "                    {\n" +
-                "                        \"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\n" +
+                "                        \"skuName\": \"【小米（MI）7号电池 彩虹电池碱性 7号（10粒装）\",\n" +
                 "                        \"num\": 1,\n" +
-                "                        \"skuCode\": \"1075510226\"\n" +
+                "                        \"skuCode\": \"2614024\"\n" +
                 "                    }\n" +
                 "                ],\n" +
                 "                \"state\": \"200\",\n" +
