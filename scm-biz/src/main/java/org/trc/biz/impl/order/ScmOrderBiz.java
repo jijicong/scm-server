@@ -1004,7 +1004,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if((waitDeliverNum + waitWarehouseDeliverNum) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
             //供应商下单异常: (发送供应商失败数 + 仓库接收失败数) > 0 && (等待供应商发货数 + 等待仓库发货数 + 全部发货数 + 已取消) > 0
-            if((sendWarehouseFialure + sendSupplierFialure) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum) > 0)
+            if((sendWarehouseFialure + sendSupplierFialure) > 0 
+            		&& (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum + partsDeliverNum) > 0)
               return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
             //部分发货：部分发货数 > 0 || ((等待供应商发货数 + 等待仓库发货数) > 0 && 全部发货数 > 0)
             if(partsDeliverNum > 0 || ((waitDeliverNum + waitWarehouseDeliverNum) > 0 && allDeliverNum > 0))
