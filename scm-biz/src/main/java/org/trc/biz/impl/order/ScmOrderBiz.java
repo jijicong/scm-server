@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.impl.config.LogInfoBiz;
+import org.trc.biz.order.IOrderExtBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.common.RequsetUpdateStock;
@@ -226,6 +227,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private RedisLock redisLock;
     @Autowired
     private ISkusService skusService;
+    @Autowired
+    private IOrderExtBiz orderExtBiz;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -2885,16 +2888,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
 
         //在这里剔除已经发货完成并通知了渠道的物流信息
-        /*for(SupplierOrderLogistics supplierOrderLogistics: oldSupplierOrderLogisticsList){
-            List<Logistic> logistics = logisticForm.getLogistics();
-            for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
-                Logistic logistic = it.next();
-                if (StringUtils.equals(logistic.getSupplierOrderCode(),supplierOrderLogistics.getSupplierOrderCode())) {
-                    it.remove();
-                }
-            }
-        }*/
-
         List<Logistic> logistics = logisticForm.getLogistics();
         for (Iterator<Logistic> it = logistics.iterator(); it.hasNext();) {
             Logistic logistic = it.next();
@@ -2951,6 +2944,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode());
             //更新店铺订单供应商订单状态
             updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
+            //清除订单缓存
+            orderExtBiz.cleanOrderCache();
         }
     }
 
@@ -4376,6 +4371,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     public ResponseAck jdOrderSplitNotice(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "京东订单拆分通知信息为空");
         JdOrderSplitParam jdOrderSplitParam = null;
