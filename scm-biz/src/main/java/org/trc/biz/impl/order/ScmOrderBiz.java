@@ -838,7 +838,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 更新仓库订单供应商订单状态
      * @param warehouseOrderCode
      */
-    public WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode){
+    private WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode){
         OrderItem orderItem = new OrderItem();
         orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);

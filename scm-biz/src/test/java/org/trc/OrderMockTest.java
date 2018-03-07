@@ -292,7 +292,7 @@ public class OrderMockTest {
     
     @Test
     public void testUpdateWarehouseOrder () {
-    	scmOrderBiz.updateWarehouseOrderSupplierOrderStatus("GYS0000571201710200000541");
+    	//scmOrderBiz.updateWarehouseOrderSupplierOrderStatus("GYS0000571201710200000541");
     }
 	
 	
