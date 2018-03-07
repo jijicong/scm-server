@@ -185,5 +185,7 @@ public interface IScmOrderBiz {
      */
     ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap);
 
+    WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String string);
+
 
 }

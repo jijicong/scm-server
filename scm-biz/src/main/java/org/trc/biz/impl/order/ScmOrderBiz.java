@@ -139,6 +139,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String ZERO_MONEY_STR = "0.000";
     //下单成功日志信息
     public final static String ORDER_SUCCESS_INFO = "下单成功";
+    //下单成功日志信息
+    public final static String ORDER_PART_INFO = "部分发货";
+    //下单成功日志信息
+    public final static String ORDER_ALL_INFO = "全部发货";
     //下单失败日志信息
     public final static String ORDER_FAILURE_INFO = "下单失败";
     //下单成功日志信息
@@ -571,15 +575,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         StringBuilder sb = new StringBuilder();
         for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
             List<SkuInfo> skuInfoList = JSONArray.parseArray(supplierOrderInfo.getSkus(), SkuInfo.class);
-            if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
-                    StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus()) ||
-                    StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+            if (StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())) {
                 for(SkuInfo skuInfo: skuInfoList){
                     sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_SUCCESS_INFO).append(HTML_BR);
                 }
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+            } else if (StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())) {
                 for(SkuInfo skuInfo: skuInfoList){
-                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_FAILURE_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_PART_INFO).append(HTML_BR);
+                }
+            } else if (StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), supplierOrderInfo.getSupplierOrderStatus())) {
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_ALL_INFO).append(HTML_BR);
+                }
+            } else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
+                for(SkuInfo skuInfo: skuInfoList){
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_FAILURE_INFO)
+                    	.append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
                 }
             }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
@@ -824,7 +835,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 更新仓库订单供应商订单状态
      * @param warehouseOrderCode
      */
-    private WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode){
+    public WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode){
         OrderItem orderItem = new OrderItem();
         orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);
@@ -871,15 +882,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(null != logOperationEnum){
             String remark = "";
-            if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus()) ||
-                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+//            if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus()) ||
+//                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
                 SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
                 supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
                 List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
                 if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
                     remark = getOrderExceptionMessage(supplierOrderInfoList);
                 }
-            }
+//            }
             //记录操作日志
             logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), logOperationEnum.getMessage(), remark,null);
         }
