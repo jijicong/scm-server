@@ -1,6 +1,7 @@
 package org.trc.util.lock;
 
 import org.trc.framework.core.spring.SpringContextHolder;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 public abstract class LockBaseService {
