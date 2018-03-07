@@ -22,12 +22,16 @@ import org.trc.dbUnit.order.form.TrcOrderItem;
 import org.trc.dbUnit.order.form.TrcPlatformOrder;
 import org.trc.dbUnit.order.form.TrcShopOrder;
 import org.trc.dbUnit.order.form.TrcShopOrderForm;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.LogisticNoticeForm;
+import org.trc.form.JDModel.JingDongSupplierOrder;
 import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.util.IRealIpService;
+import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
 
 import com.alibaba.fastjson.JSON;
@@ -50,13 +54,13 @@ public class OrderMockTest {
 	}
 	
 	/**
-	 * 京东就收完订单之后，提交订单
+	 * 京东接收完订单之后，提交订单
 	 * @throws Exception
 	 */
 	@Test
 	public void submitJdOrder () throws Exception {
-        mockQueryLogistics(scmOrderBiz);
-		//scmOrderBiz.submitJingDongOrder();
+		mockSubmitJDOrder(scmOrderBiz);
+		scmOrderBiz.submitJingDongOrder("GYS0000561201803050000690", "address", "sub_address", createAclUserAccreditInfo());
 		
 	}
 	/**
@@ -78,6 +82,67 @@ public class OrderMockTest {
 		String orderInfo = "{\"orderType\":\"1\",\"order\":[{\"warehouseOrderCode\":\"GYS0000571201803050000691\",\"supplierParentOrderCode\":\"\",\"supplyOrderCode\":\"33333xxxxxxxxx0000016\",\"cancelReason\":\"人为取消\"}]}";
 		scmOrderBiz.supplierCancelOrder(orderInfo);
 	}
+	
+    private AclUserAccreditInfo createAclUserAccreditInfo () {
+        AclUserAccreditInfo info = new AclUserAccreditInfo();
+        info.setId(1L);
+        info.setChannelId(2L);
+        info.setChannelName("小泰乐活");
+        info.setUserId("E2E4BDAD80354EFAB6E70120C271968C");
+        info.setPhone("15757195796");
+        info.setName("admin");
+        info.setUserType("mixtureUser");
+        info.setChannelCode("QD002");
+        info.setRemark("admin");
+        info.setIsValid("1");
+        info.setIsDeleted("0");
+        info.setCreateOperator("E2E4BDAD80354EFAB6E70120C271968C");
+        return info;
+    }
+    
+    /**
+     * mock调用外部接口提交京东订单
+     * @param scmOrderBiz
+     */
+    private void mockSubmitJDOrder(IScmOrderBiz scmOrderBiz){
+        IJDService ijdService = mock(IJDService.class);
+        scmOrderBiz.setIjdService(ijdService);
+        JingDongSupplierOrder jdSupplierOrder = new JingDongSupplierOrder();
+        ResponseAck responseAck = new ResponseAck();
+        responseAck.setCode(ResponseAck.SUCCESS_CODE);
+        String submitOrderReturn = "{\n" +
+                "        \"orderType\": \"0\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201803050000690\",\n" +
+                "        \"order\": [\n" +
+                "            {\n" +
+                "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\n" +
+                "                        \"num\": 2,\n" +
+                "                        \"skuCode\": \"1241479\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"state\": \"200\",\n" +
+                "                \"message\": \"子订单下单成功\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"【小米（MI）7号电池 彩虹电池碱性 7号（10粒装）\",\n" +
+                "                        \"num\": 1,\n" +
+                "                        \"skuCode\": \"2614024\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"state\": \"200\",\n" +
+                "                \"message\": \"子订单下单成功\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }";
+        responseAck.setData(submitOrderReturn);
+        when(ijdService.submitJingDongOrder(any(jdSupplierOrder.getClass()))).thenReturn(responseAck);
+    }
 	
     /**
      * mock调用外部接口查询供应商订单物流信息
