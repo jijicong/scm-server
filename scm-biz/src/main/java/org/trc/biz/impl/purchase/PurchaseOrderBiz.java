@@ -145,7 +145,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS, rollbackFor = Exception.class)
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseOrder> purchaseOrderPage(PurchaseOrderForm form, Pagenation<PurchaseOrder> page,String  channelCode)  {
 
