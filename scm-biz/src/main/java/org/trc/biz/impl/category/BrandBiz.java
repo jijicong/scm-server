@@ -345,11 +345,15 @@ public class BrandBiz implements IBrandBiz {
         logInfoService.recordLog(brand,brand.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),remark,null);
         //通知渠道方
         Brand newBrand = brandService.selectOneById(brand.getId());
-        try{
-            trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand,newBrand,System.currentTimeMillis());
-        }catch (Exception e){
-            log.error("品牌状态变更通知调用出现异常:"+e.getMessage());
-        }
+            Runnable runnable = () -> {
+                try {
+                    trcBiz.sendBrand(TrcActionTypeEnum.EDIT_BRAND, selectBrand, newBrand, System.currentTimeMillis());
+                } catch (Exception e) {
+                    log.error("品牌状态变更通知调用出现异常" + e.getMessage(), e);
+                }
+
+            };
+
     }
 
     @Override
