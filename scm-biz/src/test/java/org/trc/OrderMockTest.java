@@ -23,6 +23,9 @@ import org.trc.dbUnit.order.form.TrcPlatformOrder;
 import org.trc.dbUnit.order.form.TrcShopOrder;
 import org.trc.dbUnit.order.form.TrcShopOrderForm;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.order.SupplierOrderInfo;
+import org.trc.enums.SupplierOrderStatusEnum;
+import org.trc.enums.WarehouseOrderLogisticsStatusEnum;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.JDModel.JingDongSupplierOrder;
 import org.trc.form.JDModel.ReturnTypeDO;
@@ -30,6 +33,7 @@ import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
+import org.trc.service.order.ISupplierOrderInfoService;
 import org.trc.service.util.IRealIpService;
 import org.trc.util.ResponseAck;
 import org.trc.util.SHAEncrypt;
@@ -37,11 +41,15 @@ import org.trc.util.SHAEncrypt;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 
+import tk.mybatis.mapper.entity.Example;
+
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
 @ContextConfiguration({"classpath:config/resource-context.xml"}) //配合spring测试  可以引入多个配置文件
 public class OrderMockTest {
 	@Autowired 
 	private IScmOrderBiz scmOrderBiz;
+	@Autowired 
+	private ISupplierOrderInfoService supplierOrderInfoService;
 	
 	/**
 	 * 接收订单，粮油提交直接通过postman请求接口完成下单
@@ -63,6 +71,17 @@ public class OrderMockTest {
 		scmOrderBiz.submitJingDongOrder("GYS0000561201803050000690", "address", "sub_address", createAclUserAccreditInfo());
 		
 	}
+	
+	/**
+	 * 粮油接收完订单之后，提交订单
+	 * @throws Exception
+	 */
+	@Test
+	public void submitLYOrder () throws Exception {
+		mockSubmitLiangYouOrder(scmOrderBiz);
+		scmOrderBiz.submitLiangYouOrder("GYS0000571201803080000713");
+		
+	}
 	/**
 	 * 接收物流信息
 	 * @throws Exception
@@ -70,7 +89,20 @@ public class OrderMockTest {
 	@Test
 	public void testLogisticsInfo () throws Exception {
 		mockQueryLogistics(scmOrderBiz);
-		scmOrderBiz.fetchLogisticsInfo();
+		
+        Example example = new Example(SupplierOrderInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+//        criteria.andEqualTo("logisticsStatus", WarehouseOrderLogisticsStatusEnum.UN_COMPLETE.getCode());
+//        criteria.andEqualTo("status", ResponseAck.SUCCESS_CODE);
+        List<String> supplierOrderStatusList = new ArrayList<String>();
+//        supplierOrderStatusList.add(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());
+//        supplierOrderStatusList.add(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
+//        criteria.andIn("supplierOrderStatus", supplierOrderStatusList);
+        criteria.andEqualTo("warehouseOrderCode","GYS0000571201803080000713");
+        List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
+        for (SupplierOrderInfo info : supplierOrderInfoList) {
+        	scmOrderBiz.handlerOrderLogisticsInfo(info);
+        }
 		
 	}
 	
@@ -143,6 +175,50 @@ public class OrderMockTest {
         responseAck.setData(submitOrderReturn);
         when(ijdService.submitJingDongOrder(any(jdSupplierOrder.getClass()))).thenReturn(responseAck);
     }
+    
+    /**
+     * mock调用外部接口提交粮油订单
+     * @param scmOrderBiz
+     */
+    private void mockSubmitLiangYouOrder(IScmOrderBiz scmOrderBiz){
+        IJDService ijdService = mock(IJDService.class);
+        scmOrderBiz.setIjdService(ijdService);
+        LiangYouSupplierOrder liangYouSupplierOrder = new LiangYouSupplierOrder();
+        ResponseAck responseAck = new ResponseAck();
+        responseAck.setCode(ResponseAck.SUCCESS_CODE);
+        String submitOrderReturn = "{\n" +
+                "        \"orderType\": \"1\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201803080000713\",\n" +
+                "        \"order\": [\n" +
+                "            {\n" +
+                "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +  // 发货时根据此code生成supplyOrderCode
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
+                "                        \"num\": 2,\n" +
+                "                        \"skuCode\": \"310516625460002590\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"state\": \"200\",\n" +
+                "                \"message\": \"子订单下单成功\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
+                "                \"skus\": [\n" +
+                "                    {\n" +
+                "                        \"skuName\": \"【单品包邮】日版MUHI池田模范堂 儿童液体无比滴S2a清凉冷感止痒露药水40ml\",\n" +
+                "                        \"num\": 1,\n" +
+                "                        \"skuCode\": \"1075510226\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"state\": \"200\",\n" +
+                "                \"message\": \"子订单下单成功\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }";
+        responseAck.setData(submitOrderReturn);
+        when(ijdService.submitLiangYouOrder(any(liangYouSupplierOrder.getClass()))).thenReturn(responseAck);
+    }
 	
     /**
      * mock调用外部接口查询供应商订单物流信息
@@ -194,7 +270,7 @@ public class OrderMockTest {
                 "                \"skus\": [\n" +
                 "                    {\n" +
                 "                        \"skuName\": \"保加利亚奥伯伦（Oberon）蜂蜜 椴树蜜\",\n" +
-                "                        \"num\": \"2\",\n" +
+                "                        \"num\": \"1\",\n" +
                 "                        \"skuCode\": \"310516625460002590\"\n" +
                 "                    }\n" +
                 "                ],\n" +
@@ -212,19 +288,19 @@ public class OrderMockTest {
                 "                        \"skuCode\": \"1075510226\"\n" +
                 "                    }\n" +
                 "                ],\n" +
-                "                \"waybillNumber\": \"1608201657240531\",\n" +
+                "                \"waybillNumber\": \"1608201657240532\",\n" +
                 "                \"logisticsCorporation\": \"圆通速递\",\n" +
                 "                \"logisticInfo\": [],\n" +
                 "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-1\",\n" +
                 "                \"logisticsStatus\": \"1\"\n" +
                 "            }\n" +
                 "        ],\n" +
-                "        \"type\": \"1\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000571201710180000530\"\n" +
+                "        \"type\": \"0\",\n" +  // type 为 1时 是京东快递
+                "        \"warehouseOrderCode\": \"GYS0000571201803080000713\"\n" +
                 "    }";
         returnTypeDO2.setResult(result2);
         when(ijdService.getLogisticsInfo(anyString(), eq("0"))).thenReturn(returnTypeDO);
-        when(ijdService.getLogisticsInfo(anyString(), eq("1"))).thenReturn(returnTypeDO2);
+        when(ijdService.getLogisticsInfo(anyString(), eq("1"))).thenReturn(returnTypeDO2); // 粮油
 
         IRealIpService iRealIpService = mock(IRealIpService.class);
         scmOrderBiz.setiRealIpService(iRealIpService);
