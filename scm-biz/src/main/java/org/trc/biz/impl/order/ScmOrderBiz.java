@@ -5072,6 +5072,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outboundDetail.setStatus(OutboundDetailStatusEnum.WAITING.getCode());
             outboundDetail.setCreateTime(currentTime);
             outboundDetail.setUpdateTime(currentTime);
+            outboundDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
             outboundDetailList.add(outboundDetail);
         }
 
