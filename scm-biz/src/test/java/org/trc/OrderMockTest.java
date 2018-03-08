@@ -68,7 +68,7 @@ public class OrderMockTest {
 	@Test
 	public void submitJdOrder () throws Exception {
 		mockSubmitJDOrder(scmOrderBiz);
-		scmOrderBiz.submitJingDongOrder("GYS0000561201803050000690", "address", "sub_address", createAclUserAccreditInfo());
+		scmOrderBiz.submitJingDongOrder("GYS0000561201803080000722", "001", "002", createAclUserAccreditInfo());
 		
 	}
 	
@@ -83,7 +83,7 @@ public class OrderMockTest {
 		
 	}
 	/**
-	 * 接收物流信息
+	 * 接收物流信息 (京东、粮油通用)
 	 * @throws Exception
 	 */
 	@Test
@@ -98,7 +98,7 @@ public class OrderMockTest {
 //        supplierOrderStatusList.add(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());
 //        supplierOrderStatusList.add(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
 //        criteria.andIn("supplierOrderStatus", supplierOrderStatusList);
-        criteria.andEqualTo("warehouseOrderCode","GYS0000571201803080000719");
+        criteria.andEqualTo("warehouseOrderCode","GYS0000561201803080000722");
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for (SupplierOrderInfo info : supplierOrderInfoList) {
         	scmOrderBiz.handlerOrderLogisticsInfo(info);
@@ -156,7 +156,7 @@ public class OrderMockTest {
         responseAck.setCode(ResponseAck.SUCCESS_CODE);
         String submitOrderReturn = "{\n" +
                 "        \"orderType\": \"0\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000561201803050000690\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201803080000722\",\n" +
                 "        \"order\": [\n" +
                 "            {\n" +
                 "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
@@ -265,12 +265,12 @@ public class OrderMockTest {
                 "                        \"operator\": \"系统\"\n" +
                 "                    }\n" +
                 "                ],\n" +
-                "                \"supplierOrderCode\": \"22222222-test\",\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
                 "                \"logisticsStatus\": \"1\"\n" +
                 "            }\n" +
                 "        ],\n" +
                 "        \"type\": \"0\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000561201803070000700\"\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201803080000722\"\n" +
                 "    }";
         returnTypeDO.setResult(result);
 
