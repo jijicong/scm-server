@@ -79,7 +79,7 @@ public class OrderMockTest {
 	 */
 	@Test
 	public void testCancelOrder () {
-		String orderInfo = "{\"orderType\":\"1\",\"order\":[{\"warehouseOrderCode\":\"GYS0000571201803050000691\",\"supplierParentOrderCode\":\"\",\"supplyOrderCode\":\"33333xxxxxxxxx0000016\",\"cancelReason\":\"人为取消\"}]}";
+		String orderInfo = "{\"orderType\":\"0\",\"order\":[{\"warehouseOrderCode\":\"GYS0000561201803070000702\",\"supplierParentOrderCode\":\"GYS0000561201803070000702\",\"supplyOrderCode\":\"33333xxxxxxxxx0000016\",\"cancelReason\":\"人为取消\"}]}";
 		scmOrderBiz.supplierCancelOrder(orderInfo);
 	}
 	
@@ -159,7 +159,7 @@ public class OrderMockTest {
                 "                \"skus\": [\n" +
                 "                    {\n" +
                 "                        \"skuName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\n" +
-                "                        \"num\": \"2\",\n" +
+                "                        \"num\": \"1\",\n" +
                 "                        \"skuCode\": \"1241479\"\n" +
                 "                    }\n" +
                 "                ],\n" +
@@ -182,7 +182,7 @@ public class OrderMockTest {
                 "            }\n" +
                 "        ],\n" +
                 "        \"type\": \"0\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000561201710180000529\"\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201803070000700\"\n" +
                 "    }";
         returnTypeDO.setResult(result);
 
