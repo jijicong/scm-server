@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Caching(
     evict = {
             @CacheEvict(value = SupplyConstants.Cache.PURCHASE_ORDER, allEntries = true),
-            @CacheEvict(value = SupplyConstants.Cache.OUTBOUND_ORDER, allEntries = true)
+            @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_NOTICE, allEntries = true)
     }
 )
 @Target({ElementType.METHOD, ElementType.TYPE})
