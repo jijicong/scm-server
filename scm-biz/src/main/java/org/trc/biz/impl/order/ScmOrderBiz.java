@@ -2589,6 +2589,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
+    @SupplierOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ResponseAck<String> supplierCancelOrder(String orderInfo) {
         AssertUtil.notBlank(orderInfo, "供应商取消订单通知接口输入参数不能为空");
