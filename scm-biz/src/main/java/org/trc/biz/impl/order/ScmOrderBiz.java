@@ -85,6 +85,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
+import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.cache.SupplierOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
@@ -4636,7 +4637,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @SupplierOrderCacheEvict
+    @OutboundOrderCacheEvict
     public ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap) {
         new Thread(
                 new Runnable() {
