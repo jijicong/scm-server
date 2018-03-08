@@ -79,7 +79,7 @@ public class OrderMockTest {
 	@Test
 	public void submitLYOrder () throws Exception {
 		mockSubmitLiangYouOrder(scmOrderBiz);
-		scmOrderBiz.submitLiangYouOrder("GYS0000571201803080000713");
+		scmOrderBiz.submitLiangYouOrder("GYS0000571201803080000719");
 		
 	}
 	/**
@@ -98,7 +98,7 @@ public class OrderMockTest {
 //        supplierOrderStatusList.add(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());
 //        supplierOrderStatusList.add(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
 //        criteria.andIn("supplierOrderStatus", supplierOrderStatusList);
-        criteria.andEqualTo("warehouseOrderCode","GYS0000571201803080000713");
+        criteria.andEqualTo("warehouseOrderCode","GYS0000571201803080000719");
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for (SupplierOrderInfo info : supplierOrderInfoList) {
         	scmOrderBiz.handlerOrderLogisticsInfo(info);
@@ -111,7 +111,19 @@ public class OrderMockTest {
 	 */
 	@Test
 	public void testCancelOrder () {
-		String orderInfo = "{\"orderType\":\"0\",\"order\":[{\"warehouseOrderCode\":\"GYS0000561201803070000702\",\"supplierParentOrderCode\":\"GYS0000561201803070000702\",\"supplyOrderCode\":\"33333xxxxxxxxx0000016\",\"cancelReason\":\"人为取消\"}]}";
+//		String orderInfo = "{\"orderType\":\"0\",\"order\":[{\"warehouseOrderCode\":\"GYS0000561201803070000702\",\"supplierParentOrderCode\":\"GYS0000561201803070000702\",\"supplyOrderCode\":\"33333xxxxxxxxx0000016\",\"cancelReason\":\"人为取消\"}]}";
+		String orderInfo = "{" + 
+							"	  \"orderType\": \"1\"," + 
+							"	  \"order\": [" +
+							"	    {" +
+							"	      \"warehouseOrderCode\": \"GYS0000571201803080000719\"," +
+							"	      \"supplierParentOrderCode\": \"\"," +
+							"	      \"supplyOrderCode\": \"33333xxxxxxxxx0000016-1\"," +
+							"	      \"cancelReason\": \"人为取消\" " +
+							"	    }" +
+							"	  ]" +
+							"	}";
+		
 		scmOrderBiz.supplierCancelOrder(orderInfo);
 	}
 	
@@ -188,7 +200,7 @@ public class OrderMockTest {
         responseAck.setCode(ResponseAck.SUCCESS_CODE);
         String submitOrderReturn = "{\n" +
                 "        \"orderType\": \"1\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000571201803080000713\",\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201803080000719\",\n" +
                 "        \"order\": [\n" +
                 "            {\n" +
                 "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +  // 发货时根据此code生成supplyOrderCode
@@ -296,7 +308,7 @@ public class OrderMockTest {
                 "            }\n" +
                 "        ],\n" +
                 "        \"type\": \"0\",\n" +  // type 为 1时 是京东快递
-                "        \"warehouseOrderCode\": \"GYS0000571201803080000713\"\n" +
+                "        \"warehouseOrderCode\": \"GYS0000571201803080000719\"\n" +
                 "    }";
         returnTypeDO2.setResult(result2);
         when(ijdService.getLogisticsInfo(anyString(), eq("0"))).thenReturn(returnTypeDO);
