@@ -2456,7 +2456,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 处理订单物流信息
      * @param supplierOrderInfo
      */
-    private void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo){
+    public void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo){
         supplierOrderInfo = supplierOrderInfoService.selectByPrimaryKey(supplierOrderInfo.getId());
         AssertUtil.notNull(supplierOrderInfo, String.format("定时查询物流信息根据主键ID[%s]查询供应商订单信息为空", supplierOrderInfo.getId()));
         if(StringUtils.equals(SupplierOrderDeliverStatusEnum.COMPLETE.getCode(), supplierOrderInfo.getLogisticsStatus())){//供应商订单已经全部发货
@@ -2957,7 +2957,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //更新仓库订单供应商订单状态
             WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode(), false);
             //记录发货日志
-            recordSendLog(logisticForm, supplierOrderInfo.getWarehouseOrderCode());
+            recordSendLog(supplierOrderLogisticsList, supplierOrderInfo.getWarehouseOrderCode());
             //更新店铺订单供应商订单状态
             updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
             //清除订单缓存
@@ -2965,22 +2965,23 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
     }
     
-    private void recordSendLog (LogisticForm logisticForm, String warehouseOrderCode) {
+    private void recordSendLog (List<SupplierOrderLogistics> supplierOrderLogistics, String warehouseOrderCode) {
         OrderItem orderItem = new OrderItem();
         orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);
-        List<Logistic> logistics = logisticForm.getLogistics();
+//        List<Logistic> logistics = logisticForm.getLogistics();
         AssertUtil.notEmpty(orderItemList, String.format("记录发货日志时,根据仓库订单号[%s]查询相应的商品明细为空", warehouseOrderCode));
-        AssertUtil.notEmpty(logistics, "记录发货日志时,物流信息为空");
+//        AssertUtil.notEmpty(logistics, "记录发货日志时,物流信息为空");
         
         WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
         warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
         AssertUtil.notNull(warehouseOrder, String.format("记录发货日志时,根据仓库订单编码[%s]查询仓库订单信息为空", warehouseOrderCode));
         StringBuilder sb = new StringBuilder();
+        
     	for (OrderItem item : orderItemList) {
-    		for (Logistic logic : logistics) {
-    			List<SkuInfo> skus = logic.getSkus();
+    		for (SupplierOrderLogistics logic : supplierOrderLogistics) {
+    			List<SkuInfo> skus = JSONArray.parseArray(logic.getSkus(), SkuInfo.class);
     			AssertUtil.notEmpty(skus, "记录发货日志时,sku信息为空");
     			for (SkuInfo sku : skus) {
     				if (StringUtils.equals(item.getSupplierSkuCode(), sku.getSkuCode())) {

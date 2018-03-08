@@ -4,6 +4,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ExceptionOrder;
 import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
+import org.trc.domain.order.SupplierOrderInfo;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
@@ -186,6 +187,8 @@ public interface IScmOrderBiz {
     ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap);
 
     //WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String string);
+    
+    void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo);
 
 
 }
