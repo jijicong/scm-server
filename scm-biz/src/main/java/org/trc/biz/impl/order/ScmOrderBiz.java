@@ -524,7 +524,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //更新订单商品供应商订单状态
             updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderInfoList);
             //更新仓库订单供应商订单状态
-            warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+            warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), true);
             //更新店铺订单供应商订单状态
             updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
             if(StringUtils.equals(responseAck.getCode(), ResponseAck.SUCCESS_CODE)){
@@ -757,7 +757,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品供应商订单状态
         updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), supplierOrderInfoList);
         //更新仓库订单供应商订单状态
-        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), true);
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
 
@@ -838,7 +838,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 更新仓库订单供应商订单状态
      * @param warehouseOrderCode
      */
-    private WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode){
+    private WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String warehouseOrderCode, boolean flg){
         OrderItem orderItem = new OrderItem();
         orderItem.setWarehouseOrderCode(warehouseOrderCode);
         List<OrderItem> orderItemList = orderItemService.select(orderItem);
@@ -849,7 +849,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notNull(warehouseOrder, String.format("更新仓库订单供应商订单状态,根据仓库订单编码%s查询仓库订单信息为空", warehouseOrder));
         if(StringUtils.equals(OrderTypeEnum.SUPPLIER.getCode(), warehouseOrder.getOrderType())){
             //更新代发订单供应商订单状态
-            updateWarehouseOrderSupplierOrderStatus_supplier(warehouseOrder, orderItemList);
+            updateWarehouseOrderSupplierOrderStatus_supplier(warehouseOrder, orderItemList, flg);
         }else if(StringUtils.equals(OrderTypeEnum.SELF_PURCHARSE.getCode(), warehouseOrder.getOrderType())){
             //更新自采仓库订单供应商订单状态
             updateWarehouseOrderSupplierOrderStatus_selfPurchase(warehouseOrder, orderItemList);
@@ -862,8 +862,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 更新代发仓库订单供应商订单状态
      * @param warehouseOrder
      * @param orderItemList
+     * @param 操作日志动作类型
      */
-    private void updateWarehouseOrderSupplierOrderStatus_supplier(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList){
+    private void updateWarehouseOrderSupplierOrderStatus_supplier(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList,
+    		boolean isStatus){
         String supplierOrderStatus = getSupplierOrderStatusByItems(orderItemList, ZeroToNineEnum.ZERO.getCode());
         if(StringUtils.isBlank(supplierOrderStatus)){
             return;
@@ -872,30 +874,39 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setUpdateTime(Calendar.getInstance().getTime());
         warehouseOrderService.updateByPrimaryKey(warehouseOrder);
         LogOperationEnum logOperationEnum = null;
-        if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            logOperationEnum = LogOperationEnum.ORDER_EXCEPTION;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            logOperationEnum = LogOperationEnum.ORDER_FAILURE;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            logOperationEnum = LogOperationEnum.WAIT_FOR_DELIVER;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            logOperationEnum = LogOperationEnum.PARTS_DELIVER;
-        }else if(StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
-            logOperationEnum = LogOperationEnum.ALL_DELIVER;
+        // 状态订单，用于判断下单成功 异常 失败
+        if (isStatus) {
+        	if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        		logOperationEnum = LogOperationEnum.ORDER_EXCEPTION;
+        	}else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+        		logOperationEnum = LogOperationEnum.ORDER_FAILURE;
+        	}else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
+//        		logOperationEnum = LogOperationEnum.WAIT_FOR_DELIVER;
+        		//下单成功
+        		logOperationEnum = LogOperationEnum.ORDER_SUCCESS;
+        	}else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
+//        		logOperationEnum = LogOperationEnum.PARTS_DELIVER;
+        		logOperationEnum = LogOperationEnum.SEND;
+        	}else if(StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), warehouseOrder.getSupplierOrderStatus())){
+//        		logOperationEnum = LogOperationEnum.ALL_DELIVER;
+        		logOperationEnum = LogOperationEnum.SEND;
+        	}
         }
-        if(null != logOperationEnum){
+        // 是否需要记日志
+        if (null != logOperationEnum) {
             String remark = "";
-//            if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder.getSupplierOrderStatus()) ||
-//                    StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder.getSupplierOrderStatus())){
+            if(!StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(),
+            		warehouseOrder.getSupplierOrderStatus())){ // 非下单成功的状态，下单成功不需要备注信息
                 SupplierOrderInfo supplierOrderInfo = new SupplierOrderInfo();
                 supplierOrderInfo.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
                 List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.select(supplierOrderInfo);
                 if(!CollectionUtils.isEmpty(supplierOrderInfoList)){
                     remark = getOrderExceptionMessage(supplierOrderInfoList);
                 }
-//            }
+            }
             //记录操作日志
-            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), warehouseOrder.getSupplierName(), logOperationEnum.getMessage(), remark,null);
+            logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), 
+            		warehouseOrder.getSupplierName(), logOperationEnum.getMessage(), remark,null);
         }
     }
 
@@ -2599,7 +2610,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(SupplierOrderInfo supplierOrderInfo: supplierOrderInfoList){
                 List<OrderItem> orderItemList = cancelOrderItemByNotify(supplierOrderInfo);
                 //更新仓库订单供应商订单状态
-                WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode());
+                WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode(), false);
                 //更新店铺订单供应商订单状态
                 updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
                 //记录操作日志
@@ -2941,12 +2952,47 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //更新供应商订单状态
             updateSupplierOrderStatus(supplierOrderInfo);
             //更新仓库订单供应商订单状态
-            WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode());
+            WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(supplierOrderInfo.getWarehouseOrderCode(), false);
+            //记录发货日志
+            recordSendLog(logisticForm, supplierOrderInfo.getWarehouseOrderCode());
             //更新店铺订单供应商订单状态
             updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
             //清除订单缓存
             orderExtBiz.cleanOrderCache();
         }
+    }
+    
+    private void recordSendLog (LogisticForm logisticForm, String warehouseOrderCode) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.setWarehouseOrderCode(warehouseOrderCode);
+        List<OrderItem> orderItemList = orderItemService.select(orderItem);
+        List<Logistic> logistics = logisticForm.getLogistics();
+        AssertUtil.notEmpty(orderItemList, String.format("记录发货日志时,根据仓库订单号[%s]查询相应的商品明细为空", warehouseOrderCode));
+        AssertUtil.notEmpty(logistics, "记录发货日志时,物流信息为空");
+        
+        WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setWarehouseOrderCode(warehouseOrderCode);
+        warehouseOrder = warehouseOrderService.selectOne(warehouseOrder);
+        AssertUtil.notNull(warehouseOrder, String.format("记录发货日志时,根据仓库订单编码[%s]查询仓库订单信息为空", warehouseOrderCode));
+        StringBuilder sb = new StringBuilder();
+    	for (OrderItem item : orderItemList) {
+    		for (Logistic logic : logistics) {
+    			List<SkuInfo> skus = logic.getSkus();
+    			AssertUtil.notEmpty(skus, "记录发货日志时,sku信息为空");
+    			for (SkuInfo sku : skus) {
+    				if (StringUtils.equals(item.getSupplierSkuCode(), sku.getSkuCode())) {
+    					if (StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), item.getSupplierOrderStatus())) {
+    						sb.append(sku.getSkuCode()).append(":").append(ORDER_ALL_INFO).append(HTML_BR);
+    					} else if (StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), item.getSupplierOrderStatus())) {
+    						sb.append(sku.getSkuCode()).append(":").append(ORDER_PART_INFO).append(HTML_BR);
+    					}
+    				}
+    			}
+    		}
+    	}
+        //记录操作日志
+        logInfoService.recordLog(warehouseOrder,warehouseOrder.getId().toString(), 
+        		warehouseOrder.getSupplierName(), LogOperationEnum.SEND.getMessage(), sb.toString(), null);
     }
 
     /**
@@ -4444,7 +4490,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品供应商订单状态
         updateOrderItemSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), _supplierOrderInfoList);
         //更新仓库订单供应商订单状态
-        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+        warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), true);
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收供应商订单下单结果通知成功", "");
@@ -4583,7 +4629,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public ResponseAck outboundConfirmNotice(String warehouseOrderCode) {
         AssertUtil.notBlank(warehouseOrderCode, "发货通知单发货明细确认通知参数仓库订单编码warehouseOrderCode不能为空");
         //更新仓库订单供应商订单状态
-        WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrderCode);
+        WarehouseOrder warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrderCode, false);
         //更新店铺订单供应商订单状态
         updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "通知接收成功", "");
@@ -4878,7 +4924,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         for(WarehouseOrder warehouseOrder: warehouseOrderList){
             //更新仓库订单供应商订单状态
-            warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode());
+            warehouseOrder = updateWarehouseOrderSupplierOrderStatus(warehouseOrder.getWarehouseOrderCode(), false);
             //更新店铺订单供应商订单状态
             updateShopOrderSupplierOrderStatus(warehouseOrder.getPlatformOrderCode(), warehouseOrder.getShopOrderCode());
         }
