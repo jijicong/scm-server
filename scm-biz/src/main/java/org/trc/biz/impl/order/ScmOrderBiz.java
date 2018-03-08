@@ -626,7 +626,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), supplierOrderInfo.getSupplierOrderStatus())){
                 for(SkuInfo skuInfo: skuInfoList){
-                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
+                    //sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(SupplyConstants.Symbol.COMMA).append(supplierOrderInfo.getMessage()).append(HTML_BR);
+                    sb.append(skuInfo.getSkuCode()).append(":").append(ORDER_CANCEL_INFO).append(HTML_BR);
                 }
             }
         }
