@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +52,8 @@ public class OrderMockTest {
 	@Autowired 
 	private ISupplierOrderInfoService supplierOrderInfoService;
 	
+	private String warehouseOrderCode = "GYS0000561201803090000724";
+	
 	/**
 	 * 接收订单，粮油提交直接通过postman请求接口完成下单
 	 * @throws Exception
@@ -67,8 +70,9 @@ public class OrderMockTest {
 	 */
 	@Test
 	public void submitJdOrder () throws Exception {
-		mockSubmitJDOrder(scmOrderBiz);
-		scmOrderBiz.submitJingDongOrder("GYS0000561201803050000690", "address", "sub_address", createAclUserAccreditInfo());
+		
+		mockSubmitJDOrder(scmOrderBiz, warehouseOrderCode);
+		scmOrderBiz.submitJingDongOrder(warehouseOrderCode, "001", "002", createAclUserAccreditInfo());
 		
 	}
 	
@@ -83,7 +87,7 @@ public class OrderMockTest {
 		
 	}
 	/**
-	 * 接收物流信息
+	 * 接收物流信息 (京东、粮油通用)
 	 * @throws Exception
 	 */
 	@Test
@@ -98,7 +102,7 @@ public class OrderMockTest {
 //        supplierOrderStatusList.add(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode());
 //        supplierOrderStatusList.add(SupplierOrderStatusEnum.PARTS_DELIVER.getCode());
 //        criteria.andIn("supplierOrderStatus", supplierOrderStatusList);
-        criteria.andEqualTo("warehouseOrderCode","GYS0000571201803080000719");
+        criteria.andEqualTo("warehouseOrderCode","GYS0000561201803080000722");
         List<SupplierOrderInfo> supplierOrderInfoList = supplierOrderInfoService.selectByExample(example);
         for (SupplierOrderInfo info : supplierOrderInfoList) {
         	scmOrderBiz.handlerOrderLogisticsInfo(info);
@@ -148,7 +152,7 @@ public class OrderMockTest {
      * mock调用外部接口提交京东订单
      * @param scmOrderBiz
      */
-    private void mockSubmitJDOrder(IScmOrderBiz scmOrderBiz){
+    private void mockSubmitJDOrder(IScmOrderBiz scmOrderBiz, String warehouseOrderCode){
         IJDService ijdService = mock(IJDService.class);
         scmOrderBiz.setIjdService(ijdService);
         JingDongSupplierOrder jdSupplierOrder = new JingDongSupplierOrder();
@@ -156,7 +160,7 @@ public class OrderMockTest {
         responseAck.setCode(ResponseAck.SUCCESS_CODE);
         String submitOrderReturn = "{\n" +
                 "        \"orderType\": \"0\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000561201803050000690\",\n" +
+                "        \"warehouseOrderCode\": \"" + warehouseOrderCode + "\",\n" +
                 "        \"order\": [\n" +
                 "            {\n" +
                 "                \"supplyOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
@@ -265,12 +269,12 @@ public class OrderMockTest {
                 "                        \"operator\": \"系统\"\n" +
                 "                    }\n" +
                 "                ],\n" +
-                "                \"supplierOrderCode\": \"22222222-test\",\n" +
+                "                \"supplierOrderCode\": \"33333xxxxxxxxx0000016-2\",\n" +
                 "                \"logisticsStatus\": \"1\"\n" +
                 "            }\n" +
                 "        ],\n" +
                 "        \"type\": \"0\",\n" +
-                "        \"warehouseOrderCode\": \"GYS0000561201803070000700\"\n" +
+                "        \"warehouseOrderCode\": \"GYS0000561201803080000722\"\n" +
                 "    }";
         returnTypeDO.setResult(result);
 
@@ -325,16 +329,16 @@ public class OrderMockTest {
         resultDO.setMsg("发送物流信息给泰然城成功");
         when(trcService.sendLogisticInfoNotice(any(LogisticNoticeForm.class))).thenReturn(resultDO);
     }
-	
-    private String createOrderInfo(){
+	@Test
+    public String createOrderInfo(){
         TrcOrderForm orderForm  = new TrcOrderForm();
         //创建平台订单信息
-        TrcPlatformOrder platformOrder = JSON.parseObject("{\"adjustFee\": 0,\"anony\": 0,\"buyerArea\": \"110100/110101\",\"cancelReason\": \"现在不想购买\",\"cancelStatus\": \"SUCCESS\",\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"couponCode\": \"\",\"createTime\": 1471683422,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"endTime\": 1471919905,\"groupBuyStatus\": \"NO_APPLY\",\"invoiceMain\": \"浙江小泰科技有限公司\",\"invoiceType\": \"2\",\"ip\": \"118.178.15.71\",\"isClearing\": 0,\"isDeleted\": \"0\",\"isVirtual\": 0,\"itemNum\": 6,\"needInvoice\": \"0\",\"obtainPointFee\": 180,\"payTime\": 1508206933000,\"payType\": \"online\",\"payment\": 225,\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"platformType\": \"wap\",\"pointsFee\": 0,\"postageFee\": 39,\"rateStatus\": 0,\"receiveTime\": 1471919905,\"receiverAddress\": \"余杭区\",\"receiverCity\": \"杭州市\",\"receiverDistrict\": \"余杭区\",\"receiverEmail\": \"471869639@qq.com\",\"receiverIdCard\": \"420281198602197693\",\"receiverMobile\": \"15068839416\",\"receiverName\": \"熊9测试\",\"receiverPhone\": \"15068839416\",\"receiverProvince\": \"浙江省\",\"receiverZip\": \"232656\",\"shippingType\": \"express\",\"status\": \"TRADE_CLOSED_BY_CANCEL\",\"totalFee\": 184,\"totalTax\": 2,\"type\": 0,\"userId\": \"531\",\"userName\": \"15229896960\"}").toJavaObject(TrcPlatformOrder.class);
+        TrcPlatformOrder platformOrder = JSON.parseObject("{\"adjustFee\": 0,\"anony\": 0,\"buyerArea\": \"110100/110101\",\"cancelReason\": \"现在不想购买\",\"cancelStatus\": \"SUCCESS\",\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"couponCode\": \"\",\"createTime\": 1471683422,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"endTime\": 1471919905,\"groupBuyStatus\": \"NO_APPLY\",\"invoiceMain\": \"浙江小泰科技有限公司\",\"invoiceType\": \"2\",\"ip\": \"118.178.15.71\",\"isClearing\": 0,\"isDeleted\": \"0\",\"isVirtual\": 0,\"itemNum\": 106,\"needInvoice\": \"0\",\"obtainPointFee\": 180,\"payTime\": 1508206933000,\"payType\": \"online\",\"payment\": 225,\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"platformType\": \"wap\",\"pointsFee\": 0,\"postageFee\": 39,\"rateStatus\": 0,\"receiveTime\": 1471919905,\"receiverAddress\": \"余杭区\",\"receiverCity\": \"杭州市\",\"receiverDistrict\": \"余杭区\",\"receiverEmail\": \"471869639@qq.com\",\"receiverIdCard\": \"420281198602197693\",\"receiverMobile\": \"15068839416\",\"receiverName\": \"熊9测试\",\"receiverPhone\": \"15068839416\",\"receiverProvince\": \"浙江省\",\"receiverZip\": \"232656\",\"shippingType\": \"express\",\"status\": \"TRADE_CLOSED_BY_CANCEL\",\"totalFee\": 184,\"totalTax\": 2,\"type\": 0,\"userId\": \"531\",\"userName\": \"15229896960\"}").toJavaObject(TrcPlatformOrder.class);
         orderForm.setPlatformOrder(platformOrder);
         //创建店铺订单信息
         List<TrcShopOrderForm> shopOrders = new ArrayList<>();
-        TrcShopOrder shopOrder = JSON.parseObject("{\"adjustFee\": 0,\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"consignTime\": 1468559766,\"createTime\": 1468555312,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"dlytmplIds\": \"4\",\"groupBuyStatus\": \"NO_APPLY\",\"isDeleted\": \"0\",\"isPartConsign\": \"0\",\"itemNum\": 3,\"payment\": 55,\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"platformType\": \"wap\",\"postageFee\": 19,\"rateStatus\": \"1\",\"shopId\": 4,\"shopName\": \"泰然直营（自营店铺）（自营店铺）\",\"shopOrderCode\": \"33333xxxxxxxxx0000015\",\"status\": \"TRADE_FINISHED\",\"title\": \"订单明细介绍\",\"totalFee\": 35,\"totalTax\": 1,\"totalWeight\": 0,\"tradeMemo\": \"13588129773\",\"userId\": \"5\"}").toJavaObject(TrcShopOrder.class);
-        List<TrcOrderItem> orderItems = JSONArray.parseArray("[{\"id\": \"3333\",\"adjustFee\": 0,\"barCode\": \"\",\"catServiceRate\": 0,\"category\": \"232\",\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"complaintsStatus\": \"NOT_COMPLAINTS\",\"consignTime\": 1468559766,\"createTime\": 1468555312,\"customsPrice\": 0,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"dlytmplId\": 4,\"endTime\": 1468568194,\"isOversold\": false,\"itemName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\"itemNo\": \"yidonghuafei20\",\"marketPrice\": 19.94,\"num\": 2,\"objType\": \"recharge\",\"outerSkuId\": \"SP1201710120000627\",\"oversold\": false,\"params\": \"[]\",\"payTime\": 1468555346,\"payment\": 36,\"picPath\": \"\",\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"postDiscount\": 10,\"price\": 13,\"priceTax\": 0,\"promotionPrice\": 0,\"promotionTags\": \"\",\"refundFee\": 0,\"shopId\": 4,\"shopName\": \"泰然直营（自营店铺）（自营店铺）\",\"shopOrderCode\": \"33333xxxxxxxxx0000015\",\"skuCode\": \"\",\"status\": \"TRADE_FINISHED\",\"subStock\": false,\"taxRate\": 0,\"totalFee\": 26,\"totalWeight\": 0,\"transactionPrice\": 19.94,\"type\": \"4\",\"userId\": \"5\"},{\"id\": \"4444\",\"adjustFee\": 0,\"barCode\": \"\",\"catServiceRate\": 0,\"category\": \"64\",\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"complaintsStatus\": \"NOT_COMPLAINTS\",\"consignTime\": 1468918407,\"createTime\": 1468557443,\"customsPrice\": 0,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"dlytmplId\": 1,\"endTime\": 1469685165,\"isOversold\": false,\"itemName\": \"小米（MI）7号电池 彩虹电池碱性 7号（10粒装）\",\"itemNo\": \"310520151011501429\",\"marketPrice\": 52,\"num\": 1,\"objType\": \"item\",\"outerSkuId\": \"SP1201710120000628\",\"oversold\": false,\"params\": \"[]\",\"payTime\": 1468557489,\"payment\": 19,\"picPath\": \"https://image.trc.com/c8/f8/ed/d880b82a6d258c0e357cafa1390d32e54e9106f6.jpg\",\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"postDiscount\": 9,\"price\": 9,\"priceTax\": 1,\"promotionPrice\": 0,\"promotionTags\": \"\",\"refundFee\": 0,\"shopId\": 2,\"shopName\": \"泰然直营1（自营店铺）\",\"shopOrderCode\": \"33333xxxxxxxxx0000015\",\"skuCode\": \"\",\"status\": \"TRADE_FINISHED\",\"subStock\": false,\"taxRate\": 0,\"totalFee\": 9,\"totalWeight\": 0.1,\"transactionPrice\": 57,\"type\": \"0\",\"userId\": \"10\"}]", TrcOrderItem.class);
+        TrcShopOrder shopOrder = JSON.parseObject("{\"adjustFee\": 0,\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"consignTime\": 1468559766,\"createTime\": 1468555312,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"dlytmplIds\": \"4\",\"groupBuyStatus\": \"NO_APPLY\",\"isDeleted\": \"0\",\"isPartConsign\": \"0\",\"itemNum\": 103,\"payment\": 55,\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"platformType\": \"wap\",\"postageFee\": 19,\"rateStatus\": \"1\",\"shopId\": 4,\"shopName\": \"泰然直营（自营店铺）（自营店铺）\",\"shopOrderCode\": \"33333xxxxxxxxx0000015\",\"status\": \"TRADE_FINISHED\",\"title\": \"订单明细介绍\",\"totalFee\": 35,\"totalTax\": 1,\"totalWeight\": 0,\"tradeMemo\": \"13588129773\",\"userId\": \"5\"}").toJavaObject(TrcShopOrder.class);
+        List<TrcOrderItem> orderItems = JSONArray.parseArray("[{\"id\": \"3333\",\"adjustFee\": 0,\"barCode\": \"\",\"catServiceRate\": 0,\"category\": \"232\",\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"complaintsStatus\": \"NOT_COMPLAINTS\",\"consignTime\": 1468559766,\"createTime\": 1468555312,\"customsPrice\": 0,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"dlytmplId\": 4,\"endTime\": 1468568194,\"isOversold\": false,\"itemName\": \"佳能（Glad）背心袋抽取式保鲜袋大号中号组合装BCB30+BCB25\",\"itemNo\": \"yidonghuafei20\",\"marketPrice\": 19.94,\"num\": 102,\"objType\": \"recharge\",\"outerSkuId\": \"SP1201710120000627\",\"oversold\": false,\"params\": \"[]\",\"payTime\": 1468555346,\"payment\": 36,\"picPath\": \"\",\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"postDiscount\": 10,\"price\": 13,\"priceTax\": 0,\"promotionPrice\": 0,\"promotionTags\": \"\",\"refundFee\": 0,\"shopId\": 4,\"shopName\": \"泰然直营（自营店铺）（自营店铺）\",\"shopOrderCode\": \"33333xxxxxxxxx0000015\",\"skuCode\": \"\",\"status\": \"TRADE_FINISHED\",\"subStock\": false,\"taxRate\": 0,\"totalFee\": 26,\"totalWeight\": 0,\"transactionPrice\": 19.94,\"type\": \"4\",\"userId\": \"5\"},{\"id\": \"4444\",\"adjustFee\": 0,\"barCode\": \"\",\"catServiceRate\": 0,\"category\": \"64\",\"channelCode\": \"QD001\",\"sellCode\": \"QD001\",\"complaintsStatus\": \"NOT_COMPLAINTS\",\"consignTime\": 1468918407,\"createTime\": 1468557443,\"customsPrice\": 0,\"discountCouponPlatform\": 0,\"discountCouponShop\": 0,\"discountFee\": 0,\"discountPromotion\": 0,\"dlytmplId\": 1,\"endTime\": 1469685165,\"isOversold\": false,\"itemName\": \"小米（MI）7号电池 彩虹电池碱性 7号（10粒装）\",\"itemNo\": \"310520151011501429\",\"marketPrice\": 52,\"num\": 1,\"objType\": \"item\",\"outerSkuId\": \"SP1201710120000628\",\"oversold\": false,\"params\": \"[]\",\"payTime\": 1468557489,\"payment\": 19,\"picPath\": \"https://image.trc.com/c8/f8/ed/d880b82a6d258c0e357cafa1390d32e54e9106f6.jpg\",\"platformCode\": \"QD001\",\"platformOrderCode\": \"1608201657240531\",\"postDiscount\": 9,\"price\": 9,\"priceTax\": 1,\"promotionPrice\": 0,\"promotionTags\": \"\",\"refundFee\": 0,\"shopId\": 2,\"shopName\": \"泰然直营1（自营店铺）\",\"shopOrderCode\": \"33333xxxxxxxxx0000015\",\"skuCode\": \"\",\"status\": \"TRADE_FINISHED\",\"subStock\": false,\"taxRate\": 0,\"totalFee\": 9,\"totalWeight\": 0.1,\"transactionPrice\": 57,\"type\": \"0\",\"userId\": \"10\"}]", TrcOrderItem.class);
         TrcShopOrderForm trcShopOrderForm = new TrcShopOrderForm();
         trcShopOrderForm.setShopOrder(shopOrder);
         trcShopOrderForm.setOrderItems(orderItems);
@@ -374,7 +378,7 @@ public class OrderMockTest {
         }
         String sign = SHAEncrypt.SHA256(encryptStr);
         orderForm.setSign(sign);
-//        System.out.println(JSON.toJSONString(orderForm));
+        System.out.println(JSON.toJSONString(orderForm));
         return JSON.toJSONString(orderForm);
     }
     
