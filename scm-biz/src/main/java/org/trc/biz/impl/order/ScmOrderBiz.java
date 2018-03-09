@@ -2003,6 +2003,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //保存异常单信息
         if(exceptionOrderItemList.size() > 0){
             saveExceptionOrder(platformOrder, shopOrderList, exceptionOrderItemList);
+            //updateShopOrderSupplierOrderStatus();
         }
         //保存商品明细
         List<OrderItem> itemList = new ArrayList<>();//一件代发
@@ -2025,6 +2026,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(!CollectionUtils.isEmpty(skuWarehouseMap)){
             //更新订单商品占用库存
             frozenOrderInventory(platformOrder.getChannelCode(), skuWarehouseMap);
+        }
+        /**
+         * 自采商品存在异常订单的时候，这里需要更新店铺状态信息
+         **/
+        if (exceptionOrderItemList.size() > 0) {
+        	for (ExceptionOrderItem exItem : exceptionOrderItemList) {
+        		for (ShopOrder shopOrder: shopOrderList) {
+        			List<OrderItem> shopItemList = shopOrder.getOrderItems();
+            		for (OrderItem shopItem : shopItemList) {
+        				if (StringUtils.equals(exItem.getSkuCode(), shopItem.getSkuCode())) {
+        					updateShopOrderSupplierOrderStatus(platformOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode());
+        					break;
+        				}
+            		}
+            	}
+            }
         }
         //如果自采sku全部异常，那么直接通知渠道自采sku下单失败
         if(selfSkuAllException){
