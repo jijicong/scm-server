@@ -873,7 +873,6 @@ public class GoodsBiz implements IGoodsBiz {
         }
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
-            AssertUtil.notNull(jbo.getBigDecimal("weight2"),"SKU重量不能为空");
             AssertUtil.notBlank(jbo.getString("barCode"),"SKU条形码不能为空");
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){
                 AssertUtil.notBlank(jbo.getString("skuCode"),"SKU编码不能为空");
@@ -917,7 +916,9 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
             skus2.setPropertyValue(jbo.getString("propertyValue"));
             skus2.setBarCode(jbo.getString("barCode"));
-            skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
+            if(StringUtils.isNotBlank(jbo.getString("weight2"))){
+                skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
+            }
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
             skus2.setIsValid(jbo.getString("isValid"));
@@ -2617,6 +2618,15 @@ public class GoodsBiz implements IGoodsBiz {
             supplier.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             return supplierService.select(supplier);
         }
+    }
+
+    @Override
+    public void checkBarcodeOnly(String barcode) {
+        AssertUtil.notBlank(barcode, "条形码不能为空");
+        Skus skus = new Skus();
+        skus.setBarCode(barcode);
+        skus = skusService.selectOne(skus);
+        AssertUtil.isNull(skus, "该条形码已经存在!");
     }
 
     /**

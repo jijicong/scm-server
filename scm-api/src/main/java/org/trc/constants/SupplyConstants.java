@@ -708,6 +708,8 @@ public class SupplyConstants {
         public static final String CHECK_PROPERTY_STATUS = "checkPropetyStatus";
         //查询供应商列表
         public static final String SUPPLIERS_LIST = "suppliersList";
+        //校验条形码唯一
+        public static final String CHECK_BARCODE_ONLY = "checkBarcodeOnly";
 
     }
 

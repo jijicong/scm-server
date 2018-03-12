@@ -185,4 +185,13 @@ public class GoodsResource {
         return ResultUtil.createSuccessResult("查询供应商列表成功", goodsBiz.querySuppliers(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
 
     }
+
+    @POST
+    @Path(SupplyConstants.Goods.CHECK_BARCODE_ONLY)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded")
+    public Response checkBarcodeOnly(@FormParam("barCode") String barCode) throws Exception {
+        goodsBiz.checkBarcodeOnly(barCode);
+        return ResultUtil.createSuccessResult("该条形码可用", "");
+    }
 }

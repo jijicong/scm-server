@@ -157,4 +157,10 @@ public interface IGoodsBiz {
      * @throws Exception
      */
     List<Supplier> querySuppliers(SupplierForm SupplierForm,AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
+
+    /**
+     * 检查条形码唯一性
+     * @param barcode
+     */
+    void checkBarcodeOnly(String barcode);
 }
