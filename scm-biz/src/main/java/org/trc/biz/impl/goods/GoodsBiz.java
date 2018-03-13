@@ -2625,8 +2625,10 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notBlank(barcode, "条形码不能为空");
         Skus skus = new Skus();
         skus.setBarCode(barcode);
-        skus = skusService.selectOne(skus);
-        AssertUtil.isNull(skus, "该条形码已经存在!");
+        List<Skus> skusList = skusService.select(skus);
+        if(!CollectionUtils.isEmpty(skusList)){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "该条形码已经存在!");
+        }
     }
 
     /**
