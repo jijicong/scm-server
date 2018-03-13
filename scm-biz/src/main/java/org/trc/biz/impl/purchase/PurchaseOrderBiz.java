@@ -57,6 +57,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
+import java.text.Collator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1576,12 +1577,17 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SUPPLIER)
+    //@Cacheable(value = SupplyConstants.Cache.SUPPLIER)
     public List<SupplierBrandExt> findSupplierBrand(String supplierCode) throws Exception {
         AssertUtil.notBlank(supplierCode,"供应商的编码为空!");
-
         List<SupplierBrandExt> supplierBrandExts = iSupplierBrandService.selectSupplierBrandNames(supplierCode);
-
+        Collections.sort(supplierBrandExts, new Comparator<SupplierBrandExt>() {
+            @Override
+            public int compare(SupplierBrandExt o1, SupplierBrandExt o2) {
+                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
+                return com.compare(o1.getBrandName(), o2.getBrandName());
+            }
+        });
         return supplierBrandExts;
     }
 
