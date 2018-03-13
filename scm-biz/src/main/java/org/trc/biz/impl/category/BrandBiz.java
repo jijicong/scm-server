@@ -41,6 +41,7 @@ import org.trc.util.*;
 import org.trc.util.cache.BrandCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
+import java.text.Collator;
 import java.util.*;
 
 /**
@@ -221,7 +222,15 @@ public class BrandBiz implements IBrandBiz {
             brand.setIsValid(ZeroToNineEnum.ONE.getCode());
         }
         brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        return brandService.select(brand);
+        List<Brand> brandList = brandService.select(brand);
+        Collections.sort(brandList, new Comparator<Brand>() {
+            @Override
+            public int compare(Brand o1, Brand o2) {
+                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
+                return com.compare(o1.getName(), o2.getName());
+            }
+        });
+        return brandList;
     }
 
     @Override

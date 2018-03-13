@@ -24,13 +24,11 @@ import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.supplier.ISupplierCategoryService;
 import org.trc.service.util.ISerialUtilService;
-import org.trc.util.AssertUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
-import org.trc.util.StringUtil;
+import org.trc.util.*;
 import org.trc.util.cache.CategoryCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
+import java.text.Collator;
 import java.util.*;
 
 /**
@@ -410,13 +408,20 @@ public class CategoryBiz implements ICategoryBiz {
     @Cacheable(value = SupplyConstants.Cache.CATEGORY)
     public List<CategoryBrandExt> queryCategoryBrands(CategoryBrandForm categoryBrandForm) throws Exception {
         AssertUtil.notBlank(categoryBrandForm.getCategoryId(), "查询分类相关品牌分类ID不能为空");
-//        categoryLevel(Long.parseLong(categoryBrandForm.getCategoryId()));
         String[] categoryIds = categoryBrandForm.getCategoryId().split(SupplyConstants.Symbol.COMMA);
         List<Long> categoryList = new ArrayList<Long>();
         for (String categoryId : categoryIds) {
             categoryList.add(Long.parseLong(categoryId));
         }
-        return categoryBrandService.queryCategoryBrands(categoryList);
+        List<CategoryBrandExt> categoryBrandExts = categoryBrandService.queryCategoryBrands(categoryList);
+        Collections.sort(categoryBrandExts, new Comparator<CategoryBrandExt>() {
+            @Override
+            public int compare(CategoryBrandExt o1, CategoryBrandExt o2) {
+                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
+                return com.compare(o1.getBrandName(), o2.getBrandName());
+            }
+        });
+        return categoryBrandExts;
     }
 
     @Override
