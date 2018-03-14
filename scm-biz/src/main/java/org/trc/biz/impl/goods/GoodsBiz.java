@@ -1163,7 +1163,9 @@ public class GoodsBiz implements IGoodsBiz {
             skus2.setPropertyValueId(jbo.getString("propertyValueId"));
             skus2.setPropertyValue(jbo.getString("propertyValue"));
             skus2.setBarCode(jbo.getString("barCode"));
-            skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
+            if(StringUtils.isNotBlank(jbo.getString("weight2"))){
+                skus2.setWeight(CommonUtil.getWeightLong(jbo.getString("weight2")));
+            }
             skus2.setMarketPrice(getLongValue(jbo.getString("marketPrice2")));
             skus2.setPicture(jbo.getString("picture"));
             skus2.setSpecInfo(jbo.getString("normName")); // 规格信息保存  20171117
