@@ -294,6 +294,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public List<JurisdictionTreeNode> getNodes(Long parentId, boolean isRecursive) {
         Example example = new Example(AclResource.class);
         Example.Criteria criteria = example.createCriteria();
@@ -343,6 +344,7 @@ public class AclResourceBiz implements IAclResourceBiz {
      * @throws Exception
      */
     @Override
+    @UserCacheEvict
     public void saveJurisdiction(JurisdictionTreeNode jurisdictionTreeNode, AclUserAccreditInfo aclUserAccreditInfo) {
         String code = "";
         //生成code
@@ -422,6 +424,7 @@ public class AclResourceBiz implements IAclResourceBiz {
      * @throws Exception
      */
     @Override
+    @UserCacheEvict
     public void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode) {
         AclResourceExt aclResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode), AclResourceExt.class);
         AclResourceExt resourceExt = new AclResourceExt();
@@ -439,6 +442,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public List<Map<String, Object>> getHtmlJurisdiction(String userId) {
         List<Map<String, Object>> jurisdictionList = new ArrayList<>();
         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
