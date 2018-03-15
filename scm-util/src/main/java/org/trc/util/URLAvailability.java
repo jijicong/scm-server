@@ -18,7 +18,7 @@ public class URLAvailability {
     private static URL url;
     private static HttpURLConnection con;
     private static int state = -1;
-        private final static int TRY_TIMES = 15;
+        private final static int TRY_TIMES = 20;
     private final static long WAIT_SECONDS = 300;//单位/毫秒
 
     /**
