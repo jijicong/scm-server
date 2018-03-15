@@ -2694,12 +2694,13 @@ public class GoodsBiz implements IGoodsBiz {
      * @param flag 0-新增代发商品,1-根据供应商sku更新通知更新一件代发商品
      * @return
      */
-    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems, String flag){ List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
+    private List<ExternalItemSku> getExternalItemSkus(List<SupplyItems> supplyItems, String flag) {
+        List<ExternalItemSku> externalItemSkus = new ArrayList<ExternalItemSku>();
         Date sysDate = Calendar.getInstance().getTime();
         String sysDateStr = DateUtils.dateToCompactString(sysDate);
         Map<String, String> supplierMap = new HashMap<>();
         Set<String> supplierInterfaceIds = new HashSet<>();
-        for(SupplyItems items: supplyItems){
+        for (SupplyItems items : supplyItems) {
             supplierInterfaceIds.add(items.getSupplierCode());
             supplierMap.put(items.getSupplierCode(), items.getSupplyName());
         }
@@ -2784,7 +2785,7 @@ public class GoodsBiz implements IGoodsBiz {
                 externalItemSku.setUpdateTime(sysDate);
             }
             externalItemSku.setMinBuyCount(items.getMinBuyCount());
-
+            externalItemSku.setExternalId(items.getId());
             externalItemSkus.add(externalItemSku);
         }
         return externalItemSkus;
@@ -2799,6 +2800,7 @@ public class GoodsBiz implements IGoodsBiz {
         for(ExternalItemSku externalItemSku: externalItemSkuList){
             SkuDO skuDO = new SkuDO();
             skuDO.setSupplySku(externalItemSku.getSupplierSkuCode());
+            skuDO.setId(externalItemSku.getExternalId());
             skuDOList.add(skuDO);
         }
         ReturnTypeDO returnTypeDO = jdService.noticeUpdateSkuUsedStatus(skuDOList);
