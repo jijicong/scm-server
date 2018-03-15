@@ -198,6 +198,17 @@ public class ExternalItemSku implements Serializable{
     @Transient
     private String skuRelationStatus;
 
+    @Transient
+    private Long externalId;
+
+    public Long getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(Long externalId) {
+        this.externalId = externalId;
+    }
+
     public Long getId() {
         return id;
     }
