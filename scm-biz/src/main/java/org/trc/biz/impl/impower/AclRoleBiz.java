@@ -27,6 +27,7 @@ import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
+import org.trc.util.cache.UserCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
@@ -73,6 +74,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
 
     @Override
+    @UserCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateRoleState(AclRole aclRole, AclUserAccreditInfo aclUserAccreditInfo){
 
@@ -159,6 +161,7 @@ public class AclRoleBiz implements IAclRoleBiz {
 
     }
     @Override
+    @UserCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateRole(AclRole aclRole, String roleJurisdiction,AclUserAccreditInfo aclUserAccreditInfo){
 
@@ -218,6 +221,7 @@ public class AclRoleBiz implements IAclRoleBiz {
     }
 
     @Override
+    @UserCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveRole(AclRole aclRole, String roleJurisdiction, AclUserAccreditInfo aclUserAccreditInfo){
         AssertUtil.notNull(aclRole,"角色管理模块保存角色信息失败，角色信息为空");
