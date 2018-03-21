@@ -107,7 +107,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             WarehouseInfoResult result = new WarehouseInfoResult();
             result.setId(warehouseInfo.getId());
             result.setWarehouseName(warehouseInfo.getWarehouseName());
-            result.setType(warehouseInfo.getType());
+            result.setType(warehouseInfo.getWarehouseTypeCode());
             result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
             result.setSkuNum(warehouseInfo.getSkuNum());
             String state = convertWarehouseState(warehouseInfo.getOwnerWarehouseState());
@@ -320,7 +320,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         校验如果是保税仓，必须要是否支持清关的数据<否则，为不合理的，或者非法提交>
         如果是其它仓，不能接受是否支持清关的数据
          */
-        String strs = warehouse.getType();
+        String strs = warehouse.getWarehouseTypeCode();
         AssertUtil.notBlank(strs,"仓库类型为空");
         if(strs.equals("bondedWarehouse")){
             AssertUtil.notNull(warehouse.getIsCustomsClearance(),"仓库类型为保税仓,是否支持清关不能为空");

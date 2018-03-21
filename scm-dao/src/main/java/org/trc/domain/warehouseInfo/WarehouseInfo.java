@@ -30,12 +30,11 @@ public class WarehouseInfo extends BaseDO {
     @Length(max = 64, message = "入库通知的编码字母和数字不能超过64个,汉字不能超过32个")
     private String warehouseName;
 
-    //仓库类型
-    @FormParam("type")
-    private String type;
+    @FormParam("warehouseTypeCode")
+    @Length(max = 32, message = "仓库类型字母和数字不能超过32个,汉字不能超过16个")
+    private String warehouseTypeCode;   //仓库类型 1.保税仓 2.海外仓 3.普通仓
 
     @FormParam("isThroughQimen")
-
     private Integer isThroughQimen; // 是否通过奇门对接：0-不通过 1-通过
 
     @FormParam("isCustomsClearance")
@@ -126,14 +125,6 @@ public class WarehouseInfo extends BaseDO {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getQimenWarehouseCode() {
@@ -302,5 +293,13 @@ public class WarehouseInfo extends BaseDO {
 
     public void setIsThroughQimen(Integer isThroughQimen) {
         this.isThroughQimen = isThroughQimen;
+    }
+
+    public String getWarehouseTypeCode() {
+        return warehouseTypeCode;
+    }
+
+    public void setWarehouseTypeCode(String warehouseTypeCode) {
+        this.warehouseTypeCode = warehouseTypeCode;
     }
 }
