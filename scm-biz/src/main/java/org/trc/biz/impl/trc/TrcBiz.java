@@ -1163,12 +1163,15 @@ public class TrcBiz implements ITrcBiz {
         if(skusList == null || skusList.size() < 1){
             return;
         }
+        for(Skus skus: skusList){
+            skus.setStock(0l);
+        }
         //通过奇门获取库存信息
-        List<InventoryQueryResponse.Item> itemList = this.getQimenStockByskuCode(this.getSkuCodes(skusList), channelCode);
+        /*List<InventoryQueryResponse.Item> itemList = this.getQimenStockByskuCode(this.getSkuCodes(skusList), channelCode);
         //合并同skuCode库存
         Map<String, Long> map = this.getSkuMap(itemList);
         //赋值stock
-        this.setSkuStock(skusList, map);
+        this.setSkuStock(skusList, map);*/
     }
 
     //赋值stock
