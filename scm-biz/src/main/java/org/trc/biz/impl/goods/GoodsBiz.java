@@ -21,7 +21,6 @@ import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -51,7 +50,6 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
-import org.trc.service.impl.system.WarehouseService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
@@ -145,8 +143,6 @@ public class GoodsBiz implements IGoodsBiz {
     private IJDService jdService;
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
-    @Autowired
-    private WarehouseService warehouseService;
     @Autowired
     private ITrcBiz trcBiz;
     @Autowired
@@ -797,9 +793,8 @@ public class GoodsBiz implements IGoodsBiz {
     private ItemsSynchronizeRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
-        Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.parseLong(warehouseInfo.getWarehouseId()));
-        if(warehouse.getIsThroughQimen() == null || warehouse.getIsThroughQimen() == 0 ||
-                StringUtils.equals(warehouse.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
+        if(warehouseInfo.getIsThroughQimen() == null || warehouseInfo.getIsThroughQimen() == 0 ||
+                StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
             return null;
         }
 

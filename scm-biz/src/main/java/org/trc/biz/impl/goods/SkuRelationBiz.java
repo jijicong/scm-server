@@ -263,7 +263,7 @@ public class SkuRelationBiz implements ISkuRelationBiz {
         if(StringUtils.isNotEmpty(channelCode)){
             warehouseInfo.setChannelCode(channelCode);
         }
-        warehouseInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        warehouseInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         warehouseInfo.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
         return warehouseInfoService.select(warehouseInfo);
     }

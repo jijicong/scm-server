@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,6 @@ import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
@@ -59,7 +57,6 @@ import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
 import org.trc.service.ITrcService;
 import org.trc.service.System.ILogisticsCompanyService;
-import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
@@ -67,15 +64,7 @@ import org.trc.service.goods.IExternalItemSkuService;
 import org.trc.service.goods.ISkuRelationService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
-import org.trc.service.order.IExceptionOrderItemService;
-import org.trc.service.order.IExceptionOrderService;
-import org.trc.service.order.IOrderFlowService;
-import org.trc.service.order.IOrderItemService;
-import org.trc.service.order.IPlatformOrderService;
-import org.trc.service.order.IShopOrderService;
-import org.trc.service.order.ISupplierOrderInfoService;
-import org.trc.service.order.ISupplierOrderLogisticsService;
-import org.trc.service.order.IWarehouseOrderService;
+import org.trc.service.order.*;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
@@ -210,8 +199,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IExceptionOrderItemService exceptionOrderItemService;
     @Autowired
     private ISkuStockService skuStockService;
-    @Autowired
-    private IWarehouseService warehouseService;
     @Autowired
     private IQimenService qimenService;
     @Autowired
@@ -3992,15 +3979,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder, List<SkuStock> skuStockList, Map<String, List<SkuWarehouseDO>> skuWarehouseMap) {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
-        List<Warehouse> warehouseList = new ArrayList<>();
+        List<WarehouseInfo> warehouseList = new ArrayList<>();
         Set<String> warehouseCodes = new HashSet<>();
         for(SkuStock skuStock: skuStockList){
             warehouseCodes.add(skuStock.getWarehouseCode());
         }
-        Example example2 = new Example(Warehouse.class);
+        Example example2 = new Example(WarehouseInfo.class);
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("code", warehouseCodes);
-        warehouseList = warehouseService.selectByExample(example2);
+        warehouseList = warehouseInfoService.selectByExample(example2);
         AssertUtil.notEmpty(warehouseList, String.format("根据仓库编码列表[%s]查询仓库为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes))));
         Set<String> warehouses = new HashSet<>();//所有匹配库存的仓库
         for(OrderItem orderItem: orderItems){
@@ -4016,13 +4003,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //创建仓库订单
         if(warehouses.size() > 0){
-            Example example3 = new Example(Warehouse.class);
+            Example example3 = new Example(WarehouseInfo.class);
             Example.Criteria criteria3 = example3.createCriteria();
             criteria3.andIn("code", warehouses);
-            List<Warehouse> warehouseList3 = warehouseService.selectByExample(example3);
+            List<WarehouseInfo> warehouseList3 = warehouseInfoService.selectByExample(example3);
             for(String warehouseCode: warehouses){
                 boolean flag = false;
-                for(Warehouse warehouse: warehouseList3){
+                for(WarehouseInfo warehouse: warehouseList3){
                     if(StringUtils.equals(warehouseCode, warehouse.getCode())){
                         flag = true;
                         break;
@@ -4030,7 +4017,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
                 AssertUtil.isTrue(flag, String.format("根据仓库订单编码[%s]查询仓库信息为空", warehouseCode));
             }
-            for(Warehouse warehouse: warehouseList3){
+            for(WarehouseInfo warehouse: warehouseList3){
                 List<OrderItem> warehouseOrderItemList = new ArrayList<>();
                 for(Map.Entry<String, List<SkuWarehouseDO>> entry: skuWarehouseMap.entrySet()){
                     List<SkuWarehouseDO> skuWarehouseDOList = entry.getValue();
@@ -4070,11 +4057,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrder
      * @return
      */
-    private WarehouseOrder getSelfWarehouseOrder(Warehouse warehouse, List<OrderItem> orderItems, ShopOrder shopOrder){
+    private WarehouseOrder getSelfWarehouseOrder(WarehouseInfo warehouse, List<OrderItem> orderItems, ShopOrder shopOrder){
         WarehouseOrder warehouseOrder = new WarehouseOrder();
         warehouseOrder.setWarehouseId(warehouse.getId());
         warehouseOrder.setWarehouseCode(warehouse.getCode());
-        warehouseOrder.setWarehouseName(warehouse.getName());
+        warehouseOrder.setWarehouseName(warehouse.getWarehouseName());
         warehouseOrder.setShopId(shopOrder.getShopId());
         warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
         warehouseOrder.setShopName(shopOrder.getShopName());
@@ -5123,18 +5110,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
         criteria.andIn("code", warehouseCodes);
         criteria.andEqualTo("channelCode", channelCode);
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
-        AssertUtil.notEmpty(warehouseInfoList, String.format("根据仓库编码[%s]和业务线[%s]查询仓储信息为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes)), channelCode));
-        Example example2 = new Example(Warehouse.class);
+        AssertUtil.notEmpty(warehouseInfoList, String.format("根据仓库编码[%s]查询仓储信息为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes)), channelCode));
+        Example example2 = new Example(WarehouseInfo.class);
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("code", warehouseCodes);
-        List<Warehouse> warehouseList = warehouseService.selectByExample(example2);
+        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(example2);
         AssertUtil.notEmpty(warehouseList, String.format("根据仓库编码[%s]查询仓库信息为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes))));
         Map<String, OutboundForm> outboundMap2 = new HashedMap(outboundMap);
         //替换发货通知单中的仓库编码
         for(Map.Entry<String, OutboundForm> entry: entries){
             OutboundForm outboundForm = entry.getValue();
             OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
-            for(Warehouse warehouse: warehouseList){
+            for(WarehouseInfo warehouse: warehouseList){
                 if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
                     outboundOrder.setWarehouseCode(warehouse.getCode());
                     break;
@@ -5172,7 +5159,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param outboundMap
      * @param appResult
      */
-    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult, List<Warehouse> warehouseList){
+    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult, List<WarehouseInfo> warehouseList){
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
         List<String> outboundCodes = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
@@ -5238,9 +5225,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 for(Map.Entry<String, OutboundForm> entry: entries){
                     if(StringUtils.equals(order.getDeliveryOrderCode(), entry.getKey())){
                         OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                        for(Warehouse warehouse: warehouseList){
+                        for(WarehouseInfo warehouse: warehouseList){
                             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
-                                operator = warehouse.getName();
+                                operator = warehouse.getWarehouseName();
                             }
                         }
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
@@ -5255,9 +5242,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 for(Map.Entry<String, OutboundForm> entry: entries){
                     if(StringUtils.equals(successOutboundCode, entry.getKey())){
                         OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-                        for(Warehouse warehouse: warehouseList){
+                        for(WarehouseInfo warehouse: warehouseList){
                             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
-                                operator = warehouse.getName();
+                                operator = warehouse.getWarehouseName();
                             }
                         }
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_SUCCESS.getMessage(), "",null);
@@ -5353,7 +5340,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param warehouseList
      * @return
      */
-    private DeliveryorderBatchcreateRequest.DeliveryOrder getDeliveryOrder(OutboundOrder outboundOrder, List<Warehouse> warehouseList){
+    private DeliveryorderBatchcreateRequest.DeliveryOrder getDeliveryOrder(OutboundOrder outboundOrder, List<WarehouseInfo> warehouseList){
         //发货单信息
         DeliveryorderBatchcreateRequest.DeliveryOrder deliveryOrder = new DeliveryorderBatchcreateRequest.DeliveryOrder();
         deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
@@ -5370,9 +5357,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         deliveryOrder.setSellerMessage(outboundOrder.getSellerMessage());
         //发件人信息
         DeliveryorderBatchcreateRequest.SenderInfo senderInfo = new DeliveryorderBatchcreateRequest.SenderInfo();
-        for(Warehouse warehouse: warehouseList){
+        for(WarehouseInfo warehouse: warehouseList){
             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
-                senderInfo.setName(warehouse.getName());
+                senderInfo.setName(warehouse.getWarehouseName());
                 senderInfo.setMobile(warehouse.getSenderPhoneNumber());
                 senderInfo.setProvince(warehouse.getProvince());
                 senderInfo.setCity(warehouse.getCity());

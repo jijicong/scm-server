@@ -1,16 +1,14 @@
 package org.trc.biz.impl.outbound;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.core.Response;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.qimen.api.request.DeliveryorderConfirmRequest;
+import com.qimen.api.request.DeliveryorderConfirmRequest.Item;
+import com.qimen.api.request.DeliveryorderCreateRequest;
+import com.qimen.api.request.OrderCancelRequest;
+import com.qimen.api.response.DeliveryorderCreateResponse;
+import com.qimen.api.response.OrderCancelResponse;
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,29 +21,23 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
-import org.trc.cache.CacheEvit;
 import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.LogisticsCompany;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OrderItem;
 import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundDetailLogistics;
 import org.trc.domain.order.OutboundOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
-import org.trc.form.Logistic;
-import org.trc.form.LogisticNoticeForm;
-import org.trc.form.SkuInfo;
-import org.trc.form.TrcConfig;
-import org.trc.form.TrcParam;
+import org.trc.form.*;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IQimenService;
-import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.impl.TrcService;
@@ -55,26 +47,15 @@ import org.trc.service.order.IOrderItemService;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
-import org.trc.util.ParamsUtil;
-import org.trc.util.ResultUtil;
-
-import com.alibaba.fastjson.JSONObject;
-import com.qimen.api.request.DeliveryorderConfirmRequest;
-import com.qimen.api.request.DeliveryorderConfirmRequest.Item;
-import com.qimen.api.request.DeliveryorderCreateRequest;
-import com.qimen.api.request.OrderCancelRequest;
-import com.qimen.api.response.DeliveryorderCreateResponse;
-import com.qimen.api.response.OrderCancelResponse;
-import com.thoughtworks.xstream.XStream;
-
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.util.*;
 import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
+
+import javax.ws.rs.core.Response;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service("outBoundOrderBiz")
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
@@ -95,8 +76,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
-    @Autowired
-    private IWarehouseService warehouseService;
     @Autowired
     private IOutboundDetailService outboundDetailService;
     @Autowired
@@ -119,7 +98,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RequestFlowService requestFlowService;
     @Autowired
     private LogisticsCompanyService logisticsCompanyService;
-
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private RedisLock redisLock;
 
@@ -139,7 +119,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, form);
         List<OutboundOrder> outboundOrderList = pagenation.getResult();
         for(OutboundOrder order : outboundOrderList){
-            order.setWarehouseName(warehouseService.selectByPrimaryKey(order.getWarehouseId()).getName());
+            order.setWarehouseName(warehouseInfoService.selectByPrimaryKey(order.getWarehouseId()).getWarehouseName());
             if((StringUtils.equals(order.getIsCancel(), ZeroToNineEnum.ONE.getCode())
                     || StringUtils.equals(order.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
                     this.checkDate(order.getUpdateTime())){
@@ -190,7 +170,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //获取仓库名称
         Long warehouseId = outboundOrder.getWarehouseId();
-        Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
+        WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
 
         //更新订单信息
         this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
@@ -199,7 +179,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         deliveryOrderConfirmNotice(outboundOrder, packageList);
 
         //记录日志
-        logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getName(),
+        logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
                 LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
         
     }
@@ -482,7 +462,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Long id = outboundOrder.getId();
         AssertUtil.notNull(outboundOrder,"根据发货通知单id获取发货通知单记录为空");
         Long warehouseId = outboundOrder.getWarehouseId();
-        Warehouse warehouse = warehouseService.selectByPrimaryKey(warehouseId);
+        WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode",outboundOrder.getOutboundOrderCode());
@@ -521,10 +501,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
-                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getName(),"仓库接收成功","",null);
+                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
                 }else {
                     //仓库接受失败插入一条日志
-                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getName(),"仓库接收失败",msg,null);
+                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
                     updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id);
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -568,7 +548,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 detail.setOutboundDetailLogisticsList(outboundDetailLogisticsList);
             }
             outboundOrder.setOutboundDetailList(outboundDetailList);
-            outboundOrder.setWarehouseName(warehouseService.selectByPrimaryKey(outboundOrder.getWarehouseId()).getName());
+            outboundOrder.setWarehouseName(warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId()).getWarehouseName());
             return ResultUtil.createSuccessResult("获取发货通知单详情成功！", outboundOrder);
         }catch(Exception e){
             logger.error(e.getMessage(), e);
@@ -762,7 +742,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    private DeliveryorderCreateRequest setParam(Warehouse warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
+    private DeliveryorderCreateRequest setParam(WarehouseInfo warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
         DeliveryorderCreateRequest request = new DeliveryorderCreateRequest();
         DeliveryorderCreateRequest.DeliveryOrder deliveryOrder =  new DeliveryorderCreateRequest.DeliveryOrder();
         deliveryOrder.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());
@@ -774,7 +754,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         deliveryOrder.setShopNick(outboundOrder.getShopName());
         deliveryOrder.setSourcePlatformCode(SupplyConstants.SourcePlatformCodeType.OTHER);
         DeliveryorderCreateRequest.SenderInfo senderInfo = new DeliveryorderCreateRequest.SenderInfo();
-        senderInfo.setName(warehouse.getName());
+        senderInfo.setName(warehouse.getWarehouseName());
         senderInfo.setMobile(warehouse.getSenderPhoneNumber());
         senderInfo.setProvince(warehouse.getProvince());
         senderInfo.setCity(warehouse.getCity());
@@ -830,7 +810,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             }
 
             //获取仓库信息
-            Warehouse warehouse =warehouseService.selectByPrimaryKey(outboundOrder.getWarehouseId());
+            WarehouseInfo warehouse =warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
 
             //组装请求
             OrderCancelRequest orderCancelRequest = new OrderCancelRequest();
@@ -898,14 +878,14 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
     }
 
-    private void verifyParam(Warehouse warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
+    private void verifyParam(WarehouseInfo warehouse,OutboundOrder outboundOrder,List<OutboundDetail> outboundDetails){
         AssertUtil.notBlank(outboundOrder.getOutboundOrderCode(),"出库通知单编号不能为空");
         AssertUtil.notBlank(outboundOrder.getOrderType(),"出库单类型不能为空");
         AssertUtil.notBlank(warehouse.getCode(),"仓库编码不能为空");
         AssertUtil.notNull(outboundOrder.getCreateTime(),"发货单创建时间不能为空");
         AssertUtil.notNull(outboundOrder.getPayTime(),"付款时间不能为空");
         AssertUtil.notBlank(outboundOrder.getShopName(),"店铺名称不能为空");
-        AssertUtil.notBlank(warehouse.getName(),"发货仓库名称不能为空");
+        AssertUtil.notBlank(warehouse.getWarehouseName(),"发货仓库名称不能为空");
         AssertUtil.notBlank(warehouse.getSenderPhoneNumber(),"运单发件人手机号不能为空");
         AssertUtil.notBlank(warehouse.getProvince(),"发货仓库省份不能为空");
         AssertUtil.notBlank(warehouse.getCity(),"发货仓库城市不能为空");

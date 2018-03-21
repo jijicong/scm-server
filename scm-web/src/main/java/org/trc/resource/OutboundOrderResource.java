@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
@@ -42,14 +42,14 @@ public class OutboundOrderResource {
     @GET
     @Path(SupplyConstants.OutboundOrder.WAREHOUSE_LIST)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Warehouse> findValidWarehouseList() {
+    public AppResult<WarehouseInfo> findValidWarehouseList() {
         return ResultUtil.createSucssAppResult("查询有效的仓库成功!", warehouseBiz.findWarehouseValid());
     }
 
     @GET
     @Path(SupplyConstants.OutboundOrder.WAREHOUSE_LIST_ALL)
     @Produces(MediaType.APPLICATION_JSON)
-    public AppResult<Warehouse> findWarehouseList() {
+    public AppResult<WarehouseInfo> findWarehouseList() {
         return ResultUtil.createSucssAppResult("查询仓库成功!", warehouseBiz.findWarehouse());
     }
 

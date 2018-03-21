@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.warehouseInfo.IWarehouseInfoMapper">
-    <!-- 获取所有有效的仓库 -->
-    <select id="selectWarehouseInfo" resultType="org.trc.domain.warehouseInfo.WarehouseInfo"
-            parameterType="java.util.Map">
-        SELECT info.code,info.warehouse_id AS warehouseId, info.warehouse_name AS warehouseName,info.type,
-                info.qimen_warehouse_code AS qimenWarehouseCode, info.sku_num AS skuNum, info.channel_code AS channelCode,
-                info.warehouse_owner_id AS warehouseOwnerId, info.owner_name AS ownerName, info.owner_warehouse_state AS ownerWarehouseState,
-                info.is_delete AS isDelete, info.remark, info.id
-        FROM warehouse_info info
-        RIGHT JOIN warehouse w
-        ON info.warehouse_id = w.id
-        WHERE
-        w.is_valid = 1
-        AND info.owner_warehouse_state = 1
-        AND info.is_delete = 0
-        AND info.channel_code = #{channelCode}
-    </select>
 </mapper>

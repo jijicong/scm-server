@@ -1,14 +1,14 @@
 package org.trc.form.warehouseInfo;
 
+import java.io.Serializable;
+
 /**
  * Created by wangyz on 2017/11/15.
  */
-public class WarehouseInfoResult {
+public class WarehouseInfoResult implements Serializable {
     //主键
     private Long id;
 
-    //仓库订单表主键
-    private String warehouseId;
     //仓库名称
     private String warehouseName;
 
@@ -46,8 +46,9 @@ public class WarehouseInfoResult {
 
     private String isNoticeWarehouseItems;
 
-    //备注
-    private String remark;
+    private String isValid;
+
+    private String createOperator;
 
     public Long getId() {
         return id;
@@ -55,14 +56,6 @@ public class WarehouseInfoResult {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getWarehouseId() {
-        return warehouseId;
-    }
-
-    public void setWarehouseId(String warehouseId) {
-        this.warehouseId = warehouseId;
     }
 
     public String getWarehouseName() {
@@ -169,11 +162,19 @@ public class WarehouseInfoResult {
         this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 
-    public String getRemark() {
-        return remark;
+    public String getIsValid() {
+        return isValid;
     }
 
-    public void setRemark(String remark) {
-        this.remark = remark;
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getCreateOperator() {
+        return createOperator;
+    }
+
+    public void setCreateOperator(String createOperator) {
+        this.createOperator = createOperator;
     }
 }

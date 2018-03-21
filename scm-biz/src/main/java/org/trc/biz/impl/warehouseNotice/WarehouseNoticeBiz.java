@@ -12,7 +12,6 @@ import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
 import com.qimen.api.response.EntryorderCreateResponse;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +21,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
-import org.trc.biz.impl.purchase.PurchaseOrderAuditBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.common.RequsetUpdateStock;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.Brand;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.SkuStock;
@@ -35,13 +32,13 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.service.IQimenService;
-import org.trc.service.System.IWarehouseService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
 import org.trc.service.config.ILogInfoService;
@@ -54,12 +51,12 @@ import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
-import org.trc.util.ResultUtil;
 import org.trc.util.cache.WarehouseNoticeCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
@@ -81,7 +78,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     @Autowired
     private IPurchaseOrderService purchaseOrderService;
     @Autowired
-    private IWarehouseService warehouseService;
+    private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
     @Autowired
@@ -215,11 +212,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     	        AssertUtil.notNull(supplier, "供应商名称查询失败");
     	        notice.setSupplierName(supplier.getSupplierName());
 
-    	        Warehouse warehouse = new Warehouse();
+    	        WarehouseInfo warehouse = new WarehouseInfo();
     	        warehouse.setCode(notice.getWarehouseCode());
-    	        warehouse = warehouseService.selectOne(warehouse);
+    	        warehouse = warehouseInfoService.selectOne(warehouse);
     	        AssertUtil.notNull(warehouse, "仓库名称查询失败");
-    	        notice.setWarehouseName(warehouse.getName());
+    	        notice.setWarehouseName(warehouse.getWarehouseName());
     			
     		}
     	}
@@ -832,11 +829,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notNull(aclUserAccreditInfo.getName(), "采购人名称查询失败");
         warehouseNotice.setPurchasePersonName(aclUserAccreditInfo.getName());
 
-        Warehouse warehouse = new Warehouse();
+        WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setCode(warehouseNotice.getWarehouseCode());
-        warehouse = warehouseService.selectOne(warehouse);
-        AssertUtil.notNull(warehouse.getName(), "仓库名称查询失败");
-        warehouseNotice.setWarehouseName(warehouse.getName());
+        warehouse = warehouseInfoService.selectOne(warehouse);
+        AssertUtil.notNull(warehouse.getWarehouseName(), "仓库名称查询失败");
+        warehouseNotice.setWarehouseName(warehouse.getWarehouseName());
         List<Dict> dicts = configBiz.findDictsByTypeNo(SupplyConstants.SelectList.PURCHASE_TYPE);
         for (Dict dict : dicts) {
             if (warehouseNotice.getPurchaseType().equals(dict.getValue())) {
@@ -893,9 +890,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //ownerCode 货主编码,itemId 仓储系统商品ID 需要转换成本地对应的YWX,itemId
         String itemId = orderLine.getItemId();
         if (!StringUtils.isBlank(itemId)) {
-            Warehouse warehouse = new Warehouse();
+            WarehouseInfo warehouse = new WarehouseInfo();
             warehouse.setQimenWarehouseCode(itemId);
-            warehouse = warehouseService.selectOne(warehouse);
+            warehouse = warehouseInfoService.selectOne(warehouse);
             if (null != warehouse) {
                 return warehouse.getCode();
             }
