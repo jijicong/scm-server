@@ -888,6 +888,7 @@ public class GoodsBiz implements IGoodsBiz {
     private void saveItemsBase(Items items) throws Exception{
         ParamsUtil.setBaseDO(items);
         checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
+        checkIsQuality(items);
         int count = itemsService.insert(items);
         if (count == 0) {
             String msg = String.format("保商品基础信息%s到数据库失败", JSON.toJSONString(items));
@@ -999,6 +1000,19 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(categoryBrand, String.format("分类[%s]和品牌[%s]关联关系已解除,请选择其他品牌!", category.getName(), brand.getName()));
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
             throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]关联品牌[%s]已被禁用,请选择其他品牌!", category.getName(), brand.getName()));
+        }
+    }
+
+
+    /**
+     * 校验是否质保
+     * @param items
+     */
+    private void checkIsQuality(Items items){
+        if (StringUtils.equals(items.getIsQuality(),ZeroToNineEnum.ONE.getCode())){
+            AssertUtil.notNull(items.getQualityDay(),"商品具有质保日期管理时，质保天数不能为空！");
+        }else {
+            AssertUtil.isNull(items.getQualityDay(),"商品不具有质保日期管理时，质保天数必须为空！");
         }
     }
 
@@ -1115,6 +1129,7 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(items.getId(), "商品ID不能为空");
         items.setUpdateTime(Calendar.getInstance().getTime());
         checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
+        checkIsQuality(items);
         Items items1 = itemsService.selectByPrimaryKey(items.getId());
         if(!StringUtils.equals(items1.getItemNo(), items.getItemNo())){
             map.put("itemNo", items.getItemNo());

@@ -65,6 +65,13 @@ public class Items extends BaseDO{
     @Length(max = 512, message = "属性量长度不能超过512个")
     private String properties;
 
+    @FormParam("isQuality")
+    @NotNull(message = "是否具有质保管理不能为空")
+    private String isQuality;
+
+    @FormParam("qualityDay")
+    private Long qualityDay;
+
     /**
      * SKU列表
      */
@@ -232,5 +239,21 @@ public class Items extends BaseDO{
 
     public void setBrandCode(String brandCode) {
         this.brandCode = brandCode;
+    }
+
+    public String getIsQuality() {
+        return isQuality;
+    }
+
+    public void setIsQuality(String isQuality) {
+        this.isQuality = isQuality;
+    }
+
+    public Long getQualityDay() {
+        return qualityDay;
+    }
+
+    public void setQualityDay(Long qualityDay) {
+        this.qualityDay = qualityDay;
     }
 }
