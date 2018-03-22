@@ -1187,6 +1187,8 @@ public class SupplyConstants {
         //京东地址
         public final static String JD_ADDRESS = "jd_address";
 
+        public final static String WAREHOUSE_ITEM = "warehouse_item";
+
     }
 
 

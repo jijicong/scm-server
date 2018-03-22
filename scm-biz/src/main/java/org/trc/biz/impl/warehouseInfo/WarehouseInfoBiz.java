@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -270,6 +272,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_ITEM)
     public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
         AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
@@ -301,7 +304,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
 
     @Override
-    @CacheEvit
+    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void deleteWarehouseItemInfoById(Long id) {
         AssertUtil.notNull(id, "仓库商品信息ID不能为空");
@@ -351,7 +354,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvit
+    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo) {
         AssertUtil.notNull(warehouseItemInfo.getId(), "仓库商品信息ID不能为空");
@@ -424,7 +427,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvit
+    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveWarehouseItemsSku(String items,Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId,"仓库的主键不能为空");
@@ -766,7 +769,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvit
+    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response uploadNoticeStatus(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String warehouseInfoId) {
         String fileName = fileDetail.getFileName();
@@ -839,7 +842,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvit
+    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response warehouseItemNoticeQimen(String itemIds) {
         AssertUtil.notBlank(itemIds, "同步商品不能为空");
