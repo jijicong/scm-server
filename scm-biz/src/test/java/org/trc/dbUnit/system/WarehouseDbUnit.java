@@ -119,7 +119,7 @@ public class WarehouseDbUnit extends BaseTestContext {
         warehouse.setProvince("210000");
         warehouse.setArea("210301");
         warehouse.setWarehouseName("wangwu");
-        warehouse.setType("bondedWarehouse");
+        warehouse.setWarehouseTypeCode("bondedWarehouse");
         warehouse.setIsCustomsClearance(1);
         warehouse.setRemark("11");
         return warehouse;
@@ -141,7 +141,7 @@ public class WarehouseDbUnit extends BaseTestContext {
         warehouse.setProvince("210000");
         warehouse.setArea("210301");
         warehouse.setWarehouseName("zhangsan");
-        warehouse.setType("bondedWarehouse");
+        warehouse.setWarehouseTypeCode("bondedWarehouse");
         warehouse.setIsCustomsClearance(1);
         warehouse.setRemark("11");
         return warehouse;

@@ -9,11 +9,13 @@ public class WarehouseInfoResult implements Serializable {
     //主键
     private Long id;
 
+    private String code;
+
     //仓库名称
     private String warehouseName;
 
     //仓库类型
-    private String type;
+    private String warehouseTypeCode;
 
     //奇门仓库编码
     private String qimenWarehouseCode;
@@ -64,14 +66,6 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getQimenWarehouseCode() {
@@ -176,5 +170,21 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setCreateOperator(String createOperator) {
         this.createOperator = createOperator;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getWarehouseTypeCode() {
+        return warehouseTypeCode;
+    }
+
+    public void setWarehouseTypeCode(String warehouseTypeCode) {
+        this.warehouseTypeCode = warehouseTypeCode;
     }
 }

@@ -107,7 +107,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             WarehouseInfoResult result = new WarehouseInfoResult();
             result.setId(warehouseInfo.getId());
             result.setWarehouseName(warehouseInfo.getWarehouseName());
-            result.setType(warehouseInfo.getWarehouseTypeCode());
+            result.setWarehouseTypeCode(warehouseInfo.getWarehouseTypeCode());
             result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
             result.setSkuNum(warehouseInfo.getSkuNum());
             String state = convertWarehouseState(warehouseInfo.getOwnerWarehouseState());
@@ -124,6 +124,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setOwnerId(warehouseInfo.getChannelCode());
             result.setOwnerName(warehouseInfo.getOwnerName());
             result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId()==null?"":warehouseInfo.getWarehouseOwnerId());
+            result.setCreateOperator(warehouseInfo.getCreateOperator());
             newList.add(result);
         }
 
