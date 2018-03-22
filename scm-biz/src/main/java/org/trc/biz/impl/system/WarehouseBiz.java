@@ -127,6 +127,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setCreateOperator(warehouseInfo.getCreateOperator());
             result.setCode(warehouseInfo.getCode());
             result.setIsValid(warehouseInfo.getIsValid());
+            result.setRemark(warehouseInfo.getRemark()==null?"":warehouseInfo.getRemark());
             newList.add(result);
         }
 

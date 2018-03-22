@@ -11,6 +11,8 @@ public class WarehouseInfoResult implements Serializable {
 
     private String code;
 
+    private String remark;
+
     //仓库名称
     private String warehouseName;
 
@@ -186,5 +188,13 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setWarehouseTypeCode(String warehouseTypeCode) {
         this.warehouseTypeCode = warehouseTypeCode;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }
