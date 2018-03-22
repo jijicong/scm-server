@@ -7,13 +7,13 @@ public class ScmDeliveryOrderCreateRequest  extends ScmWarehouseRequestBase{
     /**
      * 采购单参数列表
      */
-    private List<ScmDeleveryOrderDO> scmDeleveryOrderDOList;
+    private List<ScmDeliveryOrderDO> scmDeleveryOrderDOList;
 
-    public List<ScmDeleveryOrderDO> getScmDeleveryOrderDOList() {
+    public List<ScmDeliveryOrderDO> getScmDeleveryOrderDOList() {
         return scmDeleveryOrderDOList;
     }
 
-    public void setScmDeleveryOrderDOList(List<ScmDeleveryOrderDO> scmDeleveryOrderDOList) {
+    public void setScmDeleveryOrderDOList(List<ScmDeliveryOrderDO> scmDeleveryOrderDOList) {
         this.scmDeleveryOrderDOList = scmDeleveryOrderDOList;
     }
 }

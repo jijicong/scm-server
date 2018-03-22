@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 发货单信息
  */
-public class ScmDeleveryOrderDO {
+public class ScmDeliveryOrderDO {
 
     /**
      * 出库单号
@@ -173,7 +173,7 @@ public class ScmDeleveryOrderDO {
     /**
      * 订单列表
      */
-    private List<ScmDeleveryOrderItem> scmDeleveryOrderItemList;
+    private List<ScmDeliveryOrderItem> scmDeleveryOrderItemList;
 
     public String getDeliveryOrderCode() {
         return deliveryOrderCode;
@@ -431,11 +431,11 @@ public class ScmDeleveryOrderDO {
         this.salePlatformSource = salePlatformSource;
     }
 
-    public List<ScmDeleveryOrderItem> getScmDeleveryOrderItemList() {
+    public List<ScmDeliveryOrderItem> getScmDeleveryOrderItemList() {
         return scmDeleveryOrderItemList;
     }
 
-    public void setScmDeleveryOrderItemList(List<ScmDeleveryOrderItem> scmDeleveryOrderItemList) {
+    public void setScmDeleveryOrderItemList(List<ScmDeliveryOrderItem> scmDeleveryOrderItemList) {
         this.scmDeleveryOrderItemList = scmDeleveryOrderItemList;
     }
 }
