@@ -38,6 +38,7 @@ import org.trc.service.goods.ISkusService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
+import org.trc.util.cache.WarehouseCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -102,7 +103,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private String PASSWORD;
 
     @Override
-    @CacheEvit
+    @WarehouseCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveWarehouse(String code,AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(code,"仓库编号不能为空");
@@ -1168,6 +1169,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
 
     @Override
+    @WarehouseCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveOwnerInfo(WarehouseInfo warehouseInfo){
 //        AssertUtil.notBlank(warehouseInfo.getOwnerName(),"货主姓名不能为空");
