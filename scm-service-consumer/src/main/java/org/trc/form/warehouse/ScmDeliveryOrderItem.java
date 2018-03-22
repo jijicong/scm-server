@@ -2,7 +2,7 @@ package org.trc.form.warehouse;
 
 import java.math.BigDecimal;
 
-public class ScmDeleveryOrderItem {
+public class ScmDeliveryOrderItem {
 
     /**
      * 货主编码

@@ -1,6 +1,6 @@
 package org.trc.form.warehouse;
 
-public class ScmEntryOrderResponseItem {
+public class ScmEntryOrderDetailResponseItem {
 
     /**
      * 库存类型
