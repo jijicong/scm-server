@@ -5,12 +5,7 @@ import java.util.List;
 /**
  * 仓库商品同步参数
  */
-public class ScmItemSyncRequest {
-
-    /**
-     * 仓库类型:
-     */
-    private String warehouseType;
+public class ScmItemSyncRequest extends ScmWarehouseRequestBase{
 
     /**
      * 操作类型：add-新增|update-更新
@@ -64,11 +59,5 @@ public class ScmItemSyncRequest {
         this.warehouseItemList = warehouseItemList;
     }
 
-    public String getWarehouseType() {
-        return warehouseType;
-    }
 
-    public void setWarehouseType(String warehouseType) {
-        this.warehouseType = warehouseType;
-    }
 }

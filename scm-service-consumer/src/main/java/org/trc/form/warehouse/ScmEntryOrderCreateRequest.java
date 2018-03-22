@@ -3,12 +3,7 @@ package org.trc.form.warehouse;
 import java.util.Date;
 import java.util.List;
 
-public class ScmEntryOrderCreateRequest {
-
-    /**
-     * 仓库类型:
-     */
-    private String warehouseType;
+public class ScmEntryOrderCreateRequest  extends ScmWarehouseRequestBase{
 
     /**
      * 入库单号
@@ -134,14 +129,6 @@ public class ScmEntryOrderCreateRequest {
      * 入库单商品
      */
     private List<ScmEntryOrderItem> entryOrderItemList;
-
-    public String getWarehouseType() {
-        return warehouseType;
-    }
-
-    public void setWarehouseType(String warehouseType) {
-        this.warehouseType = warehouseType;
-    }
 
     public String getEntryOrderCode() {
         return entryOrderCode;

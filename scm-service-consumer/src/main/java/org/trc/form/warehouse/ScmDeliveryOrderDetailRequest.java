@@ -1,10 +1,7 @@
 package org.trc.form.warehouse;
 
-public class ScmDeliveryOrderDetailRequest {
+public class ScmDeliveryOrderDetailRequest extends ScmWarehouseRequestBase {
 
-    /**
-     * 仓库类型:
-     */
-    private String warehouseType;
+
 
 }

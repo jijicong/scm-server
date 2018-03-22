@@ -1,11 +1,6 @@
 package org.trc.form.warehouse;
 
-public class ScmOrderCancelRequest {
-
-    /**
-     * 仓库类型:
-     */
-    private String warehouseType;
+public class ScmOrderCancelRequest extends ScmWarehouseRequestBase{
 
     /**
      * 仓库编码
@@ -26,14 +21,6 @@ public class ScmOrderCancelRequest {
      *取消原因
      */
     private String cancelReason;
-
-    public String getWarehouseType() {
-        return warehouseType;
-    }
-
-    public void setWarehouseType(String warehouseType) {
-        this.warehouseType = warehouseType;
-    }
 
     public String getWarehouseCode() {
         return warehouseCode;
