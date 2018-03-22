@@ -3,12 +3,7 @@ package org.trc.form.warehouse;
 /**
  * 库存查询参数
  */
-public class ScmInventoryQueryRequest {
-
-    /**
-     * 仓库类型:
-     */
-    private String warehouseType;
+public class ScmInventoryQueryRequest  extends ScmWarehouseRequestBase{
 
     /**
      * 仓库编码
@@ -88,11 +83,4 @@ public class ScmInventoryQueryRequest {
         this.itemId = itemId;
     }
 
-    public String getWarehouseType() {
-        return warehouseType;
-    }
-
-    public void setWarehouseType(String warehouseType) {
-        this.warehouseType = warehouseType;
-    }
 }

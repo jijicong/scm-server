@@ -2,7 +2,7 @@ package org.trc.form.warehouse;
 
 import java.util.List;
 
-public class ScmDeliveryOrderCreateRequest {
+public class ScmDeliveryOrderCreateRequest  extends ScmWarehouseRequestBase{
 
     /**
      * 采购单参数列表
