@@ -794,7 +794,7 @@ public class SupplyConstants {
         //异常订单编码长度
         public static final Integer EXCEPTION_ORDER_LENGTH = 5;
         //发货通知单
-        public static final String OUTBOUND_ORDER = "FHTZ";
+        public static final String OUTBOUND_ORDER = "ZYFHTZ";
         //发货通知单编码长度
         public static final Integer OUTBOUND_ORDER_LENGTH = 5;
         //仓库订单

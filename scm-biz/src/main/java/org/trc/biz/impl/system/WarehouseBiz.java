@@ -125,6 +125,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setOwnerName(warehouseInfo.getOwnerName());
             result.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId()==null?"":warehouseInfo.getWarehouseOwnerId());
             result.setCreateOperator(warehouseInfo.getCreateOperator());
+            result.setCode(warehouseInfo.getCode());
+            result.setIsValid(warehouseInfo.getIsValid());
             newList.add(result);
         }
 
@@ -340,6 +342,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouse.setIsThroughQimen(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         warehouse.setChannelCode("TRMALL");
         warehouse.setOwnerName("小泰科技");
+        warehouse.setSkuNum(0);
 
         int count = warehouseInfoService.insert(warehouse);
         if (count == 0) {
