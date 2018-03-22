@@ -57,6 +57,41 @@ public class ExternalSupplierConfig {
     //京东订单状态反查接口地址
     private String jdOrderStatusUrl;
 
+    /**
+     * 商品同步接口地址
+     */
+    private String itemsSyncUrl;
+
+    /**
+     * 商品库存查询接口地址
+     */
+    private String inventoryQueryUrl;
+
+    /**
+     * 入库单创建接口URL
+     */
+    private String entryOrderCreateUrl;
+
+    /**
+     * 发货通知单创建接口URL
+     */
+    private String deliveryOrderCreateUrl;
+
+    /**
+     * 入库单详情接口URL
+     */
+    private String entryOrderDetailQueryUrl;
+
+    /**
+     * 出库单详情接口URL
+     */
+    private String deliveryOrderDetailQueryUrl;
+
+    /**
+     * 单据取消接口URL
+     */
+    private String orderCancelUrl;
+
     public String getSkuPageUrl() {
         return skuPageUrl;
     }
@@ -263,5 +298,61 @@ public class ExternalSupplierConfig {
 
     public void setJdOrderStatusUrl(String jdOrderStatusUrl) {
         this.jdOrderStatusUrl = jdOrderStatusUrl;
+    }
+
+    public String getItemsSyncUrl() {
+        return itemsSyncUrl;
+    }
+
+    public void setItemsSyncUrl(String itemsSyncUrl) {
+        this.itemsSyncUrl = itemsSyncUrl;
+    }
+
+    public String getInventoryQueryUrl() {
+        return inventoryQueryUrl;
+    }
+
+    public void setInventoryQueryUrl(String inventoryQueryUrl) {
+        this.inventoryQueryUrl = inventoryQueryUrl;
+    }
+
+    public String getEntryOrderCreateUrl() {
+        return entryOrderCreateUrl;
+    }
+
+    public void setEntryOrderCreateUrl(String entryOrderCreateUrl) {
+        this.entryOrderCreateUrl = entryOrderCreateUrl;
+    }
+
+    public String getDeliveryOrderCreateUrl() {
+        return deliveryOrderCreateUrl;
+    }
+
+    public void setDeliveryOrderCreateUrl(String deliveryOrderCreateUrl) {
+        this.deliveryOrderCreateUrl = deliveryOrderCreateUrl;
+    }
+
+    public String getEntryOrderDetailQueryUrl() {
+        return entryOrderDetailQueryUrl;
+    }
+
+    public void setEntryOrderDetailQueryUrl(String entryOrderDetailQueryUrl) {
+        this.entryOrderDetailQueryUrl = entryOrderDetailQueryUrl;
+    }
+
+    public String getDeliveryOrderDetailQueryUrl() {
+        return deliveryOrderDetailQueryUrl;
+    }
+
+    public void setDeliveryOrderDetailQueryUrl(String deliveryOrderDetailQueryUrl) {
+        this.deliveryOrderDetailQueryUrl = deliveryOrderDetailQueryUrl;
+    }
+
+    public String getOrderCancelUrl() {
+        return orderCancelUrl;
+    }
+
+    public void setOrderCancelUrl(String orderCancelUrl) {
+        this.orderCancelUrl = orderCancelUrl;
     }
 }
