@@ -1,6 +1,6 @@
 package org.trc.form.warehouse;
 
-public class ScmOrderCancelResponse{
+public class ScmOrderCancelResponse {
 
     /**
      * 是否成功：true/false

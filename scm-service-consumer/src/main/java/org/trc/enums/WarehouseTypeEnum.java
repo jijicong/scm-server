@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * 文件类型枚举
  */
-public enum WarehouseEnum {
+public enum WarehouseTypeEnum {
 
 	Qimen("QM","奇门"),
 	Jingdong("JD","京东");
@@ -15,7 +15,7 @@ public enum WarehouseEnum {
 	private String code;
 	private String name;
 
-	WarehouseEnum(String code, String name){
+	WarehouseTypeEnum(String code, String name){
 		this.code = code;
 		this.name = name;
 	}
@@ -29,8 +29,8 @@ public enum WarehouseEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseEnum getValidEnumByName(String name){
-		for(WarehouseEnum validEnum : WarehouseEnum.values()){
+	public static WarehouseTypeEnum getValidEnumByName(String name){
+		for(WarehouseTypeEnum validEnum : WarehouseTypeEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
 			}
@@ -47,8 +47,8 @@ public enum WarehouseEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseEnum getValidEnumByCode(String code){
-		for(WarehouseEnum validEnum : WarehouseEnum.values()){
+	public static WarehouseTypeEnum getValidEnumByCode(String code){
+		for(WarehouseTypeEnum validEnum : WarehouseTypeEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;
 			}
@@ -66,7 +66,7 @@ public enum WarehouseEnum {
 	 */
 	public static JSONArray toJSONArray(){
 		JSONArray array = new JSONArray();
-		for(WarehouseEnum sexEnum : WarehouseEnum.values()){
+		for(WarehouseTypeEnum sexEnum : WarehouseTypeEnum.values()){
 			JSONObject obj = new JSONObject();
 			obj.put("code", sexEnum.getCode());
 			obj.put("name", sexEnum.getName());

@@ -3,7 +3,7 @@ package org.trc.form.warehouse;
 /**
  * 库存查询返回参数
  */
-public class ScmInventoryQueryResponse {
+public class ScmInventoryQueryResponse{
 
     /**
      * 仓库编码

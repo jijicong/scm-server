@@ -15,7 +15,7 @@ public interface IWarehouseApiService {
      * @param scmItemSyncRequest
      * @return 新增时data里面值是仓库商品编号,修改时里面是修改的结果true/false
      */
-    AppResult<Object> itemSync(ScmItemSyncRequest scmItemSyncRequest);
+    AppResult<List<ScmItemSyncResponse>> itemSync(ScmItemSyncRequest scmItemSyncRequest);
 
     /**
      * 商品库存查询
