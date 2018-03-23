@@ -181,6 +181,16 @@ public class ScmDeliveryOrderDO {
     private String salePlatformSource;
 
     /**
+     * 承运商编号(京东)
+     */
+    private String shipperNo;
+
+    /**
+     * 安维标识，0 不需要安装 1 京东安装 2 厂家安装(京东)
+     */
+    private String installVenderId;
+
+    /**
      * 订单列表
      */
     private List<ScmDeliveryOrderItem> scmDeleveryOrderItemList;
@@ -463,5 +473,21 @@ public class ScmDeliveryOrderDO {
 
     public void setShopNo(String shopNo) {
         this.shopNo = shopNo;
+    }
+
+    public String getShipperNo() {
+        return shipperNo;
+    }
+
+    public void setShipperNo(String shipperNo) {
+        this.shipperNo = shipperNo;
+    }
+
+    public String getInstallVenderId() {
+        return installVenderId;
+    }
+
+    public void setInstallVenderId(String installVenderId) {
+        this.installVenderId = installVenderId;
     }
 }

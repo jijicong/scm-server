@@ -50,7 +50,7 @@ public interface IWarehouseApiService {
      * @param orderCancelRequest
      * @return
      */
-    AppResult<String> orderCancel(ScmOrderCancelRequest orderCancelRequest);
+    AppResult<ScmOrderCancelResponse> orderCancel(ScmOrderCancelRequest orderCancelRequest);
 
     /**
      * 入库单详情查询

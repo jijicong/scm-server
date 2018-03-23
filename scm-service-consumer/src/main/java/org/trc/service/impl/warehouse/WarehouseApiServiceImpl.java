@@ -57,7 +57,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     }
 
     @Override
-    public AppResult<String> orderCancel(ScmOrderCancelRequest orderCancelRequest) {
+    public AppResult<ScmOrderCancelResponse> orderCancel(ScmOrderCancelRequest orderCancelRequest) {
         return wmsInvoke(orderCancelRequest);
     }
 
