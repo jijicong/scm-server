@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.warehouse.ItemActionType;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.warehouse.*;
@@ -115,7 +116,11 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 appResult = jbo.toJavaObject(AppResult.class);
-                setResponseData(scmWarehouseRequestBase, appResult);
+                if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), appResult.getAppcode())){
+                    log.error(String.format("调用仓库%s接口失败,失败信息:%s", method, appResult.getResult()));
+                }else{
+                    setResponseData(scmWarehouseRequestBase, appResult);
+                }
             }else {
                 appResult = ResultUtil.createFailAppResult(String.format("调用仓库%s接口返回结果为空", method));
             }
