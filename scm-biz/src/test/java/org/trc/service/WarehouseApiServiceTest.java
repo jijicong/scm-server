@@ -21,8 +21,8 @@ public class WarehouseApiServiceTest {
     public void orderCancelTest(){
         ScmOrderCancelRequest orderCancelRequest = new ScmOrderCancelRequest();
         orderCancelRequest.setOrderCode("11111");
-        AppResult<String> appResult = warehouseApiService.orderCancel(orderCancelRequest);
-        System.out.println(JSON.toJSONString(appResult));
+//        AppResult<String> appResult = warehouseApiService.orderCancel(orderCancelRequest);
+//        System.out.println(JSON.toJSONString(appResult));
     }
 
 }
