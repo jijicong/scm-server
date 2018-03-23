@@ -1006,6 +1006,7 @@ public class GoodsBiz implements IGoodsBiz {
     private void checkIsQuality(Items items){
         if (StringUtils.equals(items.getIsQuality(),ZeroToNineEnum.ONE.getCode())){
             AssertUtil.notNull(items.getQualityDay(),"商品具有质保日期管理时，质保天数不能为空！");
+            AssertUtil.isTrue(items.getQualityDay()>0,"天数不能小于0");
         }else {
             AssertUtil.isNull(items.getQualityDay(),"商品不具有质保日期管理时，质保天数必须为空！");
         }
@@ -1801,6 +1802,9 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(items, String.format("根据商品SPU编码[%s]查询商品基础信息为空", spuCode));
         String categoryName = categoryBiz.getCategoryName(items.getCategoryId());
         items.setCategoryName(categoryName);
+        if (StringUtils.equals(items.getIsQuality(),ZeroToNineEnum.ZERO.getCode())){
+            items.setQualityDay(null);
+        }
         //查询商品SKU信息
         Skus skus = new Skus();
         skus.setSpuCode(spuCode);
