@@ -21,6 +21,11 @@ public class ScmEntryOrderCreateRequest  extends ScmWarehouseRequestBase{
     private String warehouseCode;
 
     /**
+     * 货主编码
+     */
+    private String ownerCode;
+
+    /**
      * 业务类型
      */
     private String orderType;
@@ -328,5 +333,13 @@ public class ScmEntryOrderCreateRequest  extends ScmWarehouseRequestBase{
 
     public void setEntryOrderItemList(List<ScmEntryOrderItem> entryOrderItemList) {
         this.entryOrderItemList = entryOrderItemList;
+    }
+
+    public String getOwnerCode() {
+        return ownerCode;
+    }
+
+    public void setOwnerCode(String ownerCode) {
+        this.ownerCode = ownerCode;
     }
 }
