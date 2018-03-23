@@ -851,7 +851,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 更新代发仓库订单供应商订单状态
      * @param warehouseOrder
      * @param orderItemList
-     * @param 操作日志动作类型
+     * @param isStatus
      */
     private void updateWarehouseOrderSupplierOrderStatus_supplier(WarehouseOrder warehouseOrder, List<OrderItem> orderItemList,
     		boolean isStatus){

@@ -25,6 +25,16 @@ public class ScmDeliveryOrderDO {
     private String warehouseCode;
 
     /**
+     * 货主编码
+     */
+    private String ownerCode;
+
+    /**
+     * 店铺编号
+     */
+    private String shopNo;
+
+    /**
      * 店铺名称
      */
     private String shopNick;
@@ -437,5 +447,21 @@ public class ScmDeliveryOrderDO {
 
     public void setScmDeleveryOrderItemList(List<ScmDeliveryOrderItem> scmDeleveryOrderItemList) {
         this.scmDeleveryOrderItemList = scmDeleveryOrderItemList;
+    }
+
+    public String getOwnerCode() {
+        return ownerCode;
+    }
+
+    public void setOwnerCode(String ownerCode) {
+        this.ownerCode = ownerCode;
+    }
+
+    public String getShopNo() {
+        return shopNo;
+    }
+
+    public void setShopNo(String shopNo) {
+        this.shopNo = shopNo;
     }
 }
