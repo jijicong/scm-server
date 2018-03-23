@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.warehouse.ItemActionType;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.warehouse.*;
 import org.trc.service.impl.JDServiceImpl;
@@ -32,7 +33,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     private ExternalSupplierConfig externalSupplierConfig;
 
     @Override
-    public AppResult<Object> itemSync(ScmItemSyncRequest scmItemSyncRequest) {
+    public AppResult<List<ScmItemSyncResponse>> itemSync(ScmItemSyncRequest scmItemSyncRequest) {
         return wmsInvoke(scmItemSyncRequest);
     }
 
@@ -57,7 +58,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     }
 
     @Override
-    public AppResult<String> orderCancel(ScmOrderCancelRequest orderCancelRequest) {
+    public AppResult<ScmOrderCancelResponse> orderCancel(ScmOrderCancelRequest orderCancelRequest) {
         return wmsInvoke(orderCancelRequest);
     }
 
@@ -70,6 +71,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     public AppResult<ScmDeliveryOrderDetailResponse> deliveryOrderDetail(ScmDeliveryOrderDetailRequest deliveryOrderDetailRequest) {
         return wmsInvoke(deliveryOrderDetailRequest);
     }
+
+
 
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         String url = "";
@@ -112,6 +115,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             if(StringUtils.isNotBlank(response)){
                 JSONObject jbo = JSONObject.parseObject(response);
                 appResult = jbo.toJavaObject(AppResult.class);
+                setResponseData(scmWarehouseRequestBase, appResult);
             }else {
                 appResult = ResultUtil.createFailAppResult(String.format("调用仓库%s接口返回结果为空", method));
             }
@@ -129,6 +133,26 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             appResult = ResultUtil.createFailAppResult(msg);
         }
         return appResult;
+    }
+
+    private void setResponseData(ScmWarehouseRequestBase scmWarehouseRequestBase, AppResult appResult){
+        Object response = null;
+        if(scmWarehouseRequestBase instanceof ScmItemSyncRequest){
+            response = JSON.parseArray(appResult.getResult().toString(), ScmItemSyncResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmInventoryQueryRequest){
+            response = JSON.parseArray(appResult.getResult().toString(), ScmInventoryQueryResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmEntryOrderCreateRequest){
+            response = appResult.getResult();
+        }else if(scmWarehouseRequestBase instanceof ScmDeliveryOrderCreateRequest){
+            response = JSON.parseArray(appResult.getResult().toString(), ScmDeliveryOrderCreateResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmOrderCancelRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmOrderCancelResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmEntryOrderDetailRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmEntryOrderDetailResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmDeliveryOrderDetailRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmDeliveryOrderDetailResponse.class);
+        }
+        appResult.setResult(response);
     }
 
 

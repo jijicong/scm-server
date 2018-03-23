@@ -30,6 +30,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
+import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.form.warehouseInfo.*;
 import org.trc.service.IQimenService;
 import org.trc.service.category.IBrandService;
@@ -612,7 +613,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    public Pagenation<ItemsResult> queryWarehouseItemsSku(SkusForm form, Pagenation<Skus> page, Long warehouseInfoId) {
+    public Pagenation<ItemsResult> queryWarehouseItemsSku(SkusForm form, Pagenation<Skus> page, Long warehouseInfoId){
         AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
@@ -628,15 +629,36 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             excludeSkuCode.add(warehouseItemInfo.getSkuCode());
         }
         log.info("添加过的商品信息结束，开始查询没有没有添加过的sku信息================》");
-        Example example1 = new Example(Skus.class);
-        Example.Criteria criteria1 = example1.createCriteria();
-        criteria1.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
-        if (excludeSkuCode.size()!=0){
-            criteria1.andNotIn("skuCode",excludeSkuCode);
+//        Example example1 = new Example(Skus.class);
+//        Example.Criteria criteria1 = example1.createCriteria();
+//        criteria1.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
+//        if (excludeSkuCode.size()!=0){
+//            criteria1.andNotIn("skuCode",excludeSkuCode);
+//        }
+//        setQueryParam(example1, criteria1, form);
+//        Pagenation<Skus> pageTem = skusService.pagination(example1,page,form);
+//        List<Skus> includeList = pageTem.getResult();
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("skuName", form.getSkuName());
+        map1.put("skuCode", form.getSkuCode());
+        map1.put("brandName", form.getBrandName());
+        map1.put("spuCode", form.getSpuCode());
+        map1.put("skuCodes", excludeSkuCode.toArray());
+        if(excludeSkuCode.size() > 0){
+            map1.put("spuTemp", "sku");
+        }else{
+            map1.put("spuTemp", null);
         }
-        setQueryParam(example1, criteria1, form);
-        Pagenation<Skus> pageTem = skusService.pagination(example1,page,form);
-        List<Skus> includeList = pageTem.getResult();
+        Integer skusListCount = 0;
+        List<Skus> includeList = null;
+        skusListCount = skusService.selectSkuListCount(map1);
+        if(skusListCount < 1){
+            return new Pagenation<ItemsResult>();
+        }
+        //获取分页数
+        map1.put("start", page.getStart());
+        map1.put("pageSize", page.getPageSize());
+        includeList = skusService.selectSkuList(map1);
         log.info("开始补全未添加过的sku信息===============》");
         Pagenation<ItemsResult> pagenation = new Pagenation<>();
         if (includeList.size()!=0){
@@ -660,10 +682,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 itemsResult.setItemId(sku.getItemId());
                 newList.add(itemsResult);
             }
-            pagenation.setStart(pageTem.getStart());
-            pagenation.setTotalCount(pageTem.getTotalCount());
-            pagenation.setPageSize(pageTem.getPageSize());
-            pagenation.setPageNo(pageTem.getPageNo());
+            pagenation.setStart(page.getStart());
+            pagenation.setTotalCount(skusListCount);
+            pagenation.setPageSize(page.getPageSize());
+            pagenation.setPageNo(page.getPageNo());
             pagenation.setResult(newList);
             log.info("补全数据结束，返回结果");
         }
@@ -863,7 +885,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         //组装商品
-        List<ItemsSynchronizeRequest.Item> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
+//        List<ItemsSynchronizeRequest.Item> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
 
         //获取仓库信息详情
         WarehouseInfo warehouseInfo = this.getWarehouseInfo(warehouseItemInfoList.get(0).getWarehouseInfoId());
@@ -881,7 +903,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
         //调用奇门接口
         ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
-        request.setItems(itemsSynList);
+//        request.setItems(itemsSynList);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
         request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
         request.setActionType("add");
@@ -936,16 +958,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
     }
 
-    private List<ItemsSynchronizeRequest.Item> getItemsSynList(List<WarehouseItemInfo> infoList){
-        List<ItemsSynchronizeRequest.Item> list = new ArrayList<ItemsSynchronizeRequest.Item>();
-        ItemsSynchronizeRequest.Item item = null;
+    private List<ScmWarehouseItem> getItemsSynList(List<WarehouseItemInfo> infoList){
+        List<ScmWarehouseItem> list = new ArrayList<ScmWarehouseItem>();
+        ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : infoList){
-            item = new ItemsSynchronizeRequest.Item();
+            item = new ScmWarehouseItem();
             item.setItemCode(info.getSkuCode());
             item.setGoodsCode(info.getItemNo());
+            item.setSaveDays(0);
             item.setItemName(info.getItemName());
             item.setBarCode(info.getBarCode());
-            item.setSkuProperty(info.getSpecNatureInfo());
+//            item.setSkuProperty(info.getSpecNatureInfo());
             item.setItemType(info.getItemType());
 
             list.add(item);

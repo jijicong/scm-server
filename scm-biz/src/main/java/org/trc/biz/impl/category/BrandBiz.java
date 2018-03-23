@@ -215,11 +215,11 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.BRAND)
+//    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
         Brand brand = new Brand();
-        if (StringUtils.isEmpty(brandForm.getIsValid())) {
-            brand.setIsValid(ZeroToNineEnum.ONE.getCode());
+        if (!StringUtils.isEmpty(brandForm.getIsValid())) {
+            brand.setIsValid(brandForm.getIsValid());
         }
         brand.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<Brand> brandList = brandService.select(brand);

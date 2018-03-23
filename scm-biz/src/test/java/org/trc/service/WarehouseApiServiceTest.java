@@ -1,12 +1,14 @@
 package org.trc.service;
 
 import com.alibaba.fastjson.JSON;
+import com.qimen.api.response.OrderCancelResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.AppResult;
 
@@ -21,7 +23,7 @@ public class WarehouseApiServiceTest {
     public void orderCancelTest(){
         ScmOrderCancelRequest orderCancelRequest = new ScmOrderCancelRequest();
         orderCancelRequest.setOrderCode("11111");
-        AppResult<String> appResult = warehouseApiService.orderCancel(orderCancelRequest);
+        AppResult<ScmOrderCancelResponse> appResult = warehouseApiService.orderCancel(orderCancelRequest);
         System.out.println(JSON.toJSONString(appResult));
     }
 
