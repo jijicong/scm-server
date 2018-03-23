@@ -190,8 +190,8 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.CHECK_BARCODE_ONLY)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public Response checkBarcodeOnly(@FormParam("barCode") String barCode) throws Exception {
-        goodsBiz.checkBarcodeOnly(barCode);
+    public Response checkBarcodeOnly(@FormParam("barCode") String barCode,@FormParam("skuCode") String skuCode) throws Exception {
+        goodsBiz.checkBarcodeOnly(barCode,skuCode);
         return ResultUtil.createSuccessResult("条形码可用", "");
     }
 }

@@ -2637,21 +2637,51 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public void checkBarcodeOnly(String barcode) {
+    public void checkBarcodeOnly(String barcode, String skuCode) {
         AssertUtil.notBlank(barcode, "条形码不能为空");
-        String barArray[]  = StringUtils.split(barcode,SupplyConstants.Symbol.COMMA);
-        List<String>  existedCode = new ArrayList<>();
-        for (String barCode: barArray) {
+        String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
+        List<String> existedCode = new ArrayList<>();
+        List<String> barCodeList = new ArrayList<>();
+        List<String> nowBarCode = new ArrayList<>();
+        //编辑时获取到新增的条形码
+        getNewBarCode(skuCode, barArray, barCodeList, nowBarCode);
+        if (AssertUtil.collectionIsEmpty(barCodeList)&&StringUtils.isBlank(skuCode)) {
+            barCodeList = Arrays.asList(barArray);
+        }
+        for (String barCode : barCodeList) {
             Skus skus = new Skus();
             skus.setBarCode(barCode);
             skus.setIsValid(ValidEnum.VALID.getCode());
             List<Skus> skusList = skusService.select(skus);
-            if(!CollectionUtils.isEmpty(skusList)){
+            if (!CollectionUtils.isEmpty(skusList)) {
                 existedCode.add(barCode);
             }
         }
-        if (!AssertUtil.collectionIsEmpty(existedCode)){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码"+StringUtils.join(existedCode,SupplyConstants.Symbol.COMMA)+"已经存在!");
+        if (!AssertUtil.collectionIsEmpty(existedCode)) {
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码" + StringUtils.join(existedCode, SupplyConstants.Symbol.COMMA) + "已经存在!");
+        }
+    }
+
+    private void getNewBarCode(String skuCode, String[] barArray, List<String> barCodeList, List<String> nowBarCode) {
+        if (StringUtils.isNotBlank(skuCode)) {
+            Skus sku = new Skus();
+            sku.setSkuCode(skuCode);
+            sku.setIsValid(ValidEnum.VALID.getCode());
+            sku = skusService.selectOne(sku);
+            if (null != sku) {
+                nowBarCode = Arrays.asList(StringUtils.split(sku.getBarCode(), SupplyConstants.Symbol.COMMA));
+            }
+            for (int i = 0; i < barArray.length; i++) {
+                boolean isFlag = false;
+                for (String bar : nowBarCode) {
+                    if (StringUtils.equals(barArray[i], bar)) {
+                        isFlag = true;
+                    }
+                }
+                if (!isFlag) {
+                    barCodeList.add(barArray[i]);
+                }
+            }
         }
     }
 
