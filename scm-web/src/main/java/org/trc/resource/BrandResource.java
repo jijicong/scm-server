@@ -78,7 +78,6 @@ public class BrandResource {
         return ResultUtil.createSuccessResult("查询品牌列表成功", brandBiz.queryBrands(form));
     }
 
-
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND +"/{id}")
     @Produces(MediaType.APPLICATION_JSON)

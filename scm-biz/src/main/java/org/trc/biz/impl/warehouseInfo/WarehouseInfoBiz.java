@@ -30,6 +30,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
+import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.form.warehouseInfo.*;
 import org.trc.service.IQimenService;
 import org.trc.service.category.IBrandService;
@@ -884,7 +885,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         //组装商品
-        List<ItemsSynchronizeRequest.Item> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
+//        List<ItemsSynchronizeRequest.Item> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
 
         //获取仓库信息详情
         WarehouseInfo warehouseInfo = this.getWarehouseInfo(warehouseItemInfoList.get(0).getWarehouseInfoId());
@@ -902,7 +903,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
         //调用奇门接口
         ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
-        request.setItems(itemsSynList);
+//        request.setItems(itemsSynList);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
         request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
         request.setActionType("add");
@@ -957,16 +958,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
     }
 
-    private List<ItemsSynchronizeRequest.Item> getItemsSynList(List<WarehouseItemInfo> infoList){
-        List<ItemsSynchronizeRequest.Item> list = new ArrayList<ItemsSynchronizeRequest.Item>();
-        ItemsSynchronizeRequest.Item item = null;
+    private List<ScmWarehouseItem> getItemsSynList(List<WarehouseItemInfo> infoList){
+        List<ScmWarehouseItem> list = new ArrayList<ScmWarehouseItem>();
+        ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : infoList){
-            item = new ItemsSynchronizeRequest.Item();
+            item = new ScmWarehouseItem();
             item.setItemCode(info.getSkuCode());
             item.setGoodsCode(info.getItemNo());
+            item.setSaveDays(0);
             item.setItemName(info.getItemName());
             item.setBarCode(info.getBarCode());
-            item.setSkuProperty(info.getSpecNatureInfo());
+//            item.setSkuProperty(info.getSpecNatureInfo());
             item.setItemType(info.getItemType());
 
             list.add(item);
