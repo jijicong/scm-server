@@ -192,6 +192,6 @@ public class GoodsResource {
     @Consumes("application/x-www-form-urlencoded")
     public Response checkBarcodeOnly(@FormParam("barCode") String barCode) throws Exception {
         goodsBiz.checkBarcodeOnly(barCode);
-        return ResultUtil.createSuccessResult("该条形码可用", "");
+        return ResultUtil.createSuccessResult("条形码可用", "");
     }
 }

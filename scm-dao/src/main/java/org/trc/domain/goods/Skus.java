@@ -34,7 +34,7 @@ public class Skus extends ScmDO {
     @Length(max = 128, message = "属性值长度不能超过128个")
     private String propertyValue;
     @FormParam("barCode")
-    @Length(max = 64, message = "条形码长度不能超过32个")
+    @Length(max = 512, message = "条形码长度不能超过256个")
     private String barCode;
     @FormParam("marketPrice")
     private Long marketPrice;

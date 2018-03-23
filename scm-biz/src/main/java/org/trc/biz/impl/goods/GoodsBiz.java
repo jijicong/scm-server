@@ -2635,11 +2635,19 @@ public class GoodsBiz implements IGoodsBiz {
     @Override
     public void checkBarcodeOnly(String barcode) {
         AssertUtil.notBlank(barcode, "条形码不能为空");
-        Skus skus = new Skus();
-        skus.setBarCode(barcode);
-        List<Skus> skusList = skusService.select(skus);
-        if(!CollectionUtils.isEmpty(skusList)){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "该条形码已经存在!");
+        String barArray[]  = StringUtils.split(barcode,SupplyConstants.Symbol.COMMA);
+        List<String>  existedCode = new ArrayList<>();
+        for (String barCode: barArray) {
+            Skus skus = new Skus();
+            skus.setBarCode(barCode);
+            skus.setIsValid(ValidEnum.VALID.getCode());
+            List<Skus> skusList = skusService.select(skus);
+            if(!CollectionUtils.isEmpty(skusList)){
+                existedCode.add(barCode);
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(existedCode)){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码"+StringUtils.join(existedCode,SupplyConstants.Symbol.COMMA)+"已经存在!");
         }
     }
 
