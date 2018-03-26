@@ -30,6 +30,8 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
+import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmItemSyncResponse;
 import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.form.warehouseInfo.*;
 import org.trc.service.IQimenService;
@@ -38,6 +40,7 @@ import org.trc.service.category.ICategoryService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -90,7 +93,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     @Autowired
     private ICategoryBiz categoryBiz;
     @Autowired
-    private IQimenService qimenService;
+    private IWarehouseApiService warehouseApiService;
     @Autowired
     private ISkuStockService skuStockService;
     @Value("${exception.notice.upload.address}")
@@ -885,7 +888,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         //组装商品
-//        List<ItemsSynchronizeRequest.Item> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
+        List<ScmWarehouseItem> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
 
         //获取仓库信息详情
         WarehouseInfo warehouseInfo = this.getWarehouseInfo(warehouseItemInfoList.get(0).getWarehouseInfoId());
@@ -902,38 +905,31 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
 
         //调用奇门接口
-        ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
-//        request.setItems(itemsSynList);
+        ScmItemSyncRequest request = new ScmItemSyncRequest();
+        request.setWarehouseItemList(itemsSynList);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
         request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
         request.setActionType("add");
-        AppResult<ItemsSynchronizeResponse> appResult = qimenService.itemsSync(request);
+        AppResult<List<ScmItemSyncResponse>> appResult = warehouseApiService.itemSync(request);
 
         //解析接口
         if(org.apache.commons.lang3.StringUtils.equals(appResult.getAppcode(), SUCCESS)){
-            ItemsSynchronizeResponse res = JSONObject.toJavaObject((JSONObject) appResult.getResult(),
-                    ItemsSynchronizeResponse.class);
-            if(SUCCESS.equals(res.getCode())){
-                this.updateWarehouseItemInfo(itemList);
-                return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
-            }else{
-                List<ItemsSynchronizeResponse.BatchItemSynItem> batchItemSynItems = res.getItems();
-                if(batchItemSynItems != null && batchItemSynItems.size() > 0){
-                    this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseItemInfoList,batchItemSynItems));
-                }
-                return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), res.getMessage(), res.getItems());
+            List<ScmItemSyncResponse> res = (List<ScmItemSyncResponse>)appResult.getResult();
+            if(res != null && res.size() > 0){
+                this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseItemInfoList,res));
             }
+            return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
         }
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), appResult.getDatabuffer(), "");
     }
 
-    private List<String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ItemsSynchronizeResponse.BatchItemSynItem> batchItemSynItems){
+    private List<String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ScmItemSyncResponse> batchItemSynItems){
         List<String> itemIds = new ArrayList<String>();
         for(WarehouseItemInfo item : infoList){
-            boolean flag = true;
-            for(ItemsSynchronizeResponse.BatchItemSynItem synItem : batchItemSynItems){
-                if(synItem.getItemCode().equals(item.getSkuCode())){
-                    flag = false;
+            boolean flag = false;
+            for(ScmItemSyncResponse synItem : batchItemSynItems){
+                if(synItem.getItemCode().equals(item.getSkuCode()) && SUCCESS.equals(synItem.getCode())){
+                    flag = true;
                 }
             }
             if(flag){
@@ -968,7 +964,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             item.setSaveDays(0);
             item.setItemName(info.getItemName());
             item.setBarCode(info.getBarCode());
-//            item.setSkuProperty(info.getSpecNatureInfo());
+            item.setSkuProperty(info.getSpecNatureInfo());
             item.setItemType(info.getItemType());
 
             list.add(item);

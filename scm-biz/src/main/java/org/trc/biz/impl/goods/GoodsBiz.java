@@ -42,6 +42,8 @@ import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
@@ -54,6 +56,7 @@ import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -158,7 +161,7 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private IExternalPictureService externalPictureService;
     @Autowired
-    private IQimenService qimenService;
+    private IWarehouseApiService warehouseApiService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
 
@@ -778,9 +781,9 @@ public class GoodsBiz implements IGoodsBiz {
         try{
             for (Map.Entry<Long, List<WarehouseItemInfo>> entry : map.entrySet()) {
                 new Thread(() -> {
-                    ItemsSynchronizeRequest request = this.setItemsSynchronizeRequest(entry.getValue());
+                    ScmItemSyncRequest request = this.setItemsSynchronizeRequest(entry.getValue());
                     if(request != null){
-                        qimenService.itemsSync(request);
+                        warehouseApiService.itemSync(request);
                     }
                 }).start();
             }
@@ -790,7 +793,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     //组装信息
-    private ItemsSynchronizeRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
+    private ScmItemSyncRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
         if(warehouseInfo.getIsThroughQimen() == null || warehouseInfo.getIsThroughQimen() == 0 ||
@@ -798,13 +801,13 @@ public class GoodsBiz implements IGoodsBiz {
             return null;
         }
 
-        List<ItemsSynchronizeRequest.Item> list1 = new ArrayList<ItemsSynchronizeRequest.Item>();
-        ItemsSynchronizeRequest.Item item = null;
+        List<ScmWarehouseItem> list1 = new ArrayList<>();
+        ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : list){
             if(StringUtils.isEmpty(info.getWarehouseItemId())){
                 continue;
             }
-            item = new ItemsSynchronizeRequest.Item();
+            item = new ScmWarehouseItem();
             item.setItemCode(info.getSkuCode());
             item.setGoodsCode(info.getItemNo());
             item.setItemName(info.getItemName());
@@ -820,8 +823,8 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         //组装奇门接口
-        ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
-        request.setItems(list1);
+        ScmItemSyncRequest request = new ScmItemSyncRequest();
+        request.setWarehouseItemList(list1);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
         request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
         request.setActionType("update");

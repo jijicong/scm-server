@@ -36,7 +36,7 @@ public class ScmWarehouseItem {
     /**
      * 商品规格
      */
-    private String skuPropety;
+    private String skuProperty;
 
     /**
      * 保质期天数
@@ -91,19 +91,19 @@ public class ScmWarehouseItem {
         this.barCode = barCode;
     }
 
-    public String getSkuPropety() {
-        return skuPropety;
-    }
-
-    public void setSkuPropety(String skuPropety) {
-        this.skuPropety = skuPropety;
-    }
-
     public Integer getSaveDays() {
         return saveDays;
     }
 
     public void setSaveDays(Integer saveDays) {
         this.saveDays = saveDays;
+    }
+
+    public String getSkuProperty() {
+        return skuProperty;
+    }
+
+    public void setSkuProperty(String skuProperty) {
+        this.skuProperty = skuProperty;
     }
 }
