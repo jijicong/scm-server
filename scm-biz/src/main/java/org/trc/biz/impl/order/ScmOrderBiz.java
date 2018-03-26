@@ -2508,30 +2508,65 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     public AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap) {
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
+        //获取采购单相关商品的仓库对接信息
+        List<WarehouseItemInfo> warehouseItemInfoList = getWarehouseItemInfos(entries);
+        //准备下单参数
         ScmDeliveryOrderCreateRequest request = new ScmDeliveryOrderCreateRequest();
         List<ScmDeliveryOrderDO> scmDeliveryOrderDOList = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
             OutboundForm outboundForm = entry.getValue();
             OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
             List<OutboundDetail> outboundDetailList = outboundForm.getOutboundDetailList();
-            ScmDeliveryOrderDO scmDeliveryOrderDO = getScmDeliveryOrderDO(outboundOrder);
-
-
-
-
+            ScmDeliveryOrderDO scmDeliveryOrderDO = getScmDeliveryOrderDO(outboundOrder, warehouseItemInfoList);
             List<ScmDeliveryOrderItem> scmDeliveryOrderItemList = new ArrayList<>();
-
-
-
-
+            for(OutboundDetail detail: outboundDetailList){
+                scmDeliveryOrderItemList.add(getScmDeliveryOrderItem(outboundOrder, detail, warehouseItemInfoList));
+            }
+            scmDeliveryOrderDO.setScmDeleveryOrderItemList(scmDeliveryOrderItemList);
+            scmDeliveryOrderDOList.add(scmDeliveryOrderDO);
         }
-        return null;
+        request.setScmDeleveryOrderDOList(scmDeliveryOrderDOList);
+        return warehouseApiService.deliveryOrderCreate(request);
     }
 
-    private ScmDeliveryOrderDO getScmDeliveryOrderDO(OutboundOrder outboundOrder){
+    /**
+     * 获取采购单相关商品的仓库对接信息
+     * @param entries
+     * @return
+     */
+    private List<WarehouseItemInfo> getWarehouseItemInfos(Set<Map.Entry<String, OutboundForm>> entries){
+        Set<String> warehoseCodes = new HashSet<>();
+        Set<String> skuCodes = new HashSet<>();
+        List<String> outboudOrderCodes = new ArrayList<>();
+        for(Map.Entry<String, OutboundForm> entry: entries){
+            OutboundForm outboundForm = entry.getValue();
+            OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
+            warehoseCodes.add(outboundOrder.getWarehouseCode());
+            outboudOrderCodes.add(outboundOrder.getOutboundOrderCode());
+            List<OutboundDetail> outboundDetailList = outboundForm.getOutboundDetailList();
+            for(OutboundDetail detail: outboundDetailList){
+                skuCodes.add(detail.getSkuCode());
+            }
+        }
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("warehouseCode", warehoseCodes);
+        criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+        AssertUtil.notEmpty(warehouseItemInfoList, String.format("发货单[%s]的相关商品全部不可用", CommonUtil.converCollectionToString(outboudOrderCodes)));
+        return warehouseItemInfoList;
+    }
+
+    private ScmDeliveryOrderDO getScmDeliveryOrderDO(OutboundOrder outboundOrder, List<WarehouseItemInfo> warehouseItemInfoList){
         ScmDeliveryOrderDO scmDeliveryOrderDO = new ScmDeliveryOrderDO();
         scmDeliveryOrderDO.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());//发货单编码
-        scmDeliveryOrderDO.setWarehouseCode(outboundOrder.getWarehouseCode());
+        for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+            if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseItemInfo.getWarehouseCode())){
+                scmDeliveryOrderDO.setWarehouseCode(warehouseItemInfo.getWmsWarehouseCode());
+                break;
+            }
+        }
         scmDeliveryOrderDO.setOrderType(JdDeliverOrderTypeEnum.B2C.getCode());
         scmDeliveryOrderDO.setOwnerCode("");//货主编码(事业部编码) FIXME
         scmDeliveryOrderDO.setShopNo(outboundOrder.getShopId().toString());
@@ -2564,10 +2599,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return scmDeliveryOrderDO;
     }
 
-    private ScmDeliveryOrderItem getScmDeliveryOrderItem(OutboundDetail outboundDetail){
+    private ScmDeliveryOrderItem getScmDeliveryOrderItem(OutboundOrder outboundOrder, OutboundDetail outboundDetail, List<WarehouseItemInfo> warehouseItemInfoList){
         ScmDeliveryOrderItem scmDeliveryOrderItem = new ScmDeliveryOrderItem();
         scmDeliveryOrderItem.setItemCode(outboundDetail.getSkuCode());
-        scmDeliveryOrderItem.setItemId(outboundDetail.get);
+        String warehouseOwnerId = "";
+        for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+            if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseItemInfo.getWarehouseCode()) &&
+                    StringUtils.equals(outboundDetail.getSkuCode(), warehouseItemInfo.getSkuCode())){
+                scmDeliveryOrderItem.setItemId(warehouseItemInfo.getWarehouseItemId());
+                warehouseOwnerId = warehouseItemInfo.getWarehouseOwnerId();
+                break;
+            }
+        }
+        scmDeliveryOrderItem.setOwnerCode(warehouseOwnerId);
+        scmDeliveryOrderItem.setPlanQty(outboundDetail.getShouldSentItemNum());
+        scmDeliveryOrderItem.setActualPrice(CommonUtil.fenToYuan(outboundDetail.getActualAmount()));
+        return scmDeliveryOrderItem;
     }
 
 
@@ -5306,65 +5353,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 通知仓库发货
      * @param outboundMap
      */
-    private void noticeWarehouseSendGoods(String channelCode, Map<String, OutboundForm> outboundMap){
-        Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
-        //查询所有发货单相关仓库信息
-        Set<String> warehouseCodes = new HashSet<>();
-        for(Map.Entry<String, OutboundForm> entry: entries){
-            OutboundForm outboundForm = entry.getValue();
-            warehouseCodes.add(outboundForm.getOutboundOrder().getWarehouseCode());
-        }
-        Example example = new Example(WarehouseInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("code", warehouseCodes);
-        criteria.andEqualTo("channelCode", channelCode);
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
-        AssertUtil.notEmpty(warehouseInfoList, String.format("根据仓库编码[%s]查询仓储信息为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes)), channelCode));
-        Example example2 = new Example(WarehouseInfo.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andIn("code", warehouseCodes);
-        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(example2);
-        AssertUtil.notEmpty(warehouseList, String.format("根据仓库编码[%s]查询仓库信息为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes))));
-        Map<String, OutboundForm> outboundMap2 = new HashedMap(outboundMap);
-        //替换发货通知单中的仓库编码
-        for(Map.Entry<String, OutboundForm> entry: entries){
-            OutboundForm outboundForm = entry.getValue();
-            OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
-            for(WarehouseInfo warehouse: warehouseList){
-                if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouse.getCode())){
-                    outboundOrder.setWarehouseCode(warehouse.getCode());
-                    break;
-                }
-            }
-            outboundForm.setOutboundOrder(outboundOrder);
-            outboundMap.put(entry.getKey(), outboundForm);
-        }
-        //处理发货通知单创建参数
-        /*List<DeliveryorderBatchcreateRequest.Order> orderList = new ArrayList<>();
-        for(Map.Entry<String, OutboundForm> entry: entries){
-            OutboundForm outboundForm = entry.getValue();
-            OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
-            List<OutboundDetail> outboundDetailList = outboundForm.getOutboundDetailList();
-            DeliveryorderBatchcreateRequest.Order order = new DeliveryorderBatchcreateRequest.Order();
-            order.setDeliveryOrder(getDeliveryOrder(outboundOrder, warehouseList));
-            order.setOrderLines(getDeliveryOrderLines(outboundOrder, outboundDetailList, warehouseInfoList));
-            orderList.add(order);
-        }
-        //发货单发送奇门创建日志
-        for(Map.Entry<String, OutboundForm> entry: entries){
-            OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-            logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), SYSTEM, LogOperationEnum.OUTBOUND_SEND.getMessage(), "",null);
-        }
-        //调用奇门创建发货单接口(批量)
-        DeliveryorderBatchcreateRequest request = new DeliveryorderBatchcreateRequest();
-        request.setOrders(orderList);
-        AppResult appResult = qimenService.deliveryorderBatchcreate(request);*/
-
-
-
-
+    private void noticeWarehouseSendGoods(Map<String, OutboundForm> outboundMap){
+        //调用仓库接口创建发货单
+        AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = deliveryOrderCreate(outboundMap);
         //更新发货单状态
-        updateOutboudOrderStatus(outboundMap2, appResult, warehouseList);
+        updateOutboudOrderStatus(outboundMap, appResult);
     }
 
     /**
@@ -5372,7 +5365,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param outboundMap
      * @param appResult
      */
-    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult, List<WarehouseInfo> warehouseList){
+    private void updateOutboudOrderStatus(Map<String, OutboundForm> outboundMap, AppResult appResult){
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
         List<String> outboundCodes = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
