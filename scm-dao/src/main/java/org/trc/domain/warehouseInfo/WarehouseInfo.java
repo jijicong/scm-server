@@ -52,9 +52,9 @@ public class WarehouseInfo extends BaseDO {
     @Length(max = 30, message = "仓库联系人字母和数字不能超过30个,汉字不能超过15个")
     private String warehouseContact; //仓库联系人
 
-    //奇门仓库编码
-    @FormParam("qimenWarehouseCode")
-    private String qimenWarehouseCode;
+    //开放平台仓库编码
+    @FormParam("wmsWarehouseCode")
+    private String wmsWarehouseCode;
 
     //sku数量
     @FormParam("skuNum")
@@ -125,14 +125,6 @@ public class WarehouseInfo extends BaseDO {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
-    }
-
-    public String getQimenWarehouseCode() {
-        return qimenWarehouseCode;
-    }
-
-    public void setQimenWarehouseCode(String qimenWarehouseCode) {
-        this.qimenWarehouseCode = qimenWarehouseCode;
     }
 
     public Integer getSkuNum() {
@@ -301,5 +293,13 @@ public class WarehouseInfo extends BaseDO {
 
     public void setWarehouseTypeCode(String warehouseTypeCode) {
         this.warehouseTypeCode = warehouseTypeCode;
+    }
+
+    public String getWmsWarehouseCode() {
+        return wmsWarehouseCode;
+    }
+
+    public void setWmsWarehouseCode(String wmsWarehouseCode) {
+        this.wmsWarehouseCode = wmsWarehouseCode;
     }
 }

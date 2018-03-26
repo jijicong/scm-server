@@ -449,10 +449,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         //验证仓库是否通知成功
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouseInfoId);
-//        if (!warehouseInfo.getOwnerWarehouseState().equals(ZeroToNineEnum.ONE.getCode())){
-//            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"仓库状态为非通知成功状态");
-//
-//        }
+        if (!warehouseInfo.getOwnerWarehouseState().equals(ZeroToNineEnum.ONE.getCode())){
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"仓库状态为非通知成功状态");
+        }
         List<WarehouseItemInfo> list = new ArrayList<>();
         List<String> skuList = new ArrayList<>();
         for (Skus sku:itemsList){
@@ -497,6 +496,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setItemNo(map.get(sku.getSkuCode()));
             warehouseItemInfo.setItemType(ItemTypeEnum.NOEMAL.getCode());
             warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
+            warehouseItemInfo.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
+            warehouseItemInfo.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
@@ -909,7 +910,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         ScmItemSyncRequest request = new ScmItemSyncRequest();
         request.setWarehouseItemList(itemsSynList);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        request.setWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         request.setActionType("add");
         AppResult<List<ScmItemSyncResponse>> appResult = warehouseApiService.itemSync(request);
 

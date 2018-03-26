@@ -891,7 +891,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         String itemId = orderLine.getItemId();
         if (!StringUtils.isBlank(itemId)) {
             WarehouseInfo warehouse = new WarehouseInfo();
-            warehouse.setQimenWarehouseCode(itemId);
+            warehouse.setWmsWarehouseCode(itemId);
             warehouse = warehouseInfoService.selectOne(warehouse);
             if (null != warehouse) {
                 return warehouse.getCode();
