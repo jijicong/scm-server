@@ -496,6 +496,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setSpuCode(sku.getSpuCode());
             warehouseItemInfo.setItemNo(map.get(sku.getSkuCode()));
             warehouseItemInfo.setItemType(ItemTypeEnum.NOEMAL.getCode());
+            warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
