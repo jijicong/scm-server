@@ -9,9 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
+import org.trc.form.warehouse.ScmDeliveryOrderDetailRequest;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.service.BaseTest;
 import org.trc.service.IQimenService;
 import org.trc.service.outbound.IOutBoundOrderService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.AppResult;
 
 import java.util.ArrayList;
@@ -100,7 +104,7 @@ public class OutboundDbUnit extends BaseTest {
     }
 
     private void mockQimene(Boolean isSucc) {
-        IQimenService qimenService = mock(IQimenService.class);
+        IWarehouseApiService qimenService = mock(IWarehouseApiService.class);
         outBoundOrderBiz.setQimenService(qimenService);
         AppResult ret = new AppResult();
         if (isSucc) {
@@ -112,7 +116,7 @@ public class OutboundDbUnit extends BaseTest {
         }
         String body = "{\"flag\":\"success\",\"code\":\"200\",\"success\":true,\"entryOrderId\":\"WMS-CGRKTZ2017120500166\",\"message\":\"操作成功\",\"body\":\"<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?><response>   <flag>success</flag>    <code>200</code>    <message>订单取消成功</message> </response>\"}";
         ret.setResult(JSON.parseObject(body));
-        when(qimenService.orderCancel(any(OrderCancelRequest.class))).thenReturn(ret);
+        when(qimenService.orderCancel(any(ScmOrderCancelRequest.class))).thenReturn(ret);
     }
 
     private AclUserAccreditInfo createAclUserAccreditInfo () {
