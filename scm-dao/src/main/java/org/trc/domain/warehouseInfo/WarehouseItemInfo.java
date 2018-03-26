@@ -64,6 +64,8 @@ public class WarehouseItemInfo implements Serializable{
     //是否显示
     @Transient
     private String disabled;
+    //仓库货主ID
+    private String warehouseOwnerId;
 
     public Long getId() {
         return id;
@@ -215,6 +217,14 @@ public class WarehouseItemInfo implements Serializable{
 
     public void setWarehouseCode(String warehouseCode) {
         this.warehouseCode = warehouseCode;
+    }
+
+    public String getWarehouseOwnerId() {
+        return warehouseOwnerId;
+    }
+
+    public void setWarehouseOwnerId(String warehouseOwnerId) {
+        this.warehouseOwnerId = warehouseOwnerId;
     }
 
     @Override
