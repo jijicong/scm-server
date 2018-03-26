@@ -4,6 +4,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.service.IQimenService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -15,7 +16,7 @@ public interface IOutBoundOrderBiz {
     Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm queryModel, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception;
 
     //发货明细更新
-    void updateOutboundDetail(String requestText) throws Exception;
+    void updateOutboundDetail();
 
     Response orderCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo);
 
@@ -35,5 +36,5 @@ public interface IOutBoundOrderBiz {
     //判读是否超过7天，超过七天则将置为1
     void checkTimeOutTimer();
 
-    void setQimenService(IQimenService service);
+    void setQimenService(IWarehouseApiService service);
 }

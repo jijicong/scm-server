@@ -24,6 +24,8 @@ public class OutboundOrder implements Serializable {
     //店铺订单编号
     private String warehouseOrderCode;
 
+    private String wmsOrderCode;
+
     private Long shopId;
 
     private String shopName;
@@ -363,5 +365,13 @@ public class OutboundOrder implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getWmsOrderCode() {
+        return wmsOrderCode;
+    }
+
+    public void setWmsOrderCode(String wmsOrderCode) {
+        this.wmsOrderCode = wmsOrderCode;
     }
 }
