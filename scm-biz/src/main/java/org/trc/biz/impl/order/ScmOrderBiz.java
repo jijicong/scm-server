@@ -52,6 +52,9 @@ import org.trc.form.JDModel.*;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.form.order.*;
+import org.trc.form.warehouse.ScmInventoryQueryItem;
+import org.trc.form.warehouse.ScmInventoryQueryRequest;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
@@ -71,6 +74,7 @@ import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -217,6 +221,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ISkusService skusService;
     @Autowired
     private IOrderExtBiz orderExtBiz;
+    @Autowired
+    private IWarehouseApiService warehouseApiService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1932,14 +1938,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(selfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
             setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
-            //获取并校验业务线相关仓储信息
+            /*//获取并校验业务线相关仓储信息
             List<WarehouseInfo> warehouseInfoList = getChannelAndCheckWarehouseInfo(platformOrder.getChannelCode());
             //获取自采商品奇门库存
             selfItemsInventorys = getSelfItemsQmStock(selfPurcharseOrderItemList, warehouseInfoList, platformOrder.getChannelCode());
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
             //校验自采商品的可用库存
-            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, selfItemsInventorys);
+            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, selfItemsInventorys);*/
+            //获取并校验业务线相关仓储信息
+            List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
+            //获取自采商品奇门库存
+            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = getWarehouseInventory(selfPurcharseOrderItemList, warehouseInfoList);
+            //获取自采商品本地库存
+            skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
+            //校验自采商品的可用库存
+            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList);
             List<OrderItem> checkFailureSelfPurcharseItems = (List<OrderItem>)map.get("checkFailureItems");
             skuWarehouseMap = (Map<String, List<SkuWarehouseDO>>)map.get("warehouseSkuMap");
             if(!CollectionUtils.isEmpty(checkFailureSelfPurcharseItems)){
@@ -3558,6 +3572,106 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return externalItemSkuList;
     }
 
+    /**
+     * 获取可用仓库信息
+     * @return
+     */
+    private List<WarehouseInfo> getWarehouseInfo(){
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+        AssertUtil.notEmpty(warehouseInfoList, "没有查询到可用仓库");
+        return warehouseInfoList;
+    }
+
+    /**
+     * 获取仓库商品库存
+     * @param orderItemList
+     * @param warehouseInfoList
+     * @return
+     */
+    private List<ScmInventoryQueryResponse> getWarehouseInventory(List<OrderItem> orderItemList, List<WarehouseInfo> warehouseInfoList){
+        List<Long> warehouseInfoIds = new ArrayList<>();
+        for(WarehouseInfo warehouseInfo2: warehouseInfoList){
+            warehouseInfoIds.add(warehouseInfo2.getId());
+        }
+        List<String> skuCodes = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodes.add(orderItem.getSkuCode());
+        }
+        //查询跟仓库绑定过的商品,其中没有绑定过的在后面的拆单时会归到异常订单里面
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("warehouseInfoId", warehouseInfoIds);
+        criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
+        criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+        AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
+        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
+        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();
+        for(WarehouseInfo warehouseInfo: warehouseInfoList){
+            List<WarehouseItemInfo> tmpWarehouseItemInfoList = new ArrayList<>();
+            WarehouseOwernSkuDO warehouseOwernSkuDO = new WarehouseOwernSkuDO();
+            for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+                if(warehouseItemInfo.getWarehouseInfoId().longValue() == warehouseInfo.getId().longValue()){
+                    tmpWarehouseItemInfoList.add(warehouseItemInfo);
+                }
+            }
+            if(tmpWarehouseItemInfoList.size() > 0){
+                warehouseOwernSkuDO.setWarehouseInfo(warehouseInfo);
+                warehouseOwernSkuDO.setWarehouseItemInfoList(tmpWarehouseItemInfoList);
+                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughQimen().toString())){//奇门仓储
+                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
+                    warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
+                }else{//京东仓储
+                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
+                    warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
+                }
+            }
+        }
+
+        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
+        if(warehouseOwernSkuDOListQimen.size() > 0){
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(), warehouseOwernSkuDOListQimen));
+        }
+        if(warehouseOwernSkuDOListJingdong.size() > 0){
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong));
+        }
+        return scmInventoryQueryResponseList;
+    }
+
+    /**
+     * 获取仓库库存
+     * @param warehouseType
+     * @param warehouseOwernSkuDOListQimen
+     * @return
+     */
+    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen){
+        ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
+        request.setWarehouseType(warehouseType);
+        List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
+        for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOListQimen){
+            for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
+                ScmInventoryQueryItem item = new ScmInventoryQueryItem();
+                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getQimenWarehouseCode());
+                item.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
+                item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
+                item.setItemCode(warehouseItemInfo.getSkuCode());
+                item.setItemId(warehouseItemInfo.getWarehouseItemId());
+                scmInventoryQueryItemList.add(item);
+            }
+        }
+        request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
+        AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
+        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
+        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), appResult.getAppcode())){
+            scmInventoryQueryResponseList = (List<ScmInventoryQueryResponse>) appResult.getResult();
+        }
+        return scmInventoryQueryResponseList;
+    }
+
 
 
     /**
@@ -3565,7 +3679,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItemList
      * @param channelCode 渠道编码
      */
-    private List<InventoryQueryItemDO> getSelfItemsQmStock(List<OrderItem> orderItemList, List<WarehouseInfo> warehouseInfoList, String channelCode){
+    /*private List<InventoryQueryItemDO> getSelfItemsQmStock(List<OrderItem> orderItemList, List<WarehouseInfo> warehouseInfoList, String channelCode){
         List<Long> warehouseInfoIds = new ArrayList<>();
         for(WarehouseInfo warehouseInfo2: warehouseInfoList){
             warehouseInfoIds.add(warehouseInfo2.getId());
@@ -3616,7 +3730,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             inventoryQueryItemDOList.addAll(getQimenStockByWarehouseOwnerId(entry));
         }
         return inventoryQueryItemDOList;
-    }
+    }*/
 
     /**
      * 根据货主ID获取奇门库存
@@ -3692,53 +3806,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param skuStockList
      * @return
      */
-    /*private List<OrderItem> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<InventoryQueryItemDO> inventoryQueryItemDOList){
-        List<String> skuCodeList = new ArrayList<>();
-        for(OrderItem orderItem: orderItemList){
-            skuCodeList.add(orderItem.getSkuCode());
-        }
-        //校验失败的商品
-        List<OrderItem> checkFailureItems = new ArrayList<>();
-        for(OrderItem orderItem: orderItemList){
-            boolean _flag = false;
-            //本地库存
-            long localStock = 0;
-            for(SkuStock skuStock: skuStockList){
-                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
-                    //可用库存
-                    long availableInventory = skuStock.getRealInventory() - skuStock.getFrozenInventory();
-                    localStock += availableInventory;
-                }
-            }
-            //奇门库存
-            long qimenStock = 0;
-            for(InventoryQueryItemDO item: inventoryQueryItemDOList){
-                if(StringUtils.equals(orderItem.getSkuCode(), item.getItemCode())){
-                    qimenStock += item.getQuantity();
-                }
-            }
-            //校验库存,本地库存和奇门库存以小的为准
-            if(localStock >= qimenStock){
-                if(qimenStock >= orderItem.getNum().longValue()){
-                    _flag = true;
-                }else{
-                    checkFailureItems.add(orderItem);
-                }
-            }else{
-                if(localStock >= orderItem.getNum().longValue()){
-                    _flag = true;
-                }else{
-                    checkFailureItems.add(orderItem);
-                }
-            }
-            if(!_flag){
-                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
-            }
-        }
-        return  checkFailureItems;
-    }*/
-
-    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<InventoryQueryItemDO> inventoryQueryItemDOList){
+    /*private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<InventoryQueryItemDO> inventoryQueryItemDOList){
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
         List<String> skuCodeList = new ArrayList<>();
         for(OrderItem orderItem: orderItemList){
@@ -3787,6 +3855,86 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             boolean _flag = false;
             //校验库存,本地库存和奇门库存以小的为准
+            if(localStock >= qimenStock){
+                if(qimenStock >= orderItem.getNum().longValue()){
+                    _flag = true;
+                }else{
+                    checkFailureItems.add(orderItem);
+                }
+            }else{
+                if(localStock >= orderItem.getNum().longValue()){
+                    _flag = true;
+                }else{
+                    checkFailureItems.add(orderItem);
+                }
+            }
+            if(_flag){
+                List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
+                SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
+                skuWarehouseDO.setSkuCode(maxSkuStock.getSkuCode());
+                skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
+                skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
+                skuWarehouseDOList.add(skuWarehouseDO);
+                warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
+            }else {
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
+            }
+        }
+        Map<String, Object> map = new HashedMap();
+        map.put("checkFailureItems", checkFailureItems);
+        map.put("warehouseSkuMap", warehouseSkuMap);
+        return map;
+    }*/
+
+    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+        Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
+        List<String> skuCodeList = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodeList.add(orderItem.getSkuCode());
+        }
+        //校验失败的商品
+        List<OrderItem> checkFailureItems = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            long qimenStock = 0;//奇门库存
+            long localStock = 0;//本地库存
+            List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
+            for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
+                if(StringUtils.equals(orderItem.getSkuCode(), item.getItemCode())){
+                    _inventoryQueryItemList.add(item);
+                }
+            }
+            //按仓库库存降序排序
+            if(_inventoryQueryItemList.size() > 0){
+                Collections.sort(_inventoryQueryItemList, new Comparator<ScmInventoryQueryResponse>() {
+                    @Override
+                    public int compare(ScmInventoryQueryResponse o1, ScmInventoryQueryResponse o2) {
+                        return o2.getQuantity().intValue() - o1.getQuantity().intValue();
+                    }
+                });
+                qimenStock = _inventoryQueryItemList.get(0).getQuantity();
+            }
+            List<SkuStock> _skuStockList = new ArrayList<>();
+            for(SkuStock skuStock: skuStockList){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                    _skuStockList.add(skuStock);
+                }
+            }
+            SkuStock maxSkuStock = null;
+            //按本地库存降序排序
+            if(_skuStockList.size() > 0){
+                Collections.sort(_skuStockList, new Comparator<SkuStock>() {
+                    @Override
+                    public int compare(SkuStock o1, SkuStock o2) {
+                        int _stock1 = o1.getRealInventory().intValue() - o1.getFrozenInventory().intValue();
+                        int _stock2 = o2.getRealInventory().intValue() - o2.getFrozenInventory().intValue();
+                        return _stock2 - _stock1;
+                    }
+                });
+                maxSkuStock = _skuStockList.get(0);
+                localStock = maxSkuStock.getRealInventory() - maxSkuStock.getFrozenInventory();
+            }
+            boolean _flag = false;
+            //校验库存,本地库存和仓库库存以小的为准
             if(localStock >= qimenStock){
                 if(qimenStock >= orderItem.getNum().longValue()){
                     _flag = true;

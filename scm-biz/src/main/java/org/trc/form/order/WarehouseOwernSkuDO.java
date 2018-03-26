@@ -7,6 +7,11 @@ import java.util.List;
 
 public class WarehouseOwernSkuDO {
 
+    /**
+     * 仓库类型:
+     */
+    private String warehouseType;
+
     private WarehouseInfo warehouseInfo;
 
     private List<WarehouseItemInfo> warehouseItemInfoList;
@@ -25,5 +30,13 @@ public class WarehouseOwernSkuDO {
 
     public void setWarehouseItemInfoList(List<WarehouseItemInfo> warehouseItemInfoList) {
         this.warehouseItemInfoList = warehouseItemInfoList;
+    }
+
+    public String getWarehouseType() {
+        return warehouseType;
+    }
+
+    public void setWarehouseType(String warehouseType) {
+        this.warehouseType = warehouseType;
     }
 }

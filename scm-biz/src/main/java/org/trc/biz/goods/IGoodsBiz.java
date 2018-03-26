@@ -162,5 +162,5 @@ public interface IGoodsBiz {
      * 检查条形码唯一性
      * @param barcode
      */
-    void checkBarcodeOnly(String barcode);
+    void checkBarcodeOnly(String barcode,String skuCode);
 }
