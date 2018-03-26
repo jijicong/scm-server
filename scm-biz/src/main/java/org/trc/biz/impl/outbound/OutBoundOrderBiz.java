@@ -654,7 +654,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 stockType.put("frozen_inventory", String.valueOf((-1*detail.getShouldSentItemNum())));
             }
             requsetUpdateStock.setStockType(stockType);
-            requsetUpdateStock.setChannelCode(channelCode);
+            requsetUpdateStock.setChannelCode("TRMALL");
             requsetUpdateStock.setSkuCode(detail.getSkuCode());
             requsetUpdateStock.setWarehouseCode(warehouseCode);
             updateStockList.add(requsetUpdateStock);

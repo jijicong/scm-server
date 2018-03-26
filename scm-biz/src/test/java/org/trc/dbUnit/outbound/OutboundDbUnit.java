@@ -103,6 +103,10 @@ public class OutboundDbUnit extends BaseTest {
         resultCompare("case1");
     }
 
+    public void orderCancel()throws Exception{
+
+    }
+
     private void mockQimene(Boolean isSucc) {
         IWarehouseApiService qimenService = mock(IWarehouseApiService.class);
         outBoundOrderBiz.setQimenService(qimenService);
