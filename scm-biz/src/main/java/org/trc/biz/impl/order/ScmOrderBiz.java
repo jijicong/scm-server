@@ -5002,7 +5002,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品占用库存
         //frozenOrderInventory(outboundMap);
         //通知仓库发货
-        noticeWarehouseSendGoods(platformOrder.getChannelCode(), outboundMap);
+        noticeWarehouseSendGoods(outboundMap);
         
         //通知渠道发货结果 ......
         notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
@@ -5426,7 +5426,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //记录操作日志
         if(failureOutboundCodes.size() > 0){
             //失败日志
-            List<DeliveryorderBatchcreateResponse.Order> orderList = deliveryorderBatchcreateResponse.getOrders();
+            /*List<DeliveryorderBatchcreateResponse.Order> orderList = deliveryorderBatchcreateResponse.getOrders();
             for(DeliveryorderBatchcreateResponse.Order order: orderList){
                 for(Map.Entry<String, OutboundForm> entry: entries){
                     if(StringUtils.equals(order.getDeliveryOrderCode(), entry.getKey())){
@@ -5439,12 +5439,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_FAIL.getMessage(), order.getMessage(),null);
                     }
                 }
-            }
+            }*/
         }
 
         if(successOutboundCodes.size() > 0){
             //成功日志
-            for(String successOutboundCode: successOutboundCodes){
+            /*for(String successOutboundCode: successOutboundCodes){
                 for(Map.Entry<String, OutboundForm> entry: entries){
                     if(StringUtils.equals(successOutboundCode, entry.getKey())){
                         OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
@@ -5456,7 +5456,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(), operator, LogOperationEnum.OUTBOUND_RECEIVE_SUCCESS.getMessage(), "",null);
                     }
                 }
-            }
+            }*/
         }
     }
 
