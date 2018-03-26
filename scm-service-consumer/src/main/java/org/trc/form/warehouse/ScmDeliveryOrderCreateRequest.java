@@ -16,4 +16,6 @@ public class ScmDeliveryOrderCreateRequest  extends ScmWarehouseRequestBase{
     public void setScmDeleveryOrderDOList(List<ScmDeliveryOrderDO> scmDeleveryOrderDOList) {
         this.scmDeleveryOrderDOList = scmDeleveryOrderDOList;
     }
+
+
 }

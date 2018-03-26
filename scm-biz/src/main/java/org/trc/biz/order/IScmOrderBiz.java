@@ -8,9 +8,12 @@ import org.trc.domain.order.SupplierOrderInfo;
 import org.trc.domain.order.WarehouseOrder;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
+import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
+import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.util.IRealIpService;
+import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
@@ -189,6 +192,13 @@ public interface IScmOrderBiz {
     //WarehouseOrder updateWarehouseOrderSupplierOrderStatus(String string);
     
     void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo);
+
+    /**
+     * 创建发货单
+     * @param outboundMap, 里面的key是采购单编码,OutboundForm是采购单对象和采购单明细列表
+     * @return
+     */
+    AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap);
 
 
 }

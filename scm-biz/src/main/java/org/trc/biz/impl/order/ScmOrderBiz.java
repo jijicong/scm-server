@@ -52,9 +52,7 @@ import org.trc.form.JDModel.*;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.form.order.*;
-import org.trc.form.warehouse.ScmInventoryQueryItem;
-import org.trc.form.warehouse.ScmInventoryQueryRequest;
-import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
@@ -2507,7 +2505,70 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
     }
 
+    @Override
+    public AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap) {
+        Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
+        ScmDeliveryOrderCreateRequest request = new ScmDeliveryOrderCreateRequest();
+        List<ScmDeliveryOrderDO> scmDeliveryOrderDOList = new ArrayList<>();
+        for(Map.Entry<String, OutboundForm> entry: entries){
+            OutboundForm outboundForm = entry.getValue();
+            OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
+            List<OutboundDetail> outboundDetailList = outboundForm.getOutboundDetailList();
+            ScmDeliveryOrderDO scmDeliveryOrderDO = getScmDeliveryOrderDO(outboundOrder);
 
+
+
+
+            List<ScmDeliveryOrderItem> scmDeliveryOrderItemList = new ArrayList<>();
+
+
+
+
+        }
+        return null;
+    }
+
+    private ScmDeliveryOrderDO getScmDeliveryOrderDO(OutboundOrder outboundOrder){
+        ScmDeliveryOrderDO scmDeliveryOrderDO = new ScmDeliveryOrderDO();
+        scmDeliveryOrderDO.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());//发货单编码
+        scmDeliveryOrderDO.setWarehouseCode(outboundOrder.getWarehouseCode());
+        scmDeliveryOrderDO.setOrderType(JdDeliverOrderTypeEnum.B2C.getCode());
+        scmDeliveryOrderDO.setOwnerCode("");//货主编码(事业部编码) FIXME
+        scmDeliveryOrderDO.setShopNo(outboundOrder.getShopId().toString());
+        scmDeliveryOrderDO.setShopNick(outboundOrder.getShopName());
+        scmDeliveryOrderDO.setReciverProvince(outboundOrder.getReceiverProvince());
+        scmDeliveryOrderDO.setReciverCity(outboundOrder.getReceiverCity());
+        scmDeliveryOrderDO.setReciverCountry(outboundOrder.getReceiverDistrict());
+        //scmDeliveryOrderDO.setReciverTown("");//收货人所在镇
+        scmDeliveryOrderDO.setReciverDetailAddress(outboundOrder.getReceiverAddress());
+        scmDeliveryOrderDO.setReciverName(outboundOrder.getReceiverName());
+        scmDeliveryOrderDO.setReciverMobile(outboundOrder.getReceiverPhone());
+        //scmDeliveryOrderDO.setInvoiceFlag("");//是否需要发票
+        //scmDeliveryOrderDO.setInvoiceType("");//发票类型
+        //scmDeliveryOrderDO.setInvoiceTitle("");//发票抬头
+        //scmDeliveryOrderDO.setInvoiceAmount(null);//发票金额
+        //scmDeliveryOrderDO.setInvoiceState("");//发票标识
+        //scmDeliveryOrderDO.setInvoiceContent("");//发票内容
+        //scmDeliveryOrderDO.setInvoiceTax("");//购方税号(税务识别号) 
+        scmDeliveryOrderDO.setBuyerMessage(outboundOrder.getBuyerMessage());
+        //scmDeliveryOrderDO.setSellerMessage("");//
+        scmDeliveryOrderDO.setPlaceOrderTime(outboundOrder.getCreateTime());//下单时间
+
+        /**
+         * 京东专有参数 FIXME
+         */
+        scmDeliveryOrderDO.setIsvSource("");//ISV来源编号
+        scmDeliveryOrderDO.setSalePlatformSource("");//销售平台来源
+        scmDeliveryOrderDO.setOrderMark("");//订单标记位
+
+        return scmDeliveryOrderDO;
+    }
+
+    private ScmDeliveryOrderItem getScmDeliveryOrderItem(OutboundDetail outboundDetail){
+        ScmDeliveryOrderItem scmDeliveryOrderItem = new ScmDeliveryOrderItem();
+        scmDeliveryOrderItem.setItemCode(outboundDetail.getSkuCode());
+        scmDeliveryOrderItem.setItemId(outboundDetail.get);
+    }
 
 
     @Override
@@ -5279,7 +5340,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outboundMap.put(entry.getKey(), outboundForm);
         }
         //处理发货通知单创建参数
-        List<DeliveryorderBatchcreateRequest.Order> orderList = new ArrayList<>();
+        /*List<DeliveryorderBatchcreateRequest.Order> orderList = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
             OutboundForm outboundForm = entry.getValue();
             OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
@@ -5297,7 +5358,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //调用奇门创建发货单接口(批量)
         DeliveryorderBatchcreateRequest request = new DeliveryorderBatchcreateRequest();
         request.setOrders(orderList);
-        AppResult appResult = qimenService.deliveryorderBatchcreate(request);
+        AppResult appResult = qimenService.deliveryorderBatchcreate(request);*/
+
+
+
+
         //更新发货单状态
         updateOutboudOrderStatus(outboundMap2, appResult, warehouseList);
     }
