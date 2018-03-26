@@ -35,6 +35,8 @@ public class WarehouseItemInfo implements Serializable{
     private String itemNo;
     //商品名称
     private String itemName;
+    //仓库编码
+    private String warehouseCode;
     //条形码
     private String barCode;
     //商品规格描述
@@ -205,6 +207,14 @@ public class WarehouseItemInfo implements Serializable{
 
     public void setDisabled(String disabled) {
         this.disabled = disabled;
+    }
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
     }
 
     @Override
