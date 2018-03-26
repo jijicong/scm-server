@@ -22,6 +22,7 @@ import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseException;
 import org.trc.form.system.WarehouseForm;
@@ -33,6 +34,7 @@ import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.WarehouseCacheEvict;
 import tk.mybatis.mapper.entity.Example;
@@ -77,6 +79,9 @@ public class WarehouseBiz implements IWarehouseBiz {
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
 
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
+
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
@@ -108,7 +113,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setId(warehouseInfo.getId());
             result.setWarehouseName(warehouseInfo.getWarehouseName());
             result.setWarehouseTypeCode(warehouseInfo.getWarehouseTypeCode());
-            result.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+            result.setQimenWarehouseCode(warehouseInfo.getWmsWarehouseCode());
             result.setSkuNum(warehouseInfo.getSkuNum());
             String state = convertWarehouseState(warehouseInfo.getOwnerWarehouseState());
             result.setOwnerWarehouseState(state);
@@ -258,22 +263,22 @@ public class WarehouseBiz implements IWarehouseBiz {
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
 
         if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
-                StringUtils.isEmpty(warehouse.getQimenWarehouseCode())){
+                StringUtils.isEmpty(warehouse.getWmsWarehouseCode())){
             String msg = "奇门仓库编码不能为空！" ;
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
         if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
-                StringUtils.isNoneEmpty(warehouse.getQimenWarehouseCode()) &&
-                !this.checkQimenWarehouseCode(warehouse.getQimenWarehouseCode(), warehouse.getId())){
-            String msg = "奇门仓库编码重复," + warehouse.getQimenWarehouseCode();
+                StringUtils.isNoneEmpty(warehouse.getWmsWarehouseCode()) &&
+                !this.checkQimenWarehouseCode(warehouse.getWmsWarehouseCode(), warehouse.getId())){
+            String msg = "奇门仓库编码重复," + warehouse.getWmsWarehouseCode();
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
         if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
-            warehouse.setQimenWarehouseCode("");
+            warehouse.setWmsWarehouseCode("");
             warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
             warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
         }
@@ -285,6 +290,14 @@ public class WarehouseBiz implements IWarehouseBiz {
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
         }
+
+        //更新仓库商品信息
+        WarehouseItemInfo warehouseItemInfoTemp = new WarehouseItemInfo();
+        warehouseItemInfoTemp.setWmsWarehouseCode(warehouse.getWmsWarehouseCode());
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseInfoId", warehouse.getId());
+        warehouseItemInfoService.updateByExampleSelective(warehouseItemInfoTemp, example);
 
     }
 

@@ -3655,7 +3655,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOListQimen){
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
                 ScmInventoryQueryItem item = new ScmInventoryQueryItem();
-                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getQimenWarehouseCode());
+                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
                 item.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
                 item.setItemCode(warehouseItemInfo.getSkuCode());
@@ -3751,7 +3751,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 criteria.setItemCode(warehouseItemInfo.getSkuCode());
                 criteria.setItemId(warehouseItemInfo.getWarehouseItemId());
                 criteria.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
-                criteria.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+                criteria.setWarehouseCode(warehouseInfo.getWmsWarehouseCode());
                 criteria.setOwnerCode(warehouseOwnerId);
                 criteriaList.add(criteria);
             }

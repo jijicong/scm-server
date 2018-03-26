@@ -863,7 +863,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             scmOrderCancelRequest.setCancelReason(remark);
             scmOrderCancelRequest.setOrderCode(outboundOrder.getOutboundOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
-            scmOrderCancelRequest.setWarehouseCode(warehouse.getQimenWarehouseCode());
+            scmOrderCancelRequest.setWarehouseCode(warehouse.getWmsWarehouseCode());
 
             //调用奇门接口
             AppResult<ScmOrderCancelResponse> appResult = warehouseApiService.orderCancel(scmOrderCancelRequest);

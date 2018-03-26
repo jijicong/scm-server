@@ -66,6 +66,8 @@ public class WarehouseItemInfo implements Serializable{
     private String disabled;
     //仓库货主ID
     private String warehouseOwnerId;
+    //开放平台仓库编码
+    private String wmsWarehouseCode;
 
     public Long getId() {
         return id;
@@ -225,6 +227,14 @@ public class WarehouseItemInfo implements Serializable{
 
     public void setWarehouseOwnerId(String warehouseOwnerId) {
         this.warehouseOwnerId = warehouseOwnerId;
+    }
+
+    public String getWmsWarehouseCode() {
+        return wmsWarehouseCode;
+    }
+
+    public void setWmsWarehouseCode(String wmsWarehouseCode) {
+        this.wmsWarehouseCode = wmsWarehouseCode;
     }
 
     @Override

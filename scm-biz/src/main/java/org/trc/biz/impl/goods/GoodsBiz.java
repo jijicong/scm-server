@@ -826,7 +826,7 @@ public class GoodsBiz implements IGoodsBiz {
         ScmItemSyncRequest request = new ScmItemSyncRequest();
         request.setWarehouseItemList(list1);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        request.setWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         request.setActionType("update");
 
         return request;

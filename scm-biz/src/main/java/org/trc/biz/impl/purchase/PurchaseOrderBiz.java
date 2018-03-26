@@ -1473,7 +1473,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
         warehouseNotice.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        warehouseNotice.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        warehouseNotice.setQimenWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         warehouseNotice.setSender(order.getSender());
         warehouseNotice.setReceiverNumber(order.getReceiverNumber());
         warehouseNotice.setReceiver(order.getReceiver());
