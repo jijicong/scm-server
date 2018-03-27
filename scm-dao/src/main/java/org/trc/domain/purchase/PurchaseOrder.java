@@ -28,8 +28,7 @@ public class PurchaseOrder extends BaseDO{
     private String purchaseOrderCode;
     @FormParam("channelId")
     private Long channelId;//
-    @FormParam("wmsOrderCode")
-    private String wmsOrderCode;
+
     @FormParam("channelCode")
     private String channelCode;//
     @FormParam("supplierId")
@@ -514,13 +513,5 @@ public class PurchaseOrder extends BaseDO{
 
     public void setSenderCityName(String senderCityName) {
         this.senderCityName = senderCityName;
-    }
-
-    public String getWmsOrderCode() {
-        return wmsOrderCode;
-    }
-
-    public void setWmsOrderCode(String wmsOrderCode) {
-        this.wmsOrderCode = wmsOrderCode;
     }
 }

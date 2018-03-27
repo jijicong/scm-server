@@ -159,7 +159,7 @@ public class WarehouseInfoResource {
     @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_NOTICE_QIMEN)
     @Produces(MediaType.APPLICATION_JSON)
     public Response warehouseItemNoticeQimen(@FormParam("itemIds") String itemIds){
-        logger.info("仓库商品信息开始通知奇门同步，请求参数分别为：itemIds=" + itemIds);
+        logger.info("仓库商品信息开始通知开放平台同步，请求参数分别为：itemIds=" + itemIds);
         return warehouseInfoBiz.warehouseItemNoticeQimen(itemIds);
     }
 }

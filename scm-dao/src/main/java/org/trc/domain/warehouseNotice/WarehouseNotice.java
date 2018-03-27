@@ -140,6 +140,8 @@ public class WarehouseNotice implements Serializable{
     private String failureCause;
     //异常原因
     private String exceptionCause;
+    //开放平台入库单号
+    private String wmsOrderCode;
 
     public String getExceptionCause() {
 		return exceptionCause;
@@ -475,5 +477,13 @@ public class WarehouseNotice implements Serializable{
 
     public void setWarehouseInfoId(Long warehouseInfoId) {
         this.warehouseInfoId = warehouseInfoId;
+    }
+
+    public String getWmsOrderCode() {
+        return wmsOrderCode;
+    }
+
+    public void setWmsOrderCode(String wmsOrderCode) {
+        this.wmsOrderCode = wmsOrderCode;
     }
 }

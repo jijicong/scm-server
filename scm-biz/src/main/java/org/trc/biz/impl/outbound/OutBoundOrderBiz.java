@@ -29,6 +29,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
 import org.trc.form.*;
+import org.trc.form.order.OutboundForm;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
@@ -521,7 +522,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), true));
         }
         //设置发货通知单参数
-        ScmDeliveryOrderCreateRequest request = setParam(warehouse,outboundOrder,outboundDetails);
+        Map<String, OutboundForm> outboundMap = new HashMap<>();
+        OutboundForm outboundForm = new OutboundForm();
+        outboundForm.setOutboundOrder(outboundOrder);
+        outboundForm.setOutboundDetailList(outboundDetails);
+        outboundMap.put(outboundOrder.getOutboundOrderCode(), outboundForm);
+
         logger.info("请求参数赋值完成，开始调用奇门接口-------->");
         // 重新发货
         String identifier = "";
@@ -536,19 +542,21 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     msg = "已经通知仓库重新发货成功";
                     return ResultUtil.createSuccessResult("已经通知仓库重新发货成功","");
                 }
-                result = warehouseApiService.deliveryOrderCreate(request);
+                result = scmOrderBiz.deliveryOrderCreate(outboundMap);
+
                 logger.info("调用奇门接口结束<--------");
                 String code = result.getAppcode();
                 msg = result.getDatabuffer();
                 //调用重新发货接口插入一条日志记录
                 logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
                 if (StringUtils.equals(code,SUCCESS)){
-                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id);
+                    List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
+                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getDeliveryOrderCode());
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
                 }else {
                     //仓库接受失败插入一条日志
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
-                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id);
+                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }
@@ -559,13 +567,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             } else {
                 //获取锁失败
                 logger.error("重新发货失败:{} 发货通知单发送，获取锁失败，skuStockId:{}，identifier:{}",
-                        JSON.toJSONString(request), outboundOrderCode, identifier);
+                        JSON.toJSONString(outboundMap), outboundOrderCode, identifier);
                 return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION.getCode()),"操作失败，请重试");
             }
         }catch (Exception e){
             e.printStackTrace();
             logger.error("重新发货失败:{} 发送发货通知单后，更新更新状态失败，outboundOrderCode:{}，identifier:{}, err:{}",
-                    JSON.toJSONString(request), outboundOrderCode, identifier, e.getMessage());
+                    JSON.toJSONString(outboundMap), outboundOrderCode, identifier, e.getMessage());
             return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION.getCode()),"重新发货失败");
         }finally {
             if (redisLock.releaseLock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() + outboundOrderCode, identifier)) {
@@ -756,7 +764,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
 
-    private void updateOutboundDetailState(String outboundOrderCode,String state,Long id){
+    private void updateOutboundDetailState(String outboundOrderCode,String state,Long id, String deliveryOrderCode){
         logger.info("开始更新发货通知单详情表状态");
         Example example = new Example(OutboundDetail.class);
         Example.Criteria criteria = example.createCriteria();
@@ -777,6 +785,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         List<OutboundDetail> list = outboundDetailService.selectByExample(example);
         String outboundOrderStatus = this.getOutboundOrderStatusByDetail(list);
         outboundOrder.setStatus(outboundOrderStatus);
+        outboundOrder.setWmsOrderCode(deliveryOrderCode);
         count = outBoundOrderService.updateByPrimaryKeySelective(outboundOrder);
         if (count == 0){
             String msg = String.format("创建发货单%s后，更新发货通知表状态失败",outboundOrderCode);
