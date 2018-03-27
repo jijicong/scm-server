@@ -20,7 +20,7 @@ public class WarehouseInfoResult implements Serializable {
     private String warehouseTypeCode;
 
     //奇门仓库编码
-    private String qimenWarehouseCode;
+    private String wmsWarehouseCode;
 
     //sku数量
     private Integer skuNum;
@@ -68,14 +68,6 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
-    }
-
-    public String getQimenWarehouseCode() {
-        return qimenWarehouseCode;
-    }
-
-    public void setQimenWarehouseCode(String qimenWarehouseCode) {
-        this.qimenWarehouseCode = qimenWarehouseCode;
     }
 
     public Integer getSkuNum() {
@@ -196,5 +188,13 @@ public class WarehouseInfoResult implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getWmsWarehouseCode() {
+        return wmsWarehouseCode;
+    }
+
+    public void setWmsWarehouseCode(String wmsWarehouseCode) {
+        this.wmsWarehouseCode = wmsWarehouseCode;
     }
 }

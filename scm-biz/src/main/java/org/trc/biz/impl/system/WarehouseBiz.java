@@ -113,7 +113,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setId(warehouseInfo.getId());
             result.setWarehouseName(warehouseInfo.getWarehouseName());
             result.setWarehouseTypeCode(warehouseInfo.getWarehouseTypeCode());
-            result.setQimenWarehouseCode(warehouseInfo.getWmsWarehouseCode());
+            result.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
             result.setSkuNum(warehouseInfo.getSkuNum());
             String state = convertWarehouseState(warehouseInfo.getOwnerWarehouseState());
             result.setOwnerWarehouseState(state);
@@ -374,7 +374,7 @@ public class WarehouseBiz implements IWarehouseBiz {
     private boolean checkQimenWarehouseCode(String qimenWarehouseCode, Long id){
         Example example = new Example(WarehouseInfo.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("qimenWarehouseCode",qimenWarehouseCode);
+        criteria.andEqualTo("wmsWarehouseCode",qimenWarehouseCode);
         List<WarehouseInfo> list = warehouseInfoService.selectByExample(example);
         if(list == null || list.size() < 1 ||
             (list.size() == 1 && list.get(0).getId() == id)){
