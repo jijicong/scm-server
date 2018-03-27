@@ -413,7 +413,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
 
         if(warehouseList==null || warehouseList.size() < 1){
-            String msg = "无数据，请确认【系统管理-仓库管理】中存在“启用”状态的仓库！";
+            String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态的仓库！";
             LOGGER.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }

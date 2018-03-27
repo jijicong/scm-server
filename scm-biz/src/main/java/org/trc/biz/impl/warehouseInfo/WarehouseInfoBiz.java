@@ -449,7 +449,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         //验证仓库是否通知成功
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouseInfoId);
-        if (!warehouseInfo.getOwnerWarehouseState().equals(ZeroToNineEnum.ONE.getCode())){
+        if (!StringUtils.isEquals(warehouseInfo.getOwnerWarehouseState(), ZeroToNineEnum.ONE.getCode())){
             return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION.getCode()),"仓库状态为非通知成功状态");
         }
         List<WarehouseItemInfo> list = new ArrayList<>();
@@ -925,27 +925,26 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), appResult.getDatabuffer(), "");
     }
 
-    private List<String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ScmItemSyncResponse> batchItemSynItems){
-        List<String> itemIds = new ArrayList<String>();
+    private Map<String, String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ScmItemSyncResponse> batchItemSynItems){
+        Map<String, String> itemMap = new HashMap<>();
         for(WarehouseItemInfo item : infoList){
-            boolean flag = false;
             for(ScmItemSyncResponse synItem : batchItemSynItems){
                 if(synItem.getItemCode().equals(item.getSkuCode()) && SUCCESS.equals(synItem.getCode())){
-                    flag = true;
+                    itemMap.put(String.valueOf(item.getId()), synItem.getItemId());
                 }
             }
-            if(flag){
-                itemIds.add(String.valueOf(item.getId()));
-            }
         }
-        return itemIds;
+        return itemMap;
     }
 
-    private void updateWarehouseItemInfo(List<String> itemList){
+    private void updateWarehouseItemInfo(Map<String, String> itemMap){
         WarehouseInfo warehouseInfo = null;
-        for(String itemId : itemList){
+        for (Map.Entry<String, String> entry : itemMap.entrySet()) {
+            String itemId = entry.getKey().toString();
+            String warehouseItemId = entry.getValue().toString();
             WarehouseItemInfo info = new WarehouseItemInfo();
             info.setId(Long.parseLong(itemId));
+            info.setWarehouseItemId(warehouseItemId);
             info.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.FOUR.getCode()));
             warehouseItemInfoService.updateByPrimaryKeySelective(info);
             info = warehouseItemInfoService.selectByPrimaryKey(Long.parseLong(itemId));
@@ -1237,5 +1236,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         return ResultUtil.createSuccessResult("删除仓库信息成功","success");
     }
 
-
+    public void setWmsService(IWarehouseApiService service) {
+        this.warehouseApiService = service;
+    }
 }
