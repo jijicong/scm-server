@@ -34,8 +34,8 @@ public class WarehouseInfo extends BaseDO {
     @Length(max = 32, message = "仓库类型字母和数字不能超过32个,汉字不能超过16个")
     private String warehouseTypeCode;   //仓库类型 1.保税仓 2.海外仓 3.普通仓
 
-    @FormParam("isThroughQimen")
-    private Integer isThroughQimen; // 是否通过奇门对接：0-不通过 1-通过
+    @FormParam("isThroughWms")
+    private Integer isThroughWms; // 是否通过开放平台对接：0-不通过 1-通过
 
     @FormParam("isCustomsClearance")
     private Integer isCustomsClearance; //是否支持清关 0.不支持 1. 支持  null.无   只用保税仓，才会有清关 ，其它为null
@@ -279,14 +279,6 @@ public class WarehouseInfo extends BaseDO {
         this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 
-    public Integer getIsThroughQimen() {
-        return isThroughQimen;
-    }
-
-    public void setIsThroughQimen(Integer isThroughQimen) {
-        this.isThroughQimen = isThroughQimen;
-    }
-
     public String getWarehouseTypeCode() {
         return warehouseTypeCode;
     }
@@ -301,5 +293,13 @@ public class WarehouseInfo extends BaseDO {
 
     public void setWmsWarehouseCode(String wmsWarehouseCode) {
         this.wmsWarehouseCode = wmsWarehouseCode;
+    }
+
+    public Integer getIsThroughWms() {
+        return isThroughWms;
+    }
+
+    public void setIsThroughWms(Integer isThroughWms) {
+        this.isThroughWms = isThroughWms;
     }
 }

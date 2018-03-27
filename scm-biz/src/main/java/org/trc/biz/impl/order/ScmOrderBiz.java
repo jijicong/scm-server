@@ -3730,7 +3730,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(tmpWarehouseItemInfoList.size() > 0){
                 warehouseOwernSkuDO.setWarehouseInfo(warehouseInfo);
                 warehouseOwernSkuDO.setWarehouseItemInfoList(tmpWarehouseItemInfoList);
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughQimen().toString())){//奇门仓储
+                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
                     warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
                     warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
                 }else{//京东仓储

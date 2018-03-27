@@ -796,7 +796,7 @@ public class GoodsBiz implements IGoodsBiz {
     private ScmItemSyncRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
-        if(warehouseInfo.getIsThroughQimen() == null || warehouseInfo.getIsThroughQimen() == 0 ||
+        if(warehouseInfo.getIsThroughWms() == null || warehouseInfo.getIsThroughWms() == 0 ||
                 StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
             return null;
         }

@@ -262,14 +262,14 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo _warehouse = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
 
-        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
+        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
                 StringUtils.isEmpty(warehouse.getWmsWarehouseCode())){
             String msg = "奇门仓库编码不能为空！" ;
             logger.error(msg);
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
+        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
                 StringUtils.isNoneEmpty(warehouse.getWmsWarehouseCode()) &&
                 !this.checkQimenWarehouseCode(warehouse.getWmsWarehouseCode(), warehouse.getId())){
             String msg = "奇门仓库编码重复," + warehouse.getWmsWarehouseCode();
@@ -277,7 +277,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        if(warehouse.getIsThroughQimen() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
+        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
             warehouse.setWmsWarehouseCode("");
             warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
             warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
@@ -353,7 +353,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        warehouse.setIsThroughQimen(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+        warehouse.setIsThroughWms(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         warehouse.setChannelCode("TRMALL");
         warehouse.setOwnerName("小泰科技");
         warehouse.setSkuNum(0);
