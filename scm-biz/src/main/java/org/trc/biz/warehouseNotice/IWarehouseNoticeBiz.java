@@ -50,5 +50,7 @@ public interface IWarehouseNoticeBiz {
 
 	void setQimenService(IQimenService service);
 
+	void updateStock();
+
 
 }
