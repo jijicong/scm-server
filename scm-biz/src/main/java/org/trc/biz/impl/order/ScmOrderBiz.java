@@ -1936,14 +1936,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(selfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
             setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
-            /*//获取并校验业务线相关仓储信息
-            List<WarehouseInfo> warehouseInfoList = getChannelAndCheckWarehouseInfo(platformOrder.getChannelCode());
-            //获取自采商品奇门库存
-            selfItemsInventorys = getSelfItemsQmStock(selfPurcharseOrderItemList, warehouseInfoList, platformOrder.getChannelCode());
-            //获取自采商品本地库存
-            skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
-            //校验自采商品的可用库存
-            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, selfItemsInventorys);*/
             //获取并校验业务线相关仓储信息
             List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
             //获取自采商品仓库库存
