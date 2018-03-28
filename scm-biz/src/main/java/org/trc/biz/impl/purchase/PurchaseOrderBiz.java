@@ -1325,11 +1325,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseInfo.setId(purchaseOrder.getWarehouseInfoId());
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
 
-        WarehouseInfo warehouse = new WarehouseInfo();
-        warehouse.setId(purchaseOrder.getWarehouseId());
-        warehouse  = warehouseInfoService.selectOne(warehouse);
-
-        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo, warehouse);
+        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo);
         int count = iWarehouseNoticeService.insert(warehouseNotice);
         if(count == 0){
             String msg = "保存入库通知单数据库操作失败";
@@ -1445,7 +1441,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     /**赋值入库通知单
      */
-    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo, WarehouseInfo warehouse){
+    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo){
         //'入库通知单编号',流水的长度为5,前缀为CGRKTZ,加时间
         String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         warehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
@@ -1490,16 +1486,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setSenderAddress(order.getSenderAddress());
         warehouseNotice.setSenderNumber(order.getSenderNumber());
         area =new Area();
-        area.setCode(warehouse.getProvince());
+        area.setCode(warehouseInfo.getProvince());
         area = locationUtilService.selectOne(area);
         AssertUtil.notNull(area, "收件人所在省为空");
         warehouseNotice.setReceiverProvince(area.getProvince());
         area =new Area();
-        area.setCode(warehouse.getCity());
+        area.setCode(warehouseInfo.getCity());
         area = locationUtilService.selectOne(area);
         AssertUtil.notNull(area, "收件人所在城市为空");
         warehouseNotice.setReceiverCity(area.getCity());
-        warehouseNotice.setReceiverAddress(warehouse.getAddress());
+        warehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
     }
 
     @Override
