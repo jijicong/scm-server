@@ -57,7 +57,7 @@ public class ImportExcel {
         Map<String, String> content = new HashMap<String, String>();
         String str = "";
         try {
-            fs = new POIFSFileSystem(is);
+//            fs = new POIFSFileSystem(is);
             wb = new HSSFWorkbook(fs);
         } catch (IOException e) {
             e.printStackTrace();

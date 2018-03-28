@@ -134,4 +134,11 @@ public interface IWarehouseInfoBiz {
     Response warehouseItemNoticeQimen(String itemIds);
 
     void setWmsService(IWarehouseApiService service);
+
+    /**
+     * 导出错误信息
+     * @param excelCode
+     * @return
+     */
+    Response exportItemNoticeException(String excelCode);
 }

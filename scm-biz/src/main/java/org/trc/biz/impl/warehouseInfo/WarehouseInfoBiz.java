@@ -26,6 +26,7 @@ import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
@@ -40,6 +41,8 @@ import org.trc.service.category.ICategoryService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.util.IExcelExceptionService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
@@ -91,7 +94,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     @Autowired
     private ICategoryService categoryService;
     @Autowired
+    private IExcelExceptionService excelExceptionService;
+    @Autowired
     private ICategoryBiz categoryBiz;
+    @Autowired
+    private ISerialUtilService serialUtilService;
     @Autowired
     private IWarehouseApiService warehouseApiService;
     @Autowired
@@ -804,7 +811,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         AssertUtil.notBlank(warehouseInfoId, "仓库信息id不能为空");
         boolean flag = true;
         WarehouseItemInfoExceptionResult result = new WarehouseItemInfoExceptionResult();
-
+        String code = "";
         try {
             //获取仓库信息详情
             WarehouseInfo warehouseInfo = this.getWarehouseInfo(Long.parseLong(warehouseInfoId));
@@ -844,18 +851,13 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             int failCount = countNum - successCount;
 
             //将错误通知导入excel
-            String url = null;
             if (!(Boolean) contentMapResult.get("flag")) {
                 flag = false;
-                String newFileName = String.valueOf(System.nanoTime());
-                url = newFileName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
-                ByteArrayOutputStream stream = this.saveExceptionExcel((Map<String, String>) contentMapResult.get("exceptionContent"), newFileName);
-                //保存文本到前端服务器
-                this.saveExcel(stream, url);
+                code = this.saveExcelException((Map<String, String>) contentMapResult.get("exceptionContent"));
             }
 
             //构造返回参数
-            result = new WarehouseItemInfoExceptionResult(url, String.valueOf(successCount), String.valueOf(failCount));
+            result = new WarehouseItemInfoExceptionResult(code, String.valueOf(successCount), String.valueOf(failCount));
 
         } catch (Exception e) {
             String msg = e.getMessage();
@@ -1049,6 +1051,58 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         skuStockService.updateByPrimaryKey(skuStock);
     }
 
+    private String saveExcelException(Map<String, String> map) throws Exception{
+        //获取所有异常信息
+        List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map);
+        //获取code
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, "EXCEL",
+                "0", DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+
+        List<ExcelException> list = new ArrayList<>();
+        for(WarehouseItemInfoException warehouseItemInfoException : warehouseItemInfoExceptionList){
+            ExcelException e = new ExcelException();
+            e.setExcelCode(code);
+            e.setException(warehouseItemInfoException.getExceptionReason());
+            e.setItemId(warehouseItemInfoException.getItemId());
+            e.setSkuCode(warehouseItemInfoException.getSkuCode());
+            list.add(e);
+        }
+        excelExceptionService.insertList(list);
+        return code;
+    }
+
+    @Override
+    public Response exportItemNoticeException(String excelCode) {
+        AssertUtil.notBlank(excelCode, "查询信息编码不能为空");
+        try {
+            ExcelException e = new ExcelException();
+            e.setExcelCode(excelCode);
+            List<ExcelException> list = excelExceptionService.select(e);
+
+            CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
+            CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
+            CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+
+            List<CellDefinition> cellDefinitionList = new ArrayList<>();
+            cellDefinitionList.add(skuCode);
+            cellDefinitionList.add(itemId);
+            cellDefinitionList.add(exception);
+
+            String sheetName = "仓库商品信息异常原因";
+
+            HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(list, cellDefinitionList, sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+
+            String fileName = String.valueOf(System.nanoTime())+ SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+        } catch (Exception e) {
+            log.error("供应商订单导出异常" + e.getMessage(), e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.SUPPLIER_ORDER_EXPORT_EXCEPTION.getCode()), ExceptionEnum.SUPPLIER_ORDER_EXPORT_EXCEPTION.getMessage());
+        }
+    }
+
     private ByteArrayOutputStream saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {
         //获取所有异常信息
         List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map);
@@ -1239,4 +1293,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     public void setWmsService(IWarehouseApiService service) {
         this.warehouseApiService = service;
     }
+
+
 }

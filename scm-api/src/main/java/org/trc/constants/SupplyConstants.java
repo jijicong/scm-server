@@ -936,6 +936,8 @@ public class SupplyConstants {
 
         //仓库商品信息通知奇门同步
         public static final String WAREHOUSE_ITEM_NOTICE_QIMEN = "warehouseItemNoticeQimen";
+
+        public static final String EXCEPTION_EXCEL = "exceptionExcel";
     }
 
     /**
