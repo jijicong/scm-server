@@ -5,9 +5,11 @@ import java.io.Serializable;
 public class ScmWarehouseRequestBase implements Serializable{
 
     /**
-     * 仓库类型:
+     * 仓库类型:默认为京东开放平台
+     * Qimen("QM","奇门"),
+	 * Jingdong("JD","京东");
      */
-    private String warehouseType;
+    private String warehouseType = "JD";
 
     public String getWarehouseType() {
         return warehouseType;
