@@ -965,13 +965,14 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
             Skus skus = new Skus();
             skus.setSkuCode(info.getSkuCode());
-            skusService.selectOne(skus);
+            skus = skusService.selectOne(skus);
             Items items = iItemsService.selectByPrimaryKey(skus.getItemId());
             String isquality = items.getIsQuality();
             Long days = items.getQualityDay();
             if(StringUtils.isEquals(isquality, ZeroToNineEnum.ONE.getCode()) && days > 0){
                 item.setSaveDays(days.intValue());
                 item.setInstoreThreshold("0.5");
+                item.setOutstoreThreshold("0.8");
             }else{
                 item.setSaveDays(0);
             }
@@ -981,6 +982,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             item.setBarCode(info.getBarCode());
             item.setSkuProperty(info.getSpecNatureInfo());
             item.setItemType(info.getItemType());
+            item.setThirdCategoryNo("1421");
 
             list.add(item);
         }
