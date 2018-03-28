@@ -16,4 +16,6 @@ public interface ISkusService extends IBaseService<Skus, String>{
     List<Skus> selectSkuList(Map<String, Object> map);
 
     Integer selectSkuListCount(Map<String, Object> map);
+
+    List<String> selectAllBarCode();
 }

@@ -34,5 +34,10 @@ public class SkusService extends BaseService<Skus, String> implements ISkusServi
         return skusMapper.selectSkuListCount(map);
     }
 
+    @Override
+    public List<String> selectAllBarCode() {
+        return skusMapper.selectAllBarCode();
+    }
+
 
 }
