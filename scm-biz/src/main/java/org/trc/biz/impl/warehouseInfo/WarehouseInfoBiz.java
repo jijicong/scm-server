@@ -962,9 +962,21 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : infoList){
             item = new ScmWarehouseItem();
+
+            Skus skus = new Skus();
+            skus.setSkuCode(info.getSkuCode());
+            skusService.selectOne(skus);
+            Items items = iItemsService.selectByPrimaryKey(skus.getItemId());
+            String isquality = items.getIsQuality();
+            Long days = items.getQualityDay();
+            if(StringUtils.isEquals(isquality, ZeroToNineEnum.ONE.getCode()) && days > 0){
+                item.setSaveDays(days.intValue());
+                item.setInstoreThreshold("0.5");
+            }else{
+                item.setSaveDays(0);
+            }
             item.setItemCode(info.getSkuCode());
             item.setGoodsCode(info.getItemNo());
-            item.setSaveDays(0);
             item.setItemName(info.getItemName());
             item.setBarCode(info.getBarCode());
             item.setSkuProperty(info.getSpecNatureInfo());
