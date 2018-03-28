@@ -60,6 +60,7 @@
         <task:scheduled ref="scmOrderBiz" method="fetchLogisticsInfo" cron="${fetch.logisticsInfo}"/>
         <task:scheduled ref="externalPictureBiz" method="uploadExternalPic" cron="${retry.external.picture.upload}"/>
         <task:scheduled ref="outBoundOrderBiz" method="updateOutboundDetail" cron="${warehouse.outbound.start}"/>
+        <task:scheduled ref="outBoundOrderBiz" method="retryCancelOrder" cron="${warehouse.cancel.start}"/>
 
     </task:scheduled-tasks>
 

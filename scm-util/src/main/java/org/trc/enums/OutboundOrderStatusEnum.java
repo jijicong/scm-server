@@ -18,7 +18,8 @@ public enum OutboundOrderStatusEnum {
 	ON_WAREHOUSE_NOTICE("3","仓库告知的过程中状态"),
 	ALL_GOODS("4","全部发货"),
 	PART_OF_SHIPMENT("5","部分发货"),
-	CANCELED("6","已取消");
+	CANCELED("6","已取消"),
+	ON_CANCELED("7", "取消中");
 
 	private String code;
 	private String name;

@@ -37,4 +37,7 @@ public interface IOutBoundOrderBiz {
     void checkTimeOutTimer();
 
     void setQimenService(IWarehouseApiService service);
+
+    //重新调用取消发货单接口
+    void retryCancelOrder();
 }
