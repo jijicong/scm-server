@@ -42,6 +42,16 @@ public class ScmWarehouseItem {
      * 保质期天数
      */
     private Integer saveDays;
+    
+    /**
+     * 入库保质期阀值，默认0.5
+     */
+    private String instoreThreshold;
+    
+    /**
+     * 出库保质期阀值，默认0.8
+     */
+    private String outstoreThreshold;
 
     public String getItemCode() {
         return itemCode;
@@ -106,4 +116,21 @@ public class ScmWarehouseItem {
     public void setSkuProperty(String skuProperty) {
         this.skuProperty = skuProperty;
     }
+    
+	public String getInstoreThreshold() {
+		return instoreThreshold;
+	}
+
+	public void setInstoreThreshold(String instoreThreshold) {
+		this.instoreThreshold = instoreThreshold;
+	}
+
+	public String getOutstoreThreshold() {
+		return outstoreThreshold;
+	}
+
+	public void setOutstoreThreshold(String outstoreThreshold) {
+		this.outstoreThreshold = outstoreThreshold;
+	}
+    
 }
