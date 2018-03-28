@@ -57,7 +57,7 @@ public interface IWarehouseApiService {
      * @param entryOrderDetailRequest
      * @return
      */
-    AppResult<ScmEntryOrderDetailResponse> entryOrderDetail(ScmEntryOrderDetailRequest entryOrderDetailRequest);
+    AppResult<List<ScmEntryOrderDetailResponse>> entryOrderDetail(ScmEntryOrderDetailRequest entryOrderDetailRequest);
 
     /**
      * 出库单详情查询

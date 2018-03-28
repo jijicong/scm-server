@@ -13,6 +13,8 @@ public enum CommonExceptionEnum {
     JAVA_BEAN_TO_MAP_EXCEPTION("2000101","JavaBean转Map数据转换异常"),
     MAPJ_TO_AVA_BEAN_EXCEPTION("2000102","Map转JavaBean数据转换异常"),
     NULL_EXCEPTION("2000103","系统繁忙"),
+    REMOTE_TIMEOUT("2000104","远程服务超时"),
+    REMOTE_ERROR("2000105","远程服务错误"),
 
 
     NOVALID("0","停用");

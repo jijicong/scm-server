@@ -9,16 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.warehouse.ItemActionType;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.warehouse.*;
 import org.trc.service.warehouse.IWarehouseApiService;
-import org.trc.util.AppResult;
-import org.trc.util.DateUtils;
-import org.trc.util.HttpClientUtil;
-import org.trc.util.ResultUtil;
+import org.trc.util.*;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -64,7 +62,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     }
 
     @Override
-    public AppResult<ScmEntryOrderDetailResponse> entryOrderDetail(ScmEntryOrderDetailRequest entryOrderDetailRequest) {
+    public AppResult<List<ScmEntryOrderDetailResponse>> entryOrderDetail(ScmEntryOrderDetailRequest entryOrderDetailRequest) {
         return wmsInvoke(entryOrderDetailRequest);
     }
 
@@ -122,20 +120,20 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
                     setResponseData(scmWarehouseRequestBase, appResult);
                 }
             }else {
-                appResult = ResultUtil.createFailAppResult(String.format("调用仓库%s接口返回结果为空", method));
+                appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), String.format("调用仓库%s接口返回结果为空", method), "");
             }
         }catch (IOException e){
             String msg = String.format("调用仓库%s接口网络超时,错误信息:%s", method, e.getMessage());
             log.error(msg, e);
-            appResult = ResultUtil.createFailAppResult(msg);
+            appResult = new AppResult(CommonExceptionEnum.REMOTE_TIMEOUT.getCode(), msg, "");
         }catch (JSONException e){
             String msg = String.format("调用仓库%s接口返回数据格式错误,错误信息:%s", method, e.getMessage());
             log.error(msg, e);
-            appResult = ResultUtil.createFailAppResult(msg);
+            appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), msg, "");
         }catch (Exception e){
             String msg = String.format("调用仓库%s接口异常,错误信息:%s", method, e.getMessage());
             log.error(msg, e);
-            appResult = ResultUtil.createFailAppResult(msg);
+            appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), msg, "");
         }
         return appResult;
     }
@@ -153,7 +151,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmOrderCancelRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmOrderCancelResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmEntryOrderDetailRequest){
-            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmEntryOrderDetailResponse.class);
+            response = JSON.parseArray(appResult.getResult().toString(), ScmEntryOrderDetailResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmDeliveryOrderDetailRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmDeliveryOrderDetailResponse.class);
         }

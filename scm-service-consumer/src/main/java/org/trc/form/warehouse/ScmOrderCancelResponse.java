@@ -3,21 +3,21 @@ package org.trc.form.warehouse;
 public class ScmOrderCancelResponse {
 
     /**
-     * 是否成功：true/false
+     * 是否取消成功: 1-取消成功, 2-取消失败, 3-取消中
      */
-    private Boolean success;
+    private String flag;
 
     /**
      * 说明信息
      */
     private String message;
 
-    public Boolean getSuccess() {
-        return success;
+    public String getFlag() {
+        return flag;
     }
 
-    public void setSuccess(Boolean success) {
-        this.success = success;
+    public void setFlag(String flag) {
+        this.flag = flag;
     }
 
     public String getMessage() {
