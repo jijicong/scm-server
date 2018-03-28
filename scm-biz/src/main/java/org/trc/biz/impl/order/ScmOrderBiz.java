@@ -221,6 +221,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IOrderExtBiz orderExtBiz;
     @Autowired
     private IWarehouseApiService warehouseApiService;
+    @Autowired
+    private JDWmsConstantConfig jDWmsConstantConfig;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -2560,9 +2562,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         scmDeliveryOrderDO.setOrderType(JdDeliverOrderTypeEnum.B2C.getCode());
-        scmDeliveryOrderDO.setOwnerCode("");//货主编码(事业部编码) FIXME
-        scmDeliveryOrderDO.setShopNo(outboundOrder.getShopId().toString());
+        scmDeliveryOrderDO.setOwnerCode(jDWmsConstantConfig.getDeptNo());//货主编码(事业部编码)
+        scmDeliveryOrderDO.setShopNo(jDWmsConstantConfig.getShopNo());
         scmDeliveryOrderDO.setShopNick(outboundOrder.getShopName());
+        scmDeliveryOrderDO.setShipperNo(jDWmsConstantConfig.getShipperNo());
         scmDeliveryOrderDO.setReciverProvince(outboundOrder.getReceiverProvince());
         scmDeliveryOrderDO.setReciverCity(outboundOrder.getReceiverCity());
         scmDeliveryOrderDO.setReciverCountry(outboundOrder.getReceiverDistrict());
@@ -2582,11 +2585,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         scmDeliveryOrderDO.setPlaceOrderTime(outboundOrder.getCreateTime());//下单时间
 
         /**
-         * 京东专有参数 FIXME
+         * 京东专有参数
          */
-        scmDeliveryOrderDO.setIsvSource("");//ISV来源编号
-        scmDeliveryOrderDO.setSalePlatformSource("");//销售平台来源
-        scmDeliveryOrderDO.setOrderMark("");//订单标记位
+        scmDeliveryOrderDO.setIsvSource(jDWmsConstantConfig.getIsvSource());//ISV来源编号
+        scmDeliveryOrderDO.setSalePlatformSource(jDWmsConstantConfig.getSalePlatformSource());//销售平台来源
+        scmDeliveryOrderDO.setOrderMark(jDWmsConstantConfig.getOrderMark());//订单标记位
 
         return scmDeliveryOrderDO;
     }

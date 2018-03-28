@@ -37,6 +37,7 @@ import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeException;
+import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.ScmEntryOrderCreateRequest;
 import org.trc.form.warehouse.ScmEntryOrderItem;
 import org.trc.form.warehouse.WarehouseNoticeForm;
@@ -109,6 +110,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private RedisLock redisLock;
+    @Autowired
+    private JDWmsConstantConfig jDWmsConstantConfig;
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private Set<String> defectiveSku;
@@ -576,11 +579,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //入库单信息
         scmEntryOrderCreateRequest.setEntryOrderCode(noticeCode);
         scmEntryOrderCreateRequest.setPurchaseOrderCode(notice.getPurchaseOrderCode());
-        scmEntryOrderCreateRequest.setWarehouseCode(notice.getWarehouseCode());
-        scmEntryOrderCreateRequest.setOwnerCode(notice.getOwnerCode());
+        scmEntryOrderCreateRequest.setWarehouseCode(jDWmsConstantConfig.getWarehouseNo());
+        scmEntryOrderCreateRequest.setOwnerCode(jDWmsConstantConfig.getDeptNo());
         scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
-        scmEntryOrderCreateRequest.setSupplierCode(notice.getSupplierCode());
+        scmEntryOrderCreateRequest.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
         scmEntryOrderCreateRequest.setSupplierName(notice.getSupplierName());
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
         scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
