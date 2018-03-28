@@ -2,7 +2,14 @@ package org.trc.biz.impl.warehouseNotice;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.EntryorderConfirmRequest;
+import com.qimen.api.request.EntryorderCreateRequest;
+import com.qimen.api.request.EntryorderCreateRequest.EntryOrder;
+import com.qimen.api.request.EntryorderCreateRequest.OrderLine;
+import com.qimen.api.request.EntryorderCreateRequest.ReceiverInfo;
+import com.qimen.api.request.EntryorderCreateRequest.SenderInfo;
+import com.qimen.api.response.EntryorderCreateResponse;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,7 +37,10 @@ import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeException;
-import org.trc.form.warehouse.*;
+import org.trc.form.JDWmsConstantConfig;
+import org.trc.form.warehouse.ScmEntryOrderCreateRequest;
+import org.trc.form.warehouse.ScmEntryOrderItem;
+import org.trc.form.warehouse.WarehouseNoticeForm;
 import org.trc.service.IQimenService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
@@ -100,6 +110,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private RedisLock redisLock;
+    @Autowired
+    private JDWmsConstantConfig jDWmsConstantConfig;
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private Set<String> defectiveSku;
@@ -567,11 +579,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //入库单信息
         scmEntryOrderCreateRequest.setEntryOrderCode(noticeCode);
         scmEntryOrderCreateRequest.setPurchaseOrderCode(notice.getPurchaseOrderCode());
-        scmEntryOrderCreateRequest.setWarehouseCode(notice.getWarehouseCode());
-        scmEntryOrderCreateRequest.setOwnerCode(notice.getOwnerCode());
+        scmEntryOrderCreateRequest.setWarehouseCode(jDWmsConstantConfig.getWarehouseNo());
+        scmEntryOrderCreateRequest.setOwnerCode(jDWmsConstantConfig.getDeptNo());
         scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
-        scmEntryOrderCreateRequest.setSupplierCode(notice.getSupplierCode());
+        scmEntryOrderCreateRequest.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
         scmEntryOrderCreateRequest.setSupplierName(notice.getSupplierName());
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
         scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
@@ -815,94 +827,4 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 		this.qimenService = service;
 		
 	}
-
-    /**
-     * 定时任务调用接口，更新库存信息
-     * 1.查询入库通知单，状态为收货异常，待仓库反馈，部分收货的入库单
-     * 2.分隔list，接口支持10个wms_order_code批量查询
-     * 3.分线程处理库存，以及入库信息
-     */
-    @Override
-    public void updateStock() {
-        //1. 查询入库通知单，状态为收货异常，待仓库反馈，部分收货的入库单
-        // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
-        Example warehouseNoticeExample = new Example(WarehouseNotice.class);
-        Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
-        List<String> stateArray = new ArrayList<>();
-        //添加需要查询的状态
-        stateArray.add(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
-        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-        warehouseNoticeCriteria.andIn("status",stateArray);
-        List<WarehouseNotice> warehouseNoticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
-        if (!AssertUtil.collectionIsEmpty(warehouseNoticeList)){
-            //接口支持一次查询十个单号查询，需要分割符合条件的入库单
-            List<List<WarehouseNotice>> splitWarehouseNoticeList = ListSplit.split(warehouseNoticeList,10);
-            //分批调用接口
-            for (List<WarehouseNotice> noticeList:splitWarehouseNoticeList) {
-                scmEntryOrder(noticeList);
-            }
-        }else {
-            logger.info("未查询到符合条件的入库通知单！");
-        }
-    }
-    private void scmEntryOrder(List<WarehouseNotice> noticeList){
-        //1.组装wms_order_code
-        List<String> wmsOrderCodeList = new ArrayList<>();
-        for (WarehouseNotice warehouseNotice:noticeList) {
-            wmsOrderCodeList.add(warehouseNotice.getWmsOrderCode());
-            ScmEntryOrderDetailRequest entryOrderDetailRequest =  new ScmEntryOrderDetailRequest();
-            entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList,SupplyConstants.Symbol.COMMA));
-            AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
-//            List<>appResult.getResult();
-            List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseList = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
-
-            //处理库存信息
-            if (!AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseList)) {
-                for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseList) {
-                    /* 定位到入库通知单 */
-                    WarehouseNotice noticeOrder = new WarehouseNotice();
-                    noticeOrder.setWarehouseNoticeCode(entryOrderDetail.getEntryOrderCode());
-                    noticeOrder = warehouseNoticeService.selectOne(noticeOrder);
-                    //查询到入库通知单,查询到关联的入库通知单详情
-                    if (null != noticeOrder) {
-                        WarehouseNoticeDetails warehouseNoticeDetail = new WarehouseNoticeDetails();
-                        warehouseNoticeDetail.setWarehouseNoticeCode(noticeOrder.getWarehouseNoticeCode());
-                        List<WarehouseNoticeDetails> warehouseNoticeDetailsList = warehouseNoticeDetailsService.select(warehouseNoticeDetail);
-                        List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList = entryOrderDetail.getScmEntryOrderDetailResponseItemList();
-                        if (!AssertUtil.collectionIsEmpty(warehouseNoticeDetailsList) && !AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseItemList)) {
-                            for (WarehouseNoticeDetails warehouseDetail : warehouseNoticeDetailsList) {
-                                delStock(scmEntryOrderDetailResponseItemList, warehouseDetail);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void delStock(List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList, WarehouseNoticeDetails warehouseDetail) {
-        //用Map存库存信息
-        Map<String,Long> stockMap = new HashMap<>();
-        //残次品入库数量
-        Long defectiveQuantity = 0L;
-        //正品入库数量
-        Long normalQuantity = 0L;
-        for (ScmEntryOrderDetailResponseItem entryOrderDetailOrder : scmEntryOrderDetailResponseItemList) {
-
-            if (StringUtils.equals(warehouseDetail.getSkuCode(),entryOrderDetailOrder.getItemCode())){
-                //计算反馈库存
-                if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
-                    defectiveQuantity =warehouseDetail.getDefectiveStorageQuantity()==null?0:warehouseDetail.getDefectiveStorageQuantity()+entryOrderDetailOrder.getDamagedQty()+defectiveQuantity;
-                    normalQuantity=warehouseDetail.getActualStorageQuantity()==null?0:warehouseDetail.getActualStorageQuantity()+entryOrderDetailOrder.getActualQty()+normalQuantity;
-                }else if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
-                    defectiveQuantity =warehouseDetail.getDefectiveStorageQuantity()==null?0:warehouseDetail.getDefectiveStorageQuantity()+entryOrderDetailOrder.getDamagedQty()+defectiveQuantity;
-                }
-            }
-        }
-    }
-
-    private void dealStockMessage(WarehouseNoticeDetails warehouseDetail, ScmEntryOrderDetailResponseItem entryOrderDetailOrder) {
-
-    }
 }

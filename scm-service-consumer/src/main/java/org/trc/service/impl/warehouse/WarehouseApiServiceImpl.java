@@ -98,7 +98,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             url = externalSupplierConfig.getDeliveryOrderDetailQueryUrl();
             method = "出库单详情";
         }
-        url = String.format("%s/%s", externalSupplierConfig.getScmExternalUrl(), url);
+        url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
         String jsonParam = JSON.toJSONString(scmWarehouseRequestBase);
 
         log.debug(String.format("开始调用仓库%s接口%s,参数: %s. 开始时间%s", method, url, jsonParam,

@@ -53,6 +53,11 @@ public class ScmWarehouseItem {
      */
     private String outstoreThreshold;
 
+    /**
+     * 京东三级分类编号
+     */
+    private String thirdCategoryNo;
+
     public String getItemCode() {
         return itemCode;
     }
@@ -132,5 +137,12 @@ public class ScmWarehouseItem {
 	public void setOutstoreThreshold(String outstoreThreshold) {
 		this.outstoreThreshold = outstoreThreshold;
 	}
-    
+
+    public String getThirdCategoryNo() {
+        return thirdCategoryNo;
+    }
+
+    public void setThirdCategoryNo(String thirdCategoryNo) {
+        this.thirdCategoryNo = thirdCategoryNo;
+    }
 }
