@@ -872,8 +872,13 @@ public class GoodsBiz implements IGoodsBiz {
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
             AssertUtil.notBlank(jbo.getString("barCode"),"SKU条形码不能为空");
+            AssertUtil.notBlank(jbo.getString("isValid"),"启停用状态不能为空");
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){
                 AssertUtil.notBlank(jbo.getString("skuCode"),"SKU编码不能为空");
+                //条形码校验
+                if (StringUtils.equals(jbo.getString("isValid"),ValidEnum.VALID.getCode())){
+                    checkBarcodeOnly(jbo.getString("barCode"),jbo.getString("skuCode"));
+                }
             }
         }
     }
