@@ -7,6 +7,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.form.warehouseInfo.*;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.Pagenation;
 
 import javax.ws.rs.core.Response;
@@ -131,4 +132,13 @@ public interface IWarehouseInfoBiz {
      * @return
      */
     Response warehouseItemNoticeQimen(String itemIds);
+
+    void setWmsService(IWarehouseApiService service);
+
+    /**
+     * 导出错误信息
+     * @param excelCode
+     * @return
+     */
+    Response exportItemNoticeException(String excelCode);
 }

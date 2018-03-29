@@ -3,12 +3,10 @@ package org.trc.resource;
 import org.springframework.stereotype.Component;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.system.WarehouseForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -18,7 +16,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by sone on 2017/5/4.
@@ -33,7 +30,7 @@ public class WarehouseResource {
     @GET
     @Path(SupplyConstants.Warehouse.WAREHOUSE_PAGE)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<Warehouse> page){
+    public Response warehousePage(@BeanParam WarehouseForm form, @BeanParam Pagenation<WarehouseInfo> page){
         return ResultUtil.createSuccessPageResult( warehouseBiz.warehousePage(form,page));
     }
     //根据仓库名查询仓库
@@ -49,7 +46,7 @@ public class WarehouseResource {
     @Path(SupplyConstants.Warehouse.WAREHOUSE)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public Response saveChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
+    public Response saveChannel(@BeanParam WarehouseInfo warehouse,@Context ContainerRequestContext requestContext){
         warehouseBiz.saveWarehouse(warehouse,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSuccessResult("保存成功","");
     }
@@ -57,7 +54,7 @@ public class WarehouseResource {
     @PUT
     @Path(SupplyConstants.Warehouse.WAREHOUSE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateChannel(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
+    public Response updateChannel(@BeanParam WarehouseInfo warehouse,@Context ContainerRequestContext requestContext){
         warehouseBiz.updateWarehouse(warehouse,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return  ResultUtil.createSuccessResult("修改仓库信息成功","");
     }
@@ -65,7 +62,7 @@ public class WarehouseResource {
     @PUT
     @Path(SupplyConstants.Warehouse.UPDATE_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateWarehouseState(@BeanParam Warehouse warehouse,@Context ContainerRequestContext requestContext){
+    public Response updateWarehouseState(@BeanParam WarehouseInfo warehouse,@Context ContainerRequestContext requestContext){
         warehouseBiz.updateWarehouseState(warehouse,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult(ValidEnum.VALID.getCode().equals(warehouse.getIsValid()) ? "停用成功!":"启用成功!","");
     }
@@ -88,7 +85,7 @@ public class WarehouseResource {
     @PUT
     @Path(SupplyConstants.Warehouse.WAREHOUSE_CONFIG+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateWarehouseConfig(@BeanParam Warehouse warehouse) {
+    public Response updateWarehouseConfig(@BeanParam WarehouseInfo warehouse) {
         warehouseBiz.updateWarehouseConfig(warehouse);
         return ResultUtil.createSuccessResult("修改仓库信息配置成功！", "");
     }
@@ -98,6 +95,6 @@ public class WarehouseResource {
     @Path(SupplyConstants.Warehouse.WAREHOUSE_CONFIG)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findNotConfigWarehouse() {
-        return ResultUtil.createSuccessResult("查询有效的仓库成功",warehouseBiz.findNotConfigWarehouse());
+        return ResultUtil.createSuccessResult("查询有效的仓库成功",warehouseBiz.findWarehouse());
     }
 }

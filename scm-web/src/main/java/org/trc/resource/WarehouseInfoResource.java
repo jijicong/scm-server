@@ -148,6 +148,7 @@ public class WarehouseInfoResource {
     @POST
     @Path(SupplyConstants.WarehouseInfo.NOTICE_STATUS)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/octet-stream")
     public Response uploadNoticeStatus(@FormDataParam("file") InputStream uploadedInputStream,
                                        @FormDataParam("file") FormDataContentDisposition fileDetail,
                                        @FormDataParam("warehouseInfoId") String warehouseInfoId) {
@@ -159,7 +160,15 @@ public class WarehouseInfoResource {
     @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_NOTICE_QIMEN)
     @Produces(MediaType.APPLICATION_JSON)
     public Response warehouseItemNoticeQimen(@FormParam("itemIds") String itemIds){
-        logger.info("仓库商品信息开始通知奇门同步，请求参数分别为：itemIds=" + itemIds);
+        logger.info("仓库商品信息开始通知开放平台同步，请求参数分别为：itemIds=" + itemIds);
         return warehouseInfoBiz.warehouseItemNoticeQimen(itemIds);
+    }
+
+    @GET
+    @Path(SupplyConstants.WarehouseInfo.EXCEPTION_EXCEL+"/{excelCode}")
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response exportItemNoticeException(@PathParam("excelCode") String excelCode) throws Exception {
+        return warehouseInfoBiz.exportItemNoticeException(excelCode);
     }
 }

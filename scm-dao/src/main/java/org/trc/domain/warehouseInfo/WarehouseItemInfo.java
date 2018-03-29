@@ -35,6 +35,8 @@ public class WarehouseItemInfo implements Serializable{
     private String itemNo;
     //商品名称
     private String itemName;
+    //仓库编码
+    private String warehouseCode;
     //条形码
     private String barCode;
     //商品规格描述
@@ -62,6 +64,10 @@ public class WarehouseItemInfo implements Serializable{
     //是否显示
     @Transient
     private String disabled;
+    //仓库货主ID
+    private String warehouseOwnerId;
+    //开放平台仓库编码
+    private String wmsWarehouseCode;
 
     public Long getId() {
         return id;
@@ -205,6 +211,30 @@ public class WarehouseItemInfo implements Serializable{
 
     public void setDisabled(String disabled) {
         this.disabled = disabled;
+    }
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
+    }
+
+    public String getWarehouseOwnerId() {
+        return warehouseOwnerId;
+    }
+
+    public void setWarehouseOwnerId(String warehouseOwnerId) {
+        this.warehouseOwnerId = warehouseOwnerId;
+    }
+
+    public String getWmsWarehouseCode() {
+        return wmsWarehouseCode;
+    }
+
+    public void setWmsWarehouseCode(String wmsWarehouseCode) {
+        this.wmsWarehouseCode = wmsWarehouseCode;
     }
 
     @Override

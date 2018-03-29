@@ -10,5 +10,5 @@ import java.util.Map;
  * Created by wangyz on 2017/11/15.
  */
 public interface IWarehouseInfoMapper extends BaseMapper<WarehouseInfo> {
-    List<WarehouseInfo> selectWarehouseInfo(Map<String, String> map);
+
 }

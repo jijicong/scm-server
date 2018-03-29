@@ -1,22 +1,26 @@
 package org.trc.form.warehouseInfo;
 
+import java.io.Serializable;
+
 /**
  * Created by wangyz on 2017/11/15.
  */
-public class WarehouseInfoResult {
+public class WarehouseInfoResult implements Serializable {
     //主键
     private Long id;
 
-    //仓库订单表主键
-    private String warehouseId;
+    private String code;
+
+    private String remark;
+
     //仓库名称
     private String warehouseName;
 
     //仓库类型
-    private String type;
+    private String warehouseTypeCode;
 
     //奇门仓库编码
-    private String qimenWarehouseCode;
+    private String wmsWarehouseCode;
 
     //sku数量
     private Integer skuNum;
@@ -46,8 +50,9 @@ public class WarehouseInfoResult {
 
     private String isNoticeWarehouseItems;
 
-    //备注
-    private String remark;
+    private String isValid;
+
+    private String createOperator;
 
     public Long getId() {
         return id;
@@ -57,36 +62,12 @@ public class WarehouseInfoResult {
         this.id = id;
     }
 
-    public String getWarehouseId() {
-        return warehouseId;
-    }
-
-    public void setWarehouseId(String warehouseId) {
-        this.warehouseId = warehouseId;
-    }
-
     public String getWarehouseName() {
         return warehouseName;
     }
 
     public void setWarehouseName(String warehouseName) {
         this.warehouseName = warehouseName;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getQimenWarehouseCode() {
-        return qimenWarehouseCode;
-    }
-
-    public void setQimenWarehouseCode(String qimenWarehouseCode) {
-        this.qimenWarehouseCode = qimenWarehouseCode;
     }
 
     public Integer getSkuNum() {
@@ -169,11 +150,51 @@ public class WarehouseInfoResult {
         this.isNoticeWarehouseItems = isNoticeWarehouseItems;
     }
 
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
+
+    public String getCreateOperator() {
+        return createOperator;
+    }
+
+    public void setCreateOperator(String createOperator) {
+        this.createOperator = createOperator;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getWarehouseTypeCode() {
+        return warehouseTypeCode;
+    }
+
+    public void setWarehouseTypeCode(String warehouseTypeCode) {
+        this.warehouseTypeCode = warehouseTypeCode;
+    }
+
     public String getRemark() {
         return remark;
     }
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getWmsWarehouseCode() {
+        return wmsWarehouseCode;
+    }
+
+    public void setWmsWarehouseCode(String wmsWarehouseCode) {
+        this.wmsWarehouseCode = wmsWarehouseCode;
     }
 }

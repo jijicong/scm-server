@@ -8,6 +8,7 @@ import org.trc.service.goods.ISkusService;
 import org.trc.service.impl.BaseService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -22,4 +23,21 @@ public class SkusService extends BaseService<Skus, String> implements ISkusServi
     public Integer updateSkus(List<Skus> skusList) throws Exception {
         return skusMapper.updateSkus(skusList);
     }
+
+    @Override
+    public List<Skus> selectSkuList(Map<String, Object> map){
+        return skusMapper.selectSkuList(map);
+    }
+
+    @Override
+    public Integer selectSkuListCount(Map<String, Object> map){
+        return skusMapper.selectSkuListCount(map);
+    }
+
+    @Override
+    public List<String> selectAllBarCode() {
+        return skusMapper.selectAllBarCode();
+    }
+
+
 }

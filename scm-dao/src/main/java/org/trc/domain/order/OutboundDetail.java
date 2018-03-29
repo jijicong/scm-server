@@ -168,4 +168,5 @@ public class OutboundDetail implements Serializable {
     public void setSpecNatureInfo(String specNatureInfo) {
         this.specNatureInfo = specNatureInfo;
     }
+
 }

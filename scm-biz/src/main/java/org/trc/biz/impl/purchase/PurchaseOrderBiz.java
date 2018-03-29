@@ -15,9 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
-import org.trc.cache.CacheEvit;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
@@ -36,7 +34,6 @@ import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
-import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
@@ -79,8 +76,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ISupplierService supplierService;
     @Resource
     private IPurchaseGroupService purchaseGroupService;
-    @Resource
-    private IWarehouseService warehouseService;
     @Resource
     private IPurchaseOrderAuditService iPurchaseOrderAuditService;
     @Resource
@@ -197,10 +192,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             //赋值仓库名称
             if(StringUtils.isNotBlank(purchaseOrder.getWarehouseCode())){
-                Warehouse warehouse = new Warehouse();
+                WarehouseInfo warehouse = new WarehouseInfo();
                 warehouse.setCode(purchaseOrder.getWarehouseCode());
-                Warehouse entityWarehouse = warehouseService.selectOne(warehouse);
-                purchaseOrder.setWarehouseName(entityWarehouse.getName());
+                WarehouseInfo entityWarehouse = warehouseInfoService.selectOne(warehouse);
+                purchaseOrder.setWarehouseName(entityWarehouse.getWarehouseName());
             }
         }
 
@@ -213,16 +208,19 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         for(int i = 0 ; i < purchaseOrderList.size();i++){
             warehouseArray[i] = purchaseOrderList.get(i).getWarehouseCode();
         }
-        List<Warehouse> warehouseList = warehouseService.selectWarehouseNames(warehouseArray);
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("code", Arrays.asList(warehouseArray));
+        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(example);
         if(CollectionUtils.isEmpty(warehouseList)){
             String msg = "根据仓库编码,查询仓库失败";
             LOGGER.error(msg);
             throw  new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_QUERY_EXCEPTION, msg);
         }
-        for (Warehouse warehouse : warehouseList){
+        for (WarehouseInfo warehouse : warehouseList){
             for (PurchaseOrder purchaseOrder : purchaseOrderList){
                 if(warehouse.getCode().equals(purchaseOrder.getWarehouseCode())){
-                    purchaseOrder.setWarehouseName(warehouse.getName());
+                    purchaseOrder.setWarehouseName(warehouse.getWarehouseName());
                 }
             }
         }
@@ -402,29 +400,27 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Override
     public Response findWarehousesByChannelCode(String channelCode) {
         //根据业务线查询对应的仓库
-        AssertUtil.notBlank(channelCode ,"获取业务线失败");
-        if (StringUtils.isBlank(channelCode)) {
-            String msg = "根据业务线查询仓库的参数为空";
-            LOGGER.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-        }
+//        AssertUtil.notBlank(channelCode ,"获取业务线失败");
+//        if (StringUtils.isBlank(channelCode)) {
+//            String msg = "根据业务线查询仓库的参数为空";
+//            LOGGER.error(msg);
+//            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+//        }
 
         //获取已启用仓库信息
-        Warehouse warehouse = new Warehouse();
+        WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setIsValid(ZeroToNineEnum.ONE.getCode());
-        warehouse.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        List<Warehouse> warehouseList = warehouseService.select(warehouse);
+        List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
 
         if(warehouseList==null || warehouseList.size() < 1){
-            String msg = "无数据，请确认【系统管理-仓库管理】中存在“启用”状态的仓库！";
+            String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态的仓库！";
             LOGGER.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
 
         //校验仓库是否已通知
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("channelCode", channelCode);
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectWarehouseInfo(map);
+        warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouse);
         if(warehouseInfoList == null || warehouseInfoList.size() < 1){
             String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
             LOGGER.error(msg);
@@ -586,12 +582,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     private void checkWarehouse(Long warehouseId){
         if(warehouseId != null){
-            Warehouse warehouse = new Warehouse();
+            WarehouseInfo warehouse = new WarehouseInfo();
             warehouse.setId(warehouseId);
             warehouse.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-            warehouse = warehouseService.selectOne(warehouse);
+            warehouse = warehouseInfoService.selectOne(warehouse);
             if(ZeroToNineEnum.ZERO.getCode().equals(warehouse.getIsValid())){
-                String msg = String.format("仓库%s已被停用，请重新选择！", warehouse.getName());
+                String msg = String.format("仓库%s已被停用，请重新选择！", warehouse.getWarehouseName());
                 LOGGER.error(msg);
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
@@ -1003,11 +999,11 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
         }
         if(StringUtils.isNotBlank(purchaseOrder.getWarehouseCode())){
-            Warehouse warehouse = new Warehouse();
+            WarehouseInfo warehouse = new WarehouseInfo();
             warehouse.setCode(purchaseOrder.getWarehouseCode());
-            warehouse = warehouseService.selectOne(warehouse);
+            warehouse = warehouseInfoService.selectOne(warehouse);
             AssertUtil.notNull(warehouse,"根据用户的仓库编码查询仓库信息失败");
-            purchaseOrder.setWarehouseName(warehouse.getName());
+            purchaseOrder.setWarehouseName(warehouse.getWarehouseName());
         }
         dicts = configBiz.findDictsByTypeNo("transportCostsTake");
         for (Dict dict:dicts) {
@@ -1329,11 +1325,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseInfo.setId(purchaseOrder.getWarehouseInfoId());
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
 
-        Warehouse warehouse = new Warehouse();
-        warehouse.setId(purchaseOrder.getWarehouseId());
-        warehouse  = warehouseService.selectOne(warehouse);
-
-        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo, warehouse);
+        assignmentWarehouseNotice(order,warehouseNotice, warehouseInfo);
         int count = iWarehouseNoticeService.insert(warehouseNotice);
         if(count == 0){
             String msg = "保存入库通知单数据库操作失败";
@@ -1376,7 +1368,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         }
 
         insertWarehouseNoticeDetail(purchaseDetails,warehouseNotice.getWarehouseNoticeCode(), warehouseInfo.getChannelCode(),
-                Long.parseLong(warehouseInfo.getWarehouseId()), warehouseInfo.getWarehouseOwnerId());
+                warehouseInfo.getId(), warehouseInfo.getWarehouseOwnerId());
 
         //释放锁
         if (redisLock.releaseLock(DistributeLockEnum.PURCHASE_ORDER.getCode() + "warahouseAdvice"+purchaseOrder.getId(), identifier)) {
@@ -1449,7 +1441,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
     /**赋值入库通知单
      */
-    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo, Warehouse warehouse){
+    private void assignmentWarehouseNotice(PurchaseOrder order, WarehouseNotice warehouseNotice, WarehouseInfo warehouseInfo){
         //'入库通知单编号',流水的长度为5,前缀为CGRKTZ,加时间
         String warehouseNoticeCode = iSerialUtilService.generateCode(5,CGRKTZ,DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         warehouseNotice.setWarehouseNoticeCode(warehouseNoticeCode);
@@ -1477,7 +1469,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
         warehouseNotice.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        warehouseNotice.setQimenWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        warehouseNotice.setQimenWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         warehouseNotice.setSender(order.getSender());
         warehouseNotice.setReceiverNumber(order.getReceiverNumber());
         warehouseNotice.setReceiver(order.getReceiver());
@@ -1494,16 +1486,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setSenderAddress(order.getSenderAddress());
         warehouseNotice.setSenderNumber(order.getSenderNumber());
         area =new Area();
-        area.setCode(warehouse.getProvince());
+        area.setCode(warehouseInfo.getProvince());
         area = locationUtilService.selectOne(area);
         AssertUtil.notNull(area, "收件人所在省为空");
         warehouseNotice.setReceiverProvince(area.getProvince());
         area =new Area();
-        area.setCode(warehouse.getCity());
+        area.setCode(warehouseInfo.getCity());
         area = locationUtilService.selectOne(area);
         AssertUtil.notNull(area, "收件人所在城市为空");
         warehouseNotice.setReceiverCity(area.getCity());
-        warehouseNotice.setReceiverAddress(warehouse.getAddress());
+        warehouseNotice.setReceiverAddress(warehouseInfo.getAddress());
     }
 
     @Override

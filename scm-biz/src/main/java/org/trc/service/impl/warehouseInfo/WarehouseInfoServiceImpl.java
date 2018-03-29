@@ -15,10 +15,4 @@ import java.util.Map;
  */
 @Service("warehouseInfoService")
 public class WarehouseInfoServiceImpl extends BaseService<WarehouseInfo,Long> implements IWarehouseInfoService {
-    @Autowired
-    private IWarehouseInfoMapper warehouseInfoMapper;
-    @Override
-    public List<WarehouseInfo> selectWarehouseInfo(Map<String, String> map) {
-        return warehouseInfoMapper.selectWarehouseInfo(map);
-    }
 }

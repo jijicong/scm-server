@@ -28,6 +28,7 @@ public class PurchaseOrder extends BaseDO{
     private String purchaseOrderCode;
     @FormParam("channelId")
     private Long channelId;//
+
     @FormParam("channelCode")
     private String channelCode;//
     @FormParam("supplierId")
@@ -58,7 +59,7 @@ public class PurchaseOrder extends BaseDO{
      private Long warehouseId;
      @FormParam("currencyType")
      private String currencyType;
-    @Transient
+        @Transient
      private String currencyTypeName;
      @FormParam("purchasePersonId")
      private String purchasePersonId;

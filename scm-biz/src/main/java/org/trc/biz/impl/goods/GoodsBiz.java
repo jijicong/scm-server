@@ -21,7 +21,6 @@ import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.qinniu.IQinniuBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.category.*;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -43,6 +42,8 @@ import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
+import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
@@ -51,11 +52,11 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.*;
 import org.trc.service.impl.goods.ItemNatureProperyService;
 import org.trc.service.impl.goods.ItemSalesProperyService;
-import org.trc.service.impl.system.WarehouseService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -146,8 +147,6 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
     @Autowired
-    private WarehouseService warehouseService;
-    @Autowired
     private ITrcBiz trcBiz;
     @Autowired
     private ILogInfoService logInfoService;
@@ -162,7 +161,7 @@ public class GoodsBiz implements IGoodsBiz {
     @Autowired
     private IExternalPictureService externalPictureService;
     @Autowired
-    private IQimenService qimenService;
+    private IWarehouseApiService warehouseApiService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
 
@@ -782,9 +781,9 @@ public class GoodsBiz implements IGoodsBiz {
         try{
             for (Map.Entry<Long, List<WarehouseItemInfo>> entry : map.entrySet()) {
                 new Thread(() -> {
-                    ItemsSynchronizeRequest request = this.setItemsSynchronizeRequest(entry.getValue());
+                    ScmItemSyncRequest request = this.setItemsSynchronizeRequest(entry.getValue());
                     if(request != null){
-                        qimenService.itemsSync(request);
+                        warehouseApiService.itemSync(request);
                     }
                 }).start();
             }
@@ -794,22 +793,21 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     //组装信息
-    private ItemsSynchronizeRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
+    private ScmItemSyncRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
-        Warehouse warehouse = warehouseService.selectByPrimaryKey(Long.parseLong(warehouseInfo.getWarehouseId()));
-        if(warehouse.getIsThroughQimen() == null || warehouse.getIsThroughQimen() == 0 ||
-                StringUtils.equals(warehouse.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
+        if(warehouseInfo.getIsThroughWms() == null || warehouseInfo.getIsThroughWms() == 0 ||
+                StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
             return null;
         }
 
-        List<ItemsSynchronizeRequest.Item> list1 = new ArrayList<ItemsSynchronizeRequest.Item>();
-        ItemsSynchronizeRequest.Item item = null;
+        List<ScmWarehouseItem> list1 = new ArrayList<>();
+        ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : list){
             if(StringUtils.isEmpty(info.getWarehouseItemId())){
                 continue;
             }
-            item = new ItemsSynchronizeRequest.Item();
+            item = new ScmWarehouseItem();
             item.setItemCode(info.getSkuCode());
             item.setGoodsCode(info.getItemNo());
             item.setItemName(info.getItemName());
@@ -825,10 +823,10 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         //组装奇门接口
-        ItemsSynchronizeRequest request = new ItemsSynchronizeRequest();
-        request.setItems(list1);
+        ScmItemSyncRequest request = new ScmItemSyncRequest();
+        request.setWarehouseItemList(list1);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        request.setWarehouseCode(warehouseInfo.getQimenWarehouseCode());
+        request.setWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         request.setActionType("update");
 
         return request;
@@ -874,8 +872,22 @@ public class GoodsBiz implements IGoodsBiz {
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
             AssertUtil.notBlank(jbo.getString("barCode"),"SKU条形码不能为空");
+            AssertUtil.notBlank(jbo.getString("isValid"),"启停用状态不能为空");
             if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){
                 AssertUtil.notBlank(jbo.getString("skuCode"),"SKU编码不能为空");
+                //条形码校验
+                if (StringUtils.equals(jbo.getString("isValid"),ValidEnum.VALID.getCode())){
+                    //查询当前sku的数据
+                    Skus sku = new Skus();
+                    sku.setSkuCode(jbo.getString("skuCode"));
+                    sku = skusService.selectOne(sku);
+                    //判断sku当前的状态
+                    if (null!=sku){
+                        if(StringUtils.equals(sku.getIsValid(),ValidEnum.NOVALID.getCode())){
+                            checkBarcodeOnly(jbo.getString("barCode"),"");
+                        }
+                    }
+                }
             }
         }
     }
@@ -888,6 +900,7 @@ public class GoodsBiz implements IGoodsBiz {
     private void saveItemsBase(Items items) throws Exception{
         ParamsUtil.setBaseDO(items);
         checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
+        checkIsQuality(items);
         int count = itemsService.insert(items);
         if (count == 0) {
             String msg = String.format("保商品基础信息%s到数据库失败", JSON.toJSONString(items));
@@ -999,6 +1012,20 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(categoryBrand, String.format("分类[%s]和品牌[%s]关联关系已解除,请选择其他品牌!", category.getName(), brand.getName()));
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), categoryBrand.getIsValid())){
             throw new GoodsException(ExceptionEnum.GOODS_DEPEND_DATA_INVALID, String.format("分类[%s]关联品牌[%s]已被禁用,请选择其他品牌!", category.getName(), brand.getName()));
+        }
+    }
+
+
+    /**
+     * 校验是否质保
+     * @param items
+     */
+    private void checkIsQuality(Items items){
+        if (StringUtils.equals(items.getIsQuality(),ZeroToNineEnum.ONE.getCode())){
+            AssertUtil.notNull(items.getQualityDay(),"商品具有质保日期管理时，质保天数不能为空！");
+            AssertUtil.isTrue(items.getQualityDay()>0,"天数不能小于0");
+        }else {
+            AssertUtil.isNull(items.getQualityDay(),"商品不具有质保日期管理时，质保天数必须为空！");
         }
     }
 
@@ -1115,6 +1142,7 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(items.getId(), "商品ID不能为空");
         items.setUpdateTime(Calendar.getInstance().getTime());
         checkCategoryBrandValidStatus(items.getCategoryId(), items.getBrandId());
+        checkIsQuality(items);
         Items items1 = itemsService.selectByPrimaryKey(items.getId());
         if(!StringUtils.equals(items1.getItemNo(), items.getItemNo())){
             map.put("itemNo", items.getItemNo());
@@ -1791,6 +1819,9 @@ public class GoodsBiz implements IGoodsBiz {
         AssertUtil.notNull(items, String.format("根据商品SPU编码[%s]查询商品基础信息为空", spuCode));
         String categoryName = categoryBiz.getCategoryName(items.getCategoryId());
         items.setCategoryName(categoryName);
+        if (StringUtils.equals(items.getIsQuality(),ZeroToNineEnum.ZERO.getCode())){
+            items.setQualityDay(null);
+        }
         //查询商品SKU信息
         Skus skus = new Skus();
         skus.setSpuCode(spuCode);
@@ -2623,13 +2654,81 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public void checkBarcodeOnly(String barcode) {
+    public void checkBarcodeOnly(String barcode, String skuCode) {
+        String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
+        List<String> existedCode = new ArrayList<>();
+        List<String> barCodeList = new ArrayList<>();
+        List<String> nowBarCode = new ArrayList<>();
+        List<String> allBarCode = skusService.selectAllBarCode();
+        String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
+        String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
+        allBarCode =  Arrays.asList(allBarCodeArray);
+        System.out.println(JSON.toJSONString(allBarCode));
         AssertUtil.notBlank(barcode, "条形码不能为空");
-        Skus skus = new Skus();
-        skus.setBarCode(barcode);
-        List<Skus> skusList = skusService.select(skus);
-        if(!CollectionUtils.isEmpty(skusList)){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "该条形码已经存在!");
+        //新增时校验条形码
+        if (StringUtils.isBlank(skuCode)){
+            for (String barCode : Arrays.asList(barArray)) {
+                boolean isFlag = false;
+                for (String validBar : allBarCode) {
+                    if (StringUtils.equals(barCode, validBar)) {
+                        isFlag = true;
+                    }
+                }
+                if (isFlag) {
+                    existedCode.add(barCode);
+                }
+            }
+            if (!AssertUtil.collectionIsEmpty(existedCode)) {
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码" + StringUtils.join(existedCode, SupplyConstants.Symbol.COMMA) + "已经存在!");
+            }
+        }else {
+            //编辑时校验方式
+            //编辑时获取到新增的条形码
+            getNewBarCode(skuCode, barArray, barCodeList, nowBarCode);
+            if (AssertUtil.collectionIsEmpty(barCodeList)&&StringUtils.isBlank(skuCode)) {
+                barCodeList = Arrays.asList(barArray);
+            }
+            for (String barCode : barCodeList) {
+                boolean isFlag = false;
+                for (String validBar : allBarCode) {
+                    if (StringUtils.equals(barCode, validBar)) {
+                        isFlag = true;
+                    }
+                }
+                if (isFlag) {
+                    existedCode.add(barCode);
+                }
+            }
+            if (!AssertUtil.collectionIsEmpty(existedCode)) {
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码" + StringUtils.join(existedCode, SupplyConstants.Symbol.COMMA) + "已经存在!");
+            }
+        }
+
+
+
+
+    }
+
+    private void getNewBarCode(String skuCode, String[] barArray, List<String> barCodeList, List<String> nowBarCode) {
+        if (StringUtils.isNotBlank(skuCode)) {
+            Skus sku = new Skus();
+            sku.setSkuCode(skuCode);
+            sku.setIsValid(ValidEnum.VALID.getCode());
+            sku = skusService.selectOne(sku);
+            if (null != sku) {
+                nowBarCode = Arrays.asList(StringUtils.split(sku.getBarCode(), SupplyConstants.Symbol.COMMA));
+            }
+            for (int i = 0; i < barArray.length; i++) {
+                boolean isFlag = false;
+                for (String bar : nowBarCode) {
+                    if (StringUtils.equals(barArray[i], bar)) {
+                        isFlag = true;
+                    }
+                }
+                if (!isFlag) {
+                    barCodeList.add(barArray[i]);
+                }
+            }
         }
     }
 

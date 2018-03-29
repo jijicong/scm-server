@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.trc.biz.purchase.IPurchaseOrderAuditBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
 import org.trc.domain.purchase.PurchaseOrder;
@@ -27,7 +25,6 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.PurchaseOrderAuditException;
 import org.trc.form.purchase.PurchaseOrderAuditForm;
-import org.trc.service.System.IWarehouseService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderAuditService;
@@ -56,8 +53,6 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
     private IPurchaseOrderAuditService purchaseOrderAuditService;
     @Resource
     private IPurchaseOrderService iPurchaseOrderService;
-    @Resource
-    private IWarehouseService warehouseService;
 
     @Resource
     private IPurchaseGroupService purchaseGroupService;
@@ -157,16 +152,19 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         for(int i = 0 ; i < purchaseOrderList.size();i++){
             warehouseArray[i] = purchaseOrderList.get(i).getWarehouseCode();
         }
-        List<Warehouse> warehouseList = warehouseService.selectWarehouseNames(warehouseArray);
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("code", Arrays.asList(warehouseArray));
+        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(example);
         if(CollectionUtils.isEmpty(warehouseList)){
             String msg = "根据仓库编码,查询仓库失败";
             logger.error(msg);
             throw  new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_QUERY_EXCEPTION, msg);
         }
-        for (Warehouse warehouse : warehouseList){
+        for (WarehouseInfo warehouse : warehouseList){
             for (PurchaseOrder purchaseOrder : purchaseOrderList){
                 if(warehouse.getCode().equals(purchaseOrder.getWarehouseCode())){
-                    purchaseOrder.setWarehouseName(warehouse.getName());
+                    purchaseOrder.setWarehouseName(warehouse.getWarehouseName());
                 }
             }
         }

@@ -6,15 +6,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.trc.biz.system.IChannelBiz;
 import org.trc.biz.system.IWarehouseBiz;
 import org.trc.dbUnit.BaseTestContext;
-import org.trc.domain.System.Channel;
-import org.trc.domain.System.Warehouse;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ZeroToNineEnum;
-import org.trc.exception.ChannelException;
 import org.trc.exception.TestException;
 import org.trc.exception.WarehouseException;
 
@@ -48,7 +44,7 @@ public class WarehouseDbUnit extends BaseTestContext {
         //从xml文件读取数据并插入数据库中
         prepareData(conn, "system/warehouse/preInsertWarehouseData.xml");
 
-        Warehouse warehouse = createWarehouse();
+        WarehouseInfo warehouse = createWarehouse();
         warehouseBiz.saveWarehouse(warehouse,aclUserAccreditInfo);
         //从xml文件读取期望结果
         ReplacementDataSet expResult = createDataSet(Thread.currentThread().getContextClassLoader().getResourceAsStream("system/warehouse/expInsertWarehouseData.xml"));
@@ -71,7 +67,7 @@ public class WarehouseDbUnit extends BaseTestContext {
 
         prepareData(conn,"system/warehouse/preUpdateWarehouseStatusDate.xml");
 
-        Warehouse warehouse = createWarehouse();
+        WarehouseInfo warehouse = createWarehouse();
 
         warehouseBiz.updateWarehouseState(warehouse,aclUserAccreditInfo);
 
@@ -92,7 +88,7 @@ public class WarehouseDbUnit extends BaseTestContext {
 
         prepareData(conn, "system/warehouse/preUpdateWarehouseDate.xml");
 
-        Warehouse warehouse = createUpdateWarehouse();
+        WarehouseInfo warehouse = createUpdateWarehouse();
 
         try{
             warehouseBiz.updateWarehouse(warehouse,aclUserAccreditInfo);
@@ -103,7 +99,7 @@ public class WarehouseDbUnit extends BaseTestContext {
             }
         }
        /*测试正常流程*/
-        warehouse.setName("heiba");
+        warehouse.setWarehouseName("heiba");
         warehouseBiz.updateWarehouse(warehouse,aclUserAccreditInfo);
 
         IDataSet expDataSet=getXmlDataSet("system/warehouse/expUpdateWarehouseDate.xml");
@@ -112,8 +108,8 @@ public class WarehouseDbUnit extends BaseTestContext {
 
     }
 
-    private Warehouse createUpdateWarehouse(){
-        Warehouse warehouse = new Warehouse();
+    private WarehouseInfo createUpdateWarehouse(){
+        WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setId(1L);
         warehouse.setCreateOperator("lisi");
         warehouse.setIsValid("1");
@@ -122,7 +118,7 @@ public class WarehouseDbUnit extends BaseTestContext {
         warehouse.setCity("210300");
         warehouse.setProvince("210000");
         warehouse.setArea("210301");
-        warehouse.setName("wangwu");
+        warehouse.setWarehouseName("wangwu");
         warehouse.setWarehouseTypeCode("bondedWarehouse");
         warehouse.setIsCustomsClearance(1);
         warehouse.setRemark("11");
@@ -133,9 +129,9 @@ public class WarehouseDbUnit extends BaseTestContext {
      * 创建仓库
      * @return
      */
-    private Warehouse createWarehouse(){
+    private WarehouseInfo createWarehouse(){
 
-        Warehouse warehouse = new Warehouse();
+        WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setId(1L);
         warehouse.setCreateOperator("E2E4BDAD80354EFAB6E70120C271968C");
         warehouse.setIsValid("1");
@@ -144,7 +140,7 @@ public class WarehouseDbUnit extends BaseTestContext {
         warehouse.setCity("210300");
         warehouse.setProvince("210000");
         warehouse.setArea("210301");
-        warehouse.setName("zhangsan");
+        warehouse.setWarehouseName("zhangsan");
         warehouse.setWarehouseTypeCode("bondedWarehouse");
         warehouse.setIsCustomsClearance(1);
         warehouse.setRemark("11");

@@ -20,6 +20,10 @@ public class SkusForm extends QueryModel {
     @QueryParam("spuCode")
     private String spuCode;
 
+    //商品品牌
+    @QueryParam("brandName")
+    private String brandName;
+
     public String getSkuCode() {
         return skuCode;
     }
@@ -42,5 +46,13 @@ public class SkusForm extends QueryModel {
 
     public void setSpuCode(String spuCode) {
         this.spuCode = spuCode;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
     }
 }

@@ -115,14 +115,14 @@ public class QimenResource {
                 warehouseNoticeBiz
                         .updateInStock(requestText);
                 break;
-            case DELIVERY_ORDER_CONFIRM:
-                try {
-                    outBoundOrderBiz.updateOutboundDetail(requestText);
-                } catch (Exception e) {
-                   logger.error("发货明细更新异常",e);
-                   throw new Exception("发货明细更新异常");
-                }
-                break;
+//            case DELIVERY_ORDER_CONFIRM:
+//                try {
+//                    outBoundOrderBiz.updateOutboundDetail(requestText);
+//                } catch (Exception e) {
+//                   logger.error("发货明细更新异常",e);
+//                   throw new Exception("发货明细更新异常");
+//                }
+//                break;
             case STOCKOUT_CONFIRM:
                 break;
             case RETURNORDER_CONFIRM:

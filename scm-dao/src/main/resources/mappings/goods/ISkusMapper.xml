@@ -21,5 +21,72 @@
               spu_code = #{skus.spuCode} AND sku_code = #{skus.skuCode}
         </foreach>
     </update>
-    
+
+    <select id="selectSkuList" resultType="org.trc.domain.goods.Skus"
+            parameterType="java.util.Map">
+        SELECT sk.sku_name AS skuName, sk.sku_code AS skuCode, sk.spu_code AS spuCode, sk.spec_info AS specInfo,
+                sk.bar_code AS barCode, sk.item_id AS itemId
+        FROM
+	        skus sk
+        LEFT JOIN
+	        (SELECT it.spu_code,br.name brandName FROM items it LEFT JOIN brand br ON it.brand_id = br.id) its
+        ON sk.spu_code = its.spu_code
+        WHERE sk.is_valid = 1
+        <if test="brandName != null and brandName != ''">
+            AND its.brandName = #{brandName}
+        </if>
+        <if test="skuName != null and skuName != ''">
+            AND sk.sku_name LIKE CONCAT('%', #{skuName}, '%')
+        </if>
+        <if test="skuCode != null and skuCode != ''">
+            AND sk.sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        </if>
+        <if test="spuCode != null and spuCode != ''">
+            AND sk.spu_code LIKE CONCAT('%', #{spuCode}, '%')
+        </if>
+        <if test="spuTemp != null and spuTemp !=''">
+            AND sk.sku_code NOT IN
+            <foreach collection="skuCodes" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="pageSize != null and pageSize != ''">
+            LIMIT #{start},#{pageSize}
+        </if>
+    </select>
+
+    <select id="selectSkuListCount" resultType="java.lang.Integer"
+            parameterType="java.util.Map">
+        SELECT count(*) FROM (
+        SELECT sk.sku_name AS skuName, sk.sku_code AS skuCode, sk.spu_code AS spuCode, sk.spec_info AS specInfo,
+        sk.bar_code AS barCode, sk.item_id AS itemId
+        FROM
+        skus sk
+        LEFT JOIN
+        (SELECT it.spu_code,br.name brandName FROM items it LEFT JOIN brand br ON it.brand_id = br.id) its
+        ON sk.spu_code = its.spu_code
+        WHERE sk.is_valid = 1
+        <if test="brandName != null and brandName != ''">
+            AND its.brandName = #{brandName}
+        </if>
+        <if test="skuName != null and skuName != ''">
+            AND sk.sku_name LIKE CONCAT('%', #{skuName}, '%')
+        </if>
+        <if test="skuCode != null and skuCode != ''">
+            AND sk.sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        </if>
+        <if test="spuCode != null and spuCode != ''">
+            AND sk.spu_code LIKE CONCAT('%', #{spuCode}, '%')
+        </if>
+        <if test="skutemp != null and skutemp !=''">
+            AND sk.sku_code NOT IN
+            <foreach collection="skuCodes" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>) t
+    </select>
+
+    <select id="selectAllBarCode" resultType="java.lang.String">
+        SELECT bar_code from  skus where  is_valid = '1'
+    </select>
 </mapper>

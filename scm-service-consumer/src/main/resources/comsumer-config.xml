@@ -40,6 +40,14 @@
         <property name="balancestatisticsUrl" value="${get.jd.statistics.balance.url}"/>
         <property name="reportCompensateUrl" value="${jd.report.compensate.url}"/>
         <property name="jdOrderStatusUrl" value="${jd.order.status.url}"/>
+
+        <property name="itemsSyncUrl" value="${wms.itemsSync.url}"/>
+        <property name="inventoryQueryUrl" value="${wms.inventoryQuery.url}"/>
+        <property name="entryOrderCreateUrl" value="${wms.entryOrderCreate.url}"/>
+        <property name="deliveryOrderCreateUrl" value="${wms.deliveryOrderCreate.url}"/>
+        <property name="entryOrderDetailQueryUrl" value="${wms.entryOrderDetail.url}"/>
+        <property name="deliveryOrderDetailQueryUrl" value="${wms.deleveryOrderDetail.url}"/>
+        <property name="orderCancelUrl" value="${wms.orderCancel.url}"/>
     </bean>
 
     <!--泰然城接口调用地址-->
@@ -70,6 +78,19 @@
         <property name="qimenReturnOrderCreateUrl" value="${qimen.returnOrderCreate.url}"/>
         <property name="qimenStockoutCreateUrl" value="${qimen.stockoutCreate.url}"/>
         <property name="qimenOrderPendingUrl" value="${qimen.orderPending.url}"/>
+    </bean>
+
+    <!--京东仓库常量配置-->
+    <bean id="jDWmsConstantConfig" class="org.trc.form.JDWmsConstantConfig">
+        <property name="deptNo" value="${jd.wms.constant.deptNo}"/>
+        <property name="warehouseNo" value="${jd.wms.constant.warehouseNo}"/>
+        <property name="supplierNo" value="${jd.wms.constant.supplierNo}"/>
+        <property name="shopNo" value="${jd.wms.constant.shopNo}"/>
+        <property name="isvSource" value="${jd.wms.constant.isvSource}"/>
+        <property name="thirdCategoryNo" value="${jd.wms.constant.thirdCategoryNo}"/>
+        <property name="salePlatformSource" value="${jd.wms.constant.salePlatformSource}"/>
+        <property name="shipperNo" value="${jd.wms.constant.shipperNo}"/>
+        <property name="orderMark" value="${jd.wms.constant.orderMark}"/>
     </bean>
 
 </beans>
