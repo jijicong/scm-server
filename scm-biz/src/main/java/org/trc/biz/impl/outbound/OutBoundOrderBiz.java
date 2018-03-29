@@ -871,9 +871,31 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             //组装请求
             ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
             scmOrderCancelRequest.setCancelReason(remark);
-            scmOrderCancelRequest.setOrderCode(outboundOrder.getOutboundOrderCode());
+            scmOrderCancelRequest.setOrderCode(outboundOrder.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
             scmOrderCancelRequest.setWarehouseCode(warehouse.getWmsWarehouseCode());
+
+
+            //组装请求信息
+            ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
+            request.setOrderCode(outboundOrder.getOutboundOrderCode());
+            request.setOrderId(outboundOrder.getWmsOrderCode());
+            request.setOwnerCode(warehouse.getWarehouseOwnerId());
+            request.setWarehouseCode(warehouse.getCode());
+            AppResult<ScmDeliveryOrderDetailResponse>  result = warehouseApiService.deliveryOrderDetail(request);
+            if(StringUtils.equals(result.getAppcode(), SUCCESS)){
+                ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
+                if(response == null || StringUtils.isEmpty(response.getCurrentStatus())
+                        || Integer.parseInt(response.getCurrentStatus()) > 10017){
+                    String msg = "订单已完成复核流程，无法取消!";
+                    logger.error(msg);
+                    throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+                }
+            }else{
+                String msg = "获取发货单状态失败!";
+                logger.error(msg);
+                throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+            }
 
             //调用奇门接口
             AppResult<ScmOrderCancelResponse> appResult = warehouseApiService.orderCancel(scmOrderCancelRequest);
@@ -940,7 +962,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             WarehouseInfo warehouse =warehouseInfoService.selectByPrimaryKey(order.getWarehouseId());
             ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
             scmOrderCancelRequest.setCancelReason(order.getRemark());
-            scmOrderCancelRequest.setOrderCode(order.getOutboundOrderCode());
+            scmOrderCancelRequest.setOrderCode(order.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
             scmOrderCancelRequest.setWarehouseCode(warehouse.getWmsWarehouseCode());
             requests.add(scmOrderCancelRequest);
