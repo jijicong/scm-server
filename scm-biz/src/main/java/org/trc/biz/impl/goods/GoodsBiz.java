@@ -43,6 +43,7 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmItemSyncResponse;
 import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
@@ -714,7 +715,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     //更新仓库商品信息和同步仓库
-    private void updateWarehouseItemInfo(Map<String, Object> warehouseItemInfoMap, String spuCode){
+    private void updateWarehouseItemInfo(Map<String, Object> warehouseItemInfoMap, String spuCode) throws Exception{
         //获取所有仓库商品信息
         WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
         warehouseItemInfo.setSpuCode(spuCode);
@@ -773,23 +774,35 @@ public class GoodsBiz implements IGoodsBiz {
         }
 
         //调用奇门接口同步商品
-        itemsSync(map);
+        String msg = itemsSync(map);
+        if(StringUtils.isNotEmpty(msg)){
+            throw new Exception(msg);
+        }
     }
 
     //调用奇门接口
-    private void itemsSync (Map<Long, List<WarehouseItemInfo>> map){
+    private String itemsSync (Map<Long, List<WarehouseItemInfo>> map){
         try{
             for (Map.Entry<Long, List<WarehouseItemInfo>> entry : map.entrySet()) {
-                new Thread(() -> {
-                    ScmItemSyncRequest request = this.setItemsSynchronizeRequest(entry.getValue());
-                    if(request != null){
-                        warehouseApiService.itemSync(request);
+                ScmItemSyncRequest request = this.setItemsSynchronizeRequest(entry.getValue());
+                if(request != null){
+                    AppResult<List<ScmItemSyncResponse>> result = warehouseApiService.itemSync(request);
+                    if(StringUtils.equals("200", result.getAppcode())){
+                        List<ScmItemSyncResponse> list = (List<ScmItemSyncResponse>)result.getResult();
+                        for(ScmItemSyncResponse r : list){
+                            if(!StringUtils.equals("200", r.getCode())){
+                                return r.getMessage();
+                            }
+                        }
+                    }else{
+                        return "开放平台接口调用错误";
                     }
-                }).start();
+                }
             }
         }catch(Exception e){
             log.error("商品同步失败", e);
         }
+        return "";
     }
 
     //组装信息

@@ -357,6 +357,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouse.setChannelCode("TRMALL");
         warehouse.setOwnerName("小泰科技");
         warehouse.setSkuNum(0);
+        warehouse.setOwnerWarehouseState("0");
 
         int count = warehouseInfoService.insert(warehouse);
         if (count == 0) {
