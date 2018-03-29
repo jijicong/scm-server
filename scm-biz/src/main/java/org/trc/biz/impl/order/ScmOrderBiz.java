@@ -1906,12 +1906,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //拆分自采和代发商品
         List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
         List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
+        List<String> skuCodes = new ArrayList<>();
         List<OrderItem> supplierOrderItemList = new ArrayList<>();//一件代发
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
                 if (orderItem.getSkuCode().startsWith(SP0)) {
                     selfPurcharseOrderItemList.add(orderItem);
+                    skuCodes.add(orderItem.getSkuCode());
                 }
                 if (orderItem.getSkuCode().startsWith(SP1)) {
                     supplierOrderItemList.add(orderItem);
@@ -1941,7 +1943,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //获取并校验业务线相关仓储信息
             List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
             //获取自采商品仓库库存
-            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = getWarehouseInventory(selfPurcharseOrderItemList, warehouseInfoList);
+            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = getWarehouseInventory(skuCodes, warehouseInfoList);
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
             //校验自采商品的可用库存
@@ -3690,18 +3692,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     /**
      * 获取仓库商品库存
-     * @param orderItemList
+     * @param skuCodes
      * @param warehouseInfoList
      * @return
      */
-    private List<ScmInventoryQueryResponse> getWarehouseInventory(List<OrderItem> orderItemList, List<WarehouseInfo> warehouseInfoList){
+    @Override
+    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList){
         List<Long> warehouseInfoIds = new ArrayList<>();
         for(WarehouseInfo warehouseInfo2: warehouseInfoList){
             warehouseInfoIds.add(warehouseInfo2.getId());
-        }
-        List<String> skuCodes = new ArrayList<>();
-        for(OrderItem orderItem: orderItemList){
-            skuCodes.add(orderItem.getSkuCode());
         }
         //查询跟仓库绑定过的商品,其中没有绑定过的在后面的拆单时会归到异常订单里面
         Example example = new Example(WarehouseItemInfo.class);
@@ -3748,14 +3747,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 获取仓库库存
      * @param warehouseType
-     * @param warehouseOwernSkuDOListQimen
+     * @param warehouseOwernSkuDOList
      * @return
      */
-    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen){
+    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList){
         ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
         request.setWarehouseType(warehouseType);
         List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
-        for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOListQimen){
+        for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
                 ScmInventoryQueryItem item = new ScmInventoryQueryItem();
                 item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
