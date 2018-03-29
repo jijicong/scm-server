@@ -48,7 +48,7 @@ public interface IWarehouseNoticeBiz {
 
     void updateInStock(String requestText) ;
 
-	void setQimenService(IQimenService service);
+    void setQimenService(IQimenService service);
 
-
+    void updateStock();
 }

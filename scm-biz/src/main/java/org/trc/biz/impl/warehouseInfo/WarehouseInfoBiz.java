@@ -920,20 +920,26 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         if(org.apache.commons.lang3.StringUtils.equals(appResult.getAppcode(), SUCCESS)){
             List<ScmItemSyncResponse> res = (List<ScmItemSyncResponse>)appResult.getResult();
             if(res != null && res.size() > 0){
-                this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseItemInfoList,res));
+                this.updateWarehouseItemInfo(this.getSuccessItemId(warehouseInfo.getCode(), res));
             }
             return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", "");
         }
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), appResult.getDatabuffer(), "");
     }
 
-    private Map<String, String> getSuccessItemId(List<WarehouseItemInfo> infoList, List<ScmItemSyncResponse> batchItemSynItems){
+    private Map<String, String> getSuccessItemId(String warehouseCode, List<ScmItemSyncResponse> batchItemSynItems){
         Map<String, String> itemMap = new HashMap<>();
-        for(WarehouseItemInfo item : infoList){
-            for(ScmItemSyncResponse synItem : batchItemSynItems){
-                if(synItem.getItemCode().equals(item.getSkuCode()) && SUCCESS.equals(synItem.getCode())){
-                    itemMap.put(String.valueOf(item.getId()), synItem.getItemId());
-                }
+        for(ScmItemSyncResponse synItem : batchItemSynItems){
+            WarehouseItemInfo info = new WarehouseItemInfo();
+            info.setWarehouseCode(warehouseCode);
+            info.setSkuCode(synItem.getItemCode());
+            info = warehouseItemInfoService.selectOne(info);
+            if( SUCCESS.equals(synItem.getCode())){
+                itemMap.put(String.valueOf(info.getId()), synItem.getItemId());
+            }else{
+                info.setExceptionReason(synItem.getMessage());
+                info.setNoticeStatus(Integer.parseInt(ZeroToNineEnum.ONE.getCode()));
+                warehouseItemInfoService.updateByPrimaryKeySelective(info);
             }
         }
         return itemMap;
@@ -982,7 +988,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             item.setBarCode(info.getBarCode());
             item.setSkuProperty(info.getSpecNatureInfo());
             item.setItemType(info.getItemType());
-            item.setThirdCategoryNo("1421");
+            item.setThirdCategoryNo("其他");
 
             list.add(item);
         }

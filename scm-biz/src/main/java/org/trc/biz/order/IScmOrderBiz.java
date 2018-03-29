@@ -6,10 +6,12 @@ import org.trc.domain.order.PlatformOrder;
 import org.trc.domain.order.ShopOrder;
 import org.trc.domain.order.SupplierOrderInfo;
 import org.trc.domain.order.WarehouseOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.LogisticNoticeForm2;
 import org.trc.form.order.*;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
 import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.service.IJDService;
 import org.trc.service.ITrcService;
 import org.trc.service.util.IRealIpService;
@@ -199,6 +201,14 @@ public interface IScmOrderBiz {
      * @return
      */
     AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap);
+
+    /**
+     * 查询
+     * @param skuCodes
+     * @param warehouseInfoList
+     * @return
+     */
+    List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList);
 
 
 }

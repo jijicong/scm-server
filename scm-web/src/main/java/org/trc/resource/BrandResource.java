@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.category.IBrandBiz;
@@ -8,8 +7,8 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
-import org.trc.enums.remarkEnum;
 import org.trc.form.category.BrandForm;
+import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -89,7 +88,12 @@ public class BrandResource {
     @PUT
     @Path(SupplyConstants.Category.Brand.BRAND_STATE+"/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateBrandStatus(@BeanParam Brand brand, @Context ContainerRequestContext requestContext)throws Exception{
+    public Response updateBrandStatus(@FormParam("isValid")String isValid,@PathParam("id") Long id, @Context ContainerRequestContext requestContext)throws Exception{
+        AssertUtil.notNull(id, "需要更新品牌状态时，品牌主键ID不能为空");
+        AssertUtil.notBlank(isValid, "需要更新品牌状态时，品牌当状态不能为空");
+        Brand brand = new Brand();
+        brand.setId(id);
+        brand.setIsValid(isValid);
         brandBiz.updateBrandStatus(brand,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         ValidEnum validEnum=ValidEnum.VALID;
         if (brand.getIsValid().equals(ValidEnum.VALID.getCode())) {

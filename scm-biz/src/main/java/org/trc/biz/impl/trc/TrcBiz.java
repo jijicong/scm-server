@@ -19,6 +19,7 @@ import org.trc.biz.goods.ISkuRelationBiz;
 import org.trc.biz.impl.goods.GoodsBiz;
 import org.trc.biz.impl.trc.model.Skus2;
 import org.trc.biz.impl.trc.model.SkusProperty;
+import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.trc.ITrcBiz;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
@@ -29,25 +30,32 @@ import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.forTrc.PropertyValueForTrc;
 import org.trc.domain.goods.*;
+import org.trc.domain.order.OrderItem;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.supplier.SupplierApplyAudit;
 import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.util.ScmDO;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.ParamValidException;
 import org.trc.exception.QimenException;
 import org.trc.exception.TrcException;
+import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.TrcConfig;
 import org.trc.form.TrcParam;
 import org.trc.form.goods.ExternalItemSkuForm;
 import org.trc.form.goods.SkusForm;
+import org.trc.form.order.WarehouseOwernSkuDO;
 import org.trc.form.supplier.SupplierForm;
 import org.trc.form.trc.BrandForm2;
 import org.trc.form.trc.CategoryForm2;
 import org.trc.form.trc.ItemsForm2;
 import org.trc.form.trcForm.PropertyFormForTrc;
+import org.trc.form.warehouse.ScmInventoryQueryItem;
+import org.trc.form.warehouse.ScmInventoryQueryRequest;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.model.BrandToTrcDO;
 import org.trc.model.CategoryToTrcDO;
 import org.trc.model.PropertyToTrcDO;
@@ -66,7 +74,9 @@ import org.trc.service.impl.system.ChannelService;
 import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -129,7 +139,10 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private IQimenService qimenService;
     @Autowired
-    private ISkuRelationBiz skuRelationBiz;
+    private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private IScmOrderBiz scmOrderBiz;
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
@@ -1166,12 +1179,12 @@ public class TrcBiz implements ITrcBiz {
         for(Skus skus: skusList){
             skus.setStock(0l);
         }
-        //通过奇门获取库存信息
-        /*List<InventoryQueryResponse.Item> itemList = this.getQimenStockByskuCode(this.getSkuCodes(skusList), channelCode);
+        //获取仓库库存
+        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = getWarehouseInventory(skusList);
         //合并同skuCode库存
-        Map<String, Long> map = this.getSkuMap(itemList);
+        Map<String, Long> map = this.getSkuMap(scmInventoryQueryResponseList);
         //赋值stock
-        this.setSkuStock(skusList, map);*/
+        this.setSkuStock(skusList, map);
     }
 
     //赋值stock
@@ -1188,14 +1201,14 @@ public class TrcBiz implements ITrcBiz {
 
     /**
      * 整合sku库存信息
-     * @param itemList
+     * @param scmInventoryQueryResponseList
      * @return
      */
-    private Map<String, Long> getSkuMap(List<InventoryQueryResponse.Item> itemList){
+    private Map<String, Long> getSkuMap(List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
         Map<String, Long> skuMap = new HashMap<String, Long>();
-        for(InventoryQueryResponse.Item item : itemList){
-            String skuCode = item.getItemCode();
-            Long stockNum = item.getQuantity();
+        for(ScmInventoryQueryResponse response : scmInventoryQueryResponseList){
+            String skuCode = response.getItemCode();
+            Long stockNum = response.getQuantity();
             if(skuMap.containsKey(skuCode)){
                 skuMap.put(skuCode, stockNum + skuMap.get(skuCode));
             }else{
@@ -1204,6 +1217,29 @@ public class TrcBiz implements ITrcBiz {
         }
         return skuMap;
     }
+
+    /**
+     * 获取仓库商品库存
+     * @param skusList
+     * @return
+     */
+    private List<ScmInventoryQueryResponse> getWarehouseInventory(List<Skus> skusList){
+        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
+        Set<String> skuCodes = new HashSet<>();
+        for(Skus skus: skusList){
+            skuCodes.add(skus.getSkuCode());
+        }
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+        if(CollectionUtils.isEmpty(warehouseInfoList)){
+            logger.warn("自采SKU没有查询到可用仓库");
+            return scmInventoryQueryResponseList;
+        }
+        return scmOrderBiz.getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList);
+    }
+
 
     /**
      * 根据业务线获取所有仓库信息
@@ -1224,7 +1260,7 @@ public class TrcBiz implements ITrcBiz {
      * 根据skuCode和业务线获取奇门库存
      * @return
      */
-    private List<InventoryQueryResponse.Item> getQimenStockByskuCode(List<String> skuCodes, String channelCode){
+    /*private List<InventoryQueryResponse.Item> getQimenStockByskuCode(List<String> skuCodes, String channelCode){
         //根据业务线获取所有仓库信息
         List<WarehouseInfo> warehouseInfoList = this.getWharehouseInfoListByChannelCode(channelCode);
         AssertUtil.notNull(warehouseInfoList,"当前业务线没有对应的库存仓库信息!");
@@ -1262,7 +1298,7 @@ public class TrcBiz implements ITrcBiz {
         }else {
             throw new QimenException(ExceptionEnum.QIMEN_INVENTORY_QUERY_EXCEPTION, inventoryQueryResponse.getMessage());
         }
-    }
+    }*/
 
     /**
      * 设置SKU属性信息
