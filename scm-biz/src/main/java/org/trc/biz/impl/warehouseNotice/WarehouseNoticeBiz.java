@@ -53,6 +53,7 @@ import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
@@ -110,6 +111,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private RedisLock redisLock;
     @Autowired
     private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private IWarehouseExtService warehouseExtService;
+
     private boolean isSection = false;
     private boolean isReceivingError = false;
     private Set<String> defectiveSku;
@@ -523,7 +527,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private void entryOrderCreate(WarehouseNotice notice, String userId) {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
-        scmEntryOrderCreateRequest.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
+        WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
+        scmEntryOrderCreateRequest.setWarehouseType(warehouseTypeEnum.getCode());
         //入库单信息
         scmEntryOrderCreateRequest.setEntryOrderCode(noticeCode);
         scmEntryOrderCreateRequest.setPurchaseOrderCode(notice.getPurchaseOrderCode());

@@ -202,13 +202,5 @@ public interface IScmOrderBiz {
      */
     AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap);
 
-    /**
-     * 查询
-     * @param skuCodes
-     * @param warehouseInfoList
-     * @return
-     */
-    List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList);
-
 
 }
