@@ -36,6 +36,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.exception.WarehouseNoticeDetailException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.*;
@@ -894,6 +895,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)){
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
                         }
+                        //更新入库通知单
+                      int count = warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                        if (count == 0) {
+                            String msg = "修改入库通知单" + JSON.toJSONString(warehouseNotice) + "数据库操作失败";
+                            throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
+                        }
+
                     }else {
                         logger.error("未查询到通知单编号为"+entryOrderDetail.getEntryOrderCode()+"的入库通知单");
                     }
@@ -916,7 +924,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
                     normalQuantity=warehouseDetail.getActualStorageQuantity()==null?0:warehouseDetail.getActualStorageQuantity()+entryOrderDetailOrder.getActualQty()+normalQuantity;
                 }else if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
-                    defectiveQuantity =warehouseDetail.getDefectiveStorageQuantity()==null?0:warehouseDetail.getDefectiveStorageQuantity()+entryOrderDetailOrder.getDamagedQty()+defectiveQuantity;
+                    defectiveQuantity =warehouseDetail.getDefectiveStorageQuantity()==null?0:warehouseDetail.getDefectiveStorageQuantity()+entryOrderDetailOrder.getActualQty()+defectiveQuantity;
                 }
             }
         }
@@ -950,6 +958,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         //设置入库时间
         warehouseDetail.setStorageTime(Calendar.getInstance().getTime());
+        //更新入库通知单
+        int count = warehouseNoticeDetailsService.updateByPrimaryKey(warehouseDetail);
+        if (count == 0) {
+            String msg = "修改入库通知单详情" + JSON.toJSONString(warehouseDetail) + "数据库操作失败";
+            throw new WarehouseNoticeDetailException(ExceptionEnum.WAREHOUSE_NOTICE_DETAIL_EXCEPTION, msg);
+        }
 
         return warehouseDetail;
     }
