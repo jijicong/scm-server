@@ -75,6 +75,7 @@ import org.trc.service.supplier.ISupplierApplyService;
 import org.trc.service.supplier.ISupplierBrandService;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -141,7 +142,7 @@ public class TrcBiz implements ITrcBiz {
     @Autowired
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
-    private IScmOrderBiz scmOrderBiz;
+    private IWarehouseExtService warehouseExtService;
 
 
     @Override
@@ -1237,7 +1238,7 @@ public class TrcBiz implements ITrcBiz {
             logger.warn("自采SKU没有查询到可用仓库");
             return scmInventoryQueryResponseList;
         }
-        return scmOrderBiz.getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList);
+        return warehouseExtService.getWarehouseInventory(new ArrayList<>(skuCodes));
     }
 
 

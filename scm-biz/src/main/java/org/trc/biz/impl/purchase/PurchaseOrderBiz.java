@@ -1469,7 +1469,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setChannelCode(order.getChannelCode());
         warehouseNotice.setWarehouseInfoId(warehouseInfo.getId());
         warehouseNotice.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        warehouseNotice.setQimenWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         warehouseNotice.setSender(order.getSender());
         warehouseNotice.setReceiverNumber(order.getReceiverNumber());
         warehouseNotice.setReceiver(order.getReceiver());
@@ -1576,8 +1575,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Collections.sort(supplierBrandExts, new Comparator<SupplierBrandExt>() {
             @Override
             public int compare(SupplierBrandExt o1, SupplierBrandExt o2) {
-                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
-                return com.compare(o1.getBrandName(), o2.getBrandName());
+                return PinyinUtil.compare(o1.getBrandName(), o2.getBrandName());
             }
         });
         return supplierBrandExts;

@@ -277,11 +277,11 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
-            warehouse.setWmsWarehouseCode("");
-            warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
-            warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
-        }
+//        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
+//            warehouse.setWmsWarehouseCode("");
+////            warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+////            warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
+//        }
 
         int count = warehouseInfoService.updateByPrimaryKeySelective(warehouse);
 
