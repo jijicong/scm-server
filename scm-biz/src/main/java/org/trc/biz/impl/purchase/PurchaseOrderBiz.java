@@ -1576,8 +1576,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Collections.sort(supplierBrandExts, new Comparator<SupplierBrandExt>() {
             @Override
             public int compare(SupplierBrandExt o1, SupplierBrandExt o2) {
-                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
-                return com.compare(o1.getBrandName(), o2.getBrandName());
+                return PinyinUtil.compare(o1.getBrandName(), o2.getBrandName());
             }
         });
         return supplierBrandExts;
