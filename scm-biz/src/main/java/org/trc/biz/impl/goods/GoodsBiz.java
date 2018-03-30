@@ -1034,7 +1034,7 @@ public class GoodsBiz implements IGoodsBiz {
     private void checkIsQuality(Items items){
         if (StringUtils.equals(items.getIsQuality(),ZeroToNineEnum.ONE.getCode())){
             AssertUtil.notNull(items.getQualityDay(),"商品具有质保日期管理时，质保天数不能为空！");
-            AssertUtil.isTrue(items.getQualityDay()>0,"天数不能小于0");
+            AssertUtil.isTrue(items.getQualityDay()>=0,"天数不能小于0");
         }else {
             AssertUtil.isNull(items.getQualityDay(),"商品不具有质保日期管理时，质保天数必须为空！");
         }
