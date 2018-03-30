@@ -277,11 +277,11 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
-            warehouse.setWmsWarehouseCode("");
-            warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
-            warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
-        }
+//        if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode())){
+//            warehouse.setWmsWarehouseCode("");
+////            warehouse.setIsNoticeSuccess(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
+////            warehouse.setIsNoticeWarehouseItems(ZeroToNineEnum.ZERO.getCode());
+//        }
 
         int count = warehouseInfoService.updateByPrimaryKeySelective(warehouse);
 
@@ -357,6 +357,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         warehouse.setChannelCode("TRMALL");
         warehouse.setOwnerName("小泰科技");
         warehouse.setSkuNum(0);
+        warehouse.setOwnerWarehouseState("0");
 
         int count = warehouseInfoService.insert(warehouse);
         if (count == 0) {
