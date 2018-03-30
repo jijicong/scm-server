@@ -809,8 +809,7 @@ public class GoodsBiz implements IGoodsBiz {
     private ScmItemSyncRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
-        if(warehouseInfo.getIsThroughWms() == null || warehouseInfo.getIsThroughWms() == 0 ||
-                StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
+        if(StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
             return null;
         }
 
@@ -839,7 +838,6 @@ public class GoodsBiz implements IGoodsBiz {
         ScmItemSyncRequest request = new ScmItemSyncRequest();
         request.setWarehouseItemList(list1);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        request.setWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         request.setActionType("update");
 
         return request;
