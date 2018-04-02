@@ -42,7 +42,7 @@ public class Items extends BaseDO{
     @Transient
     private String brandName;//供应商名称
     @FormParam("tradeType")
-    @NotEmpty
+    @NotEmpty(message = "贸易类型不能为空")
     @Length(max = 32, message = "贸易类型长度不能超过32个")
     private String tradeType;
     @FormParam("itemNo")
