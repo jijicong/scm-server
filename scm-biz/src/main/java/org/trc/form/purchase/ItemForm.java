@@ -113,6 +113,8 @@ public class ItemForm extends QueryModel{
                 ", brandName='" + brandName + '\'' +
                 ", itemNo='" + itemNo + '\'' +
                 ", barCode='" + barCode + '\'' +
+                ", supplierCode='" + supplierCode + '\'' +
+                ", warehouseInfoId='" + warehouseInfoId + '\'' +
                 '}';
     }
 }
