@@ -2647,6 +2647,7 @@ public class GoodsBiz implements IGoodsBiz {
     @Override
     public void checkBarcodeOnly(String barcode, String skuCode) {
         String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
+        AssertUtil.notEmpty( Arrays.asList(barArray),"未接收到条形码");
         List<String> existedCode = new ArrayList<>();
         List<String> barCodeList = new ArrayList<>();
         List<String> nowBarCode = new ArrayList<>();
@@ -2654,7 +2655,6 @@ public class GoodsBiz implements IGoodsBiz {
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);
-        System.out.println(JSON.toJSONString(allBarCode));
         AssertUtil.notBlank(barcode, "条形码不能为空");
         //新增时校验条形码
         if (StringUtils.isBlank(skuCode)){
