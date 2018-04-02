@@ -562,7 +562,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setItemCode(details.getSkuCode());
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(JingdongInventoryStateEnum.GOOD.getCode());
-            scmEntryOrderItem.setPlanQty(details.getNormalStorageQuantity());
+            scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
             scmEntryOrderItemList.add(scmEntryOrderItem);
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
