@@ -48,6 +48,7 @@ import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.WarehouseCacheEvict;
+import org.trc.util.cache.WarehouseItemCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -315,7 +316,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
 
     @Override
-    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
+    @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void deleteWarehouseItemInfoById(Long id) {
         AssertUtil.notNull(id, "仓库商品信息ID不能为空");
@@ -365,7 +366,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
+    @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo) {
         AssertUtil.notNull(warehouseItemInfo.getId(), "仓库商品信息ID不能为空");
@@ -438,7 +439,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
+    @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveWarehouseItemsSku(String items,Long warehouseInfoId) {
         AssertUtil.notNull(warehouseInfoId,"仓库的主键不能为空");
@@ -802,7 +803,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
+    @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response uploadNoticeStatus(InputStream uploadedInputStream, FormDataContentDisposition fileDetail, String warehouseInfoId) {
         String fileName = fileDetail.getFileName();
@@ -870,7 +871,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     @Override
-    @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
+    @WarehouseItemCacheEvict
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public Response warehouseItemNoticeQimen(String itemIds) {
         AssertUtil.notBlank(itemIds, "同步商品不能为空");
