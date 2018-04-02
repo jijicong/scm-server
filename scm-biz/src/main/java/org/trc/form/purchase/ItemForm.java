@@ -105,16 +105,4 @@ public class ItemForm extends QueryModel{
         this.warehouseInfoId = warehouseInfoId;
     }
 
-    @Override
-    public String toString() {
-        return "ItemForm{" +
-                "skuName='" + skuName + '\'' +
-                ", skuCode='" + skuCode + '\'' +
-                ", brandName='" + brandName + '\'' +
-                ", itemNo='" + itemNo + '\'' +
-                ", barCode='" + barCode + '\'' +
-                ", supplierCode='" + supplierCode + '\'' +
-                ", warehouseInfoId='" + warehouseInfoId + '\'' +
-                '}';
-    }
 }
