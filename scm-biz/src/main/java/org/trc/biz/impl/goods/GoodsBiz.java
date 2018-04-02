@@ -1867,7 +1867,7 @@ public class GoodsBiz implements IGoodsBiz {
             if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
                 for (WarehouseInfo warehouse : warehouseInfoList) {
                     RequestSkuStock skuStock = new RequestSkuStock();
-                    skuStock.setWarehouseName("TTTESTT");
+                    skuStock.setWarehouseName(warehouse.getWarehouseName());
                     for (ScmInventoryQueryResponse inventoryQueryResponse : inventoryQueryResponseList) {
                         if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
                             //判断库存类型,可销售
