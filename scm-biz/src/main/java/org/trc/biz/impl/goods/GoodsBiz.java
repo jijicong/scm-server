@@ -1850,69 +1850,49 @@ public class GoodsBiz implements IGoodsBiz {
             if(null != s.getMarketPrice() && s.getMarketPrice() >= 0){
                 s.setMarketPrice2(CommonUtil.fenToYuan(s.getMarketPrice()));
             }
-            if(StringUtils.isNotBlank(skuCode)){//查询查询模块发起的sku详情查询
-                //sku库存查询
-                Example example = new Example(SkuStock.class);
-                Example.Criteria criteria = example.createCriteria();
-                criteria.andEqualTo("skuCode", skuCode);
-                criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
-                criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-                List<SkuStock> skuStocks = skuStockService.selectByExample(example);
-
-                //sku通知状态
-                Example exampleWarehouseItemInfo = new Example(WarehouseItemInfo.class);
-                Example.Criteria criteriaWarehouseItemInfo = exampleWarehouseItemInfo.createCriteria();
-                criteriaWarehouseItemInfo.andEqualTo("skuCode", skuCode);
-                criteriaWarehouseItemInfo.andEqualTo("noticeStatus", WarehouseItemInfoNoticeStateEnum.NOTICE_SUCCESS.getCode());
-                List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(exampleWarehouseItemInfo);
-                List<Long> warehouseItemInfoIds = new ArrayList<>();
-
-                if (!AssertUtil.collectionIsEmpty(warehouseItemInfoList)){
-                    for (WarehouseItemInfo warehouseItemInfo:warehouseItemInfoList ) {
-                        warehouseItemInfoIds.add(warehouseItemInfo.getWarehouseInfoId());
-                    }
-
-                    List<String> warehouseCodeList = new ArrayList<>();
-                    if(skuStocks.size() > 0){
-                        for (SkuStock skuStock : skuStocks) {
-                            warehouseCodeList.add(skuStock.getWarehouseCode());
-                       /*
-                        Warehouse warehouse = new Warehouse();
-                        warehouse.setCode(skuStock.getWarehouseCode());
-                        warehouse.setIsNoticeSuccess(1);
-                        warehouse = warehouseService.selectOne(warehouse);
-                        AssertUtil.notNull(warehouse, String.format("根据仓库编码[%s]查询仓库信息为空", skuStock.getWarehouseCode()));
-                        skuStock.setWarehouseName(warehouse.getName());*/
-                        }
-                        Example exampleWarehouse = new Example(WarehouseInfo.class);
-                        Example.Criteria criteriaWarehouse = exampleWarehouse.createCriteria();
-                        criteriaWarehouse.andEqualTo("ownerWarehouseState", 1);
-                        criteriaWarehouse.andIn("id", warehouseItemInfoIds);
-//                    criteriaWarehouse.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
-                        List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(exampleWarehouse);
-                        List<SkuStock> skuStockList = new ArrayList<>();
-
-                        if (!AssertUtil.collectionIsEmpty(warehouseList)) {
-                            for (SkuStock skuStock : skuStocks) {
-                                boolean isFlag = false;
-                                for (WarehouseInfo warehouse : warehouseList) {
-                                    if (StringUtils.equals(skuStock.getWarehouseCode(), warehouse.getCode())) {
-                                        skuStock.setWarehouseName(warehouse.getWarehouseName());
-                                        isFlag = true;
-                                    }
-                                }
-                                if (isFlag){
-                                    Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
-                                            (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
-                                    skuStock.setAvailableInventory(availableInventory<0?0:availableInventory);
-                                    skuStockList.add(skuStock);
-                                }
+            //调用接口查询库存
+            List<ScmInventoryQueryResponse> inventoryQueryResponseList = new ArrayList<>();
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+            warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+            if(CollectionUtils.isEmpty(warehouseInfoList)){
+                log.warn("自采SKU没有查询到可用仓库");
+            }
+            List<String> skuCodes =  new ArrayList<>();
+            skuCodes.add(s.getSkuCode());
+            List<RequestSkuStock> skuStockList = new ArrayList<>();
+            //所有库存类型
+            inventoryQueryResponseList= getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList,null);
+            if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
+                for (WarehouseInfo warehouse : warehouseInfoList) {
+                    RequestSkuStock skuStock = new RequestSkuStock();
+                    skuStock.setWarehouseName("TTTESTT");
+                    for (ScmInventoryQueryResponse inventoryQueryResponse : inventoryQueryResponseList) {
+                        if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
+                            //判断库存类型,可销售
+                            if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())){
+                                skuStock.setAvailableInventory(inventoryQueryResponse.getTotalNum()+skuStock.getAvailableInventory());
+                            }
+                            //判断库存类型,仓库锁定
+                            if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())){
+                                skuStock.setWarehouseLockInventory(inventoryQueryResponse.getTotalNum()+skuStock.getWarehouseLockInventory());
+                            }
+                            //判断库存类型,临期锁定
+                            if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.ADVENT_LOCK.getCode())){
+                               skuStock.setAdventLockInventory(inventoryQueryResponse.getTotalNum()+skuStock.getAdventLockInventory());
+                            }
+                            //判断库存类型,盘点锁定
+                            if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.CHECK_LOCK.getCode())){
+                                skuStock.setCheckLockInventory(inventoryQueryResponse.getTotalNum()+skuStock.getCheckLockInventory());
+                            }
+                            //残品库存
+                            if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
+                                skuStock.setDefectiveInventory(inventoryQueryResponse.getTotalNum()+skuStock.getDefectiveInventory());
                             }
                         }
-                        s.setStockList(skuStockList);
-
-                }
-
+                    }
+                    skuStockList.add(skuStock);
                 }
             }
         }
