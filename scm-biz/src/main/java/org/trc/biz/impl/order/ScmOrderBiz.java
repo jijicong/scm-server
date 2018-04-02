@@ -73,6 +73,7 @@ import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -223,6 +224,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private IWarehouseExtService warehouseExtService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1940,10 +1943,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(selfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
             setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
-            //获取并校验业务线相关仓储信息
-            List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
             //获取自采商品仓库库存
-            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = getWarehouseInventory(skuCodes, warehouseInfoList);
+            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes);
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
             //校验自采商品的可用库存
@@ -3676,104 +3677,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return externalItemSkuList;
     }
-
-    /**
-     * 获取可用仓库信息
-     * @return
-     */
-    private List<WarehouseInfo> getWarehouseInfo(){
-        WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
-        AssertUtil.notEmpty(warehouseInfoList, "没有查询到可用仓库");
-        return warehouseInfoList;
-    }
-
-    /**
-     * 获取仓库商品库存
-     * @param skuCodes
-     * @param warehouseInfoList
-     * @return
-     */
-    @Override
-    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList){
-        List<Long> warehouseInfoIds = new ArrayList<>();
-        for(WarehouseInfo warehouseInfo2: warehouseInfoList){
-            warehouseInfoIds.add(warehouseInfo2.getId());
-        }
-        //查询跟仓库绑定过的商品,其中没有绑定过的在后面的拆单时会归到异常订单里面
-        Example example = new Example(WarehouseItemInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIn("warehouseInfoId", warehouseInfoIds);
-        criteria.andIn("skuCode", skuCodes);
-        criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
-        criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-        AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
-        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
-        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();
-        for(WarehouseInfo warehouseInfo: warehouseInfoList){
-            List<WarehouseItemInfo> tmpWarehouseItemInfoList = new ArrayList<>();
-            WarehouseOwernSkuDO warehouseOwernSkuDO = new WarehouseOwernSkuDO();
-            for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
-                if(warehouseItemInfo.getWarehouseInfoId().longValue() == warehouseInfo.getId().longValue()){
-                    tmpWarehouseItemInfoList.add(warehouseItemInfo);
-                }
-            }
-            if(tmpWarehouseItemInfoList.size() > 0){
-                warehouseOwernSkuDO.setWarehouseInfo(warehouseInfo);
-                warehouseOwernSkuDO.setWarehouseItemInfoList(tmpWarehouseItemInfoList);
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
-                    warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
-                }else{//京东仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
-                    warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
-                }
-            }
-        }
-
-        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        if(warehouseOwernSkuDOListQimen.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(), warehouseOwernSkuDOListQimen));
-        }
-        if(warehouseOwernSkuDOListJingdong.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong));
-        }
-        return scmInventoryQueryResponseList;
-    }
-
-    /**
-     * 获取仓库库存
-     * @param warehouseType
-     * @param warehouseOwernSkuDOList
-     * @return
-     */
-    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList){
-        ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
-        request.setWarehouseType(warehouseType);
-        List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
-        for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
-            for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
-                ScmInventoryQueryItem item = new ScmInventoryQueryItem();
-                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
-                item.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
-                item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
-                item.setItemCode(warehouseItemInfo.getSkuCode());
-                item.setItemId(warehouseItemInfo.getWarehouseItemId());
-                scmInventoryQueryItemList.add(item);
-            }
-        }
-        request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
-        AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
-        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), appResult.getAppcode())){
-            scmInventoryQueryResponseList = (List<ScmInventoryQueryResponse>) appResult.getResult();
-        }
-        return scmInventoryQueryResponseList;
-    }
-
 
 
     /**

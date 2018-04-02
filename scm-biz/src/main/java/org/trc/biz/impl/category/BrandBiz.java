@@ -215,7 +215,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.BRAND)
+    //@Cacheable(value = SupplyConstants.Cache.BRAND)
     public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
         Brand brand = new Brand();
         if (!StringUtils.isEmpty(brandForm.getIsValid())) {
@@ -226,8 +226,7 @@ public class BrandBiz implements IBrandBiz {
         Collections.sort(brandList, new Comparator<Brand>() {
             @Override
             public int compare(Brand o1, Brand o2) {
-                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
-                return com.compare(o1.getName(), o2.getName());
+                return PinyinUtil.compare(o1.getName(), o2.getName());
             }
         });
         return brandList;

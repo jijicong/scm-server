@@ -504,7 +504,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setItemType(ItemTypeEnum.NOEMAL.getCode());
             warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
             warehouseItemInfo.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
-            warehouseItemInfo.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
@@ -912,7 +911,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         ScmItemSyncRequest request = new ScmItemSyncRequest();
         request.setWarehouseItemList(itemsSynList);
         request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
-        request.setWarehouseCode(warehouseInfo.getWmsWarehouseCode());
         request.setActionType("add");
         AppResult<List<ScmItemSyncResponse>> appResult = warehouseApiService.itemSync(request);
 

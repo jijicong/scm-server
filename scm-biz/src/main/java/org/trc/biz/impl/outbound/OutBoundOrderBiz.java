@@ -141,7 +141,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         this.updateDeliveryOrderDetail(responseAppResult, request.getOrderCode());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        logger.error("发货单号:{},物流信息获取异常：{}", request.getOrderCode(), responseAppResult.getResult());
+                        logger.error("发货单号:{},物流信息获取异常", request.getOrderCode());
                     }
                 }).start();
             }
@@ -873,7 +873,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             scmOrderCancelRequest.setCancelReason(remark);
             scmOrderCancelRequest.setOrderCode(outboundOrder.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
-            scmOrderCancelRequest.setWarehouseCode(warehouse.getWmsWarehouseCode());
 
 
             //组装请求信息
@@ -887,6 +886,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
                 if(response == null || StringUtils.isEmpty(response.getCurrentStatus())
                         || Integer.parseInt(response.getCurrentStatus()) > 10017){
+                    String msg = "未获取订单详情!";
+                    logger.error(msg);
+                    throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+                }else if(Integer.parseInt(response.getCurrentStatus()) > 10017){
                     String msg = "订单已完成复核流程，无法取消!";
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -964,7 +967,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             scmOrderCancelRequest.setCancelReason(order.getRemark());
             scmOrderCancelRequest.setOrderCode(order.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
-            scmOrderCancelRequest.setWarehouseCode(warehouse.getWmsWarehouseCode());
             requests.add(scmOrderCancelRequest);
         }
 

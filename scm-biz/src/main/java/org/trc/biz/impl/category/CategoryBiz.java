@@ -417,8 +417,7 @@ public class CategoryBiz implements ICategoryBiz {
         Collections.sort(categoryBrandExts, new Comparator<CategoryBrandExt>() {
             @Override
             public int compare(CategoryBrandExt o1, CategoryBrandExt o2) {
-                Comparator<Object> com = Collator.getInstance(java.util.Locale.CHINA);
-                return com.compare(o1.getBrandName(), o2.getBrandName());
+                return PinyinUtil.compare(o1.getBrandName(), o2.getBrandName());
             }
         });
         return categoryBrandExts;
