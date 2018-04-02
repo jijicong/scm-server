@@ -815,7 +815,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //1.组装wms_order_code
         List<String> wmsOrderCodeList = new ArrayList<>();
         for (WarehouseNotice warehouseNotice:noticeList) {
-            wmsOrderCodeList.add(warehouseNotice.getWmsOrderCode());
+            wmsOrderCodeList.add(warehouseNotice.getEntryOrderId());
             ScmEntryOrderDetailRequest entryOrderDetailRequest =  new ScmEntryOrderDetailRequest();
             entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList,SupplyConstants.Symbol.COMMA));
             AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
