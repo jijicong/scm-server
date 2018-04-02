@@ -140,6 +140,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 
     private void setResponseData(ScmWarehouseRequestBase scmWarehouseRequestBase, AppResult appResult){
         Object response = null;
+        if (appResult.getResult() == null) {
+        	return;
+        }
         if(scmWarehouseRequestBase instanceof ScmItemSyncRequest){
             response = JSON.parseArray(appResult.getResult().toString(), ScmItemSyncResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmInventoryQueryRequest){

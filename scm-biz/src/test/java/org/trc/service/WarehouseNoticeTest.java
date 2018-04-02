@@ -5,11 +5,14 @@ import com.alibaba.fastjson.JSON;
 import com.qimen.api.request.EntryorderConfirmRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.trc.biz.impl.warehouseNotice.WarehouseNoticeBiz;
+import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 
 import java.util.HashMap;
 import java.util.List;
@@ -98,4 +101,16 @@ public class WarehouseNoticeTest extends AbstractJUnit4SpringContextTests {
 
         System.out.println(JSON.toJSONString(confirmRequest));
     }
+    
+    @Autowired
+    private IWarehouseNoticeBiz noticeBiz;
+    /**
+     * 定时任务查询满足条件的入库单，更新入库单状态
+     */
+    @Test
+    public void testEntryOrderDetailQuery () {
+    	noticeBiz.updateStock();
+    }
+    
+    
 }
