@@ -12,7 +12,8 @@ import java.lang.annotation.*;
             @CacheEvict(value = SupplyConstants.Cache.GOODS_QUERY, allEntries = true),
             @CacheEvict(value = SupplyConstants.Cache.SUPPLIER, allEntries = true),
             @CacheEvict(value = SupplyConstants.Cache.PURCHASE_ORDER, allEntries = true),
-            @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true)
+            @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE_ITEM, allEntries = true),
+            @CacheEvict(value = SupplyConstants.Cache.WAREHOUSE, allEntries = true)
     }
 )
 @Target({ElementType.METHOD, ElementType.TYPE})
