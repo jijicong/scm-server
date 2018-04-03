@@ -173,7 +173,7 @@ public class GoodsResource {
     @GET
     @Path(SupplyConstants.Goods.CHECK_PROPERTY_STATUS)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkPropetyStatus(@QueryParam("propertyInfo") String propertyInfo) throws Exception {
+    public Response checkPropetyStatus(@QueryParam("propertyInfow") String propertyInfo) throws Exception {
         goodsBiz.checkPropetyStatus(propertyInfo);
         return ResultUtil.createSuccessResult("检查属性启停用状态成功","");
     }
