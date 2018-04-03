@@ -841,6 +841,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
             //校验导入文件信息，并获取信息
             Map<String, String> contentResult = ImportExcel.readExcelContent(uploadedInputStream, SupplyConstants.Symbol.COMMA);
+            if(StringUtils.isEquals("0", contentResult.get("count").toString())){
+                return ResultUtil.createfailureResult(Response.Status.EXPECTATION_FAILED.getStatusCode(), "导入附件不能为空！", "");
+            }
             Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId);
             String count = (String) contentMapResult.get("count");
             int countNum = Integer.parseInt(count);
