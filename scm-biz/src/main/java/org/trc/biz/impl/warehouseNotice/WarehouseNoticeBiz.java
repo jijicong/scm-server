@@ -815,7 +815,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //1.组装wms_order_code
         List<String> wmsOrderCodeList = new ArrayList<>();
         for (WarehouseNotice warehouseNotice:noticeList) {
-            wmsOrderCodeList.add(warehouseNotice.getWmsOrderCode());
+            wmsOrderCodeList.add(warehouseNotice.getEntryOrderId());
             ScmEntryOrderDetailRequest entryOrderDetailRequest =  new ScmEntryOrderDetailRequest();
             entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList,SupplyConstants.Symbol.COMMA));
             AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
@@ -1017,8 +1017,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }
 
         }else {
-            logger.error("库存ID:"+warehouseNoticeDetails.getSkuStockId()+"未获取到锁！/n真实库存新增："+(normalQuantity + defectiveQuantity)
-                    +"/n可用正品库新增："+normalQuantity+"/n残次品库存新增："+defectiveQuantity);
+            logger.error("库存ID:"+warehouseNoticeDetails.getSkuStockId()+"未获取到锁！\n真实库存新增："+(normalQuantity + defectiveQuantity)
+                    +"\n可用正品库新增："+normalQuantity+"\n残次品库存新增："+defectiveQuantity);
         }
     }
 
