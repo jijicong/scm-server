@@ -133,7 +133,7 @@
 
     <select id="selectUserListByUserId2" resultType="org.trc.domain.impower.AclUserAccreditInfo">
         SELECT a.id,a.user_id AS 'userId',a.phone,a.`name`,a.user_type AS 'userType',
-        b.id As 'channelId',b.name AS 'channelName',c.channel_code AS channelCode
+        b.id As 'channelId',b.name AS 'channelName',c.channel_code AS channelCode, b.create_time AS 'createTime'
         FROM acl_user_accredit_info a ,channel b,acl_user_channel_sell c
         <where>
 
