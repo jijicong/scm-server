@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * 
-* @ClassName: ClearanceEnum
+* @ClassName: WarehouseNoticeStatusEnum
 * @Description: 入库通知单状态枚举
 * @author A18ccms a18ccms_gmail_com 
 * @date 2017年4月6日 上午9:16:13 
@@ -40,7 +40,7 @@ public enum WarehouseNoticeStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseNoticeStatusEnum getClearanceEnumByName(String name){
+	public static WarehouseNoticeStatusEnum getWarehouseNoticeStatusEnumByName(String name){
 		for(WarehouseNoticeStatusEnum validEnum : WarehouseNoticeStatusEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
@@ -58,7 +58,7 @@ public enum WarehouseNoticeStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseNoticeStatusEnum getClearanceEnumByCode(String code){
+	public static WarehouseNoticeStatusEnum getWarehouseNoticeStatusEnumByCode(String code){
 		for(WarehouseNoticeStatusEnum validEnum : WarehouseNoticeStatusEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;
