@@ -788,6 +788,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * 3.分线程处理库存，以及入库信息
      */
     @Override
+    @WarehouseNoticeCacheEvict
     public void updateStock() {
         //1. 查询入库通知单，状态为收货异常，待仓库反馈，部分收货的入库单
         // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
@@ -846,6 +847,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             for (WarehouseNoticeDetails warehouseDetail : warehouseNoticeDetailsList) {
                                 //获取当前入库单详情的库存情况,目前只有两种状态
                                 Map<String,Long> stockMap=  delStock(scmEntryOrderDetailResponseItemList, warehouseDetail);
+                                //判断入库为0的时候 直接跳过
+                                if (stockMap.get("defectiveQ").longValue() ==0L&&stockMap.get("normalQ").longValue()==0L){
+                                    continue;
+                                }
                                 //判断状态
                                 judgeWarehouseNoticeDetailState(stockMap,warehouseDetail);
                                 //更新库存
@@ -879,20 +884,23 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         }
 
                         //判断通知单状态,如果有异常记录备注
-                        if (!AssertUtil.collectionIsEmpty(exceptionSku)){
+                        //状态判断有多种情况
+                        //异常状态
+                        if (!AssertUtil.collectionIsEmpty(exceptionSku)||!AssertUtil.collectionIsEmpty(exceptionSkuCount)){
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-                            warehouseNotice.setExceptionCause("SKU[" + StringUtils.join(errorSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库。");
-                        }
-                        if (!AssertUtil.collectionIsEmpty(exceptionSkuCount)){
-                            warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-                            warehouseNotice.setExceptionCause("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
-                        }
-                        //部分收货
-                        if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)){
+                            List<String> exceptionCauseList = new ArrayList<>();
+                            if (!AssertUtil.collectionIsEmpty(exceptionSku)){
+                                exceptionCauseList.add("SKU[" + StringUtils.join(errorSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库。");
+                            }
+                            if (!AssertUtil.collectionIsEmpty(exceptionSkuCount)){
+                                exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
+                            }
+                            warehouseNotice.setExceptionCause(StringUtils.join(exceptionCauseList,SupplyConstants.Symbol.COMMA));
+                        }else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)){
+                            //部分收货
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
-                        }
-                        //全部收货
-                        if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)){
+                        }else if (!AssertUtil.collectionIsEmpty(allNoticeDetailList)){
+                            //全部收货
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
                         }
                         //更新入库通知单
@@ -907,7 +915,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     }
                 }
             }
-        }
+         }
     }
 
     private Map<String,Long> delStock(List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList, WarehouseNoticeDetails warehouseDetail) {
@@ -919,7 +927,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         Long normalQuantity = 0L;
         for (ScmEntryOrderDetailResponseItem entryOrderDetailOrder : scmEntryOrderDetailResponseItemList) {
 
-            if (StringUtils.equals(warehouseDetail.getSkuCode(),entryOrderDetailOrder.getItemCode())){
+            if (StringUtils.equals(warehouseDetail.getItemId(),entryOrderDetailOrder.getItemId())){
                 //计算反馈库存
                 if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
                     normalQuantity=warehouseDetail.getActualStorageQuantity()==null?0:warehouseDetail.getActualStorageQuantity()+entryOrderDetailOrder.getActualQty()+normalQuantity;

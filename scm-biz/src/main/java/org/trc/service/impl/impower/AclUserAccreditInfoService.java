@@ -11,10 +11,7 @@ import org.trc.service.impl.BaseService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AssertUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -113,6 +110,15 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
         }
         for (String channelCode : userMap.keySet()) {
             dedupAccreditInfoList.add(userMap.get(channelCode));
+        }
+        if (!AssertUtil.collectionIsEmpty(dedupAccreditInfoList)){
+            Collections.sort(dedupAccreditInfoList, new Comparator<AclUserAccreditInfo>() {
+                @Override
+                public int compare(AclUserAccreditInfo o1, AclUserAccreditInfo o2) {
+                    Long i = o1.getCreateTime().getTime()-o2.getCreateTime().getTime();
+                    return Integer.parseInt(String.valueOf(i));
+                }
+            });
         }
         return dedupAccreditInfoList;
     }
