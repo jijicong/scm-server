@@ -505,6 +505,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setItemType(ItemTypeEnum.NOEMAL.getCode());
             warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
             warehouseItemInfo.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
+            warehouseItemInfo.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
             list.add(warehouseItemInfo);
         }
         warehouseItemInfoService.insertList(list);
