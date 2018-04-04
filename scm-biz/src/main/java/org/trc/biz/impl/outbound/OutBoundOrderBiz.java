@@ -418,7 +418,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String warehouseCode = response.getWarehouseCode();
         //遍历所有商品详情
         for(ScmDeliveryOrderDetailResponseItem item : items){
-            Long sentNum = item.getPlanQty();
+            Long sentNum = item.getActualQty();
             //获取发货详情
             outboundDetail = new OutboundDetail();
             outboundDetail.setOutboundOrderCode(outboundOrderCode);
