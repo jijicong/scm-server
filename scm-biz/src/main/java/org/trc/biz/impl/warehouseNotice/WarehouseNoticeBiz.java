@@ -122,7 +122,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -672,7 +672,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public WarehouseNotice findfindWarehouseNoticeById(Long id)
     {
 
@@ -817,7 +817,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
             AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
             List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseList = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
-
             //处理库存信息
             if (!AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseList)) {
                 for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseList) {
@@ -861,13 +860,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                         exceptionSku = new HashSet<>();
                                         exceptionSku.add(warehouseDetail.getSkuCode());
                                     }
-
                                     //2.正品入库数量大于采购数量
                                     if (StringUtils.equals(warehouseDetail.getInstockException(), "正品入库数量大于采购数量.")) {
                                         exceptionSkuCount = new HashSet<>();
                                         exceptionSkuCount.add(warehouseDetail.getSkuCode());
                                     }
-
                                 }
                                 if (StringUtils.equals(String.valueOf(warehouseDetail.getStatus()), WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode())) {
                                     //通知单详情部分收货
@@ -893,9 +890,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             }
                             if (!AssertUtil.collectionIsEmpty(exceptionSkuCount)) {
                                 exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
+
                             }
-
-
                             warehouseNotice.setExceptionCause(StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
                         } else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)) {
                             //部分收货
@@ -914,8 +910,15 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                         //更新完成 记录日志
                         if (StringUtils.equals(warehouseNotice.getStatus(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
-
-
+                                //获取异常日志
+                            try {
+                                logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
+                                        "warehouse",
+                                        WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName()
+                                        , getExceptionLog(warehouseNotice,warehouseNoticeDetailsList), null);
+                            } catch (Exception e) {
+                                logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e.getMessage());
+                            }
                         } else {
                             try {
                                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
@@ -932,6 +935,23 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
     }
 
+    private String getExceptionLog(WarehouseNotice warehouseNotice, List<WarehouseNoticeDetails> warehouseNoticeDetailsList) {
+        List<String> errorList = new ArrayList<>();
+        for (WarehouseNoticeDetails warehouseNoticeDetail:warehouseNoticeDetailsList) {
+            if (StringUtils.equals(String.valueOf(warehouseNoticeDetail.getStatus()),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
+                if (warehouseNoticeDetail.getDefectiveStorageQuantity()>0){
+                    String log = "商品｛"+warehouseNoticeDetail.getSkuCode()+"｝残品入库数量"+(warehouseNoticeDetail.getDefectiveStorageQuantity());
+                    errorList.add(log);
+                }
+                if (warehouseNoticeDetail.getActualStorageQuantity()>warehouseNoticeDetail.getPurchasingQuantity()){
+                    String logError = "商品｛"+warehouseNoticeDetail.getSkuCode()+"｝的实际入库数量-采购数量="+(warehouseNoticeDetail.getActualStorageQuantity()-warehouseNoticeDetail.getPurchasingQuantity());
+                    errorList.add(logError);
+                }
+            }
+        }
+        return StringUtils.join(errorList,"\n");
+    }
+
     private Map<String,Long> delStock(List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList, WarehouseNoticeDetails warehouseDetail) {
         //用Map存库存信息
         Map<String,Long> stockMap = new HashMap<>();
@@ -944,7 +964,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             if (StringUtils.equals(warehouseDetail.getItemId(),entryOrderDetailOrder.getItemId())){
                 //计算反馈库存
                 if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
-                    normalQuantity = (warehouseDetail.getActualStorageQuantity() == null ? 0 : warehouseDetail.getActualStorageQuantity()) + (entryOrderDetailOrder.getActualQty()) + (normalQuantity);
+                    normalQuantity = (warehouseDetail.getNormalStorageQuantity() == null ? 0 : warehouseDetail.getNormalStorageQuantity()) + (entryOrderDetailOrder.getActualQty()) + (normalQuantity);
                 }else if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
                     defectiveQuantity =warehouseDetail.getDefectiveStorageQuantity()==null?0:warehouseDetail.getDefectiveStorageQuantity()+entryOrderDetailOrder.getActualQty()+defectiveQuantity;
                 }
