@@ -7,6 +7,10 @@ public class SkuWarehouseDO {
      */
     private String skuCode;
     /**
+     * 渠道编码
+     */
+    private String channelCode;
+    /**
      * 仓库编码
      */
     private String warehouseCode;
@@ -15,6 +19,13 @@ public class SkuWarehouseDO {
      */
     private Long itemNum;
 
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
 
     public String getSkuCode() {
         return skuCode;

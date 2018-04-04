@@ -2021,7 +2021,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         createOrderLog(warehouseOrderList);
         if(!CollectionUtils.isEmpty(skuWarehouseMap)){
             //更新订单商品占用库存
-            frozenOrderInventory(platformOrder.getChannelCode(), skuWarehouseMap);
+            frozenOrderInventory(skuWarehouseMap);
         }
         /**
          * 自采商品存在异常订单的时候，这里需要更新店铺状态信息
@@ -3767,6 +3767,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                 skuWarehouseDO.setSkuCode(maxSkuStock.getSkuCode());
                 skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
+                skuWarehouseDO.setChannelCode(maxSkuStock.getChannelCode());
                 skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
                 skuWarehouseDOList.add(skuWarehouseDO);
                 warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
@@ -4923,39 +4924,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
-
-
-    /*private void frozenOrderInventory(Map<String, OutboundForm> outboundMap) throws Exception {
-        List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
-        Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
-        for(Map.Entry<String, OutboundForm> entry: entries){
-            OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
-            List<OutboundDetail> outboundDetailList = entry.getValue().getOutboundDetailList();
-            for(OutboundDetail detail : outboundDetailList){
-                RequsetUpdateStock requsetUpdateStock = new RequsetUpdateStock();
-                Map<String, String> stockType = new HashMap<String, String>();
-                stockType.put("frozen_inventory", String.valueOf((detail.getShouldSentItemNum())));
-                requsetUpdateStock.setStockType(stockType);
-                requsetUpdateStock.setChannelCode(outboundOrder.getChannelCode());
-                requsetUpdateStock.setWarehouseCode(outboundOrder.getWarehouseCode());
-                requsetUpdateStock.setSkuCode(detail.getSkuCode());
-                updateStockList.add(requsetUpdateStock);
-            }
-        }
-        if(updateStockList.size() > 0){
-            //更新库存
-            skuStockService.updateSkuStock(updateStockList);
-        }
-
-    }*/
-
     /**
      * 更新订单商品占用库存
-     * @param channalCode
      * @param skuWarehouseMap
      * @throws Exception
      */
-    private void frozenOrderInventory(String channalCode, Map<String, List<SkuWarehouseDO>> skuWarehouseMap) throws Exception {
+    private void frozenOrderInventory(Map<String, List<SkuWarehouseDO>> skuWarehouseMap) throws Exception {
         List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
         Set<Map.Entry<String, List<SkuWarehouseDO>>> entries = skuWarehouseMap.entrySet();
         for(Map.Entry<String, List<SkuWarehouseDO>> entry: entries){
@@ -4965,7 +4939,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 Map<String, String> stockType = new HashMap<String, String>();
                 stockType.put("frozen_inventory", skuWarehouseDO.getItemNum().toString());
                 requsetUpdateStock.setStockType(stockType);
-                requsetUpdateStock.setChannelCode(channalCode);
+                requsetUpdateStock.setChannelCode(skuWarehouseDO.getChannelCode());
                 requsetUpdateStock.setWarehouseCode(skuWarehouseDO.getWarehouseCode());
                 requsetUpdateStock.setSkuCode(skuWarehouseDO.getSkuCode());
                 updateStockList.add(requsetUpdateStock);
