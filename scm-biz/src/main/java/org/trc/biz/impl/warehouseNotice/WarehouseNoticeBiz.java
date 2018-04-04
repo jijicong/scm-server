@@ -122,7 +122,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -672,7 +672,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public WarehouseNotice findfindWarehouseNoticeById(Long id)
     {
 
