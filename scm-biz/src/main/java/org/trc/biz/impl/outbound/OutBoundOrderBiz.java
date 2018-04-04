@@ -141,7 +141,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         this.updateDeliveryOrderDetail(responseAppResult, request.getOrderCode());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        logger.error("发货单号:{},物流信息获取异常", request.getOrderCode());
+                        logger.error("发货单号:{},物流信息获取异常{}", request.getOrderCode(),e.getMessage());
                     }
                 }).start();
             }
@@ -153,9 +153,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Override
     public void updateOutboundDetail(){
         //获取所有为等待仓库发货发货单信息
-        OutboundOrder outboundOrderTemp = new OutboundOrder();
-        outboundOrderTemp.setStatus(OutboundOrderStatusEnum.WAITING.getCode());
-        List<OutboundOrder> outboundOrders = outBoundOrderService.select(outboundOrderTemp);
+        Example example = new Example(OutboundOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        List<String> list = new ArrayList<>();
+        list.add(OutboundOrderStatusEnum.WAITING.getCode());
+        list.add(OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode());
+        criteria.andIn("status", list);
+        List<OutboundOrder> outboundOrders = outBoundOrderService.selectByExample(example);
 
         //组装信息
         List<ScmDeliveryOrderDetailRequest> requests = new ArrayList<>();
@@ -185,13 +189,18 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Cacheable(value = SupplyConstants.Cache.OUTBOUND_ORDER)
     public void updateDeliveryOrderDetail(AppResult<ScmDeliveryOrderDetailResponse> responseAppResult,
                                            String outboundOrderCode) throws Exception{
-        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), responseAppResult.getAppcode())){
+        if(StringUtils.equals("200", responseAppResult.getAppcode())){
             ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
 
             //获取发货单
             OutboundOrder outboundOrder = new OutboundOrder();
             outboundOrder.setOutboundOrderCode(outboundOrderCode);
             outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+
+            if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
+                logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
+                return;
+            }
 
             //更新发货单信息
             List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(response);
