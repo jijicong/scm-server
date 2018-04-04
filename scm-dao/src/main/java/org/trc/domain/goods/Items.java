@@ -70,6 +70,7 @@ public class Items extends BaseDO{
     private String isQuality;
 
     @FormParam("qualityDay")
+    @Length(max = 16,message = "天数长度不能超过16")
     private Long qualityDay;
 
     /**
