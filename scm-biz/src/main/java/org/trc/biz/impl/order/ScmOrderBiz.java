@@ -1613,11 +1613,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
             criteria3.andIn("outboundOrderCode", outboundOrderCodeSet);
             List<OutboundDetail> outboundDetailList = outboundDetailService.selectByExample(example3);
             if (!AssertUtil.collectionIsEmpty(outboundDetailList)) {
+                Map<String, List<OutboundDetail>> outboundDetailMap = new HashMap<>();
                 Set<Long> outboundDetailIds = new HashSet<>();
-                Map<String, OutboundDetail> outboundDetailMap = new HashMap<>();
-                for (OutboundDetail outboundDetail : outboundDetailList) {
-                    outboundDetailIds.add(outboundDetail.getId());
-                    outboundDetailMap.put(outboundDetail.getOutboundOrderCode(), outboundDetail);
+                for(String outboundOrderCode: outboundOrderCodeSet){
+                    List<OutboundDetail> outboundDetails = new ArrayList<>();
+                    for (OutboundDetail outboundDetail : outboundDetailList) {
+                        if(StringUtils.equals(outboundOrderCode, outboundDetail.getOutboundOrderCode())){
+                            outboundDetails.add(outboundDetail);
+                        }
+                        outboundDetailIds.add(outboundDetail.getId());
+                    }
+                    outboundDetailMap.put(outboundOrderCode, outboundDetails);
                 }
                 //查询发货通知单物流信息
                 Example example4 = new Example(OutboundDetailLogistics.class);
@@ -1641,13 +1647,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             //实发商品数量
                             OutboundOrder outboundOrder = outboundOrderMap.get(orderItem.getWarehouseOrderCode());
                             if (null != outboundOrder && null != outboundOrder.getOutboundOrderCode()) {
-                                OutboundDetail outboundDetail = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
-                                if (null != outboundDetail && null != outboundDetail.getRealSentItemNum()) {
-                                    orderItem.setDeliverNum(Integer.parseInt(String.valueOf(outboundDetail.getRealSentItemNum())));
+                                List<OutboundDetail> outboundDetails = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
+                                OutboundDetail targetOutboundDetail = null;
+                                if(!CollectionUtils.isEmpty(outboundDetails)){
+                                    for(OutboundDetail detail: outboundDetails){
+                                        if(StringUtils.equals(orderItem.getSkuCode(), detail.getSkuCode()) && null != detail.getRealSentItemNum()){
+                                            orderItem.setDeliverNum(Integer.parseInt(String.valueOf(detail.getRealSentItemNum())));
+                                            targetOutboundDetail = detail;
+                                            break;
+                                        }
+                                    }
                                 }
-
                                 //物流信息
-                                List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(outboundDetail.getId());
+                                List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(targetOutboundDetail.getId());
                                 //物流详细
                                 List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
                                 if (!AssertUtil.collectionIsEmpty(logisticsList)) {
