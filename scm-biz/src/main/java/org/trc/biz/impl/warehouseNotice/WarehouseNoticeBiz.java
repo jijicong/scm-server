@@ -122,7 +122,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -672,7 +672,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public WarehouseNotice findfindWarehouseNoticeById(Long id)
     {
 
@@ -794,7 +794,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
         stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
-        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047931571");
+//        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047931571");
         List<WarehouseNotice> warehouseNoticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
         if (!AssertUtil.collectionIsEmpty(warehouseNoticeList)){
             //接口支持一次查询十个单号查询，需要分割符合条件的入库单
