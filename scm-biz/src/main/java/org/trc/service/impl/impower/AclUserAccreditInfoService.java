@@ -116,7 +116,13 @@ public class AclUserAccreditInfoService extends BaseService<AclUserAccreditInfo,
                 @Override
                 public int compare(AclUserAccreditInfo o1, AclUserAccreditInfo o2) {
                     Long i = o1.getCreateTime().getTime()-o2.getCreateTime().getTime();
-                    return Integer.parseInt(String.valueOf(i));
+                    if (i<0L){
+                        return -1;
+                    }else if (i==0L){
+                        return 0;
+                    }else {
+                        return 1;
+                    }
                 }
             });
         }
