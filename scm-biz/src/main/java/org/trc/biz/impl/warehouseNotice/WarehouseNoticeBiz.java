@@ -122,7 +122,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -672,7 +672,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public WarehouseNotice findfindWarehouseNoticeById(Long id)
     {
 
@@ -716,7 +716,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public List<WarehouseNoticeDetails> warehouseNoticeDetailList(Long warehouseNoticeId) {
 
         AssertUtil.notNull(warehouseNoticeId, "入库通知的id为空");
@@ -794,7 +794,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
         stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
-//        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047931571");
+//        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047973168");
         List<WarehouseNotice> warehouseNoticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
         if (!AssertUtil.collectionIsEmpty(warehouseNoticeList)){
             //接口支持一次查询十个单号查询，需要分割符合条件的入库单
@@ -813,10 +813,19 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         List<String> wmsOrderCodeList = new ArrayList<>();
         for (WarehouseNotice warehouseNotice : noticeList) {
             wmsOrderCodeList.add(warehouseNotice.getEntryOrderId());
-            ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
-            entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
-            AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
-            List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseList = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
+        }
+        ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
+        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
+        entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
+        List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseListRequest = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
+        for (WarehouseNotice warehouseNotice : noticeList) {
+            //获取当前入库单对应的入库查询结果
+            List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseList = new ArrayList<>();
+            for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseListRequest) {
+                if (StringUtils.equals(entryOrderDetail.getEntryOrderCode(),warehouseNotice.getWarehouseNoticeCode())){
+                    scmEntryOrderDetailResponseList.add(entryOrderDetail);
+                }
+            }
             //处理库存信息
             if (!AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseList)) {
                 for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseList) {
