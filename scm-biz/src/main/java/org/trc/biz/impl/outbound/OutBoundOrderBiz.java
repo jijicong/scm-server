@@ -894,9 +894,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             AppResult<ScmDeliveryOrderDetailResponse>  result = warehouseApiService.deliveryOrderDetail(request);
             if(StringUtils.equals(result.getAppcode(), SUCCESS)){
                 ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
-                if(response == null || StringUtils.isEmpty(response.getCurrentStatus())
-                        || Integer.parseInt(response.getCurrentStatus()) > 10017){
-                    String msg = "未获取订单详情!";
+                if(response == null || StringUtils.isEmpty(response.getCurrentStatus())){
+                    String msg = "发货通知单状态查询为空，无法取消!";
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }else if(Integer.parseInt(response.getCurrentStatus()) > 10017){
