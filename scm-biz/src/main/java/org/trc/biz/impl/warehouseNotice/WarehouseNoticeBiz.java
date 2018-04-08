@@ -122,7 +122,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @return
      */
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
@@ -617,7 +617,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             			Map<String, String> map = new HashMap<>();
             			RequsetUpdateStock stock = new RequsetUpdateStock();
             			map.put("air_inventory", String.valueOf(detail.getPurchasingQuantity()));
-            			stock.setChannelCode(channelCode);
+            			//stock.setChannelCode(channelCode);
+            			stock.setChannelCode("TRMALL");
             			stock.setSkuCode(detail.getSkuCode());
             			stock.setWarehouseCode(warehouseCode);
             			stock.setStockType(map);
@@ -672,7 +673,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public WarehouseNotice findfindWarehouseNoticeById(Long id)
     {
 
@@ -716,7 +717,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     }
 
     @Override
-//    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
+    @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
     public List<WarehouseNoticeDetails> warehouseNoticeDetailList(Long warehouseNoticeId) {
 
         AssertUtil.notNull(warehouseNoticeId, "入库通知的id为空");
@@ -870,7 +871,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                         exceptionSku.add(warehouseDetail.getSkuCode());
                                     }
                                     //2.正品入库数量大于采购数量
-                                    if (StringUtils.equals(warehouseDetail.getInstockException(), "正品入库数量大于采购数量.")) {
+                                    if (StringUtils.equals(warehouseDetail.getInstockException(), "入库数量大于采购数量.")) {
                                         exceptionSkuCount = new HashSet<>();
                                         exceptionSkuCount.add(warehouseDetail.getSkuCode());
                                     }
@@ -892,16 +893,16 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         //状态判断有多种情况
                         //异常状态
                         if (!AssertUtil.collectionIsEmpty(exceptionSku) || !AssertUtil.collectionIsEmpty(exceptionSkuCount)) {
-                            warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                             List<String> exceptionCauseList = new ArrayList<>();
                             if (!AssertUtil.collectionIsEmpty(exceptionSku)) {
-                                exceptionCauseList.add("SKU[" + StringUtils.join(errorSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库。");
+                                exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSku, SupplyConstants.Symbol.COMMA) + "]存在残品入库。");
                             }
                             if (!AssertUtil.collectionIsEmpty(exceptionSkuCount)) {
                                 exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
 
                             }
-                            warehouseNotice.setExceptionCause(StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
+                            warehouseNotice.setExceptionCause(((warehouseNotice.getExceptionCause())==null?"":(warehouseNotice.getExceptionCause()+","))+StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
+                            warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                         } else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)) {
                             //部分收货
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
