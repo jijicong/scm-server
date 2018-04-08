@@ -617,7 +617,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             			Map<String, String> map = new HashMap<>();
             			RequsetUpdateStock stock = new RequsetUpdateStock();
             			map.put("air_inventory", String.valueOf(detail.getPurchasingQuantity()));
-            			stock.setChannelCode(channelCode);
+            			//stock.setChannelCode(channelCode);
+            			stock.setChannelCode("TRMALL");
             			stock.setSkuCode(detail.getSkuCode());
             			stock.setWarehouseCode(warehouseCode);
             			stock.setStockType(map);
