@@ -145,6 +145,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     }
                 }).start();
             }
+
         }catch(Exception e){
             logger.error("获取商品详情失败", e);
         }
@@ -203,7 +204,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             }
 
             //更新发货单信息
-            List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(response);
+            List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(response, outboundOrder.getWarehouseCode());
 
             //更新发货单状态
             this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
@@ -407,7 +408,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     //更新发货单
-    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmDeliveryOrderDetailResponse response) throws Exception{
+    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmDeliveryOrderDetailResponse response, String warehouseCode) throws Exception{
         OutboundDetail outboundDetail = null;
         OutboundDetailLogistics outboundDetailLogistics = null;
         List<OutboundDetailLogistics> outboundDetailLogisticsList = null;
@@ -424,7 +425,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //操作时间
         Date operateTime = response.getOperateTime();
         //仓库编码
-        String warehouseCode = response.getWarehouseCode();
+//        String warehouseCode = response.getWarehouseCode();
         //遍历所有商品详情
         for(ScmDeliveryOrderDetailResponseItem item : items){
             Long sentNum = item.getActualQty();
@@ -893,9 +894,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             AppResult<ScmDeliveryOrderDetailResponse>  result = warehouseApiService.deliveryOrderDetail(request);
             if(StringUtils.equals(result.getAppcode(), SUCCESS)){
                 ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
-                if(response == null || StringUtils.isEmpty(response.getCurrentStatus())
-                        || Integer.parseInt(response.getCurrentStatus()) > 10017){
-                    String msg = "未获取订单详情!";
+                if(response == null || StringUtils.isEmpty(response.getCurrentStatus())){
+                    String msg = "发货通知单状态查询为空，无法取消!";
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }else if(Integer.parseInt(response.getCurrentStatus()) > 10017){
