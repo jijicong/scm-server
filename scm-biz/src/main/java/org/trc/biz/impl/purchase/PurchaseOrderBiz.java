@@ -415,7 +415,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(warehouseList==null || warehouseList.size() < 1){
             String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“启用”状态的仓库！";
             LOGGER.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            return ResultUtil.createSuccessResult(msg, "");
         }
 
         //校验仓库是否已通知
@@ -424,7 +424,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         if(warehouseInfoList == null || warehouseInfoList.size() < 1){
             String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“货主仓库状态”为“通知成功”的仓库！";
             LOGGER.error(msg);
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            return ResultUtil.createSuccessResult(msg, "");
         }
         return ResultUtil.createSuccessResult("根据业务线查询对应的仓库", warehouseInfoList);
     }
