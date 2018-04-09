@@ -66,6 +66,7 @@ import tk.mybatis.mapper.util.StringUtil;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -108,7 +109,8 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String EXTERNAL_QINNIU_PATH = "external/";
     //京东原图路径
     public static final String JING_DONG_PIC_N_12 = "n12/";
-
+    //逗号分隔的正则
+    private static final String COMMA_SPLIT = "[^,]*?";
 
     @Autowired
     private IItemsService itemsService;
@@ -2691,6 +2693,12 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     public void checkBarcodeOnly(String barcode, String skuCode) {
+        //逗号分隔的正则
+        if (Pattern.matches(COMMA_SPLIT, barcode)) {
+            String msg = "条形码格式异常" ;
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
         String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
         AssertUtil.notEmpty( Arrays.asList(barArray),"未接收到条形码");
         List<String> existedCode = new ArrayList<>();
