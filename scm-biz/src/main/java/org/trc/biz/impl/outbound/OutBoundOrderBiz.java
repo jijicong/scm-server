@@ -1015,15 +1015,23 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 outboundOrderTemp.setOutboundOrderCode(outboundOrderCode);
                 OutboundOrder outboundOrder = outBoundOrderService.selectOne(outboundOrderTemp);
 
-                this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
-                this.updateOrderCancelInfo(outboundOrder, outboundOrder.getRemark(),false);
+                ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+                String flag = response.getFlag();
+                if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){
+                    this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
+                    this.updateOrderCancelInfo(outboundOrder, outboundOrder.getRemark(),false);
 
-                //更新库存
-                skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
-                        outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
+                    //更新库存
+                    skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
+                            outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
-                //更新订单信息
-                this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+                    //更新订单信息
+                    this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+                }else if(StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){
+                    outboundOrder.setStatus(OutboundOrderStatusEnum.WAITING.getCode());
+                    outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
+                    outBoundOrderService.updateByPrimaryKey(outboundOrder);
+                }
             }
         }catch(Exception e){
             e.printStackTrace();
