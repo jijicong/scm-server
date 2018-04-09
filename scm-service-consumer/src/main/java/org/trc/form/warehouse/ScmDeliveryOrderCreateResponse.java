@@ -20,6 +20,11 @@ public class ScmDeliveryOrderCreateResponse {
      */
     private String deliveryOrderCode;
 
+    /**
+     * 仓库出库单号
+     */
+    private String wmsOrderCode;
+
     public String getCode() {
         return code;
     }
@@ -42,5 +47,13 @@ public class ScmDeliveryOrderCreateResponse {
 
     public void setDeliveryOrderCode(String deliveryOrderCode) {
         this.deliveryOrderCode = deliveryOrderCode;
+    }
+
+    public String getWmsOrderCode() {
+        return wmsOrderCode;
+    }
+
+    public void setWmsOrderCode(String wmsOrderCode) {
+        this.wmsOrderCode = wmsOrderCode;
     }
 }
