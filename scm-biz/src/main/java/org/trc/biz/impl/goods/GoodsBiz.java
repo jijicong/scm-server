@@ -2693,11 +2693,13 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     public void checkBarcodeOnly(String barcode, String skuCode) {
-        //逗号分隔的正则
-        if (Pattern.matches(COMMA_SPLIT, barcode)) {
-            String msg = "条形码格式异常" ;
-            log.error(msg);
-            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        if (barcode.indexOf(SupplyConstants.Symbol.COMMA)!=-1){
+            //逗号分隔的正则
+            if (Pattern.matches(COMMA_SPLIT, barcode)) {
+                String msg = "条形码格式异常" ;
+                log.error(msg);
+                throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+            }
         }
         String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
         AssertUtil.notEmpty( Arrays.asList(barArray),"未接收到条形码");
@@ -3176,7 +3178,7 @@ public class GoodsBiz implements IGoodsBiz {
         request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
         AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), appResult.getAppcode())){
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())){
             scmInventoryQueryResponseList = (List<ScmInventoryQueryResponse>) appResult.getResult();
         }
         return scmInventoryQueryResponseList;

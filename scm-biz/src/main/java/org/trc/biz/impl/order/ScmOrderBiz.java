@@ -5080,7 +5080,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(failureOutbound.size() > 0){
             for(ScmDeliveryOrderCreateResponse response: failureOutbound){
-                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, response.getDeliveryOrderCode(), response.getMessage());
+                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
             }
         }
         Example example = new Example(WarehouseInfo.class);
@@ -5131,13 +5131,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param outboundOrderCode
      */
 
-    private void updateOutboundOrderAfterCreate(OutboundOrderStatusEnum outboundOrderStatusEnum, String outboundOrderCode, String message){
+    private void updateOutboundOrderAfterCreate(OutboundOrderStatusEnum outboundOrderStatusEnum, String outboundOrderCode, String wmsOrderCode, String message){
         Date currentTime = Calendar.getInstance().getTime();
         //更新发货通知单状态
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("outboundOrderCode", outboundOrderCode);
         OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setWmsOrderCode(wmsOrderCode);
         outboundOrder.setStatus(outboundOrderStatusEnum.getCode());
         outboundOrder.setMessage(message);
         outboundOrder.setUpdateTime(currentTime);
