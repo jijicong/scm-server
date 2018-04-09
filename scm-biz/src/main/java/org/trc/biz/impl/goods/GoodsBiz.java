@@ -42,9 +42,6 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.order.WarehouseOwernSkuDO;
 import org.trc.form.supplier.SupplierForm;
-import org.trc.form.warehouse.ScmItemSyncRequest;
-import org.trc.form.warehouse.ScmItemSyncResponse;
-import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
@@ -899,6 +896,34 @@ public class GoodsBiz implements IGoodsBiz {
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         if(skuArray.size() == 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
+        }
+        //当前需要报存sku重复校验
+        List<SkuGridInfo> skuGridInfoList = JSON.parseArray(skus.getSkusInfo(),SkuGridInfo.class);
+        //啟用的sku信息
+        List<SkuGridInfo> skuValidInfoList = new ArrayList<>();
+        for (SkuGridInfo s:skuGridInfoList ) {
+            if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
+                skuValidInfoList.add(s);
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(skuValidInfoList)){
+            Collections.sort(skuValidInfoList, new Comparator<SkuGridInfo>() {
+                @Override
+                public int compare(SkuGridInfo o1, SkuGridInfo o2) {
+                    String barCodeO1[] = StringUtils.split(o1.getBarCode(), SupplyConstants.Symbol.COMMA);
+                    String barCodeO2[] = StringUtils.split(o2.getBarCode(), SupplyConstants.Symbol.COMMA);
+                    boolean isFlag = false;
+                    for (String barO1: barCodeO1) {
+                        for (String barO2:barCodeO2) {
+                            if (barO1.equals(barO2)){
+                                isFlag =true;
+                            }
+                        }
+                    }
+                    AssertUtil.isTrue(!isFlag,"存在相同的条形码,请检查条形码!");
+                    return 0;
+                }
+            });
         }
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;

@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.util.List;
@@ -70,7 +71,6 @@ public class Items extends BaseDO{
     private String isQuality;
 
     @FormParam("qualityDay")
-    @Length(max = 16,message = "天数长度不能超过16")
     private Long qualityDay;
 
     /**
