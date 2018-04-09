@@ -3178,7 +3178,7 @@ public class GoodsBiz implements IGoodsBiz {
         request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
         AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        if(StringUtils.equals(SuccessFailureEnum.SUCCESS.getCode(), appResult.getAppcode())){
+        if(StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())){
             scmInventoryQueryResponseList = (List<ScmInventoryQueryResponse>) appResult.getResult();
         }
         return scmInventoryQueryResponseList;
