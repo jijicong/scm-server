@@ -5090,7 +5090,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(failureOutbound.size() > 0){
             for(ScmDeliveryOrderCreateResponse response: failureOutbound){
-                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
+                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, response.getDeliveryOrderCode(), null, response.getMessage());
+            }
+        }
+        if(successOutbound.size() > 0){
+            for(ScmDeliveryOrderCreateResponse response: successOutbound){
+                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.WAITING, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
             }
         }
         Example example = new Example(WarehouseInfo.class);
