@@ -42,9 +42,6 @@ import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.order.WarehouseOwernSkuDO;
 import org.trc.form.supplier.SupplierForm;
-import org.trc.form.warehouse.ScmItemSyncRequest;
-import org.trc.form.warehouse.ScmItemSyncResponse;
-import org.trc.form.warehouse.ScmWarehouseItem;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
@@ -69,6 +66,7 @@ import tk.mybatis.mapper.util.StringUtil;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -111,7 +109,8 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String EXTERNAL_QINNIU_PATH = "external/";
     //京东原图路径
     public static final String JING_DONG_PIC_N_12 = "n12/";
-
+    //逗号分隔的正则
+    private static final String COMMA_SPLIT = "[^,]*?";
 
     @Autowired
     private IItemsService itemsService;
@@ -308,16 +307,38 @@ public class GoodsBiz implements IGoodsBiz {
                 }
             }
         }
-        //查询SKU相关库存信息
-        Example example4 = new Example(SkuStock.class);
-        Example.Criteria criteria4 = example4.createCriteria();
-        criteria4.andIn("skuCode", skuCodeList);
-        criteria4.andEqualTo("channelCode", channelCode);
-        criteria4.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-        criteria4.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
-        List<SkuStock> skuStockList = skuStockService.selectByExample(example4);
-        /*AssertUtil.notEmpty(skuStockList, String.format("根据多个SKU编码[%s]查询SKU库存信息为空",
-                CommonUtil.converCollectionToString(Arrays.asList(skuCodeList))));*/
+        //查询SKU相关库存信息,直接调用京东接口查库存
+        //通知成功的仓库
+        List<ScmInventoryQueryResponse> inventoryQueryResponseList = new ArrayList<>();
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+        if(CollectionUtils.isEmpty(warehouseInfoList)){
+            log.warn("自采SKU没有查询到可用仓库");
+
+        }
+        List<String> skuCodes =  new ArrayList<>();
+        for(Skus skus: page.getResult()){
+            skuCodes.add(skus.getSkuCode());
+        }
+        List<SkuStock> skuStockList = new ArrayList<>();
+        inventoryQueryResponseList= getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList,InventoryTypeEnum.ZP.getCode());
+        if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
+            //sku计算库存总和
+            for (String skuCode:skuCodes) {
+                SkuStock skuStock = new SkuStock();
+                skuStock.setSkuCode(skuCode);
+                for (ScmInventoryQueryResponse inventoryQueryResponse:inventoryQueryResponseList ) {
+                    if (StringUtils.equals(skuCode,inventoryQueryResponse.getItemCode())){
+                        //可用正品总库存
+                        skuStock.setAvailableInventory(inventoryQueryResponse.getQuantity());
+                        //冻结库存
+                        skuStock.setLockInventory(inventoryQueryResponse.getLockQuantity());
+                    }
+                }
+            }
+        }
         //设置分类名称、品牌名称、库存信息
         for(Skus skus: page.getResult()){
             skus.setCategoryName(spuCategoryMap.get(skus.getSpuCode()));
@@ -329,11 +350,9 @@ public class GoodsBiz implements IGoodsBiz {
             }
             for(SkuStock skuStock: skuStockList){
                 if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
-                    Long availableInventory = (skuStock.getRealInventory()==null?0:skuStock.getRealInventory())-
-                            (skuStock.getFrozenInventory()==null?0:skuStock.getFrozenInventory());
-                    skus.setAvailableInventory(availableInventory<0?0:availableInventory);
-                    skus.setRealInventory(skuStock.getRealInventory());
-                    skus.setDefectiveInventory(skuStock.getDefectiveInventory());
+                    skus.setAvailableInventory(skuStock.getAvailableInventory());
+                    skus.setRealInventory(skuStock.getLockInventory());
+
                 }
             }
         }
@@ -879,6 +898,34 @@ public class GoodsBiz implements IGoodsBiz {
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         if(skuArray.size() == 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
+        }
+        //当前需要报存sku重复校验
+        List<SkuGridInfo> skuGridInfoList = JSON.parseArray(skus.getSkusInfo(),SkuGridInfo.class);
+        //啟用的sku信息
+        List<SkuGridInfo> skuValidInfoList = new ArrayList<>();
+        for (SkuGridInfo s:skuGridInfoList ) {
+            if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
+                skuValidInfoList.add(s);
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(skuValidInfoList)){
+            Collections.sort(skuValidInfoList, new Comparator<SkuGridInfo>() {
+                @Override
+                public int compare(SkuGridInfo o1, SkuGridInfo o2) {
+                    String barCodeO1[] = StringUtils.split(o1.getBarCode(), SupplyConstants.Symbol.COMMA);
+                    String barCodeO2[] = StringUtils.split(o2.getBarCode(), SupplyConstants.Symbol.COMMA);
+                    boolean isFlag = false;
+                    for (String barO1: barCodeO1) {
+                        for (String barO2:barCodeO2) {
+                            if (barO1.equals(barO2)){
+                                isFlag =true;
+                            }
+                        }
+                    }
+                    AssertUtil.isTrue(!isFlag,"存在相同的条形码,请检查条形码!");
+                    return 0;
+                }
+            });
         }
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
@@ -2646,6 +2693,12 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     public void checkBarcodeOnly(String barcode, String skuCode) {
+        //逗号分隔的正则
+        if (Pattern.matches(COMMA_SPLIT, barcode)) {
+            String msg = "条形码格式异常" ;
+            log.error(msg);
+            throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+        }
         String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
         AssertUtil.notEmpty( Arrays.asList(barArray),"未接收到条形码");
         List<String> existedCode = new ArrayList<>();
