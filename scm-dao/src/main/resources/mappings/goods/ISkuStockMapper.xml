@@ -26,7 +26,23 @@
               channel_code = #{stock.channelCode} AND warehouse_code = #{stock.warehouseCode} AND sku_code = #{stock.skuCode}
               AND is_deleted = '0' AND is_valid = '1'
         </foreach>
-    </update>    
+    </update>
 
-
+    <update id="batchUpdate" parameterType="java.util.Map">
+        update sku_stock
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="is_valid=1,warehouse_item_id =case" suffix="end,">
+                <foreach collection="arrSkus" item="item" index="index">
+                    when sku_code=#{item.skuCode} then #{item.warehouseItemId}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE sku_code in
+        <foreach collection="arrSkus" index="index" item="item" separator="," open="(" close=")">
+            #{item.skuCode}
+        </foreach>
+        AND warehouse_id = #{warehouseId}
+        AND is_deleted = 0
+        AND channel_code = #{channelCode}
+    </update>
 </mapper>

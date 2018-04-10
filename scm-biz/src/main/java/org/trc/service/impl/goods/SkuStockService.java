@@ -1,6 +1,7 @@
 package org.trc.service.impl.goods;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,12 @@ public class SkuStockService extends BaseService<SkuStock, Long> implements ISku
 		
 //		return false;
 	}
-	
+
+	@Override
+	public int batchUpdate(Map<String, Object> map) {
+		return skuStockMapper.batchUpdate(map);
+	}
+
 	private String toUpperFristChar(String string) {  
 	    char[] charArray = string.toCharArray();  
 	    charArray[0] -= 32;  
