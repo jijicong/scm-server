@@ -161,6 +161,10 @@ public class Skus extends ScmDO {
     private String categoryCode;
     @Transient
     private String brandCode;
+    @Transient
+    private Long categoryId;
+    @Transient
+    private Long brandId;
 
     public String getName() {
 		return name;
@@ -472,5 +476,21 @@ public class Skus extends ScmDO {
 
     public void setBrandCode(String brandCode) {
         this.brandCode = brandCode;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Long getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(Long brandId) {
+        this.brandId = brandId;
     }
 }
