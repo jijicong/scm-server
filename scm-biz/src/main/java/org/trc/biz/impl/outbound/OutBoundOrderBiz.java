@@ -1025,7 +1025,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         this.updateCancelOrder(responseAppResult, request.getOrderCode());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        logger.error("发货单号:{},取消发货单异常：{}", request.getOrderCode(), responseAppResult.getResult());
+                        logger.error("仓库发货单号:{},取消发货单异常：{}", request.getOrderCode(), responseAppResult.getResult());
                     }
                 }).start();
             }
@@ -1034,13 +1034,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String outboundOrderCode){
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String orderCode){
         //处理信息
         try{
             if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
                 //获取发货单
                 OutboundOrder outboundOrderTemp = new OutboundOrder();
-                outboundOrderTemp.setOutboundOrderCode(outboundOrderCode);
+                outboundOrderTemp.setWmsOrderCode(orderCode);
                 OutboundOrder outboundOrder = outBoundOrderService.selectOne(outboundOrderTemp);
 
                 ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
@@ -1082,7 +1082,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             }
         }catch(Exception e){
             e.printStackTrace();
-            logger.error("发货单号:{},取消发货单异常：{}", outboundOrderCode, e.getMessage());
+            logger.error("仓库发货单号:{},取消发货单异常：{}", orderCode, e.getMessage());
         }
     }
 
