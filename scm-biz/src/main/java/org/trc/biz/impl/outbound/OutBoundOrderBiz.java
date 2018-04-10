@@ -901,14 +901,14 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     String msg = "发货通知单状态查询为空，无法取消!";
                     logger.error(msg);
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                            "取消发货", "取消原因:"+remark+"\n取消结果:取消失败,"+msg,
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
                             null);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }else if(Integer.parseInt(response.getCurrentStatus()) > 10017){
                     String msg = "订单已完成复核流程，无法取消!";
                     logger.error(msg);
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                            "取消发货", "取消原因:"+remark+"\n取消结果:取消失败,"+msg,
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
                             null);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }
@@ -916,7 +916,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 String msg = "获取发货单状态失败!";
                 logger.error(msg);
                 logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                        "取消发货", "取消原因:"+remark+"\n取消结果:取消失败,"+msg,
+                        "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
                         null);
                 throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
             }
@@ -937,7 +937,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                            "取消发货", "取消原因:"+remark+"\n取消结果:取消成功",
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消成功",
                             null);
 
                     //更新订单信息
@@ -961,13 +961,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
-                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                            "取消发货", "取消原因:"+remark+"\n取消结果:取消中",
-                            null);
-                    return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
+                    return ResultUtil.createSuccessResult("发货通知单取消中！", "");
                 }else{
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                            "取消发货", "取消原因:"+remark+"\n取消结果:取消失败,"+response.getMessage(),
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+response.getMessage(),
                             null);
                     return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
                 }
@@ -1054,7 +1051,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"admin",
-                            "取消发货", "取消原因:"+outboundOrder.getRemark()+"\n取消结果:取消成功",
+                            "取消发货", "取消原因:"+outboundOrder.getRemark()+"<br>取消结果:取消成功",
                             null);
 
                     //更新订单信息
@@ -1076,7 +1073,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"admin",
-                            "取消发货", "取消原因:"+outboundOrder.getRemark()+"\n取消结果:取消失败,"+response.getMessage(),
+                            "取消发货", "取消原因:"+outboundOrder.getRemark()+"<br>取消结果:取消失败,"+response.getMessage(),
                             null);
                 }
             }
