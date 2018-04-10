@@ -910,31 +910,14 @@ public class GoodsBiz implements IGoodsBiz {
                     String msg = "条形码格式异常" ;
                     log.error(msg);
                     throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
-                }else {
-                    if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
-                        skuValidInfoList.add(s);
-                    }
                 }
+            }
+            if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
+                skuValidInfoList.add(s);
             }
         }
         if (!AssertUtil.collectionIsEmpty(skuValidInfoList)){
-            Collections.sort(skuValidInfoList, new Comparator<SkuGridInfo>() {
-                @Override
-                public int compare(SkuGridInfo o1, SkuGridInfo o2) {
-                    String barCodeO1[] = StringUtils.split(o1.getBarCode(), SupplyConstants.Symbol.COMMA);
-                    String barCodeO2[] = StringUtils.split(o2.getBarCode(), SupplyConstants.Symbol.COMMA);
-                    boolean isFlag = false;
-                    for (String barO1: barCodeO1) {
-                        for (String barO2:barCodeO2) {
-                            if (barO1.equals(barO2)){
-                                isFlag =true;
-                            }
-                        }
-                    }
-                    AssertUtil.isTrue(!isFlag,"存在相同的条形码,请检查条形码!");
-                    return 0;
-                }
-            });
+            checkRepeatBarCode(skuValidInfoList);
         }
         for(Object obj : skuArray){
             JSONObject jbo = (JSONObject) obj;
@@ -953,6 +936,36 @@ public class GoodsBiz implements IGoodsBiz {
                         if(StringUtils.equals(sku.getIsValid(),ValidEnum.NOVALID.getCode())){
                             checkBarcodeOnly(jbo.getString("barCode"),"");
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 校验编辑页面是否有重复条形码
+     * @param skuValidInfoList
+     */
+    private void checkRepeatBarCode(List<SkuGridInfo> skuValidInfoList) {
+        for (int i = 0; i < skuValidInfoList.size(); i++) {
+            SkuGridInfo o1 =skuValidInfoList.get(i);
+            for (int j = 0; j < skuValidInfoList.size(); j++) {
+                SkuGridInfo o2 =skuValidInfoList.get(j);
+                if (i!=j){
+                    String barCodeO1[] = StringUtils.split(o1.getBarCode(), SupplyConstants.Symbol.COMMA);
+                    String barCodeO2[] = StringUtils.split(o2.getBarCode(), SupplyConstants.Symbol.COMMA);
+                    boolean isFlag = false;
+                    for (String barO1: barCodeO1) {
+                        for (String barO2:barCodeO2) {
+                            if (barO1.equals(barO2)){
+                                isFlag =true;
+                            }
+                        }
+                    }
+                    if (isFlag) {
+                        String msg = "存在相同的条形码,请检查条形码!";
+                        log.error(msg);
+                        throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
                     }
                 }
             }
@@ -1874,7 +1887,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.GOODS)
+//    @Cacheable(value = SupplyConstants.Cache.GOODS)
     public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
