@@ -11,4 +11,6 @@ import java.util.Map;
  */
 public interface IWarehouseInfoMapper extends BaseMapper<WarehouseInfo> {
 
+    int batchUpdate(Map<String, Object> map);
+
 }

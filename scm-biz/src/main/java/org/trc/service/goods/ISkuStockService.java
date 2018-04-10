@@ -1,6 +1,7 @@
 package org.trc.service.goods;
 
 import java.util.List;
+import java.util.Map;
 
 import org.trc.common.RequsetUpdateStock;
 import org.trc.domain.goods.SkuStock;
@@ -31,4 +32,11 @@ public interface ISkuStockService extends IBaseService<SkuStock, Long>{
 	 * @throws Exception 
 	 */
 	void updateSkuStock (List<RequsetUpdateStock> stockList) throws Exception;
+
+	/**
+	 * 批量更新仓库商品ID
+	 * @param map
+	 * @return
+	 */
+	int batchUpdate(Map<String, Object> map);
 }

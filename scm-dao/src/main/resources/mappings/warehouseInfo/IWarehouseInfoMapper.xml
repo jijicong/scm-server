@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.trc.mapper.warehouseInfo.IWarehouseInfoMapper">
+    <update id="batchUpdate" parameterType="java.util.Map">
+        update warehouse_item_info
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="notice_status=4,warehouse_item_id =case" suffix="end,">
+                <foreach collection="arrSkus" item="item" index="index">
+                    when sku_code=#{item.skuCode} then #{item.warehouseItemId}
+                </foreach>
+            </trim>
+        </trim>
+        WHERE sku_code in
+        <foreach collection="arrSkus" index="index" item="item" separator="," open="(" close=")">
+            #{item.skuCode}
+        </foreach>
+        AND warehouse_info_id = #{warehouseInfoId}
+        AND is_delete = 0
+    </update>
 </mapper>
