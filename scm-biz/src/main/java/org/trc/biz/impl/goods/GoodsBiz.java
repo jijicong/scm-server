@@ -110,7 +110,7 @@ public class GoodsBiz implements IGoodsBiz {
     //京东原图路径
     public static final String JING_DONG_PIC_N_12 = "n12/";
     //逗号分隔的正则
-    private static final String COMMA_SPLIT = "[^,]*?";
+    private static final String COMMA_SPLIT = "^([0-9]+,)*[0-9]+$";
 
     @Autowired
     private IItemsService itemsService;
@@ -904,8 +904,17 @@ public class GoodsBiz implements IGoodsBiz {
         //啟用的sku信息
         List<SkuGridInfo> skuValidInfoList = new ArrayList<>();
         for (SkuGridInfo s:skuGridInfoList ) {
-            if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
-                skuValidInfoList.add(s);
+            if (s.getBarCode().indexOf(SupplyConstants.Symbol.COMMA)!=-1){
+                //逗号分隔的正则
+                if (!Pattern.matches(COMMA_SPLIT, s.getBarCode())) {
+                    String msg = "条形码格式异常" ;
+                    log.error(msg);
+                    throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+                }else {
+                    if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
+                        skuValidInfoList.add(s);
+                    }
+                }
             }
         }
         if (!AssertUtil.collectionIsEmpty(skuValidInfoList)){
@@ -1919,23 +1928,23 @@ public class GoodsBiz implements IGoodsBiz {
                         if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
                             //判断库存类型,可销售
                             if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())){
-                                skuStock.setAvailableInventory(inventoryQueryResponse.getTotalNum()+skuStock.getAvailableInventory());
+                                skuStock.setAvailableInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
                             }
                             //判断库存类型,仓库锁定
                             if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())){
-                                skuStock.setWarehouseLockInventory(inventoryQueryResponse.getTotalNum()+skuStock.getWarehouseLockInventory());
+                                skuStock.setWarehouseLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getWarehouseLockInventory()==null?0:skuStock.getWarehouseLockInventory()));
                             }
                             //判断库存类型,临期锁定
                             if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.ADVENT_LOCK.getCode())){
-                               skuStock.setAdventLockInventory(inventoryQueryResponse.getTotalNum()+skuStock.getAdventLockInventory());
+                               skuStock.setAdventLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getAdventLockInventory()==null?0:skuStock.getAdventLockInventory()));
                             }
                             //判断库存类型,盘点锁定
                             if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.CHECK_LOCK.getCode())){
-                                skuStock.setCheckLockInventory(inventoryQueryResponse.getTotalNum()+skuStock.getCheckLockInventory());
+                                skuStock.setCheckLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getCheckLockInventory()==null?0:skuStock.getCheckLockInventory()));
                             }
                             //残品库存
                             if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
-                                skuStock.setDefectiveInventory(inventoryQueryResponse.getTotalNum()+skuStock.getDefectiveInventory());
+                                skuStock.setDefectiveInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getDefectiveInventory()==null?0:skuStock.getDefectiveInventory()));
                             }
                         }
                     }
@@ -2695,7 +2704,7 @@ public class GoodsBiz implements IGoodsBiz {
     public void checkBarcodeOnly(String barcode, String skuCode) {
         if (barcode.indexOf(SupplyConstants.Symbol.COMMA)!=-1){
             //逗号分隔的正则
-            if (Pattern.matches(COMMA_SPLIT, barcode)) {
+            if (!Pattern.matches(COMMA_SPLIT, barcode)) {
                 String msg = "条形码格式异常" ;
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
