@@ -997,6 +997,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         int allDeliverNum = 0;//代发全部发货数
         int partsDeliverNum = 0;//代发部分发货数
         int cancelNum = 0;//已取消数
+        int cancellingNum = 0;//取消中
         for(OrderItem orderItem: orderItemList){
             if(StringUtils.equals(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus()))
                 sendSupplierFialure++;
@@ -1018,15 +1019,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 waitHandlerNum++;
             else if(StringUtils.equals(ExceptionOrderHandlerEnum.HANDLERED.getCode().toString(), orderItem.getSupplierOrderStatus()))
                 handlerNum++;
+            else if(StringUtils.equals(OrderItemDeliverStatusEnum.ORDER_CANCELING.getCode().toString(), orderItem.getSupplierOrderStatus()))
+            	cancellingNum++;
         }
+        
+        /**  取消中数量等价于等待仓库发货数   **/
+        waitWarehouseDeliverNum = waitWarehouseDeliverNum + cancellingNum;
+        
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//仓库级订单
             //下单失败：(发送供应商失败数 + 仓库接收失败数) > 0 && (发送供应商失败数 + 仓库接收失败数 + 已了结数 + 已取消) = 商品应发数量
             if((sendSupplierFialure + sendWarehouseFialure) > 0 && (sendSupplierFialure + sendWarehouseFialure + handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_FAILURE.getCode();
-            //等待供应商发货：（等待供应商发货数 + 等待仓库发货数）> 0 && (等待供应商发货数 + 等待仓库发货数 + 已了结数 + 已取消) = 商品应发数量
-            if((waitDeliverNum + waitWarehouseDeliverNum) > 0 && (waitDeliverNum + waitWarehouseDeliverNum + handlerNum + cancelNum) == orderItemList.size())
+            //等待供应商发货：（等待供应商发货数 + 等待仓库发货数）> 0 
+            	//&& (等待供应商发货数 + 等待仓库发货数 + 已了结数 + 已取消) = 商品应发数量
+            if((waitDeliverNum + waitWarehouseDeliverNum) > 0 
+            		&& (waitDeliverNum + waitWarehouseDeliverNum + handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode();
-            //供应商下单异常: (发送供应商失败数 + 仓库接收失败数) > 0 && (等待供应商发货数 + 等待仓库发货数 + 全部发货数 + 已取消) > 0
+            //供应商下单异常: (发送供应商失败数 + 仓库接收失败数) > 0 
+            	//&& (等待供应商发货数 + 等待仓库发货数 + 全部发货数 + 已取消  + 部分发货) > 0
             if((sendWarehouseFialure + sendSupplierFialure) > 0 
             		&& (waitDeliverNum + waitWarehouseDeliverNum + allDeliverNum + cancelNum + partsDeliverNum) > 0)
               return SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode();
@@ -1050,7 +1060,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(allDeliverNum > 0 && (allDeliverNum + cancelNum) == orderItemList.size())
                 return OrderDeliverStatusEnum.ALL_DELIVER.getCode();
             //部分发货：部分发货数 > 0 || ((等待供应商发货数 + 等待仓库发货数) > 0 && 全部发货数 > 0)
-            if(partsDeliverNum > 0 || ((waitDeliverNum + waitWarehouseDeliverNum)> 0 && allDeliverNum > 0))
+            if(partsDeliverNum > 0 || ((waitDeliverNum + waitWarehouseDeliverNum) > 0 && allDeliverNum > 0))
                 return OrderDeliverStatusEnum.PARTS_DELIVER.getCode();
         }
         return null;
@@ -5080,7 +5090,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(failureOutbound.size() > 0){
             for(ScmDeliveryOrderCreateResponse response: failureOutbound){
-                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
+                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.RECEIVE_FAIL, response.getDeliveryOrderCode(), null, response.getMessage());
+            }
+        }
+        if(successOutbound.size() > 0){
+            for(ScmDeliveryOrderCreateResponse response: successOutbound){
+                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.WAITING, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
             }
         }
         Example example = new Example(WarehouseInfo.class);
