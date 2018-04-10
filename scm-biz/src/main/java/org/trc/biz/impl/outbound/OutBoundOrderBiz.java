@@ -347,6 +347,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode());
             }else if(StringUtils.equals(status, OutboundDetailStatusEnum.RECEIVE_FAIL.getCode())){
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAREHOUSE_RECIVE_FAILURE.getCode());
+            }else if(StringUtils.equals(status, OutboundDetailStatusEnum.ON_CANCELED.getCode())){
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_CANCELING.getCode());
             }
             orderItemService.updateByPrimaryKey(orderItem);
         }
@@ -892,20 +894,30 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             request.setOwnerCode(warehouse.getWarehouseOwnerId());
             request.setWarehouseCode(warehouse.getCode());
             AppResult<ScmDeliveryOrderDetailResponse>  result = warehouseApiService.deliveryOrderDetail(request);
+            String userId = aclUserAccreditInfo.getUserId();
             if(StringUtils.equals(result.getAppcode(), SUCCESS)){
                 ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
                 if(response == null || StringUtils.isEmpty(response.getCurrentStatus())){
                     String msg = "发货通知单状态查询为空，无法取消!";
                     logger.error(msg);
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
+                            null);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }else if(Integer.parseInt(response.getCurrentStatus()) > 10017){
                     String msg = "订单已完成复核流程，无法取消!";
                     logger.error(msg);
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
+                            null);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }
             }else{
                 String msg = "获取发货单状态失败!";
                 logger.error(msg);
+                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                        "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
+                        null);
                 throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
             }
 
@@ -924,8 +936,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                             outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
-                    String userId = aclUserAccreditInfo.getUserId();
-                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"取消发货", remark,null);
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消成功",
+                            null);
 
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
@@ -937,10 +950,22 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundOrder.setRemark(remark);
                     outBoundOrderService.updateByPrimaryKey(outboundOrder);
 
-                    String userId = aclUserAccreditInfo.getUserId();
-                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,"取消发货", remark,null);
-                    return ResultUtil.createSuccessResult("发货通知单取消成功！", "");
+                    OutboundDetail outboundDetail = new OutboundDetail();
+                    outboundDetail.setStatus(OutboundDetailStatusEnum.ON_CANCELED.getCode());
+                    outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    Example example = new Example(OutboundDetail.class);
+                    Example.Criteria criteria = example.createCriteria();
+                    criteria.andEqualTo("outboundOrderCode", outboundOrder.getOutboundOrderCode());
+                    outboundDetailService.updateByExampleSelective(outboundDetail, example);
+
+                    //更新订单信息
+                    this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+
+                    return ResultUtil.createSuccessResult("发货通知单取消中！", "");
                 }else{
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+response.getMessage(),
+                            null);
                     return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "发货通知单取消失败！", "");
                 }
             } else {
@@ -997,7 +1022,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                         this.updateCancelOrder(responseAppResult, request.getOrderCode());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        logger.error("发货单号:{},取消发货单异常：{}", request.getOrderCode(), responseAppResult.getResult());
+                        logger.error("仓库发货单号:{},取消发货单异常：{}", request.getOrderCode(), responseAppResult.getResult());
                     }
                 }).start();
             }
@@ -1006,13 +1031,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
     }
 
-    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String outboundOrderCode){
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String orderCode){
         //处理信息
         try{
             if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
                 //获取发货单
                 OutboundOrder outboundOrderTemp = new OutboundOrder();
-                outboundOrderTemp.setOutboundOrderCode(outboundOrderCode);
+                outboundOrderTemp.setWmsOrderCode(orderCode);
                 OutboundOrder outboundOrder = outBoundOrderService.selectOne(outboundOrderTemp);
 
                 ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
@@ -1025,17 +1050,36 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                             outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
 
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"admin",
+                            "取消发货", "取消原因:"+outboundOrder.getRemark()+"<br>取消结果:取消成功",
+                            null);
+
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
                 }else if(StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){
                     outboundOrder.setStatus(OutboundOrderStatusEnum.WAITING.getCode());
                     outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
                     outBoundOrderService.updateByPrimaryKey(outboundOrder);
+
+                    OutboundDetail outboundDetail = new OutboundDetail();
+                    outboundDetail.setStatus(OutboundDetailStatusEnum.WAITING.getCode());
+                    outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    Example example = new Example(OutboundDetail.class);
+                    Example.Criteria criteria = example.createCriteria();
+                    criteria.andEqualTo("outboundOrderCode", outboundOrder.getOutboundOrderCode());
+                    outboundDetailService.updateByExampleSelective(outboundDetail, example);
+
+                    //更新订单信息
+                    this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+
+                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"admin",
+                            "取消发货", "取消原因:"+outboundOrder.getRemark()+"<br>取消结果:取消失败,"+response.getMessage(),
+                            null);
                 }
             }
         }catch(Exception e){
             e.printStackTrace();
-            logger.error("发货单号:{},取消发货单异常：{}", outboundOrderCode, e.getMessage());
+            logger.error("仓库发货单号:{},取消发货单异常：{}", orderCode, e.getMessage());
         }
     }
 
