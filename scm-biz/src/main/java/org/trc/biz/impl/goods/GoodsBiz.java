@@ -331,10 +331,14 @@ public class GoodsBiz implements IGoodsBiz {
                 skuStock.setSkuCode(skuCode);
                 for (ScmInventoryQueryResponse inventoryQueryResponse:inventoryQueryResponseList ) {
                     if (StringUtils.equals(skuCode,inventoryQueryResponse.getItemCode())){
-                        //可用正品总库存
-                        skuStock.setAvailableInventory(inventoryQueryResponse.getQuantity());
-                        //冻结库存
-                        skuStock.setLockInventory(inventoryQueryResponse.getLockQuantity());
+                        //判断库存类型,可销售
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())){
+                            skuStock.setAvailableInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
+                        }
+                        //判断库存类型,仓库锁定
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())){
+                            skuStock.setLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getLockInventory()==null?0:skuStock.getLockInventory()));
+                        }
                     }
                     skuStockList.add(skuStock);
                 }
