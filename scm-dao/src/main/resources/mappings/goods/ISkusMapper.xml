@@ -78,7 +78,7 @@
         <if test="spuCode != null and spuCode != ''">
             AND sk.spu_code LIKE CONCAT('%', #{spuCode}, '%')
         </if>
-        <if test="skutemp != null and skutemp !=''">
+        <if test="spuTemp != null and spuTemp !=''">
             AND sk.sku_code NOT IN
             <foreach collection="skuCodes" index="index" item="item" close=")" open="(" separator=",">
                 #{item}
