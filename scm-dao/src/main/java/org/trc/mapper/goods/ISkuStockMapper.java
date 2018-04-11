@@ -1,6 +1,7 @@
 package org.trc.mapper.goods;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 import org.trc.common.RequsetUpdateStock;
@@ -15,7 +16,7 @@ public interface ISkuStockMapper extends BaseMapper<SkuStock>{
 
 	void batchUpdateStock(List<RequsetUpdateStock> updateStockList);
 
-
+    int batchUpdate(Map<String, Object> map);
 
 
 }

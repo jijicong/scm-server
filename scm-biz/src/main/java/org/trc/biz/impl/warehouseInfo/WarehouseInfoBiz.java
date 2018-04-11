@@ -1040,24 +1040,29 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     }
 
     private int saveNoticeStatus(List<String> list, String warehouseInfoId) {
+        if(list == null || list.size() < 1){
+            return 0;
+        }
         String[] values = null;
         WarehouseItemInfo warehouseItemInfo = null;
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(Long.parseLong(warehouseInfoId));
-        int count = 0;
+        Map<String, Object> map = new HashMap<>();
+        List<WarehouseItemInfo> list1 = new ArrayList<>();
         for (String s : list) {
             values = s.split(SupplyConstants.Symbol.COMMA);
             warehouseItemInfo = new WarehouseItemInfo();
-            warehouseItemInfo.setWarehouseInfoId(Long.valueOf(warehouseInfoId));
             warehouseItemInfo.setSkuCode(values[0]);
-            warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
-            warehouseItemInfo = warehouseItemInfoService.selectOne(warehouseItemInfo);
             warehouseItemInfo.setWarehouseItemId(values[1]);
-            warehouseItemInfo.setNoticeStatus(Integer.valueOf(ZeroToNineEnum.FOUR.getCode()));
-            this.updateWarehouseItemInfo(warehouseItemInfo);
-            //更新库存
-            this.updateSkuStock(warehouseItemInfo, warehouseInfo);
-            count++;
+            list1.add(warehouseItemInfo);
         }
+        map.put("warehouseInfoId", warehouseInfoId);
+        map.put("arrSkus", list1);
+        //更新仓库商品信息
+        int count = warehouseItemInfoService.batchUpdate(map);
+        //更新库存
+        map.put("warehouseId", warehouseInfo.getId());
+        map.put("channelCode", warehouseInfo.getChannelCode());
+        skuStockService.batchUpdate(map);
         return count;
     }
 

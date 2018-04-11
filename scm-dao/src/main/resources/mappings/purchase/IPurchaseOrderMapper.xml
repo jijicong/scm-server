@@ -202,7 +202,6 @@
                     INNER JOIN supplier_brand s ON s.brand_id = i.brand_id
                     WHERE
                         s.supplier_code = #{supplierCode}
-
                     AND s.is_valid = '1'
                     AND i.is_valid = '1'
                 ) si ON si.spu_code = skus.spu_code
