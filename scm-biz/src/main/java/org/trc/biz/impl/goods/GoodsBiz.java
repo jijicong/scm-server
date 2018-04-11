@@ -205,7 +205,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.GOODS_QUERY)
+//    @Cacheable(value = SupplyConstants.Cache.GOODS_QUERY)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -336,6 +336,7 @@ public class GoodsBiz implements IGoodsBiz {
                         //冻结库存
                         skuStock.setLockInventory(inventoryQueryResponse.getLockQuantity());
                     }
+                    skuStockList.add(skuStock);
                 }
             }
         }
@@ -350,9 +351,14 @@ public class GoodsBiz implements IGoodsBiz {
             }
             for(SkuStock skuStock: skuStockList){
                 if(StringUtils.equals(skus.getSkuCode(), skuStock.getSkuCode())){
-                    skus.setAvailableInventory(skuStock.getAvailableInventory());
-                    skus.setRealInventory(skuStock.getLockInventory());
-
+                    skus.setAvailableInventory((skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()) + (skus.getAvailableInventory() == null ? 0 : skus.getAvailableInventory()));
+                    skus.setRealInventory((skuStock.getLockInventory() == null ? 0 : skuStock.getLockInventory()) + (skus.getRealInventory() == null ? 0 : skus.getRealInventory()));
+                    if (null == skus.getAvailableInventory()) {
+                        skus.setAvailableInventory(null);
+                    }
+                    if (null == skus.getRealInventory()) {
+                        skus.setRealInventory(null);
+                    }
                 }
             }
         }
@@ -1934,6 +1940,7 @@ public class GoodsBiz implements IGoodsBiz {
             //所有库存类型
             inventoryQueryResponseList= getWarehouseInventory(new ArrayList<>(skuCodes), warehouseInfoList,null);
             if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
+                System.out.println(JSON.toJSONString(warehouseInfoList));
                 for (WarehouseInfo warehouse : warehouseInfoList) {
                     RequestSkuStock skuStock = new RequestSkuStock();
                     skuStock.setWarehouseName(warehouse.getWarehouseName());
@@ -1963,6 +1970,9 @@ public class GoodsBiz implements IGoodsBiz {
                     }
                     skuStockList.add(skuStock);
                 }
+            }
+            if (!AssertUtil.collectionIsEmpty(skuStockList)){
+                s.setStockList(skuStockList);
             }
         }
         //获取自然属性和采购属性
@@ -3201,7 +3211,7 @@ public class GoodsBiz implements IGoodsBiz {
         AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
         if(StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())){
-            scmInventoryQueryResponseList = (List<ScmInventoryQueryResponse>) appResult.getResult();
+            scmInventoryQueryResponseList =JSON.parseArray(JSON.toJSONString(appResult.getResult()),ScmInventoryQueryResponse.class);
         }
         return scmInventoryQueryResponseList;
     }

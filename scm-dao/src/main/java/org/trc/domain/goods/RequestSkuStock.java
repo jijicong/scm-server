@@ -4,24 +4,24 @@ public class RequestSkuStock {
     /**
      * 可用正品总库存
      */
-    private Long availableInventory;
+    private Long availableInventory = 0L;
     /**
      * 仓库锁定正品总库存
      */
-    private Long warehouseLockInventory;
+    private Long warehouseLockInventory = 0L;
     /**
      * 临期锁定正品总库存
      */
-    private Long adventLockInventory;
+    private Long adventLockInventory = 0L;
 
     /**
      * 盘点锁定正品总库存
      */
-    private Long checkLockInventory;
+    private Long checkLockInventory = 0L;
     /**
      * 残品总库存
      */
-    private Long defectiveInventory;
+    private Long defectiveInventory = 0L;
 
     /**
      * 仓库名称
