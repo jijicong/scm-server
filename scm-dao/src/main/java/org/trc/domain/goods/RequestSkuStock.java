@@ -1,6 +1,8 @@
 package org.trc.domain.goods;
 
-public class RequestSkuStock {
+import java.io.Serializable;
+
+public class RequestSkuStock implements Serializable {
     /**
      * 可用正品总库存
      */
