@@ -151,7 +151,7 @@ public class Skus extends ScmDO {
 
 
     @Transient
-    private List<RequestSkuStock> stockList;
+    private List<RequestSkuStock> requestSkuStockList;
 
     //sku关联状态: 1-已关联,0-未关联
     @Transient
@@ -165,6 +165,8 @@ public class Skus extends ScmDO {
     private Long categoryId;
     @Transient
     private Long brandId;
+    @Transient
+    private List<SkuStock> stockList;
 
     public String getName() {
 		return name;
@@ -472,11 +474,19 @@ public class Skus extends ScmDO {
         this.brandCode = brandCode;
     }
 
-    public List<RequestSkuStock> getStockList() {
+    public List<RequestSkuStock> getRequestSkuStockList() {
+        return requestSkuStockList;
+    }
+
+    public void setRequestSkuStockList(List<RequestSkuStock> requestSkuStockList) {
+        this.requestSkuStockList = requestSkuStockList;
+    }
+
+    public List<SkuStock> getStockList() {
         return stockList;
     }
 
-    public void setStockList(List<RequestSkuStock> stockList) {
+    public void setStockList(List<SkuStock> stockList) {
         this.stockList = stockList;
     }
 

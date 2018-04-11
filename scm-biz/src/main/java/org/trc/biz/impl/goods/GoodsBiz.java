@@ -1972,7 +1972,7 @@ public class GoodsBiz implements IGoodsBiz {
                 }
             }
             if (!AssertUtil.collectionIsEmpty(skuStockList)){
-                s.setStockList(skuStockList);
+                s.setRequestSkuStockList(skuStockList);
             }
         }
         //获取自然属性和采购属性
