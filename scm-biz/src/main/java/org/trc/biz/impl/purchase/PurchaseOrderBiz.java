@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.config.IConfigBiz;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.Brand;
+import org.trc.domain.category.Category;
 import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.SkuStock;
@@ -23,9 +27,11 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.*;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.supplier.SupplierBrand;
 import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
@@ -34,6 +40,7 @@ import org.trc.exception.PurchaseOrderException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
+import org.trc.service.category.IBrandService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
@@ -45,6 +52,7 @@ import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
 import org.trc.util.cache.PurchaseOrderCacheEvict;
@@ -106,6 +114,12 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private ILocationUtilService locationUtilService;
     @Autowired
     private RedisLock redisLock;
+    @Autowired
+    private ICategoryBiz categoryBiz;
+    @Autowired
+    private IBrandService brandService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
 
 
 
@@ -442,14 +456,16 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(SUPPLIER_CODE, supplierCode);
         map.put(WAREHOUSE_INFO_ID, warehouseInfoId);
-        List<PurchaseDetail>  purchaseDetailListCheck = purchaseOrderService.selectItemsBySupplierCodeCheck(map);
+        //List<PurchaseDetail>  purchaseDetailListCheck = purchaseOrderService.selectItemsBySupplierCodeCheck(map);
+        /*List<PurchaseDetail>  purchaseDetailListCheck = selectItemsBySupplierCodeCheck(supplierCode, warehouseInfoId, null, null, null,
+                null, null, null, null);
         if(purchaseDetailListCheck.size() == 0){
             String msg = "无数据，请确认【商品管理】中存在所选供应商的品牌的，且所选收货仓库在【仓库信息管理】中“通知仓库状态”为“通知成功”的启用商品！";
             LOGGER.error(msg);
             throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
-        }
+        }*/
 
-        if(StringUtils.isBlank(skus)){
+        /*if(StringUtils.isBlank(skus)){
             map.put("skuTemp",null);
         } else {
             map.put("skuTemp",SKU);
@@ -464,13 +480,26 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         int purchaseDetailListCount = purchaseOrderService.selectItemsBySupplierCodeCount(map);
         if(purchaseDetailListCount < 1){
             return new Pagenation<PurchaseDetail>();
+        }*/
+        List<PurchaseDetail>  purchaseDetailListCheck2 = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
+                form.getItemNo(), form.getBrandName(), skus, null);
+        int purchaseDetailListCount = purchaseDetailListCheck2.size();
+        if(purchaseDetailListCount < 1){
+            return new Pagenation<PurchaseDetail>();
         }
         //获取总数
-        page.setTotalCount(purchaseDetailListCount);
+       /* page.setTotalCount(purchaseDetailListCount);
         //获取分页数
         map.put("start", page.getStart());
-        map.put("pageSize", page.getPageSize());
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        map.put("pageSize", page.getPageSize());*/
+        page.setTotalCount(purchaseDetailListCount);
+        Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
+        pagenation.setStart(page.getStart());
+        pagenation.setPageSize(page.getStart());
+        pagenation.setTotalCount(purchaseDetailListCount);
+        //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
+                form.getItemNo(), form.getBrandName(), skus, pagenation);
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
@@ -762,7 +791,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询所有的可采购商品失败,供应商编码为空");
         Map<String, Object> map = new HashMap<>();
         map.put(SUPPLIER_CODE,supplierCode);
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, null, null, null, null,
+                null, null, null, null);
         if(purchaseDetailList == null || purchaseDetailList.size()==0){
             purchaseDetailList = new ArrayList<>();  //如果没有查到，有效的sku商品
         }
@@ -788,7 +819,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         map.put("barCode", form.getBarCode());
         map.put("itemNo", form.getItemNo());
 
-        List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        //List<PurchaseDetail>  purchaseDetailList = purchaseOrderService.selectItemsBySupplierCode(map);
+        List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, null, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
+                form.getItemNo(), form.getBrandName(), skus, null);
         if(purchaseDetailList.size() == 0){
             String msg = "无数据，请确认所选收货仓库在【仓储管理-仓库信息管理】中存在“通知仓库状态”为“通知成功”的商品！";
             LOGGER.error(msg);
@@ -1580,6 +1613,164 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         });
         return supplierBrandExts;
     }
+
+    /**
+     * 获取供应商相关的商品
+     * @param supplierCode 供应商编码
+     * @param skuCode sku编码
+     * @param skuName sku名称
+     * @param barCode 条形码
+     * @param itemNo 商品货号
+     * @param brandName 品牌名称
+     * @param filterSkuCode 需要过滤的sku编码,多个用逗号分隔
+     * @param pagenation 分页对象
+     * @return
+     */
+    private List<PurchaseDetail> getPurchaseOrderItemsBySupplier(String supplierCode, String warehouseInfoId, String skuCode, String skuName, String barCode,
+                                           String itemNo, String brandName, String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation){
+        //查询供应商相关品牌
+        SupplierBrand supplierBrand = new SupplierBrand();
+        supplierBrand.setSupplierCode(supplierCode);
+        supplierBrand.setIsValid(ValidStateEnum.ENABLE.getCode().toString());
+        List<SupplierBrand> supplierBrandList = iSupplierBrandService.select(supplierBrand);
+        AssertUtil.notEmpty(supplierBrandList, String.format("供应商%s没有关联品牌", supplierCode));
+        Set<Long> categoryIds = new HashSet<>();
+        Set<Long> brandIds = new HashSet<>();
+        for(SupplierBrand sb: supplierBrandList){
+            categoryIds.add(sb.getCategoryId());
+            brandIds.add(sb.getBrandId());
+        }
+        //查询分类名称
+        Map<Long, String> categoryMap = new HashedMap();
+        for(Long categoryId: categoryIds){
+            try {
+                String categoryName = categoryBiz.getCategoryName(categoryId);
+                categoryMap.put(categoryId, categoryName);
+            } catch (Exception e) {
+                LOGGER.error(String.format("查询分类%s名称异常", categoryId), e);
+            }
+        }
+        //查询品牌信息
+        Example brandExample = new Example(Brand.class);
+        Example.Criteria brandCriteria = brandExample.createCriteria();
+        brandCriteria.andIn("id", brandIds);
+        if(StringUtils.isNotBlank(brandName)){
+            brandCriteria.andLike("name", "%" + brandName + "%");
+        }
+        List<Brand> brandList = brandService.selectByExample(brandExample);
+        AssertUtil.notEmpty(brandList, String.format("根据品牌ID[%s]批量查询品牌信息为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(brandIds))));
+        List<String> _brandIds = new ArrayList<>();
+        for(Brand brand: brandList){
+            _brandIds.add(brand.getId().toString());
+        }
+        //查询供应商相关商品
+        Example itemExample = new Example(Items.class);
+        Example.Criteria itemCriteria = itemExample.createCriteria();
+        itemCriteria.andIn("categoryId", categoryIds);
+        itemCriteria.andIn("brandId", _brandIds);
+        itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        List<Items> itemsList = itemsService.selectByExample(itemExample);
+        AssertUtil.notEmpty(itemsList, String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));
+        //查询供应商相关SKU
+        List<Long> itemIds = new ArrayList<>();
+        for(Items items: itemsList){
+            itemIds.add(items.getId());
+        }
+        Example skusExample = new Example(Skus.class);
+        Example.Criteria skusCriteria = skusExample.createCriteria();
+        skusCriteria.andIn("itemId", itemIds);
+        skusCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        if(StringUtils.isNotBlank(skuCode)){
+            skusCriteria.andLike("skuCode", "%" + skuCode + "%");
+        }
+        if(StringUtils.isNotBlank(skuName)){
+            skusCriteria.andLike("skuName", "%" + skuName + "%");
+        }
+        if(StringUtils.isNotBlank(filterSkuCode)){
+            String[] _skuCodes = filterSkuCode.split(SupplyConstants.Symbol.COMMA);
+            skusCriteria.andNotIn("skuCode", Arrays.asList(_skuCodes));
+        }
+        List<Skus> skusList = skusService.selectByExample(skusExample);
+        //AssertUtil.notEmpty(skusList, String.format("根据商品ID[%s]、起停用状态[%s]批量查询商品SKU信息为空", CommonUtil.converCollectionToString(new ArrayList<>(itemIds)), ValidStateEnum.ENABLE.getName()));
+        if(CollectionUtils.isEmpty(skusList)){
+            return new ArrayList<>();
+        }
+        List<String> skuCodes = new ArrayList<>();
+        for(Skus skus: skusList){
+            skuCodes.add(skus.getSkuCode());
+            for(Items items: itemsList){
+                if(skus.getItemId().longValue() == items.getId().longValue()){
+                    skus.setCategoryId(items.getCategoryId());
+                    skus.setBrandId(items.getBrandId());
+                    //设置分类名称
+                    for(Map.Entry<Long, String> entry: categoryMap.entrySet()){
+                        if(items.getCategoryId().longValue() == entry.getKey().longValue()){
+                            skus.setCategoryName(entry.getValue());
+                            break;
+                        }
+                    }
+                    //设置品牌名称
+                    for(Brand b: brandList){
+                        if(items.getBrandId().longValue() == b.getId().longValue()){
+                            skus.setBrandName(b.getName());
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        //查询仓库商品信息
+        Example warehouseItemExample = new Example(WarehouseItemInfo.class);
+        Example.Criteria warehouseItemCriteria = warehouseItemExample.createCriteria();
+        warehouseItemCriteria.andIn("skuCode", skuCodes);
+        warehouseItemCriteria.andEqualTo("warehouseInfoId", warehouseInfoId);
+        warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
+        if(StringUtils.isNotBlank(barCode)){
+            warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
+        }
+        if(StringUtils.isNotBlank(itemNo)){
+            warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
+        }
+        List<WarehouseItemInfo> warehouseItemInfoList = null;
+        if(null != pagenation){
+            pagenation = warehouseItemInfoService.pagination(warehouseItemExample, pagenation, new QueryModel());
+            warehouseItemInfoList = pagenation.getResult();
+        }else{
+            warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
+        }
+        return getPurchaseDetails(warehouseItemInfoList, skusList);
+    }
+
+    private List<PurchaseDetail> getPurchaseDetails(List<WarehouseItemInfo> warehouseItemInfoList, List<Skus> skusList){
+        List<PurchaseDetail> purchaseDetailList = new ArrayList<>();
+        for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+            PurchaseDetail detail = new PurchaseDetail();
+            detail.setSpuCode(warehouseItemInfo.getSpuCode());
+            detail.setSkuCode(warehouseItemInfo.getSkuCode());
+            detail.setBarCode(warehouseItemInfo.getBarCode());
+            detail.setItemNo(warehouseItemInfo.getItemNo());
+            detail.setSpecNatureInfo(warehouseItemInfo.getSpecNatureInfo());
+            detail.setWarehouseItemInfoId(warehouseItemInfo.getWarehouseInfoId());
+            detail.setWarehouseItemId(warehouseItemInfo.getWarehouseItemId());
+            for(Skus skus: skusList){
+                if(StringUtils.equals(warehouseItemInfo.getSkuCode(), skus.getSkuCode())){
+                    detail.setSkuName(skus.getSkuName());
+                    detail.setBrandId(skus.getBrandId());
+                    detail.setBrandName(skus.getBrandName());
+                    detail.setCategoryId(skus.getCategoryId());
+                    detail.setAllCategoryName(skus.getCategoryName());
+                    break;
+                }
+            }
+            purchaseDetailList.add(detail);
+        }
+        return purchaseDetailList;
+    }
+
+
 
     @Override
     @PurchaseOrderCacheEvict
