@@ -92,6 +92,12 @@ public class ExternalSupplierConfig {
      */
     private String orderCancelUrl;
 
+    /**
+     * 物流包裹详情接口URL
+     */
+    private String orderPackUrl;
+
+
     public String getSkuPageUrl() {
         return skuPageUrl;
     }
@@ -354,5 +360,13 @@ public class ExternalSupplierConfig {
 
     public void setOrderCancelUrl(String orderCancelUrl) {
         this.orderCancelUrl = orderCancelUrl;
+    }
+
+    public String getOrderPackUrl() {
+        return orderPackUrl;
+    }
+
+    public void setOrderPackUrl(String orderPackUrl) {
+        this.orderPackUrl = orderPackUrl;
     }
 }

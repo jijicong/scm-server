@@ -71,6 +71,10 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         return wmsInvoke(deliveryOrderDetailRequest);
     }
 
+    @Override
+    public AppResult<ScmOrderPacksResponse> orderPack(ScmOrderPacksRequest orderPacksRequest) {
+        return wmsInvoke(orderPacksRequest);
+    }
 
 
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
@@ -97,6 +101,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmDeliveryOrderDetailRequest){
             url = externalSupplierConfig.getDeliveryOrderDetailQueryUrl();
             method = "出库单详情";
+        }else if(scmWarehouseRequestBase instanceof ScmOrderPacksRequest){
+            url = externalSupplierConfig.getOrderPackUrl();
+            method = "物流详情";
         }
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
         String jsonParam = JSON.toJSONString(scmWarehouseRequestBase);
@@ -157,6 +164,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseArray(appResult.getResult().toString(), ScmEntryOrderDetailResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmDeliveryOrderDetailRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmDeliveryOrderDetailResponse.class);
+        }else if(scmWarehouseRequestBase instanceof  ScmOrderPacksRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmOrderPacksResponse.class);
         }
         appResult.setResult(response);
     }

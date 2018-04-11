@@ -66,4 +66,11 @@ public interface IWarehouseApiService {
      */
     AppResult<ScmDeliveryOrderDetailResponse> deliveryOrderDetail(ScmDeliveryOrderDetailRequest deliveryOrderDetailRequest);
 
+
+    /**
+     * 物流包裹详情查询
+     * @param orderPacksRequest
+     * @return
+     */
+    AppResult<ScmOrderPacksResponse> orderPack(ScmOrderPacksRequest orderPacksRequest);
 }
