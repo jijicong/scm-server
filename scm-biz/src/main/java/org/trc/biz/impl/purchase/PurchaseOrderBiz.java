@@ -444,7 +444,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public Pagenation<PurchaseDetail> findPurchaseDetail(ItemForm form, Pagenation<PurchaseDetail> page, String skus) {
         String supplierCode = form.getSupplierCode();
         String warehouseInfoId = form.getWarehouseInfoId();
@@ -786,7 +786,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     }
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
+    @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
     public List<PurchaseDetail> findAllPurchaseDetailBysupplierCode(String supplierCode)  {
         AssertUtil.notBlank(supplierCode,"根据供应商编码查询所有的可采购商品失败,供应商编码为空");
         Map<String, Object> map = new HashMap<>();
