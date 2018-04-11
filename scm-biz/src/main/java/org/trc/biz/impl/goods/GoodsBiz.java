@@ -327,9 +327,9 @@ public class GoodsBiz implements IGoodsBiz {
         if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
             //sku计算库存总和
             for (String skuCode:skuCodes) {
-                SkuStock skuStock = new SkuStock();
-                skuStock.setSkuCode(skuCode);
                 for (ScmInventoryQueryResponse inventoryQueryResponse:inventoryQueryResponseList ) {
+                    SkuStock skuStock = new SkuStock();
+                    skuStock.setSkuCode(skuCode);
                     if (StringUtils.equals(skuCode,inventoryQueryResponse.getItemCode())){
                         //判断库存类型,可销售
                         if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())){
@@ -3180,7 +3180,6 @@ public class GoodsBiz implements IGoodsBiz {
 
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
         if(warehouseOwernSkuDOListQimen.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(),inventoryType, warehouseOwernSkuDOListQimen));
         }
         if(warehouseOwernSkuDOListJingdong.size() > 0){
             scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(),inventoryType, warehouseOwernSkuDOListJingdong));
