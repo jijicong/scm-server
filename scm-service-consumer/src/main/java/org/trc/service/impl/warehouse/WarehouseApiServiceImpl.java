@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.JingdongInventoryStateEnum;
-import org.trc.enums.JingdongInventoryTypeEnum;
 import org.trc.enums.SuccessFailureEnum;
 import org.trc.form.JDModel.ExternalSupplierConfig;
 import org.trc.form.warehouse.*;
@@ -19,10 +17,8 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.AppResult;
 import org.trc.util.DateUtils;
 import org.trc.util.HttpClientUtil;
-import org.trc.util.ResponseAck;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -42,20 +38,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 
     @Override
     public AppResult<List<ScmInventoryQueryResponse>> inventoryQuery(ScmInventoryQueryRequest inventoryQueryRequest) {
-        //return wmsInvoke(inventoryQueryRequest);
-
-        List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
-        ScmInventoryQueryResponse response = new ScmInventoryQueryResponse();
-        response.setWarehouseCode("test123456");//京东
-        response.setItemCode("SP0201708170000001");//商品sku
-        response.setItemId("hellokaito20180404123");//京东ItemId
-        response.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());
-        response.setInventoryStatus(JingdongInventoryStateEnum.GOOD.getCode());
-        response.setOwnerCode("333");//货主id
-        response.setTotalNum(100L);
-        scmInventoryQueryResponseList.add(response);
-        AppResult<List<ScmInventoryQueryResponse>> appResult = new AppResult<>(ResponseAck.SUCCESS_CODE, "库存查询成功", scmInventoryQueryResponseList);
-        return appResult;
+        return wmsInvoke(inventoryQueryRequest);
     }
 
     @Override
