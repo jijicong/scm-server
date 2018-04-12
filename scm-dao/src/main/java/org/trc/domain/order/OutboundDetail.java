@@ -65,6 +65,9 @@ public class OutboundDetail implements Serializable {
     @Column(name = "spec_nature_info")
     private String specNatureInfo;
 
+    @Column(name = "warehouse_item_id")
+    private String warehouseItemId;
+
     public List<OutboundDetailLogistics> getOutboundDetailLogisticsList() {
         return outboundDetailLogisticsList;
     }
@@ -169,4 +172,11 @@ public class OutboundDetail implements Serializable {
         this.specNatureInfo = specNatureInfo;
     }
 
+    public String getWarehouseItemId() {
+        return warehouseItemId;
+    }
+
+    public void setWarehouseItemId(String warehouseItemId) {
+        this.warehouseItemId = warehouseItemId;
+    }
 }

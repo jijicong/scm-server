@@ -15,7 +15,7 @@ public class ScmOrderPackage {
     /**
      * 商品明细集合
      */
-    private List<ScmDeliveryOrderItem> scmDeliveryOrderItems;
+    private List<ScmDeliveryOrderDetailResponseItem> scmDeliveryOrderDetailResponseItems;
 
     public String getPackageNo() {
         return packageNo;
@@ -25,11 +25,11 @@ public class ScmOrderPackage {
         this.packageNo = packageNo;
     }
 
-    public List<ScmDeliveryOrderItem> getScmDeliveryOrderItems() {
-        return scmDeliveryOrderItems;
+    public List<ScmDeliveryOrderDetailResponseItem> getScmDeliveryOrderDetailResponseItems() {
+        return scmDeliveryOrderDetailResponseItems;
     }
 
-    public void setScmDeliveryOrderItems(List<ScmDeliveryOrderItem> scmDeliveryOrderItems) {
-        this.scmDeliveryOrderItems = scmDeliveryOrderItems;
+    public void setScmDeliveryOrderDetailResponseItems(List<ScmDeliveryOrderDetailResponseItem> scmDeliveryOrderDetailResponseItems) {
+        this.scmDeliveryOrderDetailResponseItems = scmDeliveryOrderDetailResponseItems;
     }
 }
