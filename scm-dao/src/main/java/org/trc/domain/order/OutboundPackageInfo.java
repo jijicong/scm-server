@@ -17,8 +17,6 @@ public class OutboundPackageInfo implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long outboundDetailId;
-
     private String waybillNumber;
 
     private String packageNumber;
@@ -35,14 +33,6 @@ public class OutboundPackageInfo implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getOutboundDetailId() {
-        return outboundDetailId;
-    }
-
-    public void setOutboundDetailId(Long outboundDetailId) {
-        this.outboundDetailId = outboundDetailId;
     }
 
     public String getWaybillNumber() {
