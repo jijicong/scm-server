@@ -203,7 +203,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
                 if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
                     ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
-                    List<ScmOrderDefaultResult> scmOrderDefaultResults = packsResponse.getScmOrderDefaultResults();
 
                     //获取发货单
                     OutboundOrder outboundOrder = new OutboundOrder();
@@ -438,8 +437,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         for(ScmOrderDefaultResult result : results){
             //发货单号
             String outboundOrderCode = result.getOrderCode();
-            //运单号
-            String expressCode = result.getWayBill();
             //物流公司名称
             String logisticsName = result.getLogisticsName();
             //物流公司编号
@@ -455,6 +452,9 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 outboundPackageInfo = new OutboundPackageInfo();
                 outboundPackageInfo.setPackageNumber(packageNo);
                 outboundPackageInfoList = outboundPackageInfoService.select(outboundPackageInfo);
+
+                //获取运单号
+                String expressCode = result.getWayBill().split("-")[0];
 
                 //判断是否已存储物流信息，如果没有新增
                 if(outboundPackageInfoList == null || outboundPackageInfoList.size() < 1) {
