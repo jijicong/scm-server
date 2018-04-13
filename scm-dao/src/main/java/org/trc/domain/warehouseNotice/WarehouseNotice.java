@@ -140,8 +140,18 @@ public class WarehouseNotice implements Serializable{
     private String failureCause;
     //异常原因
     private String exceptionCause;
+    //完成状态：0-未完成，1-已完成 (仓库反馈收货完成的、作废的、已取消的都是已完成)
+    private String finishStatus;
 
-    public String getExceptionCause() {
+    public String getFinishStatus() {
+		return finishStatus;
+	}
+
+	public void setFinishStatus(String finishStatus) {
+		this.finishStatus = finishStatus;
+	}
+
+	public String getExceptionCause() {
 		return exceptionCause;
 	}
 
