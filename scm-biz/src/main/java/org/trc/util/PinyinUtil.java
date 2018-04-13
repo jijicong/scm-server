@@ -10,10 +10,10 @@ public class PinyinUtil {
             int codePoint1 = o1.charAt(i);
             int codePoint2 = o2.charAt(i);
 
-            if (Character.isSupplementaryCodePoint(codePoint1)
-                    || Character.isSupplementaryCodePoint(codePoint2)) {
-                i++;
-            }
+//            if (Character.isSupplementaryCodePoint(codePoint1)
+//                    || Character.isSupplementaryCodePoint(codePoint2)) {
+//                i++;
+//            }
 
             if (codePoint1 != codePoint2) {
                 if (Character.isSupplementaryCodePoint(codePoint1)
@@ -33,7 +33,7 @@ public class PinyinUtil {
                 }
             }
         }
-        return o2.length() - o2.length();
+        return o1.length() - o2.length();
     }
 
 
