@@ -7,6 +7,10 @@ public class SkuWarehouseDO {
      */
     private String skuCode;
     /**
+     * 商品编码(仓库商品编码)
+     */
+    private String itemId;
+    /**
      * 渠道编码
      */
     private String channelCode;
@@ -49,5 +53,13 @@ public class SkuWarehouseDO {
 
     public void setItemNum(Long itemNum) {
         this.itemNum = itemNum;
+    }
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
     }
 }
