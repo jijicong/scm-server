@@ -262,7 +262,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         compareAudit = purchaseOrderAuditService.selectOne(compareAudit);
         AssertUtil.notNull(compareAudit.getId(),"查询审核采购单失败!");
         if(!compareAudit.getStatus().equals(ZeroToNineEnum.ONE.getCode())){
-            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, "该审核单不具有审核操作");
+            throw new PurchaseOrderAuditException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_AUDIT_UPDATE_EXCEPTION, "状态已更新，请返回列表页查看最新状态");
         }
         //审核驳回，检验审核意见是否为空
         if(ZeroToNineEnum.THREE.getCode().equals(purchaseOrderAudit.getStatus())){//判断是否为驳回

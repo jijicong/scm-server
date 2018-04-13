@@ -899,6 +899,9 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
             WarehouseNotice notice = new WarehouseNotice();
             notice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+            // 作废 则表示已完成
+            notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+            
             notice.setUpdateTime(Calendar.getInstance().getTime());
             Example example = new Example(WarehouseNotice.class);
             Example.Criteria criteria = example.createCriteria();
@@ -1451,6 +1454,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setWarehouseCode(order.getWarehouseCode());
         //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
         warehouseNotice.setStatus(WarehouseNoticeStatusEnum.WAREHOUSE_NOTICE_RECEIVE.getCode());
+        // 默认为未完成的状态
+        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
         warehouseNotice.setSupplierId(order.getSupplierId());
         warehouseNotice.setSupplierCode(order.getSupplierCode());
         warehouseNotice.setPurchaseType(order.getPurchaseType());
@@ -1532,6 +1537,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         //更改入库通知单的状态--用自身的‘待发起入库通知状态’,作为判断是否执行作废的操作
         WarehouseNotice notice = new WarehouseNotice();
         notice.setStatus(WarehouseNoticeStatusEnum.DROPPED.getCode());
+        // 作废 则表示已完成
+        notice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
         notice.setUpdateTime(Calendar.getInstance().getTime());
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
