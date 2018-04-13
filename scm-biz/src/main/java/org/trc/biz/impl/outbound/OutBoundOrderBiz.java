@@ -209,7 +209,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundOrder.setOutboundOrderCode(outboundOrderCode);
                     outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
-                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
+                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
                         logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
                         return;
                     }
@@ -425,6 +425,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     //更新发货单
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmOrderPacksResponse response, String warehouseCode){
         OutboundDetail outboundDetail = null;
         OutboundDetailLogistics outboundDetailLogistics = null;
