@@ -1649,7 +1649,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             LOGGER.error(String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
                     CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));
             if(!flag){
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品");
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, "无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
             }
         }
 
@@ -1677,7 +1677,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
 
         if(CollectionUtils.isEmpty(skusList)){
             if(!flag){
-                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,"无数据，请确认【商品管理】中存在“启用”状态的自采商品！");
+                throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION,"无数据，请确认【商品管理】中存在所选供应商的品牌的，且状态为启用的自采商品！");
             }
         }
         List<String> skuCodes = new ArrayList<>();
