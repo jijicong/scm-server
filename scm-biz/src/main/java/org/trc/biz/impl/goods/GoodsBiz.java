@@ -332,7 +332,7 @@ public class GoodsBiz implements IGoodsBiz {
                     skuStock.setSkuCode(skuCode);
                     if (StringUtils.equals(skuCode,inventoryQueryResponse.getItemCode())){
                         //判断库存类型,可销售
-                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())){
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
                             skuStock.setAvailableInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
                         }
                         //判断库存类型,仓库锁定
@@ -1951,7 +1951,7 @@ public class GoodsBiz implements IGoodsBiz {
                     for (ScmInventoryQueryResponse inventoryQueryResponse : inventoryQueryResponseList) {
                         if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
                             //判断库存类型,可销售
-                            if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())){
+                            if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
                                 skuStock.setAvailableInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
                             }
                             //判断库存类型,仓库锁定
@@ -3215,6 +3215,7 @@ public class GoodsBiz implements IGoodsBiz {
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
         if(StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())){
             scmInventoryQueryResponseList =JSON.parseArray(JSON.toJSONString(appResult.getResult()),ScmInventoryQueryResponse.class);
+            System.out.println(JSON.toJSONString(appResult.getResult()));
         }
         return scmInventoryQueryResponseList;
     }
