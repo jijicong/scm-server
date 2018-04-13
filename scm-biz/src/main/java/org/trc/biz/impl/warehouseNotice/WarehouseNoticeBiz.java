@@ -560,7 +560,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setOwnerCode(details.getOwnerCode());
             scmEntryOrderItem.setItemCode(details.getSkuCode());
             scmEntryOrderItem.setItemId(details.getItemId());
-            scmEntryOrderItem.setGoodsStatus(JingdongInventoryStateEnum.GOOD.getCode());
+            scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
             scmEntryOrderItemList.add(scmEntryOrderItem);
         }
@@ -785,16 +785,18 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     @Override
     @WarehouseNoticeCacheEvict
     public void updateStock() {
-        //1. 查询入库通知单，状态为收货异常，待仓库反馈，部分收货的入库单
+        //1. 查询入库通知单，状态为待仓库反馈，部分收货的入库单,完成状态为未完成的
         // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
         Example.Criteria warehouseNoticeCriteria = warehouseNoticeExample.createCriteria();
         List<String> stateArray = new ArrayList<>();
         //添加需要查询的状态
         stateArray.add(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
-        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//        stateArray.add(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         warehouseNoticeCriteria.andIn("status",stateArray);
+        //数据中未完成的入库通知单
+        warehouseNoticeCriteria.andEqualTo("finishStatus",WarehouseNoticeFinishStatusEnum.UNFINISHED.getCode());
 //        warehouseNoticeCriteria.andEqualTo("entryOrderId","EPL4418047973168");
         List<WarehouseNotice> warehouseNoticeList = warehouseNoticeService.selectByExample(warehouseNoticeExample);
         if (!AssertUtil.collectionIsEmpty(warehouseNoticeList)){
@@ -830,6 +832,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //处理库存信息
             if (!AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseList)) {
                 for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseList) {
+                    if (!StringUtils.equals(entryOrderDetail.getStatus(), "70")) {
+                        //如果不是70的完成状态,当前采购单入库详情就跳过处理
+                        continue;
+                    }
                     /* 定位到入库通知单 */
                     WarehouseNotice noticeOrder = new WarehouseNotice();
                     noticeOrder.setWarehouseNoticeCode(entryOrderDetail.getEntryOrderCode());
@@ -901,7 +907,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                                 exceptionCauseList.add("SKU[" + StringUtils.join(exceptionSkuCount, SupplyConstants.Symbol.COMMA) + "]正品入库数量大于实际采购数量。");
 
                             }
-                            warehouseNotice.setExceptionCause(((warehouseNotice.getExceptionCause())==null?"":(warehouseNotice.getExceptionCause()+","))+StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
+                            warehouseNotice.setExceptionCause(((warehouseNotice.getExceptionCause()) == null ? "" : (warehouseNotice.getExceptionCause() + ",")) + StringUtils.join(exceptionCauseList, SupplyConstants.Symbol.COMMA));
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
                         } else if (!AssertUtil.collectionIsEmpty(partialNoticeDetailList)) {
                             //部分收货
@@ -912,6 +918,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                             warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
                         }
                         //更新入库通知单
+                        //把完成状态修改为完成
+                        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
                         int count = warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
                         if (count == 0) {
                             String msg = "修改入库通知单" + JSON.toJSONString(warehouseNotice) + "数据库操作失败";
@@ -920,12 +928,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
                         //更新完成 记录日志
                         if (StringUtils.equals(warehouseNotice.getStatus(), WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())) {
-                                //获取异常日志
+                            //获取异常日志
                             try {
                                 logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(),
                                         "warehouse",
                                         WarehouseNoticeStatusEnum.getWarehouseNoticeStatusEnumByCode(warehouseNotice.getStatus()).getName()
-                                        , getExceptionLog(warehouseNotice,warehouseNoticeDetailsList), null);
+                                        , getExceptionLog(warehouseNotice, warehouseNoticeDetailsList), null);
                             } catch (Exception e) {
                                 logger.error("查询仓库详情，操作日志记录异常信息失败：{}", e.getMessage());
                             }
