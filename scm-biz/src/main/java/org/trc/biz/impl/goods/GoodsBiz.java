@@ -2739,7 +2739,7 @@ public class GoodsBiz implements IGoodsBiz {
             Pattern p = Pattern.compile(COMMA_SPLIT);
             Matcher m = p.matcher(barcode);
             if (m.find()) {
-                String msg = "条形码格式异常";
+                String msg = "条形码检验格式异常";
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
             }
@@ -2750,7 +2750,7 @@ public class GoodsBiz implements IGoodsBiz {
         for (String barCodeString : Arrays.asList(barArray)) {
             //判断条形码的形式是否符合正则
             Pattern p = Pattern.compile(CODE_CHECK);
-            Matcher m = p.matcher(barcode);
+            Matcher m = p.matcher(barCodeString);
             if (!m.find()) {
                 errorBarCode.add(barCodeString);
             }
