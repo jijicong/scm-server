@@ -112,6 +112,8 @@ public class GoodsBiz implements IGoodsBiz {
     public static final String JING_DONG_PIC_N_12 = "n12/";
     //逗号分隔的正则
     private static final String COMMA_SPLIT = "\\,{2,}";
+    //条码正则
+    private static final String CODE_CHECK = "^[\\da-zA-Z!#-]*$";
 
     @Autowired
     private IItemsService itemsService;
@@ -2732,6 +2734,7 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     public void checkBarcodeOnly(String barcode, String skuCode) {
+        AssertUtil.notBlank(barcode, "条形码不能为空");
         if (barcode.indexOf(SupplyConstants.Symbol.COMMA) != -1) {
             Pattern p = Pattern.compile(COMMA_SPLIT);
             Matcher m = p.matcher(barcode);
@@ -2743,6 +2746,20 @@ public class GoodsBiz implements IGoodsBiz {
         }
         String barArray[] = StringUtils.split(barcode, SupplyConstants.Symbol.COMMA);
         AssertUtil.notEmpty( Arrays.asList(barArray),"未接收到条形码");
+        List<String> errorBarCode = new ArrayList<>();
+        for (String barCodeString : Arrays.asList(barArray)) {
+            //判断条形码的形式是否符合正则
+            Pattern p = Pattern.compile(CODE_CHECK);
+            Matcher m = p.matcher(barcode);
+            if (!m.find()) {
+                errorBarCode.add(barCodeString);
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(errorBarCode)) {
+            String msg = "条形码:" + StringUtils.join(errorBarCode, SupplyConstants.Symbol.COMMA) + "格式异常";
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
         List<String> existedCode = new ArrayList<>();
         List<String> barCodeList = new ArrayList<>();
         List<String> nowBarCode = new ArrayList<>();
@@ -2750,10 +2767,14 @@ public class GoodsBiz implements IGoodsBiz {
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);
-        AssertUtil.notBlank(barcode, "条形码不能为空");
         //新增时校验条形码
         if (StringUtils.isBlank(skuCode)){
             for (String barCode : Arrays.asList(barArray)) {
+//                if (!Pattern.matches(barCode,CODE_CHECK)){
+//                    String msg = "条形码:"+barCode+"格式异常";
+//                    log.error(msg);
+//                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+//                }
                 boolean isFlag = false;
                 for (String validBar : allBarCode) {
                     if (StringUtils.equals(barCode, validBar)) {
