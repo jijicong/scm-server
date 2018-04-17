@@ -66,6 +66,7 @@ import tk.mybatis.mapper.util.StringUtil;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -110,7 +111,7 @@ public class GoodsBiz implements IGoodsBiz {
     //京东原图路径
     public static final String JING_DONG_PIC_N_12 = "n12/";
     //逗号分隔的正则
-    private static final String COMMA_SPLIT = "^([0-9]+,)*[0-9]+$";
+    private static final String COMMA_SPLIT = "\\,{2,}";
 
     @Autowired
     private IItemsService itemsService;
@@ -913,11 +914,13 @@ public class GoodsBiz implements IGoodsBiz {
         List<SkuGridInfo> skuGridInfoList = JSON.parseArray(skus.getSkusInfo(),SkuGridInfo.class);
         //啟用的sku信息
         List<SkuGridInfo> skuValidInfoList = new ArrayList<>();
-        for (SkuGridInfo s:skuGridInfoList ) {
-            if (s.getBarCode().indexOf(SupplyConstants.Symbol.COMMA)!=-1){
+        for (SkuGridInfo s : skuGridInfoList) {
+            if (s.getBarCode().indexOf(SupplyConstants.Symbol.COMMA) != -1) {
                 //逗号分隔的正则
-                if (!Pattern.matches(COMMA_SPLIT, s.getBarCode())) {
-                    String msg = "条形码格式异常" ;
+                Pattern p = Pattern.compile(COMMA_SPLIT);
+                Matcher m = p.matcher(s.getBarCode());
+                if (m.find()) {
+                    String msg = "条形码格式异常";
                     log.error(msg);
                     throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
                 }
@@ -2729,10 +2732,11 @@ public class GoodsBiz implements IGoodsBiz {
 
     @Override
     public void checkBarcodeOnly(String barcode, String skuCode) {
-        if (barcode.indexOf(SupplyConstants.Symbol.COMMA)!=-1){
-            //逗号分隔的正则
-            if (!Pattern.matches(COMMA_SPLIT, barcode)) {
-                String msg = "条形码格式异常" ;
+        if (barcode.indexOf(SupplyConstants.Symbol.COMMA) != -1) {
+            Pattern p = Pattern.compile(COMMA_SPLIT);
+            Matcher m = p.matcher(barcode);
+            if (m.find()) {
+                String msg = "条形码格式异常";
                 log.error(msg);
                 throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
             }
