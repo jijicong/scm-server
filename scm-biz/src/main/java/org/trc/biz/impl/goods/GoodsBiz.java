@@ -2765,10 +2765,16 @@ public class GoodsBiz implements IGoodsBiz {
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
+        List<String> noValidBarCodeList = new ArrayList<>();
+        if (StringUtils.isNotBlank(notIn)){
+            String noValidBarCodeArray[] = StringUtils.split(notIn, SupplyConstants.Symbol.COMMA);
+            noValidBarCodeList = Arrays.asList(noValidBarCodeArray);
+        }
         List<String> existedCode = new ArrayList<>();
         List<String> barCodeList = new ArrayList<>();
         List<String> nowBarCode = new ArrayList<>();
-        List<String> allBarCode = skusService.selectAllBarCode();
+        List<String> allBarCode = skusService.selectAllBarCode(noValidBarCodeList);
+        System.out.println(JSON.toJSONString(allBarCode));
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);
@@ -2777,8 +2783,6 @@ public class GoodsBiz implements IGoodsBiz {
             return;
         }
         List<String> realBarCode = new ArrayList<>();
-        String noValidBarCodeArray[] = StringUtils.split(notIn, SupplyConstants.Symbol.COMMA);
-        List<String> noValidBarCodeList = Arrays.asList(noValidBarCodeArray);
         if (!AssertUtil.collectionIsEmpty(noValidBarCodeList)){
             //过滤停用
                 //条码过滤,把页面的条码从所有启用条码中去掉
@@ -3338,7 +3342,7 @@ public class GoodsBiz implements IGoodsBiz {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         //开始校验条码
-        List<String> allBarCode = skusService.selectAllBarCode();
+        List<String> allBarCode = skusService.selectAllBarCode(new ArrayList<>());
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);

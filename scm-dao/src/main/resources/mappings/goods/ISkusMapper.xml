@@ -88,5 +88,11 @@
 
     <select id="selectAllBarCode" resultType="java.lang.String">
         SELECT bar_code from  skus where  is_valid = '1'
+        <if test="notInList != null and notInList.size>0">
+            AND sku_code NOT in
+            <foreach collection="notInList" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
     </select>
 </mapper>
