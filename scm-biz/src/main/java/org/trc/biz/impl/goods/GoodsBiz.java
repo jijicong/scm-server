@@ -737,6 +737,10 @@ public class GoodsBiz implements IGoodsBiz {
         itemsUpdateNoticeChannel(items, updateSkus, TrcActionTypeEnum.EDIT_ITEMS);
         //更新仓库商品信息和同步仓库
         this.updateWarehouseItemInfo(warehouseItemInfoMap, items.getSpuCode());
+        //更新仓库商品启停用状态
+        for(Skus s : updateSkus){
+            itemsUpdateNoticeWarehouseItemInfo(s, s.getIsValid());
+        }
         //记录操作日志
         String remark = "SPU信息更新";
         /*if(isValidUpdate)
