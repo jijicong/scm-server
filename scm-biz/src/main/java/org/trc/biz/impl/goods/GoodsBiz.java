@@ -3192,6 +3192,9 @@ public class GoodsBiz implements IGoodsBiz {
      * @return
      */
     public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList,String inventoryType){
+        if(CollectionUtils.isEmpty(skuCodes) || CollectionUtils.isEmpty(warehouseInfoList)){
+            return new ArrayList<>();
+        }
         List<Long> warehouseInfoIds = new ArrayList<>();
         for(WarehouseInfo warehouseInfo2: warehouseInfoList){
             warehouseInfoIds.add(warehouseInfo2.getId());
@@ -3204,8 +3207,8 @@ public class GoodsBiz implements IGoodsBiz {
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-        if (!AssertUtil.collectionIsEmpty(warehouseItemInfoList)) {
-
+        if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
+            return new ArrayList<>();
         }
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();

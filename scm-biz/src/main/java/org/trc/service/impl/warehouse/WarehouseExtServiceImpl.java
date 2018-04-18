@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
@@ -128,6 +129,9 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
      * @return
      */
     private List<WarehouseItemInfo> getWarehouseItemInfo(List<String> skuCodes, List<String> warehouseInfoIds){
+        if(CollectionUtils.isEmpty(skuCodes) || CollectionUtils.isEmpty(warehouseInfoIds)){
+            return new ArrayList<>();
+        }
         //查询跟仓库绑定过的商品,其中没有绑定过的在后面的拆单时会归到异常订单里面
         Example example = new Example(WarehouseItemInfo.class);
         Example.Criteria criteria = example.createCriteria();
