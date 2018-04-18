@@ -31,6 +31,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
+import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.ScmItemSyncRequest;
 import org.trc.form.warehouse.ScmItemSyncResponse;
 import org.trc.form.warehouse.ScmWarehouseItem;
@@ -104,6 +105,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private ISkuStockService skuStockService;
+    @Autowired
+    private JDWmsConstantConfig jDWmsConstantConfig;
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -980,8 +983,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             Long days = items.getQualityDay();
             if(StringUtils.isEquals(isquality, ZeroToNineEnum.ONE.getCode()) && days > 0){
                 item.setSaveDays(days.intValue());
-                item.setInstoreThreshold("0.5");
-                item.setOutstoreThreshold("0.8");
+                item.setInstoreThreshold(jDWmsConstantConfig.getInstoreThreshold());
+                item.setOutstoreThreshold(jDWmsConstantConfig.getOutstoreThreshold());
             }else{
                 item.setSaveDays(0);
             }
@@ -991,7 +994,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             item.setBarCode(info.getBarCode());
             item.setSkuProperty(info.getSpecNatureInfo());
             item.setItemType(info.getItemType());
-            item.setThirdCategoryNo("其他");
+            item.setThirdCategoryNo(jDWmsConstantConfig.getThirdCategoryNo());
 
             list.add(item);
         }

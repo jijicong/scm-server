@@ -455,7 +455,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 outboundPackageInfoList = outboundPackageInfoService.select(outboundPackageInfo);
 
                 //获取运单号
-                String expressCode = result.getWayBill().split("-")[0];
+                String expressCode = packageNo.split("-")[0];
 
                 //判断是否已存储物流信息，如果没有新增
                 if(outboundPackageInfoList == null || outboundPackageInfoList.size() < 1) {

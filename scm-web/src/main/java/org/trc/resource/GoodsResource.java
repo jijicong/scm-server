@@ -7,20 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.SuccessFailureEnum;
 import org.trc.enums.ValidEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.SupplyItemsForm;
 import org.trc.form.SupplyItemsExt;
 import org.trc.form.goods.ExternalItemSkuForm;
-import org.trc.form.goods.ItemsExt;
 import org.trc.form.goods.ItemsForm;
 import org.trc.form.goods.SkusForm;
 import org.trc.form.supplier.SupplierForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -29,7 +25,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -190,12 +185,21 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.CHECK_BARCODE_ONLY)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public Response checkBarcodeOnly(@FormParam("barCode") String barCode,@FormParam("skuCode") String skuCode,@FormParam("isValid") String isValid) throws Exception {
+    public Response checkBarcodeOnly(@FormParam("barCode") String barCode,@FormParam("skuCode") String skuCode,@FormParam("isValid") String isValid,@FormParam("notIn")String notIn) throws Exception {
         if (StringUtils.equals(isValid,ValidEnum.NOVALID.getCode())){
             return ResultUtil.createSuccessResult("条形码可用", "");
         }else {
-            goodsBiz.checkBarcodeOnly(barCode,skuCode);
+            goodsBiz.checkBarcodeOnly(barCode,skuCode,notIn);
             return ResultUtil.createSuccessResult("条形码可用", "");
         }
+    }
+
+    @POST
+    @Path(SupplyConstants.Goods.SKU_INFO_BAR)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded")
+    public Response skuInfoBarCode(@FormParam("skuInfo") String skuInfo){
+        goodsBiz.skuInfoBarCode(skuInfo);
+        return ResultUtil.createSuccessResult("条形码可用", "");
     }
 }

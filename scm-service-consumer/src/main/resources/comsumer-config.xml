@@ -92,6 +92,8 @@
         <property name="salePlatformSource" value="${jd.wms.constant.salePlatformSource}"/>
         <property name="shipperNo" value="${jd.wms.constant.shipperNo}"/>
         <property name="orderMark" value="${jd.wms.constant.orderMark}"/>
+        <property name="instoreThreshold" value="${jd.wms.constant.instoreThreshold}"/>
+        <property name="outstoreThreshold" value="${jd.wms.constant.outstoreThreshold}"/>
     </bean>
 
 </beans>

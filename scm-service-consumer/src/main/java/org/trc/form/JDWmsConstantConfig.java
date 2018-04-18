@@ -55,6 +55,16 @@ public class JDWmsConstantConfig {
      */
     private String goodStatus;
 
+    /**
+     * 入库保质期阈值
+     */
+    private String instoreThreshold;
+
+    /**
+     *出库保质期阈值
+     */
+    private String outstoreThreshold;
+
     public String getDeptNo() {
         return deptNo;
     }
@@ -133,5 +143,21 @@ public class JDWmsConstantConfig {
 
     public void setGoodStatus(String goodStatus) {
         this.goodStatus = goodStatus;
+    }
+
+    public String getInstoreThreshold() {
+        return instoreThreshold;
+    }
+
+    public void setInstoreThreshold(String instoreThreshold) {
+        this.instoreThreshold = instoreThreshold;
+    }
+
+    public String getOutstoreThreshold() {
+        return outstoreThreshold;
+    }
+
+    public void setOutstoreThreshold(String outstoreThreshold) {
+        this.outstoreThreshold = outstoreThreshold;
     }
 }
