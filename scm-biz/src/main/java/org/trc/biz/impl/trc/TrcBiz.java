@@ -1238,7 +1238,12 @@ public class TrcBiz implements ITrcBiz {
             logger.warn("自采SKU没有查询到可用仓库");
             return scmInventoryQueryResponseList;
         }
-        return warehouseExtService.getWarehouseInventory(new ArrayList<>(skuCodes));
+        try{
+            scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(new ArrayList<>(skuCodes));
+        }catch (Exception e){
+            logger.error("查询库存异常", e);
+        }
+        return scmInventoryQueryResponseList;
     }
 
 
