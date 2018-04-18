@@ -2774,7 +2774,6 @@ public class GoodsBiz implements IGoodsBiz {
         List<String> barCodeList = new ArrayList<>();
         List<String> nowBarCode = new ArrayList<>();
         List<String> allBarCode = skusService.selectAllBarCode(noValidBarCodeList);
-        System.out.println(JSON.toJSONString(allBarCode));
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);
