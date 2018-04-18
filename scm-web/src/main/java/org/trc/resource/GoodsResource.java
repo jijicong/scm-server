@@ -185,11 +185,11 @@ public class GoodsResource {
     @Path(SupplyConstants.Goods.CHECK_BARCODE_ONLY)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/x-www-form-urlencoded")
-    public Response checkBarcodeOnly(@FormParam("barCode") String barCode,@FormParam("skuCode") String skuCode,@FormParam("isValid") String isValid) throws Exception {
+    public Response checkBarcodeOnly(@FormParam("barCode") String barCode,@FormParam("skuCode") String skuCode,@FormParam("isValid") String isValid,@FormParam("notIn")String notIn) throws Exception {
         if (StringUtils.equals(isValid,ValidEnum.NOVALID.getCode())){
             return ResultUtil.createSuccessResult("条形码可用", "");
         }else {
-            goodsBiz.checkBarcodeOnly(barCode,skuCode);
+            goodsBiz.checkBarcodeOnly(barCode,skuCode,notIn);
             return ResultUtil.createSuccessResult("条形码可用", "");
         }
     }
