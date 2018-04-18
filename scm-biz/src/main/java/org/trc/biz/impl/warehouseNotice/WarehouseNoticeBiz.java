@@ -204,21 +204,27 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     			AclUserAccreditInfo user = new AclUserAccreditInfo();
     			user.setUserId(notice.getCreateOperator());
     			AclUserAccreditInfo tmpUser = userAccreditInfoService.selectOne(user);
-    			AssertUtil.notNull(tmpUser, "创建人名称查询失败");
-    			notice.setCreateOperator(tmpUser.getName());
-    			
+                if(null == tmpUser){
+                    logger.error(String.format("根据创建人编码%s查询创建人名称信息为空", notice.getCreateOperator()));
+                }else {
+                    notice.setCreateOperator(tmpUser.getName());
+                }
     	        Supplier supplier = new Supplier();
     	        supplier.setSupplierCode(notice.getSupplierCode());
     	        supplier = iSupplierService.selectOne(supplier);
-    	        AssertUtil.notNull(supplier, "供应商名称查询失败");
-    	        notice.setSupplierName(supplier.getSupplierName());
-
+                if(null == supplier){
+                    logger.error(String.format("根据供应商编码%s查询供应商信息为空", notice.getSupplierCode()));
+                }else {
+                    notice.setSupplierName(supplier.getSupplierName());
+                }
     	        WarehouseInfo warehouse = new WarehouseInfo();
     	        warehouse.setCode(notice.getWarehouseCode());
     	        warehouse = warehouseInfoService.selectOne(warehouse);
-    	        AssertUtil.notNull(warehouse, "仓库名称查询失败");
-    	        notice.setWarehouseName(warehouse.getWarehouseName());
-    			
+                if(null == warehouse){
+                    logger.error(String.format("根据仓库编码%s查询仓库信息为空", notice.getWarehouseCode()));
+                }else {
+                    notice.setWarehouseName(warehouse.getWarehouseName());
+                }
     		}
     	}
     }
@@ -704,7 +710,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setCode(warehouseNotice.getWarehouseCode());
         warehouse = warehouseInfoService.selectOne(warehouse);
-        AssertUtil.notNull(warehouse.getWarehouseName(), "仓库名称查询失败");
+        AssertUtil.notNull(warehouse, String.format("根据仓库编码%s查询仓库信息为空", warehouseNotice.getWarehouseCode()));
         warehouseNotice.setWarehouseName(warehouse.getWarehouseName());
         List<Dict> dicts = configBiz.findDictsByTypeNo(SupplyConstants.SelectList.PURCHASE_TYPE);
         for (Dict dict : dicts) {

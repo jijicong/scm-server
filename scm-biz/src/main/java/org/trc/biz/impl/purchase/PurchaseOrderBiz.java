@@ -188,28 +188,44 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 PurchaseGroup paramGroup = new PurchaseGroup();
                 paramGroup.setCode(purchaseOrder.getPurchaseGroupCode());
                 PurchaseGroup entityGroup = purchaseGroupService.selectOne(paramGroup);
-                purchaseOrder.setPurchaseGroupName(entityGroup.getName());
+                if(null == entityGroup){
+                    LOGGER.error(String.format("根据采购组编码%s查询采购组信息为空", purchaseOrder.getPurchaseGroupCode()));
+                }else{
+                    purchaseOrder.setPurchaseGroupName(entityGroup.getName());
+                }
             }
             //赋值采购人名称
             if(StringUtils.isNotBlank(purchaseOrder.getPurchasePersonId())){
                 AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
                 aclUserAccreditInfo.setUserId(purchaseOrder.getPurchasePersonId());
                 AclUserAccreditInfo entityAclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
-                purchaseOrder.setPurchasePerson(entityAclUserAccreditInfo.getName());
+                if(null == entityAclUserAccreditInfo){
+                    LOGGER.error(String.format("根据采购人编码%s查询采购人信息为空", purchaseOrder.getPurchasePersonId()));
+                }else {
+                    purchaseOrder.setPurchasePerson(entityAclUserAccreditInfo.getName());
+                }
             }
             //赋值供应商名称
             if(StringUtils.isNotBlank(purchaseOrder.getSupplierCode())){
                 Supplier supplier = new Supplier();
                 supplier.setSupplierCode(purchaseOrder.getSupplierCode());
                 Supplier entitySupplier = supplierService.selectOne(supplier);
-                purchaseOrder.setSupplierName(entitySupplier.getSupplierName());
+                if(null == entitySupplier){
+                    LOGGER.error(String.format("根据供应商编码%s查询供应商信息为空", purchaseOrder.getSupplierCode()));
+                }else {
+                    purchaseOrder.setSupplierName(entitySupplier.getSupplierName());
+                }
             }
             //赋值仓库名称
             if(StringUtils.isNotBlank(purchaseOrder.getWarehouseCode())){
                 WarehouseInfo warehouse = new WarehouseInfo();
                 warehouse.setCode(purchaseOrder.getWarehouseCode());
                 WarehouseInfo entityWarehouse = warehouseInfoService.selectOne(warehouse);
-                purchaseOrder.setWarehouseName(entityWarehouse.getWarehouseName());
+                if(null == entityWarehouse){
+                    LOGGER.error(String.format("根据仓库编码%s查询仓库信息为空", purchaseOrder.getWarehouseCode()));
+                }else {
+                    purchaseOrder.setWarehouseName(entityWarehouse.getWarehouseName());
+                }
             }
         }
 
