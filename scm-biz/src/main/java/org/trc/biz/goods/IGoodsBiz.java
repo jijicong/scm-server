@@ -163,4 +163,6 @@ public interface IGoodsBiz {
      * @param barcode
      */
     void checkBarcodeOnly(String barcode,String skuCode);
+
+    void skuInfoBarCode(String skuInfo);
 }
