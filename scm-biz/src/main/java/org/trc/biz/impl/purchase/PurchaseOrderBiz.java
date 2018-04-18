@@ -1463,7 +1463,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         warehouseNotice.setTakeGoodsNo(order.getTakeGoodsNo());
         warehouseNotice.setRequriedReceiveDate(order.getRequriedReceiveDate());
         warehouseNotice.setEndReceiveDate(order.getEndReceiveDate());
-        warehouseNotice.setRemark("新增入库通知单");
+        warehouseNotice.setRemark(order.getRemark());
         warehouseNotice.setCreateTime(Calendar.getInstance().getTime());
         warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
 
