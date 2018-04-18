@@ -907,7 +907,7 @@ public class GoodsBiz implements IGoodsBiz {
      *
      * @param skus
      */
-    private void checkSkuInfo(Skus skus){
+    private void checkSkuInfo(Skus skus) {
         JSONArray skuArray = JSONArray.parseArray(skus.getSkusInfo());
         if(skuArray.size() == 0){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
@@ -2770,11 +2770,6 @@ public class GoodsBiz implements IGoodsBiz {
         //新增时校验条形码
         if (StringUtils.isBlank(skuCode)){
             for (String barCode : Arrays.asList(barArray)) {
-//                if (!Pattern.matches(barCode,CODE_CHECK)){
-//                    String msg = "条形码:"+barCode+"格式异常";
-//                    log.error(msg);
-//                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
-//                }
                 boolean isFlag = false;
                 for (String validBar : allBarCode) {
                     if (StringUtils.equals(barCode, validBar)) {
@@ -2810,10 +2805,6 @@ public class GoodsBiz implements IGoodsBiz {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码" + StringUtils.join(existedCode, SupplyConstants.Symbol.COMMA) + "已经存在!");
             }
         }
-
-
-
-
     }
 
     private void getNewBarCode(String skuCode, String[] barArray, List<String> barCodeList, List<String> nowBarCode) {
@@ -3243,6 +3234,115 @@ public class GoodsBiz implements IGoodsBiz {
             System.out.println(JSON.toJSONString(appResult.getResult()));
         }
         return scmInventoryQueryResponseList;
+    }
+
+    /**
+     * 条形码校验终极修改版
+     * @param skuInfo
+     */
+    @Override
+    public void skuInfoBarCode(String skuInfo) {
+        JSONArray skuArray = JSONArray.parseArray(skuInfo);
+        if(skuArray.size() == 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "提交商品信息SKU信息不能为空");
+        }
+        List<SkuGridInfo> skuGridInfoList = JSON.parseArray(skuInfo,SkuGridInfo.class);
+        Map<String,List<SkuGridInfo>> barCodeMap = new HashMap<>();
+        List<SkuGridInfo> validSkuGridInfoList = new ArrayList<>();
+        List<SkuGridInfo> noValidSkuGridInfoList = new ArrayList<>();
+        for (SkuGridInfo s : skuGridInfoList) {
+            //先校验正则
+            if (s.getBarCode().indexOf(SupplyConstants.Symbol.COMMA) != -1) {
+                Pattern p = Pattern.compile(COMMA_SPLIT);
+                Matcher m = p.matcher(s.getBarCode());
+                if (m.find()) {
+                    String msg = "条形码格式异常";
+                    log.error(msg);
+                    throw new GoodsException(ExceptionEnum.GOODS_UPDATE_EXCEPTION, msg);
+                }
+            }
+            if (StringUtils.equals(s.getIsValid(),ValidEnum.VALID.getCode())){
+                validSkuGridInfoList.add(s);
+            }
+            if (StringUtils.equals(s.getIsValid(),ValidEnum.NOVALID.getCode())){
+                noValidSkuGridInfoList.add(s);
+            }
+        }
+        //页面上停用的条码
+        List<String> noValidBarCode = new ArrayList<>();
+        //页面上启用的条码
+        List<String> validBarCode = new ArrayList<>();
+        //所有的条形码
+        List<String> barCodeList = new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(noValidSkuGridInfoList)) {
+            for (SkuGridInfo skuGridInfo : noValidSkuGridInfoList) {
+                noValidBarCode.add(skuGridInfo.getBarCode());
+                barCodeList.add(skuGridInfo.getBarCode());
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(validSkuGridInfoList)) {
+            for (SkuGridInfo skuGridInfo : validSkuGridInfoList) {
+                validBarCode.add(skuGridInfo.getBarCode());
+                barCodeList.add(skuGridInfo.getBarCode());
+            }
+        }
+        AssertUtil.notEmpty(barCodeList,"未接收到条形码");
+        //正则校验
+        List<String> errorBarCode = new ArrayList<>();
+        for (String barCodeString : StringUtils.split(StringUtils.join(barCodeList,SupplyConstants.Symbol.COMMA),SupplyConstants.Symbol.COMMA)) {
+            //判断条形码的形式是否符合正则
+            Pattern p = Pattern.compile(CODE_CHECK);
+            Matcher m = p.matcher(barCodeString);
+            if (!m.find()) {
+                errorBarCode.add(barCodeString);
+            }
+        }
+        if (!AssertUtil.collectionIsEmpty(errorBarCode)) {
+            String msg = "条形码:" + StringUtils.join(errorBarCode, SupplyConstants.Symbol.COMMA) + "格式异常";
+            log.error(msg);
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+        }
+        //开始校验条码
+        List<String> allBarCode = skusService.selectAllBarCode();
+        String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
+        String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
+        allBarCode =  Arrays.asList(allBarCodeArray);
+        if (!AssertUtil.collectionIsEmpty(allBarCode)){
+            List<String> realBarCode = new ArrayList<>();
+            //条码过滤,把页面的条码从所有启用条码中去掉
+            if (!AssertUtil.collectionIsEmpty(noValidBarCode)) {
+                for (String code : allBarCode) {
+                    boolean flag = false;
+                    for (String noValidCode : noValidBarCode) {
+                        if (StringUtils.equals(code, noValidCode)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag) {
+                        realBarCode.add(code);
+                    }
+                }
+            }else{
+                realBarCode = allBarCode;
+            }
+            //条码对比校验
+            List<String> existedCode = new ArrayList<>();
+            for (String barCode : validBarCode) {
+                boolean isFlag = false;
+                for (String bar : realBarCode) {
+                    if (StringUtils.equals(barCode, bar)) {
+                        isFlag = true;
+                    }
+                }
+                if (isFlag) {
+                    existedCode.add(barCode);
+                }
+            }
+            if (!AssertUtil.collectionIsEmpty(existedCode)) {
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "条形码" + StringUtils.join(existedCode, SupplyConstants.Symbol.COMMA) + "已经存在!");
+            }
+        }
     }
 
 
