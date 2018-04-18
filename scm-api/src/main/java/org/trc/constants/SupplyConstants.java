@@ -710,7 +710,8 @@ public class SupplyConstants {
         public static final String SUPPLIERS_LIST = "suppliersList";
         //校验条形码唯一
         public static final String CHECK_BARCODE_ONLY = "checkBarcodeOnly";
-
+        //sku信息实时校验
+        public static final String SKU_INFO_BAR = "skuInfoBarCode";
     }
 
 
