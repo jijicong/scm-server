@@ -1,5 +1,6 @@
 package org.trc.mapper.goods;
 
+import org.apache.ibatis.annotations.Param;
 import org.trc.domain.goods.Skus;
 import org.trc.util.BaseMapper;
 
@@ -17,5 +18,5 @@ public interface ISkusMapper extends BaseMapper<Skus>{
 
     Integer selectSkuListCount(Map<String, Object> map);
 
-    List<String> selectAllBarCode();
+    List<String> selectAllBarCode(@Param("notInList")List<String> notInList);
 }
