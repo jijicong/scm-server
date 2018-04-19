@@ -194,7 +194,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
 
             //只获取复合过的发货单详情
-            if(Integer.parseInt(response.getCurrentStatus()) >= 10017){
+            if(response != null && Integer.parseInt(response.getCurrentStatus()) >= 10017){
                 //组装获取包裹信息
                 ScmOrderPacksRequest request = new ScmOrderPacksRequest();
                 request.setOrderIds(orderId);
