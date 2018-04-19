@@ -1444,8 +1444,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             details.setOwnerCode(ownerCode);
             details.setItemId(purchaseDetail.getWarehouseItemId());
             details.setCreateTime(Calendar.getInstance().getTime());
-            details.setNormalStorageQuantity(0L);
-            details.setDefectiveStorageQuantity(0L);
+            //details.setNormalStorageQuantity(0L);
+            //details.setDefectiveStorageQuantity(0L);
             warehouseNoticeDetails.add(details);
         }
         int count = warehouseNoticeDetailsService.insertList(warehouseNoticeDetails);
