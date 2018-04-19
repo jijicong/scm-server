@@ -1813,6 +1813,10 @@ public class GoodsBiz implements IGoodsBiz {
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
         String isValid = _isValid;
         for(WarehouseItemInfo warehouseItemInfo1 : warehouseItemInfoList){
+            int status = warehouseItemInfo1.getNoticeStatus();
+            if(status == 2 && StringUtils.equals("0", isValid)){
+                return;
+            }
             warehouseItemInfo1.setIsValid(Integer.parseInt(isValid));
             if(ZeroToNineEnum.ZERO.getCode().equals(isValid)){
                 int oldNoticeStatus = warehouseItemInfo1.getNoticeStatus();
