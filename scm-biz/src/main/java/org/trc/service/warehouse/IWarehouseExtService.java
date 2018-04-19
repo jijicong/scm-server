@@ -21,4 +21,11 @@ public interface IWarehouseExtService {
      */
     WarehouseTypeEnum getWarehouseType(String warehouseCode);
 
+    /**
+     * 获取仓库编码
+     * @param warehouseCode
+     * @return
+     */
+    String getWmsWarehouseCode(String warehouseCode);
+
 }

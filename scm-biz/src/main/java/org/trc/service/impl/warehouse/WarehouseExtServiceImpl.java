@@ -156,4 +156,13 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
             return WarehouseTypeEnum.Jingdong;
         }
     }
+
+    @Override
+    public String getWmsWarehouseCode(String warehouseCode) {
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setCode(warehouseCode);
+        warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+        AssertUtil.notNull(warehouseInfo, String.format("根据仓库编码%s查询仓库信息为空", warehouseCode));
+        return warehouseInfo.getWmsWarehouseCode();
+    }
 }
