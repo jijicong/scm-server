@@ -844,7 +844,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     }
                     /* 定位到入库通知单 */
                     WarehouseNotice noticeOrder = new WarehouseNotice();
-                    noticeOrder.setWarehouseNoticeCode(entryOrderDetail.getEntryOrderCode());
+                    noticeOrder.setEntryOrderId(entryOrderDetail.getPoOrderNo());
                     noticeOrder = warehouseNoticeService.selectOne(noticeOrder);
                     //查询到入库通知单,查询到关联的入库通知单详情
                     if (null != noticeOrder) {
