@@ -532,7 +532,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         //入库单信息
         scmEntryOrderCreateRequest.setEntryOrderCode(noticeCode);
         scmEntryOrderCreateRequest.setPurchaseOrderCode(notice.getPurchaseOrderCode());
-        scmEntryOrderCreateRequest.setWarehouseCode(jDWmsConstantConfig.getWarehouseNo());
+        scmEntryOrderCreateRequest.setWarehouseCode(warehouseExtService.getWmsWarehouseCode(notice.getWarehouseCode()));
         scmEntryOrderCreateRequest.setOwnerCode(jDWmsConstantConfig.getDeptNo());
         scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
