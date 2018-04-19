@@ -952,10 +952,27 @@ public class GoodsBiz implements IGoodsBiz {
             AssertUtil.notBlank(jbo.getString("isValid"), "启停用状态不能为空");
             if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))) {
                 AssertUtil.notBlank(jbo.getString("skuCode"), "SKU编码不能为空");
+                //查询当前sku的数据
+                Skus sku = new Skus();
+                sku.setSkuCode(jbo.getString("skuCode"));
+                sku = skusService.selectOne(sku);
+                //判断sku当前的状态
+                if (null != sku) {
+                    if (StringUtils.equals(sku.getIsValid(), ValidEnum.NOVALID.getCode())) {
+                        //条形码校验
+                        if (StringUtils.equals(jbo.getString("isValid"), ValidEnum.VALID.getCode())) {
+                            if (!AssertUtil.collectionIsEmpty(skuNoValidInfoList)) {
+                                checkBarcodeOnly(jbo.getString("barCode"), "", StringUtils.join(skuNoValidInfoList, SupplyConstants.Symbol.COMMA));
+                            } else {
+                                checkBarcodeOnly(jbo.getString("barCode"), "", "");
+                            }
+                        }
+                    }
+                }
+                continue;
             }
             //条形码校验
             if (StringUtils.equals(jbo.getString("isValid"), ValidEnum.VALID.getCode())) {
-
                 if (!AssertUtil.collectionIsEmpty(skuNoValidInfoList)) {
                     checkBarcodeOnly(jbo.getString("barCode"), "", StringUtils.join(skuNoValidInfoList, SupplyConstants.Symbol.COMMA));
                 } else {
