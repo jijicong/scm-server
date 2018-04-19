@@ -2765,10 +2765,15 @@ public class GoodsBiz implements IGoodsBiz {
             log.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
+        List<String> noValidBarCodeList = new ArrayList<>();
+        if (StringUtils.isNotBlank(notIn)){
+            String noValidBarCodeArray[] = StringUtils.split(notIn, SupplyConstants.Symbol.COMMA);
+            noValidBarCodeList = Arrays.asList(noValidBarCodeArray);
+        }
         List<String> existedCode = new ArrayList<>();
         List<String> barCodeList = new ArrayList<>();
         List<String> nowBarCode = new ArrayList<>();
-        List<String> allBarCode = skusService.selectAllBarCode();
+        List<String> allBarCode = skusService.selectAllBarCode(noValidBarCodeList);
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);
@@ -2777,8 +2782,6 @@ public class GoodsBiz implements IGoodsBiz {
             return;
         }
         List<String> realBarCode = new ArrayList<>();
-        String noValidBarCodeArray[] = StringUtils.split(notIn, SupplyConstants.Symbol.COMMA);
-        List<String> noValidBarCodeList = Arrays.asList(noValidBarCodeArray);
         if (!AssertUtil.collectionIsEmpty(noValidBarCodeList)){
             //过滤停用
                 //条码过滤,把页面的条码从所有启用条码中去掉
@@ -3189,6 +3192,9 @@ public class GoodsBiz implements IGoodsBiz {
      * @return
      */
     public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes, List<WarehouseInfo> warehouseInfoList,String inventoryType){
+        if(CollectionUtils.isEmpty(skuCodes) || CollectionUtils.isEmpty(warehouseInfoList)){
+            return new ArrayList<>();
+        }
         List<Long> warehouseInfoIds = new ArrayList<>();
         for(WarehouseInfo warehouseInfo2: warehouseInfoList){
             warehouseInfoIds.add(warehouseInfo2.getId());
@@ -3201,8 +3207,8 @@ public class GoodsBiz implements IGoodsBiz {
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-        if (!AssertUtil.collectionIsEmpty(warehouseItemInfoList)) {
-
+        if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
+            return new ArrayList<>();
         }
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();
@@ -3338,7 +3344,7 @@ public class GoodsBiz implements IGoodsBiz {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
         //开始校验条码
-        List<String> allBarCode = skusService.selectAllBarCode();
+        List<String> allBarCode = skusService.selectAllBarCode(new ArrayList<>());
         String allBarCodeString = StringUtils.join(allBarCode, SupplyConstants.Symbol.COMMA);
         String allBarCodeArray[] = StringUtils.split(allBarCodeString, SupplyConstants.Symbol.COMMA);
         allBarCode =  Arrays.asList(allBarCodeArray);
