@@ -208,7 +208,7 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.GOODS_QUERY)
+//    @Cacheable(value = SupplyConstants.Cache.GOODS_QUERY)
     public Pagenation<Skus> itemsSkusPage(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(Skus.class);
@@ -1952,7 +1952,7 @@ public class GoodsBiz implements IGoodsBiz {
 
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.GOODS)
+//    @Cacheable(value = SupplyConstants.Cache.GOODS)
     public ItemsExt queryItemsInfo(String spuCode, String skuCode, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notBlank(spuCode, "查询商品详情参数商品SPU编码supCode不能为空");
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
