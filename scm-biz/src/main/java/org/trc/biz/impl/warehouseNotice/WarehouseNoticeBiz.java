@@ -824,8 +824,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             wmsOrderCodeList.add(warehouseNotice.getEntryOrderId());
         }
         ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
-        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
         entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
+        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
         List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseListRequest = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
         for (WarehouseNotice warehouseNotice : noticeList) {
             //获取当前入库单对应的入库查询结果
@@ -844,7 +844,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     }
                     /* 定位到入库通知单 */
                     WarehouseNotice noticeOrder = new WarehouseNotice();
-                    noticeOrder.setWarehouseNoticeCode(entryOrderDetail.getEntryOrderCode());
+                    noticeOrder.setEntryOrderId(entryOrderDetail.getPoOrderNo());
                     noticeOrder = warehouseNoticeService.selectOne(noticeOrder);
                     //查询到入库通知单,查询到关联的入库通知单详情
                     if (null != noticeOrder) {
