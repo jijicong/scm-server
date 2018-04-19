@@ -920,6 +920,9 @@ public class GoodsBiz implements IGoodsBiz {
         List<SkuGridInfo> skuGridInfoList = JSON.parseArray(skus.getSkusInfo(),SkuGridInfo.class);
         //啟用的sku信息
         List<SkuGridInfo> skuValidInfoList = new ArrayList<>();
+        //页面停用的skuCode
+        List<String> skuNoValidInfoList = new ArrayList<>();
+
         for (SkuGridInfo s : skuGridInfoList) {
             if (s.getBarCode().indexOf(SupplyConstants.Symbol.COMMA) != -1) {
                 //逗号分隔的正则
@@ -934,28 +937,29 @@ public class GoodsBiz implements IGoodsBiz {
             if (s.getIsValid().equals(ValidEnum.VALID.getCode())){
                 skuValidInfoList.add(s);
             }
+            if(s.getIsValid().equals(ValidEnum.NOVALID.getCode())){
+                if (StringUtils.isNotBlank(s.getSkuCode())){
+                    skuNoValidInfoList.add(s.getSkuCode());
+                }
+            }
         }
         if (!AssertUtil.collectionIsEmpty(skuValidInfoList)){
             checkRepeatBarCode(skuValidInfoList);
         }
-        for(Object obj : skuArray){
+        for (Object obj : skuArray) {
             JSONObject jbo = (JSONObject) obj;
-            AssertUtil.notBlank(jbo.getString("barCode"),"SKU条形码不能为空");
-            AssertUtil.notBlank(jbo.getString("isValid"),"启停用状态不能为空");
-            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))){
-                AssertUtil.notBlank(jbo.getString("skuCode"),"SKU编码不能为空");
-                //条形码校验
-                if (StringUtils.equals(jbo.getString("isValid"),ValidEnum.VALID.getCode())){
-                    //查询当前sku的数据
-                    Skus sku = new Skus();
-                    sku.setSkuCode(jbo.getString("skuCode"));
-                    sku = skusService.selectOne(sku);
-                    //判断sku当前的状态
-                    if (null!=sku){
-                        if(StringUtils.equals(sku.getIsValid(),ValidEnum.NOVALID.getCode())){
-                            checkBarcodeOnly(jbo.getString("barCode"),"","");
-                        }
-                    }
+            AssertUtil.notBlank(jbo.getString("barCode"), "SKU条形码不能为空");
+            AssertUtil.notBlank(jbo.getString("isValid"), "启停用状态不能为空");
+            if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), jbo.getString("source"))) {
+                AssertUtil.notBlank(jbo.getString("skuCode"), "SKU编码不能为空");
+            }
+            //条形码校验
+            if (StringUtils.equals(jbo.getString("isValid"), ValidEnum.VALID.getCode())) {
+
+                if (!AssertUtil.collectionIsEmpty(skuNoValidInfoList)) {
+                    checkBarcodeOnly(jbo.getString("barCode"), "", StringUtils.join(skuNoValidInfoList, SupplyConstants.Symbol.COMMA));
+                } else {
+                    checkBarcodeOnly(jbo.getString("barCode"), "", "");
                 }
             }
         }
