@@ -824,8 +824,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             wmsOrderCodeList.add(warehouseNotice.getEntryOrderId());
         }
         ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
-        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
         entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
+        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
         List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseListRequest = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
         for (WarehouseNotice warehouseNotice : noticeList) {
             //获取当前入库单对应的入库查询结果
