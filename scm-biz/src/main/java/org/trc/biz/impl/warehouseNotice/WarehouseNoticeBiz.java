@@ -831,7 +831,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             //获取当前入库单对应的入库查询结果
             List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseList = new ArrayList<>();
             for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseListRequest) {
-                if (StringUtils.equals(entryOrderDetail.getEntryOrderCode(),warehouseNotice.getWarehouseNoticeCode())){
+                if (StringUtils.equals(entryOrderDetail.getPoOrderNo(),warehouseNotice.getEntryOrderId())){
                     scmEntryOrderDetailResponseList.add(entryOrderDetail);
                 }
             }
