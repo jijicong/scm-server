@@ -597,8 +597,17 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
-                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getDeliveryOrderCode());
-                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
+                    if(StringUtils.equals(SUCCESS, responses.get(0).getCode())){
+                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getWmsOrderCode());
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
+                    }else{
+                        //仓库接受失败插入一条日志
+                        msg = responses.get(0).getMessage();
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
+                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
+                        logger.error(msg);
+                        throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+                    }
                 }else {
                     //仓库接受失败插入一条日志
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
