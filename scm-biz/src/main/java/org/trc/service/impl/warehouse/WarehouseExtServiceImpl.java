@@ -92,7 +92,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
                 ScmInventoryQueryItem item = new ScmInventoryQueryItem();
                 item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
-                item.setInventoryType(ZeroToNineEnum.ONE.getCode());//正品
+                item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
                 item.setItemCode(warehouseItemInfo.getSkuCode());
                 item.setItemId(warehouseItemInfo.getWarehouseItemId());
@@ -164,5 +164,17 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
         AssertUtil.notNull(warehouseInfo, String.format("根据仓库编码%s查询仓库信息为空", warehouseCode));
         return warehouseInfo.getWmsWarehouseCode();
+    }
+
+    @Override
+    public List<WarehouseItemInfo> getWarehouseItemInfos(List<String> skuCodes) {
+        //获取可用仓库信息
+        List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
+        List<String> warehouseInfoIds = new ArrayList<>();
+        for(WarehouseInfo warehouseInfo2: warehouseInfoList){
+            warehouseInfoIds.add(warehouseInfo2.getId().toString());
+        }
+        //获取仓库绑定商品信息
+        return getWarehouseItemInfo(skuCodes, warehouseInfoIds);
     }
 }

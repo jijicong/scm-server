@@ -3721,6 +3721,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @return
      */
     private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+        setScmInventoryQueryResponseItemCode(orderItemList, scmInventoryQueryResponseList);
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
         List<String> skuCodeList = new ArrayList<>();
         for(OrderItem orderItem: orderItemList){
@@ -3804,6 +3805,27 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("checkFailureItems", checkFailureItems);
         map.put("warehouseSkuMap", warehouseSkuMap);
         return map;
+    }
+
+    /**
+     * 设置库存查询返回结果的sku编码
+     * @param orderItemList
+     * @param scmInventoryQueryResponseList
+     */
+    private void setScmInventoryQueryResponseItemCode(List<OrderItem> orderItemList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+        List<String> skuCodes = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodes.add(orderItem.getSkuCode());
+        }
+        List<WarehouseItemInfo> warehouseItemInfoList = warehouseExtService.getWarehouseItemInfos(skuCodes);
+        for(ScmInventoryQueryResponse response: scmInventoryQueryResponseList){
+            for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+                if(StringUtils.equals(response.getItemId(), warehouseItemInfo.getWarehouseItemId())){
+                    response.setItemCode(warehouseItemInfo.getSkuCode());
+                    break;
+                }
+            }
+        }
     }
 
 

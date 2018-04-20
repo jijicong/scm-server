@@ -1,5 +1,6 @@
 package org.trc.service.warehouse;
 
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.WarehouseTypeEnum;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
 
@@ -27,5 +28,12 @@ public interface IWarehouseExtService {
      * @return
      */
     String getWmsWarehouseCode(String warehouseCode);
+
+    /**
+     * 根据sku获取仓库绑定的商品信息
+     * @param skuCodes
+     * @return
+     */
+    List<WarehouseItemInfo> getWarehouseItemInfos(List<String> skuCodes);
 
 }
