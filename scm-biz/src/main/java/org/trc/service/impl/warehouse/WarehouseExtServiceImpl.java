@@ -92,7 +92,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
                 ScmInventoryQueryItem item = new ScmInventoryQueryItem();
                 item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
-                item.setInventoryType(InventoryTypeEnum.ZP.getCode());//正品
+                item.setInventoryType(ZeroToNineEnum.ONE.getCode());//正品
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
                 item.setItemCode(warehouseItemInfo.getSkuCode());
                 item.setItemId(warehouseItemInfo.getWarehouseItemId());
