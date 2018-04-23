@@ -206,27 +206,32 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
             //只获取复合过的发货单详情
             if(response != null && response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus()) ){
-                //组装获取包裹信息
-                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
-                request.setOrderIds(orderId);
-                //调用京东接口获取包裹信息
-                AppResult<ScmOrderPacksResponse> packageResponseAppResult = warehouseApiService.orderPack(request);
+//                //组装获取包裹信息
+//                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
+//                request.setOrderIds(orderId);
+//                //调用京东接口获取包裹信息
+//                AppResult<ScmOrderPacksResponse> packageResponseAppResult = warehouseApiService.orderPack(request);
 
-                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
-                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
+//                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
+//                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
 
                     //获取发货单
                     OutboundOrder outboundOrder = new OutboundOrder();
                     outboundOrder.setOutboundOrderCode(outboundOrderCode);
                     outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
-                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
+//                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
+//                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
+//                        return;
+//                    }
+
+                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
                         logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
                         return;
                     }
 
                     //更新发货单信息
-                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse, outboundOrder.getWarehouseCode());
+                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(response, outboundOrder.getWarehouseCode());
 
                     //更新发货单状态
                     this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
@@ -251,7 +256,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
                 }
 
-            }
+//            }
 
         }else{
             logger.error("发货单号:{},物流信息获取异常：{}", outboundOrderCode, responseAppResult.getResult());
@@ -433,6 +438,79 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         String outboundOrderStatus = this.getOutboundOrderStatusByDetail(outboundDetailList);
         outboundOrder.setStatus(outboundOrderStatus);
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
+    }
+
+    //更新发货单
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public List<RequsetUpdateStock> updateOutboundDetailAndLogistics(ScmDeliveryOrderDetailResponse response, String warehouseCode){
+        OutboundDetail outboundDetail = null;
+        OutboundDetailLogistics outboundDetailLogistics = null;
+        List<OutboundDetailLogistics> outboundDetailLogisticsList = null;
+        List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
+
+        //发货单号
+        String outboundOrderCode = response.getDeliveryOrderCode();
+        //物流公司名称
+        String logisticsName = response.getLogisticsName();
+        //物流公司编号
+        String logisticsCode = response.getLogisticsCode();
+        //运单号
+        String expressCode = response.getExpressCode();
+
+        List<ScmDeliveryOrderDetailResponseItem> items = response.getScmDeliveryOrderDetailResponseItemList();
+
+        //获取当前商品的包裹号
+        outboundDetailLogistics = new OutboundDetailLogistics();
+        outboundDetailLogistics.setWaybillNumber(expressCode);
+        outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
+
+        //判断是否已存储物流信息，如果没有新增
+        if(outboundDetailLogisticsList == null || outboundDetailLogisticsList.size() < 1) {
+            //遍历所有商品详情
+            if(items != null && items.size() > 0){
+                for (ScmDeliveryOrderDetailResponseItem item : items) {
+                    Long sentNum = item.getActualQty();
+                    //获取发货详情
+                    outboundDetail = new OutboundDetail();
+                    outboundDetail.setOutboundOrderCode(outboundOrderCode);
+                    outboundDetail.setWarehouseItemId(item.getItemId());
+                    outboundDetail = outboundDetailService.selectOne(outboundDetail);
+
+                    outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(outboundDetail.getId());
+                    outboundDetailLogistics.setLogisticsCorporation(logisticsName);
+                    outboundDetailLogistics.setLogisticsCode(logisticsCode);
+                    outboundDetailLogistics.setItemNum(sentNum);
+                    outboundDetailLogistics.setWaybillNumber(expressCode);
+                    outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
+                    outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                    //保存信息
+                    outboundDetailLogisticsService.insert(outboundDetailLogistics);
+                    //获取实际到货数量
+                    Long count = this.getItemNum(outboundDetail.getId());
+                    outboundDetail.setRealSentItemNum(count);
+                    if (count >= outboundDetail.getShouldSentItemNum()) {
+                        outboundDetail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+                    } else {
+                        outboundDetail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());
+                    }
+                    outboundDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    outboundDetailService.updateByPrimaryKey(outboundDetail);
+
+                    RequsetUpdateStock requsetUpdateStock = new RequsetUpdateStock();
+                    Map<String, String> stockType = new HashMap<>();
+                    stockType.put("frozen_inventory", String.valueOf((-1 * sentNum)));
+                    stockType.put("real_inventory", String.valueOf((-1 * sentNum)));
+                    requsetUpdateStock.setStockType(stockType);
+                    requsetUpdateStock.setChannelCode("TRMALL");
+                    requsetUpdateStock.setSkuCode(outboundDetail.getSkuCode());
+                    requsetUpdateStock.setWarehouseCode(warehouseCode);
+                    updateStockList.add(requsetUpdateStock);
+                }
+            }
+        }
+
+        return updateStockList;
     }
 
     //更新发货单
