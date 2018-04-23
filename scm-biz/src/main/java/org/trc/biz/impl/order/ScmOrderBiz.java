@@ -4822,7 +4822,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outboundMap.put(outboundForm.getOutboundOrder().getOutboundOrderCode(), outboundForm);
         }
         //通知仓库发货
-        //noticeWarehouseSendGoods(outboundMap);
+        noticeWarehouseSendGoods(outboundMap);
         
         //通知渠道发货结果 ......
         notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
