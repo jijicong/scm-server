@@ -455,6 +455,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             String logisticsCode = result.getLogisticsCode();
 
             List<ScmOrderPackage> scmOrderPackageList = result.getScmOrderPackageList();
+
+            boolean flag = true;
             //遍历所有包裹
             for(ScmOrderPackage pack : scmOrderPackageList){
                 String packageNo = pack.getPackageNo();
@@ -468,6 +470,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 //获取运单号
                 String expressCode = packageNo.split("-")[0];
 
+                if((items != null && items.size() > 0) || (outboundPackageInfoList != null && outboundPackageInfoList.size() > 0)){
+                    flag = false;
+                }
+
                 //判断是否已存储物流信息，如果没有新增
                 if(outboundPackageInfoList == null || outboundPackageInfoList.size() < 1) {
                     outboundPackageInfo = new OutboundPackageInfo();
@@ -478,7 +484,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundPackageInfoService.insert(outboundPackageInfo);
 
                     //遍历所有商品详情
-                    if(items != null){
+                    if(items != null && items.size() > 0){
                         for (ScmDeliveryOrderDetailResponseItem item : items) {
                             Long sentNum = item.getActualQty();
                             //获取发货详情
@@ -520,6 +526,28 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             updateStockList.add(requsetUpdateStock);
                         }
                     }
+                }
+            }
+
+            if(flag){
+                OutboundDetail outboundDetail1 = new OutboundDetail();
+                outboundDetail1.setOutboundOrderCode(outboundOrderCode);
+                List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
+                for(OutboundDetail o : outboundDetailList){
+                    o.setRealSentItemNum(o.getShouldSentItemNum());
+                    o.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+                    o.setUpdateTime(Calendar.getInstance().getTime());
+                    outboundDetailService.updateByPrimaryKey(o);
+
+                    RequsetUpdateStock requsetUpdateStock = new RequsetUpdateStock();
+                    Map<String, String> stockType = new HashMap<>();
+                    stockType.put("frozen_inventory", String.valueOf((-1 * o.getShouldSentItemNum())));
+                    stockType.put("real_inventory", String.valueOf((-1 * o.getShouldSentItemNum())));
+                    requsetUpdateStock.setStockType(stockType);
+                    requsetUpdateStock.setChannelCode("TRMALL");
+                    requsetUpdateStock.setSkuCode(o.getSkuCode());
+                    requsetUpdateStock.setWarehouseCode(warehouseCode);
+                    updateStockList.add(requsetUpdateStock);
                 }
             }
         }
