@@ -3715,12 +3715,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return skuStockService.selectByExample(example);
     }
 
-    /**
+    /** FIXME 该方法暂时不用，以后肯定会用，所以暂时注释
      * 校验自采商品的可用库存
      * @param skuStockList
      * @return
      */
-    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+    /*private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
         setScmInventoryQueryResponseItemCode(orderItemList, scmInventoryQueryResponseList);
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
         List<String> skuCodeList = new ArrayList<>();
@@ -3805,7 +3805,75 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("checkFailureItems", checkFailureItems);
         map.put("warehouseSkuMap", warehouseSkuMap);
         return map;
+    }*/
+
+
+    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+        setScmInventoryQueryResponseItemCode(orderItemList, scmInventoryQueryResponseList);
+        Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
+        List<String> skuCodeList = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            skuCodeList.add(orderItem.getSkuCode());
+        }
+        //校验失败的商品
+        List<OrderItem> checkFailureItems = new ArrayList<>();
+        for(OrderItem orderItem: orderItemList){
+            long qimenStock = 0;//仓库库存
+            List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
+            for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
+                if(StringUtils.equals(orderItem.getSkuCode(), item.getItemCode())){
+                    _inventoryQueryItemList.add(item);
+                }
+            }
+            //按仓库库存降序排序
+            if(_inventoryQueryItemList.size() > 0){
+                Collections.sort(_inventoryQueryItemList, new Comparator<ScmInventoryQueryResponse>() {
+                    @Override
+                    public int compare(ScmInventoryQueryResponse o1, ScmInventoryQueryResponse o2) {
+                        return o2.getQuantity().intValue() - o1.getQuantity().intValue();
+                    }
+                });
+                qimenStock = _inventoryQueryItemList.get(0).getQuantity();
+            }
+            boolean _flag = false;
+            if(skuStockList.size() > 0){
+                //校验库存
+                if(qimenStock >= orderItem.getNum().longValue()){
+                    _flag = true;
+                }else{
+                    checkFailureItems.add(orderItem);
+                }
+                SkuStock maxSkuStock = skuStockList.get(0);
+                if(_flag){
+                    List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
+                    SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
+                    skuWarehouseDO.setSkuCode(maxSkuStock.getSkuCode());
+                    skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
+                    skuWarehouseDO.setChannelCode(maxSkuStock.getChannelCode());
+                    skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
+                    for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
+                        if(StringUtils.equals(maxSkuStock.getSkuCode(), item.getItemCode())){
+                            skuWarehouseDO.setItemId(item.getItemId());
+                        }
+                    }
+                    skuWarehouseDOList.add(skuWarehouseDO);
+                    warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
+                }else {
+                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
+                }
+            }else{
+                checkFailureItems.add(orderItem);
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
+                log.error(String.format("自采拆单校验sku编码为[%s]的库存时商品库存信息在本地sku_stock库存信息表里面查不到", orderItem.getSkuCode()));
+            }
+        }
+        Map<String, Object> map = new HashedMap();
+        map.put("checkFailureItems", checkFailureItems);
+        map.put("warehouseSkuMap", warehouseSkuMap);
+        return map;
     }
+
+
 
     /**
      * 设置库存查询返回结果的sku编码
@@ -4754,7 +4822,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outboundMap.put(outboundForm.getOutboundOrder().getOutboundOrderCode(), outboundForm);
         }
         //通知仓库发货
-        noticeWarehouseSendGoods(outboundMap);
+        //noticeWarehouseSendGoods(outboundMap);
         
         //通知渠道发货结果 ......
         notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
