@@ -3843,16 +3843,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }else{
                     checkFailureItems.add(orderItem);
                 }
-                SkuStock maxSkuStock = skuStockList.get(0);
+                SkuStock _skuStock = null;
+                for(SkuStock skuStock: skuStockList){
+                    if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                        _skuStock = skuStock;
+                        break;
+                    }
+                }
                 if(_flag){
                     List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                     SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
-                    skuWarehouseDO.setSkuCode(maxSkuStock.getSkuCode());
+                    skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
                     skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
-                    skuWarehouseDO.setChannelCode(maxSkuStock.getChannelCode());
-                    skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
+                    skuWarehouseDO.setChannelCode(_skuStock.getChannelCode());
+                    skuWarehouseDO.setWarehouseCode(_skuStock.getWarehouseCode());
                     for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                        if(StringUtils.equals(maxSkuStock.getSkuCode(), item.getItemCode())){
+                        if(StringUtils.equals(_skuStock.getSkuCode(), item.getItemCode())){
                             skuWarehouseDO.setItemId(item.getItemId());
                         }
                     }
