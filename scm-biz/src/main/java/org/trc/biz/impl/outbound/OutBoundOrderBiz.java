@@ -454,6 +454,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             //物流公司编号
             String logisticsCode = result.getLogisticsCode();
 
+            String wayBill = result.getWayBill();
+
             List<ScmOrderPackage> scmOrderPackageList = result.getScmOrderPackageList();
 
             boolean flag = true;
@@ -538,6 +540,17 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     o.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
                     o.setUpdateTime(Calendar.getInstance().getTime());
                     outboundDetailService.updateByPrimaryKey(o);
+
+                    outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(o.getId());
+                    outboundDetailLogistics.setLogisticsCorporation(logisticsName);
+                    outboundDetailLogistics.setLogisticsCode(logisticsCode);
+                    outboundDetailLogistics.setWaybillNumber(wayBill);
+                    outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
+                    outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
+                    outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
+                    //保存信息
+                    outboundDetailLogisticsService.insert(outboundDetailLogistics);
 
                     RequsetUpdateStock requsetUpdateStock = new RequsetUpdateStock();
                     Map<String, String> stockType = new HashMap<>();
