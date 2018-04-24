@@ -204,6 +204,24 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                                            String outboundOrderCode, String orderId) throws Exception{
         if(StringUtils.equals("200", responseAppResult.getAppcode())){
             ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
+            //获取发货单
+            OutboundOrder outboundOrder = new OutboundOrder();
+            outboundOrder.setOutboundOrderCode(outboundOrderCode);
+            outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+
+            if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
+                this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
+                this.updateOrderCancelInfo(outboundOrder, "线下取消",false);
+
+                //更新库存
+                skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
+                        outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
+
+                //更新订单信息
+                this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+                return ;
+            }
+
             //只获取复合过的发货单详情
             if(response != null && response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus()) ){
                 //组装获取包裹信息
@@ -214,11 +232,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
                 if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
                     ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
-
-                    //获取发货单
-                    OutboundOrder outboundOrder = new OutboundOrder();
-                    outboundOrder.setOutboundOrderCode(outboundOrderCode);
-                    outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
                     if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
                         logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
@@ -520,7 +533,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         OutboundDetailLogistics outboundDetailLogistics = null;
         OutboundPackageInfo outboundPackageInfo = null;
         List<OutboundPackageInfo> outboundPackageInfoList = null;
-        List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
+        List<RequsetUpdateStock> updateStockList = new ArrayList<>();
         List<ScmOrderDefaultResult> results = response.getScmOrderDefaultResults();
 
         //遍历获取包裹信息
