@@ -631,7 +631,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundDetailLogistics.setWaybillNumber(wayBill);
                     outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
                     outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
-                    outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
                     //保存信息
                     outboundDetailLogisticsService.insert(outboundDetailLogistics);
 
