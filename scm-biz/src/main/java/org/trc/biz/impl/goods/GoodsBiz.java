@@ -1671,7 +1671,7 @@ public class GoodsBiz implements IGoodsBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", stopSkusList);
         SkuStock skuStock = new SkuStock();
-        skuStock.setIsValid(ZeroToNineEnum.ZERO.getCode());
+//        skuStock.setIsValid(ZeroToNineEnum.ZERO.getCode());
         skuStockService.updateByExampleSelective(skuStock, example);
     }
 
@@ -1926,7 +1926,7 @@ public class GoodsBiz implements IGoodsBiz {
             criteria.andEqualTo("skuCode", skuCode);
         }
         SkuStock skuStock = new SkuStock();
-        skuStock.setIsValid(isValid);
+//        skuStock.setIsValid(isValid);
         skuStockService.updateByExampleSelective(skuStock, example);
     }
 
