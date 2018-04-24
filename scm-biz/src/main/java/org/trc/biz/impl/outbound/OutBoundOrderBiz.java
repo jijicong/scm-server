@@ -211,7 +211,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
             if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
                 this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
-                this.updateOrderCancelInfo(outboundOrder, "",false);
+                this.updateOrderCancelInfo(outboundOrder, "线下取消",false);
 
                 //更新库存
                 skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
