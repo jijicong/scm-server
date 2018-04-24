@@ -209,6 +209,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             outboundOrder.setOutboundOrderCode(outboundOrderCode);
             outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
+            //获取仓库名称
+            Long warehouseId = outboundOrder.getWarehouseId();
+            WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
+
             if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
                 this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
                 this.updateOrderCancelInfo(outboundOrder, "线下取消",false);
@@ -219,6 +223,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
                 //更新订单信息
                 this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+
+                //记录日志
+                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
+                        "取消发货", "仓库平台取消发货", null);
                 return ;
             }
 
@@ -253,10 +261,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     if(list.size() > 0){
                         skuStockService.updateSkuStock(list);
                     }
-
-                    //获取仓库名称
-                    Long warehouseId = outboundOrder.getWarehouseId();
-                    WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
 
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
