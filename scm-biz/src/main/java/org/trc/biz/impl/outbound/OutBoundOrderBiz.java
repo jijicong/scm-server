@@ -206,32 +206,32 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
             //只获取复合过的发货单详情
             if(response != null && response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus()) ){
-//                //组装获取包裹信息
-//                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
-//                request.setOrderIds(orderId);
-//                //调用京东接口获取包裹信息
-//                AppResult<ScmOrderPacksResponse> packageResponseAppResult = warehouseApiService.orderPack(request);
+                //组装获取包裹信息
+                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
+                request.setOrderIds(orderId);
+                //调用京东接口获取包裹信息
+                AppResult<ScmOrderPacksResponse> packageResponseAppResult = warehouseApiService.orderPack(request);
 
-//                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
-//                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
+                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
+                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
 
                     //获取发货单
                     OutboundOrder outboundOrder = new OutboundOrder();
                     outboundOrder.setOutboundOrderCode(outboundOrderCode);
                     outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
-//                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
-//                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
-//                        return;
-//                    }
-
-                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
+                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), outboundOrderCode)){
                         logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
                         return;
                     }
 
+//                    if(!StringUtils.equals(response.getDeliveryOrderCode(), outboundOrderCode)){
+//                        logger.error("发货单号:{},物流信息获取异常", outboundOrderCode);
+//                        return;
+//                    }
+
                     //更新发货单信息
-                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(response, outboundOrder.getWarehouseCode());
+                    List<RequsetUpdateStock> list = this.updateOutboundDetailAndLogistics(packsResponse, outboundOrder.getWarehouseCode());
 
                     //更新发货单状态
                     this.setOutboundOrderStatus(outboundOrderCode, outboundOrder);
@@ -256,7 +256,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
                 }
 
-//            }
+            }
 
         }else{
             logger.error("发货单号:{},物流信息获取异常：{}", outboundOrderCode, responseAppResult.getResult());
@@ -535,6 +535,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             String wayBill = result.getWayBill();
 
             List<ScmOrderPackage> scmOrderPackageList = result.getScmOrderPackageList();
+
+            if(scmOrderPackageList == null || scmOrderPackageList.size() < 1){
+                return updateStockList;
+            }
 
             boolean flag = true;
             //遍历所有包裹
