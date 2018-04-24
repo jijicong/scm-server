@@ -1678,7 +1678,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                                         DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
                                         deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
                                         deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
-                                        deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                                        if (outboundDetailLogistics.getItemNum() != null) {
+                                        	deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                                        }
                                         deliverPackageFormList.add(deliverPackageForm);
                                     }
                                     orderItem.setDeliverPackageFormList(deliverPackageFormList);
