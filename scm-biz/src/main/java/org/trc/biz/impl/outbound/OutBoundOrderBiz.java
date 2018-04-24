@@ -209,6 +209,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             outboundOrder.setOutboundOrderCode(outboundOrderCode);
             outboundOrder = outBoundOrderService.selectOne(outboundOrder);
 
+            //获取仓库名称
+            Long warehouseId = outboundOrder.getWarehouseId();
+            WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
+
             if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
                 this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
                 this.updateOrderCancelInfo(outboundOrder, "线下取消",false);
@@ -219,6 +223,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
                 //更新订单信息
                 this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+
+                //记录日志
+                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
+                        "取消发货", "仓库平台取消发货", null);
                 return ;
             }
 
@@ -253,10 +261,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     if(list.size() > 0){
                         skuStockService.updateSkuStock(list);
                     }
-
-                    //获取仓库名称
-                    Long warehouseId = outboundOrder.getWarehouseId();
-                    WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(warehouseId);
 
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
@@ -532,7 +536,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         OutboundDetailLogistics outboundDetailLogistics = null;
         OutboundPackageInfo outboundPackageInfo = null;
         List<OutboundPackageInfo> outboundPackageInfoList = null;
-        List<RequsetUpdateStock> updateStockList = new ArrayList<>();
+        List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
         List<ScmOrderDefaultResult> results = response.getScmOrderDefaultResults();
 
         //遍历获取包裹信息
@@ -744,8 +748,17 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
-                    updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getDeliveryOrderCode());
-                    logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
+                    if(StringUtils.equals(SUCCESS, responses.get(0).getCode())){
+                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getWmsOrderCode());
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
+                    }else{
+                        //仓库接受失败插入一条日志
+                        msg = responses.get(0).getMessage();
+                        logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
+                        updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
+                        logger.error(msg);
+                        throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+                    }
                 }else {
                     //仓库接受失败插入一条日志
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
