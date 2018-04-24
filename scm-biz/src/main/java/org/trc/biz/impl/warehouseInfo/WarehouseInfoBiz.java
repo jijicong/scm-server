@@ -837,7 +837,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             }
 
             //校验导入文件抬头信息
-            String[] titleResult = ImportExcel.readExcelTitle(uploadedInputStream);
+            String[] titleResult = null;
+            try{
+                titleResult = ImportExcel.readExcelTitle(uploadedInputStream);
+            }catch(Exception e){
+                return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入模板错误!", "");
+            }
             Map<String, Object> titleMapResult = this.checkTitle(titleResult);
             if (titleMapResult.containsKey(CODE)) {
                 return ResultUtil.createfailureResult((Integer) titleMapResult.get(CODE), (String) titleMapResult.get(MSG), "");
@@ -846,7 +851,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             //校验导入文件信息，并获取信息
             Map<String, String> contentResult = ImportExcel.readExcelContent(uploadedInputStream, SupplyConstants.Symbol.COMMA);
             if(StringUtils.isEquals("0", contentResult.get("count").toString())){
-                return ResultUtil.createfailureResult(Response.Status.EXPECTATION_FAILED.getStatusCode(), "导入附件不能为空！", "");
+                return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
             }
             Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId);
             String count = (String) contentMapResult.get("count");
@@ -1258,10 +1263,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private Map<String, Object> checkTitle(String[] titleResult) {
         Map<String, Object> map = new HashMap<String, Object>();
         if (titleResult.length != Integer.valueOf(ZeroToNineEnum.TWO.getCode())) {
-            this.putMapResult(map, Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", "");
+            this.putMapResult(map, Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件参数错误", "");
+            return map;
         }
         if (!TITLE_ONE.equals(titleResult[0]) || !TITLE_TWO.equals(titleResult[1])) {
-            this.putMapResult(map, Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", "");
+            this.putMapResult(map, Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件参数错误", "");
         }
         return map;
     }

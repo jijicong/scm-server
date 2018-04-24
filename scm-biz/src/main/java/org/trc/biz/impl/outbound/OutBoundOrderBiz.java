@@ -537,7 +537,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         OutboundDetailLogistics outboundDetailLogistics = null;
         OutboundPackageInfo outboundPackageInfo = null;
         List<OutboundPackageInfo> outboundPackageInfoList = null;
-        List<RequsetUpdateStock> updateStockList = new ArrayList<RequsetUpdateStock>();
+        List<RequsetUpdateStock> updateStockList = new ArrayList<>();
         List<ScmOrderDefaultResult> results = response.getScmOrderDefaultResults();
 
         //遍历获取包裹信息
