@@ -230,7 +230,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
                 //记录日志
                 logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
-                        "取消发货", "仓库平台取消", null);
+                        "取消发货", "仓库平台取消发货", null);
                 return ;
             }
 
