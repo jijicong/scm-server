@@ -283,7 +283,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             logger.error("发货单号:{},物流信息获取异常：{}", outboundOrderCode, responseAppResult.getResult());
         }
     }
-    
+
     private void deliveryOrderConfirmNotice(OutboundOrder outboundOrder,
                                             ScmDeliveryOrderDetailResponse response) {
     	try {
@@ -291,10 +291,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     		//设置请求渠道的签名
     		TrcParam trcParam = ParamsUtil.generateTrcSign(trcConfig.getKey(), TrcActionTypeEnum.SEND_LOGISTIC);
     		BeanUtils.copyProperties(trcParam, noitce);
-    		
+
     		// 获取店铺级订单号
     		noitce.setShopOrderCode(outboundOrder.getShopOrderCode());
-    		
+
     		// 信息类型 0-物流单号,1-配送信息
     		noitce.setType(LogsticsTypeEnum.WAYBILL_NUMBER.getCode());
 
@@ -306,7 +306,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             String expressCode = response.getExpressCode();
             //所有商品详情
             List<ScmDeliveryOrderDetailResponseItem> items = response.getScmDeliveryOrderDetailResponseItemList();
-    		
+
     		// 包裹信息列表
     		List<Logistic> logisticList = new ArrayList<>();
             Logistic lsc = new Logistic();
@@ -345,8 +345,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             logisticList.add(lsc);
             noitce.setLogistics(logisticList);
     		//物流信息同步给渠道
-    		String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC, 
-    				RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(), 
+    		String reqNum = requestFlowService.insertRequestFlow(RequestFlowConstant.GYL, RequestFlowConstant.TRC,
+    				RequestFlowTypeEnum.SEND_LOGISTICS_INFO_TO_CHANNEL.getCode(),
     				RequestFlowStatusEnum.SEND_INITIAL.getCode(), JSONObject.toJSONString(noitce));
     		ToGlyResultDO toGlyResultDO = trcService.sendLogisticInfoNotice(noitce);
     		RequestFlow requestFlowUpdate = new RequestFlow();
@@ -354,13 +354,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     		requestFlowUpdate.setResponseParam(JSONObject.toJSONString(toGlyResultDO));
     		requestFlowUpdate.setStatus(statusMap.get(toGlyResultDO.getStatus()));
     		requestFlowService.updateRequestFlowByRequestNum(requestFlowUpdate);
-    		
+
     	} catch (Exception e) {
     		e.printStackTrace();
-    		logger.error("发货单号:{},物流信息通知渠道异常：{}", 
+    		logger.error("发货单号:{},物流信息通知渠道异常：{}",
     				outboundOrder.getOutboundOrderCode(), e.getMessage());
-    	}	
-    	
+    	}
+
     }
 
     private String generateLogisticsCode(String logisticsName, String channelCode) {
@@ -605,7 +605,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             outboundDetailLogistics.setWaybillNumber(expressCode);
                             outboundDetailLogistics.setCreateTime(Calendar.getInstance().getTime());
                             outboundDetailLogistics.setUpdateTime(Calendar.getInstance().getTime());
-                            outboundDetailLogistics.setDeliverTime(Calendar.getInstance().getTime());
                             //保存信息
                             outboundDetailLogisticsService.insert(outboundDetailLogistics);
                             //获取实际到货数量
@@ -636,7 +635,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             if(flag){
                 OutboundDetail outboundDetail1 = new OutboundDetail();
                 outboundDetail1.setOutboundOrderCode(outboundOrderCode);
-                List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
+                List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail1);
                 for(OutboundDetail o : outboundDetailList){
                     o.setRealSentItemNum(o.getShouldSentItemNum());
                     o.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
