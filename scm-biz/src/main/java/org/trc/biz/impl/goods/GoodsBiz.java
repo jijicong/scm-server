@@ -360,7 +360,7 @@ public class GoodsBiz implements IGoodsBiz {
                         }
                         //判断库存类型,仓库锁定
                         if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())){
-                            skuStock.setLockInventory((inventoryQueryResponse.getLockQuantity()==null?0:inventoryQueryResponse.getLockQuantity())+(skuStock.getLockInventory()==null?0:skuStock.getLockInventory()));
+                            skuStock.setLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getLockInventory()==null?0:skuStock.getLockInventory()));
                         }
                     }
                     skuStockList.add(skuStock);
