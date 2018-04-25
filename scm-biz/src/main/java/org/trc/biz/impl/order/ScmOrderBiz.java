@@ -2584,6 +2584,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             returnOrder.setSkus(getSkuInfo(_outboundDetailList));
             orderList.add(returnOrder);
         }
+        //通知渠道订单结果
+        noticeChannelOrderResult(orderRes);
     }
 
     private List<SkuInfo> getSkuInfo(List<OutboundDetail> outboundDetailList){
