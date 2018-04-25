@@ -41,6 +41,7 @@ import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
 import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
+import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
@@ -99,6 +100,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private RedisLock redisLock;
     @Autowired
     private IOutboundPackageInfoService outboundPackageInfoService;
+    @Autowired
+    private IRealIpService iRealIpService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -153,6 +156,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     public void updateOutboundDetail(){
+        if (!iRealIpService.isRealTimerService()) return;
         //获取所有为等待仓库发货发货单信息
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -1181,6 +1185,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     @Override
     public void retryCancelOrder() {
+        if (!iRealIpService.isRealTimerService()) return;
         //获取所有取消中的发货单
         OutboundOrder orderTemp = new OutboundOrder();
         orderTemp.setStatus(OutboundOrderStatusEnum.ON_CANCELED.getCode());
