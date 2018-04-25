@@ -315,7 +315,14 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             // 物流公司名称
             lsc.setLogisticsCorporation(logisticsName);
             // 物流公司编码
-            lsc.setLogisticsCorporationCode(generateLogisticsCode(logisticsCode, outboundOrder.getChannelCode()));
+            lsc.setLogisticsCorporationCode(generateLogisticsCode(logisticsName, outboundOrder.getChannelCode()));
+            lsc.setLogisticsStatus(SupplierOrderLogisticsStatusEnum.COMPLETE.getCode());//妥投
+            lsc.setLogisticInfo(new ArrayList<>());
+            //发货单明细信息
+            OutboundDetail outboundDetail = new OutboundDetail();
+            outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
+            List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
+            AssertUtil.notEmpty(outboundDetailList, String.format("发货单[%s]对应的发货单明细信息为空", outboundOrder.getOutboundOrderCode()));
             /**
              * 包裹对应商品信息
              **/
@@ -323,16 +330,14 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             if (!CollectionUtils.isEmpty(items)) {
                 items.forEach(item -> {
                     SkuInfo sku = new SkuInfo();
-                    sku.setSkuCode(item.getItemCode());
                     sku.setNum(item.getActualQty().intValue());
-                    /**
-                     * 获取skuName
-                     **/
-                    OutboundDetail detail = new OutboundDetail();
-                    detail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
-                    detail.setSkuCode(item.getItemCode());
-                    OutboundDetail od = outboundDetailService.selectOne(detail);
-                    sku.setSkuName(od.getSkuName());
+                    for(OutboundDetail detail1: outboundDetailList){
+                        if(StringUtils.equals(detail1.getWarehouseItemId(), item.getItemId())){
+                            sku.setSkuCode(detail1.getSkuCode());
+                            sku.setSkuName(detail1.getSkuName());
+                            break;
+                        }
+                    }
                     skuList.add(sku);
                 });
             }
@@ -357,26 +362,20 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     	}	
     	
     }
-    
-    private String generateLogisticsCode(String logisticsCode, String channelCode) {
+
+    private String generateLogisticsCode(String logisticsName, String channelCode) {
     	String retMsg = "物流公司编码未找到";
-    	if (StringUtils.isBlank(logisticsCode)) {
+    	if (StringUtils.isBlank(logisticsName)) {
     		return retMsg;
     	}
     	LogisticsCompany queryLc = new LogisticsCompany();
-    	queryLc.setType("QIMEN");
-    	queryLc.setCompanyCode(logisticsCode);
+    	queryLc.setType(channelCode);
+    	queryLc.setCompanyName(logisticsName);
         LogisticsCompany lc = logisticsCompanyService.selectOne(queryLc);
         if (null == lc) {
         	return retMsg;
         }
-        queryLc.setType(channelCode);
-        queryLc.setCompanyName(lc.getCompanyName());
-        LogisticsCompany lctmp = logisticsCompanyService.selectOne(queryLc);
-        if (null == lctmp) {
-        	return retMsg;
-        }
-		return lctmp.getCompanyCode();
+		return lc.getCompanyCode();
 	}
 
 	//更新itemOrder
