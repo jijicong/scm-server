@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.*;
@@ -119,9 +118,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
         warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
-        if(CollectionUtils.isEmpty(warehouseInfoList)){
-            logger.error("没有查询到可用仓库");
-        }
+        AssertUtil.notEmpty(warehouseInfoList, "没有查询到可用仓库");
         return warehouseInfoList;
     }
 
@@ -143,10 +140,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-        //AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
-        if(CollectionUtils.isEmpty(warehouseItemInfoList)){
-            logger.error(String.format("自采sku[%s]尚未与仓库完成绑定", StringUtils.join(skuCodes, SupplyConstants.Symbol.COMMA)));
-        }
+        AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
         return warehouseItemInfoList;
     }
 
