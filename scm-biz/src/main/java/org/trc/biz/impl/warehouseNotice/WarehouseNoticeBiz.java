@@ -46,6 +46,7 @@ import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.service.purchase.IWarehouseNoticeService;
 import org.trc.service.supplier.ISupplierService;
+import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -107,6 +108,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private JDWmsConstantConfig jDWmsConstantConfig;
     @Autowired
     private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IRealIpService iRealIpService;
 
     private boolean isSection = false;
     private boolean isReceivingError = false;
@@ -791,6 +794,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     @Override
     @WarehouseNoticeCacheEvict
     public void updateStock() {
+        if (!iRealIpService.isRealTimerService()){
+            return;
+        }
         //1. 查询入库通知单，状态为待仓库反馈，部分收货的入库单,完成状态为未完成的
         // 更新入库单为 (成功：待仓库反馈状态 ；失败：仓库接收失败)
         Example warehouseNoticeExample = new Example(WarehouseNotice.class);
