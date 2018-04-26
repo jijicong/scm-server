@@ -202,5 +202,11 @@ public interface IScmOrderBiz {
      */
     AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap);
 
+    /**
+     * 发货通知单下单结果通知渠道
+     * @param shopOrderCode 店铺订单号
+     */
+    void outboundOrderSubmitResultNoticeChannel(String shopOrderCode);
+
 
 }
