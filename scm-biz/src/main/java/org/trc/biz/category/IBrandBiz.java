@@ -83,4 +83,11 @@ public interface IBrandBiz {
      * 联想查询
      */
     List<String> associationSearch(String queryString) throws Exception;
+
+    /**
+     * 品牌名称唯一性校验
+     * @param id
+     * @param name
+     */
+    void  checkBrandName(Long id,String name) ;
 }

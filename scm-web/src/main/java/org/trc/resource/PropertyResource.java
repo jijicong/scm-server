@@ -5,10 +5,8 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.category.IPropertyBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
-import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
-import org.trc.enums.remarkEnum;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -18,7 +16,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by hzqph on 2017/5/6.
@@ -93,5 +90,14 @@ public class PropertyResource {
         return ResultUtil.createSuccessResult("查询所有属性成功",propertyBiz.queryPropertyValueByPropertyIds(propertyIds));
     }
 
+    @POST
+    @Path(SupplyConstants.Category.PropertyValue.CHECK_NAME)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response checkPropertyValueName(@FormParam("id")Long id,@FormParam("name")String name){
+        if (null !=id){
+            propertyBiz.checkPropertyValueName(id,name);
+        }
+        return ResultUtil.createSuccessResult("属性名称可用", "");
+    }
 
 }

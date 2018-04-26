@@ -156,6 +156,11 @@ public class SupplyConstants {
             public static final String BRAND_LIST_SEARCH = "brands/search";
             //联想查询
             public static final String ASSOCIATION_SEARCH = "brands/associationSearch";
+
+            /**
+             * 品牌名称唯一校验
+             */
+            public static final String CHECK_NAME = "brand/checkName";
         }
 
         /**
@@ -216,6 +221,10 @@ public class SupplyConstants {
             //根据多个属性ID查询属性值路径
             public static final String MULTI_PROPERTY_ID_SEARCH_PROPERTY_VALUE_LIST = "propertyValues/multiIdsSearch";
 
+            /**
+             * 属性值名称唯一校验
+             */
+            public static final String CHECK_NAME = "propertyValue/checkValueName";
         }
 
 

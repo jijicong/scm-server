@@ -102,4 +102,13 @@ public class BrandResource {
         String msg=validEnum.getName()+"成功!";
         return ResultUtil.createSuccessResult(msg, "");
     }
+
+    @POST
+    @Path(SupplyConstants.Category.Brand.CHECK_NAME)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response checkBrandName(@FormParam("id")Long id,@FormParam("name")String name){
+        brandBiz.checkBrandName(id,name);
+        return ResultUtil.createSuccessResult("品牌名称可用", "");
+    }
+
 }
