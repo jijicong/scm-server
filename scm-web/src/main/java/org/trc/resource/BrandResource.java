@@ -7,6 +7,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
@@ -107,8 +108,12 @@ public class BrandResource {
     @Path(SupplyConstants.Category.Brand.CHECK_NAME)
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkBrandName(@FormParam("id")Long id,@FormParam("name")String name){
-        brandBiz.checkBrandName(id,name);
-        return ResultUtil.createSuccessResult("品牌名称可用", "");
+        try {
+            brandBiz.checkBrandName(id,name);
+        }catch (ParamValidException e){
+            return ResultUtil.createSuccessResult("品牌查询成功", "1");
+        }
+        return ResultUtil.createSuccessResult("品牌查询成功", null);
     }
 
 }

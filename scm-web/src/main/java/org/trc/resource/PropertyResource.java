@@ -7,6 +7,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Property;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ValidEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.category.PropertyForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -95,9 +96,13 @@ public class PropertyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkPropertyValueName(@FormParam("id")Long id,@FormParam("name")String name){
         if (null !=id){
-            propertyBiz.checkPropertyValueName(id,name);
+            try {
+                propertyBiz.checkPropertyValueName(id,name);
+            }catch (ParamValidException e){
+                return ResultUtil.createSuccessResult("属性名称查询成功", "1");
+            }
         }
-        return ResultUtil.createSuccessResult("属性名称可用", "");
+        return ResultUtil.createSuccessResult("属性名称查询成功", "");
     }
 
 }
