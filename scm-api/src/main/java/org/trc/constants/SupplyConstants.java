@@ -259,6 +259,11 @@ public class SupplyConstants {
             //校验起停用
             public static final String CATEGORY_VALID = "valid";
 
+            /**
+             * 分类名称唯一性校验
+             */
+            public static final String CATEGORY_CHECK_NAME = "checkCategoryName";
+
         }
     }
 
