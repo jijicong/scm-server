@@ -102,7 +102,7 @@ public class PropertyResource {
                 return ResultUtil.createSuccessResult("属性名称查询成功", "1");
             }
         }
-        return ResultUtil.createSuccessResult("属性名称查询成功", "");
+        return ResultUtil.createSuccessResult("属性名称查询成功", null);
     }
 
 }
