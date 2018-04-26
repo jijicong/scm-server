@@ -18,7 +18,7 @@ import org.trc.domain.category.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
-import org.trc.form.JDModel.ReturnTypeDO;
+import org.trc.exception.ParamValidException;
 import org.trc.form.category.*;
 import org.trc.service.category.*;
 import org.trc.service.config.ILogInfoService;
@@ -28,7 +28,6 @@ import org.trc.util.*;
 import org.trc.util.cache.CategoryCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
-import java.text.Collator;
 import java.util.*;
 
 /**
@@ -349,6 +348,8 @@ public class CategoryBiz implements ICategoryBiz {
     private void checkSaveCategory(Category category) {
         AssertUtil.notNull(category.getSort(), "新增分类参数sort不能为空");
         AssertUtil.notBlank(category.getIsValid(), "新增分类参数isValid不能为空");
+        AssertUtil.notNull(category.getLevel(), "新增分类参数level不能为空");
+
 
     }
 
@@ -1060,7 +1061,31 @@ public class CategoryBiz implements ICategoryBiz {
                 log.error("通知Trc分类变更异常" + e.getMessage(), e);
             }
         };
+
+
         Thread myThread = new Thread(runnable);
         myThread.start();
+    }
+
+    /**
+     * 分类名称校验
+     * @param parentId
+     * @param name
+     */
+    @Override
+    public void checkCategoryName(Long id,Long parentId,String name){
+        AssertUtil.notBlank(name,"分类名称不能为空!");
+        Category category = new Category();
+        category.setParentId(parentId);
+        List<Category> categoryList = categoryService.select(category);
+        if (!AssertUtil.collectionIsEmpty(categoryList)) {
+            for (Category categoryItem : categoryList) {
+                if (StringUtils.equals(name, categoryItem.getName())&&categoryItem.getId().longValue()!=(null==id?0:id.longValue())) {
+                    String msg = "分类名称[" + name + "]已存在";
+                    log.error(msg);
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+                }
+            }
+        }
     }
 }
