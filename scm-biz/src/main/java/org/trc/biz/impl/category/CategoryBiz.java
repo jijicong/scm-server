@@ -231,7 +231,7 @@ public class CategoryBiz implements ICategoryBiz {
     @CategoryCacheEvict
     public void updateCategory(Category category, boolean isSave, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(category.getId(), "修改分类参数ID为空");
-
+        checkCategoryName(category.getId(),category.getParentId(),category.getName());
         Category oldCategory = new Category();
         oldCategory.setId(category.getId());
         oldCategory = categoryService.selectOne(oldCategory);
@@ -301,6 +301,7 @@ public class CategoryBiz implements ICategoryBiz {
     @CategoryCacheEvict
     public void saveCategory(Category category, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         checkSaveCategory(category);
+        checkCategoryName(null,category.getParentId(),category.getName());
         category.setCategoryCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         AssertUtil.notNull(category.getCategoryCode(), "分类编码生成失败");
         String categoryAction;
@@ -349,8 +350,6 @@ public class CategoryBiz implements ICategoryBiz {
         AssertUtil.notNull(category.getSort(), "新增分类参数sort不能为空");
         AssertUtil.notBlank(category.getIsValid(), "新增分类参数isValid不能为空");
         AssertUtil.notNull(category.getLevel(), "新增分类参数level不能为空");
-
-
     }
 
     /**
