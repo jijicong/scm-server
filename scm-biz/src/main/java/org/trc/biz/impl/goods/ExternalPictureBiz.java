@@ -13,6 +13,7 @@ import org.trc.domain.goods.ExternalPicture;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.goods.ExternalPictureForm;
 import org.trc.service.goods.IExternalPictureService;
+import org.trc.service.util.IRealIpService;
 import org.trc.util.Pagenation;
 import org.trc.util.URLAvailability;
 import tk.mybatis.mapper.entity.Example;
@@ -33,9 +34,12 @@ public class ExternalPictureBiz implements IExternalPictureBiz{
     private IQinniuBiz qinniuBiz;
     @Autowired
     private IExternalPictureService externalPictureService;
+    @Autowired
+    private IRealIpService iRealIpService;
 
     @Override
     public void uploadExternalPic() {
+        if (!iRealIpService.isRealTimerService()) return;
         long totalCount = 0;
         do {
             ExternalPictureForm form = new ExternalPictureForm();
