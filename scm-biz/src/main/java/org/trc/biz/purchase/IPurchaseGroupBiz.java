@@ -2,6 +2,7 @@ package org.trc.biz.purchase;
 
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
+import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.Pagenation;
 
@@ -47,4 +48,22 @@ public interface IPurchaseGroupBiz {
      * @
      */
     List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode) ;
+
+    /**
+     * 获取所有采购组员
+     * @return
+     */
+    List<PurchaseGroupUser> findPurchaseGroupUser();
+
+    /**
+     * 根据id删除采购组员
+     * @param id
+     */
+    void deletePurchaseCroupUserById(Long id);
+
+    /**
+     * 保存采购组员
+     * @param id
+     */
+    void savePurchaseCroupUser(PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo);
 }

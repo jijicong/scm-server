@@ -1,6 +1,8 @@
 package org.trc.biz.impl.purchase;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.sun.tools.internal.xjc.runtime.ZeroOneBooleanAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,21 +13,23 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
+import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.domain.purchase.PurchaseGroupUserRelation;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.remarkEnum;
+import org.trc.enums.*;
+import org.trc.exception.CategoryException;
 import org.trc.exception.PurchaseGroupException;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.purchase.IPurchaseGroupService;
+import org.trc.service.purchase.IPurchaseGroupUserService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ParamsUtil;
 import org.trc.util.cache.PurchaseGroupCacheEvict;
@@ -33,6 +37,8 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
+
+import static javafx.beans.binding.Bindings.select;
 
 /**
  * Created by sone on 2017/5/19.
@@ -56,6 +62,8 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private ISerialUtilService serialUtilService;
     @Resource
     private ILogInfoService logInfoService;
+    @Resource
+    private IPurchaseGroupUserService purchaseGroupUserService;
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
@@ -272,7 +280,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    private List<AclUserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list, int size) {
+    public List<AclUserAccreditInfo> selectInvalidUser(List<PurchaseGroupUserRelation>  list, int size) {
         /*
         首先要确认所插入的用户，不能被停用
         再次考虑，使用的用户据用采购角色
@@ -306,4 +314,44 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
 
     }
 
+    @Override
+    public List<PurchaseGroupUser> findPurchaseGroupUser() {
+        PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
+        purchaseGroupUser.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        List<PurchaseGroupUser> list = purchaseGroupUserService.select(purchaseGroupUser);
+        return list;
+    }
+
+    @Override
+    public void deletePurchaseCroupUserById(Long id) {
+        AssertUtil.notNull(id,"采购组管理模块根据id查询采购组员失败，采购组员信息为空");
+        PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
+        purchaseGroupUser.setId(id);
+        purchaseGroupUser.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+        purchaseGroupUserService.updateByPrimaryKeySelective(purchaseGroupUser);
+    }
+
+    @Override
+    public void savePurchaseCroupUser(PurchaseGroupUser purchaseGroupUser, AclUserAccreditInfo aclUserAccreditInfo) {
+        //需判断用户是否有改变属性启停用状态如果有变更需要更改关联关系表
+        List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
+        AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
+        String userId= aclUserAccreditInfo.getUserId();
+        for (PurchaseGroupUser user : valueList) {
+            if (user.getStatus().equals(RecordStatusEnum.ADD.getCode())) {
+                user.setCreateTime(Calendar.getInstance().getTime());
+                user.setUpdateTime(Calendar.getInstance().getTime());
+                user.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+                user.setCreateOperator(userId);
+                purchaseGroupUserService.insert(user);
+            }
+            if (user.getStatus().equals(RecordStatusEnum.DELETE.getCode())) {
+                PurchaseGroupUser userDelete = new PurchaseGroupUser();
+                userDelete.setId(user.getId());
+                userDelete.setIsDeleted(ZeroToNineEnum.ONE.getCode());
+                userDelete.setUpdateTime(Calendar.getInstance().getTime());
+                purchaseGroupUserService.updateByPrimaryKeySelective(userDelete);
+            }
+        }
+    }
 }

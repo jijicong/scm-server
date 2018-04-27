@@ -13,4 +13,8 @@ import java.util.Map;
 public interface IWarehouseItemInfoService extends IBaseService<WarehouseItemInfo, Long> {
 
     int batchUpdate(Map<String, Object> map);
+
+    int selectWarehouseItemInfoCount(Map<String, Object> map);
+
+    List<WarehouseItemInfo> selectWarehouseItemInfo(Map<String, Object> map);
 }

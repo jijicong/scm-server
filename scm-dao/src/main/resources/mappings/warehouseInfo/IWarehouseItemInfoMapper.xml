@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.trc.mapper.warehouseInfo.IWarehouseItemInfoMapper">
+    <select id="selectWarehouseItemInfo" resultType="org.trc.domain.warehouseInfo.WarehouseItemInfo"
+            parameterType="java.util.Map">
+        SELECT
+        id,warehouse_code AS warehouseCode, warehouse_info_id AS warehouseInfoId, warehouse_owner_id AS warehouseOwnerId,
+        wms_warehouse_code AS wmsWarehouseCode, sku_code AS skuCode, warehouse_item_id AS warehouseItemId, item_name AS itemName,
+        bar_code AS barCode, spec_nature_info AS specNatureInfo, item_type AS itemType, is_valid AS isValid, notice_status AS noticeStatus,
+        create_time AS createTime, update_time AS updateTime, is_delete AS isDelete, exception_reason AS exceptionReason, spu_code AS spuCode
+        FROM
+        warehouse_item_info
+        WHERE
+        is_delete=0
+        AND w.warehouse_info_id = #{warehouseInfoId}
+        <if test="skuCode != null and skuCode != ''">
+            AND sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        </if>
+        <if test="itemName != null and itemName != ''">
+            AND sku_name LIKE CONCAT('%', #{itemName}, '%')
+        </if>
+        <if test="noticeStatus != null and noticeStatus != ''">
+            AND notice_status= #{noticeStatus}
+        </if>
+        <if test="barCode != null and barCode != ''">
+            AND FIND_IN_SET(#{barCode}, barCode)
+        </if>
+        ORDER BY notice_status ASC, update_time DESC
+        <if test="pageSize != null and pageSize != ''">
+            LIMIT #{start},#{pageSize}
+        </if>
+    </select>
+
+    <select id="selectWarehouseItemInfoCount" resultType="java.lang.Integer"
+            parameterType="java.util.Map">
+        SELECT
+        count(*)
+        FROM (
+        SELECT
+        *
+        FROM
+        warehouse_item_info
+        WHERE
+        is_delete=0
+        AND w.warehouse_info_id = #{warehouseInfoId}
+        <if test="skuCode != null and skuCode != ''">
+            AND sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        </if>
+        <if test="itemName != null and itemName != ''">
+            AND sku_name LIKE CONCAT('%', #{itemName}, '%')
+        </if>
+        <if test="noticeStatus != null and noticeStatus != ''">
+            AND notice_status= #{noticeStatus}
+        </if>
+        <if test="barCode != null and barCode != ''">
+            AND FIND_IN_SET(#{barCode}, barCode)
+        </if>)
+    </select>
+</mapper>
