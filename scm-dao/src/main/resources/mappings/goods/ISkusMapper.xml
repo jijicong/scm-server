@@ -45,9 +45,9 @@
             </foreach>
         </if>
         <if test="barCodeTemp != null and barCodeTemp != ''">
-            AND sk.bar_code IN
-            <foreach collection="barCode" index="index" item="item" close=")" open="(" separator=",">
-                #{item}
+            AND
+            <foreach collection="barCode" index="index" item="item" close=")" open="(" separator=" or ">
+                FIND_IN_SET(#{item},sk.bar_code)
             </foreach>
         </if>
         <if test="spuCode != null and spuCode != ''">
