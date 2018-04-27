@@ -337,27 +337,21 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
         AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
         String userId= aclUserAccreditInfo.getUserId();
-        int valueCount = 0;
         for (PurchaseGroupUser user : valueList) {
             if (user.getStatus().equals(RecordStatusEnum.ADD.getCode())) {
                 user.setCreateTime(Calendar.getInstance().getTime());
                 user.setUpdateTime(Calendar.getInstance().getTime());
                 user.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 user.setCreateOperator(userId);
-                valueCount =  valueCount + purchaseGroupUserService.insert(user);
+                purchaseGroupUserService.insert(user);
             }
             if (user.getStatus().equals(RecordStatusEnum.DELETE.getCode())) {
                 PurchaseGroupUser userDelete = new PurchaseGroupUser();
                 userDelete.setId(user.getId());
                 userDelete.setIsDeleted(ZeroToNineEnum.ONE.getCode());
                 userDelete.setUpdateTime(Calendar.getInstance().getTime());
-                valueCount =  valueCount + purchaseGroupUserService.updateByPrimaryKeySelective(userDelete);
+                purchaseGroupUserService.updateByPrimaryKeySelective(userDelete);
             }
-        }
-        if (valueCount < 1) {
-            String str = CommonUtil.joinStr("采购组管理模块根据更新采购组员信息" + JSON.toJSONString(purchaseGroupUser) + "更新失败").toString();
-            logger.error(str);
-            throw new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, str);
         }
     }
 }
