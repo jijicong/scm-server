@@ -5,6 +5,7 @@ import org.trc.service.IBaseService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -18,4 +19,8 @@ public interface ISkusService extends IBaseService<Skus, String>{
     Integer selectSkuListCount(Map<String, Object> map);
 
     List<String> selectAllBarCode(List<String> notInList);
+
+    Set<String> selectSkuListByBarCode(List<String> barCodeList);
+
+
 }

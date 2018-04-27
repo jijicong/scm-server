@@ -14,6 +14,7 @@ import org.trc.form.supplier.SupplierForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -165,4 +166,23 @@ public interface IGoodsBiz {
     void checkBarcodeOnly(String barcode,String skuCode,String notIn);
 
     void skuInfoBarCode(String skuInfo);
+
+    /**
+     * 代发商品导出
+     * @param queryModel
+     * @param page
+     * @param aclUserAccreditInfo
+     * @return
+     */
+    Response exportExternalGoods(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) ;
+
+
+    /**
+     * 自采商品导出
+     * @param queryModel
+     * @param page
+     * @param aclUserAccreditInfo
+     * @return
+     */
+    Response exportItemGoods(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo);
 }

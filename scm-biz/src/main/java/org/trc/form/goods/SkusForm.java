@@ -33,7 +33,12 @@ public class SkusForm extends QueryModel {
     //sku名称
     @QueryParam("skuName")
     private String skuName;
-
+    //分类等级
+    @QueryParam("categoryLevel")
+    private String categoryLevel;
+    //条形码
+    @QueryParam("barCode")
+    private String barCode;
     //sku关联状态: 0-未关联,1-已关联
     @QueryParam("skuRelationStatus")
     private String skuRelationStatus;
@@ -100,5 +105,21 @@ public class SkusForm extends QueryModel {
 
     public void setSkuRelationStatus(String skuRelationStatus) {
         this.skuRelationStatus = skuRelationStatus;
+    }
+
+    public String getCategoryLevel() {
+        return categoryLevel;
+    }
+
+    public void setCategoryLevel(String categoryLevel) {
+        this.categoryLevel = categoryLevel;
+    }
+
+    public String getBarCode() {
+        return barCode;
+    }
+
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
     }
 }

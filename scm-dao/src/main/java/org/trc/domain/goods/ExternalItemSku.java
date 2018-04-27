@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -200,6 +201,12 @@ public class ExternalItemSku implements Serializable{
 
     @Transient
     private Long externalId;
+
+    @Transient
+    private BigDecimal supplyPriceYuan;
+
+    @Transient
+    private BigDecimal marketReferencePriceYuan;
 
     public Long getExternalId() {
         return externalId;
@@ -526,5 +533,21 @@ public class ExternalItemSku implements Serializable{
 
     public void setSkuRelationStatus(String skuRelationStatus) {
         this.skuRelationStatus = skuRelationStatus;
+    }
+
+    public BigDecimal getSupplyPriceYuan() {
+        return supplyPriceYuan;
+    }
+
+    public void setSupplyPriceYuan(BigDecimal supplyPriceYuan) {
+        this.supplyPriceYuan = supplyPriceYuan;
+    }
+
+    public BigDecimal getMarketReferencePriceYuan() {
+        return marketReferencePriceYuan;
+    }
+
+    public void setMarketReferencePriceYuan(BigDecimal marketReferencePriceYuan) {
+        this.marketReferencePriceYuan = marketReferencePriceYuan;
     }
 }

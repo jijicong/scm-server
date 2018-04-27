@@ -113,4 +113,11 @@
             </foreach>
         </if>
     </select>
+
+    <select id="selectSkuListByBarCode" resultType="java.lang.String">
+         SELECT bar_code from  skus sk where
+        <foreach collection="barCodeList" index="index" item="item" close=")" open="(" separator=" or ">
+            FIND_IN_SET(#{item},sk.bar_code)
+        </foreach>
+    </select>
 </mapper>

@@ -6,6 +6,7 @@ import org.trc.util.BaseMapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -19,4 +20,6 @@ public interface ISkusMapper extends BaseMapper<Skus>{
     Integer selectSkuListCount(Map<String, Object> map);
 
     List<String> selectAllBarCode(@Param("notInList")List<String> notInList);
+
+    Set<String> selectSkuListByBarCode(@Param("barCodeList")List<String> barCodeList);
 }
