@@ -707,6 +707,9 @@ public class SupplyConstants {
         public static final String SKU_VALID = "skuValid";
         //商品分类属性
         public static final String ITEMS_CATEGORY_PROPERTY = "itemsCategoryProperty";
+        //自采商品导出
+        public static final String ITEMS_EXPORT = "itemsExport";
+
 
         //代发商品分页查询路径
         public static final String EXTERNAL_GOODS_PAGE = "externalGoodsPage";
@@ -714,6 +717,8 @@ public class SupplyConstants {
         public static final String EXTERNAL_GOODS_PAGE_2 = "externalGoodsPage2";
         //代发商品
         public static final String EXTERNAL_ITEM_SKU = "externalItemSku";
+        //代发商品导出
+        public static final String EXTERNAL_ITEM_EXPORT = "externalItemExport";
         //代发商品
         public static final String EXTERNAL_ITEM_SKU_LIST = "externalItemSkus";
         //代发商品启用/停用
