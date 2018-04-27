@@ -189,7 +189,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        Map<String, Object> map = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode());
+        Map<String, Object> map = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode(),queryModel.getBarCode());
         Object spuCodes = map.get("spuCodes");
         if(null != spuCodes){//根据SPU或者SKU来查询
             List<String> _spuCodes = (List<String>)spuCodes;
@@ -479,9 +479,10 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
 
-    private Map<String, Object> handlerSkuCondition(String skuCode, String spuCode){
+    private Map<String, Object> handlerSkuCondition(String skuCode, String spuCode,String barCode){
         Map<String, Object> map = new HashMap<>();
         List<String> spuCodes = null;
+        List<Skus> skuses = new ArrayList<>();
         if(StringUtils.isNotBlank(spuCode)){
             spuCodes = new ArrayList<String>();
             Example example = new Example(Items.class);
@@ -502,8 +503,27 @@ public class GoodsBiz implements IGoodsBiz {
                 for(Skus s : skusList){
                     spuCodes.add(s.getSpuCode());
                 }
-                map.put("skuList", skusList);
+                skuses.addAll(skusList);
             }
+        }
+
+
+        if(StringUtils.isNotBlank(barCode)){
+            spuCodes = new ArrayList<String>();
+            Set<String> barCodeSet =skusService.selectSkuListByBarCode(Arrays.asList(StringUtils.split(barCode,SupplyConstants.Symbol.COMMA)));
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria2 = example.createCriteria();
+            criteria2.andIn("barCode", barCodeSet);
+            List<Skus> skusList = skusService.selectByExample(example);
+            if(skusList.size() > 0){
+                for(Skus s : skusList){
+                    spuCodes.add(s.getSpuCode());
+                }
+            }
+            skuses.addAll(skusList);
+        }
+        if (!AssertUtil.collectionIsEmpty(skuses)){
+            map.put("skuList", skuses);
         }
         map.put("spuCodes", spuCodes);
         return map;

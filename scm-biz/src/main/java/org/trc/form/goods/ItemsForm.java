@@ -29,6 +29,10 @@ public class ItemsForm extends QueryModel {
     @QueryParam("brandId")
     private Long brandId;
 
+    //商品二维码
+    @QueryParam("barCode")
+    private String barCode;
+
     public String getSpuCode() {
         return spuCode;
     }
@@ -67,5 +71,13 @@ public class ItemsForm extends QueryModel {
 
     public void setBrandId(Long brandId) {
         this.brandId = brandId;
+    }
+
+    public String getBarCode() {
+        return barCode;
+    }
+
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
     }
 }
