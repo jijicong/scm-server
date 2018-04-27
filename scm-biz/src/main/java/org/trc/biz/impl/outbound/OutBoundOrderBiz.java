@@ -52,6 +52,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("outBoundOrderBiz")
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
@@ -753,12 +754,14 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
                     if(StringUtils.equals(SUCCESS, responses.get(0).getCode())){
                         updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.WAITING.getCode(),id, responses.get(0).getWmsOrderCode());
+                        scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收成功","",null);
                     }else{
                         //仓库接受失败插入一条日志
                         msg = responses.get(0).getMessage();
                         logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
                         updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
+                        scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                         logger.error(msg);
                         throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                     }
@@ -766,6 +769,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     //仓库接受失败插入一条日志
                     logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),warehouse.getWarehouseName(),"仓库接收失败",msg,null);
                     updateOutboundDetailState(outboundOrder.getOutboundOrderCode(),OutboundDetailStatusEnum.RECEIVE_FAIL .getCode(),id, "");
+                    scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                     logger.error(msg);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }
@@ -1127,7 +1131,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){
                     this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), outboundOrder.getOutboundOrderCode());
                     this.updateOrderCancelInfo(outboundOrder, remark,false);
-
+                    scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                     //更新库存
                     skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                             outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), false));
@@ -1153,7 +1157,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     Example.Criteria criteria = example.createCriteria();
                     criteria.andEqualTo("outboundOrderCode", outboundOrder.getOutboundOrderCode());
                     outboundDetailService.updateByExampleSelective(outboundDetail, example);
-
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
 
@@ -1250,7 +1253,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),"admin",
                             "取消发货", "取消原因:"+outboundOrder.getRemark()+"<br>取消结果:取消成功",
                             null);
-
+                    scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
                 }else if(StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){

@@ -24,6 +24,9 @@ public class SkusForm extends QueryModel {
     @QueryParam("brandName")
     private String brandName;
 
+    @QueryParam("barCode")
+    private String barCode;
+
     public String getSkuCode() {
         return skuCode;
     }
@@ -54,5 +57,13 @@ public class SkusForm extends QueryModel {
 
     public void setBrandName(String brandName) {
         this.brandName = brandName;
+    }
+
+    public String getBarCode() {
+        return barCode;
+    }
+
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
     }
 }

@@ -38,8 +38,17 @@
         <if test="skuName != null and skuName != ''">
             AND sk.sku_name LIKE CONCAT('%', #{skuName}, '%')
         </if>
-        <if test="skuCode != null and skuCode != ''">
-            AND sk.sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        <if test="skuCodeTemp != null and skuCodeTemp != ''">
+            AND sk.sku_code IN
+            <foreach collection="skuCode" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="barCodeTemp != null and barCodeTemp != ''">
+            AND sk.bar_code IN
+            <foreach collection="barCode" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
         </if>
         <if test="spuCode != null and spuCode != ''">
             AND sk.spu_code LIKE CONCAT('%', #{spuCode}, '%')
@@ -72,8 +81,17 @@
         <if test="skuName != null and skuName != ''">
             AND sk.sku_name LIKE CONCAT('%', #{skuName}, '%')
         </if>
-        <if test="skuCode != null and skuCode != ''">
-            AND sk.sku_code LIKE CONCAT('%', #{skuCode}, '%')
+        <if test="skuCodeTemp != null and skuCodeTemp != ''">
+            AND sk.sku_code IN
+            <foreach collection="skuCode" index="index" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="barCodeTemp != null and barCodeTemp != ''">
+            AND
+            <foreach collection="barCode" index="index" item="item" close=")" open="(" separator=" or ">
+                FIND_IN_SET(#{item},sk.bar_code)
+            </foreach>
         </if>
         <if test="spuCode != null and spuCode != ''">
             AND sk.spu_code LIKE CONCAT('%', #{spuCode}, '%')

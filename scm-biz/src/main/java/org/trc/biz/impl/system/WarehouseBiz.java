@@ -354,8 +354,8 @@ public class WarehouseBiz implements IWarehouseBiz {
         }
 
         warehouse.setIsThroughWms(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
-        warehouse.setChannelCode("TRMALL");
-        warehouse.setOwnerName("小泰科技");
+        warehouse.setChannelCode(SupplyConstants.WarehouseConstant.CHANNEL_CODE);
+        warehouse.setOwnerName(SupplyConstants.WarehouseConstant.OWNER_NAME);
         warehouse.setSkuNum(0);
         warehouse.setOwnerWarehouseState("0");
 

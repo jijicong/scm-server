@@ -17,11 +17,19 @@ public class SupplyConstants {
         public static final String SEMICOLON = ";";//分号
         public static final String XIE_GANG = "/";//斜杠
         public static final String AND = "&";//与
+
+
         /**
          * 等号
          */
         public static final String EQUAL = "=";
 
+    }
+
+    public static final class WarehouseConstant{
+        public static final String OWNER_NAME = "浙江小泰电子商务有限公司";
+
+        public static final String CHANNEL_CODE = "TRMALL";
     }
 
 
@@ -452,6 +460,8 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
         //根据采购组code查询改组的采购人员
         public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
+        //采购组员查询
+        public static final String PURCHASE_GROUP_USER_NEW = "purchaseGroupUserNew";
 
     }
 

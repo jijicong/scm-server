@@ -1,11 +1,13 @@
 package org.trc.resource;
 
 import com.sun.org.apache.regexp.internal.RE;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseGroupBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
+import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.enums.ValidEnum;
 import org.trc.form.purchase.PurchaseGroupForm;
 import org.trc.util.AppResult;
@@ -107,4 +109,17 @@ public class PurchaseGroupResource {
 
     }
 
+    @GET
+    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER_NEW)
+    public Response findPurchaseCroupUser(){
+        return ResultUtil.createSuccessResult("查询采购组员成功",purchaseGroupBiz.findPurchaseGroupUser());
+    }
+
+    @PUT
+    @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER_NEW)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response savePurchaseGroupUser(@BeanParam PurchaseGroupUser purchaseGroupUser,@Context ContainerRequestContext requestContext){
+        purchaseGroupBiz.savePurchaseCroupUser(purchaseGroupUser, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return  ResultUtil.createSuccessResult("保存采购组员成功","");
+    }
 }
