@@ -660,11 +660,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 //        List<Skus> includeList = pageTem.getResult();
         Map<String, Object> map1 = new HashMap<>();
         map1.put("skuName", form.getSkuName());
-        if(form.getSkuCode() != null){
+        if(StringUtils.isNotEmpty(form.getSkuCode())){
             map1.put("skuCode", form.getSkuCode().split(","));
             map1.put("skuCodeTemp", "skuTemp");
         }
-        if(form.getBarCode() != null){
+        if(StringUtils.isNotEmpty(form.getBarCode())){
             map1.put("barCode", form.getBarCode().split(","));
             map1.put("barCodeTemp", "barTemp");
         }

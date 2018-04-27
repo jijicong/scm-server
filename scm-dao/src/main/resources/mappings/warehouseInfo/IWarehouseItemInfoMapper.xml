@@ -12,7 +12,7 @@
         warehouse_item_info
         WHERE
         is_delete=0
-        AND w.warehouse_info_id = #{warehouseInfoId}
+        AND warehouse_info_id = #{warehouseInfoId}
         <if test="skuCode != null and skuCode != ''">
             AND sku_code LIKE CONCAT('%', #{skuCode}, '%')
         </if>
@@ -39,21 +39,21 @@
         SELECT
         *
         FROM
-        warehouse_item_info
+        warehouse_item_info w
         WHERE
-        is_delete=0
+        w.is_delete=0
         AND w.warehouse_info_id = #{warehouseInfoId}
         <if test="skuCode != null and skuCode != ''">
-            AND sku_code LIKE CONCAT('%', #{skuCode}, '%')
+            AND w.sku_code LIKE CONCAT('%', #{skuCode}, '%')
         </if>
         <if test="itemName != null and itemName != ''">
-            AND sku_name LIKE CONCAT('%', #{itemName}, '%')
+            AND w.sku_name LIKE CONCAT('%', #{itemName}, '%')
         </if>
         <if test="noticeStatus != null and noticeStatus != ''">
-            AND notice_status= #{noticeStatus}
+            AND w.notice_status= #{noticeStatus}
         </if>
         <if test="barCode != null and barCode != ''">
-            AND FIND_IN_SET(#{barCode}, barCode)
-        </if>)
+            AND FIND_IN_SET(#{barCode}, w.barCode)
+        </if>) c
     </select>
 </mapper>
