@@ -240,9 +240,13 @@ public class GoodsBiz implements IGoodsBiz {
                         for (Category c : categoryLevel3List) {
                             categoryLevel3Ids.add(c.getId());
                         }
+                        criteria.andIn("categoryId", categoryLevel3Ids);
+                    }else {
+                        criteria.andEqualTo("categoryId", categoryId);
                     }
+                }else {
+                    criteria.andEqualTo("categoryId", categoryId);
                 }
-                criteria.andIn("categoryId", categoryLevel3Ids);
                 break;
             case "2":
                 Category category = new Category();
@@ -253,8 +257,10 @@ public class GoodsBiz implements IGoodsBiz {
                     for (Category c : categoryList) {
                         categoryIds.add(c.getId());
                     }
+                    criteria.andIn("categoryId", categoryIds);
+                }else {
+                    criteria.andEqualTo("categoryId", categoryId);
                 }
-                criteria.andIn("categoryId", categoryIds);
                 break;
             case "3":
                 criteria.andEqualTo("categoryId", categoryId);
