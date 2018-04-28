@@ -3538,11 +3538,11 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public Response exportExternalGoods(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Response exportExternalGoods(ExternalItemSkuForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) {
         try {
             Pagenation<ExternalItemSku> pageExport = new Pagenation<>();
-            page.setPageSize(Integer.MAX_VALUE);
-            pageExport = externalGoodsPage(queryModel, page, aclUserAccreditInfo);
+            pageExport.setPageSize(Integer.MAX_VALUE);
+            pageExport = externalGoodsPage(queryModel, pageExport, aclUserAccreditInfo);
             List<ExternalItemSku> externalItemSkuList =new ArrayList<>();
             externalItemSkuList = pageExport.getResult();
             CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
@@ -3601,10 +3601,11 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
     @Override
-    public Response exportItemGoods(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Response exportItemGoods(SkusForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) {
         try {
-            page.setPageSize(Integer.MAX_VALUE);
-            Pagenation<Skus> pageExport =  itemsSkusPage(queryModel, page, aclUserAccreditInfo);
+            Pagenation<Skus> pageExport  = new Pagenation<>();
+            pageExport.setPageSize(Integer.MAX_VALUE);
+            pageExport =  itemsSkusPage(queryModel, pageExport, aclUserAccreditInfo);
             List<Skus> skusList = pageExport.getResult();
             CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
             CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, 6000);

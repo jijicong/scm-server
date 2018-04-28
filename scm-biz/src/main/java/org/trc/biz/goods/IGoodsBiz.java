@@ -174,7 +174,7 @@ public interface IGoodsBiz {
      * @param aclUserAccreditInfo
      * @return
      */
-    Response exportExternalGoods(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page,AclUserAccreditInfo aclUserAccreditInfo) ;
+    Response exportExternalGoods(ExternalItemSkuForm queryModel,AclUserAccreditInfo aclUserAccreditInfo) ;
 
 
     /**
@@ -184,5 +184,5 @@ public interface IGoodsBiz {
      * @param aclUserAccreditInfo
      * @return
      */
-    Response exportItemGoods(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo);
+    Response exportItemGoods(SkusForm queryModel, AclUserAccreditInfo aclUserAccreditInfo);
 }
