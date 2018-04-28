@@ -90,4 +90,7 @@ public interface IPropertyBiz {
      * 根据输入文本查找属性或者查询所有
      */
     List<Property> searchProperty(String queryString) throws Exception;
+
+
+    void checkPropertyValueName(Long propertyId,String name);
 }

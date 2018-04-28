@@ -202,4 +202,20 @@ public class GoodsResource {
         goodsBiz.skuInfoBarCode(skuInfo);
         return ResultUtil.createSuccessResult("条形码可用", "");
     }
+
+    @GET
+    @Path(SupplyConstants.Goods.EXTERNAL_ITEM_EXPORT)
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response exportExternalGoods(@BeanParam ExternalItemSkuForm queryModel, @Context ContainerRequestContext requestContext) {
+        return goodsBiz.exportExternalGoods(queryModel, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+
+    @GET
+    @Path(SupplyConstants.Goods.ITEMS_EXPORT)
+    @Consumes("text/plain;charset=utf-8")
+    @Produces("application/octet-stream")
+    public Response exportItemGoods(@BeanParam SkusForm queryModel, @Context ContainerRequestContext requestContext) {
+        return goodsBiz.exportItemGoods(queryModel,(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
 }

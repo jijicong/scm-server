@@ -2548,6 +2548,73 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return warehouseApiService.deliveryOrderCreate(request);
     }
 
+    @Override
+    public void outboundOrderSubmitResultNoticeChannel(String shopOrderCode) {
+        AssertUtil.notBlank(shopOrderCode, "发货通知单下单结果通知渠道方法参数不能为空");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setShopOrderCode(shopOrderCode);
+        List<OutboundOrder> outboundOrderList = outBoundOrderService.select(outboundOrder);
+        AssertUtil.notEmpty(outboundOrderList, String.format("根据店铺订单号%s查询发货通知单信息为空", shopOrderCode));
+        List<String> outboundOrderCodes = new ArrayList<>();
+        for(OutboundOrder _outboundOrder: outboundOrderList){
+            outboundOrderCodes.add(_outboundOrder.getOutboundOrderCode());
+        }
+        Example example = new Example(OutboundDetail.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("outboundOrderCode", outboundOrderCodes);
+        List<OutboundDetail> outboundDetailList = outboundDetailService.selectByExample(example);
+        AssertUtil.notEmpty(outboundDetailList, String.format("根据发货单编码[%s]批量查询发货通知单明细信息为空", StringUtils.join(outboundOrderCodes, SupplyConstants.Symbol.COMMA)));
+        //组装通知参数
+        ChannelOrderResponse orderRes = new ChannelOrderResponse();
+        orderRes.setPlatformOrderCode(outboundOrderList.get(0).getPlatformOrderCode());
+        orderRes.setShopOrderCode(shopOrderCode);
+        orderRes.setOrderType(SupplierOrderTypeEnum.ZC.getCode());//自采订单
+        List<SupplierOrderReturn> orderList = new ArrayList<>();
+        for (OutboundOrder order : outboundOrderList) {
+            SupplierOrderReturn returnOrder = new SupplierOrderReturn();
+            returnOrder.setSupplyOrderCode(order.getOutboundOrderCode());
+            returnOrder.setState(getNoticeOrderStatusByOutboundStatus(order.getStatus()));
+            List<OutboundDetail> _outboundDetailList = new ArrayList<>();
+            for(OutboundDetail detail: outboundDetailList){
+                if(StringUtils.equals(detail.getOutboundOrderCode(), order.getOutboundOrderCode())){
+                    _outboundDetailList.add(detail);
+                    break;
+                }
+            }
+            returnOrder.setSkus(getSkuInfo(_outboundDetailList));
+            orderList.add(returnOrder);
+        }
+        //通知渠道订单结果
+        noticeChannelOrderResult(orderRes);
+    }
+
+    private List<SkuInfo> getSkuInfo(List<OutboundDetail> outboundDetailList){
+        List<SkuInfo> skuInfoList = new ArrayList<>();
+        for(OutboundDetail detail: outboundDetailList){
+            SkuInfo skuInfo = new SkuInfo();
+            skuInfo.setSkuCode(detail.getSkuCode());
+            skuInfo.setNum(detail.getShouldSentItemNum().intValue());
+            skuInfo.setSkuName(detail.getSkuName());
+            skuInfoList.add(skuInfo);
+        }
+        return skuInfoList;
+    }
+
+    /**
+     * 根据发货单状态获取通知渠道的订单状态
+     * @param outboundStatus
+     * @return
+     */
+    private String getNoticeOrderStatusByOutboundStatus(String outboundStatus){
+        if(outboundStatus.equals(OutboundOrderStatusEnum.WAITING.getCode())){
+            return NoticeChannelStatusEnum.SUCCESS.getCode();
+        }else if(outboundStatus.equals(OutboundOrderStatusEnum.CANCELED.getCode()) || outboundStatus.equals(OutboundOrderStatusEnum.ON_CANCELED.getCode())){
+            return NoticeChannelStatusEnum.CANCEL.getCode();
+        }else{
+            return outboundStatus;
+        }
+    }
+
     /**
      * 获取采购单相关商品的仓库对接信息
      * @param entries
@@ -2801,7 +2868,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<SupplierOrderReturn> supplierOrderReturnList = new ArrayList<SupplierOrderReturn>();
         SupplierOrderReturn supplierOrderReturn = new SupplierOrderReturn();
         supplierOrderReturn.setSupplyOrderCode(supplierOrderInfo.getSupplierOrderCode());
-        supplierOrderReturn.setState(ZeroToNineEnum.TWO.getCode());//订单取消
+        supplierOrderReturn.setState(NoticeChannelStatusEnum.CANCEL.getCode());//订单取消
         supplierOrderReturn.setMessage(SUPPLIER_PLATFORM_CANCEL_ORDER);
         supplierOrderReturn.setSkus(getSupplierOrderReturnSkuInfo(supplierOrderInfo, orderItemList));
         supplierOrderReturnList.add(supplierOrderReturn);
@@ -3811,14 +3878,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
-        setScmInventoryQueryResponseItemCode(orderItemList, scmInventoryQueryResponseList);
+        Map<String, Object> map = new HashedMap();
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
+        //校验失败的商品
+        List<OrderItem> checkFailureItems = new ArrayList<>();
+        if(CollectionUtils.isEmpty(scmInventoryQueryResponseList) || CollectionUtils.isEmpty(skuStockList)){
+            for(OrderItem orderItem: orderItemList){
+                checkFailureItems.add(orderItem);
+                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
+                log.error(String.format("自采拆单校验sku编码为[%s]的库存时查询不到商品库存信息", orderItem.getSkuCode()));
+            }
+            map.put("checkFailureItems", checkFailureItems);
+            map.put("warehouseSkuMap", warehouseSkuMap);
+            return map;
+        }
+        //设置仓库库存返回结果里的skuCode值
+        setScmInventoryQueryResponseItemCode(orderItemList, scmInventoryQueryResponseList);
         List<String> skuCodeList = new ArrayList<>();
         for(OrderItem orderItem: orderItemList){
             skuCodeList.add(orderItem.getSkuCode());
         }
-        //校验失败的商品
-        List<OrderItem> checkFailureItems = new ArrayList<>();
         for(OrderItem orderItem: orderItemList){
             long qimenStock = 0;//仓库库存
             List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
@@ -3838,44 +3917,37 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 qimenStock = _inventoryQueryItemList.get(0).getQuantity();
             }
             boolean _flag = false;
-            if(skuStockList.size() > 0){
-                //校验库存
-                if(qimenStock >= orderItem.getNum().longValue()){
-                    _flag = true;
-                }else{
-                    checkFailureItems.add(orderItem);
-                }
-                SkuStock _skuStock = null;
-                for(SkuStock skuStock: skuStockList){
-                    if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
-                        _skuStock = skuStock;
-                        break;
-                    }
-                }
-                if(_flag){
-                    List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
-                    SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
-                    skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
-                    skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
-                    skuWarehouseDO.setChannelCode(_skuStock.getChannelCode());
-                    skuWarehouseDO.setWarehouseCode(_skuStock.getWarehouseCode());
-                    for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                        if(StringUtils.equals(_skuStock.getSkuCode(), item.getItemCode())){
-                            skuWarehouseDO.setItemId(item.getItemId());
-                        }
-                    }
-                    skuWarehouseDOList.add(skuWarehouseDO);
-                    warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
-                }else {
-                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
-                }
+            //校验库存
+            if(qimenStock >= orderItem.getNum().longValue()){
+                _flag = true;
             }else{
                 checkFailureItems.add(orderItem);
+            }
+            SkuStock _skuStock = null;
+            for(SkuStock skuStock: skuStockList){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                    _skuStock = skuStock;
+                    break;
+                }
+            }
+            if(_flag){
+                List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
+                SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
+                skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
+                skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
+                skuWarehouseDO.setChannelCode(_skuStock.getChannelCode());
+                skuWarehouseDO.setWarehouseCode(_skuStock.getWarehouseCode());
+                for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
+                    if(StringUtils.equals(_skuStock.getSkuCode(), item.getItemCode())){
+                        skuWarehouseDO.setItemId(item.getItemId());
+                    }
+                }
+                skuWarehouseDOList.add(skuWarehouseDO);
+                warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
+            }else {
                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
-                log.error(String.format("自采拆单校验sku编码为[%s]的库存时商品库存信息在本地sku_stock库存信息表里面查不到", orderItem.getSkuCode()));
             }
         }
-        Map<String, Object> map = new HashedMap();
         map.put("checkFailureItems", checkFailureItems);
         map.put("warehouseSkuMap", warehouseSkuMap);
         return map;
@@ -4833,8 +4905,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         noticeWarehouseSendGoods(outboundMap);
         
         //通知渠道发货结果 ......
-        notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
-        
+        //notifyChannelSelfPurchaseSubmitOrderResult(shopOrderCodes, warehouseOrderList);
+        for(String shopOrderCode: shopOrderCodes){
+            outboundOrderSubmitResultNoticeChannel(shopOrderCode);
+        }
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交自采订单成功", "");
     }
 

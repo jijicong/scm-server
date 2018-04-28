@@ -21,6 +21,8 @@ public class WarehouseItemInfoForm extends QueryModel {
     @QueryParam("noticeStatus")
     @Length(max = 2, message = "通知状态长度不能超过2个")
     private String noticeStatus;
+    @QueryParam("barCode")
+    private String barCode;
 
     public String getSkuCode() {
         return skuCode;
@@ -44,6 +46,14 @@ public class WarehouseItemInfoForm extends QueryModel {
 
     public void setNoticeStatus(String noticeStatus) {
         this.noticeStatus = noticeStatus;
+    }
+
+    public String getBarCode() {
+        return barCode;
+    }
+
+    public void setBarCode(String barCode) {
+        this.barCode = barCode;
     }
 
     @Override

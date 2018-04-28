@@ -17,11 +17,19 @@ public class SupplyConstants {
         public static final String SEMICOLON = ";";//分号
         public static final String XIE_GANG = "/";//斜杠
         public static final String AND = "&";//与
+
+
         /**
          * 等号
          */
         public static final String EQUAL = "=";
 
+    }
+
+    public static final class WarehouseConstant{
+        public static final String OWNER_NAME = "浙江小泰电子商务有限公司";
+
+        public static final String CHANNEL_CODE = "TRMALL";
     }
 
 
@@ -156,6 +164,11 @@ public class SupplyConstants {
             public static final String BRAND_LIST_SEARCH = "brands/search";
             //联想查询
             public static final String ASSOCIATION_SEARCH = "brands/associationSearch";
+
+            /**
+             * 品牌名称唯一校验
+             */
+            public static final String CHECK_NAME = "brand/checkName";
         }
 
         /**
@@ -216,6 +229,10 @@ public class SupplyConstants {
             //根据多个属性ID查询属性值路径
             public static final String MULTI_PROPERTY_ID_SEARCH_PROPERTY_VALUE_LIST = "propertyValues/multiIdsSearch";
 
+            /**
+             * 属性值名称唯一校验
+             */
+            public static final String CHECK_NAME = "propertyValue/checkValueName";
         }
 
 
@@ -249,6 +266,11 @@ public class SupplyConstants {
 
             //校验起停用
             public static final String CATEGORY_VALID = "valid";
+
+            /**
+             * 分类名称唯一性校验
+             */
+            public static final String CATEGORY_CHECK_NAME = "checkCategoryName";
 
         }
     }
@@ -452,6 +474,8 @@ public class SupplyConstants {
         public static final String PURCHASE_GROUP_USER = "purchaseGroupUser";
         //根据采购组code查询改组的采购人员
         public static final String PURCHASE_GROUP_CODE_USER = "purchasePerson";
+        //采购组员查询
+        public static final String PURCHASE_GROUP_USER_NEW = "purchaseGroupUserNew";
 
     }
 
@@ -693,6 +717,9 @@ public class SupplyConstants {
         public static final String SKU_VALID = "skuValid";
         //商品分类属性
         public static final String ITEMS_CATEGORY_PROPERTY = "itemsCategoryProperty";
+        //自采商品导出
+        public static final String ITEMS_EXPORT = "itemsExport";
+
 
         //代发商品分页查询路径
         public static final String EXTERNAL_GOODS_PAGE = "externalGoodsPage";
@@ -700,6 +727,8 @@ public class SupplyConstants {
         public static final String EXTERNAL_GOODS_PAGE_2 = "externalGoodsPage2";
         //代发商品
         public static final String EXTERNAL_ITEM_SKU = "externalItemSku";
+        //代发商品导出
+        public static final String EXTERNAL_ITEM_EXPORT = "externalItemExport";
         //代发商品
         public static final String EXTERNAL_ITEM_SKU_LIST = "externalItemSkus";
         //代发商品启用/停用

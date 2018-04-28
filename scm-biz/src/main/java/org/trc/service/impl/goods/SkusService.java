@@ -10,6 +10,7 @@ import org.trc.service.impl.BaseService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by hzwdx on 2017/5/24.
@@ -38,6 +39,11 @@ public class SkusService extends BaseService<Skus, String> implements ISkusServi
     @Override
     public List<String> selectAllBarCode(List<String> notInList) {
         return skusMapper.selectAllBarCode(notInList);
+    }
+
+    @Override
+    public Set<String> selectSkuListByBarCode(List<String> barCodeList) {
+        return skusMapper.selectSkuListByBarCode(barCodeList);
     }
 
 

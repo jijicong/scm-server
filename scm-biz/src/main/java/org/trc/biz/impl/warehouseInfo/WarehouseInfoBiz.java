@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.warehouseInfo.IWarehouseInfoBiz;
 import org.trc.cache.CacheEvit;
@@ -296,22 +297,25 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
 
         log.info("开始查询符合条件的仓库商品信息===========》");
-        Example example = new Example(WarehouseItemInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(form.getSkuCode())) {
-            criteria.andLike("skuCode", "%" + form.getSkuCode() + "%");
+        Map<String, Object> map = new HashMap<>();
+        map.put("skuCode", form.getSkuCode());
+        map.put("itemName", form.getItemName());
+        map.put("noticeStatus", form.getNoticeStatus());
+        map.put("barCode", form.getBarCode());
+        map.put("warehouseInfoId", warehouseInfoId);
+        map.put("start", page.getStart());
+        map.put("pageSize", page.getPageSize());
+        int count = warehouseItemInfoService.selectWarehouseItemInfoCount(map);
+        List<WarehouseItemInfo> list = warehouseItemInfoService.selectWarehouseItemInfo(map);
+        if(CollectionUtils.isEmpty(list)){
+            page.setTotalCount(0);
+            return page;
         }
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(form.getItemName())) {
-            criteria.andLike("itemName", "%" + form.getItemName() + "%");
-        }
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(form.getNoticeStatus())) {
-            criteria.andEqualTo("noticeStatus", form.getNoticeStatus());
-        }
-        criteria.andEqualTo("warehouseInfoId", String.valueOf(warehouseInfoId));
-        criteria.andEqualTo("isDelete", "0");
-        example.orderBy("noticeStatus").asc();
-        example.orderBy("updateTime").desc();
-        page = warehouseItemInfoService.pagination(example, page, form);
+        page.setStart(page.getStart());
+        page.setPageSize(page.getPageSize());
+        page.setPageNo(page.getPageNo());
+        page.setResult(list);
+        page.setTotalCount(count);
         log.info("《==========查询结束，开始组装返回结果");
         this.modifyWarehouseInfoItem(page);
         return page;
@@ -531,7 +535,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             skuStock.setCreateTime(Calendar.getInstance().getTime());
             skuStock.setUpdateTime(Calendar.getInstance().getTime());
-            skuStock.setIsValid(ZeroToNineEnum.ZERO.getCode());
+            skuStock.setIsValid(ZeroToNineEnum.ONE.getCode());
             skuStock.setAvailableInventory(0L);
             skuStock.setAvailableDefectiveInventory(0L);
             skuStock.setLockInventory(0L);
@@ -656,7 +660,14 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 //        List<Skus> includeList = pageTem.getResult();
         Map<String, Object> map1 = new HashMap<>();
         map1.put("skuName", form.getSkuName());
-        map1.put("skuCode", form.getSkuCode());
+        if(StringUtils.isNotEmpty(form.getSkuCode())){
+            map1.put("skuCode", form.getSkuCode().split(","));
+            map1.put("skuCodeTemp", "skuTemp");
+        }
+        if(StringUtils.isNotEmpty(form.getBarCode())){
+            map1.put("barCode", form.getBarCode().split(","));
+            map1.put("barCodeTemp", "barTemp");
+        }
         map1.put("brandName", form.getBrandName());
         map1.put("spuCode", form.getSpuCode());
         map1.put("skuCodes", excludeSkuCode.toArray());
@@ -853,19 +864,19 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             if(StringUtils.isEquals("0", contentResult.get("count").toString())){
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
             }
-            Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId);
+            Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId, titleResult.length);
             String count = (String) contentMapResult.get("count");
             int countNum = Integer.parseInt(count);
 
             //将通知状态保存入数据库
-            List<String> importContent = (List<String>) contentMapResult.get("importContent");
-            int successCount = this.saveNoticeStatus(importContent, warehouseInfoId);
+            Map<String, Skus> importContent = (Map<String, Skus>) contentMapResult.get("importContent");
+            int successCount = this.saveNoticeStatus(importContent, warehouseInfoId, titleResult.length);
             int failCount = countNum - successCount;
 
             //将错误通知导入excel
             if (!(Boolean) contentMapResult.get("flag")) {
                 flag = false;
-                code = this.saveExcelException((Map<String, String>) contentMapResult.get("exceptionContent"));
+                code = this.saveExcelException((Map<String, String>) contentMapResult.get("exceptionContent"), titleResult.length);
             }
 
             //构造返回参数
@@ -1047,31 +1058,117 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         sf.disconnect();
     }
 
-    private int saveNoticeStatus(List<String> list, String warehouseInfoId) {
-        if(list == null || list.size() < 1){
+    private int saveNoticeStatus(Map<String, Skus> allMap, String warehouseInfoId, int length) {
+        WarehouseItemInfo warehouseItemInfo = null;
+        long warehouseInfoIdLong = Long.parseLong(warehouseInfoId);
+        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouseInfoIdLong);
+        Map<String, Object> map = new HashMap<>();
+        List<WarehouseItemInfo> addList = new ArrayList<>();
+        List<WarehouseItemInfo> updateList = new ArrayList<>();
+        List<String> skusList = new ArrayList<>();
+        int count = 0;
+        for(Map.Entry<String, Skus> entry : allMap.entrySet()){
+            skusList.add(entry.getKey().split(SupplyConstants.Symbol.COMMA)[0]);
+        }
+        if(skusList.size() < 1){
             return 0;
         }
-        String[] values = null;
-        WarehouseItemInfo warehouseItemInfo = null;
-        WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(Long.parseLong(warehouseInfoId));
-        Map<String, Object> map = new HashMap<>();
-        List<WarehouseItemInfo> list1 = new ArrayList<>();
-        for (String s : list) {
-            values = s.split(SupplyConstants.Symbol.COMMA);
-            warehouseItemInfo = new WarehouseItemInfo();
-            warehouseItemInfo.setSkuCode(values[0]);
-            warehouseItemInfo.setWarehouseItemId(values[1]);
-            list1.add(warehouseItemInfo);
+        Map<String,String> itemNoMap = getItemNoBySku(skusList);
+        String warehouseCode =  warehouseInfo.getCode();
+        String warehouseOwnerId = warehouseInfo.getWarehouseOwnerId();
+        String wmsWarehouseCode = warehouseInfo.getWmsWarehouseCode();
+
+        if(length == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+            for(Map.Entry<String, Skus> entry : allMap.entrySet()){
+                warehouseItemInfo = new WarehouseItemInfo();
+                assembleWarehouseItemInfo(warehouseItemInfo, entry.getValue(), warehouseInfoIdLong, warehouseCode,
+                        warehouseOwnerId, wmsWarehouseCode, itemNoMap);
+                addList.add(warehouseItemInfo);
+            }
+            count = warehouseItemInfoService.insertList(addList);
+            this.saveSkuStock(addList, warehouseInfo);
+        }else if(length == Integer.parseInt(ZeroToNineEnum.TWO.getCode())){
+            for(Map.Entry<String, Skus> entry : allMap.entrySet()){
+                String[] str = entry.getKey().split(SupplyConstants.Symbol.COMMA);
+                if(StringUtils.isEquals("new", str[2])){
+                    warehouseItemInfo = new WarehouseItemInfo();
+                    assembleWarehouseItemInfo(warehouseItemInfo, entry.getValue(), warehouseInfoIdLong, warehouseCode,
+                            warehouseOwnerId, wmsWarehouseCode, itemNoMap);
+                    warehouseItemInfo.setWarehouseItemId(str[1]);
+                    warehouseItemInfo.setNoticeStatus(Integer.parseInt(WarehouseItemInfoNoticeStateEnum.NOTICE_SUCCESS.getCode()));
+                    addList.add(warehouseItemInfo);
+                }else{
+                    warehouseItemInfo = new WarehouseItemInfo();
+                    warehouseItemInfo.setSkuCode(str[0]);
+                    warehouseItemInfo.setWarehouseItemId(str[1]);
+                    updateList.add(warehouseItemInfo);
+                }
+            }
+
+            if(updateList.size() > 0){
+                map.put("warehouseInfoId", warehouseInfoId);
+                map.put("arrSkus", updateList);
+                //更新仓库商品信息
+                count = count + warehouseItemInfoService.batchUpdate(map);
+                //更新库存
+                map.put("warehouseId", warehouseInfo.getId());
+                map.put("channelCode", warehouseInfo.getChannelCode());
+                skuStockService.batchUpdate(map);
+            }
+            if(addList.size() > 0){
+                count = count + warehouseItemInfoService.insertList(addList);
+                saveSkuStockIsNotice(addList, warehouseInfo);
+            }
         }
-        map.put("warehouseInfoId", warehouseInfoId);
-        map.put("arrSkus", list1);
-        //更新仓库商品信息
-        int count = warehouseItemInfoService.batchUpdate(map);
-        //更新库存
-        map.put("warehouseId", warehouseInfo.getId());
-        map.put("channelCode", warehouseInfo.getChannelCode());
-        skuStockService.batchUpdate(map);
         return count;
+    }
+
+    private void saveSkuStockIsNotice(List<WarehouseItemInfo> list, WarehouseInfo warehouseInfo){
+        List<SkuStock> skuStockList = new ArrayList<SkuStock>();
+        SkuStock skuStock = null;
+        for(WarehouseItemInfo warehouseItemInfo : list){
+            skuStock = new SkuStock();
+            skuStock.setSpuCode(warehouseItemInfo.getSpuCode());
+            skuStock.setSkuCode(warehouseItemInfo.getSkuCode());
+            skuStock.setChannelCode(warehouseInfo.getChannelCode());
+            skuStock.setWarehouseId(warehouseInfo.getId());
+            skuStock.setWarehouseCode(warehouseInfo.getCode());
+            skuStock.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+            skuStock.setCreateTime(Calendar.getInstance().getTime());
+            skuStock.setUpdateTime(Calendar.getInstance().getTime());
+            skuStock.setIsValid(ZeroToNineEnum.ONE.getCode());
+            skuStock.setAvailableInventory(0L);
+            skuStock.setAvailableDefectiveInventory(0L);
+            skuStock.setWarehouseItemId(warehouseItemInfo.getWarehouseItemId());
+            skuStock.setLockInventory(0L);
+            skuStock.setAirInventory(0L);
+            skuStock.setFrozenInventory(0L);
+            skuStock.setRealInventory(0L);
+            skuStock.setDefectiveInventory(0L);
+            skuStockList.add(skuStock);
+        }
+        skuStockService.insertList(skuStockList);
+    }
+
+    private void assembleWarehouseItemInfo(WarehouseItemInfo warehouseItemInfo, Skus skus, long warehouseInfoId,
+                                           String warehouseCode, String warehouseOwnerId, String wmsWarehouseCode,
+                                           Map<String,String> itemNoMap){
+        warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
+        warehouseItemInfo.setWarehouseItemId(String.valueOf(skus.getItemId()));
+        warehouseItemInfo.setSkuCode(skus.getSkuCode());
+        warehouseItemInfo.setItemName(skus.getSkuName());
+        warehouseItemInfo.setSpecNatureInfo(skus.getSpecInfo());
+        warehouseItemInfo.setIsValid(Integer.valueOf(ZeroToNineEnum.ONE.getCode()));
+        warehouseItemInfo.setWarehouseItemId(null);
+        warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.UN_NOTICS.getCode());
+        warehouseItemInfo.setBarCode(skus.getBarCode());
+        warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
+        warehouseItemInfo.setSpuCode(skus.getSpuCode());
+        warehouseItemInfo.setItemNo(itemNoMap.get(skus.getSkuCode()));
+        warehouseItemInfo.setItemType(ItemTypeEnum.NOEMAL.getCode());
+        warehouseItemInfo.setWarehouseCode(warehouseCode);
+        warehouseItemInfo.setWarehouseOwnerId(warehouseOwnerId);
+        warehouseItemInfo.setWmsWarehouseCode(wmsWarehouseCode);
     }
 
     private void updateSkuStock(WarehouseItemInfo warehouseItemInfo, WarehouseInfo warehouseInfo){
@@ -1087,9 +1184,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         skuStockService.updateByPrimaryKey(skuStock);
     }
 
-    private String saveExcelException(Map<String, String> map) throws Exception{
+    private String saveExcelException(Map<String, String> map, int length) throws Exception{
         //获取所有异常信息
-        List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map);
+        List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map, length);
         //获取code
         String code = serialUtilService.generateCode(SupplyConstants.Serial.SKU_LENGTH, "EXCEL",
                 "0", DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
@@ -1101,6 +1198,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             e.setException(warehouseItemInfoException.getExceptionReason());
             e.setItemId(warehouseItemInfoException.getItemId());
             e.setSkuCode(warehouseItemInfoException.getSkuCode());
+            if(length == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                e.setType(ZeroToNineEnum.ONE.getCode());
+            }else{
+                e.setType(ZeroToNineEnum.TWO.getCode());
+            }
             list.add(e);
         }
         excelExceptionService.insertList(list);
@@ -1114,15 +1216,22 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             ExcelException e = new ExcelException();
             e.setExcelCode(excelCode);
             List<ExcelException> list = excelExceptionService.select(e);
-
-            CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
-            CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
-            CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
-
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
-            cellDefinitionList.add(skuCode);
-            cellDefinitionList.add(itemId);
-            cellDefinitionList.add(exception);
+            if(StringUtils.isEquals(list.get(0).getType(), ZeroToNineEnum.ONE.getCode())){
+                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
+                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+
+                cellDefinitionList.add(skuCode);
+                cellDefinitionList.add(exception);
+            }else{
+                CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
+                CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
+                CellDefinition exception = new CellDefinition("exception", TITLE_THREE, CellDefinition.TEXT, 8000);
+
+                cellDefinitionList.add(skuCode);
+                cellDefinitionList.add(itemId);
+                cellDefinitionList.add(exception);
+            }
 
             String sheetName = "仓库商品信息异常原因";
 
@@ -1139,31 +1248,31 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
     }
 
-    private ByteArrayOutputStream saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {
-        //获取所有异常信息
-        List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map);
+//    private ByteArrayOutputStream saveExceptionExcel(Map<String, String> map, String fileName) throws IOException {
+//        //获取所有异常信息
+//        List<WarehouseItemInfoException> warehouseItemInfoExceptionList = this.getWarehouseItemInfoExceptionList(map);
+//
+//        CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
+//        CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
+//        CellDefinition exceptionReason = new CellDefinition("exceptionReason", TITLE_THREE, CellDefinition.TEXT, 8000);
+//
+//        List<CellDefinition> cellDefinitionList = new ArrayList<>();
+//        cellDefinitionList.add(skuCode);
+//        cellDefinitionList.add(itemId);
+//        cellDefinitionList.add(exceptionReason);
+//
+//        String sheetName = "仓库商品信息异常原因";
+//        //fileName = "仓库商品信息异常原因" + fileName;
+//        //fileName = fileName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+//        //String downloadAddress = EXCEPTION_NOTICE_UPLOAD_ADDRESS + fileName;
+//
+//        HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(warehouseItemInfoExceptionList, cellDefinitionList, sheetName);
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//        hssfWorkbook.write(stream);
+//        return stream;
+//    }
 
-        CellDefinition skuCode = new CellDefinition("skuCode", TITLE_ONE, CellDefinition.TEXT, 8000);
-        CellDefinition itemId = new CellDefinition("itemId", TITLE_TWO, CellDefinition.TEXT, 8000);
-        CellDefinition exceptionReason = new CellDefinition("exceptionReason", TITLE_THREE, CellDefinition.TEXT, 8000);
-
-        List<CellDefinition> cellDefinitionList = new ArrayList<>();
-        cellDefinitionList.add(skuCode);
-        cellDefinitionList.add(itemId);
-        cellDefinitionList.add(exceptionReason);
-
-        String sheetName = "仓库商品信息异常原因";
-        //fileName = "仓库商品信息异常原因" + fileName;
-        //fileName = fileName + SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
-        //String downloadAddress = EXCEPTION_NOTICE_UPLOAD_ADDRESS + fileName;
-
-        HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(warehouseItemInfoExceptionList, cellDefinitionList, sheetName);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        hssfWorkbook.write(stream);
-        return stream;
-    }
-
-    private List<WarehouseItemInfoException> getWarehouseItemInfoExceptionList(Map<String, String> map) {
+    private List<WarehouseItemInfoException> getWarehouseItemInfoExceptionList(Map<String, String> map, int length) {
         String value = null;
         String[] values = null;
         List<WarehouseItemInfoException> list = new ArrayList<WarehouseItemInfoException>();
@@ -1172,24 +1281,29 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             value = entry.getValue();
             values = value.split(SupplyConstants.Symbol.COMMA);
             warehouseItemInfoException = new WarehouseItemInfoException();
-            warehouseItemInfoException.setExceptionReason(values[3]);
-            warehouseItemInfoException.setItemId(values[1]);
-            warehouseItemInfoException.setSkuCode(values[0]);
+            if(length == Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+                warehouseItemInfoException.setExceptionReason(values[2]);
+                warehouseItemInfoException.setSkuCode(values[0]);
+            }else{
+                warehouseItemInfoException.setExceptionReason(values[3]);
+                warehouseItemInfoException.setItemId(values[1]);
+                warehouseItemInfoException.setSkuCode(values[0]);
+            }
             list.add(warehouseItemInfoException);
         }
         return list;
     }
 
-    private Map<String, Object> checkContent(Map<String, String> map, String warehouseInfoId) {
-        Map<String, Object> returnMap = new HashMap<String, Object>();
-        Map<String, String> exceptionContent = new HashMap<String, String>();
-        List<String> importContent = new ArrayList<String>();
+    private Map<String, Object> checkContent(Map<String, String> map, String warehouseInfoId, int length) {
+        Map<String, Object> returnMap = new HashMap<>();
+        Map<String, String> exceptionContent = new HashMap<>();
+        Map<String, Skus> importContent = new HashMap<>();
         boolean flag = true;
         String value = null;
         String[] values = null;
         String skuCode = null;
-        Integer noticeStatus = null;
         WarehouseItemInfo warehouseItemInfo = null;
+        Skus skus = null;
         String count = null;
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = entry.getKey();
@@ -1199,46 +1313,105 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
                 continue;
             }
             values = value.split(SupplyConstants.Symbol.COMMA);
-            if (StringUtils.isEmpty(values[0])) {
-                flag = false;
-                value += ",商品SKU编号不能为空！";
-                exceptionContent.put(key, value);
-                continue;
-            }
-            if (StringUtils.isEmpty(values[1])) {
-                flag = false;
-                value += ",仓库商品ID不能为空！";
-                exceptionContent.put(key, value);
-                continue;
-            }
-            if(this.isExeistsQimenItemId(Long.valueOf(warehouseInfoId), values[1])){
-                flag = false;
-                value += ",该仓库商品ID已存在！";
-                exceptionContent.put(key, value);
-                continue;
-            }
-            if (StringUtils.isNotEmpty(values[0])) {
+            if(length == 2){
+                if (StringUtils.isEmpty(values[0])) {
+                    flag = false;
+                    value += ",商品SKU编号不能为空！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+                if (StringUtils.isEmpty(values[1])) {
+                    flag = false;
+                    value += ",仓库商品ID不能为空！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+
                 skuCode = values[0];
+                skus = new Skus();
+                skus.setSkuCode(skuCode);
+                skus = skusService.selectOne(skus);
+                if(skus == null){
+                    flag = false;
+                    value += ",请导入自采商品！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+
+                if(StringUtils.isEquals(skus.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+                    flag = false;
+                    value += ",商品已停用！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+
                 warehouseItemInfo = new WarehouseItemInfo();
                 warehouseItemInfo.setWarehouseInfoId(Long.valueOf(warehouseInfoId));
                 warehouseItemInfo.setSkuCode(skuCode);
                 warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
-                warehouseItemInfo = warehouseItemInfoService.selectOne(warehouseItemInfo);
-                if (warehouseItemInfo == null) {
+                List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+                if (warehouseItemInfoList != null && warehouseItemInfoList.size() > 0) {
+                    Integer oldNoticeStatus = warehouseItemInfoList.get(0).getNoticeStatus();
+                    if(oldNoticeStatus == Integer.parseInt(WarehouseItemInfoNoticeStateEnum.NOTICE_.getCode()) ||
+                        oldNoticeStatus == Integer.parseInt(WarehouseItemInfoNoticeStateEnum.NOTICE_CANCEL.getCode())){
+                        flag = false;
+                        value += ",当前通知仓库状态不允许导入！";
+                        exceptionContent.put(key, value);
+                        continue;
+                    }
+                }
+
+                if(this.isExeistsQimenItemId(Long.valueOf(warehouseInfoId), values[1])){
                     flag = false;
-                    value += ",商品还未添加到仓库中！";
+                    value += ",该仓库商品ID已存在！";
                     exceptionContent.put(key, value);
                     continue;
                 }
-                noticeStatus = warehouseItemInfo.getNoticeStatus();
-                if (Integer.valueOf(ZeroToNineEnum.TWO.getCode()) == noticeStatus ||
-                        Integer.valueOf(ZeroToNineEnum.THREE.getCode()) == noticeStatus) {
-                    flag = false;
-                    value += ",当前通知仓库状态不允许导入！";
-                    exceptionContent.put(key, value);
-                } else {
-                    importContent.add(values[0] + SupplyConstants.Symbol.COMMA + values[1]);
+
+                if(warehouseItemInfoList != null && warehouseItemInfoList.size() > 0){
+                    importContent.put(values[0] + SupplyConstants.Symbol.COMMA + values[1] +
+                            SupplyConstants.Symbol.COMMA + "old", skus);
+                }else{
+                    importContent.put(values[0] + SupplyConstants.Symbol.COMMA + values[1] +
+                            SupplyConstants.Symbol.COMMA + "new", skus);
                 }
+            }else{
+                if (StringUtils.isEmpty(values[0])) {
+                    flag = false;
+                    value += ",商品SKU编号不能为空！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+                skuCode = values[0];
+                skus = new Skus();
+                skus.setSkuCode(skuCode);
+                skus = skusService.selectOne(skus);
+                if(skus == null){
+                    flag = false;
+                    value += ",请导入自采商品！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+
+                if(StringUtils.isEquals(skus.getIsValid(), ZeroToNineEnum.ZERO.getCode())){
+                    flag = false;
+                    value += ",商品已停用！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+
+                warehouseItemInfo = new WarehouseItemInfo();
+                warehouseItemInfo.setWarehouseInfoId(Long.valueOf(warehouseInfoId));
+                warehouseItemInfo.setSkuCode(skuCode);
+                warehouseItemInfo.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
+                List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+                if (warehouseItemInfoList != null && warehouseItemInfoList.size() > 0) {
+                    flag = false;
+                    value += ",商品已存在！";
+                    exceptionContent.put(key, value);
+                    continue;
+                }
+                importContent.put(values[0], skus);
             }
         }
         returnMap.put("importContent", importContent);
@@ -1262,11 +1435,14 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     private Map<String, Object> checkTitle(String[] titleResult) {
         Map<String, Object> map = new HashMap<String, Object>();
-        if (titleResult.length != Integer.valueOf(ZeroToNineEnum.TWO.getCode())) {
+        if (titleResult.length == Integer.valueOf(ZeroToNineEnum.TWO.getCode()) &&
+                (!TITLE_ONE.equals(titleResult[0]) || !TITLE_TWO.equals(titleResult[1]))) {
             this.putMapResult(map, Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件参数错误", "");
-            return map;
-        }
-        if (!TITLE_ONE.equals(titleResult[0]) || !TITLE_TWO.equals(titleResult[1])) {
+        }else if(titleResult.length == Integer.valueOf(ZeroToNineEnum.ONE.getCode()) &&
+                !TITLE_ONE.equals(titleResult[0])){
+            this.putMapResult(map, Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件参数错误", "");
+        }else if(titleResult.length != Integer.valueOf(ZeroToNineEnum.TWO.getCode()) &&
+                titleResult.length != Integer.valueOf(ZeroToNineEnum.ONE.getCode())){
             this.putMapResult(map, Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件参数错误", "");
         }
         return map;

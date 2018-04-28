@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -63,7 +65,12 @@ import org.trc.util.cache.OutGoodsCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -114,6 +121,11 @@ public class GoodsBiz implements IGoodsBiz {
     private static final String COMMA_SPLIT = "\\,{2,}";
     //条码正则
     private static final String CODE_CHECK = "^[\\da-zA-Z!#-]*$";
+    //-
+    private final static String BAR = "-";
+    //EXCEL
+    private final static String EXCEL = ".xls";
+
 
     @Autowired
     private IItemsService itemsService;
@@ -177,7 +189,7 @@ public class GoodsBiz implements IGoodsBiz {
         if (StringUtil.isNotEmpty(queryModel.getName())) {//商品名称
             criteria.andLike("name", "%" + queryModel.getName() + "%");
         }
-        Map<String, Object> map = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode());
+        Map<String, Object> map = handlerSkuCondition(queryModel.getSkuCode(), queryModel.getSpuCode(),queryModel.getBarCode());
         Object spuCodes = map.get("spuCodes");
         if(null != spuCodes){//根据SPU或者SKU来查询
             List<String> _spuCodes = (List<String>)spuCodes;
@@ -227,6 +239,13 @@ public class GoodsBiz implements IGoodsBiz {
             criteria.andLike("skuName", "%" + queryModel.getSkuName() + "%");
         }
 
+        if (StringUtils.isNotBlank(queryModel.getBarCode())){
+            List<String> barCodeList = Arrays.asList(StringUtils.split(queryModel.getBarCode(),SupplyConstants.Symbol.COMMA));
+            Set<String> barCodeSet =skusService.selectSkuListByBarCode(barCodeList);
+            if (!AssertUtil.collectionIsEmpty(barCodeSet)){
+                criteria.andIn("barCode", barCodeSet);
+            }
+        }
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
         if(null != spus){
             if(spus.size() > 0){
@@ -403,8 +422,47 @@ public class GoodsBiz implements IGoodsBiz {
             if(StringUtil.isNotEmpty(queryModel.getItemName())) {//商品名称
                 criteria.andLike("name", "%" + queryModel.getItemName() + "%");
             }
-            if(null != queryModel.getCategoryId()){
-                criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+            if (null != queryModel.getCategoryId()) {
+                AssertUtil.notBlank(queryModel.getCategoryLevel(), "根据分类条件查询时,当前选择的分类等级不能为空!");
+                switch (queryModel.getCategoryLevel()) {
+                    case "1":
+                        Category categoryLevel2 = new Category();
+                        categoryLevel2.setParentId(queryModel.getCategoryId());
+                        List<Category> categoryListLevel2 = categoryService.select(categoryLevel2);
+                        List<Long> categoryLevel2Ids = new ArrayList<>();
+                        List<Long> categoryLevel3Ids = new ArrayList<>();
+                        if (!AssertUtil.collectionIsEmpty(categoryListLevel2)) {
+                            for (Category c : categoryListLevel2) {
+                                categoryLevel2Ids.add(c.getId());
+                            }
+                            Example exampleLevel = new Example(Category.class);
+                            Example.Criteria criteriaLevel = exampleLevel.createCriteria();
+                            criteriaLevel.andIn("parentId", categoryLevel2Ids);
+                            List<Category> categoryLevel3List = categoryService.selectByExample(exampleLevel);
+                            if (!AssertUtil.collectionIsEmpty(categoryLevel3List)) {
+                                for (Category c : categoryLevel3List) {
+                                    categoryLevel3Ids.add(c.getId());
+                                }
+                            }
+                        }
+                        criteria.andIn("categoryId", categoryLevel3Ids);
+                        break;
+                    case "2":
+                        Category category = new Category();
+                        category.setParentId(queryModel.getCategoryId());
+                        List<Category> categoryList = categoryService.select(category);
+                        List<Long> categoryIds = new ArrayList<>();
+                        if (!AssertUtil.collectionIsEmpty(categoryList)) {
+                            for (Category c : categoryList) {
+                                categoryIds.add(c.getId());
+                            }
+                        }
+                        criteria.andIn("categoryId", categoryIds);
+                        break;
+                    case "3":
+                        criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+                        break;
+                }
             }
             if(null != queryModel.getBrandId()){
                 criteria.andEqualTo("brandId", queryModel.getBrandId());
@@ -421,9 +479,10 @@ public class GoodsBiz implements IGoodsBiz {
     }
 
 
-    private Map<String, Object> handlerSkuCondition(String skuCode, String spuCode){
+    private Map<String, Object> handlerSkuCondition(String skuCode, String spuCode,String barCode){
         Map<String, Object> map = new HashMap<>();
         List<String> spuCodes = null;
+        List<Skus> skuses = new ArrayList<>();
         if(StringUtils.isNotBlank(spuCode)){
             spuCodes = new ArrayList<String>();
             Example example = new Example(Items.class);
@@ -444,8 +503,27 @@ public class GoodsBiz implements IGoodsBiz {
                 for(Skus s : skusList){
                     spuCodes.add(s.getSpuCode());
                 }
-                map.put("skuList", skusList);
+                skuses.addAll(skusList);
             }
+        }
+
+
+        if(StringUtils.isNotBlank(barCode)){
+            spuCodes = new ArrayList<String>();
+            Set<String> barCodeSet =skusService.selectSkuListByBarCode(Arrays.asList(StringUtils.split(barCode,SupplyConstants.Symbol.COMMA)));
+            Example example = new Example(Skus.class);
+            Example.Criteria criteria2 = example.createCriteria();
+            criteria2.andIn("barCode", barCodeSet);
+            List<Skus> skusList = skusService.selectByExample(example);
+            if(skusList.size() > 0){
+                for(Skus s : skusList){
+                    spuCodes.add(s.getSpuCode());
+                }
+            }
+            skuses.addAll(skusList);
+        }
+        if (!AssertUtil.collectionIsEmpty(skuses)){
+            map.put("skuList", skuses);
         }
         map.put("spuCodes", spuCodes);
         return map;
@@ -3459,6 +3537,126 @@ public class GoodsBiz implements IGoodsBiz {
         }
     }
 
+    @Override
+    public Response exportExternalGoods(ExternalItemSkuForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) {
+        try {
+            Pagenation<ExternalItemSku> pageExport = new Pagenation<>();
+            pageExport.setPageSize(Integer.MAX_VALUE);
+            pageExport = externalGoodsPage(queryModel, pageExport, aclUserAccreditInfo);
+            List<ExternalItemSku> externalItemSkuList =new ArrayList<>();
+            externalItemSkuList = pageExport.getResult();
+            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
+            CellDefinition supplierName = new CellDefinition("supplierName", "供应商名称", CellDefinition.TEXT, 6000);
+            CellDefinition supplierSkuCode = new CellDefinition("supplierSkuCode", "供应商商品SKU编号", CellDefinition.TEXT, 6000);
+            CellDefinition itemName = new CellDefinition("itemName", "商品名称", CellDefinition.TEXT, 6000);
+            CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, 6000);
+            CellDefinition supplyPrice = new CellDefinition("supplyPriceYuan", "供货价(元)", CellDefinition.NUM_0_00, 6000);
+            CellDefinition marketReferencePrice = new CellDefinition("marketReferencePriceYuan", "市场参考价(元)", CellDefinition.NUM_0_00, 8000);
+            CellDefinition warehouse = new CellDefinition("warehouse", "仓库名称", CellDefinition.TEXT, 3000);
+            CellDefinition stock = new CellDefinition("stock", "库存", CellDefinition.TEXT, 2000);
+            CellDefinition state = new CellDefinition("state", "供应商商品状态", CellDefinition.TEXT, 2000);
+            CellDefinition notifyTime = new CellDefinition("notifyTime", "最近同步时间", CellDefinition.DATE_TIME, 6000);
+            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, 6000);
+
+            List<CellDefinition> cellDefinitionList = new ArrayList<>();
+            cellDefinitionList.add(skuCode);
+            cellDefinitionList.add(supplierName);
+            cellDefinitionList.add(supplierSkuCode);
+            cellDefinitionList.add(itemName);
+            cellDefinitionList.add(barCode);
+            cellDefinitionList.add(supplyPrice);
+            cellDefinitionList.add(marketReferencePrice);
+            cellDefinitionList.add(warehouse);
+            cellDefinitionList.add(stock);
+            cellDefinitionList.add(state);
+            cellDefinitionList.add(notifyTime);
+            cellDefinitionList.add(updateTime);
+
+            String sheetName = "代发商品表";
+            String fileName = "代发商品表"+EXCEL;
+            if (!AssertUtil.collectionIsEmpty(externalItemSkuList)){
+                for (ExternalItemSku itemSku:externalItemSkuList) {
+                    itemSku.setSupplyPriceYuan(CommonUtil.fenToYuan(itemSku.getSupplyPrice()));
+                    itemSku.setMarketReferencePriceYuan(CommonUtil.fenToYuan(itemSku.getMarketReferencePrice()));
+                    itemSku.setState(StateEnum.getStateEnumByCode(itemSku.getState()).getName());
+                }
+            }
+            try {
+                fileName = URLEncoder.encode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException e1) {
+                log.error("文件导出错误", e1);
+            }
+            HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(externalItemSkuList, cellDefinitionList, sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+
+        } catch (Exception e) {
+            log.error("一件代发商品导出异常" + e.getMessage(), e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.EXTERNAL_GOODS_EXPORT_EXCEPTION.getCode()), ExceptionEnum.EXTERNAL_GOODS_EXPORT_EXCEPTION.getMessage());
+
+        }
+
+    }
+
+    @Override
+    public Response exportItemGoods(SkusForm queryModel, AclUserAccreditInfo aclUserAccreditInfo) {
+        try {
+            Pagenation<Skus> pageExport  = new Pagenation<>();
+            pageExport.setPageSize(Integer.MAX_VALUE);
+            pageExport =  itemsSkusPage(queryModel, pageExport, aclUserAccreditInfo);
+            List<Skus> skusList = pageExport.getResult();
+            CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
+            CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, 6000);
+            CellDefinition spuCode = new CellDefinition("spuCode", "SPU编号", CellDefinition.TEXT, 6000);
+            CellDefinition propertyValue = new CellDefinition("propertyValue", "规格", CellDefinition.TEXT, 6000);
+            CellDefinition barCode = new CellDefinition("barCode", "条形码", CellDefinition.TEXT, 6000);
+            CellDefinition categoryName = new CellDefinition("categoryName", "类目", CellDefinition.TEXT, 8000);
+            CellDefinition brandName = new CellDefinition("brandName", "品牌", CellDefinition.TEXT, 3000);
+            CellDefinition availableInventory = new CellDefinition("availableInventory", "可用正品总库存", CellDefinition.TEXT, 2000);
+            CellDefinition realInventory = new CellDefinition("realInventory", "仓库锁定正品总库存", CellDefinition.TEXT, 2000);
+            CellDefinition isValid = new CellDefinition("isValid", "商品状态", CellDefinition.TEXT, 6000);
+            CellDefinition updateTime = new CellDefinition("updateTime", "最近更新时间", CellDefinition.DATE_TIME, 6000);
+
+            List<CellDefinition> cellDefinitionList = new ArrayList<>();
+            cellDefinitionList.add(skuCode);
+            cellDefinitionList.add(skuName);
+            cellDefinitionList.add(spuCode);
+            cellDefinitionList.add(propertyValue);
+            cellDefinitionList.add(barCode);
+            cellDefinitionList.add(categoryName);
+            cellDefinitionList.add(brandName);
+            cellDefinitionList.add(availableInventory);
+            cellDefinitionList.add(realInventory);
+            cellDefinitionList.add(realInventory);
+            cellDefinitionList.add(isValid);
+            cellDefinitionList.add(updateTime);
+
+            String sheetName = "自采商品表";
+            String fileName = "自采商品表"+EXCEL;
+            if (!AssertUtil.collectionIsEmpty(skusList)){
+                for (Skus itemSku:skusList) {
+                    itemSku.setIsValid(ValidEnum.getValidEnumByCode(itemSku.getIsValid()).getName());
+                }
+            }
+            try {
+                fileName = URLEncoder.encode(fileName, "UTF-8");
+            } catch (UnsupportedEncodingException e1) {
+                log.error("文件导出错误", e1);
+            }
+            HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(skusList, cellDefinitionList, sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+
+        } catch (Exception e) {
+            log.error("自采商品导出异常" + e.getMessage(), e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.GOODS_EXPORT_EXCEPTION.getCode()), ExceptionEnum.GOODS_EXPORT_EXCEPTION.getMessage());
+
+        }
+    }
 
 }
 

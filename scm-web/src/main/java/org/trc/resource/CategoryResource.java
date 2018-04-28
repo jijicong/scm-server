@@ -1,6 +1,5 @@
 package org.trc.resource;
 
-import com.alibaba.fastjson.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +8,11 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
 import org.trc.domain.category.Category;
-import org.trc.domain.category.CategoryBrandExt;
-import org.trc.domain.category.CategoryProperty;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.SuccessFailureEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.category.BrandForm;
 import org.trc.form.category.CategoryBrandForm;
 import org.trc.form.category.CategoryForm;
-import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -25,7 +21,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Created by hzszy on 2017/5/10.
@@ -214,4 +209,19 @@ public class CategoryResource {
     public Response checkCategoryIsValid(@PathParam("id") Long id) throws Exception {
         return ResultUtil.createSuccessResult("状态查询成功", categoryBiz.checkCategoryIsValid(id));
     }
+
+
+    @POST
+    @Path(SupplyConstants.Category.Classify.CATEGORY_CHECK_NAME )
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response checkCategoryName(@FormParam("id")Long id,@FormParam("parentId")Long parentId,@FormParam("name")String name){
+        try {
+            categoryBiz.checkCategoryName(id,parentId,name);
+        }catch (ParamValidException e){
+            return ResultUtil.createSuccessResult("分类名称查询成功", "1");
+        }
+        return ResultUtil.createSuccessResult("分类名称查询成功", null);
+
+    }
+
 }

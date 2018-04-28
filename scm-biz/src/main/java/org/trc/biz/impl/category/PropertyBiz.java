@@ -26,6 +26,7 @@ import org.trc.domain.category.PropertyValue;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.*;
 import org.trc.exception.CategoryException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.FileUrl;
 import org.trc.form.category.PropertyForm;
 import org.trc.model.SearchResult;
@@ -199,6 +200,7 @@ public class PropertyBiz implements IPropertyBiz {
         List<PropertyValue> propertyValueList = JSONArray.parseArray(property.getGridValue(), PropertyValue.class);
         //验证属性值信息
         AssertUtil.notNull(propertyValueList, "属性管理模块保存属性值信息失败，属性值信息为空");
+        checkRepeatValueName(propertyValueList);
         List<PropertyValue> newPropertyValueList = new ArrayList<>();
         for (int i = 0; i < propertyValueList.size(); i++) {
             PropertyValue propertyValue = propertyValueList.get(i);
@@ -225,6 +227,27 @@ public class PropertyBiz implements IPropertyBiz {
             log.error("属性新增渠道通知调用出现异常,message:{}", e.getMessage(), e);
         }
         logInfoService.recordLog(property, property.getId().toString(), userId, LogOperationEnum.ADD.getMessage(), null, null);
+    }
+
+    /**
+     * 校验重复属性名称
+     * @param propertyValueList
+     */
+    private void checkRepeatValueName(List<PropertyValue> propertyValueList) {
+        //剔除删除的属性值
+        Set<String> nameSet = new HashSet<>();
+        List<PropertyValue> propertyValues = new ArrayList<>();
+        for (PropertyValue propertyValue : propertyValueList) {
+            if (!StringUtils.equals(String.valueOf(propertyValue.getStatus()), ZeroToNineEnum.THREE.getCode())) {
+                propertyValues.add(propertyValue);
+                nameSet.add(propertyValue.getValue());
+            }
+        }
+        if (nameSet.size()<propertyValues.size()){
+            String msg = "存在重复的属性值名称";
+            log.error(msg);
+            throw new CategoryException(ExceptionEnum.CATEGORY_PROPERTY_VALUE_SAVE_EXCEPTION, msg);
+        }
     }
 
     /**
@@ -295,6 +318,7 @@ public class PropertyBiz implements IPropertyBiz {
         List<PropertyValue> propertyValueList = JSONArray.parseArray(property.getGridValue(), PropertyValue.class);
         //验证属性值信息
         AssertUtil.notNull(propertyValueList, "属性管理模块更新属性值信息失败，属性值信息为空");
+        checkRepeatValueName(propertyValueList);
         Integer sort = 0;
         for (int i = 0; i < propertyValueList.size(); i++) {
             PropertyValue propertyValue = propertyValueList.get(i);
@@ -490,6 +514,23 @@ public class PropertyBiz implements IPropertyBiz {
         example.orderBy("isValid").desc();
         example.orderBy("sort").asc();
         return propertyService.selectByExample(example);
+    }
+
+    @Override
+    public void checkPropertyValueName(Long propertyId,String name) {
+        AssertUtil.notBlank(name, "属性值名称不能为空!");
+        PropertyValue propertyValue = new PropertyValue();
+        propertyValue.setPropertyId(propertyId);
+        List<PropertyValue> propertyValueList = propertyValueService.select(propertyValue);
+        if (!AssertUtil.collectionIsEmpty(propertyValueList)){
+            for (PropertyValue value:propertyValueList) {
+                if (StringUtils.equals(name,value.getValue())){
+                    String msg = "属性值名称[" + name+ "]已存在";
+                    log.error(msg);
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+                }
+            }
+        }
     }
 
     /**

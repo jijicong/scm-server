@@ -14,6 +14,7 @@ public class ExcelException implements Serializable {
     private String skuCode;
     private String itemId;
     private String exception;
+    private String type;
 
     public Long getId() {
         return id;
@@ -53,5 +54,13 @@ public class ExcelException implements Serializable {
 
     public void setException(String exception) {
         this.exception = exception;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -149,4 +149,7 @@ public interface ICategoryBiz {
     List<Category> queryCategorys(@BeanParam CategoryForm categoryForm) throws Exception;
 
     Pagenation<Brand> brandListCategory(BrandForm queryModel, Pagenation<Brand> page) throws Exception;
+
+
+    void checkCategoryName(Long id,Long parentId,String name);
 }

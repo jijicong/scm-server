@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +40,6 @@ import org.trc.util.*;
 import org.trc.util.cache.BrandCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
-import java.text.Collator;
 import java.util.*;
 
 /**
@@ -192,6 +190,30 @@ public class BrandBiz implements IBrandBiz {
         return  brandNameList;
     }
 
+    @Override
+    public void checkBrandName(Long id, String name) {
+        AssertUtil.notBlank(name,"品牌名称不能为空");
+        Brand brand = new Brand();
+        brand.setName(name);
+        List<Brand> brandList  = brandService.select(brand);
+        if (null==id){
+            if (!AssertUtil.collectionIsEmpty(brandList)){
+                String msg = "品牌名称[" + name+ "]已存在";
+                log.error(msg);
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+            }
+        }else {
+            for (Brand brandItem:brandList) {
+                if (brandItem.getId().longValue()!=id){
+                    String msg = "品牌名称[" + name+ "]已存在";
+                    log.error(msg);
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
+                }
+            }
+        }
+
+    }
+
     public void setQueryParam(Example example,Example.Criteria criteria,BrandForm queryModel){
         if (!StringUtils.isBlank(queryModel.getName())) {
             criteria.andLike("name", "%" + queryModel.getName() + "%");
@@ -215,7 +237,7 @@ public class BrandBiz implements IBrandBiz {
     }
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.BRAND)
+    @Cacheable(value = SupplyConstants.Cache.BRAND)
     public List<Brand> queryBrands(BrandForm brandForm) throws Exception {
         Brand brand = new Brand();
         if (!StringUtils.isEmpty(brandForm.getIsValid())) {
@@ -237,6 +259,8 @@ public class BrandBiz implements IBrandBiz {
     @BrandCacheEvict
     public void saveBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand, "保存品牌信息，品牌不能为空");
+        AssertUtil.notBlank(brand.getName(),"保存品牌信息,品牌名称不能为空");
+        checkBrandName(null,brand.getName());
         //初始化信息
         brand.setSource(SourceEnum.SCM.getCode());
         ParamsUtil.setBaseDO(brand);
@@ -283,6 +307,8 @@ public class BrandBiz implements IBrandBiz {
     @BrandCacheEvict
     public void updateBrand(Brand brand, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
         AssertUtil.notNull(brand.getId(), "更新品牌信息，品牌ID不能为空");
+        AssertUtil.notBlank(brand.getName(), "更新品牌信息，品牌名称不能为空");
+        checkBrandName(brand.getId(),brand.getName());
         String remark=null;
         Brand selectBrand=brandService.selectOneById(brand.getId());
         brand.setUpdateTime(Calendar.getInstance().getTime());
