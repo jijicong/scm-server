@@ -3541,6 +3541,7 @@ public class GoodsBiz implements IGoodsBiz {
     public Response exportExternalGoods(ExternalItemSkuForm queryModel, Pagenation<ExternalItemSku> page, AclUserAccreditInfo aclUserAccreditInfo) {
         try {
             Pagenation<ExternalItemSku> pageExport = new Pagenation<>();
+            page.setPageSize(Integer.MAX_VALUE);
             pageExport = externalGoodsPage(queryModel, page, aclUserAccreditInfo);
             List<ExternalItemSku> externalItemSkuList =new ArrayList<>();
             externalItemSkuList = pageExport.getResult();
@@ -3602,6 +3603,7 @@ public class GoodsBiz implements IGoodsBiz {
     @Override
     public Response exportItemGoods(SkusForm queryModel, Pagenation<Skus> page, AclUserAccreditInfo aclUserAccreditInfo) {
         try {
+            page.setPageSize(Integer.MAX_VALUE);
             Pagenation<Skus> pageExport =  itemsSkusPage(queryModel, page, aclUserAccreditInfo);
             List<Skus> skusList = pageExport.getResult();
             CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
