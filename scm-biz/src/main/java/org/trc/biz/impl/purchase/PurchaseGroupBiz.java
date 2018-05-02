@@ -37,6 +37,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static javafx.beans.binding.Bindings.select;
 
@@ -56,6 +57,11 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     private IUserNameUtilService userNameUtilService;
 
     private final static String  SERIALNAME = "CGZ";
+
+    /**
+     * 正则表达式：验证手机号
+     */
+    private final static String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
 
     private final static Integer LENGTH = 5;
     @Resource
@@ -338,6 +344,19 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
         String userId= aclUserAccreditInfo.getUserId();
         for (PurchaseGroupUser user : valueList) {
+            AssertUtil.notNull(user.getName(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
+            AssertUtil.notNull(user.getPhoneNumber(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
+            if (Pattern.matches(REGEX_MOBILE, user.getPhoneNumber())) {
+                String msg = "手机号格式错误," + user.getPhoneNumber();
+                logger.error(msg);
+                throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
+            }
+            if(user.getName().length() > 10){
+                String msg = "用户名格式错误," + user.getName();
+                logger.error(msg);
+                throw  new PurchaseGroupException(ExceptionEnum.PURCHASE_PURCHASEGROUP_SAVE_EXCEPTION, msg);
+            }
+
             if (user.getStatus().equals(RecordStatusEnum.ADD.getCode())) {
                 user.setCreateTime(Calendar.getInstance().getTime());
                 user.setUpdateTime(Calendar.getInstance().getTime());

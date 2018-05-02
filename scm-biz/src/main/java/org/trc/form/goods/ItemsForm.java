@@ -32,6 +32,9 @@ public class ItemsForm extends QueryModel {
     //商品二维码
     @QueryParam("barCode")
     private String barCode;
+    @QueryParam("categoryLevel")
+    private String categoryLevel;
+
 
     public String getSpuCode() {
         return spuCode;
@@ -79,5 +82,13 @@ public class ItemsForm extends QueryModel {
 
     public void setBarCode(String barCode) {
         this.barCode = barCode;
+    }
+
+    public String getCategoryLevel() {
+        return categoryLevel;
+    }
+
+    public void setCategoryLevel(String categoryLevel) {
+        this.categoryLevel = categoryLevel;
     }
 }

@@ -917,6 +917,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         //组装商品
         List<ScmWarehouseItem> itemsSynList = this.getItemsSynList(warehouseItemInfoList);
 
+        if(itemsSynList.size() < 1){
+            String msg = "同步商品不能为空";
+            log.error(msg);
+            throw new WarehouseInfoException(ExceptionEnum.WAREHOUSE_INFO_EXCEPTION, msg);
+        }
+
         //获取仓库信息详情
         WarehouseInfo warehouseInfo = this.getWarehouseInfo(warehouseItemInfoList.get(0).getWarehouseInfoId());
         if(warehouseInfo == null){
@@ -989,6 +995,12 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<ScmWarehouseItem> list = new ArrayList<ScmWarehouseItem>();
         ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : infoList){
+            if(!(info.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                    info.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) ||
+                    info.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.TWO.getCode()))){
+                continue;
+            }
+
             item = new ScmWarehouseItem();
 
             Skus skus = new Skus();

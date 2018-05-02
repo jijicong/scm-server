@@ -23,7 +23,7 @@
             AND notice_status= #{noticeStatus}
         </if>
         <if test="barCode != null and barCode != ''">
-            AND FIND_IN_SET(#{barCode}, barCode)
+            AND FIND_IN_SET(#{barCode}, bar_code)
         </if>
         ORDER BY notice_status ASC, update_time DESC
         <if test="pageSize != null and pageSize != ''">
@@ -53,7 +53,7 @@
             AND w.notice_status= #{noticeStatus}
         </if>
         <if test="barCode != null and barCode != ''">
-            AND FIND_IN_SET(#{barCode}, w.barCode)
+            AND FIND_IN_SET(#{barCode}, w.bar_code)
         </if>) c
     </select>
 </mapper>

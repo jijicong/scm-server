@@ -199,8 +199,8 @@ public class GoodsBiz implements IGoodsBiz {
                 criteria.andIn("spuCode", _spuCodes);
             }
         }
-        if (null != queryModel.getCategoryId()) {//商品所属分类ID
-            criteria.andEqualTo("categoryId", queryModel.getCategoryId());
+        if (null != queryModel.getCategoryId()) {
+            categoryFrom(criteria, queryModel.getCategoryLevel(), queryModel.getCategoryId());
         }
         if (null != queryModel.getBrandId()) {//商品所属品牌ID
             criteria.andEqualTo("brandId", queryModel.getBrandId());
@@ -217,6 +217,55 @@ public class GoodsBiz implements IGoodsBiz {
         handerPage(page, skusList);
         //分页查询
         return page;
+    }
+
+    private void categoryFrom(Example.Criteria criteria, String categoryLevel, Long categoryId) {
+        AssertUtil.notBlank(categoryLevel, "根据分类条件查询时,当前选择的分类等级不能为空!");
+        switch (categoryLevel) {
+            case "1":
+                Category categoryLevel2 = new Category();
+                categoryLevel2.setParentId(categoryId);
+                List<Category> categoryListLevel2 = categoryService.select(categoryLevel2);
+                List<Long> categoryLevel2Ids = new ArrayList<>();
+                List<Long> categoryLevel3Ids = new ArrayList<>();
+                if (!AssertUtil.collectionIsEmpty(categoryListLevel2)) {
+                    for (Category c : categoryListLevel2) {
+                        categoryLevel2Ids.add(c.getId());
+                    }
+                    Example exampleLevel = new Example(Category.class);
+                    Example.Criteria criteriaLevel = exampleLevel.createCriteria();
+                    criteriaLevel.andIn("parentId", categoryLevel2Ids);
+                    List<Category> categoryLevel3List = categoryService.selectByExample(exampleLevel);
+                    if (!AssertUtil.collectionIsEmpty(categoryLevel3List)) {
+                        for (Category c : categoryLevel3List) {
+                            categoryLevel3Ids.add(c.getId());
+                        }
+                        criteria.andIn("categoryId", categoryLevel3Ids);
+                    }else {
+                        criteria.andEqualTo("categoryId", categoryId);
+                    }
+                }else {
+                    criteria.andEqualTo("categoryId", categoryId);
+                }
+                break;
+            case "2":
+                Category category = new Category();
+                category.setParentId(categoryId);
+                List<Category> categoryList = categoryService.select(category);
+                List<Long> categoryIds = new ArrayList<>();
+                if (!AssertUtil.collectionIsEmpty(categoryList)) {
+                    for (Category c : categoryList) {
+                        categoryIds.add(c.getId());
+                    }
+                    criteria.andIn("categoryId", categoryIds);
+                }else {
+                    criteria.andEqualTo("categoryId", categoryId);
+                }
+                break;
+            case "3":
+                criteria.andEqualTo("categoryId", categoryId);
+                break;
+        }
     }
 
     @Override
@@ -423,46 +472,7 @@ public class GoodsBiz implements IGoodsBiz {
                 criteria.andLike("name", "%" + queryModel.getItemName() + "%");
             }
             if (null != queryModel.getCategoryId()) {
-                AssertUtil.notBlank(queryModel.getCategoryLevel(), "根据分类条件查询时,当前选择的分类等级不能为空!");
-                switch (queryModel.getCategoryLevel()) {
-                    case "1":
-                        Category categoryLevel2 = new Category();
-                        categoryLevel2.setParentId(queryModel.getCategoryId());
-                        List<Category> categoryListLevel2 = categoryService.select(categoryLevel2);
-                        List<Long> categoryLevel2Ids = new ArrayList<>();
-                        List<Long> categoryLevel3Ids = new ArrayList<>();
-                        if (!AssertUtil.collectionIsEmpty(categoryListLevel2)) {
-                            for (Category c : categoryListLevel2) {
-                                categoryLevel2Ids.add(c.getId());
-                            }
-                            Example exampleLevel = new Example(Category.class);
-                            Example.Criteria criteriaLevel = exampleLevel.createCriteria();
-                            criteriaLevel.andIn("parentId", categoryLevel2Ids);
-                            List<Category> categoryLevel3List = categoryService.selectByExample(exampleLevel);
-                            if (!AssertUtil.collectionIsEmpty(categoryLevel3List)) {
-                                for (Category c : categoryLevel3List) {
-                                    categoryLevel3Ids.add(c.getId());
-                                }
-                            }
-                        }
-                        criteria.andIn("categoryId", categoryLevel3Ids);
-                        break;
-                    case "2":
-                        Category category = new Category();
-                        category.setParentId(queryModel.getCategoryId());
-                        List<Category> categoryList = categoryService.select(category);
-                        List<Long> categoryIds = new ArrayList<>();
-                        if (!AssertUtil.collectionIsEmpty(categoryList)) {
-                            for (Category c : categoryList) {
-                                categoryIds.add(c.getId());
-                            }
-                        }
-                        criteria.andIn("categoryId", categoryIds);
-                        break;
-                    case "3":
-                        criteria.andEqualTo("categoryId", queryModel.getCategoryId());
-                        break;
-                }
+                categoryFrom(criteria, queryModel.getCategoryLevel(), queryModel.getCategoryId());
             }
             if(null != queryModel.getBrandId()){
                 criteria.andEqualTo("brandId", queryModel.getBrandId());
