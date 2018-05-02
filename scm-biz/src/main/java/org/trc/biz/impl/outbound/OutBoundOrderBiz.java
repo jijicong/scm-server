@@ -119,7 +119,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         Pagenation<OutboundOrder> pagenation = outBoundOrderService.pagination(example, page, form);
         List<OutboundOrder> outboundOrderList = pagenation.getResult();
         for(OutboundOrder order : outboundOrderList){
-            order.setWarehouseName(warehouseInfoService.selectByPrimaryKey(order.getWarehouseId()).getWarehouseName());
+            WarehouseInfo orderWarehouse = warehouseInfoService.selectByPrimaryKey(order.getWarehouseId());
+            if(orderWarehouse == null){
+                order.setWarehouseName("");
+            }else{
+                order.setWarehouseName(orderWarehouse.getWarehouseName());
+            }
             if((StringUtils.equals(order.getIsCancel(), ZeroToNineEnum.ONE.getCode())
                     || StringUtils.equals(order.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
                     this.checkDate(order.getUpdateTime())){
