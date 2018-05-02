@@ -995,8 +995,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<ScmWarehouseItem> list = new ArrayList<ScmWarehouseItem>();
         ScmWarehouseItem item = null;
         for(WarehouseItemInfo info : infoList){
-            if(info.getNoticeStatus() != Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
-                    info.getNoticeStatus() != Integer.parseInt(ZeroToNineEnum.ONE.getCode())){
+            if(!(info.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.ZERO.getCode()) ||
+                    info.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) ||
+                    info.getNoticeStatus() == Integer.parseInt(ZeroToNineEnum.TWO.getCode()))){
                 continue;
             }
 
