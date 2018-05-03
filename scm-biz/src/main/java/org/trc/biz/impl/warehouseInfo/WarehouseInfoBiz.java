@@ -665,8 +665,17 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             map1.put("skuCodeTemp", "skuTemp");
         }
         if(StringUtils.isNotEmpty(form.getBarCode())){
-            map1.put("barCode", form.getBarCode().split(","));
-            map1.put("barCodeTemp", "barTemp");
+            String[] barCodes = form.getBarCode().split(",");
+            List<String> barCodeList = new ArrayList<>();
+            for(String bar : barCodes){
+                if(StringUtils.isNotEmpty(bar)){
+                    barCodeList.add(bar);
+                }
+            }
+            if(barCodeList.size() > 0){
+                map1.put("barCode", barCodeList);
+                map1.put("barCodeTemp", "barTemp");
+            }
         }
         map1.put("brandName", form.getBrandName());
         map1.put("spuCode", form.getSpuCode());
