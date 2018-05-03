@@ -100,6 +100,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         if (!StringUtils.isBlank(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
+        if (!StringUtils.isBlank(form.getOperationalNature())) {
+            criteria.andEqualTo("operationalNature", form.getOperationalNature());
+        }
+        if (!StringUtils.isBlank(form.getOperationalType())) {
+            criteria.andEqualTo("operationalType", form.getOperationalType());
+        }
         example.orderBy("updateTime").desc();
         Pagenation<WarehouseInfo> pagenation = warehouseInfoService.pagination(example,page,form);
 
@@ -133,6 +139,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setCode(warehouseInfo.getCode());
             result.setIsValid(warehouseInfo.getIsValid());
             result.setRemark(warehouseInfo.getRemark()==null?"":warehouseInfo.getRemark());
+            result.setOperationalNature(warehouseInfo.getOperationalNature());
+            result.setOperationalType(warehouseInfo.getOperationalType());
             newList.add(result);
         }
 

@@ -19,12 +19,36 @@ public class WarehouseForm extends QueryModel{
     @Length(max = 64)
     private String name;
 
+    @QueryParam("operationalNature")
+    @Length(max = 1)
+    private String operationalNature;
+
+    @QueryParam("operationalType")
+    @Length(max = 1)
+    private String operationalType;
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getOperationalNature() {
+        return operationalNature;
+    }
+
+    public void setOperationalNature(String operationalNature) {
+        this.operationalNature = operationalNature;
+    }
+
+    public String getOperationalType() {
+        return operationalType;
+    }
+
+    public void setOperationalType(String operationalType) {
+        this.operationalType = operationalType;
     }
 
     @Override
