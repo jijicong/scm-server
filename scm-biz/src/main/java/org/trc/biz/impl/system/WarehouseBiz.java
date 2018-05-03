@@ -353,6 +353,33 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
+        //校验运行性质字段是否符合要求
+        String operationalNature = warehouse.getOperationalNature();
+        String operationalType = warehouse.getOperationalType();
+        String storeCorrespondChannel = warehouse.getStoreCorrespondChannel();
+        if(StringUtils.isEmpty(operationalNature)){
+            String msg = "运营性质不能为空";
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), operationalNature)){
+            if(StringUtils.isEmpty(operationalType)){
+                String msg = "运营类型不能为空";
+                logger.error(msg);
+                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            }
+
+            if(!StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), operationalType)){
+                if(StringUtils.isEmpty(storeCorrespondChannel)){
+                    String msg = "门店仓对应销售渠道不能为空";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                }
+            }
+            warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        }
+
         warehouse.setIsThroughWms(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         warehouse.setChannelCode(SupplyConstants.WarehouseConstant.CHANNEL_CODE);
         warehouse.setOwnerName(SupplyConstants.WarehouseConstant.OWNER_NAME);
