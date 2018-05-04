@@ -187,7 +187,9 @@ public enum ExceptionEnum{
     NOVALID("0","停用"),
 	
     ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION("501101","调拨单提交审核异常"),
-	ALLOCATE_ORDER_DELETE_EXCEPTION("501102","删除调拨单异常");
+	ALLOCATE_ORDER_DELETE_EXCEPTION("501102","删除调拨单异常"),
+	ALLOCATE_ORDER_DROP_EXCEPTION("501103","作废调拨单异常"),
+	ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION("501104","作废调拨单异常");
 
     private String code;
     private String message;

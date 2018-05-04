@@ -16,4 +16,6 @@ public interface IAllocateOrderBiz {
 
 	void dropAllocateOrder(String orderId);
 
+	void noticeWarehouse(String orderId);
+
 }

@@ -13,10 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
@@ -116,6 +118,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
 
 	@Override
+	@Transactional
 	public void saveAllocateOrder(AllocateOrder allocateOrder, String delsIds, String isReview,
 			String skuDetail, AclUserAccreditInfo aclUserAccreditInfo) {
 		
@@ -227,7 +230,22 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	}
 	
 	@Override
+	@Transactional
 	public void deleteAllocateOrder(String orderId) {
+		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (queryOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
+					"未查的相关调拨单信息");
+		}
+		String status = queryOrder.getOrderStatus();
+		/**
+		 * 暂存,审核驳回 的状态才能删除
+		 */
+		if (!AllocateOrderEnum.AllocateOrderStatusEnum.INIT.getCode().equals(status) 
+				&& !AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode().equals(status)) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
+					"当前调拨单状态不满足删除条件");
+		}
 		AllocateOrder allocateOrder = new AllocateOrder();
 		allocateOrder.setAllocateOrderCode(orderId);
 		allocateOrder.setIsDeleted(ZeroToNineEnum.ONE.getCode());
@@ -236,10 +254,69 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
 					"删除调拨单失败");
 		}
+        Example example = new Example(AllocateSkuDetail.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("allocateOrderCode", orderId);
 		AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
 		allocateSkuDetail.setAllocateOrderCode(orderId);
 		allocateSkuDetail.setIsDeleted(ZeroToNineEnum.ONE.getCode());
-		//allocateSkuDetailService.updateByExampleSelective(t, example);
+		int countDetail = allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example);
+		if (countDetail < 1) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
+					"删除调拨单详情失败");
+		}
+	}
+	
+	@Override
+	public void dropAllocateOrder(String orderId) {
+		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (queryOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+					"未查的相关调拨单信息");
+		}
+		String status = queryOrder.getOrderStatus();
+		/**
+		 * 暂存,审核驳回 的状态才能作废
+		 */
+//		if () {
+//			
+//		}
+		
+		AllocateOrder allocateOrder = new AllocateOrder();
+		allocateOrder.setAllocateOrderCode(orderId);
+		allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.DROP.getCode());
+		int count = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);
+		if (count < 1) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+					"作废调拨单失败");
+		}
+	}
+	
+
+	@Override
+	@Transactional
+	public void noticeWarehouse(String orderId) {
+		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (queryOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+					"未查的相关调拨单信息");
+		}
+		String status = queryOrder.getOrderStatus();
+		/**
+		 * 审核通过 的状态才能通知仓库
+		 */
+		if (!AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode().equals(status)) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+					"当前调拨单状态不满足作废条件");
+		}
+		AllocateOrder allocateOrder = new AllocateOrder();
+		allocateOrder.setAllocateOrderCode(orderId);
+		allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+		int count = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);	
+		if (count < 1) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
+					"调拨单通知仓库失败");
+		}
 	}
 
 
@@ -284,6 +361,9 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		// 设置调出详细地址
 		allocateOrder.setSenderAddress(whInfo.getAddress());
 	}
+
+
+
 
 
 }

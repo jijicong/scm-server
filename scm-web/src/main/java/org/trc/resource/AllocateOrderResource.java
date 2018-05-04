@@ -9,34 +9,21 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
-import org.trc.biz.warehouseNotice.IWarehouseNoticeBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseOrderAddData;
-import org.trc.domain.warehouseNotice.WarehouseNotice;
-import org.trc.enums.DistributeLockEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.PurchaseOrderStatusEnum;
-import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
-import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
-import org.trc.util.lock.RedisLock;
 
 @Component
 @Path("allocateOrder")
@@ -74,7 +61,8 @@ public class AllocateOrderResource {
     		@FormParam("skuDetailList") String skuDetail, 
     		@Context ContainerRequestContext requestContext) {
     	allocateOrderBiz.saveAllocateOrder(allocateOrder, delIds, isReview, skuDetail, 
-    			(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    			(AclUserAccreditInfo) requestContext.
+    				getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("操作成功","");
 
     }
@@ -96,6 +84,16 @@ public class AllocateOrderResource {
     		@Context ContainerRequestContext requestContext) {
     	allocateOrderBiz.dropAllocateOrder(orderId);
     	return ResultUtil.createSuccessResult("作废调拨单成功","");
+    	
+    }
+    
+    @POST
+    @Path("noticeWarehouse/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response noticeWarehouse(@PathParam("id") String orderId,
+    		@Context ContainerRequestContext requestContext) {
+    	allocateOrderBiz.noticeWarehouse(orderId);
+    	return ResultUtil.createSuccessResult("调拨单通知仓库成功","");
     	
     }
     
