@@ -92,7 +92,8 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response noticeWarehouse(@PathParam("id") String orderId,
     		@Context ContainerRequestContext requestContext) {
-    	allocateOrderBiz.noticeWarehouse(orderId);
+    	allocateOrderBiz.noticeWarehouse(orderId, (AclUserAccreditInfo) requestContext.
+				getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     	return ResultUtil.createSuccessResult("调拨单通知仓库成功","");
     	
     }

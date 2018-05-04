@@ -30,6 +30,7 @@ import org.trc.exception.AllocateOrderException;
 import org.trc.exception.WarehouseInfoException;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.service.allocateOrder.IAllocateOrderService;
+import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -54,6 +55,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
     private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private IAllocateSkuDetailService allocateSkuDetailService;
+    @Autowired
+    private IAllocateOutOrderService allocateOutOrderService;
     /**
      * 调拨单分页查询
      */
@@ -165,7 +168,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.INIT.getCode());
 			allocateOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
 			allocateOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-			int insertCount = allocateOrderService.insert(allocateOrder);
+			int insertCount = allocateOrderService.insertSelective(allocateOrder);
 			
 			/**
 			 * 插入调拨单商品明细
@@ -280,7 +283,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		/**
 		 * 暂存,审核驳回 的状态才能作废
 		 */
-//		if () {
+//		if (AllocateOrderEnum.AllocateOrderStatusEnum.) {
 //			
 //		}
 		
@@ -297,7 +300,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
 	@Override
 	@Transactional
-	public void noticeWarehouse(String orderId) {
+	public void noticeWarehouse(String orderId, AclUserAccreditInfo userInfo) {
 		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
 		if (queryOrder == null) {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
@@ -330,10 +333,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         
         outOrder.setAllocateOutOrderCode(code);
-        outOrder.setCreateOperator("");
+        outOrder.setCreateOperator(userInfo.getUserId());
         outOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
-        outOrder.setStatus(status);
+        outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
+        allocateOutOrderService.insertSelective(outOrder);
 		
 		
 	}
