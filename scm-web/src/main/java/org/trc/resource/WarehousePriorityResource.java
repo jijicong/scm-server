@@ -26,14 +26,14 @@ public class WarehousePriorityResource {
     @Path(SupplyConstants.WarehousePriority.WAREHOUSE_PRIORITY_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public Response warehousePriorityList(){
-        return ResultUtil.createSuccessPageResult(warehousePriorityBiz.warehousePriorityList());
+        return ResultUtil.createSuccessResult("仓库匹配查询成功", warehousePriorityBiz.warehousePriorityList());
     }
 
     @GET
     @Path(SupplyConstants.WarehousePriority.WAREHOUSE_LIST)
     @Produces(MediaType.APPLICATION_JSON)
     public Response warehouseList(){
-        return ResultUtil.createSuccessPageResult(warehousePriorityBiz.queryWarehouseInfoList());
+        return ResultUtil.createSuccessResult("查询可用仓库成功", warehousePriorityBiz.queryWarehouseInfoList());
     }
 
     @POST
