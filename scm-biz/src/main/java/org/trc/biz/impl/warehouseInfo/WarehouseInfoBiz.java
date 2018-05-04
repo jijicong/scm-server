@@ -514,7 +514,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
             warehouseItemInfo.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
             warehouseItemInfo.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
-            if(StringUtils.isEquals(ZeroToNineEnum.ONE.getCode(), operationalNature)){
+            if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
                 warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.SUCCESS.getCode());
                 warehouseItemInfo.setWarehouseItemId(sku.getSkuCode());
             }
@@ -523,7 +523,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         warehouseItemInfoService.insertList(list);
         countSkuNum(warehouseInfoId);
         //新增库存表信息
-        if(StringUtils.isEquals(ZeroToNineEnum.ONE.getCode(), operationalNature)){
+        if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
             saveSkuStockIsNotice(list, warehouseInfo);
         }else{
             this.saveSkuStock(list, warehouseInfo);
