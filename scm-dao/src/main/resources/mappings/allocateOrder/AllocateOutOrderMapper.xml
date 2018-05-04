@@ -14,14 +14,14 @@
     <result column="out_warehouse_name" property="outWarehouseName" jdbcType="VARCHAR" />
     <result column="status" property="status" jdbcType="VARCHAR" />
     <result column="receiver" property="receiver" jdbcType="VARCHAR" />
-    <result column="receiver_phone" property="receiverPhone" jdbcType="VARCHAR" />
+    <result column="receiver_moblie" property="receiverMoblie" jdbcType="VARCHAR" />
     <result column="reciver_province" property="reciverProvince" jdbcType="VARCHAR" />
     <result column="reciver_city" property="reciverCity" jdbcType="VARCHAR" />
     <result column="receive_address" property="receiveAddress" jdbcType="VARCHAR" />
     <result column="sender" property="sender" jdbcType="VARCHAR" />
     <result column="sender_province" property="senderProvince" jdbcType="VARCHAR" />
     <result column="sender_city" property="senderCity" jdbcType="VARCHAR" />
-    <result column="sender_phone" property="senderPhone" jdbcType="VARCHAR" />
+    <result column="sender_moblie" property="senderMoblie" jdbcType="VARCHAR" />
     <result column="sender_address" property="senderAddress" jdbcType="VARCHAR" />
     <result column="memo" property="memo" jdbcType="VARCHAR" />
     <result column="is_deleted" property="isDeleted" jdbcType="VARCHAR" />

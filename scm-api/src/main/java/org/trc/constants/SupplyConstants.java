@@ -856,6 +856,10 @@ public class SupplyConstants {
         public static final String ALLOCATE_ORDER_CODE = "DBD";
         //调拨单编码长度
         public static final Integer ALLOCATE_ORDER_LENGTH = 5;
+        //调拨出库单前缀
+        public static final String ALLOCATE_ORDER_OUT_CODE = "DBCKTZ";
+        //调拨单出库单编码长度
+        public static final Integer ALLOCATE_ORDER_OUT_LENGTH = 5;
 
         //序列号查询路径
         public static final String SERIAL = "serial";

@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
+import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -317,11 +319,23 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
 					"调拨单通知仓库失败");
 		}
-	}
-
-	@Override
-	public void dropAllocateOrder(String orderId) {
-
+		/**
+		 * 生成出入库通知单
+		 */
+		AllocateOutOrder outOrder = new AllocateOutOrder();
+		BeanUtils.copyProperties(queryOrder, outOrder);
+		
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_OUT_LENGTH, 
+        		SupplyConstants.Serial.ALLOCATE_ORDER_OUT_CODE,
+        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        
+        outOrder.setAllocateOutOrderCode(code);
+        outOrder.setCreateOperator("");
+        outOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
+        outOrder.setStatus(status);
+		
+		
 	}
 
 

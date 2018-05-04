@@ -153,5 +153,44 @@ public class AllocateOrderEnum {
 		}
 		
 	}
+	
+	/**
+	 * @author admin
+	 * 调拨单出库单状态
+	 */
+	public enum AllocateOutOrderStatusEnum {
+		
+		WAIT_NOTICE("0","待通知出库"),
+		OUT_RECEIVE_SUCC("1","出库仓接收成功"),
+		OUT_RECEIVE_FAIL("2","出库仓接收失败"),
+		OUT_SUCCESS("3","出库完成"),
+		OUT_EXCEPTION("4","出库异常"),
+		CANCEL("5","已取消");
+		
+		private String code;
+		private String name;
+		
+		AllocateOutOrderStatusEnum(String code, String name) {
+			this.code = code;
+			this.name = name;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public void setName(String name) {
+			this.name = name;
+		}
+		
+		public String getCode() {
+			return code;
+		}
+		
+		public void setCode(String code) {
+			this.code = code;
+		}
+		
+	}
 }
 
