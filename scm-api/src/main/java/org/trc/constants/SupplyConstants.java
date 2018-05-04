@@ -1052,6 +1052,8 @@ public class SupplyConstants {
         public static final String ROOT = "allocateOutOrder";
 
         public static final String ALLOCATE_OUT_ORDER_PAGE = "allocateOutOrderPage";
+
+        public static final String CLOSE = "close";
     }
 
     /**
@@ -1270,6 +1272,9 @@ public class SupplyConstants {
         
         //调拨单
         public final static String ALLOCATE_ORDER = "allocate_order";
+
+        //调拨发货单
+        public final static String ALLOCATE_OUT_ORDER = "allocate_out_order";
 
     }
 
