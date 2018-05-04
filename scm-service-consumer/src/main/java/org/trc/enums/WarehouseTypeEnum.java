@@ -10,7 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 public enum WarehouseTypeEnum {
 
 	Qimen("QM","奇门"),
-	Jingdong("JD","京东");
+	Jingdong("JD","京东"),
+	Zy("ZY","自营"),
+	;
 
 	private String code;
 	private String name;

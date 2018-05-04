@@ -67,8 +67,6 @@ public interface IWarehouseInfoBiz {
 
     /**
      * 仓库商品信息分页查询
-     *
-     * @param query
      * @param page
      * @return
      */

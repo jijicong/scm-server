@@ -982,6 +982,19 @@ public class SupplyConstants {
     }
 
     /**
+     * 仓库匹配优先级
+     */
+    public static final class WarehousePriority {
+        public static final String ROOT = "warehousePriority";
+        //仓库匹配优先级列表查询
+        public static final String WAREHOUSE_PRIORITY_LIST = "warehousePriorityList";
+        //可用仓库列表查询
+        public static final String WAREHOUSE_LIST = "warehouseList";
+        //保存仓库匹配优先级
+        public static final String WAREHOUSE_PRIORITY = "warehousePriority";
+    }
+
+    /**
      * 出库通知单
      */
     public static final class OutboundOrder {
