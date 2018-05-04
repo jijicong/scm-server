@@ -30,7 +30,9 @@ import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Channel;
 import org.trc.domain.System.LogisticsCompany;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
@@ -58,7 +60,9 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
 import org.trc.service.ITrcService;
+import org.trc.service.System.IChannelService;
 import org.trc.service.System.ILogisticsCompanyService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
@@ -230,6 +234,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IWarehouseExtService warehouseExtService;
     @Autowired
     private IWarehousePriorityService warehousePriorityService;
+    @Autowired
+    private IChannelService channelService;
+    @Autowired
+    private ISellChannelService sellChannelService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -4045,12 +4053,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 校验渠道
      * @param channelCode
      */
-    private void checkChannel(String channelCode){
-        SystemConfig systemConfig = new SystemConfig();
+    private SellChannel checkChannel(String channelCode, String sellCode){
+        /*SystemConfig systemConfig = new SystemConfig();
         systemConfig.setType(SupplyConstants.SystemConfigType.CHANNEL);
         systemConfig.setCode(channelCode);
         List<SystemConfig> systemConfigList = systemConfigService.select(systemConfig);
-        AssertUtil.notEmpty(systemConfigList, "不是供应链授权访问的渠道，非法访问");
+        AssertUtil.notEmpty(systemConfigList, "不是供应链授权访问的渠道，非法访问");*/
+        AssertUtil.notBlank(channelCode, "业务线编码不能为空");
+        AssertUtil.notBlank(sellCode, "销售渠道编码不能为空");
+        Channel channel = new Channel();
+        channel.setCode(channelCode);
+        channel = channelService.selectOne(channel);
+        AssertUtil.notNull(channel, String.format("业务线%s在供应链系统不存在!", channelCode));
+
+        SellChannel sellChannel = new SellChannel();
+        sellChannel.setSellCode(sellCode);
+        sellChannel = sellChannelService.selectOne(sellChannel);
+        AssertUtil.notNull(sellChannel, String.format("销售渠道%s在供应链系统不存在!", sellCode));
+        return sellChannel;
     }
 
     /**
@@ -4059,20 +4079,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param platformOrder
      */
     private void platformOrderParamCheck(PlatformOrder platformOrder, List<OrderItem> orderItems) {
-        AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
-        checkChannel(platformOrder.getChannelCode());
+        //检查业务线和销售渠道
+        SellChannel sellChannel = checkChannel(platformOrder.getChannelCode(), platformOrder.getSellCode());
+        //检查收货用户信息
+        checkCustmerInfo(platformOrder, sellChannel);
+
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
-        AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
-        AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
-
-        AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
-
-        AssertUtil.notBlank(platformOrder.getReceiverProvince(), "平台订单收货人所在省不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverCity(), "平台订单收货人所在城市不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不空");
 
         AssertUtil.notBlank(platformOrder.getPayType(), "平台订单单支付类型不能为空");
         AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
@@ -4104,8 +4117,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 break;
             }
         }
+    }
 
 
+
+    /**
+     * 检查收货用户信息
+     * @param platformOrder
+     */
+    private void checkCustmerInfo(PlatformOrder platformOrder, SellChannel sellChannel){
+        if(!StringUtils.equals(SellChannelTypeEnum.STORE.getCode().toString(), sellChannel.getSellType())){
+            AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
+            AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverProvince(), "平台订单收货人所在省不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverCity(), "平台订单收货人所在城市不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不空");
+        }
     }
 
     /**

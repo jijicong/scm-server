@@ -1,0 +1,563 @@
+package org.trc.domain.allocateOrder;
+
+import java.util.Date;
+import javax.persistence.*;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
+@Table(name = "allocate_order")
+public class AllocateOrder {
+    /**
+     * 调拨单编号
+     */
+    @Id
+    @Column(name = "allocate_order_code")
+    private String allocateOrderCode;
+
+    @Column(name = "in_warehouse_code")
+    @NotEmpty
+    private String inWarehouseCode;
+
+    @Column(name = "in_warehouse_name")
+    private String inWarehouseName;
+
+    @Column(name = "out_warehouse_code")
+    @NotEmpty
+    private String outWarehouseCode;
+
+    @Column(name = "out_warehouse_name")
+    private String outWarehouseName;
+
+    /**
+     * 调拨入库单编号
+     */
+    @Column(name = "allocate_in_order_code")
+    private String allocateInOrderCode;
+
+    /**
+     * 调拨出库单编号
+     */
+    @Column(name = "allocate_out_order_code")
+    private String allocateOutOrderCode;
+
+    /**
+     * 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     */
+    @Column(name = "order_status")
+    private String orderStatus;
+
+    /**
+     * 出入库状态
+            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     */
+    @Column(name = "in_out_status")
+    private String inOutStatus;
+
+    /**
+     * 收货人
+     */
+    @NotEmpty
+    private String receiver;
+
+    /**
+     * 收货人所在省
+     */
+    @Column(name = "reciver_province")
+    @NotEmpty
+    private String reciverProvince;
+
+    /**
+     * 收货人所在城市
+     */
+    @Column(name = "reciver_city")
+    @NotEmpty
+    private String reciverCity;
+
+    /**
+     * 收货详细地址
+     */
+    @Column(name = "receive_address")
+    private String receiveAddress;
+
+    /**
+     * 收货人手机
+     */
+    @Column(name = "receiver_mobile")
+    @NotEmpty
+    private String receiverMobile;
+
+    /**
+     * 发件人
+     */
+    @NotEmpty
+    private String sender;
+
+    /**
+     * 发件人所在省
+     */
+    @Column(name = "sender_province")
+    @NotEmpty
+    private String senderProvince;
+
+    /**
+     * 发件人所在城市
+     */
+    @Column(name = "sender_city")
+    @NotEmpty
+    private String senderCity;
+
+    /**
+     * 发件人手机
+     */
+    @Column(name = "sender_mobile")
+    @NotEmpty
+    private String senderMobile;
+
+    /**
+     * 发件方详细地址
+     */
+    @Column(name = "sender_address")
+    private String senderAddress;
+
+    private String memo;
+
+    /**
+     * 是否删除:0-否,1-是
+     */
+    @Column(name = "is_deleted")
+    private String isDeleted;
+
+    /**
+     * 创建人
+     */
+    @Column(name = "create_operator")
+    private String createOperator;
+
+    /**
+     * 创建时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    @Column(name = "create_time")
+    private Date createTime;
+
+    /**
+     * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    /**
+     * 获取调拨单编号
+     *
+     * @return allocate_order_code - 调拨单编号
+     */
+    public String getAllocateOrderCode() {
+        return allocateOrderCode;
+    }
+
+    /**
+     * 设置调拨单编号
+     *
+     * @param allocateOrderCode 调拨单编号
+     */
+    public void setAllocateOrderCode(String allocateOrderCode) {
+        this.allocateOrderCode = allocateOrderCode;
+    }
+
+    /**
+     * @return in_warehouse_code
+     */
+    public String getInWarehouseCode() {
+        return inWarehouseCode;
+    }
+
+    /**
+     * @param inWarehouseCode
+     */
+    public void setInWarehouseCode(String inWarehouseCode) {
+        this.inWarehouseCode = inWarehouseCode;
+    }
+
+    /**
+     * @return in_warehouse_name
+     */
+    public String getInWarehouseName() {
+        return inWarehouseName;
+    }
+
+    /**
+     * @param inWarehouseName
+     */
+    public void setInWarehouseName(String inWarehouseName) {
+        this.inWarehouseName = inWarehouseName;
+    }
+
+    /**
+     * @return out_warehouse_code
+     */
+    public String getOutWarehouseCode() {
+        return outWarehouseCode;
+    }
+
+    /**
+     * @param outWarehouseCode
+     */
+    public void setOutWarehouseCode(String outWarehouseCode) {
+        this.outWarehouseCode = outWarehouseCode;
+    }
+
+    /**
+     * @return out_warehouse_name
+     */
+    public String getOutWarehouseName() {
+        return outWarehouseName;
+    }
+
+    /**
+     * @param outWarehouseName
+     */
+    public void setOutWarehouseName(String outWarehouseName) {
+        this.outWarehouseName = outWarehouseName;
+    }
+
+    /**
+     * 获取调拨入库单编号
+     *
+     * @return allocate_in_order_code - 调拨入库单编号
+     */
+    public String getAllocateInOrderCode() {
+        return allocateInOrderCode;
+    }
+
+    /**
+     * 设置调拨入库单编号
+     *
+     * @param allocateInOrderCode 调拨入库单编号
+     */
+    public void setAllocateInOrderCode(String allocateInOrderCode) {
+        this.allocateInOrderCode = allocateInOrderCode;
+    }
+
+    /**
+     * 获取调拨出库单编号
+     *
+     * @return allocate_out_order_code - 调拨出库单编号
+     */
+    public String getAllocateOutOrderCode() {
+        return allocateOutOrderCode;
+    }
+
+    /**
+     * 设置调拨出库单编号
+     *
+     * @param allocateOutOrderCode 调拨出库单编号
+     */
+    public void setAllocateOutOrderCode(String allocateOutOrderCode) {
+        this.allocateOutOrderCode = allocateOutOrderCode;
+    }
+
+    /**
+     * 获取0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     *
+     * @return order_status - 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     */
+    public String getOrderStatus() {
+        return orderStatus;
+    }
+
+    /**
+     * 设置0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     *
+     * @param orderStatus 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     */
+    public void setOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
+    }
+
+    /**
+     * 获取出入库状态
+            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     *
+     * @return in_out_status - 出入库状态
+            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     */
+    public String getInOutStatus() {
+        return inOutStatus;
+    }
+
+    /**
+     * 设置出入库状态
+            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     *
+     * @param inOutStatus 出入库状态
+            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     */
+    public void setInOutStatus(String inOutStatus) {
+        this.inOutStatus = inOutStatus;
+    }
+
+    /**
+     * 获取收货人
+     *
+     * @return receiver - 收货人
+     */
+    public String getReceiver() {
+        return receiver;
+    }
+
+    /**
+     * 设置收货人
+     *
+     * @param receiver 收货人
+     */
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    /**
+     * 获取收货人所在省
+     *
+     * @return reciver_province - 收货人所在省
+     */
+    public String getReciverProvince() {
+        return reciverProvince;
+    }
+
+    /**
+     * 设置收货人所在省
+     *
+     * @param reciverProvince 收货人所在省
+     */
+    public void setReciverProvince(String reciverProvince) {
+        this.reciverProvince = reciverProvince;
+    }
+
+    /**
+     * 获取收货人所在城市
+     *
+     * @return reciver_city - 收货人所在城市
+     */
+    public String getReciverCity() {
+        return reciverCity;
+    }
+
+    /**
+     * 设置收货人所在城市
+     *
+     * @param reciverCity 收货人所在城市
+     */
+    public void setReciverCity(String reciverCity) {
+        this.reciverCity = reciverCity;
+    }
+
+    /**
+     * 获取收货详细地址
+     *
+     * @return receive_address - 收货详细地址
+     */
+    public String getReceiveAddress() {
+        return receiveAddress;
+    }
+
+    /**
+     * 设置收货详细地址
+     *
+     * @param receiveAddress 收货详细地址
+     */
+    public void setReceiveAddress(String receiveAddress) {
+        this.receiveAddress = receiveAddress;
+    }
+
+    /**
+     * 获取收货人手机
+     *
+     * @return receiver_mobile - 收货人手机
+     */
+    public String getReceiverMobile() {
+        return receiverMobile;
+    }
+
+    /**
+     * 设置收货人手机
+     *
+     * @param receiverMobile 收货人手机
+     */
+    public void setReceiverMobile(String receiverMobile) {
+        this.receiverMobile = receiverMobile;
+    }
+
+    /**
+     * 获取发件人
+     *
+     * @return sender - 发件人
+     */
+    public String getSender() {
+        return sender;
+    }
+
+    /**
+     * 设置发件人
+     *
+     * @param sender 发件人
+     */
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    /**
+     * 获取发件人所在省
+     *
+     * @return sender_province - 发件人所在省
+     */
+    public String getSenderProvince() {
+        return senderProvince;
+    }
+
+    /**
+     * 设置发件人所在省
+     *
+     * @param senderProvince 发件人所在省
+     */
+    public void setSenderProvince(String senderProvince) {
+        this.senderProvince = senderProvince;
+    }
+
+    /**
+     * 获取发件人所在城市
+     *
+     * @return sender_city - 发件人所在城市
+     */
+    public String getSenderCity() {
+        return senderCity;
+    }
+
+    /**
+     * 设置发件人所在城市
+     *
+     * @param senderCity 发件人所在城市
+     */
+    public void setSenderCity(String senderCity) {
+        this.senderCity = senderCity;
+    }
+
+    /**
+     * 获取发件人手机
+     *
+     * @return sender_mobile - 发件人手机
+     */
+    public String getSenderMobile() {
+        return senderMobile;
+    }
+
+    /**
+     * 设置发件人手机
+     *
+     * @param senderMobile 发件人手机
+     */
+    public void setSenderMobile(String senderMobile) {
+        this.senderMobile = senderMobile;
+    }
+
+    /**
+     * 获取发件方详细地址
+     *
+     * @return sender_address - 发件方详细地址
+     */
+    public String getSenderAddress() {
+        return senderAddress;
+    }
+
+    /**
+     * 设置发件方详细地址
+     *
+     * @param senderAddress 发件方详细地址
+     */
+    public void setSenderAddress(String senderAddress) {
+        this.senderAddress = senderAddress;
+    }
+
+    /**
+     * @return memo
+     */
+    public String getMemo() {
+        return memo;
+    }
+
+    /**
+     * @param memo
+     */
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
+    /**
+     * 获取是否删除:0-否,1-是
+     *
+     * @return is_deleted - 是否删除:0-否,1-是
+     */
+    public String getIsDeleted() {
+        return isDeleted;
+    }
+
+    /**
+     * 设置是否删除:0-否,1-是
+     *
+     * @param isDeleted 是否删除:0-否,1-是
+     */
+    public void setIsDeleted(String isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    /**
+     * 获取创建人
+     *
+     * @return create_operator - 创建人
+     */
+    public String getCreateOperator() {
+        return createOperator;
+    }
+
+    /**
+     * 设置创建人
+     *
+     * @param createOperator 创建人
+     */
+    public void setCreateOperator(String createOperator) {
+        this.createOperator = createOperator;
+    }
+
+    /**
+     * 获取创建时间,格式yyyy-mm-dd hh:mi:ss
+     *
+     * @return create_time - 创建时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * 设置创建时间,格式yyyy-mm-dd hh:mi:ss
+     *
+     * @param createTime 创建时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * 获取最后更新时间,格式yyyy-mm-dd hh:mi:ss
+     *
+     * @return update_time - 最后更新时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * 设置最后更新时间,格式yyyy-mm-dd hh:mi:ss
+     *
+     * @param updateTime 最后更新时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+}

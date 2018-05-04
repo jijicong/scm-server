@@ -21,6 +21,7 @@ public enum ExceptionEnum{
      * 外部调用:1000开头
      * 数据库:3000开头
      * 系统异常:4000开头
+     * 调拨单异常:501开头
      */
     CONFIG_DICT_QUERY_EXCEPTION("100101","数据字典查询异常"),
     CONFIG_DICT_SAVE_EXCEPTION("100102","数据字典保存异常"),
@@ -183,7 +184,10 @@ public enum ExceptionEnum{
     SIGN_ERROR("4000103","签名错误"),
     ENPYTY_RESPONSE("4000104","外部接口返回空数据"),
     RQUEST_TIMEOUT("408","请求超时"),
-    NOVALID("0","停用");
+    NOVALID("0","停用"),
+	
+    ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION("501101","调拨单提交审核异常"),
+	ALLOCATE_ORDER_DELETE_EXCEPTION("501102","删除调拨单异常");
 
     private String code;
     private String message;

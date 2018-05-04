@@ -19,6 +19,15 @@ public class AssertUtil extends Assert{
         if(StringUtils.isBlank(str))
             throw new IllegalArgumentException(msg);
     }
+    /**
+     * 判断空对象
+     * @param obj
+     * @param msg
+     */
+    public static void objNotBlank(Object obj, String msg){
+    	if(obj == null)
+    		throw new IllegalArgumentException(msg);
+    }
 
     public static boolean collectionIsEmpty(Collection collection){
         return (collection==null||collection.isEmpty());
