@@ -356,6 +356,17 @@ public class SupplyConstants {
         public static final String WAREHOUSE_CONFIG = "warehouseConfig";
     }
 
+    public static final class LogisticsCorporation {
+        //根路径
+        public static final String ROOT = "system";
+        //分页查询
+        public static final String LOGISTICS_CORPORATION_PAGE = "logisticsCorporationPage";
+        //物流公司
+        public static final String LOGISTICS_CORPORATION = "logisticsCorporation";
+        //更新物流公司状态
+        public static final String UPDATE_STATE = "updateState";
+    }
+
     /**
      * 授权信息
      */
