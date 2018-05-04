@@ -1044,6 +1044,12 @@ public class SupplyConstants {
         public static final String OUTBOUND_ORDER_DETAIL = "outboundOrderDetail";
     }
 
+    public static final class AllocateOutOrder {
+        public static final String ROOT = "allocateOutOrder";
+
+        public static final String ALLOCATE_OUT_ORDER_PAGE = "allocateOutOrderPage";
+    }
+
     /**
      * 订单管理
      */

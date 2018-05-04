@@ -242,6 +242,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		//allocateSkuDetailService.updateByExampleSelective(t, example);
 	}
 
+	@Override
+	public void dropAllocateOrder(String orderId) {
+
+	}
+
 
 	/**
 	 * 新增和修改时设置调拨单详情
