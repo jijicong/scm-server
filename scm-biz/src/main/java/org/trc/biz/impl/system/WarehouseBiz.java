@@ -371,14 +371,14 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        if(StringUtils.equals(LogisticsCorporationNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
+        if(StringUtils.equals(OperationalNatureNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
             if(StringUtils.isEmpty(operationalType)){
                 String msg = "运营类型不能为空";
                 logger.error(msg);
                 throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
             }
 
-            if(!StringUtils.equals(LogisticsCorporationTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+            if(!StringUtils.equals(OperationalNatureTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
                 if(StringUtils.isEmpty(storeCorrespondChannel)){
                     String msg = "门店仓对应销售渠道不能为空";
                     logger.error(msg);

@@ -7,14 +7,16 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Created by hzcyn on 2018/5/4.
  */
-public enum LogisticsCorporationNatureEnum {
-    THIRD_PARTY("0", "第三方仓库"),
-    SELF_SUPPORT("1","自营仓库");
+public enum OperationalNatureTypeEnum {
+
+    ONLY_WAREHOUSE("0", "纯仓库"),
+    NORMAL_STORE("1","普通门店"),
+    UNMANNED_STORE("2","无人门店");
 
     private String code;
     private String name;
 
-    LogisticsCorporationNatureEnum(String code, String name){
+    OperationalNatureTypeEnum(String code, String name){
         this.code = code;
         this.name = name;
     }
@@ -28,8 +30,8 @@ public enum LogisticsCorporationNatureEnum {
      * @return ValidEnum
      * @throws
      */
-    public static LogisticsCorporationNatureEnum getClearanceEnumByName(String name){
-        for(LogisticsCorporationNatureEnum validEnum : LogisticsCorporationNatureEnum.values()){
+    public static OperationalNatureTypeEnum getClearanceEnumByName(String name){
+        for(OperationalNatureTypeEnum validEnum : OperationalNatureTypeEnum.values()){
             if(StringUtils.equals(name, validEnum.getName())){
                 return validEnum;
             }
@@ -46,8 +48,8 @@ public enum LogisticsCorporationNatureEnum {
      * @return ValidEnum
      * @throws
      */
-    public static LogisticsCorporationNatureEnum getClearanceEnumByCode(String code){
-        for(LogisticsCorporationNatureEnum validEnum : LogisticsCorporationNatureEnum.values()){
+    public static OperationalNatureTypeEnum getClearanceEnumByCode(String code){
+        for(OperationalNatureTypeEnum validEnum : OperationalNatureTypeEnum.values()){
             if(StringUtils.equals(validEnum.getCode(), code)){
                 return validEnum;
             }
@@ -65,7 +67,7 @@ public enum LogisticsCorporationNatureEnum {
      */
     public static JSONArray toJSONArray(){
         JSONArray array = new JSONArray();
-        for(LogisticsCorporationNatureEnum sexEnum : LogisticsCorporationNatureEnum.values()){
+        for(OperationalNatureTypeEnum sexEnum : OperationalNatureTypeEnum.values()){
             JSONObject obj = new JSONObject();
             obj.put("code", sexEnum.getCode());
             obj.put("name", sexEnum.getName());
