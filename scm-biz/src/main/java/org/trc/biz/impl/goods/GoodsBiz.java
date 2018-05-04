@@ -293,6 +293,8 @@ public class GoodsBiz implements IGoodsBiz {
             Set<String> barCodeSet =skusService.selectSkuListByBarCode(barCodeList);
             if (!AssertUtil.collectionIsEmpty(barCodeSet)){
                 criteria.andIn("barCode", barCodeSet);
+            }else {
+                criteria.andEqualTo("barCode", StringUtils.EMPTY);
             }
         }
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);
@@ -523,7 +525,11 @@ public class GoodsBiz implements IGoodsBiz {
             Set<String> barCodeSet =skusService.selectSkuListByBarCode(Arrays.asList(StringUtils.split(barCode,SupplyConstants.Symbol.COMMA)));
             Example example = new Example(Skus.class);
             Example.Criteria criteria2 = example.createCriteria();
-            criteria2.andIn("barCode", barCodeSet);
+            if (!AssertUtil.collectionIsEmpty(barCodeSet)){
+                criteria2.andIn("barCode", barCodeSet);
+            }else {
+                criteria2.andEqualTo("barCode", StringUtils.EMPTY);
+            }
             List<Skus> skusList = skusService.selectByExample(example);
             if(skusList.size() > 0){
                 for(Skus s : skusList){
