@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="tk.mapper.AllocateOrderMapper" >
+  <resultMap id="BaseResultMap" type="tk.model.AllocateOrder" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="allocate_order_code" property="allocateOrderCode" jdbcType="VARCHAR" />
+    <result column="in_warehouse_code" property="inWarehouseCode" jdbcType="VARCHAR" />
+    <result column="in_warehouse_name" property="inWarehouseName" jdbcType="VARCHAR" />
+    <result column="out_warehouse_code" property="outWarehouseCode" jdbcType="VARCHAR" />
+    <result column="out_warehouse_name" property="outWarehouseName" jdbcType="VARCHAR" />
+    <result column="allocate_in_order_code" property="allocateInOrderCode" jdbcType="VARCHAR" />
+    <result column="allocate_out_order_code" property="allocateOutOrderCode" jdbcType="VARCHAR" />
+    <result column="order_status" property="orderStatus" jdbcType="VARCHAR" />
+    <result column="in_out_status" property="inOutStatus" jdbcType="VARCHAR" />
+    <result column="receiver" property="receiver" jdbcType="VARCHAR" />
+    <result column="reciver_province" property="reciverProvince" jdbcType="VARCHAR" />
+    <result column="reciver_city" property="reciverCity" jdbcType="VARCHAR" />
+    <result column="receive_address" property="receiveAddress" jdbcType="VARCHAR" />
+    <result column="receiver_mobile" property="receiverMobile" jdbcType="VARCHAR" />
+    <result column="sender" property="sender" jdbcType="VARCHAR" />
+    <result column="sender_province" property="senderProvince" jdbcType="VARCHAR" />
+    <result column="sender_city" property="senderCity" jdbcType="VARCHAR" />
+    <result column="sender_mobile" property="senderMobile" jdbcType="VARCHAR" />
+    <result column="sender_address" property="senderAddress" jdbcType="VARCHAR" />
+    <result column="memo" property="memo" jdbcType="VARCHAR" />
+    <result column="is_deleted" property="isDeleted" jdbcType="VARCHAR" />
+    <result column="create_operator" property="createOperator" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

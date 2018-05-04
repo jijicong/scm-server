@@ -562,6 +562,15 @@ public class SupplyConstants {
         public static final String WAREHOUSE_NOTICE_DETAIL = "warehouseNoticeDetail";
 
     }
+    
+    /**
+     * 调拨单
+     */
+    public static final class AllocateOrder {
+//    	//根路径
+//    	public static final String ROOT = "allocateOrder";
+    	
+    }
 
     /**
      * 七牛
@@ -831,7 +840,11 @@ public class SupplyConstants {
         public static final String WAREHOUSE_ORDER_CODE = "CKDD";
         //仓库订单编码长度
         public static final Integer WAREHOUSE_ORDER_CODE_LENGTH = 7;
-
+        
+        //调拨单前缀
+        public static final String ALLOCATE_ORDER_CODE = "DBD";
+        //调拨单编码长度
+        public static final Integer ALLOCATE_ORDER_LENGTH = 5;
 
         //序列号查询路径
         public static final String SERIAL = "serial";
@@ -1220,6 +1233,9 @@ public class SupplyConstants {
         public final static String JD_ADDRESS = "jd_address";
 
         public final static String WAREHOUSE_ITEM = "warehouse_item";
+        
+        //调拨单
+        public final static String ALLOCATE_ORDER = "allocate_order";
 
     }
 
