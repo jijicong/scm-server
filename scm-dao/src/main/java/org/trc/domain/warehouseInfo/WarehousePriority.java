@@ -27,6 +27,10 @@ public class WarehousePriority extends ScmDO {
     @Length(max = 32, message = "仓库编码不能超过32个")
     private String warehouseCode;
 
+    //wms仓库编码
+    @Transient
+    private String wmsWarehouseCode;
+
     @FormParam("priority")
     private Integer priority; // 优先级,从1开始，数字越小优先级越大
 
@@ -78,5 +82,11 @@ public class WarehousePriority extends ScmDO {
         this.warehouseName = warehouseName;
     }
 
+    public String getWmsWarehouseCode() {
+        return wmsWarehouseCode;
+    }
 
+    public void setWmsWarehouseCode(String wmsWarehouseCode) {
+        this.wmsWarehouseCode = wmsWarehouseCode;
+    }
 }

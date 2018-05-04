@@ -143,7 +143,6 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-        //AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){
             logger.error(String.format("自采sku[%s]尚未与仓库完成绑定", StringUtils.join(skuCodes, SupplyConstants.Symbol.COMMA)));
         }

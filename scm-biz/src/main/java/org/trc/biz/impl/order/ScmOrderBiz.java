@@ -42,6 +42,7 @@ import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.warehouseInfo.WarehousePriority;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
 import org.trc.exception.ParamValidException;
@@ -76,6 +77,7 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.warehouseInfo.IWarehousePriorityService;
 import org.trc.util.*;
 import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.cache.SupplierOrderCacheEvict;
@@ -226,6 +228,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private JDWmsConstantConfig jDWmsConstantConfig;
     @Autowired
     private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IWarehousePriorityService warehousePriorityService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1970,8 +1974,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes);
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
+            //查询仓库匹配优先级
+            List<WarehousePriority> warehousePriorityList = getWarehousePriority();
             //校验自采商品的可用库存
-            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList);
+            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList, warehousePriorityList);
             List<OrderItem> checkFailureSelfPurcharseItems = (List<OrderItem>)map.get("checkFailureItems");
             skuWarehouseMap = (Map<String, List<SkuWarehouseDO>>)map.get("warehouseSkuMap");
             if(!CollectionUtils.isEmpty(checkFailureSelfPurcharseItems)){
@@ -2074,6 +2080,40 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("warehouseOrderList", warehouseOrderList);
         map.put("skuWarehouseMap", skuWarehouseMap);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", map);
+    }
+
+    /**
+     * 获取仓库匹配优先级
+     * @return
+     */
+    private List<WarehousePriority> getWarehousePriority(){
+        Example example = new Example(WarehousePriority.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        example.orderBy("priority").asc();
+        List<WarehousePriority> warehousePriorityList = warehousePriorityService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(warehousePriorityList)){
+            List<String> warehouseCodes = new ArrayList<>();
+            for(WarehousePriority priority: warehousePriorityList){
+                warehouseCodes.add(priority.getWarehouseCode());
+            }
+            Example example2 = new Example(WarehouseInfo.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andIn("code", warehouseCodes);
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example2);
+            if(!CollectionUtils.isEmpty(warehouseInfoList)){
+                for(WarehousePriority priority: warehousePriorityList){
+                    for(WarehouseInfo warehouseInfo: warehouseInfoList){
+                        if(StringUtils.equals(priority.getWarehouseCode(), warehouseInfo.getCode())){
+                            priority.setWarehouseName(warehouseInfo.getWarehouseName());
+                            priority.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return warehousePriorityList;
     }
 
     /**
@@ -3877,7 +3917,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }*/
 
 
-    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList,
+                                List<ScmInventoryQueryResponse> scmInventoryQueryResponseList, List<WarehousePriority> warehousePriorityList){
         Map<String, Object> map = new HashedMap();
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
         //校验失败的商品
@@ -3906,8 +3947,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     _inventoryQueryItemList.add(item);
                 }
             }
+
             //按仓库库存降序排序
-            if(_inventoryQueryItemList.size() > 0){
+            /*if(_inventoryQueryItemList.size() > 0){
                 Collections.sort(_inventoryQueryItemList, new Comparator<ScmInventoryQueryResponse>() {
                     @Override
                     public int compare(ScmInventoryQueryResponse o1, ScmInventoryQueryResponse o2) {
@@ -3915,17 +3957,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                 });
                 qimenStock = _inventoryQueryItemList.get(0).getQuantity();
-            }
+            }*/
+
             boolean _flag = false;
+            //检查库存
+            ScmInventoryQueryResponse scmInventoryQueryResponse = checkStock(orderItem.getNum().intValue(), _inventoryQueryItemList, warehousePriorityList);
             //校验库存
-            if(qimenStock >= orderItem.getNum().longValue()){
+            if(null != scmInventoryQueryResponse){
                 _flag = true;
             }else{
                 checkFailureItems.add(orderItem);
             }
             SkuStock _skuStock = null;
             for(SkuStock skuStock: skuStockList){
-                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) && StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId())){
                     _skuStock = skuStock;
                     break;
                 }
@@ -3952,6 +3997,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("warehouseSkuMap", warehouseSkuMap);
         return map;
     }
+
+    private ScmInventoryQueryResponse checkStock(int itemNum, List<ScmInventoryQueryResponse> inventoryQueryItemList, List<WarehousePriority> warehousePriorityList){
+        List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
+        for(WarehousePriority priority: warehousePriorityList){
+            for(ScmInventoryQueryResponse response: inventoryQueryItemList){
+                if(StringUtils.equals(priority.getWmsWarehouseCode(), response.getWarehouseCode())){
+                    _inventoryQueryItemList.add(response);
+                    break;
+                }
+            }
+        }
+        for(ScmInventoryQueryResponse response: _inventoryQueryItemList){
+            if(response.getQuantity().intValue() >= itemNum){
+                return response;
+            }
+        }
+        return null;
+    }
+
 
 
 
