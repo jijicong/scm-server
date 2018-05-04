@@ -489,6 +489,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         }
         AssertUtil.isTrue(list2.size()==0,"商品名称不能为空");
         AssertUtil.isTrue(list3.size()==0,"商品sku编码不能为空");
+        String operationalNature = warehouseInfo.getOperationalNature();
         for (Skus sku:itemsList){
             WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
             warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
@@ -513,7 +514,6 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             warehouseItemInfo.setWarehouseCode(warehouseInfo.getCode());
             warehouseItemInfo.setWarehouseOwnerId(warehouseInfo.getWarehouseOwnerId());
             warehouseItemInfo.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
-            String operationalNature = warehouseInfo.getOperationalNature();
             if(StringUtils.isEquals(ZeroToNineEnum.ONE.getCode(), operationalNature)){
                 warehouseItemInfo.setNoticeStatus(NoticsWarehouseStateEnum.SUCCESS.getCode());
                 warehouseItemInfo.setWarehouseItemId(sku.getSkuCode());
@@ -523,7 +523,11 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         warehouseItemInfoService.insertList(list);
         countSkuNum(warehouseInfoId);
         //新增库存表信息
-        this.saveSkuStock(list, warehouseInfo);
+        if(StringUtils.isEquals(ZeroToNineEnum.ONE.getCode(), operationalNature)){
+            saveSkuStockIsNotice(list, warehouseInfo);
+        }else{
+            this.saveSkuStock(list, warehouseInfo);
+        }
         return ResultUtil.createSuccessResult("添加新商品成功","success");
     }
 

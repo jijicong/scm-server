@@ -30,7 +30,9 @@ import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Channel;
 import org.trc.domain.System.LogisticsCompany;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
@@ -42,6 +44,7 @@ import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.warehouseInfo.WarehousePriority;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
 import org.trc.exception.ParamValidException;
@@ -57,7 +60,9 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
 import org.trc.service.ITrcService;
+import org.trc.service.System.IChannelService;
 import org.trc.service.System.ILogisticsCompanyService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
@@ -76,6 +81,7 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.warehouseInfo.IWarehousePriorityService;
 import org.trc.util.*;
 import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.cache.SupplierOrderCacheEvict;
@@ -226,6 +232,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private JDWmsConstantConfig jDWmsConstantConfig;
     @Autowired
     private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IWarehousePriorityService warehousePriorityService;
+    @Autowired
+    private IChannelService channelService;
+    @Autowired
+    private ISellChannelService sellChannelService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1970,8 +1982,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes);
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
+            //查询仓库匹配优先级
+            List<WarehousePriority> warehousePriorityList = getWarehousePriority();
             //校验自采商品的可用库存
-            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList);
+            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList, warehousePriorityList);
             List<OrderItem> checkFailureSelfPurcharseItems = (List<OrderItem>)map.get("checkFailureItems");
             skuWarehouseMap = (Map<String, List<SkuWarehouseDO>>)map.get("warehouseSkuMap");
             if(!CollectionUtils.isEmpty(checkFailureSelfPurcharseItems)){
@@ -2074,6 +2088,40 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("warehouseOrderList", warehouseOrderList);
         map.put("skuWarehouseMap", skuWarehouseMap);
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "接收订单成功", map);
+    }
+
+    /**
+     * 获取仓库匹配优先级
+     * @return
+     */
+    private List<WarehousePriority> getWarehousePriority(){
+        Example example = new Example(WarehousePriority.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        example.orderBy("priority").asc();
+        List<WarehousePriority> warehousePriorityList = warehousePriorityService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(warehousePriorityList)){
+            List<String> warehouseCodes = new ArrayList<>();
+            for(WarehousePriority priority: warehousePriorityList){
+                warehouseCodes.add(priority.getWarehouseCode());
+            }
+            Example example2 = new Example(WarehouseInfo.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andIn("code", warehouseCodes);
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example2);
+            if(!CollectionUtils.isEmpty(warehouseInfoList)){
+                for(WarehousePriority priority: warehousePriorityList){
+                    for(WarehouseInfo warehouseInfo: warehouseInfoList){
+                        if(StringUtils.equals(priority.getWarehouseCode(), warehouseInfo.getCode())){
+                            priority.setWarehouseName(warehouseInfo.getWarehouseName());
+                            priority.setWmsWarehouseCode(warehouseInfo.getWmsWarehouseCode());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return warehousePriorityList;
     }
 
     /**
@@ -3877,7 +3925,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }*/
 
 
-    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList){
+    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList,
+                                List<ScmInventoryQueryResponse> scmInventoryQueryResponseList, List<WarehousePriority> warehousePriorityList){
         Map<String, Object> map = new HashedMap();
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
         //校验失败的商品
@@ -3906,8 +3955,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     _inventoryQueryItemList.add(item);
                 }
             }
+
             //按仓库库存降序排序
-            if(_inventoryQueryItemList.size() > 0){
+            /*if(_inventoryQueryItemList.size() > 0){
                 Collections.sort(_inventoryQueryItemList, new Comparator<ScmInventoryQueryResponse>() {
                     @Override
                     public int compare(ScmInventoryQueryResponse o1, ScmInventoryQueryResponse o2) {
@@ -3915,17 +3965,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                 });
                 qimenStock = _inventoryQueryItemList.get(0).getQuantity();
-            }
+            }*/
+
             boolean _flag = false;
+            //检查库存
+            ScmInventoryQueryResponse scmInventoryQueryResponse = checkStock(orderItem.getNum().intValue(), _inventoryQueryItemList, warehousePriorityList);
             //校验库存
-            if(qimenStock >= orderItem.getNum().longValue()){
+            if(null != scmInventoryQueryResponse){
                 _flag = true;
             }else{
                 checkFailureItems.add(orderItem);
             }
             SkuStock _skuStock = null;
             for(SkuStock skuStock: skuStockList){
-                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode())){
+                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) && StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId())){
                     _skuStock = skuStock;
                     break;
                 }
@@ -3952,6 +4005,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
         map.put("warehouseSkuMap", warehouseSkuMap);
         return map;
     }
+
+    private ScmInventoryQueryResponse checkStock(int itemNum, List<ScmInventoryQueryResponse> inventoryQueryItemList, List<WarehousePriority> warehousePriorityList){
+        List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
+        for(WarehousePriority priority: warehousePriorityList){
+            for(ScmInventoryQueryResponse response: inventoryQueryItemList){
+                if(StringUtils.equals(priority.getWmsWarehouseCode(), response.getWarehouseCode())){
+                    _inventoryQueryItemList.add(response);
+                    break;
+                }
+            }
+        }
+        for(ScmInventoryQueryResponse response: _inventoryQueryItemList){
+            if(response.getQuantity().intValue() >= itemNum){
+                return response;
+            }
+        }
+        return null;
+    }
+
 
 
 
@@ -3981,12 +4053,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 校验渠道
      * @param channelCode
      */
-    private void checkChannel(String channelCode){
-        SystemConfig systemConfig = new SystemConfig();
+    private SellChannel checkChannel(String channelCode, String sellCode){
+        /*SystemConfig systemConfig = new SystemConfig();
         systemConfig.setType(SupplyConstants.SystemConfigType.CHANNEL);
         systemConfig.setCode(channelCode);
         List<SystemConfig> systemConfigList = systemConfigService.select(systemConfig);
-        AssertUtil.notEmpty(systemConfigList, "不是供应链授权访问的渠道，非法访问");
+        AssertUtil.notEmpty(systemConfigList, "不是供应链授权访问的渠道，非法访问");*/
+        AssertUtil.notBlank(channelCode, "业务线编码不能为空");
+        AssertUtil.notBlank(sellCode, "销售渠道编码不能为空");
+        Channel channel = new Channel();
+        channel.setCode(channelCode);
+        channel = channelService.selectOne(channel);
+        AssertUtil.notNull(channel, String.format("业务线%s在供应链系统不存在!", channelCode));
+
+        SellChannel sellChannel = new SellChannel();
+        sellChannel.setSellCode(sellCode);
+        sellChannel = sellChannelService.selectOne(sellChannel);
+        AssertUtil.notNull(sellChannel, String.format("销售渠道%s在供应链系统不存在!", sellCode));
+        return sellChannel;
     }
 
     /**
@@ -3995,20 +4079,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param platformOrder
      */
     private void platformOrderParamCheck(PlatformOrder platformOrder, List<OrderItem> orderItems) {
-        AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
-        checkChannel(platformOrder.getChannelCode());
+        //检查业务线和销售渠道
+        SellChannel sellChannel = checkChannel(platformOrder.getChannelCode(), platformOrder.getSellCode());
+        //检查收货用户信息
+        checkCustmerInfo(platformOrder, sellChannel);
+
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
-        AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
-        AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
-
-        AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
-
-        AssertUtil.notBlank(platformOrder.getReceiverProvince(), "平台订单收货人所在省不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverCity(), "平台订单收货人所在城市不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
-        AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不空");
 
         AssertUtil.notBlank(platformOrder.getPayType(), "平台订单单支付类型不能为空");
         AssertUtil.notBlank(platformOrder.getStatus(), "平台订单订单状态不能为空");
@@ -4040,8 +4117,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 break;
             }
         }
+    }
 
 
+
+    /**
+     * 检查收货用户信息
+     * @param platformOrder
+     */
+    private void checkCustmerInfo(PlatformOrder platformOrder, SellChannel sellChannel){
+        if(!StringUtils.equals(SellChannelTypeEnum.STORE.getCode().toString(), sellChannel.getSellType())){
+            AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
+            AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverMobile(), "平台订单收货人手机号码不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverProvince(), "平台订单收货人所在省不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverCity(), "平台订单收货人所在城市不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverDistrict(), "平台订单收货人所在地区不能为空");
+            AssertUtil.notBlank(platformOrder.getReceiverAddress(), "平台订单收货人详细地址不空");
+        }
     }
 
     /**

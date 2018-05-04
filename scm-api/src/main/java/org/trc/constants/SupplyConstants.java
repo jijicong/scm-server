@@ -356,6 +356,17 @@ public class SupplyConstants {
         public static final String WAREHOUSE_CONFIG = "warehouseConfig";
     }
 
+    public static final class LogisticsCorporation {
+        //根路径
+        public static final String ROOT = "system";
+        //分页查询
+        public static final String LOGISTICS_CORPORATION_PAGE = "logisticsCorporationPage";
+        //物流公司
+        public static final String LOGISTICS_CORPORATION = "logisticsCorporation";
+        //更新物流公司状态
+        public static final String UPDATE_STATE = "updateState";
+    }
+
     /**
      * 授权信息
      */
@@ -981,6 +992,19 @@ public class SupplyConstants {
         public static final String WAREHOUSE_ITEM_NOTICE_QIMEN = "warehouseItemNoticeQimen";
 
         public static final String EXCEPTION_EXCEL = "exceptionExcel";
+    }
+
+    /**
+     * 仓库匹配优先级
+     */
+    public static final class WarehousePriority {
+        public static final String ROOT = "warehousePriority";
+        //仓库匹配优先级列表查询
+        public static final String WAREHOUSE_PRIORITY_LIST = "warehousePriorityList";
+        //可用仓库列表查询
+        public static final String WAREHOUSE_LIST = "warehouseList";
+        //保存仓库匹配优先级
+        public static final String WAREHOUSE_PRIORITY = "warehousePriority";
     }
 
     /**

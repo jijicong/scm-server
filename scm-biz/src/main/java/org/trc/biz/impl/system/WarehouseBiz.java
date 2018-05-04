@@ -100,6 +100,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         if (!StringUtils.isBlank(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
         }
+        if (!StringUtils.isBlank(form.getOperationalNature())) {
+            criteria.andEqualTo("operationalNature", form.getOperationalNature());
+        }
+        if (!StringUtils.isBlank(form.getOperationalType())) {
+            criteria.andEqualTo("operationalType", form.getOperationalType());
+        }
         example.orderBy("updateTime").desc();
         Pagenation<WarehouseInfo> pagenation = warehouseInfoService.pagination(example,page,form);
 
@@ -133,6 +139,8 @@ public class WarehouseBiz implements IWarehouseBiz {
             result.setCode(warehouseInfo.getCode());
             result.setIsValid(warehouseInfo.getIsValid());
             result.setRemark(warehouseInfo.getRemark()==null?"":warehouseInfo.getRemark());
+            result.setOperationalNature(warehouseInfo.getOperationalNature());
+            result.setOperationalType(warehouseInfo.getOperationalType());
             newList.add(result);
         }
 
@@ -363,14 +371,14 @@ public class WarehouseBiz implements IWarehouseBiz {
             throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
         }
 
-        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), operationalNature)){
+        if(StringUtils.equals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
             if(StringUtils.isEmpty(operationalType)){
                 String msg = "运营类型不能为空";
                 logger.error(msg);
                 throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
             }
 
-            if(!StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), operationalType)){
+            if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
                 if(StringUtils.isEmpty(storeCorrespondChannel)){
                     String msg = "门店仓对应销售渠道不能为空";
                     logger.error(msg);
