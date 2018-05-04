@@ -319,6 +319,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		}
 	}
 
+	@Override
+	public void dropAllocateOrder(String orderId) {
+
+	}
+
 
 	/**
 	 * 新增和修改时设置调拨单详情
