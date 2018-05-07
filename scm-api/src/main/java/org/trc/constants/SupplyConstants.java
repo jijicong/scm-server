@@ -1056,6 +1056,20 @@ public class SupplyConstants {
         public static final String CLOSE = "close";
     }
 
+
+    public static final class AclWmsUser {
+
+        public static final String ROOT = "aclWmsUser";
+
+        public static final String ACL_WMS_USER_PAGE = "aclWmsUserPage";
+
+        public static final String ACL_WMS_USER_UPDATE = "aclWmsUserUpdate";
+
+        public static final String ACL_WMS_USER_QUERY = "aclWmsUserQuery";
+
+        public static final String ACL_WMS_USER_UPDATE_STATE = "aclWmsUserUpdate/state";
+    }
+
     /**
      * 订单管理
      */
