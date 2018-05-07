@@ -1,14 +1,23 @@
 package org.trc.domain.allocateOrder;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.*;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.CustomDateSerializer;
 
 @Table(name = "allocate_order")
 public class AllocateOrder extends AllocateOrderBase{
-    /**
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 741617431263633041L;
+
+	/**
      * 调拨单编号
      */
     @Id
@@ -108,13 +117,56 @@ public class AllocateOrder extends AllocateOrderBase{
 
     private String memo;
 
+    /**
+     * 审核意见
+     */
+    @Column(name = "audit_opinion")
+    private String auditOpinion;
+    
+    /**
+     * 提交审核人
+     */
+    @Column(name = "submit_operator")
+    private String submitOperator;
+    
+    /**
+     * 提交审核时间
+     */
+    @Column(name = "submit_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date submitTime;
+    
+    /**
+     * 是否删除:0-否,1-是
+     */
+    @Column(name = "is_deleted")
+    private String isDeleted;
 
+    /**
+     * 创建人
+     */
+    @Column(name = "create_operator")
+    private String createOperator;
+
+    /**
+     * 创建时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    @Column(name = "create_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date createTime;
+
+    /**
+     * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
+     */
+    @Column(name = "update_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date updateTime;
     
     /**
      * 出库通知单的状态
      */
     @Transient
-    private String out_order_status;
+    private String outOrderStatus;
     
     /**
      * 创建人姓名
@@ -418,12 +470,14 @@ public class AllocateOrder extends AllocateOrderBase{
     }
 
 
-	public String getOut_order_status() {
-		return out_order_status;
+
+
+	public String getOutOrderStatus() {
+		return outOrderStatus;
 	}
 
-	public void setOut_order_status(String out_order_status) {
-		this.out_order_status = out_order_status;
+	public void setOutOrderStatus(String outOrderStatus) {
+		this.outOrderStatus = outOrderStatus;
 	}
 
 	public String getCreateOperatorName() {
@@ -441,5 +495,63 @@ public class AllocateOrder extends AllocateOrderBase{
 	public void setSkuDetailList(List<AllocateSkuDetail> skuDetailList) {
 		this.skuDetailList = skuDetailList;
 	}
+
+	public String getAuditOpinion() {
+		return auditOpinion;
+	}
+
+	public void setAuditOpinion(String auditOpinion) {
+		this.auditOpinion = auditOpinion;
+	}
+
+	public String getSubmitOperator() {
+		return submitOperator;
+	}
+
+	public void setSubmitOperator(String submitOperator) {
+		this.submitOperator = submitOperator;
+	}
+
+	public Date getSubmitTime() {
+		return submitTime;
+	}
+
+	public void setSubmitTime(Date submitTime) {
+		this.submitTime = submitTime;
+	}
+
+	public String getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(String isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public String getCreateOperator() {
+		return createOperator;
+	}
+
+	public void setCreateOperator(String createOperator) {
+		this.createOperator = createOperator;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+	
+	
     
 }

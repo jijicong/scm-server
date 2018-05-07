@@ -68,7 +68,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     /**
      * 正则表达式：验证手机号
      */
-    private static final String REGEX_MOBILE = "^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-9])|(147))\\\\d{8}$";
+    private static final String REGEX_MOBILE = "^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$";
     @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
 
@@ -306,7 +306,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @UserCacheEvict
     public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
         checkUserAddPageDate(userAddPageDate);
-        if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
+        if (!Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);

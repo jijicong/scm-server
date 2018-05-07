@@ -65,7 +65,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         if(!StringUtils.isBlank(query.getIsValid())){
             criteria.andEqualTo("isValid",query.getIsValid());
         }
-        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         example.orderBy("updateTime").desc();
         Pagenation<LogisticsCorporation> pagenation = logisticsCorporationService.pagination(example,page,query);
         logger.info("查询结束===========》");
@@ -148,13 +148,8 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
     @Override
     public void updateLogisticsCorporationState(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(logisticsCorporation.getId(), "根据ID修改物流公司，参数ID为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
-        AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
 
-        LogisticsCorporation updateLogisticsCorporation = new LogisticsCorporation();
-        updateLogisticsCorporation.setId(logisticsCorporation.getId());
+        logisticsCorporation = logisticsCorporationService.selectByPrimaryKey(logisticsCorporation.getId());
         String remark = "";
         if (logisticsCorporation.getIsValid().equals(ValidEnum.VALID.getCode())) {
             logisticsCorporation.setIsValid(ValidEnum.NOVALID.getCode());
@@ -165,7 +160,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         logisticsCorporation.setUpdateTime(Calendar.getInstance().getTime());
         int count = logisticsCorporationService.updateByPrimaryKeySelective(logisticsCorporation);
         if (count == 0) {
-            String msg = String.format("修改物流公司%s数据库操作失败", JSON.toJSONString(updateLogisticsCorporation));
+            String msg = String.format("修改物流公司%s数据库操作失败", JSON.toJSONString(logisticsCorporation));
             logger.error(msg);
             throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_UPDATE_EXCEPTION, msg);
         }

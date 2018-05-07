@@ -2,9 +2,14 @@ package org.trc.biz.impl.allocateOrder;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,27 +20,43 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.category.Brand;
+import org.trc.domain.category.Category;
+import org.trc.domain.goods.Items;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.NoticsWarehouseStateEnum;
+import org.trc.enums.ValidStateEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.AllocateOrderException;
+import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.category.IBrandService;
+import org.trc.service.category.ICategoryService;
+import org.trc.service.goods.IItemsService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.QueryModel;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -58,6 +79,18 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
     private IAllocateOutOrderService allocateOutOrderService;
     @Autowired
     private IAclUserAccreditInfoService aclUserAccreditInfoService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private ICategoryBiz categoryBiz;
+    @Autowired
+    private IBrandService brandService;
+    @Autowired
+    private IItemsService itemsService;
+    @Autowired
+    private ISkusService skusService;
+    @Autowired
+    private ICategoryService categoryService;
 	@Autowired
 	private IAllocateOrderExtService allocateOrderExtService;
     /**
@@ -73,9 +106,48 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         
         criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         
+        //审核状态非空则表示 审核页面
+        String auditStatus = form.getAuditStatus();
+        if (StringUtils.isNotBlank(auditStatus)) {
+        	
+        	if (AllocateOrderEnum.AllocateOrderAuditStatusEnum.ALL.getCode().equals(auditStatus)) {
+        		// 全部
+                List<String> statusList = new ArrayList<>();
+                statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode());
+                statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
+                statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
+                criteria.andIn("orderStatus", statusList);
+                
+        	} else if (AllocateOrderEnum.AllocateOrderAuditStatusEnum.WAIT_AUDIT.getCode().equals(auditStatus)) {
+        		// 待审核
+                criteria.andEqualTo("orderStatus", AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode());
+                
+        	} else if (AllocateOrderEnum.AllocateOrderAuditStatusEnum.FINISH_AUDIT.getCode().equals(auditStatus)) {
+        		// 已审核
+                List<String> statusList = new ArrayList<>();
+                statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
+                statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
+                criteria.andIn("orderStatus", statusList);
+        	} else {
+        		throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+						"审核状态错误");
+        	}
+        	example.orderBy("submitTime").desc();
+            
+        } else {
+        	// 调拨单管理页面
+            //单据状态
+            if (!StringUtils.isBlank(form.getOrderStatus())) {
+            	criteria.andEqualTo("orderStatus", form.getOrderStatus());
+            }
+            //  example.orderBy("orderStatus").asc();
+            example.orderBy("updateTime").desc();
+            example.setOrderByClause("field(orderStatus,0,3,1,2,4,5)");
+        }
+        
         //调拨单编号
         if (!StringUtils.isBlank(form.getAllocateOrderCode())) {
-            criteria.andEqualTo("allocateOrderCode", form.getAllocateOrderCode());
+        	criteria.andEqualTo("allocateOrderCode", form.getAllocateOrderCode());
         }
         
         //调出仓库
@@ -91,12 +163,6 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         //出入库状态
         if (!StringUtils.isBlank(form.getInOutStatus())) {
             criteria.andEqualTo("inOutStatus", form.getInOutStatus());
-        }
-        
-        //单据状态
-        if (!StringUtils.isBlank(form.getOrderStatus())) {
-        	criteria.andEqualTo("orderStatus", form.getOrderStatus());
-        	
         }
         
         //创建日期开始
@@ -118,9 +184,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         if (!StringUtils.isBlank(form.getUpdateTimeEnd())) {
         	criteria.andLessThanOrEqualTo("updateTime", form.getUpdateTimeEnd());
         }
-      //  example.orderBy("orderStatus").asc();
-        example.orderBy("updateTime").desc();
-        example.setOrderByClause("field(orderStatus,0,3,1,2,4,5)");
+
         allocateOrderService.pagination(example, page, form);
         
         List<AllocateOrder> result = page.getResult();
@@ -130,7 +194,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         		AllocateOutOrder outOrder = new AllocateOutOrder();
         		outOrder.setAllocateOrderCode(order.getAllocateOrderCode());
         		AllocateOutOrder queryOutOrder = allocateOutOrderService.selectOne(outOrder);
-        		order.setOut_order_status(queryOutOrder.getStatus());
+        		order.setOutOrderStatus(queryOutOrder.getStatus());
         		
     			/*AclUserAccreditInfo user = new AclUserAccreditInfo();
     			user.setUserId(order.getCreateOperator());
@@ -365,13 +429,14 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
         outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
         
-		AclUserAccreditInfo user = new AclUserAccreditInfo();
-		user.setUserId(userInfo.getUserId());
-		AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
-		outOrder.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());
+//		AclUserAccreditInfo user = new AclUserAccreditInfo();
+//		user.setUserId(userInfo.getUserId());
+//		AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
+//		outOrder.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());
 		
         allocateOutOrderService.insertSelective(outOrder);
 	}
+	
 	
 	@Override
 	public AllocateOrder allocateOrderEditGet(String orderId) {
@@ -389,6 +454,246 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		}
 		return retOrder;
 	}
+	
+	@Override
+	public void allocateOrderAudit(String orderId, String auditOpinion, String auditResult,
+			AclUserAccreditInfo property) {
+		AllocateOrder retOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (retOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+					"未查到相关调拨单信息");
+		}
+		if (!AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode().equals(retOrder.getOrderStatus())
+				&& !AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode().equals(retOrder.getOrderStatus())) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+					"当前状态不能审核");
+		}
+		if (null == AllocateOrderEnum.AllocateOrderAuditResultEnum
+				.getEnumByCode(auditResult)) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+					"审核结果错误");
+		}
+		
+		AllocateOrder allocateOrder = new AllocateOrder();
+		allocateOrder.setAllocateOrderCode(orderId);
+		
+		if (AllocateOrderEnum.AllocateOrderAuditResultEnum.REJECT.getCode().equals(auditResult)) {
+			// 审核驳回
+			if (StringUtils.isBlank(auditOpinion)) {
+				// 驳回时，审核意见不能为空
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+						"驳回时，审核意见不能为空");
+			} else {
+				allocateOrder.setAuditOpinion(auditOpinion);
+				allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
+			}
+		} else {
+			// 审核通过
+			allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
+		}
+		allocateOrderService.updateByPrimaryKeySelective(allocateOrder);
+		
+	}
+	
+	@Override
+	public Pagenation<AllocateSkuDetail> querySkuList(AllocateItemForm form, 
+			Pagenation<AllocateSkuDetail> page, String skus) {
+
+        List<AllocateSkuDetail>  totalSkuList = querySkuListPage(form, skus, null);
+        int totalCount = totalSkuList.size();
+        if (totalCount < 1) {
+            return new Pagenation<AllocateSkuDetail>();
+        }
+        page.setTotalCount(totalCount);
+        Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
+        pagenation.setStart(page.getStart());
+        pagenation.setPageSize(page.getStart());
+        pagenation.setTotalCount(totalCount);
+        List<AllocateSkuDetail>  skuList = querySkuListPage(form, skus, pagenation);
+
+        page.setResult(skuList);
+
+        return page;
+	}
+
+
+
+	private List<AllocateSkuDetail> querySkuListPage(AllocateItemForm form, 
+			String filterSkuCode, Pagenation<WarehouseItemInfo> pagenation) {
+		String skuCode = form.getSkuCode();
+		String skuName = form.getSkuName();
+		String barCode = form.getBarCode();
+		String itemNo = form.getItemNo();
+		String brandName = form.getBrandName();
+		
+        //是否条件查询的标记
+        boolean flag = false;
+        if(StringUtils.isNotBlank(skuCode) || StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(barCode) ||
+                StringUtils.isNotBlank(itemNo) || StringUtils.isNotBlank(brandName) || StringUtils.isNotBlank(filterSkuCode)){
+            flag = true;
+        }
+        // 查出所有3级分类
+        Set<Long> categoryIds = new HashSet<>();
+        Category queryCategory = new Category();
+        queryCategory.setLevel(3);
+		List<Category> categoryList = categoryService.select(queryCategory);
+        for (Category cg: categoryList) {
+            categoryIds.add(cg.getId());
+        }
+        //查询分类名称
+        Map<Long, String> categoryMap = new HashedMap();
+        for(Long categoryId: categoryIds){
+            try {
+                String categoryName = categoryBiz.getCategoryName(categoryId);
+                categoryMap.put(categoryId, categoryName);
+            } catch (Exception e) {
+                logger.error(String.format("查询分类%s名称异常", categoryId), e);
+            }
+        }
+        //查询品牌信息
+        Example brandExample = new Example(Brand.class);
+        Example.Criteria brandCriteria = brandExample.createCriteria();
+       // brandCriteria.andIn("id", brandIds);
+        if(StringUtils.isNotBlank(brandName)){
+            brandCriteria.andLike("name", "%" + brandName + "%");
+        }
+        List<Brand> brandList = brandService.selectByExample(brandExample);
+        AssertUtil.notEmpty(brandList, "品牌信息为空");
+        List<String> _brandIds = new ArrayList<>();
+        for(Brand brand: brandList){
+            _brandIds.add(brand.getId().toString());
+        }
+        //查询供应商相关商品
+        Example itemExample = new Example(Items.class);
+        Example.Criteria itemCriteria = itemExample.createCriteria();
+        itemCriteria.andIn("categoryId", categoryIds);
+        itemCriteria.andIn("brandId", _brandIds);
+        itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        List<Items> itemsList = itemsService.selectByExample(itemExample);
+        /*AssertUtil.notEmpty(itemsList, String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
+                CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));*/
+        if (CollectionUtils.isEmpty(itemsList)) {
+        	logger.error(String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
+                    CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), 
+                    CommonUtil.converCollectionToString(new ArrayList<>(_brandIds)), ValidStateEnum.ENABLE.getName()));
+            if (!flag) {
+                throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION, "无数据，请确认【商品管理】中存在商品类型为”自采“的商品！");
+            }
+        }
+
+        //查询供应商相关SKU
+        List<Long> itemIds = new ArrayList<>();
+        for(Items items: itemsList){
+            itemIds.add(items.getId());
+        }
+        Example skusExample = new Example(Skus.class);
+        Example.Criteria skusCriteria = skusExample.createCriteria();
+        skusCriteria.andIn("itemId", itemIds);
+        skusCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
+        if(StringUtils.isNotBlank(skuCode)){
+            skusCriteria.andLike("skuCode", "%" + skuCode + "%");
+        }
+        if(StringUtils.isNotBlank(skuName)){
+            skusCriteria.andLike("skuName", "%" + skuName + "%");
+        }
+        if(StringUtils.isNotBlank(filterSkuCode)){
+            String[] _skuCodes = filterSkuCode.split(SupplyConstants.Symbol.COMMA);
+            skusCriteria.andNotIn("skuCode", Arrays.asList(_skuCodes));
+        }
+        List<Skus> skusList = skusService.selectByExample(skusExample);
+        //AssertUtil.notEmpty(skusList, String.format("根据商品ID[%s]、起停用状态[%s]批量查询商品SKU信息为空", CommonUtil.converCollectionToString(new ArrayList<>(itemIds)), ValidStateEnum.ENABLE.getName()));
+
+        if (CollectionUtils.isEmpty(skusList)) {
+            if (!flag) {
+                throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,"无数据，请确认【商品管理】中存在商品类型为”自采“的商品！");
+            }
+        }
+        List<String> skuCodes = new ArrayList<>();
+        for(Skus skus: skusList){
+            skuCodes.add(skus.getSkuCode());
+            for(Items items: itemsList){
+                if(skus.getItemId().longValue() == items.getId().longValue()){
+                    skus.setCategoryId(items.getCategoryId());
+                    skus.setBrandId(items.getBrandId());
+                    //设置分类名称
+                    for(Map.Entry<Long, String> entry: categoryMap.entrySet()){
+                        if(items.getCategoryId().longValue() == entry.getKey().longValue()){
+                            skus.setCategoryName(entry.getValue());
+                            break;
+                        }
+                    }
+                    //设置品牌名称
+                    for(Brand b: brandList){
+                        if(items.getBrandId().longValue() == b.getId().longValue()){
+                            skus.setBrandName(b.getName());
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        //查询仓库商品信息
+        List<WarehouseItemInfo> warehouseItemInfoList = new ArrayList<>();
+        if(!CollectionUtils.isEmpty(skuCodes)){
+            Example warehouseItemExample = new Example(WarehouseItemInfo.class);
+            Example.Criteria warehouseItemCriteria = warehouseItemExample.createCriteria();
+            
+            // 获取出入库仓库id
+            List<String> whInfoList = new ArrayList<>();
+            whInfoList.add(form.getWarehouseInfoInId());
+            whInfoList.add(form.getWarehouseInfoOutId());
+            
+            warehouseItemCriteria.andIn("skuCode", skuCodes);
+            warehouseItemCriteria.andIn("warehouseInfoId", whInfoList);
+            warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
+            if (StringUtils.isNotBlank(barCode)) {
+                warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
+            }
+            if (StringUtils.isNotBlank(itemNo)) {
+                warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
+            }
+            if (null != pagenation) {
+                pagenation = warehouseItemInfoService.pagination(warehouseItemExample, pagenation, new QueryModel());
+                warehouseItemInfoList = pagenation.getResult();
+            } else {
+                warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
+            }
+        }
+        if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
+            if (!flag) {
+                throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
+                        "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
+            }
+        }
+        return getAllocateSkuDetails(warehouseItemInfoList, skusList);
+	}
+	
+    private List<AllocateSkuDetail> getAllocateSkuDetails(List<WarehouseItemInfo> warehouseItemInfoList, List<Skus> skusList){
+        List<AllocateSkuDetail> allocateSkuList = new ArrayList<>();
+        for (WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList) {
+        	AllocateSkuDetail detail = new AllocateSkuDetail();
+           // detail.setSpuCode(warehouseItemInfo.getSpuCode());
+            detail.setSkuCode(warehouseItemInfo.getSkuCode());
+            detail.setBarCode(warehouseItemInfo.getBarCode());
+            detail.setSkuNo(warehouseItemInfo.getItemNo());
+            detail.setSpecNatureInfo(warehouseItemInfo.getSpecNatureInfo());
+            //detail.setWarehouseItemInfoId(warehouseItemInfo.getWarehouseInfoId());
+            //detail.setWarehouseItemId(warehouseItemInfo.getWarehouseItemId());
+            for(Skus skus: skusList){
+                if(StringUtils.equals(warehouseItemInfo.getSkuCode(), skus.getSkuCode())){
+                    detail.setSkuName(skus.getSkuName());
+                    detail.setBrandCode(skus.getBrandId().toString());
+                    detail.setBrandName(skus.getBrandName());
+                    //detail.setCategoryId(skus.getCategoryId());
+                    detail.setAllCategoryName(skus.getCategoryName());
+                    break;
+                }
+            }
+            allocateSkuList.add(detail);
+        }
+        return allocateSkuList;
+    }
 
 
 	/**
@@ -405,6 +710,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		detail.setBrandCode(jsonObj.getString("brandCode"));
 		detail.setInventoryType(jsonObj.getString("inventoryType"));
 		detail.setPlanAllocateNum(jsonObj.getLong("planAllocateNum"));
+		detail.setSkuNo(jsonObj.getString("skuNo"));
 		detail.setInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.INIT.getCode());
 		detail.setOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.INIT.getCode());
 		detail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -437,6 +743,5 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		// 设置调出详细地址
 		allocateOrder.setSenderAddress(whInfo.getAddress());
 	}
-
 
 }

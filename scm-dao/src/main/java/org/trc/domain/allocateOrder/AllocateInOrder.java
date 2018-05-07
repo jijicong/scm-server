@@ -8,7 +8,13 @@ import javax.persistence.*;
 
 @Table(name = "allocate_in_order")
 public class AllocateInOrder extends AllocateOrderBase{
-    /**
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -929818832773422166L;
+
+	/**
      * 主键
      */
     @Id
