@@ -1096,6 +1096,12 @@ public class SupplyConstants {
          */
         public static final String ACL_WMS_USER_RESOURCE = "aclWmsUserResource";
 
+        /**
+         * 手机号校验
+         */
+        public static final String ACL_WMS_USER_PHONE = "aclWmsUserPhone";
+
+
     }
 
     /**
