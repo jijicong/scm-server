@@ -1,36 +1,19 @@
 package org.trc.domain.allocateOrder;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.*;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.custom.CustomDateSerializer;
 
 @Table(name = "allocate_order")
-public class AllocateOrder {
+public class AllocateOrder extends AllocateOrderBase{
     /**
      * 调拨单编号
      */
     @Id
     @Column(name = "allocate_order_code")
     private String allocateOrderCode;
-
-    @Column(name = "in_warehouse_code")
-    @NotEmpty
-    private String inWarehouseCode;
-
-    @Column(name = "in_warehouse_name")
-    private String inWarehouseName;
-
-    @Column(name = "out_warehouse_code")
-    @NotEmpty
-    private String outWarehouseCode;
-
-    @Column(name = "out_warehouse_name")
-    private String outWarehouseName;
 
     /**
      * 调拨入库单编号
@@ -206,61 +189,6 @@ public class AllocateOrder {
         this.allocateOrderCode = allocateOrderCode;
     }
 
-    /**
-     * @return in_warehouse_code
-     */
-    public String getInWarehouseCode() {
-        return inWarehouseCode;
-    }
-
-    /**
-     * @param inWarehouseCode
-     */
-    public void setInWarehouseCode(String inWarehouseCode) {
-        this.inWarehouseCode = inWarehouseCode;
-    }
-
-    /**
-     * @return in_warehouse_name
-     */
-    public String getInWarehouseName() {
-        return inWarehouseName;
-    }
-
-    /**
-     * @param inWarehouseName
-     */
-    public void setInWarehouseName(String inWarehouseName) {
-        this.inWarehouseName = inWarehouseName;
-    }
-
-    /**
-     * @return out_warehouse_code
-     */
-    public String getOutWarehouseCode() {
-        return outWarehouseCode;
-    }
-
-    /**
-     * @param outWarehouseCode
-     */
-    public void setOutWarehouseCode(String outWarehouseCode) {
-        this.outWarehouseCode = outWarehouseCode;
-    }
-
-    /**
-     * @return out_warehouse_name
-     */
-    public String getOutWarehouseName() {
-        return outWarehouseName;
-    }
-
-    /**
-     * @param outWarehouseName
-     */
-    public void setOutWarehouseName(String outWarehouseName) {
-        this.outWarehouseName = outWarehouseName;
-    }
 
     /**
      * 获取调拨入库单编号
@@ -532,77 +460,6 @@ public class AllocateOrder {
         this.memo = memo;
     }
 
-    /**
-     * 获取是否删除:0-否,1-是
-     *
-     * @return is_deleted - 是否删除:0-否,1-是
-     */
-    public String getIsDeleted() {
-        return isDeleted;
-    }
-
-    /**
-     * 设置是否删除:0-否,1-是
-     *
-     * @param isDeleted 是否删除:0-否,1-是
-     */
-    public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    /**
-     * 获取创建人
-     *
-     * @return create_operator - 创建人
-     */
-    public String getCreateOperator() {
-        return createOperator;
-    }
-
-    /**
-     * 设置创建人
-     *
-     * @param createOperator 创建人
-     */
-    public void setCreateOperator(String createOperator) {
-        this.createOperator = createOperator;
-    }
-
-    /**
-     * 获取创建时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @return create_time - 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    /**
-     * 设置创建时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @param createTime 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    /**
-     * 获取最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @return update_time - 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    /**
-     * 设置最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @param updateTime 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
 
 	public String getOut_order_status() {
 		return out_order_status;

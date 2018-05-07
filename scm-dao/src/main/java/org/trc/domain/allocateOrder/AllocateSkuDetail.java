@@ -21,6 +21,18 @@ public class AllocateSkuDetail {
     private String allocateOrderCode;
 
     /**
+     * 调拨管理出库详情状态0-等待出库1-出库完成2-出库异常
+     */
+    @Column(name = "allocate_out_status")
+    private String allocateOutStatus;
+
+    /**
+     * 调拨管理入库详情状态0-等待入库1-入库完成2-入库异常
+     */
+    @Column(name = "allocate_in_status")
+    private String allocateInStatus;
+
+    /**
      * sku名称
      */
     @Column(name = "sku_name")
@@ -492,12 +504,27 @@ public class AllocateSkuDetail {
         this.updateTime = updateTime;
     }
 
+    public String getAllocateOutStatus() {
+        return allocateOutStatus;
+    }
+
+    public void setAllocateOutStatus(String allocateOutStatus) {
+        this.allocateOutStatus = allocateOutStatus;
+    }
+
+    public String getAllocateInStatus() {
+        return allocateInStatus;
+    }
+
+    public void setAllocateInStatus(String allocateInStatus) {
+        this.allocateInStatus = allocateInStatus;
+    }
+	
 	public String getSkuNo() {
 		return skuNo;
 	}
 
 	public void setSkuNo(String skuNo) {
 		this.skuNo = skuNo;
-	}
-    
+	}	
 }

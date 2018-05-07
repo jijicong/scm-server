@@ -209,7 +209,7 @@ public class AllocateOrderEnum {
 		WAIT_OUT("1","等待出库"),
 		OUT_NORMAL("2","出库完成"),
 		OUT_EXCEPTION("3","出库异常");
-		
+
 		private String code;
 		private String name;
 		

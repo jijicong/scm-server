@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="tk.mapper.AllocateOrderMapper" >
-  <resultMap id="BaseResultMap" type="tk.model.AllocateOrder" >
+<mapper namespace="org.trc.mapper.allocateOrder.AllocateOrderMapper" >
+  <resultMap id="BaseResultMap" type="org.trc.domain.allocateOrder.AllocateOrder" >
     <!--
       WARNING - @mbg.generated
     -->

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="tk.mapper.AllocateInOrderMapper">
-  <resultMap id="BaseResultMap" type="tk.model.AllocateInOrder">
+<mapper namespace="org.trc.mapper.allocateOrder.AllocateInOrderMapper">
+  <resultMap id="BaseResultMap" type="org.trc.domain.allocateOrder.AllocateInOrder">
     <!--
       WARNING - @mbg.generated
     -->
@@ -33,36 +33,5 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="is_valid" jdbcType="VARCHAR" property="isValid" />
   </resultMap>
-  <resultMap id="BaseResultMap" type="tk.model.AllocateInOrder">
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="allocate_in_order_code" jdbcType="VARCHAR" property="allocateInOrderCode" />
-    <result column="allocate_order_code" jdbcType="VARCHAR" property="allocateOrderCode" />
-    <result column="supplier_name" jdbcType="VARCHAR" property="supplierName" />
-    <result column="supplier_code" jdbcType="VARCHAR" property="supplierCode" />
-    <result column="status" jdbcType="VARCHAR" property="status" />
-    <result column="pre_recive_date" jdbcType="TIMESTAMP" property="preReciveDate" />
-    <result column="receiver" jdbcType="VARCHAR" property="receiver" />
-    <result column="receiver_phone" jdbcType="VARCHAR" property="receiverPhone" />
-    <result column="reciver_province" jdbcType="VARCHAR" property="reciverProvince" />
-    <result column="reciver_city" jdbcType="VARCHAR" property="reciverCity" />
-    <result column="receive_address" jdbcType="VARCHAR" property="receiveAddress" />
-    <result column="receiver_mobile" jdbcType="VARCHAR" property="receiverMobile" />
-    <result column="sender" jdbcType="VARCHAR" property="sender" />
-    <result column="sender_province" jdbcType="VARCHAR" property="senderProvince" />
-    <result column="sender_city" jdbcType="VARCHAR" property="senderCity" />
-    <result column="sender_phone" jdbcType="VARCHAR" property="senderPhone" />
-    <result column="sender_mobile" jdbcType="VARCHAR" property="senderMobile" />
-    <result column="sender_address" jdbcType="VARCHAR" property="senderAddress" />
-    <result column="delivery_number" jdbcType="VARCHAR" property="deliveryNumber" />
-    <result column="in_memo" jdbcType="VARCHAR" property="inMemo" />
-    <result column="memo" jdbcType="VARCHAR" property="memo" />
-    <result column="is_deleted" jdbcType="VARCHAR" property="isDeleted" />
-    <result column="create_operator" jdbcType="VARCHAR" property="createOperator" />
-    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
-    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
-    <result column="is_valid" jdbcType="VARCHAR" property="isValid" />
-  </resultMap>
+
 </mapper>
