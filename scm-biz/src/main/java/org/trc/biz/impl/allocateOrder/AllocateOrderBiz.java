@@ -26,6 +26,7 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.AllocateOrderException;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
+import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
@@ -57,6 +58,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
     private IAllocateOutOrderService allocateOutOrderService;
     @Autowired
     private IAclUserAccreditInfoService aclUserAccreditInfoService;
+	@Autowired
+	private IAllocateOrderExtService allocateOrderExtService;
     /**
      * 调拨单分页查询
      */
@@ -129,12 +132,13 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         		AllocateOutOrder queryOutOrder = allocateOutOrderService.selectOne(outOrder);
         		order.setOut_order_status(queryOutOrder.getStatus());
         		
-    			AclUserAccreditInfo user = new AclUserAccreditInfo();
+    			/*AclUserAccreditInfo user = new AclUserAccreditInfo();
     			user.setUserId(order.getCreateOperator());
     			AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
-    			order.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());
+    			order.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());*/
         	}
         }
+		allocateOrderExtService.setAllocateOrderOtherNames(page);
         return page;
     }
 

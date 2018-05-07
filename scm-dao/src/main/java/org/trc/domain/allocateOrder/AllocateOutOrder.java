@@ -4,7 +4,8 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "allocate_out_order")
-public class AllocateOutOrder {
+public class AllocateOutOrder extends AllocateOrderBase{
+
     /**
      * 主键
      */
@@ -22,30 +23,6 @@ public class AllocateOutOrder {
      */
     @Column(name = "allocate_order_code")
     private String allocateOrderCode;
-
-    /**
-     * 调入仓库编码
-     */
-    @Column(name = "in_warehouse_code")
-    private String inWarehouseCode;
-
-    /**
-     * 调入仓库名称
-     */
-    @Column(name = "in_warehouse_name")
-    private String inWarehouseName;
-
-    /**
-     * 调出仓库编码
-     */
-    @Column(name = "out_warehouse_code")
-    private String outWarehouseCode;
-
-    /**
-     * 调出仓库名称
-     */
-    @Column(name = "out_warehouse_name")
-    private String outWarehouseName;
 
     /**
      * 出库状态0-待通知出库,1-出库仓库接收成功,2-出库仓库接收失败,3-出库完成,4-出库异常,5-已取消
@@ -116,36 +93,6 @@ public class AllocateOutOrder {
     private String memo;
 
     /**
-     * 是否删除:0-否,1-是
-     */
-    @Column(name = "is_deleted")
-    private String isDeleted;
-
-    /**
-     * 出库单创建人
-     */
-    @Column(name = "create_operator_name")
-    private String createOperatorName;
-
-    /**
-     * 创建人
-     */
-    @Column(name = "create_operator")
-    private String createOperator;
-
-    /**
-     * 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    @Column(name = "create_time")
-    private Date createTime;
-
-    /**
-     * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    @Column(name = "update_time")
-    private Date updateTime;
-
-    /**
      * 是否有效:0-无效,1-有效
      */
     @Column(name = "is_valid")
@@ -203,78 +150,6 @@ public class AllocateOutOrder {
      */
     public void setAllocateOrderCode(String allocateOrderCode) {
         this.allocateOrderCode = allocateOrderCode;
-    }
-
-    /**
-     * 获取调入仓库编码
-     *
-     * @return in_warehouse_code - 调入仓库编码
-     */
-    public String getInWarehouseCode() {
-        return inWarehouseCode;
-    }
-
-    /**
-     * 设置调入仓库编码
-     *
-     * @param inWarehouseCode 调入仓库编码
-     */
-    public void setInWarehouseCode(String inWarehouseCode) {
-        this.inWarehouseCode = inWarehouseCode;
-    }
-
-    /**
-     * 获取调入仓库名称
-     *
-     * @return in_warehouse_name - 调入仓库名称
-     */
-    public String getInWarehouseName() {
-        return inWarehouseName;
-    }
-
-    /**
-     * 设置调入仓库名称
-     *
-     * @param inWarehouseName 调入仓库名称
-     */
-    public void setInWarehouseName(String inWarehouseName) {
-        this.inWarehouseName = inWarehouseName;
-    }
-
-    /**
-     * 获取调出仓库编码
-     *
-     * @return out_warehouse_code - 调出仓库编码
-     */
-    public String getOutWarehouseCode() {
-        return outWarehouseCode;
-    }
-
-    /**
-     * 设置调出仓库编码
-     *
-     * @param outWarehouseCode 调出仓库编码
-     */
-    public void setOutWarehouseCode(String outWarehouseCode) {
-        this.outWarehouseCode = outWarehouseCode;
-    }
-
-    /**
-     * 获取调出仓库名称
-     *
-     * @return out_warehouse_name - 调出仓库名称
-     */
-    public String getOutWarehouseName() {
-        return outWarehouseName;
-    }
-
-    /**
-     * 设置调出仓库名称
-     *
-     * @param outWarehouseName 调出仓库名称
-     */
-    public void setOutWarehouseName(String outWarehouseName) {
-        this.outWarehouseName = outWarehouseName;
     }
 
     /**
@@ -494,96 +369,6 @@ public class AllocateOutOrder {
     }
 
     /**
-     * 获取是否删除:0-否,1-是
-     *
-     * @return is_deleted - 是否删除:0-否,1-是
-     */
-    public String getIsDeleted() {
-        return isDeleted;
-    }
-
-    /**
-     * 设置是否删除:0-否,1-是
-     *
-     * @param isDeleted 是否删除:0-否,1-是
-     */
-    public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    /**
-     * 获取出库单创建人
-     *
-     * @return create_operator_name - 出库单创建人
-     */
-    public String getCreateOperatorName() {
-        return createOperatorName;
-    }
-
-    /**
-     * 设置出库单创建人
-     *
-     * @param createOperatorName 出库单创建人
-     */
-    public void setCreateOperatorName(String createOperatorName) {
-        this.createOperatorName = createOperatorName;
-    }
-
-    /**
-     * 获取创建人
-     *
-     * @return create_operator - 创建人
-     */
-    public String getCreateOperator() {
-        return createOperator;
-    }
-
-    /**
-     * 设置创建人
-     *
-     * @param createOperator 创建人
-     */
-    public void setCreateOperator(String createOperator) {
-        this.createOperator = createOperator;
-    }
-
-    /**
-     * 获取创建时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @return create_time - 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    /**
-     * 设置创建时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @param createTime 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    /**
-     * 获取最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @return update_time - 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    /**
-     * 设置最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @param updateTime 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    /**
      * 获取是否有效:0-无效,1-有效
      *
      * @return is_valid - 是否有效:0-无效,1-有效
@@ -599,5 +384,9 @@ public class AllocateOutOrder {
      */
     public void setIsValid(String isValid) {
         this.isValid = isValid;
+    }
+
+    public void setSenderMoblie(String senderMoblie) {
+        this.senderMoblie = senderMoblie;
     }
 }
