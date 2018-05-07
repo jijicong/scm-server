@@ -126,6 +126,25 @@ public class AllocateOrder {
     private String memo;
 
     /**
+     * 审核意见
+     */
+    @Column(name = "audit_opinion")
+    private String auditOpinion;
+    
+    /**
+     * 提交审核人
+     */
+    @Column(name = "submit_operator")
+    private String submitOperator;
+    
+    /**
+     * 提交审核时间
+     */
+    @Column(name = "submit_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
+    private Date submitTime;
+    
+    /**
      * 是否删除:0-否,1-是
      */
     @Column(name = "is_deleted")
@@ -608,5 +627,31 @@ public class AllocateOrder {
 	public void setSkuDetailList(List<AllocateSkuDetail> skuDetailList) {
 		this.skuDetailList = skuDetailList;
 	}
+
+	public String getAuditOpinion() {
+		return auditOpinion;
+	}
+
+	public void setAuditOpinion(String auditOpinion) {
+		this.auditOpinion = auditOpinion;
+	}
+
+	public String getSubmitOperator() {
+		return submitOperator;
+	}
+
+	public void setSubmitOperator(String submitOperator) {
+		this.submitOperator = submitOperator;
+	}
+
+	public Date getSubmitTime() {
+		return submitTime;
+	}
+
+	public void setSubmitTime(Date submitTime) {
+		this.submitTime = submitTime;
+	}
+	
+	
     
 }
