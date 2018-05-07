@@ -61,6 +61,20 @@ public class AllocateOrderForm extends QueryModel {
      */
     @QueryParam("createTimeEnd")
     private String createTimeEnd;
+    
+    /**
+     * 审核状态 0-全部 1-待审核 2-已审核， 不传则显示所有状态
+     */
+    @QueryParam("auditStatus")
+    private String auditStatus;
+
+	public String getAuditStatus() {
+		return auditStatus;
+	}
+
+	public void setAuditStatus(String auditStatus) {
+		this.auditStatus = auditStatus;
+	}
 
 	public String getAllocateOrderCode() {
 		return allocateOrderCode;

@@ -1,5 +1,7 @@
 package org.trc.enums;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class AllocateOrderEnum {
 	
 	/**
@@ -38,6 +40,86 @@ public class AllocateOrderEnum {
 		public void setCode(String code) {
 			this.code = code;
 		}
+		
+	}
+	/**
+	 * 
+	 * @author admin
+	 * 调拨单审核状态
+	 */
+	public enum AllocateOrderAuditStatusEnum {
+		
+		ALL("0","全部"),
+		WAIT_AUDIT("1","待审核"),
+		FINISH_AUDIT("2","已审核");
+		
+		private String code;
+		private String name;
+		
+		AllocateOrderAuditStatusEnum(String code, String name) {
+			this.code = code;
+			this.name = name;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public void setName(String name) {
+			this.name = name;
+		}
+		
+		public String getCode() {
+			return code;
+		}
+		
+		public void setCode(String code) {
+			this.code = code;
+		}
+		
+	}
+	/**
+	 * 
+	 * @author admin
+	 * 调拨单审核结果状态
+	 */
+	public enum AllocateOrderAuditResultEnum {
+		
+		PASS("0","通过"),
+		REJECT("1","驳回");
+		
+		private String code;
+		private String name;
+		
+		AllocateOrderAuditResultEnum(String code, String name) {
+			this.code = code;
+			this.name = name;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public void setName(String name) {
+			this.name = name;
+		}
+		
+		public String getCode() {
+			return code;
+		}
+		
+		public void setCode(String code) {
+			this.code = code;
+		}
+		
+	    public static AllocateOrderAuditResultEnum getEnumByCode(String code) {
+	        for (AllocateOrderAuditResultEnum resultEnum : AllocateOrderAuditResultEnum.values()) {
+	            if (StringUtils.equals(resultEnum.getCode(), code)) {
+	                return resultEnum;
+	            }
+	        }
+	        return null;
+	    }
 		
 	}
 	

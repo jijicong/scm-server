@@ -65,7 +65,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         if(!StringUtils.isBlank(query.getIsValid())){
             criteria.andEqualTo("isValid",query.getIsValid());
         }
-        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         example.orderBy("updateTime").desc();
         Pagenation<LogisticsCorporation> pagenation = logisticsCorporationService.pagination(example,page,query);
         logger.info("查询结束===========》");

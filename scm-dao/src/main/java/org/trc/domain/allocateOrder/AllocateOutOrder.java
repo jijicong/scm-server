@@ -6,7 +6,12 @@ import javax.persistence.*;
 @Table(name = "allocate_out_order")
 public class AllocateOutOrder extends AllocateOrderBase{
 
-    /**
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2868658385574266235L;
+
+	/**
      * 主键
      */
     @Id

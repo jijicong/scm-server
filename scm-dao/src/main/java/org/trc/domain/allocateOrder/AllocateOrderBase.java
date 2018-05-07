@@ -8,6 +8,11 @@ import javax.persistence.Transient;
 public class AllocateOrderBase extends CommonDO{
 
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1718564900810599995L;
+
+	/**
      * 调入仓库编码
      */
     @Length(max = 32, message = "调入仓库编码不得超过32个字符")

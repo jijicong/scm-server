@@ -2,6 +2,9 @@ package org.trc.domain.allocateOrder;
 
 import java.util.Date;
 import javax.persistence.*;
+import javax.ws.rs.FormParam;
+
+import org.hibernate.validator.constraints.Length;
 
 @Table(name = "allocate_sku_detail")
 public class AllocateSkuDetail {
@@ -112,6 +115,12 @@ public class AllocateSkuDetail {
      */
     @Column(name = "in_status")
     private String inStatus;
+    
+    /**
+     * 商品货号
+     */
+    @Column(name = "sku_no")
+    private String skuNo;
 
     @Column(name = "create_operator")
     private String createOperator;
@@ -130,8 +139,20 @@ public class AllocateSkuDetail {
 
     @Column(name = "update_time")
     private Date updateTime;
+    
+    @Transient
+    private String  allCategoryName;
 
-    /**
+    
+    public String getAllCategoryName() {
+		return allCategoryName;
+	}
+
+	public void setAllCategoryName(String allCategoryName) {
+		this.allCategoryName = allCategoryName;
+	}
+
+	/**
      * 获取主键
      *
      * @return id - 主键
@@ -498,4 +519,12 @@ public class AllocateSkuDetail {
     public void setAllocateInStatus(String allocateInStatus) {
         this.allocateInStatus = allocateInStatus;
     }
+	
+	public String getSkuNo() {
+		return skuNo;
+	}
+
+	public void setSkuNo(String skuNo) {
+		this.skuNo = skuNo;
+	}	
 }
