@@ -18,21 +18,24 @@ import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.order.OutboundOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.AllocateOrderEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.AllocateOrderException;
+import org.trc.exception.AllocateOutOrderException;
+import org.trc.exception.OutboundOrderException;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.ResultUtil;
 import org.trc.util.cache.AllocateOrderCacheEvict;
 import org.trc.util.cache.OutboundOrderCacheEvict;
 import tk.mybatis.mapper.entity.Example;
@@ -52,6 +55,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IWarehouseInfoService warehouseInfoService;
     @Autowired
     private IAllocateSkuDetailService allocateSkuDetailService;
+    @Autowired
+    private ILogInfoService logInfoService;
+
     /**
      * 调拨单分页查询
      */
@@ -114,7 +120,56 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @AllocateOrderCacheEvict
     public Response close(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
-        return null;
+        try{
+            AssertUtil.notNull(id, "调拨出库单主键不能为空");
+            AssertUtil.notBlank(remark, "关闭原因不能为空");
+
+            //获取发货单信息
+            AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
+
+            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) ||
+                    !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
+                String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+
+            //修改状态
+            this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), allocateOutOrder.getAllocateOrderCode());
+            this.updateOrderCancelInfo(allocateOutOrder, remark, true);
+
+            //仓库接受失败插入一条日志
+            String userId = aclUserAccreditInfo.getUserId();
+            logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"手工关闭", remark,null);
+            return ResultUtil.createSuccessResult("调拨出库通知单关闭成功！", "");
+        }catch(Exception e){
+            String msg = e.getMessage();
+            logger.error(msg, e);
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
+        }
     }
 
+    //修改详情状态
+    private void updateDetailStatus(String code, String allocateOrderCode){
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setOutStatus(code);
+        allocateSkuDetail.setUpdateTime(Calendar.getInstance().getTime());
+        Example exampleOrder = new Example(AllocateSkuDetail.class);
+        Example.Criteria criteriaOrder = exampleOrder.createCriteria();
+        criteriaOrder.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, exampleOrder);
+    }
+
+    //修改调拨出库单信息
+    private void updateOrderCancelInfo(AllocateOutOrder allocateOutOrder, String remark, boolean isClose){
+//        allocateOutOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
+//        if(isClose){
+//            outboundOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
+//        }else {
+//            outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+//        }
+//        outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
+//        outboundOrder.setRemark(remark);
+//        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+    }
 }
