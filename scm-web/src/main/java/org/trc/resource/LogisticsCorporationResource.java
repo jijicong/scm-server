@@ -43,6 +43,7 @@ public class LogisticsCorporationResource {
     @POST
     @Path(SupplyConstants.LogisticsCorporation.LOGISTICS_CORPORATION)
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes("application/x-www-form-urlencoded")
     public Response saveLogisticsCorporation(@BeanParam LogisticsCorporation logisticsCorporation, @Context ContainerRequestContext requestContext) {
         logger.info("开始保存物流公司信息到数据库===》"+"上传参数分别为：logisticsCorporation="+JSON.toJSONString(logisticsCorporation));
         return logisticsCorporationBiz.saveLogisticsCorporation(logisticsCorporation, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));

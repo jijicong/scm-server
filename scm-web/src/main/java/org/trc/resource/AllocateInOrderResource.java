@@ -37,11 +37,11 @@ public class AllocateInOrderResource {
     /**
      * 关闭
      */
-    @PUT
-    @Path(SupplyConstants.AllocateOutOrder.CLOSE + "/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response close(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
-        return allocateOutOrderBiz.close(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-    }
+//    @PUT
+//    @Path(SupplyConstants.AllocateOutOrder.CLOSE + "/{id}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response close(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
+//        return allocateOutOrderBiz.close(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+//    }
 
 }
