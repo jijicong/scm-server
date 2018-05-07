@@ -1059,6 +1059,8 @@ public class SupplyConstants {
 
         //调拨入库单分页查询
         public static final String ALLOCATE_IN_ORDER_PAGE = "allocateInOrderPage";
+        //调拨入库单详情查询
+        public static final String ALLOCATE_IN_ORDER_DETAIL = "allocateInOrderDetail";
     }
 
 

@@ -9,6 +9,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -20,8 +21,16 @@ import org.springframework.stereotype.Component;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseDetail;
+import org.trc.domain.purchase.PurchaseOrderAddAudit;
+import org.trc.domain.purchase.PurchaseOrderAudit;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
+import org.trc.form.purchase.ItemForm;
+import org.trc.form.purchase.PurchaseOrderAuditForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -49,6 +58,27 @@ public class AllocateOrderResource {
     public Response allocateOrderPage(@BeanParam AllocateOrderForm form, 
     		@BeanParam Pagenation<AllocateOrder> page){
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.allocateOrderPage(form, page));
+
+    }
+    
+    @GET
+    @Path("auditPage")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response allocateOrderAuditPage(@BeanParam AllocateOrderForm form, @BeanParam Pagenation<AllocateOrder> page,
+    		@Context ContainerRequestContext requestContext) {
+        return ResultUtil.createSuccessPageResult(allocateOrderBiz.allocateOrderPage(form, page));
+    }
+    
+    @PUT
+    @Path("audit/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response allocateOrderAudit(@PathParam("id") String orderId, 
+    		@FormParam("auditOpinion") String auditOpinion, 
+    		@FormParam("auditResult") String auditResult, 
+    		@Context ContainerRequestContext requestContext){
+    	allocateOrderBiz.allocateOrderAudit(orderId, auditOpinion, auditResult,
+    			(AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("调拨单审核操作成功","");
 
     }
     
@@ -133,14 +163,13 @@ public class AllocateOrderResource {
     	
     }
     
-//    @GET
-//    @Path("warehouseList")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response warehouseList (@Context ContainerRequestContext requestContext)  {
-//        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo)requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
-//        String channelCode = aclUserAccreditInfo.getChannelCode();
-//        return purchaseOrderBiz.findWarehousesByChannelCode(channelCode);
-//    }
+    @GET
+    @Path("skuList")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response skuList(@BeanParam AllocateItemForm form, @BeanParam Pagenation<AllocateSkuDetail> page,@QueryParam("skus") String skus) {
+        return ResultUtil.createSuccessPageResult(allocateOrderBiz.querySkuList(form,page,skus));
+    }
+    
     
     
 

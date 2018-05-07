@@ -3,11 +3,18 @@ package org.trc.domain.allocateOrder;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 
 @Table(name = "allocate_in_order")
 public class AllocateInOrder extends AllocateOrderBase{
-    /**
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -929818832773422166L;
+
+	/**
      * 主键
      */
     @Id
@@ -161,6 +168,12 @@ public class AllocateInOrder extends AllocateOrderBase{
     @Length(max = 2, message = "是否有效不得超过32个字符")
     @Column(name = "is_valid")
     private String isValid;
+
+    /**
+     * sku明细
+     */
+    @Transient
+    private List<AllocateSkuDetail> skuDetailList;
 
     /**
      * 获取主键
@@ -576,4 +589,11 @@ public class AllocateInOrder extends AllocateOrderBase{
         this.isValid = isValid;
     }
 
+    public List<AllocateSkuDetail> getSkuDetailList() {
+        return skuDetailList;
+    }
+
+    public void setSkuDetailList(List<AllocateSkuDetail> skuDetailList) {
+        this.skuDetailList = skuDetailList;
+    }
 }
