@@ -30,10 +30,10 @@ public class AllocateOutOrder {
     private String inWarehouseCode;
 
     /**
-     * 调入仓库名称
+     * 是否取消
      */
-    @Column(name = "in_warehouse_name")
-    private String inWarehouseName;
+    @Column(name = "is_cancel")
+    private String isCancel;
 
     /**
      * 调出仓库编码
@@ -42,10 +42,10 @@ public class AllocateOutOrder {
     private String outWarehouseCode;
 
     /**
-     * 调出仓库名称
+     * 是否关闭
      */
-    @Column(name = "out_warehouse_name")
-    private String outWarehouseName;
+    @Column(name = "is_close")
+    private String isClose;
 
     /**
      * 出库状态0-待通知出库,1-出库仓库接收成功,2-出库仓库接收失败,3-出库完成,4-出库异常,5-已取消
@@ -122,10 +122,10 @@ public class AllocateOutOrder {
     private String isDeleted;
 
     /**
-     * 出库单创建人
+     * 原始状态
      */
-    @Column(name = "create_operator_name")
-    private String createOperatorName;
+    @Column(name = "old_status")
+    private String oldtatus;
 
     /**
      * 创建人
@@ -150,6 +150,9 @@ public class AllocateOutOrder {
      */
     @Column(name = "is_valid")
     private String isValid;
+
+    @Transient
+    private String isTimeOut;
 
     /**
      * 获取主键
@@ -224,24 +227,6 @@ public class AllocateOutOrder {
     }
 
     /**
-     * 获取调入仓库名称
-     *
-     * @return in_warehouse_name - 调入仓库名称
-     */
-    public String getInWarehouseName() {
-        return inWarehouseName;
-    }
-
-    /**
-     * 设置调入仓库名称
-     *
-     * @param inWarehouseName 调入仓库名称
-     */
-    public void setInWarehouseName(String inWarehouseName) {
-        this.inWarehouseName = inWarehouseName;
-    }
-
-    /**
      * 获取调出仓库编码
      *
      * @return out_warehouse_code - 调出仓库编码
@@ -257,24 +242,6 @@ public class AllocateOutOrder {
      */
     public void setOutWarehouseCode(String outWarehouseCode) {
         this.outWarehouseCode = outWarehouseCode;
-    }
-
-    /**
-     * 获取调出仓库名称
-     *
-     * @return out_warehouse_name - 调出仓库名称
-     */
-    public String getOutWarehouseName() {
-        return outWarehouseName;
-    }
-
-    /**
-     * 设置调出仓库名称
-     *
-     * @param outWarehouseName 调出仓库名称
-     */
-    public void setOutWarehouseName(String outWarehouseName) {
-        this.outWarehouseName = outWarehouseName;
     }
 
     /**
@@ -448,14 +415,6 @@ public class AllocateOutOrder {
         return senderMoblie;
     }
 
-    /**
-     * 设置发件人手机
-     *
-     * @param senderPhone 发件人手机
-     */
-    public void setSenderPhone(String senderMoblie) {
-        this.senderMoblie = senderMoblie;
-    }
 
     /**
      * 获取发件方详细地址
@@ -509,24 +468,6 @@ public class AllocateOutOrder {
      */
     public void setIsDeleted(String isDeleted) {
         this.isDeleted = isDeleted;
-    }
-
-    /**
-     * 获取出库单创建人
-     *
-     * @return create_operator_name - 出库单创建人
-     */
-    public String getCreateOperatorName() {
-        return createOperatorName;
-    }
-
-    /**
-     * 设置出库单创建人
-     *
-     * @param createOperatorName 出库单创建人
-     */
-    public void setCreateOperatorName(String createOperatorName) {
-        this.createOperatorName = createOperatorName;
     }
 
     /**
@@ -599,5 +540,41 @@ public class AllocateOutOrder {
      */
     public void setIsValid(String isValid) {
         this.isValid = isValid;
+    }
+
+    public String getIsCancel() {
+        return isCancel;
+    }
+
+    public void setIsCancel(String isCancel) {
+        this.isCancel = isCancel;
+    }
+
+    public String getIsClose() {
+        return isClose;
+    }
+
+    public void setIsClose(String isClose) {
+        this.isClose = isClose;
+    }
+
+    public void setSenderMoblie(String senderMoblie) {
+        this.senderMoblie = senderMoblie;
+    }
+
+    public String getIsTimeOut() {
+        return isTimeOut;
+    }
+
+    public void setIsTimeOut(String isTimeOut) {
+        this.isTimeOut = isTimeOut;
+    }
+
+    public String getOldtatus() {
+        return oldtatus;
+    }
+
+    public void setOldtatus(String oldtatus) {
+        this.oldtatus = oldtatus;
     }
 }

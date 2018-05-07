@@ -50,4 +50,13 @@ public class AllocateOutOrderResource {
         return allocateOutOrderBiz.close(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
+    /**
+     * 取消关闭
+     */
+    @PUT
+    @Path(SupplyConstants.AllocateOutOrder.CANCEL_CLOSE + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response cancelClose(@PathParam("id") Long id,@Context ContainerRequestContext requestContext){
+        return allocateOutOrderBiz.cancelClose(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
 }

@@ -43,6 +43,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Service("allocateOutOrderBiz")
@@ -57,6 +58,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IAllocateOrderService allocateOrderService;
 
     /**
      * 调拨单分页查询
@@ -113,6 +116,24 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         Pagenation<AllocateOutOrder> pagenation = allocateOutOrderService.pagination(example, page, form);
 
+        List<AllocateOutOrder> allocateOutOrders = pagenation.getResult();
+        for(AllocateOutOrder allocateOutOrder : allocateOutOrders){
+            AssertUtil.notNull(allocateOutOrder.getAllocateOrderCode(),"调拨单号不能为空,id="+allocateOutOrder.getId());
+            AllocateOrder allocateOrder = new AllocateOrder();
+            allocateOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+            allocateOrder = allocateOrderService.selectOne(allocateOrder);
+
+            if((StringUtils.equals(allocateOutOrder.getIsCancel(), ZeroToNineEnum.ONE.getCode())
+                    || StringUtils.equals(allocateOutOrder.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
+                    this.checkDate(allocateOutOrder.getUpdateTime())){
+                allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            }else if(StringUtils.equals(allocateOrder.getOrderStatus(), AllocateOrderEnum.AllocateOrderStatusEnum.DROP.getCode())){
+                    allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            }else{
+                allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
+            }
+        }
+
         return pagenation;
     }
 
@@ -124,7 +145,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             AssertUtil.notNull(id, "调拨出库单主键不能为空");
             AssertUtil.notBlank(remark, "关闭原因不能为空");
 
-            //获取发货单信息
+            //获取出库单信息
             AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
 
             if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) ||
@@ -135,7 +156,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             }
 
             //修改状态
-            this.updateDetailStatus(OutboundDetailStatusEnum.CANCELED.getCode(), allocateOutOrder.getAllocateOrderCode());
+            this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
+                    allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode());
             this.updateOrderCancelInfo(allocateOutOrder, remark, true);
 
             //仓库接受失败插入一条日志
@@ -149,10 +171,48 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         }
     }
 
+    @Override
+    @AllocateOrderCacheEvict
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
+        try{
+            AssertUtil.notNull(id, "调拨出库单主键不能为空");
+
+            //获取出库单信息
+            AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
+
+            if(!StringUtils.equals(allocateOutOrder.getIsClose(), ZeroToNineEnum.ONE.getCode())){
+                String msg = "调拨出库通知单没有关闭!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+
+            if(this.checkDate(allocateOutOrder.getUpdateTime())){
+                String msg = "调拨出库通知单已经超过7天，不允许取消关闭!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+
+            //修改状态
+            this.updateDetailStatus(allocateOutOrder.getOldtatus(), allocateOutOrder.getAllocateOrderCode(),
+                    AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode());
+            this.updateOrderCancelInfoExt(allocateOutOrder, true);
+
+            String userId = aclUserAccreditInfo.getUserId();
+            logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()), userId,"取消关闭", "",null);
+            return ResultUtil.createSuccessResult("取消关闭成功！", "");
+        }catch(Exception e){
+            String msg = e.getMessage();
+            logger.error(msg, e);
+            return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), msg, "");
+        }
+    }
+
     //修改详情状态
-    private void updateDetailStatus(String code, String allocateOrderCode){
+    private void updateDetailStatus(String code, String allocateOrderCode, String allocateStatus){
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
         allocateSkuDetail.setOutStatus(code);
+        allocateSkuDetail.setAllocateOutStatus(allocateStatus);
         allocateSkuDetail.setUpdateTime(Calendar.getInstance().getTime());
         Example exampleOrder = new Example(AllocateSkuDetail.class);
         Example.Criteria criteriaOrder = exampleOrder.createCriteria();
@@ -162,14 +222,38 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     //修改调拨出库单信息
     private void updateOrderCancelInfo(AllocateOutOrder allocateOutOrder, String remark, boolean isClose){
-//        allocateOutOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
-//        if(isClose){
-//            outboundOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
-//        }else {
-//            outboundOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
-//        }
-//        outboundOrder.setUpdateTime(Calendar.getInstance().getTime());
-//        outboundOrder.setRemark(remark);
-//        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+        allocateOutOrder.setOldtatus(allocateOutOrder.getStatus());
+        allocateOutOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
+        if(isClose){
+            allocateOutOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
+        }else {
+            allocateOutOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        }
+        allocateOutOrder.setUpdateTime(Calendar.getInstance().getTime());
+        allocateOutOrder.setMemo(remark);
+        allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+    }
+
+    private void updateOrderCancelInfoExt(AllocateOutOrder allocateOutOrder, boolean isClose){
+        allocateOutOrder.setStatus(allocateOutOrder.getOldtatus());
+        allocateOutOrder.setOldtatus("");
+        if(isClose){
+            allocateOutOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
+        }else{
+            allocateOutOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        }
+        allocateOutOrder.setUpdateTime(Calendar.getInstance().getTime());
+        allocateOutOrder.setMemo("");
+        allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+    }
+
+    private boolean checkDate(Date updateTime){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(updateTime);
+        calendar.add(Calendar.DATE, Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()));
+        if(calendar.compareTo(Calendar.getInstance()) == 1){
+            return false;
+        }
+        return true;
     }
 }
