@@ -1,84 +1,76 @@
 package org.trc.domain.allocateOrder;
 
 import java.util.Date;
-import java.util.List;
-
 import javax.persistence.*;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.custom.CustomDateSerializer;
-
-@Table(name = "allocate_order")
-public class AllocateOrder {
+@Table(name = "allocate_in_order")
+public class AllocateInOrder {
     /**
-     * 调拨单编号
+     * 主键
      */
     @Id
-    @Column(name = "allocate_order_code")
-    private String allocateOrderCode;
-
-    @Column(name = "in_warehouse_code")
-    @NotEmpty
-    private String inWarehouseCode;
-
-    @Column(name = "in_warehouse_name")
-    private String inWarehouseName;
-
-    @Column(name = "out_warehouse_code")
-    @NotEmpty
-    private String outWarehouseCode;
-
-    @Column(name = "out_warehouse_name")
-    private String outWarehouseName;
+    private Long id;
 
     /**
-     * 调拨入库单编号
+     * 调拨出库单号
      */
     @Column(name = "allocate_in_order_code")
     private String allocateInOrderCode;
 
     /**
-     * 调拨出库单编号
+     * 调拨单编号
      */
-    @Column(name = "allocate_out_order_code")
-    private String allocateOutOrderCode;
+    @Column(name = "allocate_order_code")
+    private String allocateOrderCode;
 
     /**
-     * 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     * 供应商名称
      */
-    @Column(name = "order_status")
-    private String orderStatus;
+    @Column(name = "supplier_name")
+    private String supplierName;
 
     /**
-     * 出入库状态
-            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     * 供应商编码
      */
-    @Column(name = "in_out_status")
-    private String inOutStatus;
+    @Column(name = "supplier_code")
+    private String supplierCode;
+
+    /**
+     * 0-待完成出库,1-出库完成,2-出库异常,3-入库仓接收成功,4-入库仓接收失败,5-入库完成,6-入库异常,7-已取消
+     */
+    private String status;
+
+    /**
+     * 预约到货日期,格式yyyy-mm-dd hh:mi:ss
+     */
+    @Column(name = "pre_recive_date")
+    private Date preReciveDate;
 
     /**
      * 收货人
      */
-    @NotEmpty
     private String receiver;
 
     /**
-     * 收货人所在省
+     * 收货人手机
+     */
+    @Column(name = "receiver_phone")
+    private String receiverPhone;
+
+    /**
+     * 发件人所在省
      */
     @Column(name = "reciver_province")
-    @NotEmpty
     private String reciverProvince;
 
     /**
-     * 收货人所在城市
+     * 发件人所在城市
      */
     @Column(name = "reciver_city")
-    @NotEmpty
     private String reciverCity;
 
     /**
-     * 收货详细地址
+     * 收货地址
      */
     @Column(name = "receive_address")
     private String receiveAddress;
@@ -87,34 +79,35 @@ public class AllocateOrder {
      * 收货人手机
      */
     @Column(name = "receiver_mobile")
-    @NotEmpty
     private String receiverMobile;
 
     /**
      * 发件人
      */
-    @NotEmpty
     private String sender;
 
     /**
      * 发件人所在省
      */
     @Column(name = "sender_province")
-    @NotEmpty
     private String senderProvince;
 
     /**
      * 发件人所在城市
      */
     @Column(name = "sender_city")
-    @NotEmpty
     private String senderCity;
 
     /**
      * 发件人手机
      */
+    @Column(name = "sender_phone")
+    private String senderPhone;
+
+    /**
+     * 发件人手机
+     */
     @Column(name = "sender_mobile")
-    @NotEmpty
     private String senderMobile;
 
     /**
@@ -123,6 +116,21 @@ public class AllocateOrder {
     @Column(name = "sender_address")
     private String senderAddress;
 
+    /**
+     * 发货单号
+     */
+    @Column(name = "delivery_number")
+    private String deliveryNumber;
+
+    /**
+     * 入库备注
+     */
+    @Column(name = "in_memo")
+    private String inMemo;
+
+    /**
+     * 备注
+     */
     private String memo;
 
     /**
@@ -141,33 +149,55 @@ public class AllocateOrder {
      * 创建时间,格式yyyy-mm-dd hh:mi:ss
      */
     @Column(name = "create_time")
-    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
     /**
      * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
      */
     @Column(name = "update_time")
-    @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
-    
+
     /**
-     * 出库通知单的状态
+     * 是否有效:0-无效,1-有效
      */
-    @Transient
-    private String out_order_status;
-    
+    @Column(name = "is_valid")
+    private String isValid;
+
     /**
-     * 创建人姓名
+     * 获取主键
+     *
+     * @return id - 主键
      */
-    @Transient
-    private String createOperatorName;
-    
+    public Long getId() {
+        return id;
+    }
+
     /**
-     * 调拨单商品明细列表
+     * 设置主键
+     *
+     * @param id 主键
      */
-    @Transient
-    private List<AllocateSkuDetail> skuDetailList;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取调拨出库单号
+     *
+     * @return allocate_in_order_code - 调拨出库单号
+     */
+    public String getAllocateInOrderCode() {
+        return allocateInOrderCode;
+    }
+
+    /**
+     * 设置调拨出库单号
+     *
+     * @param allocateInOrderCode 调拨出库单号
+     */
+    public void setAllocateInOrderCode(String allocateInOrderCode) {
+        this.allocateInOrderCode = allocateInOrderCode;
+    }
 
     /**
      * 获取调拨单编号
@@ -188,135 +218,75 @@ public class AllocateOrder {
     }
 
     /**
-     * @return in_warehouse_code
-     */
-    public String getInWarehouseCode() {
-        return inWarehouseCode;
-    }
-
-    /**
-     * @param inWarehouseCode
-     */
-    public void setInWarehouseCode(String inWarehouseCode) {
-        this.inWarehouseCode = inWarehouseCode;
-    }
-
-    /**
-     * @return in_warehouse_name
-     */
-    public String getInWarehouseName() {
-        return inWarehouseName;
-    }
-
-    /**
-     * @param inWarehouseName
-     */
-    public void setInWarehouseName(String inWarehouseName) {
-        this.inWarehouseName = inWarehouseName;
-    }
-
-    /**
-     * @return out_warehouse_code
-     */
-    public String getOutWarehouseCode() {
-        return outWarehouseCode;
-    }
-
-    /**
-     * @param outWarehouseCode
-     */
-    public void setOutWarehouseCode(String outWarehouseCode) {
-        this.outWarehouseCode = outWarehouseCode;
-    }
-
-    /**
-     * @return out_warehouse_name
-     */
-    public String getOutWarehouseName() {
-        return outWarehouseName;
-    }
-
-    /**
-     * @param outWarehouseName
-     */
-    public void setOutWarehouseName(String outWarehouseName) {
-        this.outWarehouseName = outWarehouseName;
-    }
-
-    /**
-     * 获取调拨入库单编号
+     * 获取供应商名称
      *
-     * @return allocate_in_order_code - 调拨入库单编号
+     * @return supplier_name - 供应商名称
      */
-    public String getAllocateInOrderCode() {
-        return allocateInOrderCode;
+    public String getSupplierName() {
+        return supplierName;
     }
 
     /**
-     * 设置调拨入库单编号
+     * 设置供应商名称
      *
-     * @param allocateInOrderCode 调拨入库单编号
+     * @param supplierName 供应商名称
      */
-    public void setAllocateInOrderCode(String allocateInOrderCode) {
-        this.allocateInOrderCode = allocateInOrderCode;
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
     }
 
     /**
-     * 获取调拨出库单编号
+     * 获取供应商编码
      *
-     * @return allocate_out_order_code - 调拨出库单编号
+     * @return supplier_code - 供应商编码
      */
-    public String getAllocateOutOrderCode() {
-        return allocateOutOrderCode;
+    public String getSupplierCode() {
+        return supplierCode;
     }
 
     /**
-     * 设置调拨出库单编号
+     * 设置供应商编码
      *
-     * @param allocateOutOrderCode 调拨出库单编号
+     * @param supplierCode 供应商编码
      */
-    public void setAllocateOutOrderCode(String allocateOutOrderCode) {
-        this.allocateOutOrderCode = allocateOutOrderCode;
+    public void setSupplierCode(String supplierCode) {
+        this.supplierCode = supplierCode;
     }
 
     /**
-     * 获取0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     * 获取0-待完成出库,1-出库完成,2-出库异常,3-入库仓接收成功,4-入库仓接收失败,5-入库完成,6-入库异常,7-已取消
      *
-     * @return order_status - 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     * @return status - 0-待完成出库,1-出库完成,2-出库异常,3-入库仓接收成功,4-入库仓接收失败,5-入库完成,6-入库异常,7-已取消
      */
-    public String getOrderStatus() {
-        return orderStatus;
+    public String getStatus() {
+        return status;
     }
 
     /**
-     * 设置0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     * 设置0-待完成出库,1-出库完成,2-出库异常,3-入库仓接收成功,4-入库仓接收失败,5-入库完成,6-入库异常,7-已取消
      *
-     * @param orderStatus 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
+     * @param status 0-待完成出库,1-出库完成,2-出库异常,3-入库仓接收成功,4-入库仓接收失败,5-入库完成,6-入库异常,7-已取消
      */
-    public void setOrderStatus(String orderStatus) {
-        this.orderStatus = orderStatus;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     /**
-     * 获取出入库状态
-            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     * 获取预约到货日期,格式yyyy-mm-dd hh:mi:ss
      *
-     * @return in_out_status - 出入库状态
-            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     * @return pre_recive_date - 预约到货日期,格式yyyy-mm-dd hh:mi:ss
      */
-    public String getInOutStatus() {
-        return inOutStatus;
+    public Date getPreReciveDate() {
+        return preReciveDate;
     }
 
     /**
-     * 设置出入库状态
-            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     * 设置预约到货日期,格式yyyy-mm-dd hh:mi:ss
      *
-     * @param inOutStatus 出入库状态
-            0-初始,1-等待出入库,2-出库完成,3-出库异常,4-入库完成,5-入库异常
+     * @param preReciveDate 预约到货日期,格式yyyy-mm-dd hh:mi:ss
      */
-    public void setInOutStatus(String inOutStatus) {
-        this.inOutStatus = inOutStatus;
+    public void setPreReciveDate(Date preReciveDate) {
+        this.preReciveDate = preReciveDate;
     }
 
     /**
@@ -338,54 +308,72 @@ public class AllocateOrder {
     }
 
     /**
-     * 获取收货人所在省
+     * 获取收货人手机
      *
-     * @return reciver_province - 收货人所在省
+     * @return receiver_phone - 收货人手机
+     */
+    public String getReceiverPhone() {
+        return receiverPhone;
+    }
+
+    /**
+     * 设置收货人手机
+     *
+     * @param receiverPhone 收货人手机
+     */
+    public void setReceiverPhone(String receiverPhone) {
+        this.receiverPhone = receiverPhone;
+    }
+
+    /**
+     * 获取发件人所在省
+     *
+     * @return reciver_province - 发件人所在省
      */
     public String getReciverProvince() {
         return reciverProvince;
     }
 
     /**
-     * 设置收货人所在省
+     * 设置发件人所在省
      *
-     * @param reciverProvince 收货人所在省
+     * @param reciverProvince 发件人所在省
      */
     public void setReciverProvince(String reciverProvince) {
         this.reciverProvince = reciverProvince;
     }
 
     /**
-     * 获取收货人所在城市
+     * 获取发件人所在城市
      *
-     * @return reciver_city - 收货人所在城市
+     * @return reciver_city - 发件人所在城市
      */
     public String getReciverCity() {
         return reciverCity;
     }
 
     /**
-     * 设置收货人所在城市
+     * 设置发件人所在城市
      *
-     * @param reciverCity 收货人所在城市
+     * @param reciverCity 发件人所在城市
      */
     public void setReciverCity(String reciverCity) {
         this.reciverCity = reciverCity;
     }
 
     /**
-     * 获取收货详细地址
+     * 获取收货地址
      *
-     * @return receive_address - 收货详细地址
+     * @return receive_address - 收货地址
      */
     public String getReceiveAddress() {
         return receiveAddress;
     }
 
     /**
-     * 设置收货详细地址
+     * 设置收货地址
      *
-     * @param receiveAddress 收货详细地址
+     * @param receiveAddress 收货地址
      */
     public void setReceiveAddress(String receiveAddress) {
         this.receiveAddress = receiveAddress;
@@ -466,6 +454,24 @@ public class AllocateOrder {
     /**
      * 获取发件人手机
      *
+     * @return sender_phone - 发件人手机
+     */
+    public String getSenderPhone() {
+        return senderPhone;
+    }
+
+    /**
+     * 设置发件人手机
+     *
+     * @param senderPhone 发件人手机
+     */
+    public void setSenderPhone(String senderPhone) {
+        this.senderPhone = senderPhone;
+    }
+
+    /**
+     * 获取发件人手机
+     *
      * @return sender_mobile - 发件人手机
      */
     public String getSenderMobile() {
@@ -500,14 +506,54 @@ public class AllocateOrder {
     }
 
     /**
-     * @return memo
+     * 获取发货单号
+     *
+     * @return delivery_number - 发货单号
+     */
+    public String getDeliveryNumber() {
+        return deliveryNumber;
+    }
+
+    /**
+     * 设置发货单号
+     *
+     * @param deliveryNumber 发货单号
+     */
+    public void setDeliveryNumber(String deliveryNumber) {
+        this.deliveryNumber = deliveryNumber;
+    }
+
+    /**
+     * 获取入库备注
+     *
+     * @return in_memo - 入库备注
+     */
+    public String getInMemo() {
+        return inMemo;
+    }
+
+    /**
+     * 设置入库备注
+     *
+     * @param inMemo 入库备注
+     */
+    public void setInMemo(String inMemo) {
+        this.inMemo = inMemo;
+    }
+
+    /**
+     * 获取备注
+     *
+     * @return memo - 备注
      */
     public String getMemo() {
         return memo;
     }
 
     /**
-     * @param memo
+     * 设置备注
+     *
+     * @param memo 备注
      */
     public void setMemo(String memo) {
         this.memo = memo;
@@ -585,28 +631,21 @@ public class AllocateOrder {
         this.updateTime = updateTime;
     }
 
-	public String getOut_order_status() {
-		return out_order_status;
-	}
+    /**
+     * 获取是否有效:0-无效,1-有效
+     *
+     * @return is_valid - 是否有效:0-无效,1-有效
+     */
+    public String getIsValid() {
+        return isValid;
+    }
 
-	public void setOut_order_status(String out_order_status) {
-		this.out_order_status = out_order_status;
-	}
-
-	public String getCreateOperatorName() {
-		return createOperatorName;
-	}
-
-	public void setCreateOperatorName(String createOperatorName) {
-		this.createOperatorName = createOperatorName;
-	}
-
-	public List<AllocateSkuDetail> getSkuDetailList() {
-		return skuDetailList;
-	}
-
-	public void setSkuDetailList(List<AllocateSkuDetail> skuDetailList) {
-		this.skuDetailList = skuDetailList;
-	}
-    
+    /**
+     * 设置是否有效:0-无效,1-有效
+     *
+     * @param isValid 是否有效:0-无效,1-有效
+     */
+    public void setIsValid(String isValid) {
+        this.isValid = isValid;
+    }
 }

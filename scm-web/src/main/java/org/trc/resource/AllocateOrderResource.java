@@ -52,6 +52,23 @@ public class AllocateOrderResource {
 
     }
     
+    @GET
+    @Path("editGet/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response allocateOrderEditGet(@PathParam("id") String orderId){
+    	return ResultUtil.createSuccessResult("根据id查询调拨单成功", allocateOrderBiz.allocateOrderEditGet(orderId));
+    	
+    }
+    
+    /**
+     * 新增编辑保存
+     * @param allocateOrder
+     * @param delIds
+     * @param isReview
+     * @param skuDetail
+     * @param requestContext
+     * @return
+     */
     @POST
     @Path("save")
     @Produces(MediaType.APPLICATION_JSON)
@@ -67,6 +84,12 @@ public class AllocateOrderResource {
 
     }
     
+    /**
+     * 删除
+     * @param orderId
+     * @param requestContext
+     * @return
+     */
     @PUT
     @Path("delete/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -77,6 +100,12 @@ public class AllocateOrderResource {
     	
     }
     
+    /**
+     * 作废
+     * @param orderId
+     * @param requestContext
+     * @return
+     */
     @PUT
     @Path("drop/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -87,6 +116,12 @@ public class AllocateOrderResource {
     	
     }
     
+    /**
+     * 通知仓库
+     * @param orderId
+     * @param requestContext
+     * @return
+     */
     @POST
     @Path("noticeWarehouse/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -97,6 +132,15 @@ public class AllocateOrderResource {
     	return ResultUtil.createSuccessResult("调拨单通知仓库成功","");
     	
     }
+    
+//    @GET
+//    @Path("warehouseList")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response warehouseList (@Context ContainerRequestContext requestContext)  {
+//        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo)requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+//        String channelCode = aclUserAccreditInfo.getChannelCode();
+//        return purchaseOrderBiz.findWarehousesByChannelCode(channelCode);
+//    }
     
     
 

@@ -18,4 +18,6 @@ public interface IAllocateOrderBiz {
 
 	void noticeWarehouse(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
+	AllocateOrder allocateOrderEditGet(String orderId);
+
 }
