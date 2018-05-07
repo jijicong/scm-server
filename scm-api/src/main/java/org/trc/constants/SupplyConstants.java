@@ -1061,13 +1061,30 @@ public class SupplyConstants {
 
         public static final String ROOT = "aclWmsUser";
 
+        /**
+         * wms用户分页查询
+         */
         public static final String ACL_WMS_USER_PAGE = "aclWmsUserPage";
 
+        /**
+         * wms用户编辑
+         */
         public static final String ACL_WMS_USER_UPDATE = "aclWmsUserUpdate";
 
+        /**
+         * wms用户查询
+         */
         public static final String ACL_WMS_USER_QUERY = "aclWmsUserQuery";
 
+        /**
+         * wms用户状态修改
+         */
         public static final String ACL_WMS_USER_UPDATE_STATE = "aclWmsUserUpdate/state";
+
+        /**
+         * wms用户新增
+         */
+        public static final String ACL_WMS_USER_SAVE = "aclWmsUserSave";
     }
 
     /**
