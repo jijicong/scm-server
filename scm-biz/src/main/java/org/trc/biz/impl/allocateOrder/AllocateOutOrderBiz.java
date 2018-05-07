@@ -26,6 +26,7 @@ import org.trc.exception.AllocateOutOrderException;
 import org.trc.exception.OutboundOrderException;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
+import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
@@ -60,6 +61,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private IAllocateOrderService allocateOrderService;
+    @Autowired
+    private IAllocateOrderExtService allocateOrderExtService;
 
     /**
      * 调拨单分页查询
@@ -88,7 +91,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         //单据创建人
         if (!StringUtils.isBlank(form.getCreateOperatorName())) {
-            criteria.andLike("createOperatorName","%"+form.getCreateOperatorName()+"%");
+            allocateOrderExtService.setCreateOperator(form.getCreateOperatorName(), criteria);
         }
 
         //调出仓库
@@ -134,6 +137,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             }
         }
 
+        allocateOrderExtService.setAllocateOrderOtherNames(page);
         return pagenation;
     }
 

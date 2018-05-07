@@ -4,7 +4,8 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "allocate_out_order")
-public class AllocateOutOrder {
+public class AllocateOutOrder extends AllocateOrderBase{
+
     /**
      * 主键
      */

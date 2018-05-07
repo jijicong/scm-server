@@ -1,10 +1,12 @@
 package org.trc.domain.allocateOrder;
 
+import org.hibernate.validator.constraints.Length;
+
 import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "allocate_in_order")
-public class AllocateInOrder {
+public class AllocateInOrder extends AllocateOrderBase{
     /**
      * 主键
      */
@@ -14,30 +16,35 @@ public class AllocateInOrder {
     /**
      * 调拨出库单号
      */
+    @Length(max = 32, message = "调拨出库单号不得超过32个字符")
     @Column(name = "allocate_in_order_code")
     private String allocateInOrderCode;
 
     /**
      * 调拨单编号
      */
+    @Length(max = 32, message = "调拨单编号不得超过32个字符")
     @Column(name = "allocate_order_code")
     private String allocateOrderCode;
 
     /**
      * 供应商名称
      */
+    @Length(max = 256, message = "供应商名称不得超过256个字符")
     @Column(name = "supplier_name")
     private String supplierName;
 
     /**
      * 供应商编码
      */
+    @Length(max = 32, message = "供应商编码不得超过32个字符")
     @Column(name = "supplier_code")
     private String supplierCode;
 
     /**
      * 0-待完成出库,1-出库完成,2-出库异常,3-入库仓接收成功,4-入库仓接收失败,5-入库完成,6-入库异常,7-已取消
      */
+    @Length(max = 2, message = "调拨入库单状态不得超过2个字符")
     private String status;
 
     /**
@@ -49,117 +56,109 @@ public class AllocateInOrder {
     /**
      * 收货人
      */
+    @Length(max = 64, message = "收货人名称不得超过64个字符")
     private String receiver;
 
     /**
      * 收货人手机
      */
+    @Length(max = 16, message = "收货人手机不得超过16个字符")
     @Column(name = "receiver_phone")
     private String receiverPhone;
 
     /**
      * 发件人所在省
      */
+    @Length(max = 32, message = "发件人所在省不得超过32个字符")
     @Column(name = "reciver_province")
     private String reciverProvince;
 
     /**
      * 发件人所在城市
      */
+    @Length(max = 32, message = "发件人所在城市不得超过32个字符")
     @Column(name = "reciver_city")
     private String reciverCity;
 
     /**
      * 收货地址
      */
+    @Length(max = 256, message = "收货地址不得超过256个字符")
     @Column(name = "receive_address")
     private String receiveAddress;
 
     /**
      * 收货人手机
      */
+    @Length(max = 16, message = "收货人手机不得超过16个字符")
     @Column(name = "receiver_mobile")
     private String receiverMobile;
 
     /**
      * 发件人
      */
+    @Length(max = 64, message = "发件人不得超过64个字符")
     private String sender;
 
     /**
      * 发件人所在省
      */
+    @Length(max = 32, message = "发件人所在省不得超过32个字符")
     @Column(name = "sender_province")
     private String senderProvince;
 
     /**
      * 发件人所在城市
      */
+    @Length(max = 32, message = "发件人所在城市不得超过32个字符")
     @Column(name = "sender_city")
     private String senderCity;
 
     /**
      * 发件人手机
      */
+    @Length(max = 16, message = "发件人手机不得超过16个字符")
     @Column(name = "sender_phone")
     private String senderPhone;
 
     /**
      * 发件人手机
      */
+    @Length(max = 16, message = "发件人手机不得超过32个字符")
     @Column(name = "sender_mobile")
     private String senderMobile;
 
     /**
      * 发件方详细地址
      */
+    @Length(max = 32, message = "品牌名称不得超过32个字符")
     @Column(name = "sender_address")
     private String senderAddress;
 
     /**
      * 发货单号
      */
+    @Length(max = 128, message = "发货单号不得超过128个字符")
     @Column(name = "delivery_number")
     private String deliveryNumber;
 
     /**
      * 入库备注
      */
+    @Length(max = 2048, message = "入库备注不得超过2048个字符")
     @Column(name = "in_memo")
     private String inMemo;
 
     /**
      * 备注
      */
+    @Length(max = 2048, message = "备注不得超过2048个字符")
     private String memo;
-
-    /**
-     * 是否删除:0-否,1-是
-     */
-    @Column(name = "is_deleted")
-    private String isDeleted;
-
-    /**
-     * 创建人
-     */
-    @Column(name = "create_operator")
-    private String createOperator;
-
-    /**
-     * 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    @Column(name = "create_time")
-    private Date createTime;
-
-    /**
-     * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    @Column(name = "update_time")
-    private Date updateTime;
 
     /**
      * 是否有效:0-无效,1-有效
      */
+    @Length(max = 2, message = "是否有效不得超过32个字符")
     @Column(name = "is_valid")
     private String isValid;
 
@@ -560,78 +559,6 @@ public class AllocateInOrder {
     }
 
     /**
-     * 获取是否删除:0-否,1-是
-     *
-     * @return is_deleted - 是否删除:0-否,1-是
-     */
-    public String getIsDeleted() {
-        return isDeleted;
-    }
-
-    /**
-     * 设置是否删除:0-否,1-是
-     *
-     * @param isDeleted 是否删除:0-否,1-是
-     */
-    public void setIsDeleted(String isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
-    /**
-     * 获取创建人
-     *
-     * @return create_operator - 创建人
-     */
-    public String getCreateOperator() {
-        return createOperator;
-    }
-
-    /**
-     * 设置创建人
-     *
-     * @param createOperator 创建人
-     */
-    public void setCreateOperator(String createOperator) {
-        this.createOperator = createOperator;
-    }
-
-    /**
-     * 获取创建时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @return create_time - 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    /**
-     * 设置创建时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @param createTime 创建时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    /**
-     * 获取最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @return update_time - 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    /**
-     * 设置最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     *
-     * @param updateTime 最后更新时间,格式yyyy-mm-dd hh:mi:ss
-     */
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    /**
      * 获取是否有效:0-无效,1-有效
      *
      * @return is_valid - 是否有效:0-无效,1-有效
@@ -648,4 +575,5 @@ public class AllocateInOrder {
     public void setIsValid(String isValid) {
         this.isValid = isValid;
     }
+
 }
