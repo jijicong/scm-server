@@ -1447,6 +1447,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
         warehouseItemInfo.setWarehouseInfoId(warehouseInfoId);
         warehouseItemInfo.setWarehouseItemId(warehouseItemId);
+        warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
         if(warehouseItemInfoList != null && warehouseItemInfoList.size() > 0){
             return true;
