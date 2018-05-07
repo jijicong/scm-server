@@ -17,9 +17,9 @@ public interface IAllocateInOrderBiz {
 
     /**
      * 查询调拨入库单明细
-     * @param allocateInOrderCode 调拨入库单号
+     * @param allocateOrderCode 调拨单号
      * @return
      */
-    AllocateSkuDetail queryDetail(String allocateInOrderCode);
+    AllocateSkuDetail queryDetail(String allocateOrderCode);
 
 }

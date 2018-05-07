@@ -17,6 +17,7 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import java.beans.Transient;
 import java.util.Date;
+import java.util.List;
 
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
@@ -62,11 +63,13 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     }
 
     @Override
-    public AllocateSkuDetail queryDetail(String allocateInOrderCode) {
-        AssertUtil.notBlank(allocateInOrderCode, "查询调拨入库单明细信息参数调拨入库单编码allocateInOrderCode不能为空");
-
-
-
+    public AllocateSkuDetail queryDetail(String allocateOrderCode) {
+        AssertUtil.notBlank(allocateOrderCode, "查询调拨入库单明细信息参数调拨单编码allocateOrderCode不能为空");
+        AllocateSkuDetail record = new AllocateSkuDetail();
+        record.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(record);
+        AssertUtil.notEmpty(allocateSkuDetailList, String.format("查询调拨单[%s]明细为空", allocateOrderCode));
+        
 
 
         return null;
