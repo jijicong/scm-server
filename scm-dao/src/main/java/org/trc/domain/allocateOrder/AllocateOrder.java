@@ -1,14 +1,23 @@
 package org.trc.domain.allocateOrder;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.*;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.trc.custom.CustomDateSerializer;
 
 @Table(name = "allocate_order")
 public class AllocateOrder extends AllocateOrderBase{
-    /**
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 741617431263633041L;
+
+	/**
      * 调拨单编号
      */
     @Id
@@ -157,7 +166,7 @@ public class AllocateOrder extends AllocateOrderBase{
      * 出库通知单的状态
      */
     @Transient
-    private String out_order_status;
+    private String outOrderStatus;
     
     /**
      * 创建人姓名
@@ -461,12 +470,14 @@ public class AllocateOrder extends AllocateOrderBase{
     }
 
 
-	public String getOut_order_status() {
-		return out_order_status;
+
+
+	public String getOutOrderStatus() {
+		return outOrderStatus;
 	}
 
-	public void setOut_order_status(String out_order_status) {
-		this.out_order_status = out_order_status;
+	public void setOutOrderStatus(String outOrderStatus) {
+		this.outOrderStatus = outOrderStatus;
 	}
 
 	public String getCreateOperatorName() {
@@ -507,6 +518,38 @@ public class AllocateOrder extends AllocateOrderBase{
 
 	public void setSubmitTime(Date submitTime) {
 		this.submitTime = submitTime;
+	}
+
+	public String getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(String isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public String getCreateOperator() {
+		return createOperator;
+	}
+
+	public void setCreateOperator(String createOperator) {
+		this.createOperator = createOperator;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
 	}
 	
 	

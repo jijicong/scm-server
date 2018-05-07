@@ -194,7 +194,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         		AllocateOutOrder outOrder = new AllocateOutOrder();
         		outOrder.setAllocateOrderCode(order.getAllocateOrderCode());
         		AllocateOutOrder queryOutOrder = allocateOutOrderService.selectOne(outOrder);
-        		order.setOut_order_status(queryOutOrder.getStatus());
+        		order.setOutOrderStatus(queryOutOrder.getStatus());
         		
     			/*AclUserAccreditInfo user = new AclUserAccreditInfo();
     			user.setUserId(order.getCreateOperator());
