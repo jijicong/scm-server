@@ -4,13 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
+import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
+
+import java.beans.Transient;
 import java.util.Date;
 
 @Service("allocateInOrderBiz")
@@ -20,6 +25,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IAllocateOrderExtService allocateOrderExtService;
     @Autowired
     private IAllocateInOrderService allocateInOrderService;
+    @Autowired
+    private IAllocateSkuDetailService allocateSkuDetailService;
 
     @Override
     public Pagenation<AllocateInOrder> allocateInOrderPage(AllocateInOrderForm form, Pagenation<AllocateInOrder> page) {
@@ -54,8 +61,16 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         return page;
     }
 
+    @Override
+    public AllocateSkuDetail queryDetail(String allocateInOrderCode) {
+        AssertUtil.notBlank(allocateInOrderCode, "查询调拨入库单明细信息参数调拨入库单编码allocateInOrderCode不能为空");
 
 
+
+
+
+        return null;
+    }
 
 
 }
