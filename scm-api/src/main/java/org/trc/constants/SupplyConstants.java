@@ -1085,6 +1085,17 @@ public class SupplyConstants {
          * wms用户新增
          */
         public static final String ACL_WMS_USER_SAVE = "aclWmsUserSave";
+
+        /***
+         * 查询自营仓库
+         */
+        public static final String ACL_WMS_USER_WAREHOUSE = "aclWmsUserWarehouse";
+
+        /**
+         * 查询WMS资源
+         */
+        public static final String ACL_WMS_USER_RESOURCE = "aclWmsUserResource";
+
     }
 
     /**
