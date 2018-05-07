@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,23 +13,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
-import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.AllocateOrderException;
-import org.trc.exception.WarehouseInfoException;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
@@ -57,6 +55,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
     private IAllocateOutOrderService allocateOutOrderService;
+    @Autowired
+    private IAclUserAccreditInfoService aclUserAccreditInfoService;
     /**
      * 调拨单分页查询
      */
@@ -67,6 +67,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
         Example example = new Example(AllocateOrder.class);
         Example.Criteria criteria = example.createCriteria();
+        
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         
         //调拨单编号
         if (!StringUtils.isBlank(form.getAllocateOrderCode())) {
@@ -116,8 +118,23 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
       //  example.orderBy("orderStatus").asc();
         example.orderBy("updateTime").desc();
         example.setOrderByClause("field(orderStatus,0,3,1,2,4,5)");
-        Pagenation<AllocateOrder> pagenation = allocateOrderService.pagination(example, page, form);
-
+        allocateOrderService.pagination(example, page, form);
+        
+        List<AllocateOrder> result = page.getResult();
+        
+        if (!result.isEmpty()) {
+        	for (AllocateOrder order: result) {
+        		AllocateOutOrder outOrder = new AllocateOutOrder();
+        		outOrder.setAllocateOrderCode(order.getAllocateOrderCode());
+        		AllocateOutOrder queryOutOrder = allocateOutOrderService.selectOne(outOrder);
+        		order.setOut_order_status(queryOutOrder.getStatus());
+        		
+    			AclUserAccreditInfo user = new AclUserAccreditInfo();
+    			user.setUserId(order.getCreateOperator());
+    			AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
+    			order.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());
+        	}
+        }
         return page;
     }
 
@@ -240,7 +257,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
 		if (queryOrder == null) {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
-					"未查的相关调拨单信息");
+					"未查到相关调拨单信息");
 		}
 		String status = queryOrder.getOrderStatus();
 		/**
@@ -281,11 +298,17 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		}
 		String status = queryOrder.getOrderStatus();
 		/**
-		 * 暂存,审核驳回 的状态才能作废
+		 * 以下两种情况满足其一可以作废：
+		 * 1.审核通过
+		 * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”)
 		 */
-//		if (AllocateOrderEnum.AllocateOrderStatusEnum.) {
-//			
-//		}
+		if (!AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode().equals(status)
+				&& !(AllocateOrderEnum.AllocateOrderStatusEnum.WAREHOUSE_NOTICE.equals(status) 
+						&& (AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(status)
+								&& (AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(status))))) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+					"当前调拨单状态不满足作废条件");
+		}
 		
 		AllocateOrder allocateOrder = new AllocateOrder();
 		allocateOrder.setAllocateOrderCode(orderId);
@@ -337,9 +360,30 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         outOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
         outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
+        
+		AclUserAccreditInfo user = new AclUserAccreditInfo();
+		user.setUserId(userInfo.getUserId());
+		AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
+		outOrder.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());
+		
         allocateOutOrderService.insertSelective(outOrder);
-		
-		
+	}
+	
+	@Override
+	public AllocateOrder allocateOrderEditGet(String orderId) {
+		AllocateOrder retOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (retOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_EDIT_EXCEPTION, 
+					"未查到相关调拨单信息");
+		}
+		AllocateSkuDetail queryDetail = new AllocateSkuDetail();
+		queryDetail.setAllocateOrderCode(orderId);
+		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+		List<AllocateSkuDetail> detailList = allocateSkuDetailService.select(queryDetail);
+		if (!CollectionUtils.isEmpty(detailList)) {
+			retOrder.setSkuDetailList(detailList);
+		}
+		return retOrder;
 	}
 
 
@@ -370,23 +414,25 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	 * 新增和修改时获取出入仓库的详细地址
 	 */
 	private void setDetailAddress(AllocateOrder allocateOrder) {
-		
+		String outWhCode = allocateOrder.getOutWarehouseCode();
+		String inWhCode = allocateOrder.getInWarehouseCode();
+		if (outWhCode.equals(inWhCode)) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+					"调拨单的出入库仓库不能相同");
+		}
         WarehouseInfo queryRecord = new WarehouseInfo();
-        queryRecord.setCode(allocateOrder.getAllocateInOrderCode());
+        queryRecord.setCode(inWhCode);
 		WarehouseInfo whInfo = warehouseInfoService.selectOne(queryRecord);
 		AssertUtil.objNotBlank(whInfo, "调入仓库不存在");
 		// 设置调入详细地址
 		allocateOrder.setReceiveAddress(whInfo.getAddress());
 		
-		queryRecord.setCode(allocateOrder.getOutWarehouseCode());
+		queryRecord.setCode(outWhCode);
 		whInfo = warehouseInfoService.selectOne(queryRecord);
 		AssertUtil.objNotBlank(whInfo, "调出仓库不存在");
 		// 设置调出详细地址
 		allocateOrder.setSenderAddress(whInfo.getAddress());
 	}
-
-
-
 
 
 }
