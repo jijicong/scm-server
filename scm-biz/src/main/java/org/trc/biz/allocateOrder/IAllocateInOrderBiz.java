@@ -1,7 +1,7 @@
 package org.trc.biz.allocateOrder;
 
 import org.trc.domain.allocateOrder.AllocateInOrder;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.util.Pagenation;
 
@@ -17,9 +17,16 @@ public interface IAllocateInOrderBiz {
 
     /**
      * 查询调拨入库单明细
-     * @param allocateInOrderCode 调拨入库单号
+     * @param allocateOrderCode 调拨单号
      * @return
      */
-    AllocateSkuDetail queryDetail(String allocateInOrderCode);
+    AllocateInOrder queryDetail(String allocateOrderCode);
+
+    /**
+     * 调拨入库单取消
+     * @param allocateOrderCode 调拨单号
+     * @param flag 取消/启用标识:0-取消,1-启用
+     */
+    void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo);
 
 }

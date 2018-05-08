@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
@@ -17,6 +18,7 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import java.beans.Transient;
 import java.util.Date;
+import java.util.List;
 
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
@@ -62,14 +64,28 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     }
 
     @Override
-    public AllocateSkuDetail queryDetail(String allocateInOrderCode) {
-        AssertUtil.notBlank(allocateInOrderCode, "查询调拨入库单明细信息参数调拨入库单编码allocateInOrderCode不能为空");
+    public AllocateInOrder queryDetail(String allocateOrderCode) {
+        AssertUtil.notBlank(allocateOrderCode, "查询调拨入库单明细信息参数调拨单编码allocateOrderCode不能为空");
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setAllocateOrderCode(allocateOrderCode);
+        allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
+        AssertUtil.notNull(allocateInOrder, String.format("查询调拨单[%s]信息为空", allocateOrderCode));
+        AllocateSkuDetail record = new AllocateSkuDetail();
+        record.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(record);
+        AssertUtil.notEmpty(allocateSkuDetailList, String.format("查询调拨单[%s]明细为空", allocateOrderCode));
+        allocateInOrder.setSkuDetailList(allocateSkuDetailList);
+        return allocateInOrder;
+    }
+
+    @Override
+    public void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数allocateOrderCode不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数flag不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数cancelReson不能为空");
+        
 
 
-
-
-
-        return null;
     }
 
 
