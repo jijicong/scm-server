@@ -35,6 +35,8 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
     @Column(name = "in_warehouse_code")
     private String inWarehouseCode;
 
+    private String outMemo;
+
     /**
      * 调出仓库编码
      */
@@ -511,4 +513,11 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
         this.senderMoblie = senderMoblie;
     }
 
+    public String getOutMemo() {
+        return outMemo;
+    }
+
+    public void setOutMemo(String outMemo) {
+        this.outMemo = outMemo;
+    }
 }
