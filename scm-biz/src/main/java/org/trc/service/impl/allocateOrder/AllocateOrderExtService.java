@@ -4,10 +4,19 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.enums.LogOperationEnum;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderDetailStatusEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
+import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
+import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.Pagenation;
@@ -21,10 +30,19 @@ import java.util.Set;
 @Service("allocateOrderExtService")
 public class AllocateOrderExtService implements IAllocateOrderExtService {
 
+    private static final String SYSTEM = "系统";
+    private static final String ALLOCATE_ORDER_DESCARD = "对应调拨单被作废";
+
     @Autowired
     private IAclUserAccreditInfoService aclUserAccreditInfoService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IAllocateInOrderService allocateInOrderService;
+    @Autowired
+    private IAllocateSkuDetailService allocateSkuDetailService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
     @Override
     public void setCreateOperator(String createOpertorName, Example.Criteria criteria) {
@@ -95,6 +113,34 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
                 }
             }
         }
+    }
+
+    @Override
+    public void createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator) {
+        allocateInOrderService.insert(allocateInOrder);
+        //记录操作日志
+        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+    }
+
+    @Override
+    public void discardedAllocateInOrder(String allocateOrderCode) {
+        //更新调拨入库单状态为已取消
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+        allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        Example example = new Example(AllocateInOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateInOrderService.updateByExampleSelective(allocateInOrder, example);
+        //更新调拨入库单sku状态为已取消
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
+        Example example2 = new Example(AllocateSkuDetail.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);
+        //记录操作日志
+        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
     }
 
 }
