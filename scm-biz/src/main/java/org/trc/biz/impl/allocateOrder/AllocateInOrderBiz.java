@@ -7,11 +7,14 @@ import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
+import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.config.ILogInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
@@ -31,6 +34,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IAllocateInOrderService allocateInOrderService;
     @Autowired
     private IAllocateSkuDetailService allocateSkuDetailService;
+    @Autowired
+    private ILogInfoService logInfoService;
 
     @Override
     public Pagenation<AllocateInOrder> allocateInOrderPage(AllocateInOrderForm form, Pagenation<AllocateInOrder> page) {
@@ -82,18 +87,38 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 
     @Override
     public void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
-
+        AssertUtil.notBlank(allocateOrderCode, "取消收货/重新收货调拨单参数allocateOrderCode不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "取消收货/重新收货调拨单参数flag不能为空");
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货操作
+            AssertUtil.notBlank(allocateOrderCode, "取消收货调拨单参数cancelReson不能为空");
+        }
+        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
+        LogOperationEnum logOperationEnum = null;
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货
+            logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
+        }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
+            logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
+        }
+        //记录操作日志
+        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
     }
 
     @Override
     public void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数allocateOrderCode不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数flag不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨单参数allocateOrderCode不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨单参数flag不能为空");
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭操作
             AssertUtil.notBlank(allocateOrderCode, "关闭调拨入库单参数cancelReson不能为空");
         }
-        
-
+        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
+        LogOperationEnum logOperationEnum = null;
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭
+            logOperationEnum = LogOperationEnum.HAND_CLOSE;
+        }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//取消关闭
+            logOperationEnum = LogOperationEnum.CANCEL_CLOSE;
+        }
+        //记录操作日志
+        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
     }
 
 

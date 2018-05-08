@@ -12,7 +12,9 @@ import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.enums.LogOperationEnum;
@@ -219,23 +221,9 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void discardedAllocateOutOrder(String allocateOrderCode) {
-        //更新调拨入库单状态为已取消
-        AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
-        allocateOutOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
-        allocateOutOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
-        Example example = new Example(AllocateInOrder.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateOutOrderService.updateByExampleSelective(allocateOutOrder, example);
-        //更新调拨入库单sku状态为已取消
-        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
-        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
-        Example example2 = new Example(AllocateSkuDetail.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);
+        AllocateInOrderParamForm form = this.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.TWO.getCode(), ZeroToNineEnum.ZERO.getCode(), ALLOCATE_ORDER_DESCARD);
         //记录操作日志
-        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
     }
 
     @Override
@@ -244,6 +232,10 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
         AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空", allocateInOrder));
+        //校验订单是否已经是取消状态
+        if(StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
+        }
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
         allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
         List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
@@ -273,12 +265,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             allocateInOrder.setOldStatus(allocateInOrder.getStatus());
             allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
             allocateInOrder.setMemo(cancelReson);
-            for(AllocateSkuDetail detail: allocateSkuDetailList){
-                detail.setOldInStatus(detail.getInStatus());
-                detail.setInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
-            }
         }
-        if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//关闭/取消发货
+        if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode()) || StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//作废/关闭/取消发货
             for(AllocateSkuDetail detail: allocateSkuDetailList){
                 detail.setOldInStatus(detail.getInStatus());
                 detail.setInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
