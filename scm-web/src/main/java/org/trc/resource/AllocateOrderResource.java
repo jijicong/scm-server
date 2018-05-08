@@ -15,6 +15,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -60,6 +61,9 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response allocateOrderAuditPage(@BeanParam AllocateOrderForm form, @BeanParam Pagenation<AllocateOrder> page,
     		@Context ContainerRequestContext requestContext) {
+    	if (StringUtils.isBlank(form.getAuditStatus())) {
+    		
+    	}
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.allocateOrderPage(form, page));
     }
     

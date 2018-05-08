@@ -766,7 +766,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		WarehouseInfo whInfo = warehouseInfoService.selectOne(queryRecord);
 		AssertUtil.objNotBlank(whInfo, "调入仓库不存在");
 		// 设置调入详细地址
-		allocateOrder.setReceiveAddress(whInfo.getAddress());
+		allocateOrder.setReceiverAddress(whInfo.getAddress());
 		
 		queryRecord.setCode(outWhCode);
 		whInfo = warehouseInfoService.selectOne(queryRecord);
