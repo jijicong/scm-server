@@ -23,14 +23,8 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
-import org.trc.domain.purchase.PurchaseOrderAddAudit;
-import org.trc.domain.purchase.PurchaseOrderAudit;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
-import org.trc.form.purchase.ItemForm;
-import org.trc.form.purchase.PurchaseOrderAuditForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -164,9 +158,9 @@ public class AllocateOrderResource {
     }
     
     @GET
-    @Path("skuList")
+    @Path("skuPage")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response skuList(@BeanParam AllocateItemForm form, @BeanParam Pagenation<AllocateSkuDetail> page,@QueryParam("skus") String skus) {
+    public Response skuPage(@BeanParam AllocateItemForm form, @BeanParam Pagenation<AllocateSkuDetail> page,@QueryParam("skus") String skus) {
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.querySkuList(form,page,skus));
     }
     

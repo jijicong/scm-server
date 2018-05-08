@@ -1,9 +1,11 @@
 package org.trc.domain.allocateOrder;
 
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 import org.trc.domain.util.CommonDO;
 import javax.persistence.Column;
 import javax.persistence.Transient;
+import javax.ws.rs.FormParam;
 
 public class AllocateOrderBase extends CommonDO{
 
@@ -17,6 +19,8 @@ public class AllocateOrderBase extends CommonDO{
      */
     @Length(max = 32, message = "调入仓库编码不得超过32个字符")
     @Column(name = "in_warehouse_code")
+    @NotBlank(message = "调入仓库编码不能为空")
+    @FormParam("inWarehouseCode")
     private String inWarehouseCode;
 
     /**
@@ -30,6 +34,8 @@ public class AllocateOrderBase extends CommonDO{
      */
     @Length(max = 32, message = "调出仓库编码不得超过32个字符")
     @Column(name = "out_warehouse_code")
+    @NotBlank(message = "调出仓库编码不能为空")
+    @FormParam("outWarehouseCode")
     private String outWarehouseCode;
 
     /**

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
@@ -142,7 +143,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             }
             //  example.orderBy("orderStatus").asc();
             example.orderBy("updateTime").desc();
-            example.setOrderByClause("field(orderStatus,0,3,1,2,4,5)");
+            example.setOrderByClause("field(order_status,0,3,1,2,4,5)");
         }
         
         //调拨单编号
@@ -194,7 +195,9 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         		AllocateOutOrder outOrder = new AllocateOutOrder();
         		outOrder.setAllocateOrderCode(order.getAllocateOrderCode());
         		AllocateOutOrder queryOutOrder = allocateOutOrderService.selectOne(outOrder);
-        		order.setOutOrderStatus(queryOutOrder.getStatus());
+        		if (queryOutOrder != null) {
+        			order.setOutOrderStatus(queryOutOrder.getStatus());
+        		}
         		
     			/*AclUserAccreditInfo user = new AclUserAccreditInfo();
     			user.setUserId(order.getCreateOperator());
@@ -507,7 +510,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         page.setTotalCount(totalCount);
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
         pagenation.setStart(page.getStart());
-        pagenation.setPageSize(page.getStart());
+        pagenation.setPageSize(page.getPageSize());
         pagenation.setTotalCount(totalCount);
         List<AllocateSkuDetail>  skuList = querySkuListPage(form, skus, pagenation);
 
@@ -644,7 +647,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             whInfoList.add(form.getWarehouseInfoInId());
             whInfoList.add(form.getWarehouseInfoOutId());
             
-            warehouseItemCriteria.andIn("skuCode", skuCodes);
+            //warehouseItemCriteria.andIn("skuCode", skuCodes);
             warehouseItemCriteria.andIn("warehouseInfoId", whInfoList);
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
             if (StringUtils.isNotBlank(barCode)) {
@@ -653,11 +656,43 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             if (StringUtils.isNotBlank(itemNo)) {
                 warehouseItemCriteria.andLike("itemNo", "%" + itemNo + "%");
             }
+            List<WarehouseItemInfo> tmpList = warehouseItemInfoService.selectByExample(warehouseItemExample);
+            
+            if (CollectionUtils.isEmpty(tmpList)) {
+                if (!flag) {
+                    throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
+                            "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
+                }
+            }
+            
+    		Map<String, List<WarehouseItemInfo>> groupBySkuCodeMap =
+    				tmpList.stream().collect(Collectors.groupingBy(WarehouseItemInfo::getSkuCode));
+    		
+    		List<Long> itemInfoIdList = new ArrayList<>();
+    		
+    		for (String key : groupBySkuCodeMap.keySet()) {
+    			if (groupBySkuCodeMap.get(key).size() == whInfoList.size()) {
+    				itemInfoIdList.add(groupBySkuCodeMap.get(key).get(0).getId());
+    			}
+    		}
+            
+            if (CollectionUtils.isEmpty(itemInfoIdList)) {
+                if (!flag) {
+                    throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
+                            "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
+                }
+            }
+            
+            Example tmpExample = new Example(WarehouseItemInfo.class);
+            Example.Criteria tmpCriteria = tmpExample.createCriteria();
+            
+            tmpCriteria.andIn("id", itemInfoIdList);
+            
             if (null != pagenation) {
-                pagenation = warehouseItemInfoService.pagination(warehouseItemExample, pagenation, new QueryModel());
+                pagenation = warehouseItemInfoService.pagination(tmpExample, pagenation, new QueryModel());
                 warehouseItemInfoList = pagenation.getResult();
             } else {
-                warehouseItemInfoList = warehouseItemInfoService.selectByExample(warehouseItemExample);
+                warehouseItemInfoList = warehouseItemInfoService.selectByExample(tmpExample);
             }
         }
         if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
@@ -701,6 +736,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	 */
 	private void setAllocateSkuDetail(AclUserAccreditInfo aclUserAccreditInfo,
 			AllocateSkuDetail detail, String allocateOrderCode, JSONObject jsonObj) {
+		if (jsonObj.getLong("planAllocateNum") == null ||
+				StringUtils.isBlank(jsonObj.getString("skuCode")) ||
+				StringUtils.isBlank(jsonObj.getString("inventoryType"))) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+					"商品明细商品参数不完整");
+		}
 		detail.setAllocateOrderCode(allocateOrderCode);
 		detail.setSkuName(jsonObj.getString("skuName"));
 		detail.setSkuCode(jsonObj.getString("skuCode"));

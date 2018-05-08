@@ -3,6 +3,7 @@ package org.trc.form.AllocateOrder;
 import javax.ws.rs.QueryParam;
 
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.util.QueryModel;
 
@@ -38,24 +39,18 @@ public class AllocateItemForm extends QueryModel{
     @Length(max = 64)
     private String barCode;
 
-    @QueryParam("supplierCode")
-    private String supplierCode;
-
-    @QueryParam("warehouseInfoId")
-    private String warehouseInfoId;
-    
     /**
      * 调入仓库id
      */
     @QueryParam("warehouseInfoInId")
-    @NotEmpty
+    @NotBlank(message = "调入仓库id不能为空")
     private String warehouseInfoInId;
     
     /**
      * 调出仓库id
      */
-    @QueryParam("warehouseInfoInId")
-    @NotEmpty
+    @QueryParam("warehouseInfoOutId")
+    @NotBlank(message = "调出仓库id不能为空")
     private String warehouseInfoOutId;
 
 
@@ -113,22 +108,6 @@ public class AllocateItemForm extends QueryModel{
 
     public void setSkuName(String skuName) {
         this.skuName = skuName;
-    }
-
-    public String getSupplierCode() {
-        return supplierCode;
-    }
-
-    public void setSupplierCode(String supplierCode) {
-        this.supplierCode = supplierCode;
-    }
-
-    public String getWarehouseInfoId() {
-        return warehouseInfoId;
-    }
-
-    public void setWarehouseInfoId(String warehouseInfoId) {
-        this.warehouseInfoId = warehouseInfoId;
     }
 
 }

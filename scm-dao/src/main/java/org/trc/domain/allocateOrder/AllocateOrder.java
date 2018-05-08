@@ -4,8 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.*;
+import javax.ws.rs.FormParam;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
@@ -22,24 +24,28 @@ public class AllocateOrder extends AllocateOrderBase{
      */
     @Id
     @Column(name = "allocate_order_code")
+    @FormParam("allocateOrderCode")
     private String allocateOrderCode;
 
     /**
      * 调拨入库单编号
      */
     @Column(name = "allocate_in_order_code")
+    @FormParam("allocateInOrderCode")
     private String allocateInOrderCode;
 
     /**
      * 调拨出库单编号
      */
     @Column(name = "allocate_out_order_code")
+    @FormParam("allocateOutOrderCode")
     private String allocateOutOrderCode;
 
     /**
      * 0-暂存,1-提交审核,2-审核通过,3-审核驳回,4-通知仓库,5-作废
      */
     @Column(name = "order_status")
+    @FormParam("orderStatus")
     private String orderStatus;
 
     /**
@@ -52,74 +58,86 @@ public class AllocateOrder extends AllocateOrderBase{
     /**
      * 收货人
      */
-    @NotEmpty
+    @NotBlank(message = "收货人不能为空")
+    @FormParam("receiver")
     private String receiver;
 
     /**
      * 收货人所在省
      */
     @Column(name = "reciver_province")
-    @NotEmpty
+    @NotBlank(message = "收货人所在省不能为空")
+    @FormParam("reciverProvince")
     private String reciverProvince;
 
     /**
      * 收货人所在城市
      */
     @Column(name = "reciver_city")
-    @NotEmpty
+    @NotBlank(message = "收货人所在城市不能为空")
+    @FormParam("reciverCity")
     private String reciverCity;
 
     /**
      * 收货详细地址
      */
     @Column(name = "receive_address")
+    @FormParam("receiveAddress")
     private String receiveAddress;
 
     /**
      * 收货人手机
      */
     @Column(name = "receiver_mobile")
-    @NotEmpty
+    @NotBlank(message = "收货人手机不能为空")
+    @FormParam("receiverMobile")
     private String receiverMobile;
 
     /**
      * 发件人
      */
-    @NotEmpty
+    @NotBlank(message = "发件人不能为空")
+    @FormParam("sender")
     private String sender;
 
     /**
      * 发件人所在省
      */
     @Column(name = "sender_province")
-    @NotEmpty
+    @NotBlank(message = "发件人所在省不能为空")
+    @FormParam("senderProvince")
     private String senderProvince;
 
     /**
      * 发件人所在城市
      */
     @Column(name = "sender_city")
-    @NotEmpty
+    @NotBlank(message = "发件人所在城市不能为空")
+    @FormParam("senderCity")
     private String senderCity;
 
     /**
      * 发件人手机
      */
     @Column(name = "sender_mobile")
-    @NotEmpty
+    @NotBlank(message = "发件人手机不能为空")
+    @FormParam("senderMobile")
     private String senderMobile;
 
     /**
      * 发件方详细地址
      */
     @Column(name = "sender_address")
+    @FormParam("senderAddress")
     private String senderAddress;
 
+    @FormParam("memo")
     private String memo;
 
     /**
      * 审核意见
      */
+    @FormParam("auditOpinion")
     @Column(name = "audit_opinion")
     private String auditOpinion;
     
