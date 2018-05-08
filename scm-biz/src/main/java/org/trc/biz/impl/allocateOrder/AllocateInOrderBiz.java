@@ -83,7 +83,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数allocateOrderCode不能为空");
         AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数flag不能为空");
         AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数cancelReson不能为空");
-        
+
+
+
 
 
     }
