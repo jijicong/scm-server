@@ -149,7 +149,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void updateOrderCancelInfo(AllocateOutInOrderBase allocateOutInOrderBase, String remark, boolean isClose, String status) {
-        allocateOutInOrderBase.setOldtatus(allocateOutInOrderBase.getStatus());
+        allocateOutInOrderBase.setOldStatus(allocateOutInOrderBase.getStatus());
         allocateOutInOrderBase.setStatus(status);
         if(isClose){
             allocateOutInOrderBase.setIsClose(ZeroToNineEnum.ONE.getCode());
@@ -167,8 +167,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void updateOrderCancelInfoExt(AllocateOutInOrderBase allocateOutInOrderBase, boolean isClose) {
-        allocateOutInOrderBase.setStatus(allocateOutInOrderBase.getOldtatus());
-        allocateOutInOrderBase.setOldtatus("");
+        allocateOutInOrderBase.setStatus(allocateOutInOrderBase.getOldStatus());
+        allocateOutInOrderBase.setOldStatus("");
         if(isClose){
             allocateOutInOrderBase.setIsClose(ZeroToNineEnum.ZERO.getCode());
         }else{
