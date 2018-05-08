@@ -32,6 +32,12 @@ public class AllocateSkuDetail {
     @Column(name = "allocate_in_status")
     private String allocateInStatus;
 
+    @Column(name = "old_out_status")
+    private String oldOutStatus;
+
+    @Column(name = "old_in_status")
+    private String oldInStatus;
+
     /**
      * sku名称
      */
@@ -526,5 +532,21 @@ public class AllocateSkuDetail {
 
 	public void setSkuNo(String skuNo) {
 		this.skuNo = skuNo;
-	}	
+	}
+
+    public String getOldOutStatus() {
+        return oldOutStatus;
+    }
+
+    public void setOldOutStatus(String oldOutStatus) {
+        this.oldOutStatus = oldOutStatus;
+    }
+
+    public String getOldInStatus() {
+        return oldInStatus;
+    }
+
+    public void setOldInStatus(String oldInStatus) {
+        this.oldInStatus = oldInStatus;
+    }
 }

@@ -127,7 +127,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             }
             if((StringUtils.equals(order.getIsCancel(), ZeroToNineEnum.ONE.getCode())
                     || StringUtils.equals(order.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
-                    this.checkDate(order.getUpdateTime())){
+                    DateCheckUtil.checkDate(order.getUpdateTime())){
                 order.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
             }else{
                 order.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
@@ -904,7 +904,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
             }
 
-            if(this.checkDate(outboundOrder.getUpdateTime())){
+            if(DateCheckUtil.checkDate(outboundOrder.getUpdateTime())){
                 String msg = "发货通知单已经超过7天，不允许取消关闭!";
                 logger.error(msg);
                 throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
@@ -943,16 +943,6 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
     }
 
-    private boolean checkDate(Date updateTime){
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(updateTime);
-        calendar.add(Calendar.DATE, Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()));
-        if(calendar.compareTo(Calendar.getInstance()) == 1){
-            return false;
-        }
-        return true;
-    }
-
     @Override
     @OutboundOrderCacheEvict
     public void checkTimeOutTimer() {
@@ -967,7 +957,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
         for (OutboundOrder outboundOrder : list) {
             //比较时间是否超过7天
-            Boolean checkResult = checkDate(outboundOrder.getUpdateTime());
+            Boolean checkResult = DateCheckUtil.checkDate(outboundOrder.getUpdateTime());
             if (checkResult){
                 //超过7天的则将is_timeOut更新为1
                 OutboundOrder update = new OutboundOrder();

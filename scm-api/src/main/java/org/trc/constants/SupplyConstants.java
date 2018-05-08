@@ -1057,10 +1057,19 @@ public class SupplyConstants {
 
         public static final String CANCEL_CLOSE = "cancelClose";
 
-        //调拨入库单分页查询
-        public static final String ALLOCATE_IN_ORDER_PAGE = "allocateInOrderPage";
+    }
+
+    /**
+     * 调拨入库单
+     */
+    public static final class AllocateInOrder {
+        public static final String ROOT = "allocateInOrder";
+        //调拨入库单分页
+        public static final String ORDER_PAGE = "orderPage";
         //调拨入库单详情查询
-        public static final String ALLOCATE_IN_ORDER_DETAIL = "allocateInOrderDetail";
+        public static final String ORDER_DETAIL = "orderDetail";
+        //调拨入库单取消
+        public static final String ORDER_CANCEL = "orderCancel";
     }
 
 
@@ -1103,8 +1112,12 @@ public class SupplyConstants {
          */
         public static final String ACL_WMS_USER_RESOURCE = "aclWmsUserResource";
 
+        /**
+         * 手机号校验
+         */
+        public static final String ACL_WMS_USER_PHONE = "aclWmsUserPhone";
 
-        public static final String CANCEL_CLOSE = "cancelClose";
+
     }
 
     /**

@@ -7,7 +7,7 @@ import java.util.List;
 import javax.persistence.*;
 
 @Table(name = "allocate_in_order")
-public class AllocateInOrder extends AllocateOrderBase{
+public class AllocateInOrder extends AllocateOutInOrderBase{
 
 	/**
 	 * 
