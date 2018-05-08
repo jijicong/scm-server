@@ -15,10 +15,8 @@ import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderDetailStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
-import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
@@ -210,5 +208,59 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         //记录操作日志
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
     }
+
+    @Override
+    public Map<String, Object> updateAllocateInOrderByCancel(String allocateOrderCode, String type, String flag, String cancelReson) {
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setAllocateOrderCode(allocateOrderCode);
+        allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
+        AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空", allocateInOrder));
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
+        AssertUtil.notEmpty(allocateSkuDetailList, String.format("根据调拨单号%s查询调拨入库单明细信息为空", allocateInOrder));
+        //更新调拨入库单
+        if(StringUtils.equals(type, ZeroToNineEnum.ZERO.getCode())){//关闭类型
+            if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//关闭
+                allocateInOrder.setOldtatus(allocateInOrder.getStatus());
+                allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+                allocateInOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
+                allocateInOrder.setMemo(cancelReson);
+            }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消关闭
+                allocateInOrder.setStatus(allocateInOrder.getOldtatus());
+                allocateInOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
+            }
+        }else if(StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())){//取消发货类型
+            if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//取消发货
+                allocateInOrder.setOldtatus(allocateInOrder.getStatus());
+                allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+                allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+                allocateInOrder.setMemo(cancelReson);
+            }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//重新发货
+                allocateInOrder.setStatus(allocateInOrder.getOldtatus());
+                allocateInOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+            }
+        }else if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode())){//作废类型
+            allocateInOrder.setOldtatus(allocateInOrder.getStatus());
+            allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+            allocateInOrder.setMemo(cancelReson);
+        }
+
+
+
+        /*Example example = new Example(AllocateInOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateInOrderService.updateByExampleSelective(allocateInOrder, example);
+        //更新调拨入库单sku
+
+        allocateSkuDetail.setAllocateInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
+        Example example2 = new Example(AllocateSkuDetail.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);*/
+        return null;
+    }
+
 
 }

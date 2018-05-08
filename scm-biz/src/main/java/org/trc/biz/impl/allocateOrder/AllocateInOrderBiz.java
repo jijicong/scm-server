@@ -1,11 +1,13 @@
 package org.trc.biz.impl.allocateOrder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
@@ -80,15 +82,20 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 
     @Override
     public void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数allocateOrderCode不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数flag不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数cancelReson不能为空");
-
-
-
-
 
     }
+
+    @Override
+    public void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数allocateOrderCode不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨入库单参数flag不能为空");
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭操作
+            AssertUtil.notBlank(allocateOrderCode, "关闭调拨入库单参数cancelReson不能为空");
+        }
+        
+
+    }
+
 
 
 }

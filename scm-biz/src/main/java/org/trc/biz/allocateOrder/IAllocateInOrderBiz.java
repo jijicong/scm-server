@@ -23,10 +23,21 @@ public interface IAllocateInOrderBiz {
     AllocateInOrder queryDetail(String allocateOrderCode);
 
     /**
-     * 调拨入库单取消
+     * 调拨入库单取消发货
      * @param allocateOrderCode 调拨单号
-     * @param flag 取消/启用标识:0-取消,1-启用
+     * @param flag 操作标识:0-取消收货,1-重新收货
+     * @param cancelReson 关闭原因
+     * @param aclUserAccreditInfo
      */
     void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 调拨入库单关闭
+     * @param allocateOrderCode 调拨单号
+     * @param flag 操作标识:0-关闭,1-取消关闭
+     * @param cancelReson 关闭原因
+     * @param aclUserAccreditInfo
+     */
+    void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo);
 
 }
