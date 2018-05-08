@@ -211,4 +211,32 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
     }
 
+    @Override
+    public void createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator) {
+        allocateOutOrderService.insert(allocateoutOrder);
+        //记录操作日志
+        logInfoService.recordLog(allocateoutOrder, allocateoutOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+    }
+
+    @Override
+    public void discardedAllocateOutOrder(String allocateOrderCode) {
+        //更新调拨入库单状态为已取消
+        AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
+        allocateOutOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+        allocateOutOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        Example example = new Example(AllocateInOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateOutOrderService.updateByExampleSelective(allocateOutOrder, example);
+        //更新调拨入库单sku状态为已取消
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
+        Example example2 = new Example(AllocateSkuDetail.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);
+        //记录操作日志
+        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+    }
+
 }
