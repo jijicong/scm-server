@@ -4,19 +4,25 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
+import org.trc.domain.allocateOrder.AllocateOutInOrderBase;
+import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.ZeroToNineEnum;
+import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
+import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.util.AssertUtil;
+import org.trc.util.DateCheckUtil;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service("allocateOrderExtService")
 public class AllocateOrderExtService implements IAllocateOrderExtService {
@@ -25,6 +31,10 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     private IAclUserAccreditInfoService aclUserAccreditInfoService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IAllocateOutOrderService allocateOutOrderService;
+    @Autowired
+    private IAllocateInOrderService allocateInOrderService;
 
     @Override
     public void setCreateOperator(String createOpertorName, Example.Criteria criteria) {
@@ -94,6 +104,67 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void setIsTimeOut(Pagenation pagenation) {
+        if(null == pagenation){
+            return;
+        }
+        if(CollectionUtils.isEmpty(pagenation.getResult())){
+            return;
+        }
+        List<AllocateOutInOrderBase> allocateOutInOrderBaseList = pagenation.getResult();
+
+        for(AllocateOutInOrderBase allocateOutInOrderBase : allocateOutInOrderBaseList){
+            if((StringUtils.equals(allocateOutInOrderBase.getIsCancel(), ZeroToNineEnum.ONE.getCode())
+                    || StringUtils.equals(allocateOutInOrderBase.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
+                    DateCheckUtil.checkDate(allocateOutInOrderBase.getUpdateTime())){
+                allocateOutInOrderBase.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            }else if(StringUtils.equals(allocateOutInOrderBase.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode()) &&
+                    StringUtils.equals(allocateOutInOrderBase.getIsCancel(), ZeroToNineEnum.ZERO.getCode()) &&
+                    StringUtils.equals(allocateOutInOrderBase.getIsClose(), ZeroToNineEnum.ZERO.getCode())){
+                allocateOutInOrderBase.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            }else{
+                allocateOutInOrderBase.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
+            }
+        }
+    }
+
+    @Override
+    public void updateOrderCancelInfo(AllocateOutInOrderBase allocateOutInOrderBase, String remark, boolean isClose, String status) {
+        allocateOutInOrderBase.setOldtatus(allocateOutInOrderBase.getStatus());
+        allocateOutInOrderBase.setStatus(status);
+        if(isClose){
+            allocateOutInOrderBase.setIsClose(ZeroToNineEnum.ONE.getCode());
+        }else {
+            allocateOutInOrderBase.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        }
+        allocateOutInOrderBase.setUpdateTime(Calendar.getInstance().getTime());
+        allocateOutInOrderBase.setMemo(remark);
+        if(allocateOutInOrderBase instanceof AllocateOutOrder){
+            allocateOutOrderService.updateByPrimaryKey((AllocateOutOrder)allocateOutInOrderBase);
+        }else if(allocateOutInOrderBase instanceof AllocateInOrder){
+            allocateInOrderService.updateByPrimaryKey((AllocateInOrder)allocateOutInOrderBase);
+        }
+    }
+
+    @Override
+    public void updateOrderCancelInfoExt(AllocateOutInOrderBase allocateOutInOrderBase, boolean isClose) {
+        allocateOutInOrderBase.setStatus(allocateOutInOrderBase.getOldtatus());
+        allocateOutInOrderBase.setOldtatus("");
+        if(isClose){
+            allocateOutInOrderBase.setIsClose(ZeroToNineEnum.ZERO.getCode());
+        }else{
+            allocateOutInOrderBase.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        }
+        allocateOutInOrderBase.setUpdateTime(Calendar.getInstance().getTime());
+        allocateOutInOrderBase.setMemo("");
+        if(allocateOutInOrderBase instanceof AllocateOutOrder){
+            allocateOutOrderService.updateByPrimaryKey((AllocateOutOrder)allocateOutInOrderBase);
+        }else if(allocateOutInOrderBase instanceof AllocateInOrder){
+            allocateInOrderService.updateByPrimaryKey((AllocateInOrder)allocateOutInOrderBase);
         }
     }
 

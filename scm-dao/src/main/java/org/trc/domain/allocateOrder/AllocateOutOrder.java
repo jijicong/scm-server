@@ -4,7 +4,7 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "allocate_out_order")
-public class AllocateOutOrder extends AllocateOrderBase{
+public class AllocateOutOrder extends AllocateOutInOrderBase{
 
 	/**
 	 * 
@@ -36,22 +36,10 @@ public class AllocateOutOrder extends AllocateOrderBase{
     private String inWarehouseCode;
 
     /**
-     * 是否取消
-     */
-    @Column(name = "is_cancel")
-    private String isCancel;
-
-    /**
      * 调出仓库编码
      */
     @Column(name = "out_warehouse_code")
     private String outWarehouseCode;
-
-    /**
-     * 是否关闭
-     */
-    @Column(name = "is_close")
-    private String isClose;
 
     /**
      * 出库状态0-待通知出库,1-出库仓库接收成功,2-出库仓库接收失败,3-出库完成,4-出库异常,5-已取消
@@ -117,21 +105,10 @@ public class AllocateOutOrder extends AllocateOrderBase{
     private String senderAddress;
 
     /**
-     * 备注
-     */
-    private String memo;
-
-    /**
      * 是否删除:0-否,1-是
      */
     @Column(name = "is_deleted")
     private String isDeleted;
-
-    /**
-     * 原始状态
-     */
-    @Column(name = "old_status")
-    private String oldtatus;
 
     /**
      * 创建人
@@ -157,8 +134,7 @@ public class AllocateOutOrder extends AllocateOrderBase{
     @Column(name = "is_valid")
     private String isValid;
 
-    @Transient
-    private String isTimeOut;
+
 
     /**
      * 获取主键
@@ -441,24 +417,6 @@ public class AllocateOutOrder extends AllocateOrderBase{
     }
 
     /**
-     * 获取备注
-     *
-     * @return memo - 备注
-     */
-    public String getMemo() {
-        return memo;
-    }
-
-    /**
-     * 设置备注
-     *
-     * @param memo 备注
-     */
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
-
-    /**
      * 获取是否删除:0-否,1-是
      *
      * @return is_deleted - 是否删除:0-否,1-是
@@ -548,39 +506,9 @@ public class AllocateOutOrder extends AllocateOrderBase{
         this.isValid = isValid;
     }
 
-    public String getIsCancel() {
-        return isCancel;
-    }
-
-    public void setIsCancel(String isCancel) {
-        this.isCancel = isCancel;
-    }
-
-    public String getIsClose() {
-        return isClose;
-    }
-
-    public void setIsClose(String isClose) {
-        this.isClose = isClose;
-    }
 
     public void setSenderMoblie(String senderMoblie) {
         this.senderMoblie = senderMoblie;
     }
 
-    public String getIsTimeOut() {
-        return isTimeOut;
-    }
-
-    public void setIsTimeOut(String isTimeOut) {
-        this.isTimeOut = isTimeOut;
-    }
-
-    public String getOldtatus() {
-        return oldtatus;
-    }
-
-    public void setOldtatus(String oldtatus) {
-        this.oldtatus = oldtatus;
-    }
 }

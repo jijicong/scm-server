@@ -1,5 +1,6 @@
 package org.trc.service.allocateOrder;
 
+import org.trc.domain.allocateOrder.AllocateOutInOrderBase;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
@@ -21,4 +22,25 @@ public interface IAllocateOrderExtService {
      */
     void setAllocateOrderOtherNames(Pagenation pagenation);
 
+    /**
+     * 设置是否能操作
+     * @param pagenation
+     */
+    void setIsTimeOut(Pagenation pagenation);
+
+    /**
+     * 修改关闭状态
+     * @param allocateOutInOrderBase
+     * @param remark
+     * @param isClose
+     * @param status
+     */
+    void updateOrderCancelInfo(AllocateOutInOrderBase allocateOutInOrderBase, String remark, boolean isClose, String status);
+
+    /**
+     * 修改取消关闭状态
+     * @param allocateOutInOrderBase
+     * @param isClose
+     */
+    void updateOrderCancelInfoExt(AllocateOutInOrderBase allocateOutInOrderBase, boolean isClose);
 }
