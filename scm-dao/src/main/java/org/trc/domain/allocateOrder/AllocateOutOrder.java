@@ -57,8 +57,8 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
     /**
      * 收货人手机
      */
-    @Column(name = "receiver_moblie")
-    private String receiverMoblie;
+    @Column(name = "receiver_mobile")
+    private String receiverMobile;
 
     /**
      * 发件人所在省
@@ -98,8 +98,8 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
     /**
      * 发件人手机
      */
-    @Column(name = "sender_moblie")
-    private String senderMoblie;
+    @Column(name = "sender_mobile")
+    private String senderMobile;
 
     /**
      * 发件方详细地址
@@ -265,23 +265,7 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
         this.receiver = receiver;
     }
 
-    /**
-     * 获取收货人手机
-     *
-     * @return receiver_phone - 收货人手机
-     */
-    public String getReceiverMoblie() {
-        return receiverMoblie;
-    }
 
-    /**
-     * 设置收货人手机
-     *
-     * @param receiverPhone 收货人手机
-     */
-    public void setReceiverMoblie(String receiverMoblie) {
-        this.receiverMoblie = receiverMoblie;
-    }
 
 
 
@@ -363,14 +347,6 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
         this.senderCity = senderCity;
     }
 
-    /**
-     * 获取发件人手机
-     *
-     * @return sender_phone - 发件人手机
-     */
-    public String getSenderMoblie() {
-        return senderMoblie;
-    }
 
 
     /**
@@ -482,11 +458,24 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
     }
 
 
-    public void setSenderMoblie(String senderMoblie) {
-        this.senderMoblie = senderMoblie;
-    }
 
-    public String getOutMemo() {
+    public String getReceiverMobile() {
+		return receiverMobile;
+	}
+
+	public void setReceiverMobile(String receiverMobile) {
+		this.receiverMobile = receiverMobile;
+	}
+
+	public String getSenderMobile() {
+		return senderMobile;
+	}
+
+	public void setSenderMobile(String senderMobile) {
+		this.senderMobile = senderMobile;
+	}
+
+	public String getOutMemo() {
         return outMemo;
     }
 
