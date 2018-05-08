@@ -76,7 +76,7 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
         if (StringUtils.isNotBlank(form.getWarehouseName())) {
             setWarehouseQuery(form, criteria);
         }
-
+        example.orderBy("updateTime").desc();
         Pagenation<AclWmsUserAccreditInfo> pagenation = aclWmsUserAccreditInfoService.pagination(example, page, form);
         List<AclWmsUserAccreditInfo> pageNationResult = pagenation.getResult();
 
