@@ -40,4 +40,11 @@ public interface IAllocateInOrderBiz {
      */
     void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo);
 
+    /**
+     * 通知收货
+     * @param allocateOrderCode
+     * @param aclUserAccreditInfo
+     */
+    void noticeReciveGoods(String allocateOrderCode, AclUserAccreditInfo aclUserAccreditInfo);
+
 }

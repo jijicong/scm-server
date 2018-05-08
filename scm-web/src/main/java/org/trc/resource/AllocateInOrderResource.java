@@ -37,20 +37,36 @@ public class AllocateInOrderResource {
     @GET
     @Path(SupplyConstants.AllocateInOrder.ORDER_DETAIL + "/{allocateOrderCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response allocateOrderDetail(@PathParam("allocateOrderCode") String allocateOrderCode){
+    public Response orderDetail(@PathParam("allocateOrderCode") String allocateOrderCode){
         return ResultUtil.createSuccessResult("查询调拨入库单明细成功", allocateInOrderBiz.queryDetail(allocateOrderCode));
     }
 
     @PUT
     @Path(SupplyConstants.AllocateInOrder.ORDER_CANCEL + "/{allocateOrderCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response allocateOrderCancel(@PathParam("allocateOrderCode") String allocateOrderCode,@FormParam("flag") String flag, @FormParam("cancelReson") String cancelReson, @Context ContainerRequestContext requestContext){
+    public Response orderCancel(@PathParam("allocateOrderCode") String allocateOrderCode,@FormParam("flag") String flag, @FormParam("cancelReson") String cancelReson, @Context ContainerRequestContext requestContext){
         AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
         allocateInOrderBiz.orderCancel(allocateOrderCode, flag, cancelReson, aclUserAccreditInfo);
-        return ResultUtil.createSuccessResult("查询调拨入库单明细成功", "");
+        return ResultUtil.createSuccessResult("操作成功", "");
     }
 
+    @PUT
+    @Path(SupplyConstants.AllocateInOrder.ORDER_CLOSE + "/{allocateOrderCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response orderClose(@PathParam("allocateOrderCode") String allocateOrderCode,@FormParam("flag") String flag, @FormParam("cancelReson") String cancelReson, @Context ContainerRequestContext requestContext){
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        allocateInOrderBiz.orderClose(allocateOrderCode, flag, cancelReson, aclUserAccreditInfo);
+        return ResultUtil.createSuccessResult("操作成功", "");
+    }
 
+    @PUT
+    @Path(SupplyConstants.AllocateInOrder.NOTICE_RECIVE_GOODS + "/{allocateOrderCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response noticeReciveGoods(@PathParam("allocateOrderCode") String allocateOrderCode, @Context ContainerRequestContext requestContext){
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        allocateInOrderBiz.noticeReciveGoods(allocateOrderCode, aclUserAccreditInfo);
+        return ResultUtil.createSuccessResult("操作成功", "");
+    }
 
 
 }

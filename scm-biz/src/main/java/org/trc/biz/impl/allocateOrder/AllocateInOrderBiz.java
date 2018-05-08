@@ -7,8 +7,11 @@ import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
+import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
@@ -67,6 +70,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         example.orderBy("createTime").desc();
         page = allocateInOrderService.pagination(example, page, form);
         allocateOrderExtService.setAllocateOrderOtherNames(page);
+        allocateOrderExtService.setIsTimeOut(page);
         return page;
     }
 
@@ -87,10 +91,10 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 
     @Override
     public void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notBlank(allocateOrderCode, "取消收货/重新收货调拨单参数allocateOrderCode不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "取消收货/重新收货调拨单参数flag不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "参数操作类型flag不能为空");
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货操作
-            AssertUtil.notBlank(allocateOrderCode, "取消收货调拨单参数cancelReson不能为空");
+            AssertUtil.notBlank(allocateOrderCode, "参数关闭原因cancelReson不能为空");
         }
         AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
         LogOperationEnum logOperationEnum = null;
@@ -105,10 +109,10 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 
     @Override
     public void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨单参数allocateOrderCode不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "关闭/取消关闭调拨单参数flag不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
+        AssertUtil.notBlank(allocateOrderCode, "参数操作类型flag不能为空");
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭操作
-            AssertUtil.notBlank(allocateOrderCode, "关闭调拨入库单参数cancelReson不能为空");
+            AssertUtil.notBlank(allocateOrderCode, "参数关闭原因cancelReson不能为空");
         }
         AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
         LogOperationEnum logOperationEnum = null;
@@ -121,6 +125,22 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
     }
 
+    @Override
+    public void noticeReciveGoods(String allocateOrderCode, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setAllocateOrderCode(allocateOrderCode);
+        allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
+        AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空", allocateInOrder));
+        //校验订单是否已经是取消状态
+        if(StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
+        }
+        //FIXME 调用仓库接口逻辑待实现
+
+        //记录操作日志
+        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
+    }
 
 
 }

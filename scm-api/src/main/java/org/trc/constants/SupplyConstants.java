@@ -1070,6 +1070,11 @@ public class SupplyConstants {
         public static final String ORDER_DETAIL = "orderDetail";
         //调拨入库单取消
         public static final String ORDER_CANCEL = "orderCancel";
+        //调拨入库单关闭
+        public static final String ORDER_CLOSE = "orderClose";
+        //调拨入库单通知收货
+        public static final String NOTICE_RECIVE_GOODS = "noticeReciveGoods";
+
     }
 
 
