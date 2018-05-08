@@ -54,8 +54,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     @Autowired
     private IAllocateOutOrderService allocateOutOrderService;
     @Autowired
-    private IWarehouseInfoService warehouseInfoService;
-    @Autowired
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
     private ILogInfoService logInfoService;
@@ -68,7 +66,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
      * 调拨单分页查询
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.ALLOCATE_OUT_ORDER)
+//    @Cacheable(value = SupplyConstants.Cache.ALLOCATE_OUT_ORDER)
     public Pagenation<AllocateOutOrder> allocateOutOrderPage(AllocateOutOrderForm form,
 															 Pagenation<AllocateOutOrder> page) {
 
@@ -122,16 +120,14 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         List<AllocateOutOrder> allocateOutOrders = pagenation.getResult();
         for(AllocateOutOrder allocateOutOrder : allocateOutOrders){
             AssertUtil.notNull(allocateOutOrder.getAllocateOrderCode(),"调拨单号不能为空,id="+allocateOutOrder.getId());
-            AllocateOrder allocateOrder = new AllocateOrder();
-            allocateOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
-            allocateOrder = allocateOrderService.selectOne(allocateOrder);
-
             if((StringUtils.equals(allocateOutOrder.getIsCancel(), ZeroToNineEnum.ONE.getCode())
                     || StringUtils.equals(allocateOutOrder.getIsClose(), ZeroToNineEnum.ONE.getCode())) &&
                     this.checkDate(allocateOutOrder.getUpdateTime())){
                 allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
-            }else if(StringUtils.equals(allocateOrder.getOrderStatus(), AllocateOrderEnum.AllocateOrderStatusEnum.DROP.getCode())){
-                    allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
+            }else if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode()) &&
+                    StringUtils.equals(allocateOutOrder.getIsCancel(), ZeroToNineEnum.ZERO.getCode()) &&
+                    StringUtils.equals(allocateOutOrder.getIsClose(), ZeroToNineEnum.ZERO.getCode())){
+                allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ONE.getCode());
             }else{
                 allocateOutOrder.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
             }
@@ -152,7 +148,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             //获取出库单信息
             AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
 
-            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) ||
+            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) &&
                     !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
                 String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
                 logger.error(msg);
