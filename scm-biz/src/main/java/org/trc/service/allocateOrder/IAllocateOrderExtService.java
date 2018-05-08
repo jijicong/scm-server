@@ -1,6 +1,7 @@
 package org.trc.service.allocateOrder;
 
 import org.trc.domain.allocateOrder.AllocateOutInOrderBase;
+import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
@@ -43,4 +44,17 @@ public interface IAllocateOrderExtService {
      * @param isClose
      */
     void updateOrderCancelInfoExt(AllocateOutInOrderBase allocateOutInOrderBase, boolean isClose);
+    /**
+     * 创建调拨入库单
+     * @param allocateInOrder 调拨入库单对象
+     * @param createOperator 当前操作人
+     */
+    void createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator);
+
+    /**
+     * 调拨入库单作废
+     * @param allocateOrderCode
+     */
+    void discardedAllocateInOrder(String allocateOrderCode);
+
 }
