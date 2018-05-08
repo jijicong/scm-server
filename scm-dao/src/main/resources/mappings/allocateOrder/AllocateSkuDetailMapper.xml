@@ -31,8 +31,24 @@
         <foreach collection="list" item="skuDetail" index="index" open="" close=";" separator=";">
             update allocate_sku_detail
             <set>
-                inventory_type = #{skuDetail.inventoryType},
-                plan_allocate_num = #{skuDetail.planAllocateNum}
+                <if test="skuDetail.inventoryType != null and skuDetail.inventoryType != ''">
+                    inventory_type = #{skuDetail.inventoryType},
+                </if>
+                <if test="skuDetail.planAllocateNum != null and skuDetail.planAllocateNum != ''">
+                    plan_allocate_num = #{skuDetail.planAllocateNum},
+                </if>
+                <if test="skuDetail.updateTime != null">
+                    update_time = NOW(),
+                </if>
+                <if test="skuDetail.allocateOutStatus != null and skuDetail.allocateOutStatus != ''">
+                    allocate_out_status = #{skuDetail.allocateOutStatus},
+                </if>
+                <if test="skuDetail.outStatus != null and skuDetail.outStatus != ''">
+                    out_status = #{skuDetail.outStatus},
+                </if>
+                <if test="skuDetail.oldOutStatus != null and skuDetail.oldOutStatus != ''">
+                    old_out_status = #{skuDetail.oldOutStatus}
+                </if>
             </set>
             where
               id = #{skuDetail.id}

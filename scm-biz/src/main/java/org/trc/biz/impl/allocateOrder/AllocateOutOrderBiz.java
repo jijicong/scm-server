@@ -31,7 +31,11 @@ import org.trc.util.cache.AllocateOrderCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
+import static javafx.beans.binding.Bindings.select;
 
 @Service("allocateOutOrderBiz")
 public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
@@ -127,7 +131,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
             //修改状态
             this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
-                    allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode());
+                    allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
             allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, true,
                     AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
 
@@ -165,8 +169,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             }
 
             //修改状态
-            this.updateDetailStatus(allocateOutOrder.getOldStatus(), allocateOutOrder.getAllocateOrderCode(),
-                    AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode());
+            this.updateDetailStatus("", allocateOutOrder.getAllocateOrderCode(),
+                    AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), true);
             allocateOrderExtService.updateOrderCancelInfoExt(allocateOutOrder, true);
 
             String userId = aclUserAccreditInfo.getUserId();
@@ -180,15 +184,27 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     //修改详情状态
-    private void updateDetailStatus(String code, String allocateOrderCode, String allocateStatus){
+    private void updateDetailStatus(String code, String allocateOrderCode, String allocateStatus, boolean cancel){
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
-        allocateSkuDetail.setOutStatus(code);
-        allocateSkuDetail.setAllocateOutStatus(allocateStatus);
-        allocateSkuDetail.setUpdateTime(Calendar.getInstance().getTime());
-        Example exampleOrder = new Example(AllocateSkuDetail.class);
-        Example.Criteria criteriaOrder = exampleOrder.createCriteria();
-        criteriaOrder.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, exampleOrder);
+        allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
+        List<AllocateSkuDetail> allocateSkuDetailsUpdate = new ArrayList<>();
+
+        if(allocateSkuDetails != null && allocateSkuDetails.size() > 0){
+            for(AllocateSkuDetail allocateSkuDetailTemp : allocateSkuDetails){
+                if(cancel){
+                    allocateSkuDetailTemp.setOutStatus(allocateSkuDetailTemp.getOldOutStatus());
+                    allocateSkuDetailTemp.setOldOutStatus("");
+                }else{
+                    allocateSkuDetailTemp.setOldOutStatus(allocateSkuDetailTemp.getOutStatus());
+                    allocateSkuDetailTemp.setOutStatus(code);
+                }
+                allocateSkuDetailTemp.setAllocateOutStatus(allocateStatus);
+                allocateSkuDetailTemp.setUpdateTime(Calendar.getInstance().getTime());
+                allocateSkuDetailsUpdate.add(allocateSkuDetailTemp);
+            }
+            allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailsUpdate);
+        }
     }
 
 }
