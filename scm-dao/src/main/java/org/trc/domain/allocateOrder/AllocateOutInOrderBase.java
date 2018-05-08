@@ -24,7 +24,7 @@ public class AllocateOutInOrderBase extends AllocateOrderBase{
 
     private String status;
 
-    private String oldtatus;
+    private String oldStatus;
 
     @Transient
     private String isTimeOut;
@@ -61,19 +61,19 @@ public class AllocateOutInOrderBase extends AllocateOrderBase{
         this.status = status;
     }
 
-    public String getOldtatus() {
-        return oldtatus;
-    }
-
-    public void setOldtatus(String oldtatus) {
-        this.oldtatus = oldtatus;
-    }
-
     public String getMemo() {
         return memo;
     }
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public String getOldStatus() {
+        return oldStatus;
+    }
+
+    public void setOldStatus(String oldStatus) {
+        this.oldStatus = oldStatus;
     }
 }

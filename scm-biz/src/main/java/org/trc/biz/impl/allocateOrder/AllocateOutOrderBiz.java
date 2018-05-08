@@ -165,7 +165,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             }
 
             //修改状态
-            this.updateDetailStatus(allocateOutOrder.getOldtatus(), allocateOutOrder.getAllocateOrderCode(),
+            this.updateDetailStatus(allocateOutOrder.getOldStatus(), allocateOutOrder.getAllocateOrderCode(),
                     AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode());
             allocateOrderExtService.updateOrderCancelInfoExt(allocateOutOrder, true);
 
