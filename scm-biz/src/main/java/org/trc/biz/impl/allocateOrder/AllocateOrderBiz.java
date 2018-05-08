@@ -23,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import org.trc.biz.allocateOrder.IAllocateOrderBiz;
 import org.trc.biz.category.ICategoryBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
@@ -421,23 +422,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		 */
 		AllocateOutOrder outOrder = new AllocateOutOrder();
 		BeanUtils.copyProperties(queryOrder, outOrder);
+		allocateOrderExtService.createAllocateOutOrder(outOrder, userInfo.getUserId());
 		
-        String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_OUT_LENGTH, 
-        		SupplyConstants.Serial.ALLOCATE_ORDER_OUT_CODE,
-        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
-        
-        outOrder.setAllocateOutOrderCode(code);
-        outOrder.setCreateOperator(userInfo.getUserId());
-        outOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
-        outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
-        outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
-        
-//		AclUserAccreditInfo user = new AclUserAccreditInfo();
-//		user.setUserId(userInfo.getUserId());
-//		AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
-//		outOrder.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());
-		
-        allocateOutOrderService.insertSelective(outOrder);
+		AllocateInOrder inOrder = new AllocateInOrder();
+		BeanUtils.copyProperties(queryOrder, inOrder);
+		allocateOrderExtService.createAllocateInOrder(inOrder, userInfo.getUserId());
+        //allocateOutOrderService.insertSelective(outOrder);
 	}
 	
 	

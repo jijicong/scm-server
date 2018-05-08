@@ -18,6 +18,7 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
      * 主键
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -77,22 +78,22 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
      * 发件人所在省
      */
     @Length(max = 32, message = "发件人所在省不得超过32个字符")
-    @Column(name = "reciver_province")
-    private String reciverProvince;
+    @Column(name = "receiver_province")
+    private String receiverProvince;
 
     /**
      * 发件人所在城市
      */
     @Length(max = 32, message = "发件人所在城市不得超过32个字符")
-    @Column(name = "reciver_city")
-    private String reciverCity;
+    @Column(name = "receiver_city")
+    private String receiverCity;
 
     /**
      * 收货地址
      */
     @Length(max = 256, message = "收货地址不得超过256个字符")
-    @Column(name = "receive_address")
-    private String receiveAddress;
+    @Column(name = "receiver_address")
+    private String receiverAddress;
 
     /**
      * 收货人手机
@@ -337,61 +338,34 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
         this.receiverPhone = receiverPhone;
     }
 
-    /**
-     * 获取发件人所在省
-     *
-     * @return reciver_province - 发件人所在省
-     */
-    public String getReciverProvince() {
-        return reciverProvince;
-    }
 
-    /**
-     * 设置发件人所在省
-     *
-     * @param reciverProvince 发件人所在省
-     */
-    public void setReciverProvince(String reciverProvince) {
-        this.reciverProvince = reciverProvince;
-    }
 
-    /**
-     * 获取发件人所在城市
-     *
-     * @return reciver_city - 发件人所在城市
-     */
-    public String getReciverCity() {
-        return reciverCity;
-    }
+    public String getReceiverProvince() {
+		return receiverProvince;
+	}
 
-    /**
-     * 设置发件人所在城市
-     *
-     * @param reciverCity 发件人所在城市
-     */
-    public void setReciverCity(String reciverCity) {
-        this.reciverCity = reciverCity;
-    }
+	public void setReceiverProvince(String receiverProvince) {
+		this.receiverProvince = receiverProvince;
+	}
 
-    /**
-     * 获取收货地址
-     *
-     * @return receive_address - 收货地址
-     */
-    public String getReceiveAddress() {
-        return receiveAddress;
-    }
+	public String getReceiverCity() {
+		return receiverCity;
+	}
 
-    /**
-     * 设置收货地址
-     *
-     * @param receiveAddress 收货地址
-     */
-    public void setReceiveAddress(String receiveAddress) {
-        this.receiveAddress = receiveAddress;
-    }
+	public void setReceiverCity(String receiverCity) {
+		this.receiverCity = receiverCity;
+	}
 
-    /**
+
+    public String getReceiverAddress() {
+		return receiverAddress;
+	}
+
+	public void setReceiverAddress(String receiverAddress) {
+		this.receiverAddress = receiverAddress;
+	}
+
+	/**
      * 获取收货人手机
      *
      * @return receiver_mobile - 收货人手机

@@ -4,6 +4,7 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateOutInOrderBase;
@@ -25,9 +26,11 @@ import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateCheckUtil;
+import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
@@ -51,6 +54,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private ISerialUtilService serialUtilService;
 
     @Override
     public void setCreateOperator(String createOpertorName, Example.Criteria criteria) {
@@ -186,6 +191,16 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator) {
+    	
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_IN_LENGTH, 
+        		SupplyConstants.Serial.ALLOCATE_ORDER_IN_CODE,
+        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        allocateInOrder.setAllocateInOrderCode(code);
+        allocateInOrder.setCreateOperator(createOperator);
+        allocateInOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        allocateInOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
+        allocateInOrder.setStatus(AllocateInOrderStatusEnum.WAIT_OUT_FINISH.getCode().toString());
+    	
         allocateInOrderService.insert(allocateInOrder);
         //记录操作日志
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
@@ -213,10 +228,20 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     }
 
     @Override
-    public void createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator) {
-        allocateOutOrderService.insert(allocateoutOrder);
+    public void createAllocateOutOrder(AllocateOutOrder outOrder, String createOperator) {
+    	
+        String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_OUT_LENGTH, 
+        		SupplyConstants.Serial.ALLOCATE_ORDER_OUT_CODE,
+        			DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        outOrder.setAllocateOutOrderCode(code);
+        outOrder.setCreateOperator(createOperator);
+        outOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
+        outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
+        
+        allocateOutOrderService.insert(outOrder);
         //记录操作日志
-        logInfoService.recordLog(allocateoutOrder, allocateoutOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+        logInfoService.recordLog(outOrder, outOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
     }
 
     @Override
