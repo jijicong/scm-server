@@ -234,19 +234,29 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     public void discardedAllocateOutOrder(String allocateOrderCode) {
         //更新调拨入库单状态为已取消
         AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
+        allocateOutOrder.setAllocateOrderCode(allocateOrderCode);
+        allocateOutOrder = allocateOutOrderService.selectOne(allocateOutOrder);
+
         allocateOutOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
-        allocateOutOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
-        Example example = new Example(AllocateInOrder.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateOutOrderService.updateByExampleSelective(allocateOutOrder, example);
+        allocateOutOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+        allocateOutOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
+        allocateOutOrder.setOldStatus("");
+        allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
         //更新调拨入库单sku状态为已取消
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
-        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
-        Example example2 = new Example(AllocateSkuDetail.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);
+        allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
+
+        List<AllocateSkuDetail> allocateSkuDetailsUpdate = new ArrayList<>();
+        if(allocateSkuDetails != null && allocateSkuDetails.size() > 0){
+            for(AllocateSkuDetail allocateSkuDetailTemp : allocateSkuDetails){
+                allocateSkuDetailTemp.setOldOutStatus("");
+                allocateSkuDetailTemp.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
+                allocateSkuDetailTemp.setUpdateTime(Calendar.getInstance().getTime());
+                allocateSkuDetailsUpdate.add(allocateSkuDetailTemp);
+            }
+            allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailsUpdate);
+        }
         //记录操作日志
         logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
 

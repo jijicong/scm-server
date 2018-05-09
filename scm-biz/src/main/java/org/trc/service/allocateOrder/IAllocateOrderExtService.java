@@ -70,7 +70,7 @@ public interface IAllocateOrderExtService {
     void createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator);
 
     /**
-     * 调拨入库单作废
+     * 调拨出库单作废
      * @param allocateOrderCode
      */
     void discardedAllocateOutOrder(String allocateOrderCode);
