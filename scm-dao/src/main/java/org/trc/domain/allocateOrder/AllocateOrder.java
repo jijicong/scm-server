@@ -66,16 +66,16 @@ public class AllocateOrder extends AllocateOrderBase{
      * 收货人所在省
      */
     @Column(name = "receiver_province")
-    @NotBlank(message = "收货人所在省不能为空")
-    @FormParam("receiverProvince")
+    //@NotBlank(message = "收货人所在省不能为空")
+    //@FormParam("receiverProvince")
     private String receiverProvince;
 
     /**
      * 收货人所在城市
      */
     @Column(name = "receiver_city")
-    @NotBlank(message = "收货人所在城市不能为空")
-    @FormParam("receiverCity")
+    //@NotBlank(message = "收货人所在城市不能为空")
+    //@FormParam("receiverCity")
     private String receiverCity;
 
     /**
@@ -104,16 +104,16 @@ public class AllocateOrder extends AllocateOrderBase{
      * 发件人所在省
      */
     @Column(name = "sender_province")
-    @NotBlank(message = "发件人所在省不能为空")
-    @FormParam("senderProvince")
+   // @NotBlank(message = "发件人所在省不能为空")
+   // @FormParam("senderProvince")
     private String senderProvince;
 
     /**
      * 发件人所在城市
      */
     @Column(name = "sender_city")
-    @NotBlank(message = "发件人所在城市不能为空")
-    @FormParam("senderCity")
+    //@NotBlank(message = "发件人所在城市不能为空")
+    //@FormParam("senderCity")
     private String senderCity;
 
     /**

@@ -138,7 +138,8 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response dropAllocateOrder(@PathParam("id") String orderId,
     		@Context ContainerRequestContext requestContext) {
-    	allocateOrderBiz.dropAllocateOrder(orderId);
+    	allocateOrderBiz.dropAllocateOrder(orderId, (AclUserAccreditInfo) requestContext.
+				getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     	return ResultUtil.createSuccessResult("作废调拨单成功","");
     	
     }

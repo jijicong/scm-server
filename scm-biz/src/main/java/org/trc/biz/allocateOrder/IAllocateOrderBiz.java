@@ -18,7 +18,7 @@ public interface IAllocateOrderBiz {
 
 	void deleteAllocateOrder(String orderId);
 
-	void dropAllocateOrder(String orderId);
+	void dropAllocateOrder(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
 	void noticeWarehouse(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
