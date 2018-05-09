@@ -237,7 +237,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         allocateOutOrder.setAllocateOrderCode(allocateOrderCode);
         allocateOutOrder = allocateOutOrderService.selectOne(allocateOutOrder);
 
-        allocateOutOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+        allocateOutOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
         allocateOutOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
         allocateOutOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
         allocateOutOrder.setOldStatus("");
