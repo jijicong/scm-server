@@ -92,11 +92,11 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     @Override
     public void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "参数操作类型flag不能为空");
+        AssertUtil.notBlank(flag, "参数操作类型flag不能为空");
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货操作
-            AssertUtil.notBlank(allocateOrderCode, "参数关闭原因cancelReson不能为空");
+            AssertUtil.notBlank(cancelReson, "参数关闭原因cancelReson不能为空");
         }
-        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
+        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ONE.getCode(), flag, cancelReson);
         LogOperationEnum logOperationEnum = null;
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货
             logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
@@ -110,9 +110,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     @Override
     public void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
-        AssertUtil.notBlank(allocateOrderCode, "参数操作类型flag不能为空");
+        AssertUtil.notBlank(flag, "参数操作类型flag不能为空");
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭操作
-            AssertUtil.notBlank(allocateOrderCode, "参数关闭原因cancelReson不能为空");
+            AssertUtil.notBlank(cancelReson, "参数关闭原因cancelReson不能为空");
         }
         AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
         LogOperationEnum logOperationEnum = null;
