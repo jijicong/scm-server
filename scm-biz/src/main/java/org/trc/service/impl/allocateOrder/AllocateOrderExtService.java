@@ -208,23 +208,9 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void discardedAllocateInOrder(String allocateOrderCode) {
-        //更新调拨入库单状态为已取消
-        AllocateInOrder allocateInOrder = new AllocateInOrder();
-        allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
-        allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
-        Example example = new Example(AllocateInOrder.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateInOrderService.updateByExampleSelective(allocateInOrder, example);
-        //更新调拨入库单sku状态为已取消
-        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
-        allocateSkuDetail.setAllocateInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
-        Example example2 = new Example(AllocateSkuDetail.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
-        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);
+        AllocateInOrderParamForm form = this.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.TWO.getCode(), ZeroToNineEnum.ZERO.getCode(), ALLOCATE_ORDER_DESCARD);
         //记录操作日志
-        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
     }
 
     @Override
@@ -246,9 +232,24 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void discardedAllocateOutOrder(String allocateOrderCode) {
-        AllocateInOrderParamForm form = this.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.TWO.getCode(), ZeroToNineEnum.ZERO.getCode(), ALLOCATE_ORDER_DESCARD);
+        //更新调拨入库单状态为已取消
+        AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
+        allocateOutOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+        allocateOutOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        Example example = new Example(AllocateInOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateOutOrderService.updateByExampleSelective(allocateOutOrder, example);
+        //更新调拨入库单sku状态为已取消
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
+        Example example2 = new Example(AllocateSkuDetail.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andEqualTo("allocateOrderCode", allocateOrderCode);
+        allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example2);
         //记录操作日志
-        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+
     }
 
     @Override
