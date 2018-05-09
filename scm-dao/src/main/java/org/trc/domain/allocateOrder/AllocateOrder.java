@@ -67,7 +67,7 @@ public class AllocateOrder extends AllocateOrderBase{
      */
     @Column(name = "receiver_province")
     @NotBlank(message = "收货人所在省不能为空")
-    @FormParam("reciverProvince")
+    @FormParam("receiverProvince")
     private String receiverProvince;
 
     /**
@@ -197,8 +197,22 @@ public class AllocateOrder extends AllocateOrderBase{
      */
     @Transient
     private List<AllocateSkuDetail> skuDetailList;
-
+    
     /**
+     * 提交人姓名
+     */
+    @Transient
+    private String submitOperatorName;
+
+    public String getSubmitOperatorName() {
+		return submitOperatorName;
+	}
+
+	public void setSubmitOperatorName(String submitOperatorName) {
+		this.submitOperatorName = submitOperatorName;
+	}
+
+	/**
      * 获取调拨单编号
      *
      * @return allocate_order_code - 调拨单编号

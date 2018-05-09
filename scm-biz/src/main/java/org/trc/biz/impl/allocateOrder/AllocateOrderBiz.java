@@ -4,6 +4,8 @@ package org.trc.biz.impl.allocateOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +101,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
      * 调拨单分页查询
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.ALLOCATE_ORDER)
+   // @Cacheable(value = SupplyConstants.Cache.ALLOCATE_ORDER)
     public Pagenation<AllocateOrder> allocateOrderPage(AllocateOrderForm form, 
     		Pagenation<AllocateOrder> page) {
 
@@ -134,7 +136,39 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         		throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
 						"审核状态错误");
         	}
+        	
         	example.orderBy("submitTime").desc();
+        	
+            //提交审核日期开始
+            if (!StringUtils.isBlank(form.getSubmitTimeStart())) {
+            	criteria.andGreaterThanOrEqualTo("submitTime", form.getSubmitTimeStart());
+            }
+            
+            //提交审核日期结束
+            if (!StringUtils.isBlank(form.getSubmitTimeEnd())) {
+            	criteria.andLessThanOrEqualTo("submitTime", form.getSubmitTimeEnd());
+            }
+            
+            //提交人
+            if (!StringUtils.isBlank(form.getSubmitOperatorName())) {
+                Example userExample = new Example(AclUserAccreditInfo.class);
+                Example.Criteria userCriteria = userExample.createCriteria();
+                
+                userCriteria.andLike("name", "%" + form.getSubmitOperatorName() + "%");
+                
+                List<AclUserAccreditInfo> userList = aclUserAccreditInfoService.selectByExample(userExample);
+                if (CollectionUtils.isEmpty(userList)) {
+                	return new Pagenation<AllocateOrder>();
+                } else {
+                	List<String> userIdList = new ArrayList<>();
+                	for (AclUserAccreditInfo user : userList) {
+                		userIdList.add(user.getUserId());
+                	}
+                	criteria.andIn("submitOperator", userIdList);
+                }
+
+                
+            }
             
         } else {
         	// 调拨单管理页面
@@ -186,7 +220,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         if (!StringUtils.isBlank(form.getUpdateTimeEnd())) {
         	criteria.andLessThanOrEqualTo("updateTime", form.getUpdateTimeEnd());
         }
-
+        
         allocateOrderService.pagination(example, page, form);
         
         List<AllocateOrder> result = page.getResult();
@@ -200,10 +234,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         			order.setOutOrderStatus(queryOutOrder.getStatus());
         		}
         		
-    			/*AclUserAccreditInfo user = new AclUserAccreditInfo();
-    			user.setUserId(order.getCreateOperator());
-    			AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
-    			order.setCreateOperatorName(tmpUser == null? "" : tmpUser.getName());*/
+        		if (StringUtils.isNotBlank(order.getSubmitOperator())) {
+        			AclUserAccreditInfo user = new AclUserAccreditInfo();
+        			user.setUserId(order.getSubmitOperator());
+        			AclUserAccreditInfo tmpUser = aclUserAccreditInfoService.selectOne(user);
+        			order.setSubmitOperatorName(tmpUser == null? "" : tmpUser.getName());
+        		}
         	}
         }
 		allocateOrderExtService.setAllocateOrderOtherNames(page);
@@ -238,6 +274,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				}
 				
 			}
+			allocateOrder.setSubmitOperator(aclUserAccreditInfo.getUserId());
+			allocateOrder.setSubmitTime(new Date());
 		}
 		if (StringUtils.isBlank(allocateOrder.getAllocateOrderCode())) { // 新增
 			/**
@@ -362,6 +400,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	}
 	
 	@Override
+	@Transactional
 	public void dropAllocateOrder(String orderId) {
 		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
 		if (queryOrder == null) {
@@ -390,6 +429,13 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
 					"作废调拨单失败");
 		}
+		/**
+		 * 调拨单作废，相应得出入库通知单都要变成取消状态
+		 */
+		
+		allocateOrderExtService.discardedAllocateInOrder(orderId);
+		allocateOrderExtService.discardedAllocateOutOrder(orderId);
+		
 	}
 	
 
@@ -763,14 +809,16 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		}
         WarehouseInfo queryRecord = new WarehouseInfo();
         queryRecord.setCode(inWhCode);
+        queryRecord.setIsDeleted(ZeroToNineEnum.ZERO.getCode());//未删除
+        queryRecord.setIsValid(ZeroToNineEnum.ONE.getCode());//有效
 		WarehouseInfo whInfo = warehouseInfoService.selectOne(queryRecord);
-		AssertUtil.objNotBlank(whInfo, "调入仓库不存在");
+		AssertUtil.notNull(whInfo, "调入仓库不存在或已停用");
 		// 设置调入详细地址
 		allocateOrder.setReceiverAddress(whInfo.getAddress());
 		
 		queryRecord.setCode(outWhCode);
 		whInfo = warehouseInfoService.selectOne(queryRecord);
-		AssertUtil.objNotBlank(whInfo, "调出仓库不存在");
+		AssertUtil.notNull(whInfo, "调出仓库不存在或已停用");
 		// 设置调出详细地址
 		allocateOrder.setSenderAddress(whInfo.getAddress());
 	}

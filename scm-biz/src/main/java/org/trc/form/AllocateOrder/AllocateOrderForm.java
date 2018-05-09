@@ -1,7 +1,12 @@
 package org.trc.form.AllocateOrder;
 
+import java.util.Date;
+
+import javax.persistence.Column;
 import javax.ws.rs.QueryParam;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
 import org.trc.util.QueryModel;
 
 public class AllocateOrderForm extends QueryModel {
@@ -67,6 +72,49 @@ public class AllocateOrderForm extends QueryModel {
      */
     @QueryParam("auditStatus")
     private String auditStatus;
+    
+    /**
+     * 提交人姓名
+     */
+    @QueryParam("submitOperatorName")
+    private String submitOperatorName;
+    
+    /**
+     * 提交审核时间开始
+     */
+    @QueryParam("submitTimeStart")
+    private String submitTimeStart;
+    
+    /**
+     * 提交审核时间结束
+     */
+    @QueryParam("submitTimeEnd")
+    private String submitTimeEnd;
+
+    
+	public String getSubmitTimeStart() {
+		return submitTimeStart;
+	}
+
+	public void setSubmitTimeStart(String submitTimeStart) {
+		this.submitTimeStart = submitTimeStart;
+	}
+
+	public String getSubmitTimeEnd() {
+		return submitTimeEnd;
+	}
+
+	public void setSubmitTimeEnd(String submitTimeEnd) {
+		this.submitTimeEnd = submitTimeEnd;
+	}
+
+	public String getSubmitOperatorName() {
+		return submitOperatorName;
+	}
+
+	public void setSubmitOperatorName(String submitOperatorName) {
+		this.submitOperatorName = submitOperatorName;
+	}
 
 	public String getAuditStatus() {
 		return auditStatus;
