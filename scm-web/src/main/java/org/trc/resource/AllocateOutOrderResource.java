@@ -40,6 +40,13 @@ public class AllocateOutOrderResource {
         return ResultUtil.createSuccessPageResult(allocateOutOrderBiz.allocateOutOrderPage(form, page));
     }
 
+    @GET
+    @Path(SupplyConstants.AllocateOutOrder.ALLOCATE_OUT_ORDER + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response orderDetail(@PathParam("id") Long id){
+        return ResultUtil.createSuccessResult("查询调拨入库单详情成功", allocateOutOrderBiz.queryDetail(id));
+    }
+
     /**
      * 关闭
      */

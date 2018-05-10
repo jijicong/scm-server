@@ -75,20 +75,6 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
     private String receiverPhone;
 
     /**
-     * 发件人所在省
-     */
-    @Length(max = 32, message = "发件人所在省不得超过32个字符")
-    @Column(name = "receiver_province")
-    private String receiverProvince;
-
-    /**
-     * 发件人所在城市
-     */
-    @Length(max = 32, message = "发件人所在城市不得超过32个字符")
-    @Column(name = "receiver_city")
-    private String receiverCity;
-
-    /**
      * 收货地址
      */
     @Length(max = 256, message = "收货地址不得超过256个字符")
@@ -107,20 +93,6 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
      */
     @Length(max = 64, message = "发件人不得超过64个字符")
     private String sender;
-
-    /**
-     * 发件人所在省
-     */
-    @Length(max = 32, message = "发件人所在省不得超过32个字符")
-    @Column(name = "sender_province")
-    private String senderProvince;
-
-    /**
-     * 发件人所在城市
-     */
-    @Length(max = 32, message = "发件人所在城市不得超过32个字符")
-    @Column(name = "sender_city")
-    private String senderCity;
 
     /**
      * 发件人手机
@@ -338,25 +310,6 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
         this.receiverPhone = receiverPhone;
     }
 
-
-
-    public String getReceiverProvince() {
-		return receiverProvince;
-	}
-
-	public void setReceiverProvince(String receiverProvince) {
-		this.receiverProvince = receiverProvince;
-	}
-
-	public String getReceiverCity() {
-		return receiverCity;
-	}
-
-	public void setReceiverCity(String receiverCity) {
-		this.receiverCity = receiverCity;
-	}
-
-
     public String getReceiverAddress() {
 		return receiverAddress;
 	}
@@ -399,42 +352,6 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
      */
     public void setSender(String sender) {
         this.sender = sender;
-    }
-
-    /**
-     * 获取发件人所在省
-     *
-     * @return sender_province - 发件人所在省
-     */
-    public String getSenderProvince() {
-        return senderProvince;
-    }
-
-    /**
-     * 设置发件人所在省
-     *
-     * @param senderProvince 发件人所在省
-     */
-    public void setSenderProvince(String senderProvince) {
-        this.senderProvince = senderProvince;
-    }
-
-    /**
-     * 获取发件人所在城市
-     *
-     * @return sender_city - 发件人所在城市
-     */
-    public String getSenderCity() {
-        return senderCity;
-    }
-
-    /**
-     * 设置发件人所在城市
-     *
-     * @param senderCity 发件人所在城市
-     */
-    public void setSenderCity(String senderCity) {
-        this.senderCity = senderCity;
     }
 
     /**

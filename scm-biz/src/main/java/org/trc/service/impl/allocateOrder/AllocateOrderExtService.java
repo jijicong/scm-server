@@ -353,6 +353,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             }
         }
         if(StringUtils.isNotEmpty(allocateOrderBase.getSenderProvince())){
+            area = new Area();
             area.setCode(allocateOrderBase.getSenderProvince());
             area = locationUtilService.selectOne(area);
             if(area != null){
