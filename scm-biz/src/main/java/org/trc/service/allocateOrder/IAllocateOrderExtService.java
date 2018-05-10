@@ -91,4 +91,10 @@ public interface IAllocateOrderExtService {
      */
     void setArea(AllocateOrderBase allocateOrderBase);
 
+	/**
+	 * 设置出入库仓库名
+	 * @param allocateOrderBase
+	 */
+	void setAllocateOrderWarehouseName(AllocateOrderBase allocateOrderBase);
+
 }

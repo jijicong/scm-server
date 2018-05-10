@@ -201,7 +201,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         
         //调入仓库
         if (!StringUtils.isBlank(form.getInWarehouseCode())) {
-        	criteria.andEqualTo("inWarehouseName", form.getInWarehouseCode());
+        	criteria.andEqualTo("inWarehouseCode", form.getInWarehouseCode());
         }
         
         //出入库状态
@@ -556,6 +556,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		if (!CollectionUtils.isEmpty(detailList)) {
 			retOrder.setSkuDetailList(detailList);
 		}
+		allocateOrderExtService.setAllocateOrderWarehouseName(retOrder);
+		allocateOrderExtService.setArea(retOrder);
 		return retOrder;
 	}
 	
