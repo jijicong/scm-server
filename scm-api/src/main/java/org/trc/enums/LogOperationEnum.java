@@ -4,7 +4,7 @@ package org.trc.enums;
  * Created by hzqph on 2017/6/26.
  */
 public enum LogOperationEnum {
-    ADD("新增"),UPDATE("修改"),DELETE("删除"), AUDIT_REJECT("审核驳回"),CANCEL("作废"),RENEWAL("更新"),CREATE("创建"),
+    ADD("新增"),UPDATE("修改"),DELETE("删除"), AUDIT_REJECT("审核驳回"),CANCEL("作废"),RENEWAL("更新"),CREATE("创建"),SUBMIT("提交审核"), AUDIT_PASS("审核通过"),
     FREEZE("冻结"),UN_FREEZE("解冻"),WAREHOUSE_NOTICE("入库通知"),NOTICE_RECEIVE("通知收货"),WMS_RECEIVE_FAILED("仓库接收失败"),
     SUBMIT_JINGDONG_ORDER("映射京东地址并发送"),SUBMIT_ORDER("发送"),SUBMIT_ORDER_FIALURE("下单失败"), DELIVER("已发货"),SYNCHRONIZE("同步"),
 
@@ -17,7 +17,8 @@ public enum LogOperationEnum {
     SEND("发货"),ADD_NEW_WAREHOUSE("新增发货仓库"),
 
     ALLOCATE_IN_WMS("入库"), DISCARDED("作废"),CANCEL_CLOSE("取消关闭"),HAND_CLOSE("手工关闭"),RECIVE_WMS_RECIVE_FAILURE("入库仓接收失败"),
-    RECIVE_WMS_RECIVE_SUCCESS("入库仓接收成功"),RE_RECIVE_GOODS("重新收货"),CANCEL_RECIVE_GOODS("取消收货"),NOTICE_RECIVE_GOODS("通知收货");
+    RECIVE_WMS_RECIVE_SUCCESS("入库仓接收成功"),RE_RECIVE_GOODS("重新收货"),CANCEL_RECIVE_GOODS("取消收货"),NOTICE_RECIVE_GOODS("通知收货"),
+	NOTICE_WMS("通知仓库");
 
     private String message;
 

@@ -167,6 +167,20 @@ public class AllocateOrder extends AllocateOrderBase{
     private List<AllocateSkuDetail> skuDetailList;
 
     /**
+     * 提交人姓名
+     */
+    @Transient
+    private String submitOperatorName;
+
+    public String getSubmitOperatorName() {
+		return submitOperatorName;
+	}
+
+	public void setSubmitOperatorName(String submitOperatorName) {
+		this.submitOperatorName = submitOperatorName;
+	}
+
+	/**
      * 获取调拨单编号
      *
      * @return allocate_order_code - 调拨单编号

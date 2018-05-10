@@ -1,5 +1,7 @@
 package org.trc.biz.allocateOrder;
 
+import javax.ws.rs.core.Response;
+
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -18,7 +20,7 @@ public interface IAllocateOrderBiz {
 
 	void deleteAllocateOrder(String orderId);
 
-	void dropAllocateOrder(String orderId);
+	void dropAllocateOrder(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
 	void noticeWarehouse(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
@@ -27,5 +29,7 @@ public interface IAllocateOrderBiz {
 	Pagenation<AllocateSkuDetail> querySkuList(AllocateItemForm form, Pagenation<AllocateSkuDetail> page, String skus);
 
 	void allocateOrderAudit(String orderId, String auditOpinion, String auditResult, AclUserAccreditInfo property);
+
+	Response queryWarehouse();
 
 }

@@ -24,8 +24,10 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.AllocateOrderEnum;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
+import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -61,8 +63,9 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response allocateOrderAuditPage(@BeanParam AllocateOrderForm form, @BeanParam Pagenation<AllocateOrder> page,
     		@Context ContainerRequestContext requestContext) {
+    	// 不传状态默认为待审核
     	if (StringUtils.isBlank(form.getAuditStatus())) {
-    		
+    		form.setAuditStatus(AllocateOrderEnum.AllocateOrderAuditStatusEnum.WAIT_AUDIT.getCode());
     	}
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.allocateOrderPage(form, page));
     }
@@ -139,7 +142,8 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response dropAllocateOrder(@PathParam("id") String orderId,
     		@Context ContainerRequestContext requestContext) {
-    	allocateOrderBiz.dropAllocateOrder(orderId);
+    	allocateOrderBiz.dropAllocateOrder(orderId, (AclUserAccreditInfo) requestContext.
+				getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     	return ResultUtil.createSuccessResult("作废调拨单成功","");
     	
     }
@@ -166,6 +170,13 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response skuPage(@BeanParam AllocateItemForm form, @BeanParam Pagenation<AllocateSkuDetail> page,@QueryParam("skus") String skus) {
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.querySkuList(form,page,skus));
+    }
+    
+    @GET
+    @Path("warehouseList")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryWarehouse()  {
+        return allocateOrderBiz.queryWarehouse();
     }
     
     
