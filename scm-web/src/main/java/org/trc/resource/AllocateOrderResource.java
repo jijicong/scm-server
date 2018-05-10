@@ -168,6 +168,13 @@ public class AllocateOrderResource {
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.querySkuList(form,page,skus));
     }
     
+    @GET
+    @Path("warehouseList")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryWarehouse()  {
+        return allocateOrderBiz.queryWarehouse();
+    }
+    
     
     
 

@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -64,6 +66,7 @@ import org.trc.util.CommonUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
+import org.trc.util.ResultUtil;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -623,6 +626,22 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
         return page;
 	}
+	
+	
+	@Override
+	public Response queryWarehouse() {
+
+      WarehouseInfo warehouse = new WarehouseInfo();
+
+      //校验仓库是否已通知
+      warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+      List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouse);
+      if(warehouseInfoList == null || warehouseInfoList.size() < 1){
+          String msg = "无数据，请确认【仓储管理-仓库信息管理】中存在“通知成功”的仓库！";
+          return ResultUtil.createSuccessResult(msg, "");
+      }
+      return ResultUtil.createSuccessResult("查询仓库成功", warehouseInfoList);
+	}
 
 
 
@@ -895,5 +914,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		allocateOrder.setSenderCity(whInfo.getCity());
 		allocateOrder.setSenderProvince(whInfo.getProvince());
 	}
+
+
+
 
 }
