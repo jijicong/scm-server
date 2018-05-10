@@ -1,5 +1,8 @@
 package org.trc.domain.allocateOrder;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.trc.custom.CustomDateSerializer;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -99,12 +102,14 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
      * 创建时间,格式yyyy-mm-dd hh:mi:ss
      */
     @Column(name = "create_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
 
     /**
      * 最后更新时间,格式yyyy-mm-dd hh:mi:ss
      */
     @Column(name = "update_time")
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date updateTime;
 
     /**
