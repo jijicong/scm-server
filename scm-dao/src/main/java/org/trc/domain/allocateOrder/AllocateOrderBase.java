@@ -54,8 +54,6 @@ public class AllocateOrderBase extends CommonDO{
      * 收货人所在省
      */
     @Column(name = "receiver_province")
-    @NotBlank(message = "收货人所在省不能为空")
-    @FormParam("reciverProvince")
     private String receiverProvince;
 
     @Transient
@@ -65,8 +63,6 @@ public class AllocateOrderBase extends CommonDO{
      * 收货人所在城市
      */
     @Column(name = "receiver_city")
-    @NotBlank(message = "收货人所在城市不能为空")
-    @FormParam("receiverCity")
     private String receiverCity;
 
     @Transient
@@ -76,8 +72,6 @@ public class AllocateOrderBase extends CommonDO{
      * 发件人所在省
      */
     @Column(name = "sender_province")
-    @NotBlank(message = "发件人所在省不能为空")
-    @FormParam("senderProvince")
     private String senderProvince;
 
     @Transient
@@ -87,8 +81,6 @@ public class AllocateOrderBase extends CommonDO{
      * 发件人所在城市
      */
     @Column(name = "sender_city")
-    @NotBlank(message = "发件人所在城市不能为空")
-    @FormParam("senderCity")
     private String senderCity;
 
     @Transient
