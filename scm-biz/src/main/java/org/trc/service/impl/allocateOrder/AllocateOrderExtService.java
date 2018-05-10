@@ -11,6 +11,7 @@ import org.trc.domain.allocateOrder.AllocateOutInOrderBase;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
@@ -26,6 +27,7 @@ import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.util.ILocationUtilService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
@@ -56,6 +58,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     private ILogInfoService logInfoService;
     @Autowired
     private ISerialUtilService serialUtilService;
+    @Autowired
+    private ILocationUtilService locationUtilService;
 
     @Override
     public void setCreateOperator(String createOpertorName, Example.Criteria criteria) {
@@ -328,6 +332,41 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         form.setAllocateInOrder(allocateInOrder);
         form.setAllocateSkuDetailList(allocateSkuDetailList);
         return form;
+    }
+
+    @Override
+    public void setArea(AllocateOrderBase allocateOrderBase) {
+        Area area = new Area();
+        if(StringUtils.isNotEmpty(allocateOrderBase.getReceiverProvince())){
+            area.setCode(allocateOrderBase.getReceiverProvince());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                allocateOrderBase.setReceiverProvinceName(area.getProvince());
+            }
+        }
+        if(StringUtils.isNotEmpty(allocateOrderBase.getReceiverCity())){
+            area = new Area();
+            area.setCode(allocateOrderBase.getReceiverCity());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                allocateOrderBase.setReceiverProvinceName(area.getCity());
+            }
+        }
+        if(StringUtils.isNotEmpty(allocateOrderBase.getSenderProvince())){
+            area.setCode(allocateOrderBase.getSenderProvince());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                allocateOrderBase.setSenderProvinceName(area.getProvince());
+            }
+        }
+        if(StringUtils.isNotEmpty(allocateOrderBase.getSenderCity())){
+            area = new Area();
+            area.setCode(allocateOrderBase.getSenderCity());
+            area = locationUtilService.selectOne(area);
+            if(area != null){
+                allocateOrderBase.setSenderCityName(area.getCity());
+            }
+        }
     }
 
 

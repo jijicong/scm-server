@@ -1,5 +1,6 @@
 package org.trc.service.allocateOrder;
 
+import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateOutInOrderBase;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
@@ -83,5 +84,11 @@ public interface IAllocateOrderExtService {
      * @param cancelReson 关闭原因
      */
     AllocateInOrderParamForm updateAllocateInOrderByCancel(String allocateOrderCode, String type, String flag, String cancelReson);
+
+    /**
+     * 设置地方名称
+     * @param allocateOrderBase
+     */
+    void setArea(AllocateOrderBase allocateOrderBase);
 
 }

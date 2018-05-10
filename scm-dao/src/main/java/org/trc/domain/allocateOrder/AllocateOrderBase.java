@@ -50,6 +50,52 @@ public class AllocateOrderBase extends CommonDO{
     @Transient
     private String createOperatorName;
 
+    /**
+     * 收货人所在省
+     */
+    @Column(name = "receiver_province")
+    @NotBlank(message = "收货人所在省不能为空")
+    @FormParam("reciverProvince")
+    private String receiverProvince;
+
+    @Transient
+    private String receiverProvinceName;
+
+    /**
+     * 收货人所在城市
+     */
+    @Column(name = "receiver_city")
+    @NotBlank(message = "收货人所在城市不能为空")
+    @FormParam("receiverCity")
+    private String receiverCity;
+
+    @Transient
+    private String receiverCityName;
+
+    /**
+     * 发件人所在省
+     */
+    @Column(name = "sender_province")
+    @NotBlank(message = "发件人所在省不能为空")
+    @FormParam("senderProvince")
+    private String senderProvince;
+
+    @Transient
+    private String senderProvinceName;
+
+    /**
+     * 发件人所在城市
+     */
+    @Column(name = "sender_city")
+    @NotBlank(message = "发件人所在城市不能为空")
+    @FormParam("senderCity")
+    private String senderCity;
+
+    @Transient
+    private String senderCityName;
+
+
+
     public String getInWarehouseCode() {
         return inWarehouseCode;
     }
@@ -90,4 +136,67 @@ public class AllocateOrderBase extends CommonDO{
         this.createOperatorName = createOperatorName;
     }
 
+    public String getReceiverProvince() {
+        return receiverProvince;
+    }
+
+    public void setReceiverProvince(String receiverProvince) {
+        this.receiverProvince = receiverProvince;
+    }
+
+    public String getReceiverCity() {
+        return receiverCity;
+    }
+
+    public void setReceiverCity(String receiverCity) {
+        this.receiverCity = receiverCity;
+    }
+
+    public String getSenderProvince() {
+        return senderProvince;
+    }
+
+    public void setSenderProvince(String senderProvince) {
+        this.senderProvince = senderProvince;
+    }
+
+    public String getSenderCity() {
+        return senderCity;
+    }
+
+    public void setSenderCity(String senderCity) {
+        this.senderCity = senderCity;
+    }
+
+    public String getReceiverProvinceName() {
+        return receiverProvinceName;
+    }
+
+    public void setReceiverProvinceName(String receiverProvinceName) {
+        this.receiverProvinceName = receiverProvinceName;
+    }
+
+    public String getReceiverCityName() {
+        return receiverCityName;
+    }
+
+    public void setReceiverCityName(String receiverCityName) {
+        this.receiverCityName = receiverCityName;
+    }
+
+    public String getSenderProvinceName() {
+        return senderProvinceName;
+    }
+
+    public void setSenderProvinceName(String senderProvinceName) {
+        this.senderProvinceName = senderProvinceName;
+    }
+
+    public String getSenderCityName() {
+        return senderCityName;
+    }
+
+    public void setSenderCityName(String senderCityName) {
+        this.senderCityName = senderCityName;
+    }
 }
