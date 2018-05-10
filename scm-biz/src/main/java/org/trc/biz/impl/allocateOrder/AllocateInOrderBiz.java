@@ -51,7 +51,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             criteria.andLike("allocateInOrderCode", "%" + form.getAllocateInOrderCode() + "%");
         }
         if (StringUtil.isNotEmpty(form.getInWarehouseCode())) {//调入仓库
-            criteria.andEqualTo("nWarehouseCode", form.getInWarehouseCode() );
+            criteria.andEqualTo("inWarehouseCode", form.getInWarehouseCode() );
         }
         if (StringUtil.isNotEmpty(form.getStatus())) {//入库单状态
             criteria.andEqualTo("status", form.getStatus());

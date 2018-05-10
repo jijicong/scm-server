@@ -177,8 +177,5 @@
         <appender-ref ref="warn"/>
         <appender-ref ref="error"/>
     </root>
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
-    </root>
 
 </configuration>
