@@ -14,4 +14,6 @@ public interface IAllocateOutOrderBiz {
     Response close(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo);
 
     Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo);
+
+    AllocateOutOrder queryDetail(Long id);
 }

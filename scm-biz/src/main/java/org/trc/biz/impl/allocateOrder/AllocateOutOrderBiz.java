@@ -183,6 +183,14 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         }
     }
 
+    @Override
+    public AllocateOutOrder queryDetail(Long id) {
+        AssertUtil.notNull(id, "查询调拨出库单详情信息参数调拨单id不能为空");
+        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
+        allocateOrderExtService.setArea(allocateOutOrder);
+        return allocateOutOrder;
+    }
+
     //修改详情状态
     private void updateDetailStatus(String code, String allocateOrderCode, String allocateStatus, boolean cancel){
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
