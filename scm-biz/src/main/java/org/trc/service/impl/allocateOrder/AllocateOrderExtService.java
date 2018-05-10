@@ -368,6 +368,35 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             }
         }
     }
+    
+    @Override
+    public void setAllocateOrderWarehouseName(AllocateOrderBase baseOrder) {
+        if (null == baseOrder) {
+            return;
+        }
+        Set<String> warehouseCodes = new HashSet<>();
+        if (StringUtils.isNotBlank(baseOrder.getInWarehouseCode())) {
+        	warehouseCodes.add(baseOrder.getInWarehouseCode());
+        }
+        if (StringUtils.isNotBlank(baseOrder.getOutWarehouseCode())) {
+        	warehouseCodes.add(baseOrder.getOutWarehouseCode());
+        }
+        List<WarehouseInfo> warehouseInfoList = new ArrayList<>();
+        if (warehouseCodes.size() > 0) {
+            Example example = new Example(WarehouseInfo.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("code", warehouseCodes);
+            warehouseInfoList = warehouseInfoService.selectByExample(example);
+        }
+        
+        for (WarehouseInfo warehouseInfo: warehouseInfoList) {
+            if (StringUtils.equals(baseOrder.getOutWarehouseCode(), warehouseInfo.getCode())) {
+            	baseOrder.setOutWarehouseName(warehouseInfo.getWarehouseName());
+            } else if (StringUtils.equals(baseOrder.getInWarehouseCode(), warehouseInfo.getCode())) {
+            	baseOrder.setInWarehouseName(warehouseInfo.getWarehouseName());
+            }
+        }
+    }
 
 
 }
