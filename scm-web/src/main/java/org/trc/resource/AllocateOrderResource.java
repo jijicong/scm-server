@@ -24,6 +24,7 @@ import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.enums.AllocateOrderEnum;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.util.AssertUtil;
@@ -62,7 +63,10 @@ public class AllocateOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response allocateOrderAuditPage(@BeanParam AllocateOrderForm form, @BeanParam Pagenation<AllocateOrder> page,
     		@Context ContainerRequestContext requestContext) {
-    	AssertUtil.notBlank(form.getAuditStatus(), "审核状态不能为空");
+    	// 不传状态默认为待审核
+    	if (StringUtils.isBlank(form.getAuditStatus())) {
+    		form.setAuditStatus(AllocateOrderEnum.AllocateOrderAuditStatusEnum.WAIT_AUDIT.getCode());
+    	}
         return ResultUtil.createSuccessPageResult(allocateOrderBiz.allocateOrderPage(form, page));
     }
     
