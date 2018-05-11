@@ -34,17 +34,18 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
 
     @Override
     public List<WarehousePriority> warehousePriorityList() {
-        WarehousePriority warehousePriority = new WarehousePriority();
-        List<WarehousePriority> warehousePriorityList = warehousePriorityService.select(warehousePriority);
+        Example example = new Example(WarehousePriority.class);
+        example.orderBy("priority").asc();
+        List<WarehousePriority> warehousePriorityList = warehousePriorityService.selectByExample(example);
         if(!CollectionUtils.isEmpty(warehousePriorityList)){
             List<String> warehouseCodes = new ArrayList<>();
             for(WarehousePriority priority: warehousePriorityList){
                 warehouseCodes.add(priority.getWarehouseCode());
             }
-            Example example = new Example(WarehouseInfo.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andIn("code", warehouseCodes);
-            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+            Example example2 = new Example(WarehouseInfo.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andIn("code", warehouseCodes);
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example2);
             if(!CollectionUtils.isEmpty(warehouseInfoList)){
                 for(WarehousePriority priority: warehousePriorityList){
                     for(WarehouseInfo warehouseInfo: warehouseInfoList){
@@ -108,10 +109,6 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
             warehouseCodes.add(warehousePriority.getWarehouseCode());
             if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), _obj.getString("source"))){//新增的数据
                 addWaWarehousePrioritys.add(warehousePriority);
-            }else{
-                if(StringUtils.equals(ZeroToNineEnum.TWO.getCode(), _obj.getString("status"))){//已修改
-                    updateWaWarehousePrioritys.add(warehousePriority);
-                }
             }
         }
         //设置新的仓库优先级
@@ -128,14 +125,6 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
                 }
             }
         }
-        for(WarehousePriority priority: updateWaWarehousePrioritys){
-            for(WarehousePriority priority2: warehousePriorityList){
-                if(StringUtils.equals(priority.getWarehouseCode(), priority2.getWarehouseCode())){
-                    priority.setPriority(priority2.getPriority());
-                    break;
-                }
-            }
-        }
         //插入新增仓库优先级
         if(!CollectionUtils.isEmpty(addWaWarehousePrioritys)){
             warehousePriorityService.insertList(addWaWarehousePrioritys);
@@ -144,40 +133,36 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
                 logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ADD_NEW_WAREHOUSE.getMessage(), null,null);
             }
         }
+
+        Example example = new Example(WarehousePriority.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("warehouseCode", warehouseCodes);
+        List<WarehousePriority> _warehousePriorityList = warehousePriorityService.selectByExample(example);
         //更新修改过状态的仓库优先级
-        if(!CollectionUtils.isEmpty(updateWaWarehousePrioritys)){
-            Example example = new Example(WarehousePriority.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andIn("warehouseCode", warehouseCodes);
-            List<WarehousePriority> _warehousePriorityList = warehousePriorityService.selectByExample(example);
-            if(!CollectionUtils.isEmpty(_warehousePriorityList)){
-                for(WarehousePriority priority: updateWaWarehousePrioritys){
-                    for(WarehousePriority _priority: _warehousePriorityList){
-                        if(StringUtils.equals(priority.getWarehouseCode(), _priority.getWarehouseCode())){
-                            priority.setId(_priority.getId());
-                            warehousePriorityService.updateByPrimaryKeySelective(priority);
-                            //记录操作日志
-                            if(!StringUtils.equals(priority.getIsValid(), _priority.getIsValid())){
-                                String validStr = "";
-                                if(StringUtils.equals(ValidStateEnum.ENABLE.getCode().toString(), priority.getIsValid())){
-                                    validStr = "重新启用";
-                                }else {
-                                    validStr = "取消启用";
-                                }
-                                String remark = String.format("%s: %s", priority.getWarehouseName(), validStr);
-                                logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), remark,null);
-                            }else{
-                                logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null,null);
+        for(WarehousePriority priority: warehousePriorityList){
+            for(WarehousePriority _priority: _warehousePriorityList){
+                if(StringUtils.equals(priority.getWarehouseCode(), _priority.getWarehouseCode())){
+                    if(!StringUtils.equals(priority.getIsValid(), _priority.getIsValid()) || priority.getPriority().intValue() != _priority.getPriority().intValue()){
+                        priority.setId(_priority.getId());
+                        warehousePriorityService.updateByPrimaryKeySelective(priority);
+                        //记录操作日志
+                        if(!StringUtils.equals(priority.getIsValid(), _priority.getIsValid())){
+                            String validStr = "";
+                            if(StringUtils.equals(ValidStateEnum.ENABLE.getCode().toString(), priority.getIsValid())){
+                                validStr = "重新启用";
+                            }else {
+                                validStr = "取消启用";
                             }
-                            break;
+                            String remark = String.format("%s: %s", priority.getWarehouseName(), validStr);
+                            logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), remark,null);
+                        }else{
+                            logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null,null);
                         }
+                        break;
                     }
                 }
             }
-
         }
-
-
 
     }
 }
