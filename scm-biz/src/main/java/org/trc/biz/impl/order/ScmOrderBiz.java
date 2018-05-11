@@ -5611,6 +5611,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(com.alibaba.dubbo.common.utils.StringUtils.isEquals("0", contentResult.get("count").toString())){
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
             }
+
+            //获取导入订单sku明细
+            List<ImportOrderSkuDetail> importOrderSkuDetailList = getImportOrderSkuDetail(titleResult, contentResult);
+
             /*Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId, titleResult.length);
             String count = (String) contentMapResult.get("count");
             int countNum = Integer.parseInt(count);
@@ -5731,6 +5735,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private List<ImportOrderSkuDetail> getImportOrderSkuDetail(String[] titleResult, Map<String, String> contentResult){
         List<ImportOrderSkuDetail> importOrderSkuDetailList = new ArrayList<>();
         for(Map.Entry<String, String> entry: contentResult.entrySet()){
+            if(entry.getKey().equals("count")){
+                continue;
+            }
             String record = entry.getValue();
             String[] columVals = record.split(SupplyConstants.Symbol.COMMA);
             ImportOrderSkuDetail detail = new ImportOrderSkuDetail();
