@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.warehouseInfo.ILogisticsCorporationBiz;
+import org.trc.domain.category.Category;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.LogisticsCorporation;
 import org.trc.enums.*;
@@ -114,9 +115,11 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
         AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
 
-        LogisticsCorporation logisticsCorporationOnly = new LogisticsCorporation();
-        logisticsCorporationOnly.setLogisticsCorporationCode(logisticsCorporation.getLogisticsCorporationCode());
-        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.select(logisticsCorporationOnly);
+        Example example = new Example(LogisticsCorporation.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
+        criteria.andNotEqualTo("id", logisticsCorporation.getId());
+        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
         if(logisticsCorporationList.size() > 0){
             String msg = "物流公司编码不唯一";
             logger.error(msg);
