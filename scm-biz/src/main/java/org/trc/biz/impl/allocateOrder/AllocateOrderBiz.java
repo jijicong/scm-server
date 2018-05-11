@@ -67,6 +67,7 @@ import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import org.trc.util.ResultUtil;
+import org.trc.util.StringUtil;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -655,6 +656,25 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		String itemNo = form.getItemNo();
 		String brandName = form.getBrandName();
 		
+		// 校验仓库信息
+		String outWhCode = form.getWarehouseInfoInId();
+		String inWhCode = form.getWarehouseInfoOutId();
+		if (StringUtils.equals(outWhCode, inWhCode)) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+					"调拨单的出入库仓库不能相同");
+		}
+		
+        WarehouseInfo queryRecord = new WarehouseInfo();
+        queryRecord.setCode(inWhCode);
+        queryRecord.setIsDeleted(ZeroToNineEnum.ZERO.getCode());//未删除
+        queryRecord.setIsValid(ZeroToNineEnum.ONE.getCode());//有效
+		WarehouseInfo whInfo = warehouseInfoService.selectOne(queryRecord);
+		AssertUtil.notNull(whInfo, "调入仓库不存在或已停用");
+		
+		queryRecord.setCode(outWhCode);
+		whInfo = warehouseInfoService.selectOne(queryRecord);
+		AssertUtil.notNull(whInfo, "调出仓库不存在或已停用");
+		
         //是否条件查询的标记
         boolean flag = false;
         if(StringUtils.isNotBlank(skuCode) || StringUtils.isNotBlank(skuName) || StringUtils.isNotBlank(barCode) ||
@@ -773,8 +793,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             whInfoList.add(form.getWarehouseInfoInId());
             whInfoList.add(form.getWarehouseInfoOutId());
             
-            //warehouseItemCriteria.andIn("skuCode", skuCodes);
-            warehouseItemCriteria.andIn("warehouseInfoId", whInfoList);
+            warehouseItemCriteria.andIn("skuCode", skuCodes);
+            warehouseItemCriteria.andIn("warehouseCode", whInfoList);
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
             if (StringUtils.isNotBlank(barCode)) {
                 warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
