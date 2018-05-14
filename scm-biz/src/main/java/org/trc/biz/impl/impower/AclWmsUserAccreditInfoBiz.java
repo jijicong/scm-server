@@ -149,7 +149,7 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
     private void setWarehouseQuery(WmsUserAccreditInfoForm form, Example.Criteria criteria) {
         Example exampleWarehouseItemInfo = new Example(WarehouseInfo.class);
         Example.Criteria criteriaWarehouseItemInfo = exampleWarehouseItemInfo.createCriteria();
-        criteriaWarehouseItemInfo.andEqualTo("warehouseName", form.getWarehouseName());
+        criteriaWarehouseItemInfo.andEqualTo("code", form.getWarehouseName());
         criteriaWarehouseItemInfo.andEqualTo("operationalNature", OperationalNatureEnum.SELF_SUPPORT.getCode());
         List<WarehouseInfo> warehouseItemInfoList = warehouseInfoService.selectByExample(exampleWarehouseItemInfo);
         if (!AssertUtil.collectionIsEmpty(warehouseItemInfoList)) {
