@@ -68,7 +68,7 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
             criteria.andLike("name", "%" + form.getName() + "%");
         }
         if (StringUtils.isNotBlank(form.getPhone())) {
-            criteria.andLike("phone", "%" + form.getName() + "%");
+            criteria.andLike("phone", "%" + form.getPhone() + "%");
         }
         if (StringUtils.isNotBlank(form.getIsValid())) {
             criteria.andEqualTo("isValid", form.getIsValid());
