@@ -92,4 +92,6 @@ public interface IChannelBiz {
      * @return
      */
     List<SellChannel> querySellChannel();
+
+    List<SellChannel> querySellChannelByChannelCode(AclUserAccreditInfo aclUserAccreditInfo);
 }

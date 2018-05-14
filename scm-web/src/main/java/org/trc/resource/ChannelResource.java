@@ -37,6 +37,14 @@ public class ChannelResource {
         return ResultUtil.createSuccessPageResult(channelBiz.channelPage(form,page));
     }
 
+    //渠道分页查询
+    @GET
+    @Path(SupplyConstants.Channel.SALES_CHANNEL)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response querySellChannelByChannelCode(@Context ContainerRequestContext requestContext){
+        return  ResultUtil.createSuccessResult("查询销售渠道列表成功", channelBiz.querySellChannelByChannelCode((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    }
+
     //根据渠道名查询渠道
     @GET
     @Path(SupplyConstants.Channel.CHANNEL)

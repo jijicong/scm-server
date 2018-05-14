@@ -328,6 +328,26 @@ public class ChannelBiz implements IChannelBiz {
         return sellChannelList;
     }
 
+    @Override
+    public List<SellChannel> querySellChannelByChannelCode(AclUserAccreditInfo aclUserAccreditInfo) {
+        long channelId = aclUserAccreditInfo.getChannelId();
+        ChannelSellChannel channelSellChannel  = new ChannelSellChannel();
+        channelSellChannel.setChannelId(channelId);
+        List<ChannelSellChannel> channelSellChannelList=  channelSellChannelService.select(channelSellChannel);
+        List<Long> sellChannelIdList =  new ArrayList<>();
+        for (ChannelSellChannel sellChannel:channelSellChannelList){
+            sellChannelIdList.add(sellChannel.getSellChannelId());
+        }
+        List<SellChannel> sellChannelList = new ArrayList<>();
+        if (!AssertUtil.collectionIsEmpty(sellChannelIdList)) {
+            Example example = new Example(SellChannel.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("id", sellChannelIdList);
+            sellChannelList = sellChannelService.selectByExample(example);
+        }
+        return sellChannelList;
+    }
+
 
     /**
      * 业务销售渠道校验
