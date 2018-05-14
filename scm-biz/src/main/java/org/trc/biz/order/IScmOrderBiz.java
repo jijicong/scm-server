@@ -1,5 +1,6 @@
 package org.trc.biz.order;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.ExceptionOrder;
 import org.trc.domain.order.PlatformOrder;
@@ -20,6 +21,7 @@ import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -207,6 +209,13 @@ public interface IScmOrderBiz {
      * @param shopOrderCode 店铺订单号
      */
     void outboundOrderSubmitResultNoticeChannel(String shopOrderCode);
+
+    /**
+     * 订单导入
+     * @param uploadedInputStream
+     * @param fileDetail
+     */
+    Response importOrder(InputStream uploadedInputStream, FormDataContentDisposition fileDetail);
 
 
 }

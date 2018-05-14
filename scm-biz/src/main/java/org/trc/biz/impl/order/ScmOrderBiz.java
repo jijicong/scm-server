@@ -12,6 +12,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -46,16 +47,14 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseInfo.WarehousePriority;
 import org.trc.enums.*;
-import org.trc.exception.OrderException;
-import org.trc.exception.ParamValidException;
-import org.trc.exception.QimenException;
-import org.trc.exception.SignException;
+import org.trc.exception.*;
 import org.trc.form.*;
 import org.trc.form.JDModel.*;
 import org.trc.form.liangyou.LiangYouSupplierOrder;
 import org.trc.form.liangyou.OutOrderGoods;
 import org.trc.form.order.*;
 import org.trc.form.warehouse.*;
+import org.trc.form.warehouseInfo.WarehouseItemInfoExceptionResult;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
@@ -91,6 +90,8 @@ import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -5567,6 +5568,361 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
+    private static final String SUCCESS = "200";
+    private static final String TITLE_ONE = "商品SKU编号";
+    private static final String TITLE_TWO = "仓库商品ID";
+    private static final String TITLE_THREE = "异常说明";
+    private static final String CODE = "code";
+    private static final String MSG = "msg";
+    private static final String URL = "url";
+    private final static String XLS = "xls";
+    private final static String XLSX = "xlsx";
+    //订单导入列
+    private final static String IMPORT_ORDER_COLUMS = "importOrderColums";
+
+
+    @Override
+    public Response importOrder(InputStream uploadedInputStream, FormDataContentDisposition fileDetail) {
+        AssertUtil.notNull(uploadedInputStream, "上传文件不能为空");
+        String fileName = fileDetail.getFileName();
+        AssertUtil.notBlank(fileName, "上传文件名称不能为空");
+        boolean flag = true;
+        WarehouseItemInfoExceptionResult result = new WarehouseItemInfoExceptionResult();
+        String code = "";
+        try {
+            //检测是否是excel
+            String suffix = fileName.substring(fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT) + 1);
+            if (!(suffix.toLowerCase().equals(XLSX) || suffix.toLowerCase().equals(XLS))) {
+                return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件格式不支持", "");
+            }
+
+            //校验导入文件抬头信息
+            String[] titleResult = null;
+            try{
+                titleResult = ImportExcel.readExcelTitle(uploadedInputStream);
+            }catch(Exception e){
+                return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入模板错误!", "");
+            }
+            //校验导入表格标题
+            checkTitle(titleResult);
+
+            //校验导入文件信息，并获取信息
+            Map<String, String> contentResult = ImportExcel.readExcelContent(uploadedInputStream, SupplyConstants.Symbol.COMMA);
+            if(com.alibaba.dubbo.common.utils.StringUtils.isEquals("0", contentResult.get("count").toString())){
+                return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
+            }
+
+            //获取导入订单sku明细
+            List<ImportOrderSkuDetail> importOrderSkuDetailList = getImportOrderSkuDetail(titleResult, contentResult);
+
+            /*Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId, titleResult.length);
+            String count = (String) contentMapResult.get("count");
+            int countNum = Integer.parseInt(count);
+
+            //将通知状态保存入数据库
+            Map<String, Skus> importContent = (Map<String, Skus>) contentMapResult.get("importContent");
+            int successCount = this.saveNoticeStatus(importContent, warehouseInfoId, titleResult.length);
+            int failCount = countNum - successCount;
+
+            //将错误通知导入excel
+            if (!(Boolean) contentMapResult.get("flag")) {
+                flag = false;
+                code = this.saveExcelException((Map<String, String>) contentMapResult.get("exceptionContent"), titleResult.length);
+            }
+
+            //构造返回参数
+            result = new WarehouseItemInfoExceptionResult(code, String.valueOf(successCount), String.valueOf(failCount));*/
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            log.error(msg, e);
+            return ResultUtil.createfailureResult(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), msg, "");
+        }
+        if(flag){
+            return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", result);
+        }
+        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", result);
+
+
+    }
+
+
+    //销售渠道订单号
+    private final static String SHOP_ORDER_CODE = "销售渠道订单号";
+    //收货人姓名
+    private  final static  String RECIVE_NAME = "收货人姓名";
+    //收货人手机号
+    private final static String RECIVE_MOBILE = "收货人手机号";
+    //收货省份
+    private final static String RECIVE_PROVINCE = "收货省份";
+    //收货城市
+    private final static String RECIVE_CITY = "收货城市";
+    //收货地区
+    private final static String RECIVE_DISTRICT = "收货地区";
+    //收货详细地址
+    private final static String RECIVE_ADDRESS = "收货详细地址";
+    //商品SKU编号
+    private final static String SKU_CODE = "商品SKU编号";
+    //商品SKU名称
+    private final static String SKU_NAME = "商品SKU名称";
+    //商品交易数量
+    private final static String NUM = "商品交易数量";
+    //商品销售单价
+    private final static String PRICE = "商品销售单价";
+    //商品实付总金额
+    private final static String PAYMENT = "商品实付总金额";
+    //商品运费
+    private final static String POST_FEE = "商品运费";
+    //商品税费
+    private final static String PRICE_TAX = "商品税费";
+    //买家留言
+    private final static String BUYER_MESSAGE = "买家留言";
+    //商家备注
+    private final static String SHOP_MEMO = "商家备注";
+    //付款时间
+    private final static String PAY_TIME = "付款时间";
+
+
+    /**
+     * 检查列标题
+     * @param titleResult
+     * @return
+     */
+    private void checkTitle(String[] titleResult) {
+        StringBuilder sb = new StringBuilder();
+        _checkTitle(titleResult, SHOP_ORDER_CODE, sb);
+        _checkTitle(titleResult, RECIVE_NAME, sb);
+        _checkTitle(titleResult, RECIVE_MOBILE, sb);
+        _checkTitle(titleResult, RECIVE_PROVINCE, sb);
+        _checkTitle(titleResult, RECIVE_CITY, sb);
+        _checkTitle(titleResult, RECIVE_DISTRICT, sb);
+        _checkTitle(titleResult, RECIVE_ADDRESS, sb);
+        _checkTitle(titleResult, SKU_CODE, sb);
+        _checkTitle(titleResult, SKU_NAME, sb);
+        _checkTitle(titleResult, NUM, sb);
+        _checkTitle(titleResult, PRICE, sb);
+        _checkTitle(titleResult, PAYMENT, sb);
+        _checkTitle(titleResult, POST_FEE, sb);
+        _checkTitle(titleResult, PRICE_TAX, sb);
+        _checkTitle(titleResult, BUYER_MESSAGE, sb);
+        _checkTitle(titleResult, SHOP_MEMO, sb);
+        _checkTitle(titleResult, PAY_TIME, sb);
+        if(sb.length() > 0){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("导入订单模板缺少列%s", sb.toString()));
+        }
+    }
+
+    private void _checkTitle(String[] titleResult, String colum, StringBuilder sb){
+        boolean flag = false;
+        for(String title: titleResult){
+            if(StringUtils.equals(colum, title)){
+                flag = true;
+                break;
+            }
+        }
+        if(!flag){
+            sb.append(colum).append(SupplyConstants.Symbol.COMMA);
+        }
+    }
+
+
+    /**
+     * 获取订单导入数据
+     * @param titleResult
+     * @param contentResult
+     * @return
+     */
+    private List<ImportOrderSkuDetail> getImportOrderSkuDetail(String[] titleResult, Map<String, String> contentResult){
+        List<ImportOrderSkuDetail> importOrderSkuDetailList = new ArrayList<>();
+        for(Map.Entry<String, String> entry: contentResult.entrySet()){
+            if(entry.getKey().equals("count")){
+                continue;
+            }
+            String record = entry.getValue();
+            String[] columVals = record.split(SupplyConstants.Symbol.COMMA);
+            ImportOrderSkuDetail detail = new ImportOrderSkuDetail();
+            String shopOrderCode = columVals[getColumIndex(titleResult, SHOP_ORDER_CODE)];
+            if(StringUtils.isNotBlank(shopOrderCode)){
+                detail.setShopOrderCode(shopOrderCode);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;销售渠道订单号为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String receiverName = columVals[getColumIndex(titleResult, RECIVE_NAME)];
+            if(StringUtils.isNotBlank(receiverName)){
+                detail.setReceiverName(receiverName);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;收货人姓名为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String receiverMobil = columVals[getColumIndex(titleResult, RECIVE_MOBILE)];
+            if(StringUtils.isNotBlank(receiverMobil)){
+                detail.setReceiverMobile(receiverMobil);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;收货人手机号为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String receiverProvince = columVals[getColumIndex(titleResult, RECIVE_PROVINCE)];
+            if(StringUtils.isNotBlank(receiverProvince)){
+                detail.setReceiverProvince(receiverProvince);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;收货省份为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String receiverCity = columVals[getColumIndex(titleResult, RECIVE_CITY)];
+            if(StringUtils.isNotBlank(receiverCity)){
+                detail.setReceiverCity(receiverCity);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;收货城市为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String receiverDistrict = columVals[getColumIndex(titleResult, RECIVE_DISTRICT)];
+            if(StringUtils.isNotBlank(receiverDistrict)){
+                detail.setReceiverDistrict(receiverDistrict);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;收货地区为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String receiverAddress = columVals[getColumIndex(titleResult, RECIVE_ADDRESS)];
+            if(StringUtils.isNotBlank(receiverAddress)){
+                detail.setReceiverAddress(receiverAddress);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;收货详细地址为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String skuCode = columVals[getColumIndex(titleResult, SKU_CODE)];
+            if(StringUtils.isNotBlank(skuCode)){
+                detail.setSkuCode(skuCode);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;商品SKU编号为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String skuName = columVals[getColumIndex(titleResult, SKU_NAME)];
+            if(StringUtils.isNotBlank(skuName)){
+                detail.setSkuName(skuName);
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;商品SKU名称为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String num = columVals[getColumIndex(titleResult, NUM)];
+            if(StringUtils.isNotBlank(num)){
+                detail.setNum(Integer.parseInt(num));
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;商品交易数为空;", detail.getErrorMessage()));
+                }
+            }
+
+            String paytime = columVals[getColumIndex(titleResult, PAY_TIME)];
+            if(StringUtils.isNotBlank(paytime)){
+                Date date = DateUtils.parseDateTime(paytime);
+                if(null == date){
+                    if(detail.getFlag()){
+                        detail.setFlag(false);
+                        detail.setErrorMessage(String.format("%s;付款时间格式错误;", detail.getErrorMessage()));
+                    }
+                }else{
+                    detail.setPayTime(date);
+                }
+            }else{
+                if(detail.getFlag()){
+                    detail.setFlag(false);
+                    detail.setErrorMessage(String.format("%s;付款时间为空;", detail.getErrorMessage()));
+                }
+            }
+
+            setImportOrderMoney(detail, PRICE, titleResult, columVals);
+            setImportOrderMoney(detail, PAYMENT, titleResult, columVals);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals);
+
+            importOrderSkuDetailList.add(detail);
+        }
+        return importOrderSkuDetailList;
+    }
+
+
+
+    /**
+     * 设置导入订单金额
+     * @param importOrderSkuDetail
+     * @param colum
+     * @param columVals
+     * @return
+     */
+    private void setImportOrderMoney(ImportOrderSkuDetail importOrderSkuDetail, String colum, String[] titleResult, String[] columVals){
+        String money = columVals[getColumIndex(titleResult, colum)];
+        if(StringUtils.isNotBlank(money)){
+            try{
+                BigDecimal bigDecimal = new BigDecimal(money);
+                if(PRICE.equals(colum)){
+                    importOrderSkuDetail.setPrice(bigDecimal);
+                }else if(PAYMENT.equals(colum)){
+                    importOrderSkuDetail.setPayment(bigDecimal);
+                }else if(POST_FEE.equals(colum)){
+                    importOrderSkuDetail.setPostFee(bigDecimal);
+                }else if(PRICE_TAX.equals(colum)){
+                    importOrderSkuDetail.setPriceTax(bigDecimal);
+                }
+            }catch (Exception e){
+                importOrderSkuDetail.setFlag(false);
+                importOrderSkuDetail.setErrorMessage(String.format("%s;%s格式错误;", importOrderSkuDetail.getErrorMessage(),colum));
+                log.error(String.format("商品%s的%s数据格式错误", importOrderSkuDetail.getSkuCode(), colum), e);
+            }
+        }
+    }
+
+    /**
+     * 获取列对应的位置
+     * @param titleResult
+     * @param colum
+     * @return
+     */
+    private Integer getColumIndex(String[] titleResult, String colum){
+        for(int i=0; i<titleResult.length; i++){
+            if(titleResult[i].equals(colum)){
+                return i;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 校验表格数据
+     * @param titleResult
+     * @param contentResult
+     */
+    private void checkContent(String[] titleResult, Map<String, String> contentResult, StringBuilder sb) {
+
+    }
 
 
 
