@@ -1000,6 +1000,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         int partsDeliverNum = 0;//代发部分发货数
         int cancelNum = 0;//已取消数
         int cancellingNum = 0;//取消中
+        int offLineDeliverNum = 0;//线下发货s数量
         for(OrderItem orderItem: orderItemList){
             if(StringUtils.equals(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode(), orderItem.getSupplierOrderStatus()))
                 sendSupplierFialure++;
@@ -1023,10 +1024,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 handlerNum++;
             else if(StringUtils.equals(OrderItemDeliverStatusEnum.ORDER_CANCELING.getCode().toString(), orderItem.getSupplierOrderStatus()))
             	cancellingNum++;
+            else if(StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode().toString(), orderItem.getSupplierOrderStatus()))
+                offLineDeliverNum++;
         }
         
         /**  取消中数量等价于等待仓库发货数   **/
         waitWarehouseDeliverNum = waitWarehouseDeliverNum + cancellingNum;
+        /**  线下发货数量等价于全部发货数   **/
+        allDeliverNum = allDeliverNum + offLineDeliverNum;
         
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//仓库级订单
             //下单失败：(发送供应商失败数 + 仓库接收失败数) > 0 && (发送供应商失败数 + 仓库接收失败数 + 已了结数 + 已取消) = 商品应发数量
@@ -1073,58 +1078,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param platformOrderCode
      * @param shopOrderCode
      */
-    /*private void updateShopOrderSupplierOrderStatus(String platformOrderCode, String shopOrderCode){
-        ShopOrder shopOrder = new ShopOrder();
-        shopOrder.setPlatformOrderCode(platformOrderCode);
-        shopOrder.setShopOrderCode(shopOrderCode);
-        shopOrder = shopOrderService.selectOne(shopOrder);
-        AssertUtil.notNull(shopOrder, String.format("更新店铺订单供应商订单状态,根据平台订单编码%s和店铺订单编码%s查询店铺订单信息为空", platformOrderCode, shopOrderCode));
-        int waitSendNum = 0;//待发送供应商数
-        int exceptionNum = 0;//供应商下单异常数
-        int failureNum = 0;//供应商下单失败数
-        int waitDeliverNum = 0;//等待供应商发货数
-        int allDeliverNum = 0;//全部发货数
-        int partsDeliverNum = 0;//部分发货数
-        int cancelNum = 0;//已取消数
-        WarehouseOrder warehouseOrder = new WarehouseOrder();
-        warehouseOrder.setPlatformOrderCode(platformOrderCode);
-        warehouseOrder.setShopOrderCode(shopOrderCode);
-        List<WarehouseOrder> warehouseOrderList = warehouseOrderService.select(warehouseOrder);
-        for(WarehouseOrder warehouseOrder2: warehouseOrderList){
-            if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                waitSendNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_EXCEPTION.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                exceptionNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_FAILURE.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                failureNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_DELIVER.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                waitDeliverNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.ALL_DELIVER.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                allDeliverNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                waitSendNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.PARTS_DELIVER.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                partsDeliverNum++;
-            }else if(StringUtils.equals(SupplierOrderStatusEnum.ORDER_CANCEL.getCode(), warehouseOrder2.getSupplierOrderStatus())){
-                cancelNum++;
-            }
-        }
-        //已取消：
-        if(cancelNum == warehouseOrderList.size())
-            shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.ORDER_CANCEL.getCode());
-        //待发货：
-        if(waitSendNum > 0 && (waitSendNum + cancelNum) == warehouseOrderList.size())
-            shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
-        //部分发货:
-        if(partsDeliverNum > 0)
-            shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.PARTS_DELIVER.getCode());
-        //全部发货：
-        if(allDeliverNum > 0 && (allDeliverNum + cancelNum) == warehouseOrderList.size())
-            shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.ALL_DELIVER.getCode());
-        shopOrder.setUpdateTime(Calendar.getInstance().getTime());
-        shopOrderService.updateByPrimaryKey(shopOrder);
-    }*/
-
     private void updateShopOrderSupplierOrderStatus(String platformOrderCode, String shopOrderCode){
         OrderItem orderItem = new OrderItem();
         orderItem.setShopOrderCode(shopOrderCode);
@@ -1942,7 +1895,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
                 tmpOrderItemList.add(orderItem);
-                if (orderItem.getSkuCode().startsWith(SP0)) {
+                if (orderItem.getSkuCode().startsWith(SP0) &&
+                        !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
                     skuCodes.add(orderItem.getSkuCode());
                 }
@@ -4143,6 +4097,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder, List<SkuStock> skuStockList, Map<String, List<SkuWarehouseDO>> skuWarehouseMap) {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
+        if(null == skuWarehouseMap && CollectionUtils.isEmpty(skuStockList)){//企业购的订单
+            return warehouseOrderList;
+        }
         List<WarehouseInfo> warehouseList = new ArrayList<>();
         Set<String> warehouseCodes = new HashSet<>();
         for(SkuStock skuStock: skuStockList){
