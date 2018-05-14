@@ -154,7 +154,7 @@ public class AllocateOrderResource {
      * @param requestContext
      * @return
      */
-    @POST
+    @PUT
     @Path("noticeWarehouse/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response noticeWarehouse(@PathParam("id") String orderId,
