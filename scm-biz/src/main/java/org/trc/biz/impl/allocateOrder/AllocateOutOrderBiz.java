@@ -54,7 +54,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
      * 调拨单分页查询
      */
     @Override
-    @Cacheable(value = SupplyConstants.Cache.ALLOCATE_OUT_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.ALLOCATE_OUT_ORDER)
     public Pagenation<AllocateOutOrder> allocateOutOrderPage(AllocateOutOrderForm form,
 															 Pagenation<AllocateOutOrder> page) {
 
