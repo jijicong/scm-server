@@ -5577,9 +5577,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private static final String URL = "url";
     private final static String XLS = "xls";
     private final static String XLSX = "xlsx";
-    //订单导入列
-    private final static String IMPORT_ORDER_COLUMS = "importOrderColums";
-
+    //平台订单号生成前缀
+    private final static String PLATFORM_ORDER_CORD_PREFIX = "PTDD";
 
     @Override
     public Response importOrder(InputStream uploadedInputStream, FormDataContentDisposition fileDetail) {
@@ -5595,7 +5594,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if (!(suffix.toLowerCase().equals(XLSX) || suffix.toLowerCase().equals(XLS))) {
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入文件格式不支持", "");
             }
-
             //校验导入文件抬头信息
             String[] titleResult = null;
             try{
@@ -5605,15 +5603,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             //校验导入表格标题
             checkTitle(titleResult);
-
             //校验导入文件信息，并获取信息
             Map<String, String> contentResult = ImportExcel.readExcelContent(uploadedInputStream, SupplyConstants.Symbol.COMMA);
             if(com.alibaba.dubbo.common.utils.StringUtils.isEquals("0", contentResult.get("count").toString())){
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
             }
-
             //获取导入订单sku明细
             List<ImportOrderSkuDetail> importOrderSkuDetailList = getImportOrderSkuDetail(titleResult, contentResult);
+            //校验导入订单商品是否供应链商品
+            isScmItems2(importOrderSkuDetailList);
+            //获取导入订单的OrderItem列表
+            List<OrderItem> orderItemList = getImportSkuOrderItems(importOrderSkuDetailList);
+            //获取导入订单的店铺订单
+            List<ShopOrder> shopOrderList = getImportShopOrders(importOrderSkuDetailList);
+            //获取导入订单的平台订单
+            List<PlatformOrder> platformOrderList = getImportPlatformOrders(shopOrderList, importOrderSkuDetailList);
+
+
+
 
             /*Map<String, Object> contentMapResult = this.checkContent(contentResult, warehouseInfoId, titleResult.length);
             String count = (String) contentMapResult.get("count");
@@ -5643,8 +5650,72 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", result);
 
+    }
+
+    /**
+     * 校验导入订单商品是否供应链商品
+     * @param importOrderSkuDetailList
+     */
+    private void isScmItems2(List<ImportOrderSkuDetail> importOrderSkuDetailList){
+        Set<String> skuCodes = new HashSet<String>();
+        Set<String> channelCodes = new HashSet<String>();
+        for(ImportOrderSkuDetail detail: importOrderSkuDetailList){
+            skuCodes.add(detail.getSkuCode());
+            channelCodes.add(detail.getChannelCode());
+        }
+        //检查sku绑定
+        Example example = new Example(SkuRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        criteria.andIn("channelCode", channelCodes);
+        List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
+        for(ImportOrderSkuDetail detail: importOrderSkuDetailList){
+            boolean flag = false;
+            for(SkuRelation skuRelation: skuRelations){
+                if(StringUtils.equals(detail.getChannelCode(), skuRelation.getChannelCode()) &&
+                        StringUtils.equals(detail.getSkuCode(), skuRelation.getSkuCode())){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                detail.setFlag(false);
+                detail.setErrorMessage(String.format("商品%s在供应链系统无法识别", detail.getSkuCode()));
+            }
+        }
+        //检查sku是否代发商品
+        Example example2 = new Example(ExternalItemSku.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("skuCode", skuCodes);
+        List<ExternalItemSku> externalItemSkuList = externalItemSkuService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(externalItemSkuList)){
+            for(ImportOrderSkuDetail detail: importOrderSkuDetailList){
+                for(ExternalItemSku externalItemSku: externalItemSkuList){
+                    if(StringUtils.equals(externalItemSku.getSkuCode(), detail.getSkuCode())){
+                        detail.setFlag(false);
+                        detail.setErrorMessage(String.format("商品%s是代发商品,暂不支持订单导入", detail.getSkuCode()));
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    /**
+     * 处理导入订单
+     * @param platformOrderList
+     * @param shopOrderList
+     * @param orderItemList
+     */
+    private void processImportOrder(List<PlatformOrder> platformOrderList, List<ShopOrder> shopOrderList, List<OrderItem> orderItemList){
+
+
+
 
     }
+
+
 
 
     //销售渠道订单号
@@ -5741,14 +5812,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
             String record = entry.getValue();
             String[] columVals = record.split(SupplyConstants.Symbol.COMMA);
             ImportOrderSkuDetail detail = new ImportOrderSkuDetail();
+            detail.setFlag(true);
             String shopOrderCode = columVals[getColumIndex(titleResult, SHOP_ORDER_CODE)];
             if(StringUtils.isNotBlank(shopOrderCode)){
                 detail.setShopOrderCode(shopOrderCode);
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;销售渠道订单号为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;销售渠道订单号为空;", detail.getErrorMessage()));
             }
 
             String receiverName = columVals[getColumIndex(titleResult, RECIVE_NAME)];
@@ -5757,8 +5829,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;收货人姓名为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;收货人姓名为空;", detail.getErrorMessage()));
             }
 
             String receiverMobil = columVals[getColumIndex(titleResult, RECIVE_MOBILE)];
@@ -5767,8 +5839,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;收货人手机号为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;收货人手机号为空;", detail.getErrorMessage()));
             }
 
             String receiverProvince = columVals[getColumIndex(titleResult, RECIVE_PROVINCE)];
@@ -5777,8 +5849,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;收货省份为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;收货省份为空;", detail.getErrorMessage()));
             }
 
             String receiverCity = columVals[getColumIndex(titleResult, RECIVE_CITY)];
@@ -5787,8 +5859,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;收货城市为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;收货城市为空;", detail.getErrorMessage()));
             }
 
             String receiverDistrict = columVals[getColumIndex(titleResult, RECIVE_DISTRICT)];
@@ -5797,8 +5869,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;收货地区为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;收货地区为空;", detail.getErrorMessage()));
             }
 
             String receiverAddress = columVals[getColumIndex(titleResult, RECIVE_ADDRESS)];
@@ -5807,8 +5879,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;收货详细地址为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;收货详细地址为空;", detail.getErrorMessage()));
             }
 
             String skuCode = columVals[getColumIndex(titleResult, SKU_CODE)];
@@ -5817,8 +5889,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;商品SKU编号为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;商品SKU编号为空;", detail.getErrorMessage()));
             }
 
             String skuName = columVals[getColumIndex(titleResult, SKU_NAME)];
@@ -5827,8 +5899,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;商品SKU名称为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;商品SKU名称为空;", detail.getErrorMessage()));
             }
 
             String num = columVals[getColumIndex(titleResult, NUM)];
@@ -5837,8 +5909,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;商品交易数为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;商品交易数为空;", detail.getErrorMessage()));
             }
 
             String paytime = columVals[getColumIndex(titleResult, PAY_TIME)];
@@ -5847,28 +5919,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if(null == date){
                     if(detail.getFlag()){
                         detail.setFlag(false);
-                        detail.setErrorMessage(String.format("%s;付款时间格式错误;", detail.getErrorMessage()));
                     }
+                    detail.setErrorMessage(String.format("%s;付款时间格式错误;", detail.getErrorMessage()));
                 }else{
                     detail.setPayTime(date);
                 }
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
-                    detail.setErrorMessage(String.format("%s;付款时间为空;", detail.getErrorMessage()));
                 }
+                detail.setErrorMessage(String.format("%s;付款时间为空;", detail.getErrorMessage()));
             }
 
             setImportOrderMoney(detail, PRICE, titleResult, columVals);
             setImportOrderMoney(detail, PAYMENT, titleResult, columVals);
             setImportOrderMoney(detail, POST_FEE, titleResult, columVals);
             setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals);
-
             importOrderSkuDetailList.add(detail);
         }
         return importOrderSkuDetailList;
     }
-
 
 
     /**
@@ -5923,6 +5993,162 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private void checkContent(String[] titleResult, Map<String, String> contentResult, StringBuilder sb) {
 
     }
+
+    /**
+     *
+     * 获取导入订单的OrderItem列表
+     * @param importOrderSkuDetailList
+     * @return
+     */
+    private List<OrderItem> getImportSkuOrderItems(List<ImportOrderSkuDetail> importOrderSkuDetailList){
+        List<OrderItem> orderItemList = new ArrayList<>();
+        for(ImportOrderSkuDetail detail: importOrderSkuDetailList){
+            if(detail.getFlag()){//基础校验通过的数据
+                OrderItem orderItem = new OrderItem();
+                BeanUtils.copyProperties(orderItem, detail);
+                orderItem.setPostDiscount(detail.getPostFee());//邮费
+                orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+                orderItemList.add(orderItem);
+            }
+        }
+        return orderItemList;
+    }
+
+    /**
+     * 获取导入订单的店铺订单
+     * @param importOrderSkuDetailList
+     * @return
+     */
+    private List<ShopOrder> getImportShopOrders(List<ImportOrderSkuDetail> importOrderSkuDetailList){
+        Set<String> shopOrderCodes = new HashSet<>();
+        for(ImportOrderSkuDetail orderItem: importOrderSkuDetailList){
+            //以业务线编码-销售渠道编码-销售渠道订单号为维度决定一个店铺订单
+            StringBuilder sb = new StringBuilder();
+            sb.append(orderItem.getChannelCode()).append(SupplyConstants.Symbol.MINUS).append(orderItem.getSellCode()).
+                    append(SupplyConstants.Symbol.MINUS).append(orderItem.getShopOrderCode());
+            shopOrderCodes.add(sb.toString());
+        }
+        Map<String, List<ImportOrderSkuDetail>> map = new HashedMap();
+        for(String key: shopOrderCodes){
+            List<ImportOrderSkuDetail> _orderItemList = new ArrayList<>();
+            for(ImportOrderSkuDetail orderItem: importOrderSkuDetailList){
+                if(isSameShop(key, orderItem)){
+                    _orderItemList.add(orderItem);
+                }
+            }
+            map.put(key, _orderItemList);
+        }
+        List<ShopOrder> shopOrderList = new ArrayList<>();
+        for(Map.Entry<String, List<ImportOrderSkuDetail>> entry: map.entrySet()){
+            String shopOrderCode = entry.getKey();
+            List<ImportOrderSkuDetail> importOrderSkuDetails = entry.getValue();
+            ImportOrderSkuDetail importOrderSkuDetail = importOrderSkuDetails.get(0);
+            ShopOrder shopOrder = new ShopOrder();
+            String platformOrderCode = GuidUtil.getNextUid(PLATFORM_ORDER_CORD_PREFIX);
+            shopOrder.setPlatformOrderCode(platformOrderCode);
+            shopOrder.setShopOrderCode(shopOrderCode);
+            shopOrder.setChannelCode(importOrderSkuDetail.getSellCode());
+            shopOrder.setPayTime(importOrderSkuDetail.getPayTime());
+            StringBuilder buyerMessage = new StringBuilder();
+            StringBuilder shopMemo = new StringBuilder();
+            StringBuilder tradeMemo = new StringBuilder();
+            int num = 0;//商品交易数量
+            BigDecimal payment = new BigDecimal(0);//实付金额
+            BigDecimal postFee = new BigDecimal(0);//运费
+            BigDecimal tax = new BigDecimal(0);//税费
+            for(ImportOrderSkuDetail detail: importOrderSkuDetails){
+                if(StringUtils.isNotBlank(detail.getBuyerMessage())){
+                    buyerMessage.append(detail.getBuyerMessage()).append(SupplyConstants.Symbol.SEMICOLON);
+                }
+                if(StringUtils.isNotBlank(detail.getShopMemo())){
+                    shopMemo.append(detail.getShopMemo()).append(SupplyConstants.Symbol.SEMICOLON);
+                }
+                if(StringUtils.isNotBlank(detail.getMemo())){
+                    tradeMemo.append(detail.getMemo()).append(SupplyConstants.Symbol.SEMICOLON);
+                }
+                num += detail.getNum();
+                payment = payment.add(detail.getPayment());
+                postFee = postFee.add(detail.getPostFee());
+                tax = tax.add(detail.getPriceTax());
+            }
+            if(buyerMessage.length() > 0){
+                shopOrder.setBuyerMessage(buyerMessage.toString());
+            }
+            if(shopMemo.length() > 0){
+                shopOrder.setShopMemo(shopMemo.toString());
+            }
+            if(tradeMemo.length() > 0){
+                shopOrder.setTradeMemo(tradeMemo.toString());
+            }
+            shopOrder.setItemNum(num);
+            shopOrder.setPayment(payment);
+            shopOrder.setPostageFee(postFee);
+            shopOrder.setTotalTax(tax);
+            shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
+            shopOrderList.add(shopOrder);
+        }
+        return shopOrderList;
+    }
+
+    /**
+     * 获取导入订单的平台订单
+     * @param shopOrderList
+     * @param importOrderSkuDetailList
+     * @return
+     */
+    private List<PlatformOrder> getImportPlatformOrders(List<ShopOrder> shopOrderList, List<ImportOrderSkuDetail> importOrderSkuDetailList){
+        List<PlatformOrder> platformOrderList = new ArrayList<>();
+        for(ShopOrder shopOrder: shopOrderList){
+            PlatformOrder platformOrder = new PlatformOrder();
+            platformOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
+            platformOrder.setChannelCode(shopOrder.getChannelCode());
+            platformOrder.setSellCode(shopOrder.getSellCode());
+            platformOrder.setPayment(shopOrder.getPayment());
+            platformOrder.setPostageFee(shopOrder.getPostageFee());
+            platformOrder.setTotalTax(shopOrder.getTotalTax());
+            ImportOrderSkuDetail importOrderSkuDetail = null;
+            for(ImportOrderSkuDetail detail: importOrderSkuDetailList){
+                if(StringUtils.equals(shopOrder.getChannelCode(), detail.getChannelCode()) &&
+                        StringUtils.equals(shopOrder.getSellCode(), detail.getSellCode()) &&
+                        StringUtils.equals(shopOrder.getShopOrderCode(), detail.getShopOrderCode())){
+                    importOrderSkuDetail = detail;
+                    break;
+                }
+            }
+            if(null != importOrderSkuDetail){
+                platformOrder.setPayTime(importOrderSkuDetail.getPayTime());
+                platformOrder.setReceiverName(importOrderSkuDetail.getReceiverName());
+                platformOrder.setReceiverMobile(importOrderSkuDetail.getReceiverMobile());
+                platformOrder.setReceiverProvince(importOrderSkuDetail.getReceiverProvince());
+                platformOrder.setReceiverCity(importOrderSkuDetail.getReceiverCity());
+                platformOrder.setReceiverDistrict(importOrderSkuDetail.getReceiverDistrict());
+                platformOrder.setReceiverAddress(importOrderSkuDetail.getReceiverAddress());
+            }
+            platformOrderList.add(platformOrder);
+        }
+        return platformOrderList;
+    }
+
+    /**
+     *
+     * @param key
+     * @param detail
+     * @return
+     */
+    private boolean isSameShop(String key, ImportOrderSkuDetail detail){
+        String[] keys = key.split(SupplyConstants.Symbol.MINUS);
+        String channelCode = keys[0];//业务线编码
+        String sellCode = keys[1];//销售渠道编码
+        String shopOrderCode = keys[2];//销售渠道订单号
+        if(StringUtils.equals(channelCode, detail.getChannelCode()) &&
+                StringUtils.equals(sellCode, detail.getSellCode()) &&
+                StringUtils.equals(shopOrderCode, detail.getShopOrderCode())){
+            return true;
+        }
+        return false;
+    }
+
+
 
 
 
