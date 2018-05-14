@@ -11,7 +11,7 @@ public class LogInfoForm extends QueryModel {
     @QueryParam("entityType")
     private String entityType;//查询类型
     @QueryParam("entityId")
-    private Long entityId;//查询类型id
+    private String entityId;//查询类型id
     @QueryParam("operateType")
     private String operateType;;//操作类型:0 申请者操作 1 审核者操作
     public String getEntityType() {
@@ -22,11 +22,11 @@ public class LogInfoForm extends QueryModel {
         this.entityType = entityType;
     }
 
-    public Long getEntityId() {
+    public String getEntityId() {
         return entityId;
     }
 
-    public void setEntityId(Long entityId) {
+    public void setEntityId(String entityId) {
         this.entityId = entityId;
     }
 

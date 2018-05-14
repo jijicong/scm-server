@@ -186,8 +186,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             	criteria.andEqualTo("orderStatus", form.getOrderStatus());
             }
             //  example.orderBy("orderStatus").asc();
-            example.orderBy("updateTime").desc();
             example.setOrderByClause("field(order_status,0,3,1,2,4,5)");
+            example.orderBy("updateTime").desc();
         }
         
         //调拨单编号
