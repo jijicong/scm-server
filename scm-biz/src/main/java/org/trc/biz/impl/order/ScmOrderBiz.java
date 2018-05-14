@@ -143,6 +143,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     public final static String ORDER_CANCEL_INFO = "已取消";
     //自采商品异常订单的状态
     public final static String SELF_PURCHARES_ORDER_STATUS = "5555";
+    //企业购业务线编码
+    public final static String BUSINESS_PURCHASE_CHANNEL_CODE = "businessPurchaseChannelCode";
 
 
     //渠道订单金额校验:1-是,0-否
@@ -1924,12 +1926,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        //orderCheck(orderObj);
+        orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
         //获取店铺订单
         List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPlatformType(), platformOrder.getPayTime());
+        //设置企业购商品状态
+        setBusinessPurchaseItemStatus(shopOrderList);
         //拆分自采和代发商品
         List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
         List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
@@ -2077,6 +2081,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
+     * 设置企业购商品状态
+     * @param shopOrderList
+     */
+    private void setBusinessPurchaseItemStatus(List<ShopOrder> shopOrderList){
+        SystemConfig systemConfig = new SystemConfig();
+        systemConfig.setCode(BUSINESS_PURCHASE_CHANNEL_CODE);
+        systemConfig = systemConfigService.selectOne(systemConfig);
+        AssertUtil.notNull(systemConfig, String.format("系统配置表system_config里没有配置企业购业务线编码"));
+        for(ShopOrder shopOrder: shopOrderList){
+            for (OrderItem orderItem : shopOrder.getOrderItems()) {
+                if(StringUtils.equals(systemConfig.getContent(), orderItem.getChannelCode())){
+                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode());
+                }
+            }
+        }
+    }
+
+    /**
      * 设置代发商品供货价
      * @param itemList
      * @param externalItemSkuList
@@ -2128,22 +2150,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
     }
-
-
-    /**
-     * 获取并校验业务线相关仓储信息
-     * @param channelCode
-     * @return
-     */
-    /*private List<WarehouseInfo> getChannelAndCheckWarehouseInfo(String channelCode){
-        WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setChannelCode(channelCode);
-        warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
-        AssertUtil.notEmpty(warehouseInfoList, String.format("业务线%s还没有绑定仓库", channelCode));
-        return warehouseInfoList;
-    }*/
-
 
 
     /**
