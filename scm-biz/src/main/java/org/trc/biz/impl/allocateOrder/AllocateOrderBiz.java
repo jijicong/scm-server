@@ -681,24 +681,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                 StringUtils.isNotBlank(itemNo) || StringUtils.isNotBlank(brandName) || StringUtils.isNotBlank(filterSkuCode)){
             flag = true;
         }
-        // 查出所有3级分类
-        Set<Long> categoryIds = new HashSet<>();
-        Category queryCategory = new Category();
-        queryCategory.setLevel(3);
-		List<Category> categoryList = categoryService.select(queryCategory);
-        for (Category cg: categoryList) {
-            categoryIds.add(cg.getId());
-        }
-        //查询分类名称
-        Map<Long, String> categoryMap = new HashedMap();
-        for(Long categoryId: categoryIds){
-            try {
-                String categoryName = categoryBiz.getCategoryName(categoryId);
-                categoryMap.put(categoryId, categoryName);
-            } catch (Exception e) {
-                logger.error(String.format("查询分类%s名称异常", categoryId), e);
-            }
-        }
+
         //查询品牌信息
         Example brandExample = new Example(Brand.class);
         Example.Criteria brandCriteria = brandExample.createCriteria();
@@ -715,26 +698,37 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         //查询供应商相关商品
         Example itemExample = new Example(Items.class);
         Example.Criteria itemCriteria = itemExample.createCriteria();
-        itemCriteria.andIn("categoryId", categoryIds);
+        //itemCriteria.andIn("categoryId", categoryIds);
         itemCriteria.andIn("brandId", _brandIds);
         itemCriteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<Items> itemsList = itemsService.selectByExample(itemExample);
         /*AssertUtil.notEmpty(itemsList, String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
                 CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), CommonUtil.converCollectionToString(new ArrayList<>(brandIds)), ValidStateEnum.ENABLE.getName()));*/
         if (CollectionUtils.isEmpty(itemsList)) {
-        	logger.error(String.format("根据分类ID[%s]、品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
-                    CommonUtil.converCollectionToString(new ArrayList<>(categoryIds)), 
+        	logger.error(String.format("品牌ID[%s]、起停用状态[%s]批量查询商品信息为空",
                     CommonUtil.converCollectionToString(new ArrayList<>(_brandIds)), ValidStateEnum.ENABLE.getName()));
             if (!flag) {
                 throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION, "无数据，请确认【商品管理】中存在商品类型为”自采“的商品！");
             }
         }
+        
+        // 查出所有3级分类
+//        Category queryCategory = new Category();
+//        queryCategory.setLevel(3);
+//		List<Category> categoryList = categoryService.select(queryCategory);
+//        for (Category cg: categoryList) {
+//            categoryIds.add(cg.getId());
+//        }
+
 
         //查询供应商相关SKU
+        Map<String, Long> spuCategoryMap = new HashedMap();
         List<Long> itemIds = new ArrayList<>();
-        for(Items items: itemsList){
+        for (Items items: itemsList) {
             itemIds.add(items.getId());
+            spuCategoryMap.put(items.getSpuCode(), items.getCategoryId());
         }
+        
         Example skusExample = new Example(Skus.class);
         Example.Criteria skusCriteria = skusExample.createCriteria();
         skusCriteria.andIn("itemId", itemIds);
@@ -758,29 +752,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             }
         }
         List<String> skuCodes = new ArrayList<>();
-        for(Skus skus: skusList){
+        for (Skus skus: skusList) {
             skuCodes.add(skus.getSkuCode());
-            for(Items items: itemsList){
-                if(skus.getItemId().longValue() == items.getId().longValue()){
-                    skus.setCategoryId(items.getCategoryId());
-                    skus.setBrandId(items.getBrandId());
-                    //设置分类名称
-                    for(Map.Entry<Long, String> entry: categoryMap.entrySet()){
-                        if(items.getCategoryId().longValue() == entry.getKey().longValue()){
-                            skus.setCategoryName(entry.getValue());
-                            break;
-                        }
-                    }
-                    //设置品牌名称
-                    for(Brand b: brandList){
-                        if(items.getBrandId().longValue() == b.getId().longValue()){
-                            skus.setBrandName(b.getName());
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
         }
         //查询仓库商品信息
         List<WarehouseItemInfo> warehouseItemInfoList = new ArrayList<>();
@@ -847,6 +820,51 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                         "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
             }
         }
+        
+        //查询分类名称
+        Set<Long> categoryIds = new HashSet<>();
+        Map<Long, String> categoryMap = new HashedMap();
+        for (WarehouseItemInfo itemInfo : warehouseItemInfoList) {
+        	for (String key : spuCategoryMap.keySet()) {
+        		if (StringUtils.equals(key, itemInfo.getSpuCode())) {
+        			categoryIds.add(spuCategoryMap.get(key));
+        		}
+        	}
+        }
+        
+        for (Long categoryId: categoryIds) {
+            try {
+                String categoryName = categoryBiz.getCategoryName(categoryId);
+                categoryMap.put(categoryId, categoryName);
+            } catch (Exception e) {
+                logger.error(String.format("查询分类%s名称异常", categoryId), e);
+            }
+        }
+        
+        for (Skus skus: skusList) {
+            for(Items items: itemsList){
+                if(skus.getItemId().longValue() == items.getId().longValue()){
+                    skus.setCategoryId(items.getCategoryId());
+                    skus.setBrandId(items.getBrandId());
+                    //设置分类名称
+                    for(Map.Entry<Long, String> entry: categoryMap.entrySet()){
+                        if(items.getCategoryId().longValue() == entry.getKey().longValue()){
+                            skus.setCategoryName(entry.getValue());
+                            break;
+                        }
+                    }
+                    //设置品牌名称
+                    for(Brand b: brandList){
+                        if(items.getBrandId().longValue() == b.getId().longValue()){
+                            skus.setBrandName(b.getName());
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        
         return getAllocateSkuDetails(warehouseItemInfoList, skusList);
 	}
 	
@@ -857,7 +875,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
            // detail.setSpuCode(warehouseItemInfo.getSpuCode());
             detail.setSkuCode(warehouseItemInfo.getSkuCode());
             detail.setBarCode(warehouseItemInfo.getBarCode());
-            detail.setSkuNo(warehouseItemInfo.getItemNo());
+            detail.setSkuNo(warehouseItemInfo.getItemNo()); // 货号
             detail.setSpecNatureInfo(warehouseItemInfo.getSpecNatureInfo());
             //detail.setWarehouseItemInfoId(warehouseItemInfo.getWarehouseInfoId());
             //detail.setWarehouseItemId(warehouseItemInfo.getWarehouseItemId());
