@@ -44,6 +44,7 @@ import org.trc.enums.LogOperationEnum;
 import org.trc.enums.NoticsWarehouseStateEnum;
 import org.trc.enums.ValidStateEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.AllocateOrderException;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
@@ -918,6 +919,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		detail.setSkuNo(jsonObj.getString("skuNo"));
 		detail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.INIT.getCode());
 		detail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.INIT.getCode());
+		detail.setInStatus(AllocateInOrderStatusEnum.WAIT_OUT_FINISH.getCode().toString());
+		detail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
 		detail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 		detail.setCreateOperator(aclUserAccreditInfo.getUserId());	
 		
