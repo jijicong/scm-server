@@ -1886,7 +1886,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //获取店铺订单
         List<ShopOrder> shopOrderList = getShopOrderList(shopOrderArray, platformOrder.getPlatformType(), platformOrder.getPayTime());
         //设置企业购商品状态
-        setBusinessPurchaseItemStatus(shopOrderList);
+        boolean businessPurchaseFlag = setBusinessPurchaseItemStatus(shopOrderList);
         //拆分自采和代发商品
         List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
         List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
@@ -1971,10 +1971,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             shopOrder.setOrderItems(_orderItemList);
         }
         //订单商品明细
-        List<OrderItem> orderItemList = new ArrayList<OrderItem>();
-        for (WarehouseOrder warehouseOrder : warehouseOrderList) {
-            orderItemList.addAll(warehouseOrder.getOrderItemList());
-        }
+        /*List<OrderItem> orderItemList = new ArrayList<OrderItem>();
+        if(!CollectionUtils.isEmpty(warehouseOrderList)){
+            for (WarehouseOrder warehouseOrder : warehouseOrderList) {
+                orderItemList.addAll(warehouseOrder.getOrderItemList());
+            }
+        }*/
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
         //保存异常单信息
@@ -1997,6 +1999,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
         shopOrderService.insertList(shopOrderList);
         //保存平台订单
         platformOrderService.insert(platformOrder);
+        //如果存在企业购的，那么需要更新订单状态
+        if(businessPurchaseFlag){
+            for(ShopOrder shopOrder: shopOrderList){
+                boolean ls = false;
+                for(OrderItem orderItem: shopOrder.getOrderItems()){
+                    if(StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())){
+                        ls = true;
+                        break;
+                    }
+                }
+                if(ls){
+                    //更新店铺订单供应商订单状态
+                    updateShopOrderSupplierOrderStatus(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode());
+                }
+            }
+        }
         //创建订单日志
         createOrderLog(warehouseOrderList);
         if(!CollectionUtils.isEmpty(skuWarehouseMap)){
@@ -2038,18 +2056,23 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 设置企业购商品状态
      * @param shopOrderList
      */
-    private void setBusinessPurchaseItemStatus(List<ShopOrder> shopOrderList){
+    private boolean setBusinessPurchaseItemStatus(List<ShopOrder> shopOrderList){
+        boolean flag = false;
         SystemConfig systemConfig = new SystemConfig();
         systemConfig.setCode(BUSINESS_PURCHASE_CHANNEL_CODE);
         systemConfig = systemConfigService.selectOne(systemConfig);
         AssertUtil.notNull(systemConfig, String.format("系统配置表system_config里没有配置企业购业务线编码"));
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
-                if(StringUtils.equals(systemConfig.getContent(), orderItem.getChannelCode())){
+                if(StringUtils.equals(systemConfig.getContent(), orderItem.getChannelCode()) && orderItem.getSkuCode().startsWith(SP0)){
+                    if(!flag){
+                        flag = true;
+                    }
                     orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode());
                 }
             }
         }
+        return flag;
     }
 
     /**
