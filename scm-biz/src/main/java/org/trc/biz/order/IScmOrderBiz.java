@@ -187,8 +187,9 @@ public interface IScmOrderBiz {
     ResponseAck orderSubmitResultNotice(String orderInfo);
 
     /**
-     *提交自采订单
+     * 提交自采订单
      * @param warehouseOrders
+     * @param skuWarehouseMap
      * @return
      */
     ResponseAck submitSelfPurchaseOrder(List<WarehouseOrder> warehouseOrders, Map<String, List<SkuWarehouseDO>> skuWarehouseMap);

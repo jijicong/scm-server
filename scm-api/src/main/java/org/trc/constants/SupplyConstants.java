@@ -865,6 +865,11 @@ public class SupplyConstants {
         //调拨单入库单编码长度
         public static final Integer ALLOCATE_ORDER_IN_LENGTH = 5;
 
+        //导入订单前缀
+        public static final String IMPORT_ORDER_CODE = "DRDD";
+        //导入订单长度
+        public static final Integer IMPORT_ORDER_LENGTH = 5;
+
         //序列号查询路径
         public static final String SERIAL = "serial";
     }
