@@ -76,10 +76,10 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveLogisticsCorporation(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
-        AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
         LogisticsCorporation logisticsCorporationOnly = new LogisticsCorporation();
         logisticsCorporationOnly.setLogisticsCorporationCode(logisticsCorporation.getLogisticsCorporationCode());
         List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.select(logisticsCorporationOnly);
@@ -110,10 +110,10 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
     @Override
     public void updateLogisticsCorporation(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(logisticsCorporation.getId(), "根据ID修改物流公司，参数ID为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
-        AssertUtil.notNull(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
-        AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
+        AssertUtil.notBlank(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
 
         Example example = new Example(LogisticsCorporation.class);
         Example.Criteria criteria = example.createCriteria();
