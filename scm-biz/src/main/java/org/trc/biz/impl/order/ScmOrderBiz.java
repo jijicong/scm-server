@@ -5,9 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.DeliveryorderBatchcreateRequest;
-import com.qimen.api.request.InventoryQueryRequest;
 import com.qimen.api.response.DeliveryorderBatchcreateResponse;
-import com.qimen.api.response.InventoryQueryResponse;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -43,13 +41,13 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
+import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseInfo.WarehousePriority;
 import org.trc.enums.*;
 import org.trc.exception.OrderException;
 import org.trc.exception.ParamValidException;
-import org.trc.exception.QimenException;
 import org.trc.exception.SignException;
 import org.trc.form.*;
 import org.trc.form.JDModel.*;
@@ -254,6 +252,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private String SP1 = "SP1";
     private String ONE = "1";
     private String ZERO = "0";
+    private final static String XLS = "xls";
+    private final static String XLSX = "xlsx";
+    //导入订单平台订单号生成前缀
+    private final static String PLATFORM_ORDER_CORD_PREFIX = "PTDD";
 
 
     @Override
@@ -1949,7 +1951,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -3729,6 +3731,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
             AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
             ShopOrder shopOrder = JSONObject.parseObject(tmpObj.getString("shopOrder"),ShopOrder.class);
+            String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+            shopOrder.setScmShopOrderCode(scmShopOrderCode);
             shopOrder.setPlatformType(platformType);
             shopOrder.setCreateTime(DateUtils.timestampToDate(shopOrderObj.getLong("createTime")));//创建时间
             shopOrder.setPayTime(payTime);//支付时间
@@ -3740,7 +3744,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             JSONArray orderItemArray = tmpObj.getJSONArray("orderItems");
             AssertUtil.notEmpty(orderItemArray, String.format("接收渠道订单参数中平店铺订单%s相关商品订单明细信息为空为空", shopOrderObj));
             //获取订单商品明细
-            List<OrderItem> orderItemList = getOrderItem(orderItemArray, shopOrder.getChannelCode(), shopOrder.getSellCode());
+            List<OrderItem> orderItemList = getOrderItem(orderItemArray, scmShopOrderCode, shopOrder.getChannelCode(), shopOrder.getSellCode());
             totalShop = totalShop.add(shopOrder.getPayment());
             shopOrder.setOrderItems(orderItemList);
             shopOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -3772,11 +3776,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItemArray
      * @return
      */
-    private List<OrderItem> getOrderItem(JSONArray orderItemArray, String channelCode, String sellCode){
+    private List<OrderItem> getOrderItem(JSONArray orderItemArray, String scmShopOrderCode, String channelCode, String sellCode){
         List<OrderItem> orderItemList = new ArrayList<OrderItem>();
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
             OrderItem orderItem = JSONObject.parseObject(orderItemObj.toJSONString(),OrderItem.class);
+            orderItem.setScmShopOrderCode(scmShopOrderCode);
             orderItem.setChannelCode(channelCode);
             orderItem.setSellCode(sellCode);
             orderItem.setOrderItemCode(orderItemObj.getString("id"));
@@ -4424,6 +4429,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private WarehouseOrder getSelfWarehouseOrder(WarehouseInfo warehouse, List<OrderItem> orderItems, ShopOrder shopOrder){
         WarehouseOrder warehouseOrder = new WarehouseOrder();
+        warehouseOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
         warehouseOrder.setWarehouseId(warehouse.getId());
         warehouseOrder.setWarehouseCode(warehouse.getCode());
         warehouseOrder.setWarehouseName(warehouse.getWarehouseName());
@@ -4610,6 +4616,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         List<ExceptionOrder> exceptionOrderList = new ArrayList<>();
         for(ShopOrder shopOrder: shopOrders){
             ExceptionOrder exceptionOrder = new ExceptionOrder();
+            exceptionOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
             exceptionOrder.setChannelCode(shopOrder.getChannelCode());
             exceptionOrder.setSellCode(shopOrder.getSellCode());
             exceptionOrder.setShopOrderCode(shopOrder.getShopOrderCode());
@@ -4690,6 +4697,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for (Supplier supplier: supplierList) {
             List<OrderItem> orderItemList2 = new ArrayList<OrderItem>();
             WarehouseOrder warehouseOrder = new WarehouseOrder();
+            warehouseOrder.setScmShopOrderCode(shopOrder.getScmShopOrderCode());
             warehouseOrder.setSupplierCode(supplier.getSupplierInterfaceId());
             warehouseOrder.setShopId(shopOrder.getShopId());
             warehouseOrder.setShopOrderCode(shopOrder.getShopOrderCode());
@@ -5368,6 +5376,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         OutboundOrder outboundOrder = new OutboundOrder();
         //流水号
         String code = serialUtilService.generateCode(SupplyConstants.Serial.OUTBOUND_ORDER_LENGTH, SupplyConstants.Serial.OUTBOUND_ORDER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+        outboundOrder.setScmShopOrderCode(warehouseOrder.getScmShopOrderCode());
         outboundOrder.setChannelCode(platformOrder.getChannelCode());
         outboundOrder.setOutboundOrderCode(code);
         outboundOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
@@ -5681,26 +5690,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
 
-    private static final String SUCCESS = "200";
-    private static final String TITLE_ONE = "商品SKU编号";
-    private static final String TITLE_TWO = "仓库商品ID";
-    private static final String TITLE_THREE = "异常说明";
-    private static final String CODE = "code";
-    private static final String MSG = "msg";
-    private static final String URL = "url";
-    private final static String XLS = "xls";
-    private final static String XLSX = "xlsx";
-    //平台订单号生成前缀
-    private final static String PLATFORM_ORDER_CORD_PREFIX = "PTDD";
-
     @Override
     public Response importOrder(InputStream uploadedInputStream, FormDataContentDisposition fileDetail) {
         AssertUtil.notNull(uploadedInputStream, "上传文件不能为空");
         String fileName = fileDetail.getFileName();
         AssertUtil.notBlank(fileName, "上传文件名称不能为空");
-        boolean flag = true;
         WarehouseItemInfoExceptionResult result = new WarehouseItemInfoExceptionResult();
-        String code = "";
         try {
             //检测是否是excel
             String suffix = fileName.substring(fileName.lastIndexOf(SupplyConstants.Symbol.FILE_NAME_SPLIT) + 1);
@@ -5725,27 +5720,93 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(titleResult, contentResult);
             //校验导入订单商品是否供应链商品
             isScmItems2(importOrderInfoList);
-            //获取导入订单的OrderItem列表
-            List<OrderItem> orderItemList = getImportSkuOrderItems(importOrderInfoList);
             //获取导入订单的店铺订单
             List<ShopOrder> shopOrderList = getImportShopOrders(importOrderInfoList);
             //获取导入订单的平台订单
             List<PlatformOrder> platformOrderList = getImportPlatformOrders(shopOrderList, importOrderInfoList);
             //订单处理
-            processImportOrder(platformOrderList, shopOrderList, importOrderInfoList);
-
-
+            String importOrderCode = processImportOrder(platformOrderList, shopOrderList, importOrderInfoList);
+            //处理返回结果
+            int successCount = 0;//导入成功数
+            int failCount = 0;//导入失败数
+            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                if(importOrderInfo.getFlag()){
+                    successCount++;
+                }else{
+                    failCount++;
+                }
+            }
+            ImportOrderResult importOrderResult = new ImportOrderResult(importOrderCode, successCount, failCount);
+            if(failCount > 0){
+                return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "订单导入完成", importOrderResult);
+            }
         } catch (Exception e) {
             String msg = e.getMessage();
             log.error(msg, e);
             return ResultUtil.createfailureResult(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), msg, "");
         }
-        if(flag){
-            return ResultUtil.createSuccessResult("导入仓库商品信息通知状态成功", result);
-        }
-        return ResultUtil.createfailureResult(Response.Status.BAD_REQUEST.getStatusCode(), "导入文件参数错误", result);
+        return ResultUtil.createSuccessResult("订单导入完成", result);
 
     }
+
+    @Override
+    public Response downloadErrorOrder(String orderCode) {
+        AssertUtil.notBlank(orderCode, "错误订单编码不能为空");
+        try {
+            ImportOrderInfo importOrderInfo = new ImportOrderInfo();
+            importOrderInfo.setImportOrderCode(orderCode);
+            List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
+            List<CellDefinition> cellDefinitionList = new ArrayList<>();
+            CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 8000);
+            CellDefinition payTime = new CellDefinition("payTime", PAY_TIME, CellDefinition.DATE_TIME, 8000);
+            CellDefinition receiverName = new CellDefinition("receiverName", RECIVE_NAME, CellDefinition.TEXT, 8000);
+            CellDefinition receiverMobile = new CellDefinition("receiverMobile", RECIVE_MOBILE, CellDefinition.TEXT, 8000);
+            CellDefinition receiverProvince = new CellDefinition("receiverProvince", RECIVE_PROVINCE, CellDefinition.TEXT, 8000);
+            CellDefinition receiverCity = new CellDefinition("receiverCity", RECIVE_CITY, CellDefinition.TEXT, 8000);
+            CellDefinition receiverDistrict = new CellDefinition("receiverDistrict", RECIVE_DISTRICT, CellDefinition.TEXT, 8000);
+            CellDefinition receiverAddress = new CellDefinition("receiverAddress", RECIVE_ADDRESS, CellDefinition.TEXT, 8000);
+            CellDefinition skuCode = new CellDefinition("skuCode", SKU_CODE, CellDefinition.TEXT, 8000);
+            CellDefinition num = new CellDefinition("num", NUM, CellDefinition.TEXT, 8000);
+            CellDefinition price = new CellDefinition("price", PRICE, CellDefinition.TEXT, 8000);
+            CellDefinition payment = new CellDefinition("payment", PAYMENT, CellDefinition.TEXT, 8000);
+            CellDefinition postFee = new CellDefinition("postFee", POST_FEE, CellDefinition.TEXT, 8000);
+            CellDefinition priceTax = new CellDefinition("priceTax", PRICE_TAX, CellDefinition.TEXT, 8000);
+            CellDefinition buyerMessage = new CellDefinition("buyerMessage", BUYER_MESSAGE, CellDefinition.TEXT, 8000);
+            CellDefinition shopMemo = new CellDefinition("shopMemo", SHOP_MEMO, CellDefinition.TEXT, 8000);
+            CellDefinition errorMessage = new CellDefinition("errorMessage", ERROR_MESSAGE, CellDefinition.TEXT, 32000);
+            cellDefinitionList.add(shopOrderCode);
+            cellDefinitionList.add(payTime);
+            cellDefinitionList.add(receiverName);
+            cellDefinitionList.add(receiverMobile);
+            cellDefinitionList.add(receiverProvince);
+            cellDefinitionList.add(receiverCity);
+            cellDefinitionList.add(receiverDistrict);
+            cellDefinitionList.add(receiverAddress);
+            cellDefinitionList.add(skuCode);
+            cellDefinitionList.add(num);
+            cellDefinitionList.add(price);
+            cellDefinitionList.add(payment);
+            cellDefinitionList.add(postFee);
+            cellDefinitionList.add(priceTax);
+            cellDefinitionList.add(buyerMessage);
+            cellDefinitionList.add(shopMemo);
+            cellDefinitionList.add(errorMessage);
+
+            String sheetName = "导入失败订单";
+
+            HSSFWorkbook hssfWorkbook = ExportExcel.generateExcel(list, cellDefinitionList, sheetName);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            hssfWorkbook.write(stream);
+
+            String fileName = String.valueOf(System.nanoTime())+ SupplyConstants.Symbol.FILE_NAME_SPLIT + XLS;
+            return javax.ws.rs.core.Response.ok(stream.toByteArray()).header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename*=utf-8'zh_cn'" + fileName).type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Cache-Control", "no-cache").build();
+        } catch (Exception e) {
+            log.error("订单导入错误下载异常" + e.getMessage(), e);
+            return ResultUtil.createfailureResult(Integer.parseInt(ExceptionEnum.DOWNLOAD_ERROR_ORDER_EXCEPTION.getCode()), ExceptionEnum.DOWNLOAD_ERROR_ORDER_EXCEPTION.getMessage());
+        }
+    }
+
 
     /**
      * 校验导入订单商品是否供应链商品
@@ -5802,7 +5863,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param platformOrderList
      * @param shopOrderList
      */
-    private void processImportOrder(List<PlatformOrder> platformOrderList, List<ShopOrder> shopOrderList, List<ImportOrderInfo> importOrderInfoList) {
+    private String processImportOrder(List<PlatformOrder> platformOrderList, List<ShopOrder> shopOrderList, List<ImportOrderInfo> importOrderInfoList) {
         for(PlatformOrder platformOrder: platformOrderList){
             List<ShopOrder> _shopOrders = new ArrayList<>();
             for(ShopOrder shopOrder: shopOrderList){
@@ -5896,9 +5957,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         //保存导入订单信息
+        String importOrdrCode = serialUtilService.generateCode(SupplyConstants.Serial.IMPORT_ORDER_LENGTH, SupplyConstants.Serial.IMPORT_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         for(ImportOrderInfo importOrderInfo: importOrderInfoList){
-            String code = serialUtilService.generateCode(SupplyConstants.Serial.IMPORT_ORDER_LENGTH, SupplyConstants.Serial.IMPORT_ORDER_CODE);
-            importOrderInfo.setImportOrderCode(code);
+            importOrderInfo.setImportOrderCode(importOrdrCode);
             if(importOrderInfo.getFlag()){
                 importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());
             }else{
@@ -5908,6 +5969,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(CollectionUtils.isEmpty(importOrderInfoList)){
             importOrderInfoService.insertList(importOrderInfoList);
         }
+        return importOrdrCode;
 
     }
 
@@ -5927,7 +5989,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             updateOrderStatusByOutboundOrder(warehouseOrders);
         }
     }
-
 
 
 
@@ -5965,6 +6026,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private final static String SHOP_MEMO = "商家备注";
     //付款时间
     private final static String PAY_TIME = "付款时间";
+    //付款时间
+    private final static String ERROR_MESSAGE = "错误提示信息";
 
 
     /**
@@ -6204,12 +6267,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param importOrderInfoList
      * @return
      */
-    private List<OrderItem> getImportSkuOrderItems(List<ImportOrderInfo> importOrderInfoList){
+    private List<OrderItem> getImportSkuOrderItems(String scmShopOrderCode, List<ImportOrderInfo> importOrderInfoList){
         List<OrderItem> orderItemList = new ArrayList<>();
         for(ImportOrderInfo detail: importOrderInfoList){
             if(detail.getFlag()){//基础校验通过的数据
                 OrderItem orderItem = new OrderItem();
                 BeanUtils.copyProperties(orderItem, detail);
+                orderItem.setScmShopOrderCode(scmShopOrderCode);
                 orderItem.setPostDiscount(detail.getPostFee());//邮费
                 orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
                 orderItemList.add(orderItem);
@@ -6250,6 +6314,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             ShopOrder shopOrder = new ShopOrder();
             String platformOrderCode = GuidUtil.getNextUid(PLATFORM_ORDER_CORD_PREFIX);
             shopOrder.setPlatformOrderCode(platformOrderCode);
+            String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
+            shopOrder.setScmShopOrderCode(scmShopOrderCode);
             shopOrder.setShopOrderCode(shopOrderCode);
             shopOrder.setChannelCode(importOrderInfo.getSellCode());
             shopOrder.setPayTime(importOrderInfo.getPayTime());
@@ -6289,7 +6355,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             shopOrder.setPostageFee(postFee);
             shopOrder.setTotalTax(tax);
             shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode());
-            List<OrderItem> orderItemList = getImportSkuOrderItems(importOrderInfos);
+            List<OrderItem> orderItemList = getImportSkuOrderItems(scmShopOrderCode, importOrderInfos);
             for(OrderItem orderItem: orderItemList){
                 orderItem.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             }
