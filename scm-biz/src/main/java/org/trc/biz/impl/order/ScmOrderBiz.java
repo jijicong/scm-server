@@ -4030,7 +4030,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param platformOrder
      */
     private void platformOrderParamCheck(PlatformOrder platformOrder, List<OrderItem> orderItems) {
-        AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
+        //AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
         AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
