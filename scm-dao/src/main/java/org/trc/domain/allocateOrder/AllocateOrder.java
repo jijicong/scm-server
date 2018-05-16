@@ -58,7 +58,7 @@ public class AllocateOrder extends AllocateOrderBase{
     /**
      * 收货人
      */
-    @NotBlank(message = "收货人不能为空")
+   // @NotBlank(message = "收货人不能为空")
     @FormParam("receiver")
     private String receiver;
 
@@ -73,14 +73,14 @@ public class AllocateOrder extends AllocateOrderBase{
      * 收货人手机
      */
     @Column(name = "receiver_mobile")
-    @NotBlank(message = "收货人手机不能为空")
+    //@NotBlank(message = "收货人手机不能为空")
     @FormParam("receiverMobile")
     private String receiverMobile;
 
     /**
      * 发件人
      */
-    @NotBlank(message = "发件人不能为空")
+    //@NotBlank(message = "发件人不能为空")
     @FormParam("sender")
     private String sender;
 
@@ -88,7 +88,7 @@ public class AllocateOrder extends AllocateOrderBase{
      * 发件人手机
      */
     @Column(name = "sender_mobile")
-    @NotBlank(message = "发件人手机不能为空")
+   // @NotBlank(message = "发件人手机不能为空")
     @FormParam("senderMobile")
     private String senderMobile;
 

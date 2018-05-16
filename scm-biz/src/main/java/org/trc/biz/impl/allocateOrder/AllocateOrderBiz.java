@@ -269,6 +269,10 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		 * 商品明细要求至少选择一项商品
 		 */
 		if (ZeroToNineEnum.ONE.getCode().equals(isReview)) {
+			AssertUtil.notBlank(allocateOrder.getReceiver(), "收货人不能为空");
+			AssertUtil.notBlank(allocateOrder.getReceiverMobile(), "收货人手机不能为空");
+			AssertUtil.notBlank(allocateOrder.getSender(), "发货人不能为空");
+			AssertUtil.notBlank(allocateOrder.getSenderMobile(), "发货人手机不能为空");
 			
 			orderStatus = AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode();
 			
