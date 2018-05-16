@@ -1,12 +1,27 @@
-package org.trc.form.order;
+package org.trc.domain.order;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
  * 导入订单sku明细
  */
-public class ImportOrderSkuDetail {
+public class ImportOrderInfo implements Serializable{
+
+    // 主键
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * 导入订单编码
+     */
+    private String importOrderCode;
 
     /**
      * 业务线编码
@@ -17,6 +32,11 @@ public class ImportOrderSkuDetail {
      * 销售渠道编码
      */
     private String sellCode;
+
+    /**
+     * 平台订单号
+     */
+    private String platformCode;
 
     /**
      * 销售渠道订单号
@@ -114,6 +134,21 @@ public class ImportOrderSkuDetail {
     private Date payTime;
 
     /**
+     * 付款时间
+     */
+    private Date createTime;
+
+    /**
+     * 付款时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否失败:0-否,1-是
+     */
+    private String isFail;
+
+    /**
      * 商品货号
      */
     private String itemNo;
@@ -121,6 +156,7 @@ public class ImportOrderSkuDetail {
     /**
      * 是否错误
      */
+    @Transient
     private Boolean flag = true;
 
     public String getChannelCode() {
@@ -305,5 +341,53 @@ public class ImportOrderSkuDetail {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getPlatformCode() {
+        return platformCode;
+    }
+
+    public void setPlatformCode(String platformCode) {
+        this.platformCode = platformCode;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public String getIsFail() {
+        return isFail;
+    }
+
+    public void setIsFail(String isFail) {
+        this.isFail = isFail;
+    }
+
+    public String getImportOrderCode() {
+        return importOrderCode;
+    }
+
+    public void setImportOrderCode(String importOrderCode) {
+        this.importOrderCode = importOrderCode;
     }
 }

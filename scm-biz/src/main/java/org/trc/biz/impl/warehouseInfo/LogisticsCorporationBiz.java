@@ -79,7 +79,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
-        AssertUtil.notBlank(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
+        AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
         LogisticsCorporation logisticsCorporationOnly = new LogisticsCorporation();
         logisticsCorporationOnly.setLogisticsCorporationCode(logisticsCorporation.getLogisticsCorporationCode());
         List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.select(logisticsCorporationOnly);
@@ -113,7 +113,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
-        AssertUtil.notBlank(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
+        AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
 
         Example example = new Example(LogisticsCorporation.class);
         Example.Criteria criteria = example.createCriteria();
@@ -136,8 +136,8 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
             logger.error(msg);
             throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_UPDATE_EXCEPTION, msg);
         }
-        if (!_logisticsCorporation.getIsValid().equals(logisticsCorporation.getIsValid())) {
-            if (logisticsCorporation.getIsValid().equals(ValidEnum.VALID.getCode())) {
+        if (!(_logisticsCorporation.getIsValid() + "").equals(logisticsCorporation.getIsValid())) {
+            if ((logisticsCorporation.getIsValid() + "").equals(ValidEnum.VALID.getCode())) {
                 remark = remarkEnum.VALID_ON.getMessage();
             } else {
                 remark = remarkEnum.VALID_OFF.getMessage();
@@ -154,11 +154,11 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
 
         logisticsCorporation = logisticsCorporationService.selectByPrimaryKey(logisticsCorporation.getId());
         String remark = "";
-        if (logisticsCorporation.getIsValid().equals(ValidEnum.VALID.getCode())) {
-            logisticsCorporation.setIsValid(ValidEnum.NOVALID.getCode());
+        if ((logisticsCorporation.getIsValid() + "").equals(ValidEnum.VALID.getCode())) {
+            logisticsCorporation.setIsValid(Integer.parseInt(ValidEnum.NOVALID.getCode()));
             remark = remarkEnum.VALID_OFF.getMessage();
         } else {
-            logisticsCorporation.setIsValid(ValidEnum.VALID.getCode());
+            logisticsCorporation.setIsValid(Integer.parseInt(ValidEnum.VALID.getCode()));
         }
         logisticsCorporation.setUpdateTime(Calendar.getInstance().getTime());
         int count = logisticsCorporationService.updateByPrimaryKeySelective(logisticsCorporation);

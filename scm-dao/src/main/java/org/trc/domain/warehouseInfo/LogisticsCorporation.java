@@ -2,6 +2,7 @@ package org.trc.domain.warehouseInfo;
 
 import org.hibernate.validator.constraints.Length;
 import org.trc.domain.BaseDO;
+import org.trc.domain.util.CommonDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,7 +13,7 @@ import javax.ws.rs.PathParam;
 /**
  * Created by hzcyn on 2018/5/3.
  */
-public class LogisticsCorporation extends BaseDO {
+public class LogisticsCorporation extends CommonDO {
     //主键
     @Id
     @PathParam("id")
@@ -53,6 +54,9 @@ public class LogisticsCorporation extends BaseDO {
     @FormParam("remark")
     @Length(max = 255, message = "备注不能超过255个字节")
     private String remark;
+
+    @FormParam("isValid")
+    private int isValid;
 
     public Long getId() {
         return id;
@@ -116,5 +120,13 @@ public class LogisticsCorporation extends BaseDO {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public int getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(int isValid) {
+        this.isValid = isValid;
     }
 }
