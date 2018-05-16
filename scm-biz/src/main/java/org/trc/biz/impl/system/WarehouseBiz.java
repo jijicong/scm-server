@@ -384,15 +384,26 @@ public class WarehouseBiz implements IWarehouseBiz {
                     logger.error(msg);
                     throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
                 }
+
+                WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+                warehouseInfoTemp.setStoreCorrespondChannel(storeCorrespondChannel);
+                List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.select(warehouseInfoTemp);
+                if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                    String msg = "该销售渠道已对应相应的门店!";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                }
             }
             warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
+        }else{
+            warehouse.setOwnerWarehouseState(ZeroToNineEnum.ZERO.getCode());
         }
 
         warehouse.setIsThroughWms(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         warehouse.setChannelCode(SupplyConstants.WarehouseConstant.CHANNEL_CODE);
         warehouse.setOwnerName(SupplyConstants.WarehouseConstant.OWNER_NAME);
         warehouse.setSkuNum(0);
-        warehouse.setOwnerWarehouseState("0");
+
 
         int count = warehouseInfoService.insert(warehouse);
         if (count == 0) {
