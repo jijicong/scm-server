@@ -26,10 +26,7 @@ import org.trc.domain.System.ChannelExt;
 import org.trc.domain.System.ChannelSellChannel;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.ChannelException;
 import org.trc.form.system.ChannelForm;
 import org.trc.model.SearchResult;
@@ -343,6 +340,7 @@ public class ChannelBiz implements IChannelBiz {
             Example example = new Example(SellChannel.class);
             Example.Criteria criteria = example.createCriteria();
             criteria.andIn("id", sellChannelIdList);
+            criteria.andEqualTo("sellType", SellChannelTypeEnum.STORE.getCode());
             sellChannelList = sellChannelService.selectByExample(example);
         }
         return sellChannelList;
