@@ -151,12 +151,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         	
             //提交审核日期开始
             if (!StringUtils.isBlank(form.getSubmitTimeStart())) {
-            	criteria.andGreaterThanOrEqualTo("submitTime", form.getSubmitTimeStart());
+            	criteria.andGreaterThanOrEqualTo("submitTime", form.getSubmitTimeStart() + " 00:00:00");
             }
             
             //提交审核日期结束
             if (!StringUtils.isBlank(form.getSubmitTimeEnd())) {
-            	criteria.andLessThanOrEqualTo("submitTime", form.getSubmitTimeEnd());
+            	criteria.andLessThanOrEqualTo("submitTime", form.getSubmitTimeEnd() + " 23:59:59");
             }
             
             //提交人
@@ -213,22 +213,22 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         
         //创建日期开始
         if (!StringUtils.isBlank(form.getCreateTimeStart())) {
-            criteria.andGreaterThanOrEqualTo("createTime", form.getCreateTimeStart());
+            criteria.andGreaterThanOrEqualTo("createTime", form.getCreateTimeStart() + " 00:00:00");
         }
         
         //创建日期结束
         if (!StringUtils.isBlank(form.getCreateTimeEnd())) {
-            criteria.andLessThanOrEqualTo("createTime", form.getCreateTimeEnd());
+            criteria.andLessThanOrEqualTo("createTime", form.getCreateTimeEnd() + " 23:59:59");
         }
         
         //更新日期开始
         if (!StringUtils.isBlank(form.getUpdateTimeStart())) {
-        	criteria.andGreaterThanOrEqualTo("updateTime", form.getUpdateTimeStart());
+        	criteria.andGreaterThanOrEqualTo("updateTime", form.getUpdateTimeStart() + " 00:00:00");
         }
         
         //更新日期结束
         if (!StringUtils.isBlank(form.getUpdateTimeEnd())) {
-        	criteria.andLessThanOrEqualTo("updateTime", form.getUpdateTimeEnd());
+        	criteria.andLessThanOrEqualTo("updateTime", form.getUpdateTimeEnd() + " 23:59:59");
         }
         
         allocateOrderService.pagination(example, page, form);
@@ -340,7 +340,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 //			}
 			
 			
-		} else { // 修改
+		} else { // 暂存编辑，审核驳回编辑
 			AllocateOrder updateOrder = allocateOrderService.selectByPrimaryKey(allocateOrder.getAllocateOrderCode());
 			AssertUtil.notNull(updateOrder, "修改的调拨单不存在");
 			// 不是初始状态的不能提交审核
@@ -350,11 +350,22 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
 						"当前调拨单状态不支持提交审核");
 			}
-			allocateOrder.setInOutStatus(null);
-			allocateOrder.setOrderStatus(orderStatus);
+			AllocateOrder record = new AllocateOrder();
+			record.setAllocateOrderCode(allocateOrder.getAllocateOrderCode());
+			record.setReceiver(allocateOrder.getReceiver());
+			record.setSender(allocateOrder.getSender());
+			record.setMemo(allocateOrder.getMemo());
+			record.setReceiverMobile(allocateOrder.getReceiverMobile());
+			record.setSenderMobile(allocateOrder.getSenderMobile());
+			record.setInWarehouseCode(allocateOrder.getInWarehouseCode());
+			record.setOutWarehouseCode(allocateOrder.getOutWarehouseCode());
+			//record.setUpdateTime(Calendar.getInstance().getTime());
+			if (ZeroToNineEnum.ONE.getCode().equals(isReview)) {
+				record.setOrderStatus(orderStatus);
+			}
 			// 设置仓库信息
-			setDetailAddress(allocateOrder);
-			int updateCount = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);
+			setDetailAddress(record);
+			int updateCount = allocateOrderService.updateByPrimaryKeySelective(record);
 //			if (updateCount > 0) {
 				
 				/**
@@ -805,19 +816,20 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                     throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_ADD_SKU_EXCEPTION,
                             "无数据，请确认调拨商品在【仓库信息管理】的调入仓库和调出仓库中的“通知仓库状态”为“通知成功”！");
                 }
-            }
-            
-            Example tmpExample = new Example(WarehouseItemInfo.class);
-            Example.Criteria tmpCriteria = tmpExample.createCriteria();
-            
-            tmpCriteria.andIn("id", itemInfoIdList);
-            
-            if (null != pagenation) {
-                pagenation = warehouseItemInfoService.pagination(tmpExample, pagenation, new QueryModel());
-                warehouseItemInfoList = pagenation.getResult();
             } else {
-                warehouseItemInfoList = warehouseItemInfoService.selectByExample(tmpExample);
+            	Example tmpExample = new Example(WarehouseItemInfo.class);
+            	Example.Criteria tmpCriteria = tmpExample.createCriteria();
+            	
+            	tmpCriteria.andIn("id", itemInfoIdList);
+            	
+            	if (null != pagenation) {
+            		pagenation = warehouseItemInfoService.pagination(tmpExample, pagenation, new QueryModel());
+            		warehouseItemInfoList = pagenation.getResult();
+            	} else {
+            		warehouseItemInfoList = warehouseItemInfoService.selectByExample(tmpExample);
+            	}
             }
+            
         }
         if (CollectionUtils.isEmpty(warehouseItemInfoList)) {
             if (!flag) {
