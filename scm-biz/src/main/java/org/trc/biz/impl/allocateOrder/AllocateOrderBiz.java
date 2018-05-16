@@ -377,6 +377,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 						AllocateSkuDetail detail = new AllocateSkuDetail();
 						// 修改的数据
 						if (StringUtils.isNotEmpty(jsonObj.getString("id"))) {
+							detail.setId(Long.valueOf(jsonObj.getString("id")));
 							detail.setInventoryType(jsonObj.getString("inventoryType"));
 							detail.setPlanAllocateNum(jsonObj.getLong("planAllocateNum"));
 							updateList.add(detail);
@@ -434,10 +435,10 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		allocateSkuDetail.setAllocateOrderCode(orderId);
 		allocateSkuDetail.setIsDeleted(ZeroToNineEnum.ONE.getCode());
 		int countDetail = allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example);
-		if (countDetail < 1) {
-			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
-					"删除调拨单详情失败");
-		}
+//		if (countDetail < 1) {
+//			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DELETE_EXCEPTION, 
+//					"删除调拨单详情失败");
+//		}
 	}
 	
 	@Override
@@ -736,7 +737,9 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             itemIds.add(items.getId());
             spuCategoryMap.put(items.getSpuCode(), items.getCategoryId());
         }
-        
+        if (CollectionUtils.isEmpty(itemIds)) {
+        	return new ArrayList<AllocateSkuDetail>();
+        }
         Example skusExample = new Example(Skus.class);
         Example.Criteria skusCriteria = skusExample.createCriteria();
         skusCriteria.andIn("itemId", itemIds);

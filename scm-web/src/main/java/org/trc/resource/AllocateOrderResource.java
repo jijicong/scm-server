@@ -104,7 +104,7 @@ public class AllocateOrderResource {
     @Path("save")
     @Produces(MediaType.APPLICATION_JSON)
     public Response saveAllocateOrder(@BeanParam AllocateOrder allocateOrder, 
-    		@FormParam("delIds") String delIds, 
+    		@FormParam("delsIds") String delIds, 
     		@FormParam("isReview") String isReview,
     		@FormParam("skuDetailList") String skuDetail, 
     		@Context ContainerRequestContext requestContext) {
