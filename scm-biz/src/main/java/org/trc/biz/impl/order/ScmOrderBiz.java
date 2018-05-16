@@ -30,7 +30,9 @@ import org.trc.biz.requestFlow.IRequestFlowBiz;
 import org.trc.common.RequsetUpdateStock;
 import org.trc.constant.RequestFlowConstant;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.System.Channel;
 import org.trc.domain.System.LogisticsCompany;
+import org.trc.domain.System.SellChannel;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
 import org.trc.domain.goods.ExternalItemSku;
@@ -57,7 +59,9 @@ import org.trc.model.ToGlyResultDO;
 import org.trc.service.IJDService;
 import org.trc.service.IQimenService;
 import org.trc.service.ITrcService;
+import org.trc.service.System.IChannelService;
 import org.trc.service.System.ILogisticsCompanyService;
+import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
@@ -228,6 +232,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private JDWmsConstantConfig jDWmsConstantConfig;
     @Autowired
     private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IChannelService channelService;
+    @Autowired
+    private ISellChannelService sellChannelService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1910,7 +1918,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderMoneyCheck(platformOrder, shopOrderList, tmpOrderItemList);
         }
         //校验商品是否从供应链新增
-        isScmItems(tmpOrderItemList, platformOrder.getChannelCode());
+        isScmItems(tmpOrderItemList);
 
         List<ExternalItemSku> externalItemSkuList = null;
         if(supplierOrderItemList.size() > 0){
@@ -1970,13 +1978,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
             _orderItemList.addAll(orderItemList2);
             shopOrder.setOrderItems(_orderItemList);
         }
-        //订单商品明细
-        /*List<OrderItem> orderItemList = new ArrayList<OrderItem>();
-        if(!CollectionUtils.isEmpty(warehouseOrderList)){
-            for (WarehouseOrder warehouseOrder : warehouseOrderList) {
-                orderItemList.addAll(warehouseOrder.getOrderItemList());
-            }
-        }*/
         //保存幂等流水
         saveIdempotentFlow(shopOrderList);
         //保存异常单信息
@@ -2141,7 +2142,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         sb.append(operateTime).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         PlatformOrder platformOrder = orderObj.getJSONObject("platformOrder").toJavaObject(PlatformOrder.class);
         sb.append(platformOrder.getChannelCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
-        sb.append(platformOrder.getPlatformOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        //sb.append(platformOrder.getPlatformOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         JSONArray shopOrders = orderObj.getJSONArray("shopOrders");
         for(Object obj: shopOrders){
             ShopOrder shopOrder = ((JSONObject)obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
@@ -2188,7 +2189,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItems
      */
     private void orderMoneyCheck(PlatformOrder platformOrder, List<ShopOrder> shopOrders, List<OrderItem> orderItems){
+        //平台订单校验
         platformOrderParamCheck(platformOrder, orderItems);
+        //店铺订单业务线及销售渠道校验
+        Set<String> channelCodes = new HashSet<>();
+        Set<String> sellCodes = new HashSet<>();
+        for(ShopOrder shopOrder: shopOrders){
+            channelCodes.add(shopOrder.getChannelCode());
+            sellCodes.add(shopOrder.getSellCode());
+        }
+        checkOrderChannel(new ArrayList<String>(channelCodes), new ArrayList<String>(sellCodes));
         int itemsNum = 0;//商品数量
         BigDecimal payment = new BigDecimal(0);//实付金额
         BigDecimal totalFee = new BigDecimal(0);//应付总金额
@@ -3599,7 +3609,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             JSONArray orderItemArray = tmpObj.getJSONArray("orderItems");
             AssertUtil.notEmpty(orderItemArray, String.format("接收渠道订单参数中平店铺订单%s相关商品订单明细信息为空为空", shopOrderObj));
             //获取订单商品明细
-            List<OrderItem> orderItemList = getOrderItem(orderItemArray);
+            List<OrderItem> orderItemList = getOrderItem(orderItemArray, shopOrder.getChannelCode(), shopOrder.getSellCode());
             totalShop = totalShop.add(shopOrder.getPayment());
             shopOrder.setOrderItems(orderItemList);
             shopOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -3631,11 +3641,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param orderItemArray
      * @return
      */
-    private List<OrderItem> getOrderItem(JSONArray orderItemArray){
+    private List<OrderItem> getOrderItem(JSONArray orderItemArray, String channelCode, String sellCode){
         List<OrderItem> orderItemList = new ArrayList<OrderItem>();
         for(Object obj: orderItemArray){
             JSONObject orderItemObj = (JSONObject)obj;
             OrderItem orderItem = JSONObject.parseObject(orderItemObj.toJSONString(),OrderItem.class);
+            orderItem.setChannelCode(channelCode);
+            orderItem.setSellCode(sellCode);
             orderItem.setOrderItemCode(orderItemObj.getString("id"));
             String channelSkuCode = orderItem.getSkuCode();//渠道sku编码
             String scmSkuCode = orderItem.getOuterSkuId();//供应链sku编码
@@ -3679,9 +3691,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     /**
      * 校验是否供应链商品
      * @param orderItemList
-     * @param channelCode
      */
-    private void isScmItems(List<OrderItem> orderItemList, String channelCode){
+    private void isScmItems(List<OrderItem> orderItemList){
         Set<String> skuCodes = new HashSet<String>();
         for(OrderItem orderItem: orderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -3690,7 +3701,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(SkuRelation.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", skuCodes);
-        criteria.andEqualTo("channelCode", channelCode);
+        //criteria.andEqualTo("channelCode", channelCode);
         List<SkuRelation> skuRelations = skuRelationService.selectByExample(example);
         AssertUtil.notEmpty(skuRelations, String.format("skuCode为[%s]的订单商品在供应链系统无法识别", CommonUtil.converCollectionToString(Arrays.asList(skuCodes.toArray()))));
         StringBuilder sb = new StringBuilder();
@@ -3961,15 +3972,56 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     /**
-     * 校验渠道
-     * @param channelCode
+     * 校验店铺订单渠道信息
+     * @param channelCodes
+     * @param sellCodes
      */
-    private void checkChannel(String channelCode){
-        SystemConfig systemConfig = new SystemConfig();
-        systemConfig.setType(SupplyConstants.SystemConfigType.CHANNEL);
-        systemConfig.setCode(channelCode);
-        List<SystemConfig> systemConfigList = systemConfigService.select(systemConfig);
-        AssertUtil.notEmpty(systemConfigList, "不是供应链授权访问的渠道，非法访问");
+    private void checkOrderChannel(List<String> channelCodes, List<String> sellCodes){
+        if(!CollectionUtils.isEmpty(channelCodes)){
+            Example example = new Example(Channel.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("code", channelCodes);
+            List<Channel> channelList = channelService.selectByExample(example);
+            StringBuilder sb = new StringBuilder();
+            for(String channelCode: channelCodes){
+                boolean flag = false;
+                for(Channel channel: channelList){
+                    if(StringUtils.equals(channelCode, channel.getCode())){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    sb.append(channelCode).append(SupplyConstants.Symbol.COMMA);
+                }
+            }
+            if(sb.length() > 0){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("业务线%s不是供应链的合法数据", sb.substring(0, sb.length()-1)));
+            }
+        }
+
+        if(!CollectionUtils.isEmpty(sellCodes)){
+            Example example = new Example(SellChannel.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("sellCode", sellCodes);
+            List<SellChannel> channelList = sellChannelService.selectByExample(example);
+            StringBuilder sb = new StringBuilder();
+            for(String channelCode: sellCodes){
+                boolean flag = false;
+                for(SellChannel channel: channelList){
+                    if(StringUtils.equals(channelCode, channel.getSellCode())){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(!flag){
+                    sb.append(channelCode).append(SupplyConstants.Symbol.COMMA);
+                }
+            }
+            if(sb.length() > 0){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("销售渠道%s不是供应链的合法数据", sb.substring(0, sb.length()-1)));
+            }
+        }
     }
 
     /**
@@ -3979,7 +4031,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private void platformOrderParamCheck(PlatformOrder platformOrder, List<OrderItem> orderItems) {
         AssertUtil.notBlank(platformOrder.getChannelCode(), "渠道编码不能为空");
-        checkChannel(platformOrder.getChannelCode());
         AssertUtil.notBlank(platformOrder.getPlatformCode(), "来源平台编码不能为空");
         AssertUtil.notBlank(platformOrder.getPlatformOrderCode(), "平台订单编码不能为空");
         AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
@@ -4032,11 +4083,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrder
      */
     private void shopOrderParamCheck(ShopOrder shopOrder) {
-        AssertUtil.notBlank(shopOrder.getChannelCode(), "店铺订单渠道编码不能为空");
+        AssertUtil.notBlank(shopOrder.getChannelCode(), "店铺订单业务线编码不能为空");
+        AssertUtil.notBlank(shopOrder.getSellCode(), "店铺订单销售渠道编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformCode(), "店铺订单来源平台编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "店铺订单平台订单编码不能为空");
         AssertUtil.notBlank(shopOrder.getShopOrderCode(), "店铺订单编码不能为空");
-        //AssertUtil.notBlank(shopOrder.getPlatformType(), "店铺订单订单来源类型不能为空");
         AssertUtil.notNull(shopOrder.getShopId(), "店铺订单订单所属的店铺id不能为空");
         AssertUtil.notBlank(shopOrder.getShopName(), "店铺订单店铺名称不能为空");
         AssertUtil.notBlank(shopOrder.getUserId(), "店铺订单会员id不能为空");
@@ -4390,7 +4441,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ShopOrder shopOrder: shopOrders){
             ExceptionOrder exceptionOrder = new ExceptionOrder();
             exceptionOrder.setChannelCode(shopOrder.getChannelCode());
-            exceptionOrder.setSellCode(platformOrder.getSellCode());
+            exceptionOrder.setSellCode(shopOrder.getSellCode());
             exceptionOrder.setShopOrderCode(shopOrder.getShopOrderCode());
             exceptionOrder.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             exceptionOrder.setShopId(shopOrder.getShopId());
