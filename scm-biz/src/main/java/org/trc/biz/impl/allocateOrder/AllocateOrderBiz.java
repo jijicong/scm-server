@@ -4,7 +4,6 @@ package org.trc.biz.impl.allocateOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -32,7 +30,6 @@ import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.category.Brand;
-import org.trc.domain.category.Category;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -53,11 +50,9 @@ import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.category.IBrandService;
-import org.trc.service.category.ICategoryService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
-import org.trc.service.impl.allocateOrder.AllocateSkuDetailService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
@@ -68,7 +63,6 @@ import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
 import org.trc.util.ResultUtil;
-import org.trc.util.StringUtil;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -101,8 +95,6 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
     private IItemsService itemsService;
     @Autowired
     private ISkusService skusService;
-    @Autowired
-    private ICategoryService categoryService;
 	@Autowired
 	private IAllocateOrderExtService allocateOrderExtService;
 	@Autowired
@@ -330,11 +322,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				}
 				
 				logInfoService.recordLog(new AllocateOrder(), code, 
-						aclUserAccreditInfo.getUserId(), LogOperationEnum.CREATE.getMessage(), null, null);
+						aclUserAccreditInfo.getUserId(), LogOperationEnum.CREATE.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 				
 				if (ZeroToNineEnum.ONE.getCode().equals(isReview)) {
 					logInfoService.recordLog(new AllocateOrder(), code, 
-							aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT.getMessage(), null, null);
+							aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 				}
 				
 //			}
@@ -405,7 +397,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				}
 				
 				logInfoService.recordLog(new AllocateOrder(), allocateOrder.getAllocateOrderCode(), 
-						aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null, null);
+						aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 //			}
 		}
 	}
@@ -500,7 +492,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		allocateOrderExtService.discardedAllocateOutOrder(orderId);
 		
 		logInfoService.recordLog(new AllocateOrder(), orderId, 
-				userInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, null);
+				userInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 		
 
 	}
@@ -555,7 +547,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         //allocateOutOrderService.insertSelective(outOrder);
 		
 		logInfoService.recordLog(new AllocateOrder(), orderId, 
-				userInfo.getUserId(), LogOperationEnum.NOTICE_WMS.getMessage(), null, null);
+				userInfo.getUserId(), LogOperationEnum.NOTICE_WMS.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 	}
 	
 	
