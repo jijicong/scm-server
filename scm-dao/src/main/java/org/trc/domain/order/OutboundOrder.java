@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
@@ -17,6 +19,11 @@ public class OutboundOrder implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
 
     //出库通知单编码
     private String outboundOrderCode;
@@ -373,5 +380,13 @@ public class OutboundOrder implements Serializable {
 
     public void setWmsOrderCode(String wmsOrderCode) {
         this.wmsOrderCode = wmsOrderCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 }

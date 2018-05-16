@@ -870,6 +870,11 @@ public class SupplyConstants {
         //导入订单长度
         public static final Integer IMPORT_ORDER_LENGTH = 5;
 
+        //导入订单前缀
+        public static final String SYSTEM_ORDER_CODE = "ZY";
+        //导入订单长度
+        public static final Integer SYSTEM_ORDER_LENGTH = 8;
+
         //序列号查询路径
         public static final String SERIAL = "serial";
     }
@@ -1175,6 +1180,11 @@ public class SupplyConstants {
         public static final String EXCEPTION_ORDER_PAGE = "exceptionOrderPage";
         //根据拆单异常订单编码查询拆单异常订单详情路径
         public static final String EXCEPTION_ORDER_DETAIL = "exceptionOrder/exceptionOrderCode";
+
+        //导入订单路径
+        public static final String ORDER_IMPORT = "orderImport";
+        //下载错误订单路径
+        public static final String DOWNLOAD_ERROR_ORDER = "downloadErrorOrder";
     }
 
     /**

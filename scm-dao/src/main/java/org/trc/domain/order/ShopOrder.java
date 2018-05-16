@@ -22,6 +22,10 @@ public class ShopOrder extends OrderBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
     // 店铺订单编码
     @NotEmpty
     @Length(max = 32)
@@ -749,5 +753,13 @@ public class ShopOrder extends OrderBase {
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 }
