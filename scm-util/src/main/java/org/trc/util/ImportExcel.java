@@ -22,6 +22,10 @@ public class ImportExcel {
     private static final String SEPARATOR = ",";
 
     public static final String COUNT = "count";
+    /**
+     * 空字符串默认
+     */
+    public static final String NULL_STRING = "null";
 
     /**
      * 读取Excel表格表头的内容
@@ -79,6 +83,50 @@ public class ImportExcel {
                     throw new Exception("表格内容不能为空");
                 }
                 str += getStringCellValue(row.getCell((short) j)).trim() + separator;
+                // "-";
+                //str += getCellFormatValue(row.getCell((short) j)).trim() + "    ";
+                j++;
+            }
+            content.put(String.valueOf(i), str);
+            str = "";
+        }
+        return content;
+    }
+
+    /**
+     * 读取Excel数据内容
+     *
+     * @return Map 包含单元格数据内容的Map对象
+     */
+    public static Map<String, String> readExcelContent2(InputStream is, String separator) throws Exception {
+        Map<String, String> content = new HashMap<String, String>();
+        String str = "";
+        try {
+//            fs = new POIFSFileSystem(is);
+            wb = new HSSFWorkbook(fs);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        sheet = wb.getSheetAt(0);
+        // 得到总行数
+        int rowNum = sheet.getLastRowNum();
+        content.put(COUNT, String.valueOf(rowNum));
+        row = sheet.getRow(0);
+        int colNum = row.getPhysicalNumberOfCells();
+        // 正文内容应该从第二行开始,第一行为表头的标题
+        for (int i = 1; i <= rowNum; i++) {
+            row = sheet.getRow(i);
+            int j = 0;
+            while (j < colNum) {
+                // 每个单元格的数据内容用"-"分割开，以后需要时用String类的replace()方法还原数据
+                // 也可以将每个单元格的数据设置到一个javabean的属性中，此时需要新建一个javabean
+                String colVal = "";
+                if(null != row.getCell((short) j)){
+                    colVal = getStringCellValue(row.getCell((short) j)).trim();
+                }else{
+                    colVal = NULL_STRING;
+                }
+                str += colVal + separator;
                 // "-";
                 //str += getCellFormatValue(row.getCell((short) j)).trim() + "    ";
                 j++;

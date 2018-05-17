@@ -20,6 +20,7 @@ import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 
+import javax.ws.rs.FormParam;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
@@ -216,7 +217,7 @@ public interface IScmOrderBiz {
      * @param uploadedInputStream
      * @param fileDetail
      */
-    Response importOrder(InputStream uploadedInputStream, FormDataContentDisposition fileDetail);
+    Response importOrder(String channelCode, String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 下载错误订单

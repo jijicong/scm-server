@@ -1,5 +1,8 @@
 package org.trc.domain.order;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -36,7 +39,10 @@ public class ImportOrderInfo implements Serializable{
     /**
      * 平台订单号
      */
-    private String platformCode;
+    private String platformOrderCode;
+
+    //系统订单号
+    private String scmShopOrderCode;
 
     /**
      * 销售渠道订单号
@@ -139,7 +145,7 @@ public class ImportOrderInfo implements Serializable{
     private Date createTime;
 
     /**
-     * 付款时间
+     * 更新时间
      */
     private Date updateTime;
 
@@ -151,6 +157,7 @@ public class ImportOrderInfo implements Serializable{
     /**
      * 商品货号
      */
+    @Transient
     private String itemNo;
 
     /**
@@ -343,12 +350,12 @@ public class ImportOrderInfo implements Serializable{
         this.errorMessage = errorMessage;
     }
 
-    public String getPlatformCode() {
-        return platformCode;
+    public String getPlatformOrderCode() {
+        return platformOrderCode;
     }
 
-    public void setPlatformCode(String platformCode) {
-        this.platformCode = platformCode;
+    public void setPlatformOrderCode(String platformOrderCode) {
+        this.platformOrderCode = platformOrderCode;
     }
 
     public Long getId() {
@@ -389,5 +396,13 @@ public class ImportOrderInfo implements Serializable{
 
     public void setImportOrderCode(String importOrderCode) {
         this.importOrderCode = importOrderCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 }
