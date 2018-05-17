@@ -1896,6 +1896,13 @@ public class GoodsBiz implements IGoodsBiz {
             _isValid = ZeroToNineEnum.ONE.getCode();
         }
         skus.setIsValid(_isValid);
+        if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(),_isValid)){
+            //如果状态要改为启用 就要校验条形码
+            Skus barSku = new Skus();
+            barSku.setId(id);
+            barSku = skusService.selectOne(barSku);
+            checkBarcodeOnly(barSku.getBarCode(),"","");
+        }
         int count = skusService.updateByPrimaryKeySelective(skus);
         if(count == 0){
             String msg = "商品SKU启用/停用操作更新数据库失败";
