@@ -126,7 +126,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
-    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, 
+    		Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
         //获得渠道的编码
@@ -134,6 +135,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(channelCode, "业务线编码为空!");
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
+        //仓库反馈入库单号
+        if (!StringUtils.isBlank(form.getEntryOrderId())) {
+            criteria.andLike("entryOrderId", "%" + form.getEntryOrderId() + "%");
+        }
         //渠道编号
         if (!StringUtils.isBlank(channelCode)) { 
             criteria.andEqualTo("channelCode",channelCode);
