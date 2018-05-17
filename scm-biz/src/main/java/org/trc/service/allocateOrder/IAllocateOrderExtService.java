@@ -54,8 +54,9 @@ public interface IAllocateOrderExtService {
      * 创建调拨入库单
      * @param allocateInOrder 调拨入库单对象
      * @param createOperator 当前操作人
+     * @return 返回入库通知单号
      */
-    void createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator);
+    String createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator);
 
     /**
      * 调拨入库单作废
@@ -67,8 +68,9 @@ public interface IAllocateOrderExtService {
      * 创建调拨出库单
      * @param allocateoutOrder 调拨出库单对象
      * @param createOperator 当前操作人
+     * @return 返回出库通知单号
      */
-    void createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator);
+    String createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator);
 
     /**
      * 调拨出库单作废
