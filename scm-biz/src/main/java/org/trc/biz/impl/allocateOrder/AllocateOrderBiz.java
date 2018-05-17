@@ -260,7 +260,9 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		 * 提交审核的情况 (isReview = 1)
 		 * 商品明细要求至少选择一项商品
 		 */
+		boolean isReviewFlg = false; // 是否是提交审核
 		if (ZeroToNineEnum.ONE.getCode().equals(isReview)) {
+			isReviewFlg = true;
 			AssertUtil.notBlank(allocateOrder.getReceiver(), "收货人不能为空");
 			AssertUtil.notBlank(allocateOrder.getReceiverMobile(), "收货人手机不能为空");
 			AssertUtil.notBlank(allocateOrder.getSender(), "发货人不能为空");
@@ -313,7 +315,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 						JSONObject jsonObj = (JSONObject) obj;
 						AllocateSkuDetail insertDetail = new AllocateSkuDetail();
 						// 设置调拨单详情数据
-						setAllocateSkuDetail(aclUserAccreditInfo, insertDetail, code, jsonObj);
+						setAllocateSkuDetail(aclUserAccreditInfo, insertDetail, code, jsonObj, isReviewFlg);
 						insertList.add(insertDetail);
 					}
 					if (!insertList.isEmpty()) {
@@ -324,7 +326,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				logInfoService.recordLog(new AllocateOrder(), code, 
 						aclUserAccreditInfo.getUserId(), LogOperationEnum.CREATE.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 				
-				if (ZeroToNineEnum.ONE.getCode().equals(isReview)) {
+				if (isReviewFlg) {
 					logInfoService.recordLog(new AllocateOrder(), code, 
 							aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 				}
@@ -338,7 +340,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			// 不是初始状态的不能提交审核
 			if (!AllocateOrderEnum.AllocateOrderStatusEnum.INIT.getCode().equals(updateOrder.getOrderStatus())
 					&& !AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode().equals(updateOrder.getOrderStatus())
-					&& ZeroToNineEnum.ONE.getCode().equals(isReview)) {
+					&& isReviewFlg) {
 				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
 						"当前调拨单状态不支持提交审核");
 			}
@@ -351,8 +353,10 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			record.setSenderMobile(allocateOrder.getSenderMobile());
 			record.setInWarehouseCode(allocateOrder.getInWarehouseCode());
 			record.setOutWarehouseCode(allocateOrder.getOutWarehouseCode());
+			record.setSubmitOperator(allocateOrder.getSubmitOperator());
+			record.setSubmitTime(allocateOrder.getSubmitTime());
 			//record.setUpdateTime(Calendar.getInstance().getTime());
-			if (ZeroToNineEnum.ONE.getCode().equals(isReview)) {
+			if (isReviewFlg) {
 				record.setOrderStatus(orderStatus);
 			}
 			// 设置仓库信息
@@ -378,13 +382,22 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 						// 修改的数据
 						if (StringUtils.isNotEmpty(jsonObj.getString("id"))) {
 							detail.setId(Long.valueOf(jsonObj.getString("id")));
+							
+							if (isReviewFlg) { // 提交审核的情况下需要校验
+								if (jsonObj.getLong("planAllocateNum") == null ||
+										StringUtils.isBlank(jsonObj.getString("skuCode")) ||
+										StringUtils.isBlank(jsonObj.getString("inventoryType"))) {
+									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+											"商品明细商品参数不完整");
+								}
+							}
 							detail.setInventoryType(jsonObj.getString("inventoryType"));
 							detail.setPlanAllocateNum(jsonObj.getLong("planAllocateNum"));
 							updateList.add(detail);
 						} else {
 							// 新增的数据
 							setAllocateSkuDetail(aclUserAccreditInfo, detail, 
-									allocateOrder.getAllocateOrderCode(), jsonObj);
+									allocateOrder.getAllocateOrderCode(), jsonObj, isReviewFlg);
 
 							addList.add(detail);
 						}
@@ -399,6 +412,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				
 				logInfoService.recordLog(new AllocateOrder(), allocateOrder.getAllocateOrderCode(), 
 						aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+				
+				if (isReviewFlg) {
+					logInfoService.recordLog(new AllocateOrder(), allocateOrder.getAllocateOrderCode(), 
+							aclUserAccreditInfo.getUserId(), LogOperationEnum.SUBMIT.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+				}
 //			}
 		}
 	}
@@ -909,14 +927,17 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
 	/**
 	 * 新增和修改时设置调拨单详情
+	 * @param isReviewFlg 
 	 */
 	private void setAllocateSkuDetail(AclUserAccreditInfo aclUserAccreditInfo,
-			AllocateSkuDetail detail, String allocateOrderCode, JSONObject jsonObj) {
-		if (jsonObj.getLong("planAllocateNum") == null ||
-				StringUtils.isBlank(jsonObj.getString("skuCode")) ||
-				StringUtils.isBlank(jsonObj.getString("inventoryType"))) {
-			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
-					"商品明细商品参数不完整");
+			AllocateSkuDetail detail, String allocateOrderCode, JSONObject jsonObj, boolean isReviewFlg) {
+		if (isReviewFlg) { // 提交审核的情况下需要校验
+			if (jsonObj.getLong("planAllocateNum") == null ||
+					StringUtils.isBlank(jsonObj.getString("skuCode")) ||
+					StringUtils.isBlank(jsonObj.getString("inventoryType"))) {
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+						"商品明细商品参数不完整");
+			}
 		}
 		detail.setAllocateOrderCode(allocateOrderCode);
 		detail.setSkuName(jsonObj.getString("skuName"));
