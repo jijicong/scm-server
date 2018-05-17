@@ -498,6 +498,29 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo _warehouse = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
         String remark = null;
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
+
+        //校验运行性质字段是否符合要求
+        String operationalType = warehouse.getOperationalType();
+        String storeCorrespondChannel = warehouse.getStoreCorrespondChannel();
+        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+            if(StringUtils.isEmpty(storeCorrespondChannel)){
+                String msg = "门店仓对应销售渠道不能为空";
+                logger.error(msg);
+                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            }
+            Example example = new Example(WarehouseInfo.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
+            criteria.andNotEqualTo("code", warehouse.getCode());
+            List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
+
+            if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                String msg = "该销售渠道已对应相应的门店!";
+                logger.error(msg);
+                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            }
+        }
+
         int count = warehouseInfoService.updateByPrimaryKeySelective(warehouse);
         if (count == 0) {
             String msg = String.format("修改仓库%s数据库操作失败", JSON.toJSONString(warehouse));
