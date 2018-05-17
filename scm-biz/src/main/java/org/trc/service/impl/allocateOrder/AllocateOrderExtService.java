@@ -241,6 +241,17 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         allocateOutOrder.setAllocateOrderCode(allocateOrderCode);
         allocateOutOrder = allocateOutOrderService.selectOne(allocateOutOrder);
 
+        String status = allocateOutOrder.getStatus();
+        if(!(StringUtils.equals(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(), status) ||
+                StringUtils.equals(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode(), status) ||
+                StringUtils.equals(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode(), status))){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨出库通知单的状态为“待通知出库”或“出库仓接收失败”或“已取消”才能作废");
+        }
+
+        if(StringUtils.equals(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(), status)){
+            return;
+        }
+
         allocateOutOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode().toString());
         allocateOutOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
         allocateOutOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
