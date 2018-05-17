@@ -178,6 +178,11 @@ public enum ExceptionEnum{
     JING_DONG_COMPLETION_ORDER_EXCEPTION("1000109","京东报表补偿异常"),
 
     LIANG_YOU_EXPORT_EXCEPTION("1000109","粮油代发报表导出异常"),
+
+    DOWNLOAD_ERROR_ORDER_EXCEPTION("1000110","下载错误导入订单异常"),
+
+
+
     SYSTEM_EXCEPTION("4000100","系统异常"),
     SYSTEM_BUSY("4000101","系统繁忙"),
     REMOTE_INVOKE_TIMEOUT_EXCEPTION("4000102","外部接口调用超时"),

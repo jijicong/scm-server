@@ -1,6 +1,8 @@
 package org.trc.domain.order;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
 import javax.persistence.GeneratedValue;
@@ -20,6 +22,10 @@ public class ExceptionOrder implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
     // 渠道编码
     private String channelCode;
     //拆单异常单编号
@@ -197,6 +203,14 @@ public class ExceptionOrder implements Serializable {
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 
     @Override

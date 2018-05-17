@@ -23,6 +23,11 @@ public class WarehouseOrder implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //系统订单号
+    @NotEmpty
+    @Length(max = 32)
+    private String scmShopOrderCode;
+
     // 店铺订单编码
     private String warehouseOrderCode;
 
@@ -669,5 +674,13 @@ public class WarehouseOrder implements Serializable {
 
     public void setWarehouseCode(String warehouseCode) {
         this.warehouseCode = warehouseCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 }

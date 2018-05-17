@@ -218,5 +218,12 @@ public interface IScmOrderBiz {
      */
     Response importOrder(InputStream uploadedInputStream, FormDataContentDisposition fileDetail);
 
+    /**
+     * 下载错误订单
+     * @param orderCode
+     * @return
+     */
+    Response downloadErrorOrder(String orderCode);
+
 
 }
