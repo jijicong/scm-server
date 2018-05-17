@@ -338,23 +338,23 @@ public class ChannelBiz implements IChannelBiz {
             sellChannelIdList.add(sellChannel.getSellChannelId());
         }
 
-        Example example = new Example(WarehouseInfo.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andIsNotNull("storeCorrespondChannel");
-        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
-        Set<String> storeCorrespondChannels = new HashSet<>();
-        if(warehouseInfoList != null && warehouseInfoList.size() > 0){
-            for(WarehouseInfo info : warehouseInfoList){
-                storeCorrespondChannels.add(info.getStoreCorrespondChannel());
-            }
-        }
+//        Example example = new Example(WarehouseInfo.class);
+//        Example.Criteria criteria = example.createCriteria();
+//        criteria.andIsNotNull("storeCorrespondChannel");
+//        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+//        Set<String> storeCorrespondChannels = new HashSet<>();
+//        if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+//            for(WarehouseInfo info : warehouseInfoList){
+//                storeCorrespondChannels.add(info.getStoreCorrespondChannel());
+//            }
+//        }
 
         List<SellChannel> sellChannelList = new ArrayList<>();
         if (!AssertUtil.collectionIsEmpty(sellChannelIdList)) {
             Example exampleSell = new Example(SellChannel.class);
             Example.Criteria criteriaSell = exampleSell.createCriteria();
             criteriaSell.andIn("id", sellChannelIdList);
-            criteriaSell.andNotIn("sellCode", storeCorrespondChannels);
+//            criteriaSell.andNotIn("sellCode", storeCorrespondChannels);
             criteriaSell.andEqualTo("sellType", SellChannelTypeEnum.STORE.getCode());
             sellChannelList = sellChannelService.selectByExample(exampleSell);
         }

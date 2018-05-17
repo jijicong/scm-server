@@ -512,7 +512,7 @@ public class WarehouseBiz implements IWarehouseBiz {
             Example.Criteria criteria = example.createCriteria();
             criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
             criteria.andNotEqualTo("code", warehouse.getCode());
-            List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(criteria);
+            List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
 
             if(warehouseInfoList != null && warehouseInfoList.size() > 0){
                 String msg = "该销售渠道已对应相应的门店!";
