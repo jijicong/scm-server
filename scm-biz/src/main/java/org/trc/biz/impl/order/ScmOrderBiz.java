@@ -2141,8 +2141,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         sb.append(orderObj.getString("noticeNum")).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         sb.append(operateTime).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         PlatformOrder platformOrder = orderObj.getJSONObject("platformOrder").toJavaObject(PlatformOrder.class);
-        sb.append(platformOrder.getChannelCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
-        //sb.append(platformOrder.getPlatformOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        //sb.append(platformOrder.getChannelCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
+        sb.append(platformOrder.getPlatformOrderCode()).append(SupplyConstants.Symbol.FULL_PATH_SPLIT);
         JSONArray shopOrders = orderObj.getJSONArray("shopOrders");
         for(Object obj: shopOrders){
             ShopOrder shopOrder = ((JSONObject)obj).getJSONObject("shopOrder").toJavaObject(ShopOrder.class);
