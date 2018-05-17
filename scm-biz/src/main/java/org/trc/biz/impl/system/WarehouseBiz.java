@@ -385,13 +385,16 @@ public class WarehouseBiz implements IWarehouseBiz {
                     throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
                 }
 
-                WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
-                warehouseInfoTemp.setStoreCorrespondChannel(storeCorrespondChannel);
-                List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.select(warehouseInfoTemp);
-                if(warehouseInfoList != null && warehouseInfoList.size() > 0){
-                    String msg = "该销售渠道已对应相应的门店!";
-                    logger.error(msg);
-                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), warehouse.getIsValid())){
+                    WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+                    warehouseInfoTemp.setStoreCorrespondChannel(storeCorrespondChannel);
+                    warehouseInfoTemp.setIsValid(ZeroToNineEnum.ONE.getCode());
+                    List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.select(warehouseInfoTemp);
+                    if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                        String msg = "该销售渠道已对应相应的门店!";
+                        logger.error(msg);
+                        throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                    }
                 }
             }
             warehouse.setOwnerWarehouseState(ZeroToNineEnum.ONE.getCode());
@@ -450,6 +453,29 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo updateWarehouse = new WarehouseInfo();
         updateWarehouse.setId(warehouse.getId());
         String remark = null;
+
+        WarehouseInfo _warehouseInfo = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
+
+        //校验运行性质字段是否符合要求
+        String operationalType = _warehouseInfo.getOperationalType();
+        String storeCorrespondChannel = _warehouseInfo.getStoreCorrespondChannel();
+        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+            if(StringUtils.equals(ValidEnum.NOVALID.getCode(), _warehouseInfo.getIsValid())){
+                Example example = new Example(WarehouseInfo.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
+                criteria.andNotEqualTo("code", _warehouseInfo.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
+
+                if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                    String msg = "该销售渠道已对应相应的门店!";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_UPDATE_EXCEPTION, msg);
+                }
+            }
+        }
+
         if (warehouse.getIsValid().equals(ValidEnum.VALID.getCode())) {
             updateWarehouse.setIsValid(ValidEnum.NOVALID.getCode());
             remark = remarkEnum.VALID_OFF.getMessage();
@@ -508,16 +534,20 @@ public class WarehouseBiz implements IWarehouseBiz {
                 logger.error(msg);
                 throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
             }
-            Example example = new Example(WarehouseInfo.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
-            criteria.andNotEqualTo("code", warehouse.getCode());
-            List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
 
-            if(warehouseInfoList != null && warehouseInfoList.size() > 0){
-                String msg = "该销售渠道已对应相应的门店!";
-                logger.error(msg);
-                throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), warehouse.getIsValid())){
+                Example example = new Example(WarehouseInfo.class);
+                Example.Criteria criteria = example.createCriteria();
+                criteria.andEqualTo("storeCorrespondChannel", storeCorrespondChannel);
+                criteria.andNotEqualTo("code", warehouse.getCode());
+                criteria.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());
+                List<WarehouseInfo> warehouseInfoList =  warehouseInfoService.selectByExample(example);
+
+                if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+                    String msg = "该销售渠道已对应相应的门店!";
+                    logger.error(msg);
+                    throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+                }
             }
         }
 

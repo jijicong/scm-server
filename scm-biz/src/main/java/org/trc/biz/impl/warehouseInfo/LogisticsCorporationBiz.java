@@ -80,9 +80,10 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
         AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
-        LogisticsCorporation logisticsCorporationOnly = new LogisticsCorporation();
-        logisticsCorporationOnly.setLogisticsCorporationCode(logisticsCorporation.getLogisticsCorporationCode());
-        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.select(logisticsCorporationOnly);
+        Example example = new Example(LogisticsCorporation.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
+        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
         if(logisticsCorporationList.size() > 0){
             String msg = "物流公司编码不唯一";
             logger.error(msg);
