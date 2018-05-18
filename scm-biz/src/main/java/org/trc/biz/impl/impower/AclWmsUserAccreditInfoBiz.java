@@ -409,12 +409,12 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
     public String checkWmsPhone(String phone) {
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
         UserDO userDO = userDoService.getUserDo(phone);
-        AssertUtil.notNull(userDO, "该手机号未在泰然城关联!");
+        AssertUtil.notNull(userDO, "该手机号尚未在泰然城注册！");
         AclWmsUserAccreditInfo aclWmsUserAccreditInfo = new AclWmsUserAccreditInfo();
         aclWmsUserAccreditInfo.setPhone(phone);
         List<AclWmsUserAccreditInfo> aclWmsUserAccreditInfos = aclWmsUserAccreditInfoService.select(aclWmsUserAccreditInfo);
         if (!AssertUtil.collectionIsEmpty(aclWmsUserAccreditInfos)) {
-            String msg = "此手机号已在scm-wms系统关联用户";
+            String msg = "该手机号已存在！";
             LOGGER.error(msg);
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, msg);
         }
