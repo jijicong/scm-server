@@ -3,9 +3,7 @@ package org.trc.domain.purchase;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
-import org.trc.custom.SimpleDateSerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
@@ -15,7 +13,6 @@ import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 采购明细信息

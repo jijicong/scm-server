@@ -90,7 +90,7 @@ public class GoodsBiz implements IGoodsBiz {
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
     //分类名称全路径分割符号
-    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "-";
     //SKU的属性值ID分割符号
     public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
     //SKU的属性组合名称分割符号
@@ -357,7 +357,7 @@ public class GoodsBiz implements IGoodsBiz {
                     if(j == 0){
                         sb.append(namePathList.get(j));
                     }else{
-                        sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
+                        sb.append(namePathList.get(j)).append("-");
                     }
                 }
                 spuCategoryMap.put(items.getSpuCode(), sb.toString());
