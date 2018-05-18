@@ -281,6 +281,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				}
 				
 			}
+			// 校验商品是否停用
+			checkSkuIsVaild(skuDetail);
 			allocateOrder.setSubmitOperator(aclUserAccreditInfo.getUserId());
 			allocateOrder.setSubmitTime(new Date());
 		}
@@ -421,6 +423,34 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		}
 	}
 	
+	/**
+	 * 校验商品是否停用
+	 * @param skuDetail
+	 */
+	private void checkSkuIsVaild(String skuDetail) {
+		JSONArray skuDetailArray = JSONArray.parseArray(skuDetail);
+		for (Object obj : skuDetailArray) {
+			JSONObject jsonObj = (JSONObject) obj;
+			String skuCode = jsonObj.getString("skuCode");
+			if (StringUtils.isBlank(skuCode)) {
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+						"商品明细商品参数不完整");
+			}
+			Skus record = new Skus();
+			record.setSkuCode(skuCode);
+			Skus sku = skusService.selectOne(record);
+			if (sku == null) {
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+						"商品" + skuCode + "不存在");
+			}
+			if (!ZeroToNineEnum.ONE.getCode().equals(sku.getIsValid())) {
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+						"商品" + skuCode + "已被停用");
+			}
+		}
+	}
+
+
 	@Override
 	@Transactional
 	public void deleteAllocateOrder(String orderId) {
