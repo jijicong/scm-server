@@ -23,7 +23,6 @@ public class SupplyConstants {
          * 等号
          */
         public static final String EQUAL = "=";
-
     }
 
     public static final class WarehouseConstant{

@@ -194,7 +194,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     }
 
     @Override
-    public void createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator) {
+    public String createAllocateInOrder(AllocateInOrder allocateInOrder, String createOperator) {
     	
         String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_IN_LENGTH, 
         		SupplyConstants.Serial.ALLOCATE_ORDER_IN_CODE,
@@ -208,6 +208,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         allocateInOrderService.insert(allocateInOrder);
         //记录操作日志
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+        return code;
     }
 
     @Override
@@ -218,7 +219,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     }
 
     @Override
-    public void createAllocateOutOrder(AllocateOutOrder outOrder, String createOperator) {
+    public String createAllocateOutOrder(AllocateOutOrder outOrder, String createOperator) {
     	
         String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_OUT_LENGTH, 
         		SupplyConstants.Serial.ALLOCATE_ORDER_OUT_CODE,
@@ -232,6 +233,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         allocateOutOrderService.insert(outOrder);
         //记录操作日志
         logInfoService.recordLog(outOrder, outOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+        return code;
     }
 
     @Override

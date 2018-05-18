@@ -533,10 +533,28 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
 					"当前调拨单状态不满足作废条件");
 		}
+		
+		/**
+		 * 生成出入库通知单
+		 */
+		AllocateOutOrder outOrder = new AllocateOutOrder();
+		BeanUtils.copyProperties(queryOrder, outOrder);
+		String outCode = allocateOrderExtService.createAllocateOutOrder(outOrder, userInfo.getUserId());
+		
+		AllocateInOrder inOrder = new AllocateInOrder();
+		BeanUtils.copyProperties(queryOrder, inOrder);
+		String inCode = allocateOrderExtService.createAllocateInOrder(inOrder, userInfo.getUserId());
+        //allocateOutOrderService.insertSelective(outOrder);
+		
+		/**
+		 * 更新调拨单
+		 */
 		AllocateOrder allocateOrder = new AllocateOrder();
 		allocateOrder.setAllocateOrderCode(orderId);
 		allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.WAIT.getCode());
 		allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
+		allocateOrder.setAllocateInOrderCode(inCode);
+		allocateOrder.setAllocateOutOrderCode(outCode);
 		int count = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);	
 		if (count < 1) {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
@@ -552,18 +570,6 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("allocateOrderCode", orderId);
         allocateSkuDetailService.updateByExampleSelective(skuDetail, example);
-		
-		/**
-		 * 生成出入库通知单
-		 */
-		AllocateOutOrder outOrder = new AllocateOutOrder();
-		BeanUtils.copyProperties(queryOrder, outOrder);
-		allocateOrderExtService.createAllocateOutOrder(outOrder, userInfo.getUserId());
-		
-		AllocateInOrder inOrder = new AllocateInOrder();
-		BeanUtils.copyProperties(queryOrder, inOrder);
-		allocateOrderExtService.createAllocateInOrder(inOrder, userInfo.getUserId());
-        //allocateOutOrderService.insertSelective(outOrder);
 		
 		logInfoService.recordLog(new AllocateOrder(), orderId, 
 				userInfo.getUserId(), LogOperationEnum.NOTICE_WMS.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
