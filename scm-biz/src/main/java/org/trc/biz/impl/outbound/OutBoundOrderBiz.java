@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.common.RequsetUpdateStock;
@@ -25,9 +26,11 @@ import org.trc.domain.order.*;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.*;
 import org.trc.form.order.OutboundForm;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.form.outbound.OutBoundOrderReceiverForm;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.config.ILogInfoService;
@@ -1213,6 +1216,38 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         this.retryCancelOrder(requests);
     }
 
+    @Override
+    @OutboundOrderCacheEvict
+    public Response updateReceiverInfo(OutBoundOrderReceiverForm form, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form, "修改发货单收货地址信息不能为空");
+        AssertUtil.notBlank(form.getOutboundOrderCode(), "发货单编码不能为空");
+        AssertUtil.notBlank(form.getReceiverName(), "收货人不能为空");
+        AssertUtil.notBlank(form.getReceiverPhone(), "收货人电话不能为空");
+        AssertUtil.notBlank(form.getReceiverProvince(), "收货人所在省不能为空");
+        AssertUtil.notBlank(form.getReceiverCity(), "收货人所在城市不能为空");
+        AssertUtil.notBlank(form.getReceiverAddress(), "收货人详细地址不能为空");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setOutboundOrderCode(form.getOutboundOrderCode());
+        outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+        AssertUtil.notNull(outboundOrder, String.format("发货单%s对应的发货通知单不存在", form.getOutboundOrderCode()));
+        if (!StringUtils.equals(OutboundOrderStatusEnum.CANCELED.getCode(), outboundOrder.getStatus()) &&
+                !StringUtils.equals(OutboundOrderStatusEnum.RECEIVE_FAIL.getCode(), outboundOrder.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("发货单当前是%s状态，不能修改收货信息",
+                    OutboundOrderStatusEnum.getClearanceEnumByCode(outboundOrder.getStatus()).getName()));
+        }
+        OutboundOrder _outboundOrder = new OutboundOrder();
+        _outboundOrder.setId(outboundOrder.getId());
+        _outboundOrder.setReceiverName(form.getReceiverName());
+        _outboundOrder.setReceiverPhone(form.getReceiverPhone());
+        _outboundOrder.setReceiverProvince(form.getReceiverProvince());
+        _outboundOrder.setReceiverCity(form.getReceiverCity());
+        _outboundOrder.setReceiverDistrict(form.getReceiverDistrict());
+        _outboundOrder.setReceiverAddress(form.getReceiverAddress());
+        outBoundOrderService.updateByPrimaryKeySelective(_outboundOrder);
+        logInfoService.recordLog(_outboundOrder,_outboundOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE_RECEIVER_INFO.getMessage(), null,null);
+        return ResultUtil.createSuccessResult("更新收货信息成功", "");
+    }
+
     //调用获取商品详情接口
     private void retryCancelOrder (List<ScmOrderCancelRequest> requests){
         try{
@@ -1345,6 +1380,11 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //发货通知单编号
         if (!StringUtils.isBlank(form.getOutboundOrderCode())) {
             criteria.andLike("outboundOrderCode", "%" + form.getOutboundOrderCode() + "%");
+
+        }
+        //仓库反馈出库单号
+        if (!StringUtils.isBlank(form.getWmsOrderCode())) {
+            criteria.andLike("wmsOrderCode", "%" + form.getWmsOrderCode() + "%");
 
         }
         //业务线
