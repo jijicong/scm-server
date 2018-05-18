@@ -279,7 +279,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserRelationList.add(purchaseGroupUserRelation);
             }
         }
-        selectInvalidUser(purchaseGroupUserRelationList,purchaseGroupUserRelationList.size());
+//        selectInvalidUser(purchaseGroupUserRelationList,purchaseGroupUserRelationList.size());
 
         purchaseGroupuUserRelationService.insertList(purchaseGroupUserRelationList);
 
