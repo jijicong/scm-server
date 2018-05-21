@@ -167,7 +167,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             allocateOutInOrderBase.setIsCancel(ZeroToNineEnum.ONE.getCode());
         }
         allocateOutInOrderBase.setUpdateTime(Calendar.getInstance().getTime());
-        allocateOutInOrderBase.setMemo(remark);
+//        allocateOutInOrderBase.setMemo(remark);
         if(allocateOutInOrderBase instanceof AllocateOutOrder){
             allocateOutOrderService.updateByPrimaryKey((AllocateOutOrder)allocateOutInOrderBase);
         }else if(allocateOutInOrderBase instanceof AllocateInOrder){
