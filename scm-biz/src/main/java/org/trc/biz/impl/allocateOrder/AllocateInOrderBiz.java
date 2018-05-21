@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.CommonExceptionEnum;
@@ -25,6 +26,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
 import java.beans.Transient;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -86,6 +88,11 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(record);
         AssertUtil.notEmpty(allocateSkuDetailList, String.format("查询调拨单[%s]明细为空", allocateOrderCode));
         allocateInOrder.setSkuDetailList(allocateSkuDetailList);
+        AllocateOrderBase allocateOrderBase = allocateInOrder;
+        List<AllocateOrderBase> allocateOrderBaseList = new ArrayList<>();
+        allocateOrderBaseList.add(allocateOrderBase);
+        allocateOrderExtService.setAllocateOrderOtherNames(allocateOrderBaseList);
+        allocateOrderExtService.setArea(allocateOrderBase);
         return allocateInOrder;
     }
 

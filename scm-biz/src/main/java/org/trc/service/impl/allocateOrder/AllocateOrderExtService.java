@@ -85,6 +85,14 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             return;
         }
         List<AllocateOrderBase> allocateOrderBaseList = (List<AllocateOrderBase>)pagenation.getResult();
+        this.setAllocateOrderOtherNames(allocateOrderBaseList);
+    }
+
+    @Override
+    public void setAllocateOrderOtherNames(List<AllocateOrderBase> allocateOrderBaseList) {
+        if(CollectionUtils.isEmpty(allocateOrderBaseList)){
+            return;
+        }
         Set<String> warehouseCodes = new HashSet<>();
         Set<String> operatorIds = new HashSet<>();
         for (AllocateOrderBase base : allocateOrderBaseList) {
@@ -131,6 +139,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             }
         }
     }
+
 
     @Override
     public void setIsTimeOut(Pagenation pagenation) {
