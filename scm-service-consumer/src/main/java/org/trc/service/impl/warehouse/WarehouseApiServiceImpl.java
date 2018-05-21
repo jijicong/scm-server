@@ -189,7 +189,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
      * @return
      */
     private AppResult wmsInvokeMock(ScmWarehouseRequestBase scmWarehouseRequestBase){
-        AppResult appResult = new AppResult(SuccessFailureEnum.SUCCESS.getCode(), "", "");
+        AppResult appResult = new AppResult(ResponseAck.SUCCESS_CODE, "", "");
         String url = "";
         String method = "";
         if(scmWarehouseRequestBase instanceof ScmItemSyncRequest){
@@ -330,7 +330,6 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
      * @return
      */
     private AppResult mockScmOrderCancelResponse(ScmWarehouseRequestBase scmWarehouseRequestBase, AppResult appResult){
-        ScmOrderCancelRequest scmOrderCancelRequest = (ScmOrderCancelRequest)scmWarehouseRequestBase;
         ScmOrderCancelResponse response = new ScmOrderCancelResponse();
         response.setFlag(ZeroToNineEnum.ONE.getCode());//取消成功
         response.setMessage("取消成功");
