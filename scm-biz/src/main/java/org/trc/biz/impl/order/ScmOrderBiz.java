@@ -4085,7 +4085,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private void shopOrderParamCheck(ShopOrder shopOrder) {
         AssertUtil.notBlank(shopOrder.getChannelCode(), "店铺订单业务线编码不能为空");
         AssertUtil.notBlank(shopOrder.getSellCode(), "店铺订单销售渠道编码不能为空");
-        AssertUtil.notBlank(shopOrder.getPlatformCode(), "店铺订单来源平台编码不能为空");
+        //AssertUtil.notBlank(shopOrder.getPlatformCode(), "店铺订单来源平台编码不能为空");
         AssertUtil.notBlank(shopOrder.getPlatformOrderCode(), "店铺订单平台订单编码不能为空");
         AssertUtil.notBlank(shopOrder.getShopOrderCode(), "店铺订单编码不能为空");
         AssertUtil.notNull(shopOrder.getShopId(), "店铺订单订单所属的店铺id不能为空");
