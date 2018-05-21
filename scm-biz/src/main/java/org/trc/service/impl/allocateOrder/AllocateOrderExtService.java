@@ -85,6 +85,14 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             return;
         }
         List<AllocateOrderBase> allocateOrderBaseList = (List<AllocateOrderBase>)pagenation.getResult();
+        this.setAllocateOrderOtherNames(allocateOrderBaseList);
+    }
+
+    @Override
+    public void setAllocateOrderOtherNames(List<AllocateOrderBase> allocateOrderBaseList) {
+        if(CollectionUtils.isEmpty(allocateOrderBaseList)){
+            return;
+        }
         Set<String> warehouseCodes = new HashSet<>();
         Set<String> operatorIds = new HashSet<>();
         for (AllocateOrderBase base : allocateOrderBaseList) {
@@ -131,6 +139,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             }
         }
     }
+
 
     @Override
     public void setIsTimeOut(Pagenation pagenation) {
@@ -285,8 +294,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
         AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空", allocateInOrder));
-        //当操作是作废、关闭、取消发货时校验状态是否已经是取消状态
-        if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode()) || StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())) {//作废或者关闭/取消发货
+        //当操作是关闭、取消发货时校验状态是否已经是取消状态
+        if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())) {//关闭/取消发货
             if(StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())){
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
             }
