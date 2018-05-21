@@ -293,6 +293,8 @@ public class GoodsBiz implements IGoodsBiz {
             Set<String> barCodeSet =skusService.selectSkuListByBarCode(barCodeList);
             if (!AssertUtil.collectionIsEmpty(barCodeSet)){
                 criteria.andIn("barCode", barCodeSet);
+            }else {
+                criteria.andEqualTo("barCode", StringUtils.EMPTY);
             }
         }
         Set<String> spus = getSkusQueryConditonRelateSpus(queryModel);

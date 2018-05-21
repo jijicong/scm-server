@@ -3,7 +3,6 @@ package org.trc.resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impower.IAclWmsUserAccreditInfoBiz;
-import org.trc.biz.impower.IWmsResourceBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclWmsUserAccreditInfo;
@@ -21,8 +20,6 @@ import javax.ws.rs.core.Response;
 @Component
 @Path(SupplyConstants.AclWmsUser.ROOT)
 public class WmsResourceResource {
-    @Autowired
-    private IWmsResourceBiz wmsResourceBiz;
     @Autowired
     private IAclWmsUserAccreditInfoBiz aclWmsUserAccreditInfoBiz;
 

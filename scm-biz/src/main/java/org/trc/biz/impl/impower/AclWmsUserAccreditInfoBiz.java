@@ -1,11 +1,14 @@
 package org.trc.biz.impl.impower;
 
 import com.alibaba.fastjson.JSON;
-import com.tairanchina.md.account.user.model.UserDO;
+import com.tairanchina.csp.foundation.sdk.CSPKernelSDK;
+import com.tairanchina.csp.foundation.sdk.dto.UserInfoDTO;
+import com.tairanchina.csp.foundation.sdk.enumeration.UserInfoQueryType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +21,6 @@ import org.trc.exception.ParamValidException;
 import org.trc.exception.UserAccreditInfoException;
 import org.trc.form.impower.WmsUserAccreditInfoForm;
 import org.trc.service.config.ILogInfoService;
-import org.trc.service.impl.UserDoService;
 import org.trc.service.impower.IAclUserWarehouseRelationService;
 import org.trc.service.impower.IAclWmsUserAccreditInfoService;
 import org.trc.service.impower.IAclWmsUserResourceRelationService;
@@ -26,6 +28,7 @@ import org.trc.service.impower.IWmsResourceService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonConfigUtil;
 import org.trc.util.Pagenation;
 import tk.mybatis.mapper.entity.Example;
 
@@ -46,13 +49,19 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
     @Autowired
-    private UserDoService userDoService;
-    @Autowired
     private IUserNameUtilService userNameUtilService;
     @Autowired
     private IWmsResourceService wmsResourceService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Value("${apply.id}")
+    private String applyId;
+
+    @Value("${apply.secret}")
+    private String applySecret;
+
+    @Value("${apply.uri}")
+    private String applyUri;
 
     /**
      * 正则表达式：验证手机号
@@ -408,7 +417,13 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
     @Override
     public String checkWmsPhone(String phone) {
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
-        UserDO userDO = userDoService.getUserDo(phone);
+        CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri,applyId,applySecret);
+        UserInfoDTO userDO= null;
+        try {
+            userDO = sdk.user.singleGetUserInfo(UserInfoQueryType.USER_PHONE,phone);
+        } catch (Exception e) {
+            LOGGER.error("从用户中心根据手机号获取用户信息异常！",e);
+        }
         AssertUtil.notNull(userDO, "该手机号尚未在泰然城注册！");
         AclWmsUserAccreditInfo aclWmsUserAccreditInfo = new AclWmsUserAccreditInfo();
         aclWmsUserAccreditInfo.setPhone(phone);

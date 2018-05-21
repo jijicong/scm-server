@@ -118,7 +118,7 @@ public class AclUserAccreditInfoResource {
     @POST
     @Path(SupplyConstants.UserAccreditInfo.SAVE_ACCREDIT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response saveUserAccredit(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext) {
+    public Response saveUserAccredit(@BeanParam AclUserAddPageDate userAddPageDate, @Context ContainerRequestContext requestContext) throws Exception {
 
         userAccreditInfoBiz.saveUserAccreditInfo(userAddPageDate, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
         return ResultUtil.createSuccessResult("新增授权成功", "");

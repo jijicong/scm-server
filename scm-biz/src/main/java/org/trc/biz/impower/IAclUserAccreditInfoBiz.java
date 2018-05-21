@@ -1,6 +1,5 @@
 package org.trc.biz.impower;
 
-import org.trc.domain.System.Channel;
 import org.trc.domain.System.ChannelExt;
 import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -8,7 +7,6 @@ import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
@@ -90,7 +88,7 @@ public interface IAclUserAccreditInfoBiz {
     /**
      * 新增授权
      */
-    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext);
+    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) throws Exception;
 
     /**
      * 根据ID查询用户

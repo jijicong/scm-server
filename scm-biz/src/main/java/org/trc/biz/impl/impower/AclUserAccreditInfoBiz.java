@@ -4,7 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.tairanchina.md.account.user.model.UserDO;
+import com.tairanchina.csp.foundation.common.sdk.CommonConfig;
+import com.tairanchina.csp.foundation.sdk.CSPKernelSDK;
+import com.tairanchina.csp.foundation.sdk.dto.UserInfoDTO;
+import com.tairanchina.csp.foundation.sdk.enumeration.UserInfoQueryType;
+import com.tairanchina.csp.foundation.sdk.exception.RespException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +40,6 @@ import org.trc.service.System.IChannelSellChannelService;
 import org.trc.service.System.IChannelService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
-import org.trc.service.impl.UserDoService;
 import org.trc.service.impower.IAclRoleService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.impower.IAclUserAccreditRoleRelationService;
@@ -45,6 +48,7 @@ import org.trc.service.purchase.IPurchaseGroupService;
 import org.trc.service.purchase.IPurchaseGroupuUserRelationService;
 import org.trc.service.util.IUserNameUtilService;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonConfigUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.StringUtil;
 import org.trc.util.cache.UserCacheEvict;
@@ -81,8 +85,8 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Autowired
     private IAclUserAccreditRoleRelationService userAccreditInfoRoleRelationService;
 
-    @Autowired
-    private UserDoService userDoService;
+//    @Autowired
+//    private UserDoService userDoService;
 
     @Autowired
     private IPurchaseGroupuUserRelationService purchaseGroupuUserRelationService;
@@ -105,10 +109,18 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     private IChannelSellChannelService channelSellChannelService;
     @Autowired
     private IAclUserChannelSellService aclUserChannelSellService;
+    @Value("${apply.id}")
+    private String applyId;
+
+    @Value("${apply.secret}")
+    private String applySecret;
+
+    @Value("${apply.uri}")
+    private String applyUri;
+
 
     @Value("${admin.user.id}")
     private String ADMIN_ID;
-
 
     /**
      * 分页查询
@@ -304,15 +316,17 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @UserCacheEvict
-    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) {
+    public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) throws Exception {
         checkUserAddPageDate(userAddPageDate);
-        if (!Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
+        if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
         }
-        UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
-        AssertUtil.notNull(userDO, "该手机号未在泰然城注册");
+        AssertUtil.isTrue(getIsPhoneExists(userAddPageDate.getPhone()), "该手机号未在泰然城注册");
+        CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri,applyId,applySecret);
+        UserInfoDTO userDO= sdk.user.singleGetUserInfo(UserInfoQueryType.USER_PHONE,userAddPageDate.getPhone());
+        AssertUtil.notNull(userDO,"用户中心未查询到用户信息！");
         //手机号关联校验
         String phoneMsg = checkPhone(userDO.getPhone());
         if (StringUtils.isNoneBlank(phoneMsg)) {
@@ -596,7 +610,13 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
             }
         }
         //写入user_accredit_info表
-        UserDO userDO = userDoService.getUserDo(userAddPageDate.getPhone());
+        CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri,applyId,applySecret);
+        UserInfoDTO userDO= null;
+        try {
+            userDO = sdk.user.singleGetUserInfo(UserInfoQueryType.USER_PHONE,userAddPageDate.getPhone());
+        } catch (Exception e) {
+            LOGGER.error("从用户中心根据手机号获取用户信息异常！",e);
+        }
         AssertUtil.notNull(userDO, "用户中心未查询到该用户");
         AclUserAccreditInfo aclUserAccreditInfo = userAddPageDate;
         aclUserAccreditInfo.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -674,24 +694,35 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @Override
     public String checkPhone(String phone) {
         AssertUtil.notBlank(phone, "校验手机号时输入参数phone为空");
-        UserDO userDO = userDoService.getUserDo(phone);
+        CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri,applyId,applySecret);
+        try {
+            AssertUtil.isTrue(sdk.user.findPhoneExists(phone), "该手机号未在泰然城注册");
+        }catch (RespException e){
+            LOGGER.info("根据手机号查询用户中心异常！",e);
+            return "此手机号未在泰然城注册！";
+        }
+        catch (Exception e) {
+            LOGGER.error("根据手机号查询用户中心异常！",e);
+        }
         Example example = new Example(AclUserAccreditInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("phone", phone);
         int count = userAccreditInfoService.selectByExample(example).size();
-
         if (count > 0) {
             return "此手机号已关联用户";
-        }
-        if (userDO == null) {
-            return "此手机号尚未在泰然城注册";
         }
         return null;
     }
 
     @Override
     public String getNameByPhone(String phone) {
-        UserDO userDO = userDoService.getUserDo(phone);
+        CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri,applyId,applySecret);
+        UserInfoDTO userDO= null;
+        try {
+            userDO = sdk.user.singleGetUserInfo(UserInfoQueryType.USER_PHONE,phone);
+        } catch (Exception e) {
+            LOGGER.error("从用户中心根据手机号获取用户信息异常！",e);
+        }
         AclUserAccreditInfo userAccreditInfo = new AclUserAccreditInfo();
         userAccreditInfo.setPhone(phone);
         userAccreditInfo = userAccreditInfoService.selectOne(userAccreditInfo);
@@ -758,6 +789,15 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         return null;
     }
 
-
+    private boolean getIsPhoneExists(String phone) throws Exception {
+        CommonConfig config = new CommonConfig();
+        CommonConfig.Basic basicConfig = config.getBasic();
+        basicConfig.setUrl(applyUri);
+        basicConfig.setAppId(applyId);
+        basicConfig.setAppSecret(applySecret);
+        CSPKernelSDK sdk = CSPKernelSDK.instance(config);
+        boolean isPhoneExists = sdk.user.findPhoneExists(phone);
+        return isPhoneExists;
+    }
 
 }

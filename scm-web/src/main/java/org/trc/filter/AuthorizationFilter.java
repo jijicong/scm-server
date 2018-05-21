@@ -1,9 +1,9 @@
 package org.trc.filter;
 
 import com.tairanchina.beego.api.exception.AuthenticateException;
-import com.tairanchina.beego.api.model.BeegoToken;
-import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
-import com.tairanchina.beego.api.service.BeegoService;
+import com.tairanchina.csp.foundation.common.sdk.CommonConfig;
+import com.tairanchina.csp.foundation.sdk.CSPKernelSDK;
+import com.tairanchina.csp.foundation.sdk.dto.TokenDeliverDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
@@ -49,8 +49,15 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     @Value("${app.key}")
     private String appKey;
 
-    @Resource
-    private BeegoService beegoService;
+    @Value("${apply.id}")
+    private String applyId;
+
+    @Value("${apply.secret}")
+    private String applySecret;
+
+    @Value("${apply.uri}")
+    private String applyUri;
+
     @Autowired
     private AclResourceBiz jurisdictionBiz;
     @Autowired
@@ -88,12 +95,11 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         if (!url.startsWith(PASS_API_URL) && !url.startsWith(PASS_TAI_RAN_URL) &&!url.startsWith(SupplyConstants.Metadata.ROOT)&&!url.startsWith(SupplyConstants.Qimen.QI_MEN)) {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
-                BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
+                TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);
                 try {
-                    BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
                     AclUserAccreditInfo aclUserAccreditInfo =null;
-                    if (null != beegoToken) {
-                        String userId = beegoToken.getUserId();
+                    if (null != tokenInfo) {
+                        String userId = tokenInfo.getUserId();
                         String channelCode = _getCookieChannelCode(requestContext);
                         if (StringUtils.isBlank(channelCode)){
                             aclUserAccreditInfo =  userAccreditInfoService.selectOneById(userId);
@@ -157,11 +163,10 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         if (url.startsWith(CHANNEL_QUERY)) {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
-                BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
+                TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);
                 try {
-                    BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
-                    if (null != beegoToken) {
-                        String userId = beegoToken.getUserId();
+                    if (null != tokenInfo) {
+                        String userId = tokenInfo.getUserId();
                         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
                         if (aclUserAccreditInfo == null) {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
@@ -250,5 +255,14 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         return "";
     }
 
-
+    private TokenDeliverDTO getCSPKernelSDK(String token,String url){
+        CommonConfig config = new CommonConfig();
+        CommonConfig.Basic basicConfig = config.getBasic();
+        basicConfig.setUrl(applyUri);
+        basicConfig.setAppId(applyId);
+        basicConfig.setAppSecret(applySecret);
+        CSPKernelSDK sdk = CSPKernelSDK.instance(config);
+        TokenDeliverDTO tokenInfo = sdk.user.tenantValidate(token, url, config).getBody();
+        return tokenInfo;
+    }
 }
