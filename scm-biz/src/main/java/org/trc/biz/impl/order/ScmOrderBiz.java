@@ -4074,14 +4074,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }else{
                 checkFailureItems.add(orderItem);
             }
-            SkuStock _skuStock = null;
-            for(SkuStock skuStock: skuStockList){
-                if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) && StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId())){
-                    _skuStock = skuStock;
-                    break;
-                }
-            }
             if(_flag){
+                SkuStock _skuStock = null;
+                for(SkuStock skuStock: skuStockList){
+                    if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) && StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId())){
+                        _skuStock = skuStock;
+                        break;
+                    }
+                }
                 List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                 skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
@@ -5393,7 +5393,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //流水号
         String code = serialUtilService.generateCode(SupplyConstants.Serial.OUTBOUND_ORDER_LENGTH, SupplyConstants.Serial.OUTBOUND_ORDER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         outboundOrder.setScmShopOrderCode(warehouseOrder.getScmShopOrderCode());
-        outboundOrder.setChannelCode(platformOrder.getChannelCode());
+        outboundOrder.setChannelCode(shopOrder.getChannelCode());
         outboundOrder.setOutboundOrderCode(code);
         outboundOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         outboundOrder.setWarehouseCode(warehouseOrder.getWarehouseCode());
