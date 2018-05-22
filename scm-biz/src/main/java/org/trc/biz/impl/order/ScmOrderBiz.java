@@ -5197,7 +5197,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         OutboundOrder outboundOrder = new OutboundOrder();
         //流水号
         String code = serialUtilService.generateCode(SupplyConstants.Serial.OUTBOUND_ORDER_LENGTH, SupplyConstants.Serial.OUTBOUND_ORDER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
-        outboundOrder.setChannelCode(platformOrder.getChannelCode());
+        outboundOrder.setChannelCode(shopOrder.getChannelCode());
         outboundOrder.setOutboundOrderCode(code);
         outboundOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         outboundOrder.setWarehouseCode(warehouseOrder.getWarehouseCode());

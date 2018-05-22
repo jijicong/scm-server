@@ -18,10 +18,7 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service("warehouseApiService")
 public class WarehouseApiServiceImpl implements IWarehouseApiService {
@@ -31,15 +28,18 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     @Value("${mock.outer.interface}")
     private String mockOuterInterface;
 
-    //仓库商品ID编码前缀
-    private static final String ITEM_ID_MOCK_PREFIX = "ITEM-";
+    //商品ID编码前缀
+    public static final String ITEM_ID_MOCK_PREFIX = "ITEM-";
+    //入库单编码前缀
+    public static final String ENTRY_ORDER_CODE_MOCK_PREFIX = "ENTRY-";
     //仓库入库单编码前缀
-    private static final String ENTRY_ORDER_CODE_MOCK_PREFIX = "ENTRY-";
-    //仓库发货单编码前缀
-    private static final String DELIVERY_ORDER_CODE_MOCK_PREFIX = "DEVER-";
+    public static final String WAREHOUSE_ENTRY_ORDER_CODE_MOCK_PREFIX = "ENTR-";
+    //发货单编码前缀
+    public static final String DELIVERY_ORDER_CODE_MOCK_PREFIX = "DEVER-";
 
     @Autowired
     private ExternalSupplierConfig externalSupplierConfig;
+
 
     @Override
     public AppResult<List<ScmItemSyncResponse>> itemSync(ScmItemSyncRequest scmItemSyncRequest) {
@@ -336,6 +336,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         appResult.setResult(response);
         return appResult;
     }
+
+
 
 
 

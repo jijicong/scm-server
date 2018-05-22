@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -46,6 +47,7 @@ import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.OutboundOrderCacheEvict;
@@ -74,6 +76,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
+
+    @Value("${mock.outer.interface}")
+    private String mockOuterInterface;
+
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
     @Autowired
@@ -106,6 +112,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IOutboundPackageInfoService outboundPackageInfoService;
     @Autowired
     private IRealIpService iRealIpService;
+    @Autowired
+    private IWarehouseMockService warehouseMockService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -145,8 +153,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             for (ScmDeliveryOrderDetailRequest request : requests) {
                 new Thread(() -> {
                     //调用接口
-                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult =
-                            warehouseApiService.deliveryOrderDetail(request);
+                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult = null;
+                    if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                        responseAppResult = warehouseMockService.deliveryOrderDetail(request);
+                    }else{
+                        responseAppResult =
+                                warehouseApiService.deliveryOrderDetail(request);
+                    }
 
                     //回写数据
                     try {
@@ -249,8 +262,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 ScmOrderPacksRequest request = new ScmOrderPacksRequest();
                 request.setOrderIds(orderId);
                 //调用京东接口获取包裹信息
-                AppResult<ScmOrderPacksResponse> packageResponseAppResult = warehouseApiService.orderPack(request);
-
+                AppResult<ScmOrderPacksResponse> packageResponseAppResult = null;
+                if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                    packageResponseAppResult = warehouseMockService.orderPack(request);
+                }else{
+                    packageResponseAppResult = warehouseApiService.orderPack(request);
+                }
                 if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
                     ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
 
@@ -1101,7 +1118,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             request.setOrderId(outboundOrder.getWmsOrderCode());
             request.setOwnerCode(warehouse.getWarehouseOwnerId());
             request.setWarehouseCode(warehouse.getCode());
-            AppResult<ScmDeliveryOrderDetailResponse>  result = warehouseApiService.deliveryOrderDetail(request);
+            AppResult<ScmDeliveryOrderDetailResponse>  result = null;
+            if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                result = warehouseMockService.deliveryOrderDetail(request);
+            }else{
+                result =
+                        warehouseApiService.deliveryOrderDetail(request);
+            }
             String userId = aclUserAccreditInfo.getUserId();
             if(StringUtils.equals(result.getAppcode(), SUCCESS)){
                 ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
