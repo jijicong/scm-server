@@ -30,6 +30,12 @@ public interface IAllocateOrderExtService {
     void setAllocateOrderOtherNames(Pagenation pagenation);
 
     /**
+     * 设置调拨单其他字段名称
+     * @param allocateOrderBaseList
+     */
+    void setAllocateOrderOtherNames(List<AllocateOrderBase> allocateOrderBaseList);
+
+    /**
      * 设置是否能操作
      * @param pagenation
      */

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -188,6 +189,10 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         AssertUtil.notNull(id, "查询调拨出库单详情信息参数调拨单id不能为空");
         AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
         allocateOrderExtService.setArea(allocateOutOrder);
+        AllocateOrderBase allocateOrderBase = allocateOutOrder;
+        List<AllocateOrderBase> allocateOrderBaseList = new ArrayList<>();
+        allocateOrderBaseList.add(allocateOrderBase);
+        allocateOrderExtService.setAllocateOrderOtherNames(allocateOrderBaseList);
         return allocateOutOrder;
     }
 

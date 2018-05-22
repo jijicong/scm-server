@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -49,6 +50,7 @@ import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
+import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
 import org.trc.util.*;
@@ -110,6 +112,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IWarehouseExtService warehouseExtService;
     @Autowired
     private IRealIpService iRealIpService;
+    @Autowired
+    private IWarehouseMockService warehouseMockService;
+
+    @Value("${mock.outer.interface}")
+    private String mockOuterInterface;
 
     private boolean isSection = false;
     private boolean isReceivingError = false;
@@ -126,7 +133,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      */
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE_NOTICE)
-    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form, Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Pagenation<WarehouseNotice> warehouseNoticePage(WarehouseNoticeForm form,
+    		Pagenation<WarehouseNotice> page, AclUserAccreditInfo aclUserAccreditInfo) {
 
         AssertUtil.notNull(aclUserAccreditInfo, "获取用户信息失败!");
         //获得渠道的编码
@@ -134,6 +142,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(channelCode, "业务线编码为空!");
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
+        //仓库反馈入库单号
+        if (!StringUtils.isBlank(form.getEntryOrderId())) {
+            criteria.andLike("entryOrderId", "%" + form.getEntryOrderId() + "%");
+        }
         //渠道编号
         if (!StringUtils.isBlank(channelCode)) { 
             criteria.andEqualTo("channelCode",channelCode);
@@ -831,7 +843,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
         entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
-        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
+        AppResult appResult = null;
+        if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+            appResult = warehouseMockService.entryOrderDetail(entryOrderDetailRequest);
+        }else{
+            appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
+        }
         List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseListRequest = (List<ScmEntryOrderDetailResponse>) appResult.getResult();
         for (WarehouseNotice warehouseNotice : noticeList) {
             //获取当前入库单对应的入库查询结果
