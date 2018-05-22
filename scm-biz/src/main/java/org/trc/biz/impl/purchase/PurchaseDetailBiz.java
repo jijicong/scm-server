@@ -1,5 +1,6 @@
 package org.trc.biz.impl.purchase;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -8,14 +9,17 @@ import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.domain.goods.Items;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.service.category.IBrandService;
+import org.trc.service.impl.goods.ItemsService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,6 +42,9 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
 
     @Autowired
     private ICategoryBiz categoryBiz;
+
+    @Autowired
+    private ItemsService itemsService;
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
@@ -96,6 +103,7 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
             }
         }
         handCategoryName(purchaseDetailList);
+        setSkuQuality(purchaseDetailList);
         return purchaseDetailList;
 
     }
@@ -105,4 +113,30 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
             purchaseDetail.setAllCategoryName(categoryBiz.getCategoryName(purchaseDetail.getCategoryId()));
         }
     }
+
+    /**
+     * 设置sku保质期
+     * @param purchaseDetailList
+     */
+    private void setSkuQuality(List<PurchaseDetail> purchaseDetailList){
+        List<String> spuCodes = new ArrayList<>();
+        for(PurchaseDetail detail: purchaseDetailList){
+            spuCodes.add(detail.getSpuCode());
+        }
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("spuCode", spuCodes);
+        List<Items> itemsList = itemsService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(itemsList)){
+            for(PurchaseDetail detail: purchaseDetailList){
+                for(Items items: itemsList){
+                    if(StringUtils.equals(detail.getSpuCode(), items.getSpuCode())){
+                        detail.setIsQuality(items.getIsQuality());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
 }
