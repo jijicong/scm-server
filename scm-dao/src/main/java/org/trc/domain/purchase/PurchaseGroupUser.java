@@ -19,6 +19,8 @@ public class PurchaseGroupUser extends BaseDO {
     private Long id;
     @FormParam("name")
     private String name;
+    @FormParam("channelCode")
+    private String channelCode;
     @FormParam("phoneNumber")
     private String phoneNumber;
     @Transient
@@ -65,5 +67,13 @@ public class PurchaseGroupUser extends BaseDO {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
     }
 }
