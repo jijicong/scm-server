@@ -482,11 +482,37 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 form.getItemNo(), form.getBrandName(), skus, pagenation);
         try {
             handCategoryName(purchaseDetailList);
+            setSkuQuality(purchaseDetailList);
         } catch (Exception e) {
             LOGGER.error("分类名称赋值异常！",e);
         }
         page.setResult(purchaseDetailList);
         return page;
+    }
+
+    /**
+     * 设置sku保质期
+     * @param purchaseDetailList
+     */
+    private void setSkuQuality(List<PurchaseDetail> purchaseDetailList){
+        List<String> spuCodes = new ArrayList<>();
+        for(PurchaseDetail detail: purchaseDetailList){
+            spuCodes.add(detail.getSpuCode());
+        }
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("spuCode", spuCodes);
+        List<Items> itemsList = itemsService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(itemsList)){
+            for(PurchaseDetail detail: purchaseDetailList){
+                for(Items items: itemsList){
+                    if(StringUtils.equals(detail.getSpuCode(), items.getSpuCode())){
+                        detail.setIsQuality(items.getIsQuality());
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void handCategoryName(List<PurchaseDetail> purchaseDetailList) throws Exception{

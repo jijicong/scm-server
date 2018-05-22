@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
@@ -91,6 +92,10 @@ public class PurchaseDetail extends BaseDO{
     private String warehouseItemId;
     @Transient
     private BigDecimal totalPurchaseAmountD;
+
+    //是否具有质保期
+    @Transient
+    private String isQuality;
 
     public BigDecimal getPurchasePriceD() {
         return purchasePriceD;
@@ -300,6 +305,14 @@ public class PurchaseDetail extends BaseDO{
 
     public void setWarehouseItemId(String warehouseItemId) {
         this.warehouseItemId = warehouseItemId;
+    }
+
+    public String getIsQuality() {
+        return isQuality;
+    }
+
+    public void setIsQuality(String isQuality) {
+        this.isQuality = isQuality;
     }
 }
 
