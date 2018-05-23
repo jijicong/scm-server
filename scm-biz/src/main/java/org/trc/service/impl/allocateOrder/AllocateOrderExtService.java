@@ -314,7 +314,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
                 allocateInOrder.setOldStatus(allocateInOrder.getStatus());
                 allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
                 allocateInOrder.setIsClose(ZeroToNineEnum.ONE.getCode());
-                allocateInOrder.setMemo(cancelReson);
+                //allocateInOrder.setMemo(cancelReson);
             }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消关闭
                 allocateInOrder.setStatus(allocateInOrder.getOldStatus());
                 allocateInOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
@@ -324,7 +324,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
                 allocateInOrder.setOldStatus(allocateInOrder.getStatus());
                 allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
                 allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
-                allocateInOrder.setMemo(cancelReson);
+                //allocateInOrder.setMemo(cancelReson);
             }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//重新发货
                 allocateInOrder.setStatus(allocateInOrder.getOldStatus());
                 allocateInOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
@@ -332,7 +332,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         }else if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode())){//作废类型
             allocateInOrder.setOldStatus(allocateInOrder.getStatus());
             allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
-            allocateInOrder.setMemo(cancelReson);
+            //allocateInOrder.setMemo(cancelReson);
         }
         if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode()) || StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//作废/关闭/取消发货
             for(AllocateSkuDetail detail: allocateSkuDetailList){
