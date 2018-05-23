@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
 import org.trc.constants.SupplyConstants;
+import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
@@ -20,7 +21,10 @@ import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
+import org.trc.form.wms.WmsAllocateDetailRequest;
+import org.trc.form.wms.WmsAllocateOutRequest;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
+import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
@@ -50,6 +54,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private ILogInfoService logInfoService;
     @Autowired
     private IAllocateOrderExtService allocateOrderExtService;
+    @Autowired
+    private IAllocateOrderService allocateOrderService;
 
     /**
      * 调拨单分页查询
@@ -194,6 +200,76 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOrderBaseList.add(allocateOrderBase);
         allocateOrderExtService.setAllocateOrderOtherNames(allocateOrderBaseList);
         return allocateOutOrder;
+    }
+
+    @Override
+    public Response outFinishCallBack(WmsAllocateOutRequest req) {
+        AssertUtil.notNull(req, "调拨出库回调信息不能为空");
+        String allocateOrderCode = req.getAllocateOrderCode();
+        //获取所有调拨出库详情明细
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
+
+        List<WmsAllocateDetailRequest> wmsAllocateDetailRequests = req.getWmsAllocateDetailRequests();
+        if(wmsAllocateDetailRequests != null && wmsAllocateDetailRequests.size() > 0){
+            for(WmsAllocateDetailRequest detailRequest : wmsAllocateDetailRequests){
+                for(AllocateSkuDetail skuDetail : allocateSkuDetails){
+                    if(StringUtils.equals(detailRequest.getSkuCode(), skuDetail.getSkuCode())){
+                        skuDetail.setRealOutNum(detailRequest.getRealOutNum());
+                        if(detailRequest.getRealOutNum() == skuDetail.getPlanAllocateNum()){
+                            skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
+                            skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
+                        }else{
+                            skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
+                            skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
+                        }
+                    }
+                }
+            }
+        }
+        allocateSkuDetailService.updateSkuDetailList(allocateSkuDetails);
+        //更新调拨出库单状态
+        AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
+        allocateOutOrder.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateOutOrder> allocateOutOrders = allocateOutOrderService.select(allocateOutOrder);
+        allocateOutOrder = allocateOutOrders.get(0);
+        allocateOutOrder.setStatus(getAllocateOutOrderStatusByDetail(allocateSkuDetails));
+        allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+        //更新调拨单状态
+        AllocateOrder allocateOrder = new AllocateOrder();
+        allocateOrder.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateOrder> allocateOrders = allocateOrderService.select(allocateOrder);
+        allocateOrder = allocateOrders.get(0);
+        if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
+            allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_EXCEPTION.getCode());
+        }else if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+            allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_NORMAL.getCode());
+        }
+        allocateOrderService.updateByPrimaryKey(allocateOrder);
+        return ResultUtil.createSuccessResult("反填调拨出库信息成功！", "");
+    }
+
+    //获取状态
+    private String getAllocateOutOrderStatusByDetail(List<AllocateSkuDetail> allocateSkuDetails){
+        int outFinishNum = 0;//出库完成数
+        int outExceptionNum = 0;//出库异常数
+        for(AllocateSkuDetail detail : allocateSkuDetails){
+            if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode(), detail.getOutStatus()))
+                outFinishNum++;
+            else if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode(), detail.getOutStatus())){
+                outExceptionNum++;
+            }
+        }
+        //出库异常：存在“出库异常”的商品时，此处就为出库异常；
+        if(outExceptionNum > 0){
+            return AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode();
+        }
+        //出库完成：所有商品的“出库状态”均为“出库完成”，此处就更新为出库完成
+        if(outFinishNum == allocateSkuDetails.size()){
+            return AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode();
+        }
+        return AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode();
     }
 
     //修改详情状态

@@ -46,6 +46,9 @@
                 <if test="skuDetail.outStatus != null and skuDetail.outStatus != ''">
                     out_status = #{skuDetail.outStatus},
                 </if>
+                <if test="skuDetail.realOutNum != null and skuDetail.realOutNum != ''">
+                    real_out_num = #{skuDetail.realOutNum},
+                </if>
                 <if test="skuDetail.oldOutStatus != null and skuDetail.oldOutStatus != ''">
                     old_out_status = #{skuDetail.oldOutStatus}
                 </if>
