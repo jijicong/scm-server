@@ -1,8 +1,13 @@
 package org.trc.form.JDModel;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by hzwdx on 2017/6/21.
  */
+@Setter
+@Getter
 public class ExternalSupplierConfig {
     //scm-external项目服务地址
     private String scmExternalUrl;
@@ -96,277 +101,16 @@ public class ExternalSupplierConfig {
      * 物流包裹详情接口URL
      */
     private String orderPackUrl;
+    
+    /**
+     * 调拨出库单通知接口URL
+     */
+    private String allocateOrderOutUrl;
+    
+    /**
+     * 调拨入库单通知接口URL
+     */
+    private String allocateOrderInUrl;
 
 
-    public String getSkuPageUrl() {
-        return skuPageUrl;
-    }
-
-    public void setSkuPageUrl(String skuPageUrl) {
-        this.skuPageUrl = skuPageUrl;
-    }
-
-    public String getSkuQueryUrl() {
-        return skuQueryUrl;
-    }
-
-    public void setSkuQueryUrl(String skuQueryUrl) {
-        this.skuQueryUrl = skuQueryUrl;
-    }
-
-    public String getSkuAddNotice() {
-        return skuAddNotice;
-    }
-
-    public void setSkuAddNotice(String skuAddNotice) {
-        this.skuAddNotice = skuAddNotice;
-    }
-
-    public String getJdWarehouse() {
-        return jdWarehouse;
-    }
-
-    public void setJdWarehouse(String jdWarehouse) {
-        this.jdWarehouse = jdWarehouse;
-    }
-
-    public String getLyWarehouse() {
-        return lyWarehouse;
-    }
-
-    public void setLyWarehouse(String lyWarehouse) {
-        this.lyWarehouse = lyWarehouse;
-    }
-
-    public String getJdPictureUrl() {
-        return jdPictureUrl;
-    }
-
-    public void setJdPictureUrl(String jdPictureUrl) {
-        this.jdPictureUrl = jdPictureUrl;
-    }
-
-    public String getJdSubmitOrderUrl() {
-        return jdSubmitOrderUrl;
-    }
-
-    public void setJdSubmitOrderUrl(String jdSubmitOrderUrl) {
-        this.jdSubmitOrderUrl = jdSubmitOrderUrl;
-    }
-
-    public String getLySubmitOrderUrl() {
-        return lySubmitOrderUrl;
-    }
-
-    public void setLySubmitOrderUrl(String lySubmitOrderUrl) {
-        this.lySubmitOrderUrl = lySubmitOrderUrl;
-    }
-
-    public String getOrderQueryUrl() {
-        return orderQueryUrl;
-    }
-
-    public void setOrderQueryUrl(String orderQueryUrl) {
-        this.orderQueryUrl = orderQueryUrl;
-    }
-
-    public String getOrderLogisticsUrl() {
-        return orderLogisticsUrl;
-    }
-
-    public void setOrderLogisticsUrl(String orderLogisticsUrl) {
-        this.orderLogisticsUrl = orderLogisticsUrl;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getScmExternalUrl() {
-        return scmExternalUrl;
-    }
-
-    public void setScmExternalUrl(String scmExternalUrl) {
-        this.scmExternalUrl = scmExternalUrl;
-    }
-
-    public String getJdSkuPriceUrl() {
-        return jdSkuPriceUrl;
-    }
-
-    public void setJdSkuPriceUrl(String jdSkuPriceUrl) {
-        this.jdSkuPriceUrl = jdSkuPriceUrl;
-    }
-
-    public String getCheckOrderDetailUrl() {
-        return checkOrderDetailUrl;
-    }
-
-    public void setCheckOrderDetailUrl(String checkOrderDetailUrl) {
-        this.checkOrderDetailUrl = checkOrderDetailUrl;
-    }
-
-    public String getTreadTypeUrl() {
-        return treadTypeUrl;
-    }
-
-    public void setTreadTypeUrl(String treadTypeUrl) {
-        this.treadTypeUrl = treadTypeUrl;
-    }
-
-    public String getJdAddressUrl() {
-        return jdAddressUrl;
-    }
-
-    public void setJdAddressUrl(String jdAddressUrl) {
-        this.jdAddressUrl = jdAddressUrl;
-    }
-
-    public String getJdBalanceInfoUrl() {
-        return jdBalanceInfoUrl;
-    }
-
-    public void setJdBalanceInfoUrl(String jdBalanceInfoUrl) {
-        this.jdBalanceInfoUrl = jdBalanceInfoUrl;
-    }
-
-    public String getJdOrderDetailPageUrl() {
-        return jdOrderDetailPageUrl;
-    }
-
-    public void setJdOrderDetailPageUrl(String jdOrderDetailPageUrl) {
-        this.jdOrderDetailPageUrl = jdOrderDetailPageUrl;
-    }
-
-    public String getJdBalanceDetailPageUrl() {
-        return jdBalanceDetailPageUrl;
-    }
-
-    public void setJdBalanceDetailPageUrl(String jdBalanceDetailPageUrl) {
-        this.jdBalanceDetailPageUrl = jdBalanceDetailPageUrl;
-    }
-
-    public String getJdExportOrderUrl() {
-        return jdExportOrderUrl;
-    }
-
-    public void setJdExportOrderUrl(String jdExportOrderUrl) {
-        this.jdExportOrderUrl = jdExportOrderUrl;
-    }
-
-    public String getJdExportBalanceUrl() {
-        return jdExportBalanceUrl;
-    }
-
-    public void setJdExportBalanceUrl(String jdExportBalanceUrl) {
-        this.jdExportBalanceUrl = jdExportBalanceUrl;
-    }
-
-    public String getJdOrderOperateUrl() {
-        return jdOrderOperateUrl;
-    }
-
-    public void setJdOrderOperateUrl(String jdOrderOperateUrl) {
-        this.jdOrderOperateUrl = jdOrderOperateUrl;
-    }
-
-    public String getJdOperateStateUrl() {
-        return jdOperateStateUrl;
-    }
-
-    public void setJdOperateStateUrl(String jdOperateStateUrl) {
-        this.jdOperateStateUrl = jdOperateStateUrl;
-    }
-
-    public String getBalancestatisticsUrl() {
-        return balancestatisticsUrl;
-    }
-
-    public void setBalancestatisticsUrl(String balancestatisticsUrl) {
-        this.balancestatisticsUrl = balancestatisticsUrl;
-    }
-
-    public String getReportCompensateUrl() {
-        return reportCompensateUrl;
-    }
-
-    public void setReportCompensateUrl(String reportCompensateUrl) {
-        this.reportCompensateUrl = reportCompensateUrl;
-    }
-
-    public String getJdOrderStatusUrl() {
-        return jdOrderStatusUrl;
-    }
-
-    public void setJdOrderStatusUrl(String jdOrderStatusUrl) {
-        this.jdOrderStatusUrl = jdOrderStatusUrl;
-    }
-
-    public String getItemsSyncUrl() {
-        return itemsSyncUrl;
-    }
-
-    public void setItemsSyncUrl(String itemsSyncUrl) {
-        this.itemsSyncUrl = itemsSyncUrl;
-    }
-
-    public String getInventoryQueryUrl() {
-        return inventoryQueryUrl;
-    }
-
-    public void setInventoryQueryUrl(String inventoryQueryUrl) {
-        this.inventoryQueryUrl = inventoryQueryUrl;
-    }
-
-    public String getEntryOrderCreateUrl() {
-        return entryOrderCreateUrl;
-    }
-
-    public void setEntryOrderCreateUrl(String entryOrderCreateUrl) {
-        this.entryOrderCreateUrl = entryOrderCreateUrl;
-    }
-
-    public String getDeliveryOrderCreateUrl() {
-        return deliveryOrderCreateUrl;
-    }
-
-    public void setDeliveryOrderCreateUrl(String deliveryOrderCreateUrl) {
-        this.deliveryOrderCreateUrl = deliveryOrderCreateUrl;
-    }
-
-    public String getEntryOrderDetailQueryUrl() {
-        return entryOrderDetailQueryUrl;
-    }
-
-    public void setEntryOrderDetailQueryUrl(String entryOrderDetailQueryUrl) {
-        this.entryOrderDetailQueryUrl = entryOrderDetailQueryUrl;
-    }
-
-    public String getDeliveryOrderDetailQueryUrl() {
-        return deliveryOrderDetailQueryUrl;
-    }
-
-    public void setDeliveryOrderDetailQueryUrl(String deliveryOrderDetailQueryUrl) {
-        this.deliveryOrderDetailQueryUrl = deliveryOrderDetailQueryUrl;
-    }
-
-    public String getOrderCancelUrl() {
-        return orderCancelUrl;
-    }
-
-    public void setOrderCancelUrl(String orderCancelUrl) {
-        this.orderCancelUrl = orderCancelUrl;
-    }
-
-    public String getOrderPackUrl() {
-        return orderPackUrl;
-    }
-
-    public void setOrderPackUrl(String orderPackUrl) {
-        this.orderPackUrl = orderPackUrl;
-    }
 }

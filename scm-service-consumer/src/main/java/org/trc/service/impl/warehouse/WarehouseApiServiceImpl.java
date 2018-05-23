@@ -1,24 +1,59 @@
 package org.trc.service.impl.warehouse;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.trc.enums.*;
+import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.JingdongInventoryStateEnum;
+import org.trc.enums.JingdongInventoryTypeEnum;
+import org.trc.enums.SuccessFailureEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.JDModel.ExternalSupplierConfig;
-import org.trc.form.warehouse.*;
+import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
+import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
+import org.trc.form.warehouse.ScmDeliveryOrderDO;
+import org.trc.form.warehouse.ScmDeliveryOrderDetailRequest;
+import org.trc.form.warehouse.ScmDeliveryOrderDetailResponse;
+import org.trc.form.warehouse.ScmEntryOrderCreateRequest;
+import org.trc.form.warehouse.ScmEntryOrderDetailRequest;
+import org.trc.form.warehouse.ScmEntryOrderDetailResponse;
+import org.trc.form.warehouse.ScmInventoryQueryItem;
+import org.trc.form.warehouse.ScmInventoryQueryRequest;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmItemSyncResponse;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.ScmOrderPacksRequest;
+import org.trc.form.warehouse.ScmOrderPacksResponse;
+import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
+import org.trc.form.warehouse.ScmWarehouseItem;
+import org.trc.form.warehouse.ScmWarehouseRequestBase;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.service.warehouse.IWarehouseApiService;
-import org.trc.util.*;
+import org.trc.util.AppResult;
+import org.trc.util.DateUtils;
+import org.trc.util.GuidUtil;
+import org.trc.util.HttpClientUtil;
+import org.trc.util.ResponseAck;
 
-import java.io.IOException;
-import java.util.*;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 
 @Service("warehouseApiService")
 public class WarehouseApiServiceImpl implements IWarehouseApiService {
@@ -85,6 +120,12 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
     public AppResult<ScmOrderPacksResponse> orderPack(ScmOrderPacksRequest orderPacksRequest) {
         return wmsInvoke(orderPacksRequest);
     }
+    
+	@Override
+	public AppResult<ScmAllocateOrderOutResponse> allocateOrderOutNotice(
+			ScmAllocateOrderOutRequest allocateOrderOutRequest) {
+		 return wmsInvoke(allocateOrderOutRequest);
+	}
 
 
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
@@ -117,7 +158,14 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmOrderPacksRequest){
             url = externalSupplierConfig.getOrderPackUrl();
             method = "物流详情";
+        }else if(scmWarehouseRequestBase instanceof ScmAllocateOrderOutRequest){
+            url = externalSupplierConfig.getAllocateOrderOutUrl();
+            method = "调拨出库通知单";
+        }else if(scmWarehouseRequestBase instanceof ScmAllocateOrderInRequest){
+            url = externalSupplierConfig.getAllocateOrderInUrl();
+            method = "调拨入库通知单";
         }
+            
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
         String jsonParam = JSON.toJSONString(scmWarehouseRequestBase);
 
@@ -177,8 +225,12 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseArray(appResult.getResult().toString(), ScmEntryOrderDetailResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmDeliveryOrderDetailRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmDeliveryOrderDetailResponse.class);
-        }else if(scmWarehouseRequestBase instanceof  ScmOrderPacksRequest){
+        }else if(scmWarehouseRequestBase instanceof ScmOrderPacksRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmOrderPacksResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmAllocateOrderOutRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAllocateOrderOutResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmAllocateOrderInRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAllocateOrderInResponse.class);
         }
         appResult.setResult(response);
     }
@@ -336,15 +388,5 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         appResult.setResult(response);
         return appResult;
     }
-
-
-
-
-
-
-
-
-
-
 
 }

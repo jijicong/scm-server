@@ -1,9 +1,27 @@
 package org.trc.service.warehouse;
 
-import org.trc.form.warehouse.*;
-import org.trc.util.AppResult;
-
 import java.util.List;
+
+import org.trc.form.warehouse.ScmDeliveryOrderCreateRequest;
+import org.trc.form.warehouse.ScmDeliveryOrderCreateResponse;
+import org.trc.form.warehouse.ScmDeliveryOrderDetailRequest;
+import org.trc.form.warehouse.ScmDeliveryOrderDetailResponse;
+import org.trc.form.warehouse.ScmEntryOrderCreateRequest;
+import org.trc.form.warehouse.ScmEntryOrderDetailRequest;
+import org.trc.form.warehouse.ScmEntryOrderDetailResponse;
+import org.trc.form.warehouse.ScmInventoryQueryRequest;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouse.ScmItemSyncRequest;
+import org.trc.form.warehouse.ScmItemSyncResponse;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.ScmOrderPacksRequest;
+import org.trc.form.warehouse.ScmOrderPacksResponse;
+import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
+import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
+import org.trc.util.AppResult;
 
 /**
  * 外部仓库接口
@@ -73,4 +91,11 @@ public interface IWarehouseApiService {
      * @return
      */
     AppResult<ScmOrderPacksResponse> orderPack(ScmOrderPacksRequest orderPacksRequest);
+    
+    /**
+     * 调拨出库通知
+     * @param 
+     * @return
+     */
+    AppResult<ScmAllocateOrderOutResponse> allocateOrderOutNotice (ScmAllocateOrderOutRequest allocateOrderOutRequest);
 }
