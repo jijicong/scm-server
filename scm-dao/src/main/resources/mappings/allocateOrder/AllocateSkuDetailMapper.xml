@@ -46,8 +46,17 @@
                 <if test="skuDetail.outStatus != null and skuDetail.outStatus != ''">
                     out_status = #{skuDetail.outStatus},
                 </if>
+                <if test="skuDetail.realInNum != null and skuDetail.realInNum != ''">
+                    real_in_num = #{skuDetail.realInNum},
+                </if>
                 <if test="skuDetail.realOutNum != null and skuDetail.realOutNum != ''">
                     real_out_num = #{skuDetail.realOutNum},
+                </if>
+                <if test="skuDetail.nornalInNum != null and skuDetail.nornalInNum != ''">
+                    nornal_in_num = #{skuDetail.nornalInNum},
+                </if>
+                <if test="skuDetail.defectInNum != null and skuDetail.defectInNum != ''">
+                    defect_in_num = #{skuDetail.defectInNum},
                 </if>
                 <if test="skuDetail.oldOutStatus != null and skuDetail.oldOutStatus != ''">
                     old_out_status = #{skuDetail.oldOutStatus}
