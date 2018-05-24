@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
  * Created by hzcyn on 2018/5/22.
  */
 @Component
-@Path("wmsApi")
+@Path("api/wmsApi")
 public class WmsApiResource {
 
     private Logger logger = LoggerFactory.getLogger(WmsApiResource.class);
