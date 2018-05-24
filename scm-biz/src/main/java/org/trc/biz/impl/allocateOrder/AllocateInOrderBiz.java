@@ -4,23 +4,32 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
-import org.trc.domain.allocateOrder.*;
-import org.trc.domain.allocateOrder.AllocateOutOrder;
+import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.domain.allocateOrder.AllocateOrder;
+import org.trc.domain.allocateOrder.AllocateOrderBase;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
+import org.trc.form.wms.WmsAllocateDetailRequest;
+import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
@@ -32,10 +41,11 @@ import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
+import org.trc.util.ResultUtil;
 
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
-import javax.ws.rs.core.Response;
 
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
