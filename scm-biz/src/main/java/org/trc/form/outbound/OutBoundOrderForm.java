@@ -13,6 +13,11 @@ public class OutBoundOrderForm extends QueryModel {
     @Length(max = 32, message = "发货通知单编号长度不能超过32个")
     private String outboundOrderCode;
 
+    //开放平台出库单号
+    @QueryParam("wmsOrderCode")
+    @Length(max = 32, message = "开放平台出库单号长度不能超过32个")
+    private String wmsOrderCode;
+
     //店铺订单编号
     @QueryParam("shopOrderCode")
     @Length(max = 32, message = "店铺订单编号长度不能超过32个")
@@ -135,5 +140,13 @@ public class OutBoundOrderForm extends QueryModel {
 
     public void setEndCreateDate(String endCreateDate) {
         this.endCreateDate = endCreateDate;
+    }
+
+    public String getWmsOrderCode() {
+        return wmsOrderCode;
+    }
+
+    public void setWmsOrderCode(String wmsOrderCode) {
+        this.wmsOrderCode = wmsOrderCode;
     }
 }

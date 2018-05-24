@@ -9,10 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.common.RequsetUpdateStock;
@@ -25,9 +27,11 @@ import org.trc.domain.order.*;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.exception.OutboundOrderException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.*;
 import org.trc.form.order.OutboundForm;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.form.outbound.OutBoundOrderReceiverForm;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.config.ILogInfoService;
@@ -43,6 +47,7 @@ import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.OutboundOrderCacheEvict;
@@ -71,6 +76,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     }
 
     private Logger logger = LoggerFactory.getLogger(OutBoundOrderBiz.class);
+
+    @Value("${mock.outer.interface}")
+    private String mockOuterInterface;
+
     @Autowired
     private IOutBoundOrderService outBoundOrderService;
     @Autowired
@@ -103,6 +112,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IOutboundPackageInfoService outboundPackageInfoService;
     @Autowired
     private IRealIpService iRealIpService;
+    @Autowired
+    private IWarehouseMockService warehouseMockService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -142,8 +153,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             for (ScmDeliveryOrderDetailRequest request : requests) {
                 new Thread(() -> {
                     //调用接口
-                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult =
-                            warehouseApiService.deliveryOrderDetail(request);
+                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult = null;
+                    if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                        responseAppResult = warehouseMockService.deliveryOrderDetail(request);
+                    }else{
+                        responseAppResult =
+                                warehouseApiService.deliveryOrderDetail(request);
+                    }
 
                     //回写数据
                     try {
@@ -246,8 +262,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 ScmOrderPacksRequest request = new ScmOrderPacksRequest();
                 request.setOrderIds(orderId);
                 //调用京东接口获取包裹信息
-                AppResult<ScmOrderPacksResponse> packageResponseAppResult = warehouseApiService.orderPack(request);
-
+                AppResult<ScmOrderPacksResponse> packageResponseAppResult = null;
+                if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                    packageResponseAppResult = warehouseMockService.orderPack(request);
+                }else{
+                    packageResponseAppResult = warehouseApiService.orderPack(request);
+                }
                 if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
                     ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
 
@@ -1098,7 +1118,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             request.setOrderId(outboundOrder.getWmsOrderCode());
             request.setOwnerCode(warehouse.getWarehouseOwnerId());
             request.setWarehouseCode(warehouse.getCode());
-            AppResult<ScmDeliveryOrderDetailResponse>  result = warehouseApiService.deliveryOrderDetail(request);
+            AppResult<ScmDeliveryOrderDetailResponse>  result = null;
+            if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                result = warehouseMockService.deliveryOrderDetail(request);
+            }else{
+                result =
+                        warehouseApiService.deliveryOrderDetail(request);
+            }
             String userId = aclUserAccreditInfo.getUserId();
             if(StringUtils.equals(result.getAppcode(), SUCCESS)){
                 ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
@@ -1211,6 +1237,38 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
         //调用接口
         this.retryCancelOrder(requests);
+    }
+
+    @Override
+    @OutboundOrderCacheEvict
+    public Response updateReceiverInfo(OutBoundOrderReceiverForm form, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(form, "修改发货单收货地址信息不能为空");
+        AssertUtil.notBlank(form.getOutboundOrderCode(), "发货单编码不能为空");
+        AssertUtil.notBlank(form.getReceiverName(), "收货人不能为空");
+        AssertUtil.notBlank(form.getReceiverPhone(), "收货人电话不能为空");
+        AssertUtil.notBlank(form.getReceiverProvince(), "收货人所在省不能为空");
+        AssertUtil.notBlank(form.getReceiverCity(), "收货人所在城市不能为空");
+        AssertUtil.notBlank(form.getReceiverAddress(), "收货人详细地址不能为空");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setOutboundOrderCode(form.getOutboundOrderCode());
+        outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+        AssertUtil.notNull(outboundOrder, String.format("发货单%s对应的发货通知单不存在", form.getOutboundOrderCode()));
+        if (!StringUtils.equals(OutboundOrderStatusEnum.CANCELED.getCode(), outboundOrder.getStatus()) &&
+                !StringUtils.equals(OutboundOrderStatusEnum.RECEIVE_FAIL.getCode(), outboundOrder.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("发货单当前是%s状态，不能修改收货信息",
+                    OutboundOrderStatusEnum.getClearanceEnumByCode(outboundOrder.getStatus()).getName()));
+        }
+        OutboundOrder _outboundOrder = new OutboundOrder();
+        _outboundOrder.setId(outboundOrder.getId());
+        _outboundOrder.setReceiverName(form.getReceiverName());
+        _outboundOrder.setReceiverPhone(form.getReceiverPhone());
+        _outboundOrder.setReceiverProvince(form.getReceiverProvince());
+        _outboundOrder.setReceiverCity(form.getReceiverCity());
+        _outboundOrder.setReceiverDistrict(form.getReceiverDistrict());
+        _outboundOrder.setReceiverAddress(form.getReceiverAddress());
+        outBoundOrderService.updateByPrimaryKeySelective(_outboundOrder);
+        logInfoService.recordLog(_outboundOrder,_outboundOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE_RECEIVER_INFO.getMessage(), null,null);
+        return ResultUtil.createSuccessResult("更新收货信息成功", "");
     }
 
     //调用获取商品详情接口
@@ -1345,6 +1403,11 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //发货通知单编号
         if (!StringUtils.isBlank(form.getOutboundOrderCode())) {
             criteria.andLike("outboundOrderCode", "%" + form.getOutboundOrderCode() + "%");
+
+        }
+        //仓库反馈出库单号
+        if (!StringUtils.isBlank(form.getWmsOrderCode())) {
+            criteria.andLike("wmsOrderCode", "%" + form.getWmsOrderCode() + "%");
 
         }
         //业务线

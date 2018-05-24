@@ -3,7 +3,6 @@ package org.trc.service.purchase;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
-import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.service.IBaseService;
 
 import java.util.List;

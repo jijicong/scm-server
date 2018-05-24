@@ -1,7 +1,6 @@
 package org.trc.resource;
 
 import com.alibaba.druid.util.StringUtils;
-import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Component;
 import org.trc.biz.purchase.IPurchaseOrderBiz;
 import org.trc.constants.SupplyConstants;
@@ -9,12 +8,9 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.purchase.PurchaseOrderAddData;
-import org.trc.domain.supplier.Supplier;
-import org.trc.domain.supplier.SupplierBrandExt;
 import org.trc.enums.PurchaseOrderStatusEnum;
 import org.trc.form.purchase.ItemForm;
 import org.trc.form.purchase.PurchaseOrderForm;
-import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;

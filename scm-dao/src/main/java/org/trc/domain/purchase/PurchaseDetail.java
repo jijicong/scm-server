@@ -3,19 +3,17 @@ package org.trc.domain.purchase;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.trc.custom.CustomDateSerializer;
 import org.trc.custom.MoneySerializer;
-import org.trc.custom.SimpleDateSerializer;
 import org.trc.domain.BaseDO;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 采购明细信息
@@ -94,6 +92,12 @@ public class PurchaseDetail extends BaseDO{
     private String warehouseItemId;
     @Transient
     private BigDecimal totalPurchaseAmountD;
+
+    //是否具有质保期
+    @Transient
+    private String isQuality;
+    @Transient
+    private Long qualityDay;
 
     public BigDecimal getPurchasePriceD() {
         return purchasePriceD;
@@ -303,6 +307,22 @@ public class PurchaseDetail extends BaseDO{
 
     public void setWarehouseItemId(String warehouseItemId) {
         this.warehouseItemId = warehouseItemId;
+    }
+
+    public String getIsQuality() {
+        return isQuality;
+    }
+
+    public void setIsQuality(String isQuality) {
+        this.isQuality = isQuality;
+    }
+
+    public Long getQualityDay() {
+        return qualityDay;
+    }
+
+    public void setQualityDay(Long qualityDay) {
+        this.qualityDay = qualityDay;
     }
 }
 

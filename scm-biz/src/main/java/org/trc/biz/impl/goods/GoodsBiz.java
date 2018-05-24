@@ -90,7 +90,7 @@ public class GoodsBiz implements IGoodsBiz {
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
     //分类名称全路径分割符号
-    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "-";
     //SKU的属性值ID分割符号
     public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
     //SKU的属性组合名称分割符号
@@ -357,7 +357,7 @@ public class GoodsBiz implements IGoodsBiz {
                     if(j == 0){
                         sb.append(namePathList.get(j));
                     }else{
-                        sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
+                        sb.append(namePathList.get(j)).append("-");
                     }
                 }
                 spuCategoryMap.put(items.getSpuCode(), sb.toString());
@@ -1896,6 +1896,13 @@ public class GoodsBiz implements IGoodsBiz {
             _isValid = ZeroToNineEnum.ONE.getCode();
         }
         skus.setIsValid(_isValid);
+        if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(),_isValid)){
+            //如果状态要改为启用 就要校验条形码
+            Skus barSku = new Skus();
+            barSku.setId(id);
+            barSku = skusService.selectOne(barSku);
+            checkBarcodeOnly(barSku.getBarCode(),"","");
+        }
         int count = skusService.updateByPrimaryKeySelective(skus);
         if(count == 0){
             String msg = "商品SKU启用/停用操作更新数据库失败";
