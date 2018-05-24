@@ -1,34 +1,45 @@
 package org.trc.biz.impl.allocateOrder;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
+import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.LogOperationEnum;
+import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
+
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
-
-import java.beans.Transient;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
@@ -41,6 +52,10 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IWarehouseApiService warehouseApiService;
 
     @Override
     public Pagenation<AllocateInOrder> allocateInOrderPage(AllocateInOrderForm form, Pagenation<AllocateInOrder> page) {
@@ -144,9 +159,42 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
         }
         //FIXME 调用仓库接口逻辑待实现
-
+		WarehouseInfo whi = new WarehouseInfo();
+		whi.setCode(allocateInOrder.getInWarehouseCode());
+		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+		AssertUtil.notNull(warehouse, "调出仓库不存在");
+		
+		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
+		BeanUtils.copyProperties(allocateInOrder, request);
+		
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+			request.setWarehouseType("TRC");
+		} else {
+			request.setWarehouseType("JD");
+		}
+		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
+        
         //记录操作日志
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
+        
+        String status = null;
+        String logOp = null;
+        String resultMsg = null;
+		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
+			resultMsg = "调拨入库通知成功！";
+		} else {
+			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
+			resultMsg = "调拨入库通知失败！";
+		}
+		allocateInOrderService.updateOutOrderStatusById(status, allocateInOrder.getId());
+		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
+        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), warehouse.getWarehouseName(),
+        		logOp, null, null);
+        
+        
     }
 
 

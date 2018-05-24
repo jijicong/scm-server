@@ -10,6 +10,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ScmAllocateOrderItem {
+	
+    private String allocateOrderCode;
 
     /**
      * sku编码

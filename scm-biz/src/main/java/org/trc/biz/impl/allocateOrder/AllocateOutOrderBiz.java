@@ -25,6 +25,7 @@ import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
@@ -41,6 +42,7 @@ import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 import org.trc.util.cache.AllocateOrderCacheEvict;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -235,12 +237,22 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		}
 		WarehouseInfo whi = new WarehouseInfo();
 		whi.setCode(outOrder.getOutWarehouseCode());
-		WarehouseInfo info = warehouseInfoService.selectOne(whi);
-		AssertUtil.notNull(info, "调出仓库不存在");
+		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+		AssertUtil.notNull(warehouse, "调出仓库不存在");
 		
+		List<AllocateSkuDetail> detailList = allocateSkuDetailService.getDetailListByOrderCode(outOrder.getAllocateOrderCode());
+		List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
+		ScmAllocateOrderItem item = null;
+		for (AllocateSkuDetail detail : detailList) {
+			item = new ScmAllocateOrderItem();
+			BeanUtils.copyProperties(detail, item);
+			allocateOrderItemList.add(item);
+		}
 		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
 		BeanUtils.copyProperties(outOrder, request);
-		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(info.getOperationalNature())) {
+		request.setAllocateOrderItemList(allocateOrderItemList);
+		
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
 			request.setWarehouseType("TRC");
 		} else {
 			request.setWarehouseType("JD");
@@ -262,11 +274,11 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_FAIL.getMessage();
 			resultMsg = "调拨出库通知失败！";
 		}
-        logInfoService.recordLog(new AllocateOutOrder(), id.toString(), uerAccredit.getUserId(),
+        logInfoService.recordLog(new AllocateOutOrder(), id.toString(), warehouse.getWarehouseName(),
         		logOp, null, null);
 		
 		allocateOutOrderService.updateOutOrderStatusById(status,id);
-		allocateSkuDetailService.updateOutSkuStatusByOutOrderCode(status, outOrder.getAllocateOrderCode());
+		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
 	}
 

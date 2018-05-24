@@ -11,6 +11,8 @@ public interface IAllocateSkuDetailService extends IBaseService<AllocateSkuDetai
 
 	void deleteByIds(String[] idArray);
 
-	void updateOutSkuStatusByOutOrderCode(String status, String allocateOrderCode);
+	void updateOutSkuStatusByOrderCode(String status, String allocateOrderCode);
+
+	List<AllocateSkuDetail> getDetailListByOrderCode(String allocateOrderCode);
 
 }

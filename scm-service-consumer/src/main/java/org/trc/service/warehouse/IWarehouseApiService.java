@@ -19,6 +19,8 @@ import org.trc.form.warehouse.ScmOrderPacksRequest;
 import org.trc.form.warehouse.ScmOrderPacksResponse;
 import org.trc.form.warehouse.ScmReturnOrderCreateRequest;
 import org.trc.form.warehouse.ScmReturnOrderCreateResponse;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.util.AppResult;
@@ -98,4 +100,11 @@ public interface IWarehouseApiService {
      * @return
      */
     AppResult<ScmAllocateOrderOutResponse> allocateOrderOutNotice (ScmAllocateOrderOutRequest allocateOrderOutRequest);
+
+    /**
+     * 调拨入库通知
+     * @param 
+     * @return
+     */
+	AppResult<ScmAllocateOrderInResponse> allocateOrderInNotice(ScmAllocateOrderInRequest request);
 }

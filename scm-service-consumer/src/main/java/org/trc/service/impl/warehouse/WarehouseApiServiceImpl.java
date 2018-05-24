@@ -126,6 +126,12 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 			ScmAllocateOrderOutRequest allocateOrderOutRequest) {
 		 return wmsInvoke(allocateOrderOutRequest);
 	}
+	
+	@Override
+	public AppResult<ScmAllocateOrderInResponse> allocateOrderInNotice(
+			ScmAllocateOrderInRequest allocateOrderInRequest) {
+		return wmsInvoke(allocateOrderInRequest);
+	}
 
 
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
