@@ -11,6 +11,10 @@ public class WmsAllocateDetailRequest implements Serializable {
 
     private Long realInNum;
 
+    private Long nornalInNum;
+
+    private Long defectInNum;
+
     private String skuCode;
 
     public Long getRealOutNum() {
@@ -35,5 +39,21 @@ public class WmsAllocateDetailRequest implements Serializable {
 
     public void setSkuCode(String skuCode) {
         this.skuCode = skuCode;
+    }
+
+    public Long getNornalInNum() {
+        return nornalInNum;
+    }
+
+    public void setNornalInNum(Long nornalInNum) {
+        this.nornalInNum = nornalInNum;
+    }
+
+    public Long getDefectInNum() {
+        return defectInNum;
+    }
+
+    public void setDefectInNum(Long defectInNum) {
+        this.defectInNum = defectInNum;
     }
 }

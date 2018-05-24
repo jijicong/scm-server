@@ -5,9 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.form.wms.WmsAllocateOutRequest;
-import org.trc.util.ResultUtil;
+import org.trc.form.wms.WmsAllocateOutInRequest;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -28,14 +28,22 @@ public class WmsApiResource {
 
     @Autowired
     private IAllocateOutOrderBiz allocateOutOrderBiz;
+    @Autowired
+    private IAllocateInOrderBiz allocateInOrderBiz;
 
     @POST
     @Path("allocateOutOrder")
     @Produces(MediaType.APPLICATION_JSON)
     public Response outFinishCallBack(@FormParam("request") String request) throws Exception {
-        WmsAllocateOutRequest req = JSON.parseObject(request, WmsAllocateOutRequest.class);
+        WmsAllocateOutInRequest req = JSON.parseObject(request, WmsAllocateOutInRequest.class);
         return allocateOutOrderBiz.outFinishCallBack(req);
     }
 
-
+    @POST
+    @Path("allocateInOrder")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response inFinishCallBack(@FormParam("request") String request) throws Exception {
+        WmsAllocateOutInRequest req = JSON.parseObject(request, WmsAllocateOutInRequest.class);
+        return allocateInOrderBiz.inFinishCallBack(req);
+    }
 }

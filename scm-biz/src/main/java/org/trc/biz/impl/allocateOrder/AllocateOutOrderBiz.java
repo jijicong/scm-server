@@ -34,7 +34,7 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
-import org.trc.form.wms.WmsAllocateOutRequest;
+import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
@@ -206,7 +206,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     @Override
-    public Response outFinishCallBack(WmsAllocateOutRequest req) {
+    public Response outFinishCallBack(WmsAllocateOutInRequest req) {
         AssertUtil.notNull(req, "调拨出库回调信息不能为空");
         String allocateOrderCode = req.getAllocateOrderCode();
         //获取所有调拨出库详情明细
@@ -239,6 +239,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOutOrder = allocateOutOrders.get(0);
         allocateOutOrder.setStatus(getAllocateOutOrderStatusByDetail(allocateSkuDetails));
         allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+        //更新调拨入库单信息
+
         //更新调拨单状态
         AllocateOrder allocateOrder = new AllocateOrder();
         allocateOrder.setAllocateOrderCode(allocateOrderCode);

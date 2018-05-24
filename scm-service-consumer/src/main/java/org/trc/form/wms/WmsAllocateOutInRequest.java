@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by hzcyn on 2018/5/23.
  */
-public class WmsAllocateOutRequest implements Serializable {
+public class WmsAllocateOutInRequest implements Serializable {
 
     private  String allocateOrderCode;
 
