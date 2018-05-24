@@ -482,10 +482,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 form.getItemNo(), form.getBrandName(), skus, pagenation);
         try {
             handCategoryName(purchaseDetailList);
-            setSkuQuality(purchaseDetailList);
         } catch (Exception e) {
             LOGGER.error("分类名称赋值异常！",e);
         }
+        setSkuQuality(purchaseDetailList);
         page.setResult(purchaseDetailList);
         return page;
     }
@@ -508,6 +508,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 for(Items items: itemsList){
                     if(StringUtils.equals(detail.getSpuCode(), items.getSpuCode())){
                         detail.setIsQuality(items.getIsQuality());
+                        detail.setQualityDay(items.getQualityDay());
                         break;
                     }
                 }
