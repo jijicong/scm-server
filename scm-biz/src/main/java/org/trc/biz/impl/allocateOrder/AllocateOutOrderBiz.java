@@ -5,12 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
@@ -22,7 +20,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
 import org.trc.form.wms.WmsAllocateDetailRequest;
-import org.trc.form.wms.WmsAllocateOutRequest;
+import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
@@ -203,7 +201,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     @Override
-    public Response outFinishCallBack(WmsAllocateOutRequest req) {
+    public Response outFinishCallBack(WmsAllocateOutInRequest req) {
         AssertUtil.notNull(req, "调拨出库回调信息不能为空");
         String allocateOrderCode = req.getAllocateOrderCode();
         //获取所有调拨出库详情明细
@@ -236,6 +234,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOutOrder = allocateOutOrders.get(0);
         allocateOutOrder.setStatus(getAllocateOutOrderStatusByDetail(allocateSkuDetails));
         allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+        //更新调拨入库单信息
+
         //更新调拨单状态
         AllocateOrder allocateOrder = new AllocateOrder();
         allocateOrder.setAllocateOrderCode(allocateOrderCode);
