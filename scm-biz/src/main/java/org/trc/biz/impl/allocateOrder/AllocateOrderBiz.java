@@ -561,7 +561,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		 */
 		if (!AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode().equals(status)) {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
-					"当前调拨单状态不满足作废条件");
+					"当前调拨单状态不满足通知仓库条件");
 		}
 		
 		/**

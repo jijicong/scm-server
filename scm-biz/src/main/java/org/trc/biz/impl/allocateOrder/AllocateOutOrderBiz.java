@@ -307,7 +307,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		AssertUtil.notNull(id, "调拨出库单主键不能为空");
 		AllocateOutOrder outOrder = allocateOutOrderService.selectByPrimaryKey(id);
 		AssertUtil.notNull(outOrder, "调拨出库单不存在");
-		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())) {
+		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
+				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
 		WarehouseInfo whi = new WarehouseInfo();
