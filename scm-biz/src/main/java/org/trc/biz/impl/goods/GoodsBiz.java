@@ -3628,7 +3628,7 @@ public class GoodsBiz implements IGoodsBiz {
         try {
             Pagenation<Skus> pageExport  = new Pagenation<>();
             pageExport.setPageSize(Integer.MAX_VALUE);
-            pageExport =  itemsSkusPage(queryModel, pageExport, aclUserAccreditInfo);
+            pageExport =  itemsSkusPage(new SkusForm(), pageExport, aclUserAccreditInfo);
             List<Skus> skusList = pageExport.getResult();
             CellDefinition skuCode = new CellDefinition("skuCode", "商品SKU编号", CellDefinition.TEXT, 6000);
             CellDefinition skuName = new CellDefinition("skuName", "SKU名称", CellDefinition.TEXT, 6000);
