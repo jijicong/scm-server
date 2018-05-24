@@ -508,6 +508,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 for(Items items: itemsList){
                     if(StringUtils.equals(detail.getSpuCode(), items.getSpuCode())){
                         detail.setIsQuality(items.getIsQuality());
+                        detail.setQualityDay(items.getQualityDay());
                         break;
                     }
                 }
