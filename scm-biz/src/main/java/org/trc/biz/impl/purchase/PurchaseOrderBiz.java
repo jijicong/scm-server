@@ -482,6 +482,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         pagenation.setTotalCount(purchaseDetailListCount);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
                 form.getItemNo(), form.getBrandName(), skus, pagenation);
+        setSkuQuality(purchaseDetailList);
         List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
@@ -501,6 +502,37 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         page.setResult(purchaseDetailList);
 
         return page;
+    }
+
+    /**
+     * 设置sku保质期
+     * @param purchaseDetailList
+     */
+    private void setSkuQuality(List<PurchaseDetail> purchaseDetailList){
+        List<String> spuCodes = new ArrayList<>();
+        for(PurchaseDetail detail: purchaseDetailList){
+            spuCodes.add(detail.getSpuCode());
+        }
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("spuCode", spuCodes);
+        List<Items> itemsList = itemsService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(itemsList)){
+            for(PurchaseDetail detail: purchaseDetailList){
+                for(Items items: itemsList){
+                    if(StringUtils.equals(detail.getSpuCode(), items.getSpuCode())){
+                        detail.setIsQuality(items.getIsQuality());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void handCategoryName(List<PurchaseDetail> purchaseDetailList) throws Exception{
+        for (PurchaseDetail purchaseDetail: purchaseDetailList) {
+            purchaseDetail.setAllCategoryName(categoryBiz.getCategoryName(purchaseDetail.getCategoryId()));
+        }
     }
 
     private Pagenation<PurchaseDetail> getPage(String msg){

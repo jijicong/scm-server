@@ -1,34 +1,51 @@
 package org.trc.biz.impl.allocateOrder;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.LogOperationEnum;
+import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
+import org.trc.form.wms.WmsAllocateDetailRequest;
+import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
+import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
+import org.trc.util.ResultUtil;
+
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
-
-import java.beans.Transient;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
@@ -41,6 +58,12 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
     private ILogInfoService logInfoService;
+    @Autowired
+    private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IWarehouseApiService warehouseApiService;
+    @Autowired
+    private IAllocateOrderService allocateOrderService;	
 
     @Override
     public Pagenation<AllocateInOrder> allocateInOrderPage(AllocateInOrderForm form, Pagenation<AllocateInOrder> page) {
@@ -144,10 +167,116 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
         }
         //FIXME 调用仓库接口逻辑待实现
-
+		WarehouseInfo whi = new WarehouseInfo();
+		whi.setCode(allocateInOrder.getInWarehouseCode());
+		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+		AssertUtil.notNull(warehouse, "调出仓库不存在");
+		
+		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
+		BeanUtils.copyProperties(allocateInOrder, request);
+		
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+			request.setWarehouseType("TRC");
+		} else {
+			request.setWarehouseType("JD");
+		}
+		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
+        
         //记录操作日志
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
+        
+        String status = null;
+        String logOp = null;
+        String resultMsg = null;
+		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
+			resultMsg = "调拨入库通知成功！";
+		} else {
+			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
+			resultMsg = "调拨入库通知失败！";
+		}
+		allocateInOrderService.updateOutOrderStatusById(status, allocateInOrder.getId());
+		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
+        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), warehouse.getWarehouseName(),
+        		logOp, null, null);
+        
+        
     }
 
+    @Override
+    public Response inFinishCallBack(WmsAllocateOutInRequest req) {
+        AssertUtil.notNull(req, "调拨入库回调信息不能为空");
+        String allocateOrderCode = req.getAllocateOrderCode();
+        //获取所有调拨出库详情明细
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
 
+        List<WmsAllocateDetailRequest> wmsAllocateDetailRequests = req.getWmsAllocateDetailRequests();
+        if(wmsAllocateDetailRequests != null && wmsAllocateDetailRequests.size() > 0){
+            for(WmsAllocateDetailRequest detailRequest : wmsAllocateDetailRequests){
+                for(AllocateSkuDetail skuDetail : allocateSkuDetails){
+                    if(StringUtils.equals(detailRequest.getSkuCode(), skuDetail.getSkuCode())){
+                        skuDetail.setDefectInNum(detailRequest.getDefectInNum());
+                        skuDetail.setNornalInNum(detailRequest.getNornalInNum());
+                        Long realInNum = detailRequest.getNornalInNum() + detailRequest.getDefectInNum();
+                        skuDetail.setRealInNum(realInNum);
+                        if(realInNum == skuDetail.getPlanAllocateNum()){
+                            skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
+                            skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
+                        }else{
+                            skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_EXCEPTION.getCode());
+                            skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode()));
+                        }
+                    }
+                }
+            }
+        }
+        allocateSkuDetailService.updateSkuDetailList(allocateSkuDetails);
+        //更新调拨入库单状态
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
+        allocateInOrder = allocateInOrders.get(0);
+        if(StringUtils.isNotEmpty(getAllocateInOrderStatusByDetail(allocateSkuDetails))){
+            allocateInOrder.setStatus(getAllocateInOrderStatusByDetail(allocateSkuDetails));
+        }
+        allocateInOrderService.updateByPrimaryKey(allocateInOrder);
+        //更新调拨单状态
+        AllocateOrder allocateOrder = new AllocateOrder();
+        allocateOrder.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateOrder> allocateOrders = allocateOrderService.select(allocateOrder);
+        allocateOrder = allocateOrders.get(0);
+        if(StringUtils.equals(allocateInOrder.getStatus(), String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode()))){
+            allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.IN_EXCEPTION.getCode());
+        }else if(StringUtils.equals(allocateInOrder.getStatus(), String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()))){
+            allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.IN_NORMAL.getCode());
+        }
+        allocateOrderService.updateByPrimaryKey(allocateOrder);
+        return ResultUtil.createSuccessResult("反填调拨入库信息成功！", "");
+    }
+
+    //获取状态
+    private String getAllocateInOrderStatusByDetail(List<AllocateSkuDetail> allocateSkuDetails){
+        int inFinishNum = 0;//出库完成数
+        int inExceptionNum = 0;//出库异常数
+        for(AllocateSkuDetail detail : allocateSkuDetails){
+            if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode(), detail.getOutStatus()))
+                inFinishNum++;
+            else if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_EXCEPTION.getCode(), detail.getOutStatus())){
+                inExceptionNum++;
+            }
+        }
+        //入库异常：存在“入库异常”的商品时，此处就为入库异常；
+        if(inExceptionNum > 0){
+            return String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode());
+        }
+        //入库完成：所有商品的“入库状态”均为“入库完成”，此处就更新为入库完成
+        if(inFinishNum == allocateSkuDetails.size()){
+            return String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode());
+        }
+        return  "";
+    }
 }

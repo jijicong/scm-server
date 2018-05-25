@@ -63,7 +63,17 @@ public class AllocateOutOrderResource {
     @PUT
     @Path(SupplyConstants.AllocateOutOrder.CANCEL_CLOSE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response cancelClose(@PathParam("id") Long id,@Context ContainerRequestContext requestContext){
+    public Response cancelClose(@PathParam("id") Long id,@Context ContainerRequestContext requestContext) {
         return allocateOutOrderBiz.cancelClose(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+    
+    /**
+     * 出库通知
+     */
+    @PUT
+    @Path(SupplyConstants.AllocateOutOrder.ALLOCATE_ORDER_OUT_NOTICE + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response allocateOrderOutNotice (@PathParam("id") Long id,@Context ContainerRequestContext requestContext) {
+    	return allocateOutOrderBiz.allocateOrderOutNotice(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 }

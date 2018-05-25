@@ -111,8 +111,8 @@ public class PurchaseGroupResource {
 
     @GET
     @Path(SupplyConstants.PurchaseGroup.PURCHASE_GROUP_USER_NEW)
-    public Response findPurchaseCroupUser(){
-        return ResultUtil.createSuccessResult("查询采购组员成功",purchaseGroupBiz.findPurchaseGroupUser());
+    public Response findPurchaseCroupUser(@Context ContainerRequestContext requestContext){
+        return ResultUtil.createSuccessResult("查询采购组员成功",purchaseGroupBiz.findPurchaseGroupUser((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
     }
 
     @PUT

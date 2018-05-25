@@ -3,7 +3,10 @@ package org.trc.biz.allocateOrder;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
+import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.util.Pagenation;
+
+import javax.ws.rs.core.Response;
 
 public interface IAllocateInOrderBiz {
 
@@ -46,5 +49,12 @@ public interface IAllocateInOrderBiz {
      * @param aclUserAccreditInfo
      */
     void noticeReciveGoods(String allocateOrderCode, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 自营仓库回调
+     * @param req
+     * @return
+     */
+    Response inFinishCallBack(WmsAllocateOutInRequest req);
 
 }

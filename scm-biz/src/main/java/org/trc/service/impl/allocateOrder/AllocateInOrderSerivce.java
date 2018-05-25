@@ -8,4 +8,9 @@ import org.trc.service.impl.BaseService;
 @Service("allocateInOrderSerivce")
 public class AllocateInOrderSerivce extends BaseService<AllocateInOrder, Long> implements IAllocateInOrderService {
 
+	@Override
+	public void updateOutOrderStatusById(String status, Long id) {
+		
+	}
+
 }

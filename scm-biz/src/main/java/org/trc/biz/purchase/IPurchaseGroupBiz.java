@@ -53,7 +53,7 @@ public interface IPurchaseGroupBiz {
      * 获取所有采购组员
      * @return
      */
-    List<PurchaseGroupUser> findPurchaseGroupUser();
+    List<PurchaseGroupUser> findPurchaseGroupUser(AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 根据id删除采购组员
