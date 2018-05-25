@@ -24,6 +24,7 @@ import org.trc.domain.dict.Dict;
 import org.trc.domain.goods.SkuStock;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.purchase.PurchaseGroup;
+import org.trc.domain.purchase.PurchaseGroupUser;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
@@ -42,10 +43,7 @@ import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
-import org.trc.service.purchase.IPurchaseDetailService;
-import org.trc.service.purchase.IPurchaseGroupService;
-import org.trc.service.purchase.IPurchaseOrderService;
-import org.trc.service.purchase.IWarehouseNoticeService;
+import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -114,6 +112,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IRealIpService iRealIpService;
     @Autowired
     private IWarehouseMockService warehouseMockService;
+    @Autowired
+    private IPurchaseGroupUserService purchaseGroupUserService;
 
     @Value("${mock.outer.interface}")
     private String mockOuterInterface;
@@ -716,11 +716,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(purchaseGroup.getName(), "采购组名称查询失败");
         warehouseNotice.setPurchaseGroupName(purchaseGroup.getName());
 
-        AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
-        aclUserAccreditInfo.setUserId(warehouseNotice.getPurchasePersonId());
-        aclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
-        AssertUtil.notNull(aclUserAccreditInfo.getName(), "采购人名称查询失败");
-        warehouseNotice.setPurchasePersonName(aclUserAccreditInfo.getName());
+        PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
+        purchaseGroupUser.setId(Long.parseLong(warehouseNotice.getPurchasePersonId()));
+        purchaseGroupUser = purchaseGroupUserService.selectOne(purchaseGroupUser);
+        AssertUtil.notNull(purchaseGroupUser.getName(), "采购人名称查询失败");
+        warehouseNotice.setPurchasePersonName(purchaseGroupUser.getName());
 
         WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setCode(warehouseNotice.getWarehouseCode());
