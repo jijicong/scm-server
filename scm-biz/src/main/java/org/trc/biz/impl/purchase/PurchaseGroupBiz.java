@@ -92,7 +92,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
+    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode)  {
 
         AssertUtil.notBlank(purchaseGroupCode,"根据采购组编码查询采购组人员的参数code为空");

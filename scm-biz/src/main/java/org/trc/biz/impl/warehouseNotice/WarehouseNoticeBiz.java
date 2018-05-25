@@ -716,11 +716,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notBlank(purchaseGroup.getName(), "采购组名称查询失败");
         warehouseNotice.setPurchaseGroupName(purchaseGroup.getName());
 
-        PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
-        purchaseGroupUser.setId(Long.parseLong(warehouseNotice.getPurchasePersonId()));
-        purchaseGroupUser = purchaseGroupUserService.selectOne(purchaseGroupUser);
-        AssertUtil.notNull(purchaseGroupUser.getName(), "采购人名称查询失败");
-        warehouseNotice.setPurchasePersonName(purchaseGroupUser.getName());
+        /*AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
+        aclUserAccreditInfo.setUserId(warehouseNotice.getPurchasePersonId());
+        aclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
+        AssertUtil.notNull(aclUserAccreditInfo.getName(), "采购人名称查询失败");*/
+        PurchaseGroupUser groupUser = purchaseGroupUserService.selectByPrimaryKey(Long.parseLong(warehouseNotice.getPurchasePersonId()));
+        AssertUtil.notNull(groupUser, String.format("根据ID[%s]查询采购组员信息为空", warehouseNotice.getPurchasePersonId()));
+        warehouseNotice.setPurchasePersonName(groupUser.getName());
 
         WarehouseInfo warehouse = new WarehouseInfo();
         warehouse.setCode(warehouseNotice.getWarehouseCode());

@@ -89,8 +89,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Resource
     private IConfigBiz configBiz;
     @Resource
-    private IAclUserAccreditInfoService iAclUserAccreditInfoService;
-    @Resource
     private IWarehouseNoticeService iWarehouseNoticeService;
     @Resource
     private ISerialUtilService iSerialUtilService;
@@ -1041,12 +1039,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             purchaseOrder.setPurchaseGroupName(purchaseGroup.getName());
         }
         if(StringUtils.isNotBlank(purchaseOrder.getPurchasePersonId())){
-            PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
-            purchaseGroupUser.setId(Long.parseLong(purchaseOrder.getPurchasePersonId()));
-            purchaseGroupUser = purchaseGroupUserService.selectOne(purchaseGroupUser);
-            AssertUtil.notNull(purchaseGroupUser,"根据用户的userId查询用户信息失败");
+            PurchaseGroupUser groupUser = purchaseGroupUserService.selectByPrimaryKey(Long.parseLong(purchaseOrder.getPurchasePersonId()));
+            AssertUtil.notNull(groupUser, String.format("根据ID[%s]查询采购组员信息为空", purchaseOrder.getPurchasePersonId()));
             //赋值采购人的名称
-            purchaseOrder.setPurchasePerson(purchaseGroupUser.getName());
+            purchaseOrder.setPurchasePerson(groupUser.getName());
         }
         dicts = configBiz.findDictsByTypeNo("currency");
         for (Dict dict:dicts) {
