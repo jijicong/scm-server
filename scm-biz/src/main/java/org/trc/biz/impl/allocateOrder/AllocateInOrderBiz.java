@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrder;
@@ -23,9 +24,13 @@ import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
+import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.ScmWarehouseRequestBase;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
@@ -120,6 +125,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void orderCancel(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
         AssertUtil.notBlank(flag, "参数操作类型flag不能为空");
@@ -127,12 +133,20 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             AssertUtil.notBlank(cancelReson, "参数关闭原因cancelReson不能为空");
         }
         AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ONE.getCode(), flag, cancelReson);
+        
         LogOperationEnum logOperationEnum = null;
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货
+        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)) {//取消收货
             logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
-        }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
+            if (!wmsCancelNotice(form.getAllocateInOrder())) {
+            	throw new RuntimeException("调拨入库单取消失败");
+            }
+        } else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)) {//重新收货
             logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
+            if (!wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false)) {
+            	throw new RuntimeException("调拨入库单重新收货失败");
+            }
         }
+        
         //记录操作日志
         logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
     }
@@ -154,6 +168,86 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         //记录操作日志
         logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
     }
+    
+    /**
+     * 入库单取消通知
+     */
+    private boolean wmsCancelNotice (AllocateInOrder inOder) {
+    	boolean succ = false;
+    	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
+    	request.setOrderType(CancelOrderType.ALLOCATE_IN.getCode());
+    	request.setAllocateInOrderCode(inOder.getAllocateInOrderCode());
+		//BeanUtils.copyProperties(allocateInOrder, request);
+    	getWarehoueType(inOder.getInWarehouseCode(), request);
+    	
+    	AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
+//        String status = null;
+		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
+			if (ZeroToNineEnum.ONE.getCode().equals(respResult.getFlag())) { // 取消成功
+//				status = AllocateInOrderStatusEnum.CANCEL.getCode().toString();
+				succ = true;
+			}
+		}
+		//allocateInOrderService.updateOutOrderStatusById(status, inOder.getId());
+		//allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, inOder.getAllocateOrderCode());
+    	return succ;
+    	
+     }
+    
+    private String getWarehoueType (String whCode, ScmWarehouseRequestBase request) {
+		WarehouseInfo whi = new WarehouseInfo();
+		whi.setCode(whCode);
+		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+		AssertUtil.notNull(warehouse, "调出仓库不存在");
+		
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+			request.setWarehouseType("TRC");
+		} else {
+			request.setWarehouseType("JD");
+		}
+		return warehouse.getWarehouseName();
+    }
+    
+    /**
+     * 入库单通知
+     * @param allocateInOrder
+     * @param aclUserAccreditInfo
+     */
+    private boolean wmsAllocateOrderInNotice (AllocateInOrder allocateInOrder, AclUserAccreditInfo aclUserAccreditInfo, boolean needUpdate) {
+		boolean succ = false;
+		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
+		BeanUtils.copyProperties(allocateInOrder, request);
+		
+		String whName = getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
+	
+		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
+        
+        //记录操作日志
+        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), 
+        		aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
+        
+        String status = null;
+        String logOp = null;
+        String resultMsg = null;
+		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_SUCC.getMessage();
+			resultMsg = "调拨入库通知成功！";
+			succ = true;
+		} else {
+			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
+			resultMsg = "调拨入库通知失败！";
+		}
+		if (needUpdate) {
+			allocateInOrderService.updateOutOrderStatusById(status, allocateInOrder.getId());
+			allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
+		}
+        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whName,
+        		logOp, null, null);
+        return succ;
+    }
 
     @Override
     public void noticeReciveGoods(String allocateOrderCode, AclUserAccreditInfo aclUserAccreditInfo) {
@@ -167,40 +261,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态！请刷新页面查看最新数据！");
         }
         //FIXME 调用仓库接口逻辑待实现
-		WarehouseInfo whi = new WarehouseInfo();
-		whi.setCode(allocateInOrder.getInWarehouseCode());
-		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
-		AssertUtil.notNull(warehouse, "调出仓库不存在");
-		
-		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
-		BeanUtils.copyProperties(allocateInOrder, request);
-		
-		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
-			request.setWarehouseType("TRC");
-		} else {
-			request.setWarehouseType("JD");
-		}
-		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
-        
-        //记录操作日志
-        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
-        
-        String status = null;
-        String logOp = null;
-        String resultMsg = null;
-		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
-			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
-			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
-			resultMsg = "调拨入库通知成功！";
-		} else {
-			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
-			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
-			resultMsg = "调拨入库通知失败！";
-		}
-		allocateInOrderService.updateOutOrderStatusById(status, allocateInOrder.getId());
-		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
-        logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), warehouse.getWarehouseName(),
-        		logOp, null, null);
+        wmsAllocateOrderInNotice(allocateInOrder, aclUserAccreditInfo, true);
         
         
     }

@@ -133,36 +133,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @AllocateOrderCacheEvict
-    public Response close(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notNull(id, "调拨出库单主键不能为空");
-        AssertUtil.notBlank(remark, "关闭原因不能为空");
-
-        //获取出库单信息
-        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
-
-        if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) &&
-                !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
-            String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
-            logger.error(msg);
-            throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
-        }
-
-        //修改状态
-        this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
-                allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
-        allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, true,
-                AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
-
-        //仓库接受失败插入一条日志
-        String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"手工关闭", remark,null);
-        return ResultUtil.createSuccessResult("调拨出库通知单关闭成功！", "");
-        
-    }
-
-    @Override
     @AllocateOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
@@ -307,7 +277,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		AssertUtil.notNull(id, "调拨出库单主键不能为空");
 		AllocateOutOrder outOrder = allocateOutOrderService.selectByPrimaryKey(id);
 		AssertUtil.notNull(outOrder, "调拨出库单不存在");
-		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())) {
+		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
+				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
 		WarehouseInfo whi = new WarehouseInfo();
@@ -355,6 +326,46 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		allocateOutOrderService.updateOutOrderStatusById(status,id);
 		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
+	}
+
+	@Override
+	public Response closeOrCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo, boolean isClose) {
+        AssertUtil.notNull(id, "调拨出库单主键不能为空");
+        AssertUtil.notBlank(remark, "关闭原因不能为空");
+
+        //获取出库单信息
+        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
+
+        if(isClose){
+            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) &&
+                    !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
+                String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+        }else{
+            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode())){
+                String msg = "调拨出库通知单状态必须为出库仓接收成功!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+        }
+
+        //修改状态
+        this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
+                allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
+
+        allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, isClose,
+                AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
+
+        String userId = aclUserAccreditInfo.getUserId();
+        if(isClose){
+            logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"手工关闭", remark,null);
+            return ResultUtil.createSuccessResult("调拨出库通知单关闭成功！", "");
+        }else{
+            logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"取消出库", remark,null);
+            return ResultUtil.createSuccessResult("调拨出库通知单取消成功！", "");
+        }
 	}
 
 }

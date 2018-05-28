@@ -54,7 +54,7 @@ public class AllocateOutOrderResource {
     @Path(SupplyConstants.AllocateOutOrder.CLOSE + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response close(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
-        return allocateOutOrderBiz.close(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return allocateOutOrderBiz.closeOrCancel(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO), true);
     }
 
     /**
@@ -75,5 +75,15 @@ public class AllocateOutOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response allocateOrderOutNotice (@PathParam("id") Long id,@Context ContainerRequestContext requestContext) {
     	return allocateOutOrderBiz.allocateOrderOutNotice(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+    
+    /**
+     * 取消出库
+     */
+    @PUT
+    @Path(SupplyConstants.AllocateOutOrder.ALLOCATE_ORDER_OUT_CANCEL + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response orderCancel(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
+        return allocateOutOrderBiz.closeOrCancel(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO), false);
     }
 }

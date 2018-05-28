@@ -1078,6 +1078,8 @@ public class SupplyConstants {
         public static final String ALLOCATE_OUT_ORDER = "allocateOutOrder";
         
         public static final String ALLOCATE_ORDER_OUT_NOTICE = "allocateOrderOutNotice";
+        
+        public static final String ALLOCATE_ORDER_OUT_CANCEL = "allocateOrderOutCancel";
     }
 
     /**

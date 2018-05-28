@@ -12,8 +12,6 @@ public interface IAllocateOutOrderBiz {
 
     Pagenation<AllocateOutOrder> allocateOutOrderPage(AllocateOutOrderForm form, Pagenation<AllocateOutOrder> page);
 
-    Response close(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo);
-
     Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     AllocateOutOrder queryDetail(Long id);
@@ -21,5 +19,7 @@ public interface IAllocateOutOrderBiz {
 	Response allocateOrderOutNotice(Long id, AclUserAccreditInfo property);
 	
     Response outFinishCallBack(WmsAllocateOutInRequest req);
+
+    Response closeOrCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo, boolean isClose);
 
 }

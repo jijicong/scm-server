@@ -61,6 +61,10 @@ public class ExternalSupplierConfig {
     private String reportCompensateUrl;
     //京东订单状态反查接口地址
     private String jdOrderStatusUrl;
+    //调拨出库单取消接口URL
+    private String allocateOrderOutCancelUrl;
+    //调拨入库单取消接口URL
+    private String allocateOrderInCancelUrl;
 
     /**
      * 商品同步接口地址
