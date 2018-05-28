@@ -255,6 +255,7 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
         wmsUserAccreditInfo.setName(aclWmsUserAccreditInfo.getName());
         wmsUserAccreditInfo.setRemark(aclWmsUserAccreditInfo.getRemark());
         wmsUserAccreditInfo.setIsValid(aclWmsUserAccreditInfo.getIsValid());
+        wmsUserAccreditInfo.setUpdateTime(Calendar.getInstance().getTime());
         int count = aclWmsUserAccreditInfoService.updateByPrimaryKeySelective(wmsUserAccreditInfo);
         if (count == 0) {
             String msg = String.format("修改授权%s数据库操作失败", JSON.toJSONString(wmsUserAccreditInfo));
