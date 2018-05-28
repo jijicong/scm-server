@@ -799,5 +799,16 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
         boolean isPhoneExists = sdk.user.findPhoneExists(phone);
         return isPhoneExists;
     }
+    @Override
+    public void logOut(String userId) {
+        CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri,applyId,applySecret);
+        LOGGER.info("userId: "+userId+"开始登出！=========》");
+        try {
+            sdk.user.logoutByUnionId(userId);
+            LOGGER.info("userId: "+userId+"登出成功！《=========");
+        } catch (Exception e) {
+            LOGGER.error("调用用户中心登出接口异常！",e);
+        }
+    }
 
 }
