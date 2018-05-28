@@ -91,9 +91,9 @@ public class AllocateOutOrderResource {
      * 通知出库、重新发货
      */
     @PUT
-    @Path(SupplyConstants.AllocateInOrder.NOTICE_RECIVE_GOODS + "/{id}")
+    @Path(SupplyConstants.AllocateOutOrder.NOTICE_SEND_GOODS + "/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response noticeReciveGoods(@PathParam("id") Long id, @Context ContainerRequestContext requestContext){
-        return  allocateOutOrderBiz.noticeReceiverGoods(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    public Response noticeSendGoods(@PathParam("id") Long id, @Context ContainerRequestContext requestContext){
+        return  allocateOutOrderBiz.noticeSendGoods(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 }

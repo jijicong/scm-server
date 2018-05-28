@@ -1080,6 +1080,8 @@ public class SupplyConstants {
         public static final String ALLOCATE_ORDER_OUT_NOTICE = "allocateOrderOutNotice";
         
         public static final String ALLOCATE_ORDER_OUT_CANCEL = "allocateOrderOutCancel";
+
+        public static final String NOTICE_SEND_GOODS = "noticeSendGoods";
     }
 
     /**

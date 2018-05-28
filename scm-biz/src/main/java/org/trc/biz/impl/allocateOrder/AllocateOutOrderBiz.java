@@ -372,7 +372,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 	}
 
     @Override
-    public Response noticeReceiverGoods(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
+    public Response noticeSendGoods(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(id, "调拨出库单主键不能为空");
         AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
         AssertUtil.notNull(allocateOutOrder, String.format("根据调拨单号主键%s查询调拨入库单信息为空", id));
