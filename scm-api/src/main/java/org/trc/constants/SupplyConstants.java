@@ -1145,6 +1145,20 @@ public class SupplyConstants {
          */
         public static final String ACL_WMS_USER_PHONE = "aclWmsUserPhone";
 
+        /**
+         * 查询wms权限树
+         */
+        public static final String ACL_WMS_TREE = "aclWmsTree";
+
+        /**
+         * 查询wms新增
+         */
+        public static final String ACL_WMS_SAVE = "aclWmsSave";
+
+        /**
+         * 查询wms编辑
+         */
+        public static final String ACL_WMS_UPDATE = "aclWmsUpdate";
 
     }
 
