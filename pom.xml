@@ -78,6 +78,7 @@
         <redis.clients.version>2.4.2</redis.clients.version>
         <qiniu.version>7.2.6</qiniu.version>
         <jerseyJson.version>1.19.3</jerseyJson.version>
+        <sdk.kernel.version>3.2.2-SNAPSHOT</sdk.kernel.version>
 
     </properties>
 
@@ -97,6 +98,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!--用户中心3.0-->
+            <dependency>
+                <groupId>com.tairanchina.csp.foundation</groupId>
+                <artifactId>sdk-kernel</artifactId>
+                <version>${sdk.kernel.version}</version>
+            </dependency>
             <!--spring-->
             <dependency>
                 <groupId>org.springframework</groupId>
