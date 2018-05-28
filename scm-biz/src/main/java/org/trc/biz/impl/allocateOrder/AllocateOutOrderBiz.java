@@ -10,14 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.domain.allocateOrder.AllocateOrder;
-import org.trc.domain.allocateOrder.AllocateOrderBase;
-import org.trc.domain.allocateOrder.AllocateOutOrder;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.allocateOrder.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.exception.ParamValidException;
@@ -29,10 +27,7 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
-import org.trc.service.allocateOrder.IAllocateOrderExtService;
-import org.trc.service.allocateOrder.IAllocateOrderService;
-import org.trc.service.allocateOrder.IAllocateOutOrderService;
-import org.trc.service.allocateOrder.IAllocateSkuDetailService;
+import org.trc.service.allocateOrder.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -52,6 +47,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private Logger logger = LoggerFactory.getLogger(AllocateOutOrderBiz.class);
     @Autowired
     private IAllocateOutOrderService allocateOutOrderService;
+    @Autowired
+    private IAllocateInOrderService allocateInOrderService;
     @Autowired
     private IAllocateSkuDetailService allocateSkuDetailService;
     @Autowired
@@ -203,10 +200,20 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOutOrder.setAllocateOrderCode(allocateOrderCode);
         List<AllocateOutOrder> allocateOutOrders = allocateOutOrderService.select(allocateOutOrder);
         allocateOutOrder = allocateOutOrders.get(0);
-        allocateOutOrder.setStatus(getAllocateOutOrderStatusByDetail(allocateSkuDetails));
+        String outStatus = getAllocateOutOrderStatusByDetail(allocateSkuDetails);
+        allocateOutOrder.setStatus(outStatus);
         allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
         //更新调拨入库单信息
-
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
+        allocateInOrder = allocateInOrders.get(0);
+        if(StringUtils.equals(outStatus, AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
+            allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+        }else if(StringUtils.equals(outStatus, AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+            allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+        }
+        allocateInOrderService.updateByPrimaryKey(allocateInOrder);
         //更新调拨单状态
         AllocateOrder allocateOrder = new AllocateOrder();
         allocateOrder.setAllocateOrderCode(allocateOrderCode);
