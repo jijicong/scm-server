@@ -1,16 +1,17 @@
-package org.trc.form.warehouse;
+package org.trc.form.warehouse.allocateOrder;
+
+import org.trc.form.warehouse.ScmWarehouseRequestBase;
 
 import lombok.Getter;
 import lombok.Setter;
-
 @Setter
 @Getter
-public class ScmOrderCancelRequest extends ScmWarehouseRequestBase{
+public class ScmAllocateOrderOutCancelRequest extends ScmWarehouseRequestBase{
 
     /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1967200040087867279L;
+	private static final long serialVersionUID = -3338123399744967950L;
 
 	/**
      * 仓库编码
@@ -32,25 +33,10 @@ public class ScmOrderCancelRequest extends ScmWarehouseRequestBase{
      */
     private String cancelReason;
     
-    
-    /**
-     *调拨入库单号
-     */
-    private String allocateInOrderCode;
-    
     /**
      *调拨出库单号
      */
     private String allocateOutOrderCode;
     
-    /**
-     *取消的单据类型
-     * 0：发货单 
-     * 1：采购单 
-     * 2：调拨出库单 
-     * 3：调拨入库单
-     */
-    private String orderType;
     
-
 }

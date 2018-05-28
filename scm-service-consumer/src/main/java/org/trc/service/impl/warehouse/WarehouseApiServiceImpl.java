@@ -132,8 +132,7 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 			ScmAllocateOrderInRequest allocateOrderInRequest) {
 		return wmsInvoke(allocateOrderInRequest);
 	}
-
-
+	
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
             return wmsInvokeMock(scmWarehouseRequestBase);

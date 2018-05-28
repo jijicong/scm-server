@@ -1,7 +1,11 @@
 package org.trc.form.warehouse;
 
-public class ScmEntryOrderItem {
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
+public class ScmEntryOrderItem {
     /**
      * 货主编码
      */
@@ -35,52 +39,75 @@ public class ScmEntryOrderItem {
      * @return
      */
     private String goodsStatus;
+    
+    /**********************************
+     **********************************
+      **********************************/
+    
+    
+    /**
+     * 采购单编号
+     * @return
+     */
+    private String purchaseOrderCode;
 
-    public String getOwnerCode() {
-        return ownerCode;
-    }
+    /**
+     * sku名称
+     * @return
+     */
+    private String skuName;
 
-    public void setOwnerCode(String ownerCode) {
-        this.ownerCode = ownerCode;
-    }
+    /**
+     * 商品sku编码
+     * @return
+     */
+//    private String skuCode;
 
-    public String getItemCode() {
-        return itemCode;
-    }
+    /**
+     * 规格描述
+     * @return
+     */
+    private String specInfo;
 
-    public void setItemCode(String itemCode) {
-        this.itemCode = itemCode;
-    }
+    /**
+     * 条形码
+     * @return
+     */
+    private String barCode;
 
-    public String getItemId() {
-        return itemId;
-    }
+    /**
+     * 采购数量
+     * @return
+     */
+//    private Long purchasingQuantity;
 
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
+    /**
+     * 批次号
+     * @return
+     */
+    private String batchNo;
 
-    public Long getPlanQty() {
-        return planQty;
-    }
+    /**
+     * 生产编码
+     * @return
+     */
+    private String productionCode;
 
-    public void setPlanQty(Long planQty) {
-        this.planQty = planQty;
-    }
+    /**
+     * 生产日期
+     * @return
+     */
+    private String productionDate;
 
-    public String getInventoryType() {
-        return inventoryType;
-    }
+    /**
+     * 理论保质期
+     * @return
+     */
+    private Long expireDay;
 
-    public void setInventoryType(String inventoryType) {
-        this.inventoryType = inventoryType;
-    }
-
-    public String getGoodsStatus() {
-        return goodsStatus;
-    }
-
-    public void setGoodsStatus(String goodsStatus) {
-        this.goodsStatus = goodsStatus;
-    }
+    /**
+     * 商品货号
+     * @return
+     */
+    private String skuNo;
 }

@@ -130,8 +130,10 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         LogOperationEnum logOperationEnum = null;
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货
             logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
+            //wmsCancelNotice();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
             logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
+            //wmsAllocateOrderInNotice();
         }
         //记录操作日志
         logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
