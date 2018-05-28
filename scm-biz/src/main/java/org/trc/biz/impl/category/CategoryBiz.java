@@ -1074,9 +1074,14 @@ public class CategoryBiz implements ICategoryBiz {
     @Override
     public void checkCategoryName(Long id,Long parentId,String name){
         AssertUtil.notBlank(name,"分类名称不能为空!");
-        Category category = new Category();
-        category.setParentId(parentId);
-        List<Category> categoryList = categoryService.select(category);
+        Example example = new Example(Category.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (null == parentId){
+            criteria.andIsNull("parentId");
+        }else {
+            criteria.andEqualTo("parentId", parentId);
+        }
+        List<Category> categoryList = categoryService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(categoryList)) {
             for (Category categoryItem : categoryList) {
                 if (StringUtils.equals(name, categoryItem.getName())&&categoryItem.getId().longValue()!=(null==id?0:id.longValue())) {

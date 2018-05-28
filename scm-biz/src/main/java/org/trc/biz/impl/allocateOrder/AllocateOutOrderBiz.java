@@ -16,23 +16,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.domain.allocateOrder.AllocateOrder;
-import org.trc.domain.allocateOrder.AllocateOrderBase;
-import org.trc.domain.allocateOrder.AllocateOutOrder;
-import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.domain.allocateOrder.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.*;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.OperationalNatureEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
+import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
+import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
-import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
-import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
-import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
+import org.trc.form.warehouse.ScmOrderCancelRequest;
+import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.allocateOrder.*;
 import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
@@ -40,6 +36,7 @@ import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.jingdong.ICommonService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
@@ -70,6 +67,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IWarehouseInfoService warehouseInfoService;
 	@Autowired
     private IAllocateOrderService allocateOrderService;
+	@Autowired
+    private ICommonService commonService;
 
     /**
      * 调拨单分页查询
@@ -349,6 +348,10 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                 logger.error(msg);
                 throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
             }
+
+            if (!wmsCancelNotice(allocateOutOrder)) {
+                throw new RuntimeException("调拨入库单取消失败");
+            }
         }
 
         //修改状态
@@ -367,5 +370,80 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             return ResultUtil.createSuccessResult("调拨出库通知单取消成功！", "");
         }
 	}
+
+    @Override
+    public Response noticeReceiverGoods(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
+        AssertUtil.notNull(id, "调拨出库单主键不能为空");
+        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
+        AssertUtil.notNull(allocateOutOrder, String.format("根据调拨单号主键%s查询调拨入库单信息为空", id));
+        //校验订单是否已经是取消状态
+        if(StringUtils.equals(AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode(), allocateOutOrder.getStatus()) ||
+                StringUtils.equals(AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode(), allocateOutOrder.getStatus()) ||
+                StringUtils.equals(AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode(), allocateOutOrder.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前不允许出库！");
+        }
+        boolean flag = wmsAllocateOrderOutNotice(allocateOutOrder, aclUserAccreditInfo);
+        if(flag){
+            return ResultUtil.createSuccessResult("发货成功！", "");
+        }else{
+            return ResultUtil.createSuccessResult("发货失败", "");
+        }
+    }
+
+    /**
+     * 出库单取消通知
+     */
+    private boolean wmsCancelNotice (AllocateOutOrder outOder) {
+        boolean succ = false;
+        ScmOrderCancelRequest request = new ScmOrderCancelRequest();
+        request.setOrderType(CancelOrderType.ALLOCATE_OUT.getCode());
+        request.setAllocateOutOrderCode(outOder.getAllocateOutOrderCode());
+        commonService.getWarehoueType(outOder.getInWarehouseCode(), request);
+
+        AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
+        if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+            ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
+            if (ZeroToNineEnum.ONE.getCode().equals(respResult.getFlag())) { // 取消成功
+                succ = true;
+            }
+        }
+        return succ;
+    }
+
+    /**
+     * 出库单通知
+     */
+    private boolean wmsAllocateOrderOutNotice (AllocateOutOrder allocateOutOrder, AclUserAccreditInfo aclUserAccreditInfo) {
+        boolean succ = false;
+        ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
+        BeanUtils.copyProperties(allocateOutOrder, request);
+
+        String whName = commonService.getWarehoueType(allocateOutOrder.getOutWarehouseCode(), request);
+
+        AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
+
+        //记录操作日志
+        logInfoService.recordLog(allocateOutOrder,allocateOutOrder.getId().toString(),
+                aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_SEND_GOODS.getMessage(), "",null);
+
+        String status = null;
+        String logOp = null;
+        if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+            status = AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode();
+            logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_SUCC.getMessage();
+            succ = true;
+        } else {
+            status = AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().toString();
+            logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_FAIL.getMessage();
+        }
+        AllocateOutOrder record = new AllocateOutOrder();
+        record.setId(allocateOutOrder.getId());
+        record.setStatus(status);
+        allocateOutOrderService.updateByPrimaryKeySelective(record);
+        allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateOutOrder.getAllocateOrderCode());
+        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), whName,
+                logOp, null, null);
+        return succ;
+    }
 
 }

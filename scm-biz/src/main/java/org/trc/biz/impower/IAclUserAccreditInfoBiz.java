@@ -1,6 +1,5 @@
 package org.trc.biz.impower;
 
-import org.trc.domain.System.Channel;
 import org.trc.domain.System.ChannelExt;
 import org.trc.domain.impower.AclRole;
 import org.trc.domain.impower.AclUserAccreditInfo;
@@ -8,11 +7,9 @@ import org.trc.domain.impower.AclUserAddPageDate;
 import org.trc.form.impower.UserAccreditInfoForm;
 import org.trc.util.Pagenation;
 
-import javax.ws.rs.container.ContainerRequestContext;
 import java.util.List;
 
 /**
- *
  * @author sone
  * @date 2017/5/11
  */
@@ -51,7 +48,7 @@ public interface IAclUserAccreditInfoBiz {
      * @param
      * @throws Exception
      */
-    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo,AclUserAccreditInfo aclUserAccreditInfoContext);
+    void updateUserAccreditInfoStatus(AclUserAccreditInfo aclUserAccreditInfo, AclUserAccreditInfo aclUserAccreditInfoContext);
 
     /**
      * 根据名称查询用户授权信息
@@ -85,12 +82,12 @@ public interface IAclUserAccreditInfoBiz {
      * @return
      * @throws Exception
      */
-    List<AclRole> findChannelOrWholeJur(String roleType,AclUserAccreditInfo userAccreditInfo);
+    List<AclRole> findChannelOrWholeJur(String roleType, AclUserAccreditInfo userAccreditInfo);
 
     /**
      * 新增授权
      */
-    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext);
+    void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) throws Exception;
 
     /**
      * 根据ID查询用户
@@ -120,6 +117,7 @@ public interface IAclUserAccreditInfoBiz {
 
     /**
      * 根据手机号查询用户名称
+     *
      * @param phone
      * @return
      */
@@ -131,7 +129,8 @@ public interface IAclUserAccreditInfoBiz {
 //    int checkName(String name) throws Exception;
 
     /**
-     *  采购组员校验
+     * 采购组员校验
+     *
      * @param id
      * @throws Exception
      */
@@ -140,7 +139,8 @@ public interface IAclUserAccreditInfoBiz {
     /**
      * 查询用户对应用户的起停用状态
      */
-    String[] checkRoleValid (Long id);
+    String[] checkRoleValid(Long id);
 
-//    void queryChannelAndSellChannel() ;
+    //    void queryChannelAndSellChannel() ;
+    void logOut(String userId);
 }

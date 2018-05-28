@@ -40,6 +40,7 @@ import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
+import org.trc.service.jingdong.ICommonService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
@@ -68,7 +69,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     @Autowired
     private IWarehouseApiService warehouseApiService;
     @Autowired
-    private IAllocateOrderService allocateOrderService;	
+    private IAllocateOrderService allocateOrderService;
+    @Autowired
+    private ICommonService commonService;
 
     @Override
     public Pagenation<AllocateInOrder> allocateInOrderPage(AllocateInOrderForm form, Pagenation<AllocateInOrder> page) {
@@ -178,7 +181,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     	request.setOrderType(CancelOrderType.ALLOCATE_IN.getCode());
     	request.setAllocateInOrderCode(inOder.getAllocateInOrderCode());
 		//BeanUtils.copyProperties(allocateInOrder, request);
-    	getWarehoueType(inOder.getInWarehouseCode(), request);
+        commonService.getWarehoueType(inOder.getInWarehouseCode(), request);
     	
     	AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
 //        String status = null;
@@ -195,20 +198,6 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     	
      }
     
-    private String getWarehoueType (String whCode, ScmWarehouseRequestBase request) {
-		WarehouseInfo whi = new WarehouseInfo();
-		whi.setCode(whCode);
-		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
-		AssertUtil.notNull(warehouse, "调出仓库不存在");
-		
-		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
-			request.setWarehouseType("TRC");
-		} else {
-			request.setWarehouseType("JD");
-		}
-		return warehouse.getWarehouseName();
-    }
-    
     /**
      * 入库单通知
      * @param allocateInOrder
@@ -219,7 +208,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
 		BeanUtils.copyProperties(allocateInOrder, request);
 		
-		String whName = getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
+		String whName = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
 	
 		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
         
