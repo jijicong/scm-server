@@ -34,6 +34,8 @@ import org.trc.exception.WarehouseNoticeDetailException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.warehouse.*;
+import org.trc.form.wms.WmsInNoticeDetailRequest;
+import org.trc.form.wms.WmsInNoticeRequest;
 import org.trc.service.IQimenService;
 import org.trc.service.category.IBrandService;
 import org.trc.service.category.ICategoryService;
@@ -58,6 +60,7 @@ import org.trc.util.cache.WarehouseNoticeCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.ws.rs.core.Response;
 import java.util.*;
 
 /**
@@ -833,6 +836,38 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }else {
             logger.info("未查询到符合条件的入库通知单！");
         }
+    }
+
+    @Override
+    public Response inFinishCallBack(WmsInNoticeRequest req) {
+     //TODO   入库通知回调
+        AssertUtil.notNull(req, "采购入库回调信息不能为空");
+        String noticeCode = req.getWarehouseNoticeCode();
+        //获取采购入库详情明细
+        WarehouseNoticeDetails noticeDetail = new WarehouseNoticeDetails();
+        noticeDetail.setWarehouseNoticeCode(noticeCode);
+        List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.select(noticeDetail);
+
+        List<WmsInNoticeDetailRequest> inNoticeDetailRequests = req.getInNoticeDetailRequests();
+        if(inNoticeDetailRequests!=null && inNoticeDetailRequests.size()>0){
+            for (WmsInNoticeDetailRequest inNoticeDetailRequest : inNoticeDetailRequests) {
+                for (WarehouseNoticeDetails detail : details) {
+                    if(StringUtils.equals(inNoticeDetailRequest.getSkuCode(),detail.getSkuCode())){
+                        detail.setNormalStorageQuantity(inNoticeDetailRequest.getNormalStorageQuantity());
+                        detail.setDefectiveStorageQuantity(inNoticeDetailRequest.getDefectiveStorageQuantity());
+                        Long actualStorageQuantity=inNoticeDetailRequest.getNormalStorageQuantity()+inNoticeDetailRequest.getDefectiveStorageQuantity();
+                        detail.setActualStorageQuantity(actualStorageQuantity);
+                        detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
+                    }
+
+
+                }
+            }
+        }
+
+
+
+        return null;
     }
 
     private void scmEntryOrder(List<WarehouseNotice> noticeList) {

@@ -4,9 +4,11 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.form.warehouse.WarehouseNoticeForm;
+import org.trc.form.wms.WmsInNoticeRequest;
 import org.trc.service.IQimenService;
 import org.trc.util.Pagenation;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -51,4 +53,9 @@ public interface IWarehouseNoticeBiz {
     void setQimenService(IQimenService service);
 
     void updateStock();
+
+    /**
+     * （采购）入库通知回调
+     */
+    Response inFinishCallBack(WmsInNoticeRequest req);
 }
