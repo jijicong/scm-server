@@ -22,4 +22,7 @@ public interface IAllocateOutOrderBiz {
 	
     Response outFinishCallBack(WmsAllocateOutInRequest req);
 
+	void orderCancel(String allocateOrderCode, String flag, String cancelReson,
+			AclUserAccreditInfo aclUserAccreditInfo);
+
 }

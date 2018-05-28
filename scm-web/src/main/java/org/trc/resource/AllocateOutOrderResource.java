@@ -76,4 +76,17 @@ public class AllocateOutOrderResource {
     public Response allocateOrderOutNotice (@PathParam("id") Long id,@Context ContainerRequestContext requestContext) {
     	return allocateOutOrderBiz.allocateOrderOutNotice(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
+    
+    /**
+     * 取消出库
+     */
+    @PUT
+    @Path(SupplyConstants.AllocateOutOrder.ALLOCATE_ORDER_OUT_CANCEL + "/{allocateOrderCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response orderCancel(@PathParam("allocateOrderCode") String allocateOrderCode,
+    		@FormParam("flag") String flag, @FormParam("cancelReson") String cancelReson, @Context ContainerRequestContext requestContext){
+        AclUserAccreditInfo aclUserAccreditInfo = (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        allocateOutOrderBiz.orderCancel(allocateOrderCode, flag, cancelReson, aclUserAccreditInfo);
+        return ResultUtil.createSuccessResult("操作成功", "");
+    }
 }

@@ -358,4 +358,10 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		return ResultUtil.createSuccessResult(resultMsg, "");
 	}
 
+	@Override
+	public void orderCancel(String allocateOrderCode, String flag, String cancelReson,
+			AclUserAccreditInfo aclUserAccreditInfo) {
+		
+	}
+
 }
