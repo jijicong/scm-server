@@ -226,9 +226,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         int outFinishNum = 0;//出库完成数
         int outExceptionNum = 0;//出库异常数
         for(AllocateSkuDetail detail : allocateSkuDetails){
-            if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode(), detail.getOutStatus()))
+            if(StringUtils.equals(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode(), detail.getOutStatus()))
                 outFinishNum++;
-            else if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode(), detail.getOutStatus())){
+            else if(StringUtils.equals(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode(), detail.getOutStatus())){
                 outExceptionNum++;
             }
         }
