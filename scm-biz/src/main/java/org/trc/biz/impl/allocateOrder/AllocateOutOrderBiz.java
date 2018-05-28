@@ -133,36 +133,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @AllocateOrderCacheEvict
-    public Response close(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notNull(id, "调拨出库单主键不能为空");
-        AssertUtil.notBlank(remark, "关闭原因不能为空");
-
-        //获取出库单信息
-        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
-
-        if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) &&
-                !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
-            String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
-            logger.error(msg);
-            throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
-        }
-
-        //修改状态
-        this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
-                allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
-        allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, true,
-                AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
-
-        //仓库接受失败插入一条日志
-        String userId = aclUserAccreditInfo.getUserId();
-        logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"手工关闭", remark,null);
-        return ResultUtil.createSuccessResult("调拨出库通知单关闭成功！", "");
-        
-    }
-
-    @Override
     @AllocateOrderCacheEvict
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response cancelClose(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
@@ -359,9 +329,43 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 	}
 
 	@Override
-	public void orderCancel(String allocateOrderCode, String flag, String cancelReson,
-			AclUserAccreditInfo aclUserAccreditInfo) {
-		
+	public Response closeOrCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo, boolean isClose) {
+        AssertUtil.notNull(id, "调拨出库单主键不能为空");
+        AssertUtil.notBlank(remark, "关闭原因不能为空");
+
+        //获取出库单信息
+        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
+
+        if(isClose){
+            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) &&
+                    !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
+                String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+        }else{
+            if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode())){
+                String msg = "调拨出库通知单状态必须为出库仓接收成功!";
+                logger.error(msg);
+                throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
+            }
+        }
+
+        //修改状态
+        this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
+                allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
+
+        allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, isClose,
+                AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
+
+        String userId = aclUserAccreditInfo.getUserId();
+        if(isClose){
+            logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"手工关闭", remark,null);
+            return ResultUtil.createSuccessResult("调拨出库通知单关闭成功！", "");
+        }else{
+            logInfoService.recordLog(allocateOutOrder, String.valueOf(allocateOutOrder.getId()),userId,"取消出库", remark,null);
+            return ResultUtil.createSuccessResult("调拨出库通知单取消成功！", "");
+        }
 	}
 
 }
