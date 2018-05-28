@@ -210,7 +210,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
 		BeanUtils.copyProperties(allocateInOrder, request);
-		
+        request.setCreateOperatorName(aclUserAccreditInfo.getName());
+        request.setCreateOperatorNumber(aclUserAccreditInfo.getPhone());
+
 		String whName = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
 	
 		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);

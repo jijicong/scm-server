@@ -294,6 +294,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
 		BeanUtils.copyProperties(outOrder, request);
 		request.setAllocateOrderItemList(allocateOrderItemList);
+        request.setCreateOperatorName(uerAccredit.getName());
+        request.setCreateOperatorNumber(uerAccredit.getPhone());
 		
 		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
 			request.setWarehouseType("TRC");
