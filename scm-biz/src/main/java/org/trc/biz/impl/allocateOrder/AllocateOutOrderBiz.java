@@ -1,12 +1,6 @@
 package org.trc.biz.impl.allocateOrder;
 
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,19 +10,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.domain.allocateOrder.*;
+import org.trc.domain.allocateOrder.AllocateOrder;
+import org.trc.domain.allocateOrder.AllocateOrderBase;
+import org.trc.domain.allocateOrder.AllocateOutOrder;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
-import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
-import org.trc.form.warehouse.allocateOrder.*;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
@@ -39,15 +37,14 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateCheckUtil;
-import org.trc.util.Pagenation;
-import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
+import org.trc.util.*;
 import org.trc.util.cache.AllocateOrderCacheEvict;
-
 import tk.mybatis.mapper.entity.Example;
+
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 @Service("allocateOutOrderBiz")
 public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
@@ -276,6 +273,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		AssertUtil.notNull(id, "调拨出库单主键不能为空");
 		AllocateOutOrder outOrder = allocateOutOrderService.selectByPrimaryKey(id);
 		AssertUtil.notNull(outOrder, "调拨出库单不存在");
+        allocateOrderExtService.setArea(outOrder);
 		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
 				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");

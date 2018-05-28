@@ -96,4 +96,13 @@ public class ScmAllocateOrderOutRequest  extends ScmWarehouseRequestBase{
      */
     List<ScmAllocateOrderItem> allocateOrderItemList;
 
+    private String receiverProvinceName;
+
+    private String receiverCityName;
+
+    private String senderProvinceName;
+
+    private String senderCityName;
+
+
 }

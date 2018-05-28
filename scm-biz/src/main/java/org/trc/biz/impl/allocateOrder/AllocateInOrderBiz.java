@@ -205,6 +205,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
      */
     private boolean wmsAllocateOrderInNotice (AllocateInOrder allocateInOrder, AclUserAccreditInfo aclUserAccreditInfo, boolean needUpdate) {
 		boolean succ = false;
+
+        allocateOrderExtService.setArea(allocateInOrder);
+
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
 		BeanUtils.copyProperties(allocateInOrder, request);
 		
@@ -215,7 +218,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         //记录操作日志
         logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), 
         		aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
-        
+
         String status = null;
         String logOp = null;
         String resultMsg = null;
