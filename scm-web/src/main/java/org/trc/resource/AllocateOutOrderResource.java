@@ -86,4 +86,14 @@ public class AllocateOutOrderResource {
     public Response orderCancel(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
         return allocateOutOrderBiz.closeOrCancel(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO), false);
     }
+
+    /**
+     * 通知出库、重新发货
+     */
+    @PUT
+    @Path(SupplyConstants.AllocateInOrder.NOTICE_RECIVE_GOODS + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response noticeReciveGoods(@PathParam("id") Long id, @Context ContainerRequestContext requestContext){
+        return  allocateOutOrderBiz.noticeReceiverGoods(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
 }

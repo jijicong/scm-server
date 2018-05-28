@@ -18,7 +18,7 @@ public enum LogOperationEnum {
 
     ALLOCATE_IN_WMS("入库"), DISCARDED("作废"),CANCEL_CLOSE("取消关闭"),HAND_CLOSE("手工关闭"),RECIVE_WMS_RECIVE_FAILURE("入库仓接收失败"),
     RECIVE_WMS_RECIVE_SUCCESS("入库仓接收成功"),RE_RECIVE_GOODS("重新收货"),CANCEL_RECIVE_GOODS("取消收货"),NOTICE_RECIVE_GOODS("通知收货"),
-	NOTICE_WMS("通知仓库"),
+	NOTICE_WMS("通知仓库"),NOTICE_SEND_GOODS("通知出库"),
     RECEIVE_ORDER("接收"), IMPORT_ORDER("导入"),
     
     

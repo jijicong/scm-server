@@ -22,4 +22,5 @@ public interface IAllocateOutOrderBiz {
 
     Response closeOrCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo, boolean isClose);
 
+    Response noticeReceiverGoods(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 }
