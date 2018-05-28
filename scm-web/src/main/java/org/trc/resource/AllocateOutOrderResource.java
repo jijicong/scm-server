@@ -1,24 +1,28 @@
 package org.trc.resource;
 
+import javax.annotation.Resource;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
 import org.trc.constants.SupplyConstants;
-import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOutOrder;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
-
-import javax.annotation.Resource;
-import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * Created by hzcyn on 2018/5/4.
@@ -85,5 +89,15 @@ public class AllocateOutOrderResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response orderCancel(@PathParam("id") Long id, @FormParam("remark") String remark, @Context ContainerRequestContext requestContext){
         return allocateOutOrderBiz.closeOrCancel(id, remark, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO), false);
+    }
+
+    /**
+     * 通知出库、重新发货
+     */
+    @PUT
+    @Path(SupplyConstants.AllocateOutOrder.NOTICE_SEND_GOODS + "/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response noticeSendGoods(@PathParam("id") Long id, @Context ContainerRequestContext requestContext){
+        return  allocateOutOrderBiz.noticeSendGoods(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 }
