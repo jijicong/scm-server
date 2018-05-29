@@ -46,6 +46,9 @@
                 <if test="skuDetail.outStatus != null and skuDetail.outStatus != ''">
                     out_status = #{skuDetail.outStatus},
                 </if>
+                <if test="skuDetail.inStatus != null and skuDetail.inStatus != ''">
+                    in_status = #{skuDetail.inStatus},
+                </if>
                 <if test="skuDetail.realInNum != null and skuDetail.realInNum != ''">
                     real_in_num = #{skuDetail.realInNum},
                 </if>

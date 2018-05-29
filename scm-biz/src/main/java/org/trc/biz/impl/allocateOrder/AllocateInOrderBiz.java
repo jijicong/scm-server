@@ -319,9 +319,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         int inFinishNum = 0;//出库完成数
         int inExceptionNum = 0;//出库异常数
         for(AllocateSkuDetail detail : allocateSkuDetails){
-            if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode(), detail.getOutStatus()))
+            if(StringUtils.equals(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode().toString(), detail.getInStatus()))
                 inFinishNum++;
-            else if(StringUtils.equals(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_EXCEPTION.getCode(), detail.getOutStatus())){
+            else if(StringUtils.equals(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode().toString(), detail.getInStatus())){
                 inExceptionNum++;
             }
         }
