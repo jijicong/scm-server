@@ -7,6 +7,7 @@ import org.trc.biz.impower.IWmsResourceBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclWmsUserAccreditInfo;
+import org.trc.form.impower.JurisdictionTreeNode;
 import org.trc.form.impower.WmsUserAccreditInfoForm;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -22,9 +23,9 @@ import javax.ws.rs.core.Response;
 @Path(SupplyConstants.AclWmsUser.ROOT)
 public class WmsResourceResource {
     @Autowired
-    private IWmsResourceBiz wmsResourceBiz;
-    @Autowired
     private IAclWmsUserAccreditInfoBiz aclWmsUserAccreditInfoBiz;
+    @Autowired
+    private IWmsResourceBiz wmsResourceBiz;
 
     @GET
     @Path(SupplyConstants.AclWmsUser.ACL_WMS_USER_PAGE)
@@ -93,4 +94,30 @@ public class WmsResourceResource {
         return ResultUtil.createSuccessResult("手机号码校验成功!",1);
     }
 
+
+    @GET
+    @Path(SupplyConstants.AclWmsUser.ACL_WMS_TREE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getWmsNodes(@QueryParam("parentId") Long parentId, @QueryParam("isRecursive") boolean isRecursive) {
+        return ResultUtil.createSuccessResult("查询WMS权限资源树成功", wmsResourceBiz.getWmsNodes(parentId, isRecursive));
+    }
+
+    @POST
+    @Path(SupplyConstants.AclWmsUser.ACL_WMS_SAVE)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveWmsResource(@BeanParam JurisdictionTreeNode jurisdictionTreeNode, @Context ContainerRequestContext requestContext) {
+        AclUserAccreditInfo aclUserAccreditInfo=  (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        wmsResourceBiz.saveWmsResource(jurisdictionTreeNode, aclUserAccreditInfo);
+        return ResultUtil.createSuccessResult("添加WMS权限资源成功", "");
+    }
+
+
+    @PUT
+    @Path(SupplyConstants.AclWmsUser.ACL_WMS_UPDATE+"/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateJurisdiction(@BeanParam JurisdictionTreeNode jurisdictionTreeNode, @Context ContainerRequestContext requestContext){
+        AclUserAccreditInfo aclUserAccreditInfo=  (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO);
+        wmsResourceBiz.updateWmsResource(jurisdictionTreeNode,aclUserAccreditInfo);
+        return ResultUtil.createSuccessResult("更新WMS权限资源成功", "");
+    }
 }

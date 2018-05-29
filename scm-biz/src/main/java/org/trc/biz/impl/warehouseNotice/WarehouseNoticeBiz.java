@@ -7,6 +7,7 @@ import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -572,6 +573,18 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setReciverCity(notice.getReceiverCity());
         scmEntryOrderCreateRequest.setReciverDetailAddress(notice.getReceiverAddress());
         scmEntryOrderCreateRequest.setReciverMobile(notice.getReceiverNumber());
+        
+        //入库单联系人、号码
+        AclUserAccreditInfo info = new AclUserAccreditInfo();
+        try  {
+            info.setUserId(notice.getCreateOperator());
+            info = userAccreditInfoService.selectOne(info);
+            scmEntryOrderCreateRequest.setCreateOperatorName(info == null ? "" : info.getName());
+            scmEntryOrderCreateRequest.setCreateOperatorNumber(info == null ? "" : info.getPhone());
+        } catch (Exception e) {
+        	logger.error("仓库接收时，入库单联系人、号码获取异常：{}", e.getMessage());
+        }
+
 
         //入库单明细
         List<ScmEntryOrderItem> scmEntryOrderItemList = new ArrayList<>();
@@ -581,6 +594,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         AssertUtil.notEmpty(detailsList, String.format("发货通知单%s相关商品明细为空", noticeCode));
         for (WarehouseNoticeDetails details : detailsList) {
             ScmEntryOrderItem scmEntryOrderItem = new ScmEntryOrderItem();
+            
+            BeanUtils.copyProperties(details, scmEntryOrderItem);
+            scmEntryOrderItem.setPurchaseOrderCode(notice.getPurchaseOrderCode());
+            
             scmEntryOrderItem.setOwnerCode(details.getOwnerCode());
             scmEntryOrderItem.setItemCode(details.getSkuCode());
             scmEntryOrderItem.setItemId(details.getItemId());
@@ -589,6 +606,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItemList.add(scmEntryOrderItem);
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
+        
+		WarehouseInfo whi = new WarehouseInfo();
+		whi.setCode(notice.getWarehouseCode());
+		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
+		AssertUtil.notNull(warehouse, "采购入库仓库不存在");
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+			scmEntryOrderCreateRequest.setWarehouseType("TRC");
+		} else {
+			scmEntryOrderCreateRequest.setWarehouseType("JD");
+		}
+		
         AppResult<String> appResult = warehouseApiService.entryOrderCreate(scmEntryOrderCreateRequest);
         if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
             /**

@@ -245,9 +245,15 @@ public class ScmAllocateOrderInRequest extends ScmWarehouseRequestBase{
      * 入库单联系人
      */
     private String createOperatorName;
-    
 
-  
+
+    private String receiverProvinceName;
+
+    private String receiverCityName;
+
+    private String senderProvinceName;
+
+    private String senderCityName;
 
 
 }
