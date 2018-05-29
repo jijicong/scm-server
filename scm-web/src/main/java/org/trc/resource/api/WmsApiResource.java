@@ -63,7 +63,6 @@ public class WmsApiResource {
     public Response warehouseNoticeFinishCallBack(@FormParam("request") String request) throws Exception {
         WmsInNoticeRequest req = JSON.parseObject(request, WmsInNoticeRequest.class);
         return warehouseNoticeBiz.inFinishCallBack(req);
-
     }
 
     @POST
