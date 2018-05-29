@@ -840,7 +840,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
     @Override
     public Response inFinishCallBack(WmsInNoticeRequest req) {
-     //TODO   入库通知回调
         AssertUtil.notNull(req, "采购入库回调信息不能为空");
         String noticeCode = req.getWarehouseNoticeCode();
         //获取采购入库详情明细
@@ -853,21 +852,50 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             for (WmsInNoticeDetailRequest inNoticeDetailRequest : inNoticeDetailRequests) {
                 for (WarehouseNoticeDetails detail : details) {
                     if(StringUtils.equals(inNoticeDetailRequest.getSkuCode(),detail.getSkuCode())){
-                        detail.setNormalStorageQuantity(inNoticeDetailRequest.getNormalStorageQuantity());
-                        detail.setDefectiveStorageQuantity(inNoticeDetailRequest.getDefectiveStorageQuantity());
-                        Long actualStorageQuantity=inNoticeDetailRequest.getNormalStorageQuantity()+inNoticeDetailRequest.getDefectiveStorageQuantity();
-                        detail.setActualStorageQuantity(actualStorageQuantity);
+                        Long normalStorageQuantity= inNoticeDetailRequest.getNormalStorageQuantity();
+                        Long defectiveStorageQuantity=inNoticeDetailRequest.getDefectiveStorageQuantity();
+
+                        detail.setNormalStorageQuantity(normalStorageQuantity);
+                        detail.setDefectiveStorageQuantity(defectiveStorageQuantity);
+                        detail.setActualStorageQuantity(normalStorageQuantity+defectiveStorageQuantity);
                         detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
+                        if(defectiveStorageQuantity==0){
+                            if(detail.getPurchasingQuantity()==normalStorageQuantity){
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+                            }else{
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+                            }
+
+                        }else{
+                            detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                        }
+
                     }
-
-
                 }
             }
         }
+        warehouseNoticeDetailsService.updateWarehouseNoticeLists(details);  //FIXME  方法有待改进
+        //更新入库通知单
+        WarehouseNotice warehouseNotice = new WarehouseNotice();
+        warehouseNotice.setWarehouseNoticeCode(noticeCode);
+        Example example = new Example(WarehouseNotice.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseNoticeCode",noticeCode);
+        List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
+        warehouseNotice = warehouseNotices.get(0);
+        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
+            warehouseNotice.setStatus(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
+            warehouseNotice.setStatus(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+        }else {
+            warehouseNotice.setStatus(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+        }
+        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
-
-
-        return null;
+        return ResultUtil.createSuccessResult("反填入库通知单成功","");
     }
 
     private void scmEntryOrder(List<WarehouseNotice> noticeList) {

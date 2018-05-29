@@ -24,4 +24,8 @@ public interface IWarehouseNoticeService extends IBaseService<WarehouseNotice,Lo
      */
     int selectCountWarehouseNotice(Map<String,Object> map);
 
+    /**
+     * 通过入库通知单编号查询入库通知
+     */
+    List<WarehouseNotice> selectWarehouseNoticeListByNoticeCode(String warehouseNoticeCode);
 }
