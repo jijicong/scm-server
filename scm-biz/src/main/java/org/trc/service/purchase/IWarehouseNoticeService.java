@@ -24,4 +24,5 @@ public interface IWarehouseNoticeService extends IBaseService<WarehouseNotice,Lo
      */
     int selectCountWarehouseNotice(Map<String,Object> map);
 
+
 }

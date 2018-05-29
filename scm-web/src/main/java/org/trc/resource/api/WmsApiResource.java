@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.biz.outbuond.IOutBoundOrderBiz;
-import org.trc.form.outbound.OutboumdWmsDeliverResponseForm;
 import org.trc.form.wms.WmsAllocateOutInRequest;
-import org.trc.util.ResultUtil;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -34,6 +31,8 @@ public class WmsApiResource {
     @Autowired
     private IAllocateInOrderBiz allocateInOrderBiz;
     @Autowired
+    private IWarehouseNoticeBiz warehouseNoticeBiz;
+    @Autowired
     private IOutBoundOrderBiz outBoundOrderBiz;
 
     @POST
@@ -50,6 +49,16 @@ public class WmsApiResource {
     public Response inFinishCallBack(@FormParam("request") String request) throws Exception {
         WmsAllocateOutInRequest req = JSON.parseObject(request, WmsAllocateOutInRequest.class);
         return allocateInOrderBiz.inFinishCallBack(req);
+    }
+
+    //(采购管理)入库通知单
+    @POST
+    @Path("warehouseNotice")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response warehouseNoticeFinishCallBack(@FormParam("request") String request) throws Exception {
+        WmsInNoticeRequest req = JSON.parseObject(request, WmsInNoticeRequest.class);
+        return warehouseNoticeBiz.inFinishCallBack(req);
+
     }
 
     @POST
