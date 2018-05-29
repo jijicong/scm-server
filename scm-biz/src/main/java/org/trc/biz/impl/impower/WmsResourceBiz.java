@@ -6,11 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.trc.biz.impower.IWmsResourceBiz;
-import org.trc.constants.SupplyConstants;
-import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.WmsResource;
 import org.trc.domain.impower.WmsResourceExt;
@@ -21,7 +18,6 @@ import org.trc.form.impower.JurisdictionTreeNode;
 import org.trc.service.impower.IWmsResourceExtService;
 import org.trc.service.impower.IWmsResourceService;
 import org.trc.util.AssertUtil;
-import org.trc.util.cache.UserCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
@@ -139,11 +135,6 @@ public class WmsResourceBiz implements IWmsResourceBiz {
     @Override
     public void updateWmsResource(JurisdictionTreeNode jurisdictionTreeNode,AclUserAccreditInfo accreditInfo) {
         WmsResourceExt wmsResource = JSONObject.parseObject(JSON.toJSONString(jurisdictionTreeNode), WmsResourceExt.class);
-        WmsResourceExt resourceExt = new WmsResourceExt();
-        resourceExt.setCode(wmsResource.getId());
-        resourceExt = wmsResourceExtService.selectOne(resourceExt);
-        wmsResource.setId(resourceExt.getId());
-        wmsResource.setMethod(jurisdictionTreeNode.getOperationType());
         wmsResource.setUpdateTime(Calendar.getInstance().getTime());
         int count = wmsResourceExtService.updateByPrimaryKeySelective(wmsResource);
         if (count == 0) {
