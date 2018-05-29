@@ -35,6 +35,8 @@ public class ScmAllocateOrderOutRequest  extends ScmWarehouseRequestBase{
      * 调入仓库编码
      */
     private String inWarehouseCode;
+
+    private String inWarehouseName;
     
     /**
      * 出库备注
@@ -45,6 +47,8 @@ public class ScmAllocateOrderOutRequest  extends ScmWarehouseRequestBase{
      * 调出仓库编码
      */
     private String outWarehouseCode;
+
+    private String outWarehouseName;
     
     /**
      * 创建人
