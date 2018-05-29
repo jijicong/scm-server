@@ -208,10 +208,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
         allocateInOrder = allocateInOrders.get(0);
+        String result = "";
         if(StringUtils.equals(outStatus, AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
             allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
         }else if(StringUtils.equals(outStatus, AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
             allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+            result = "出库完成";
         }
         allocateInOrderService.updateByPrimaryKey(allocateInOrder);
         //更新调拨单状态
@@ -225,7 +227,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_NORMAL.getCode());
         }
         allocateOrderService.updateByPrimaryKey(allocateOrder);
-        return ResultUtil.createSuccessResult("反填调拨出库信息成功！", "");
+        return ResultUtil.createSuccessResult("反填调拨出库信息成功！", result);
     }
 
     //获取状态
