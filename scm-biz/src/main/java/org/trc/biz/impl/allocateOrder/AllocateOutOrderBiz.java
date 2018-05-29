@@ -34,6 +34,7 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.AllocateOrderCacheEvict;
+import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.Response;
@@ -315,7 +316,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			request.setWarehouseType("JD");
 		}
 		AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
-		
+
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), uerAccredit.getUserId(),
                 LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE.getMessage(), null, null);
         
