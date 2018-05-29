@@ -186,9 +186,11 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                         if(detailRequest.getRealOutNum() == skuDetail.getPlanAllocateNum()){
                             skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
                             skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
+                            skuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
                         }else{
                             skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
                             skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
+                            skuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
                         }
                     }
                 }
