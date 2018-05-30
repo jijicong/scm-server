@@ -89,8 +89,6 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     @Resource
     private IConfigBiz configBiz;
     @Resource
-    private IAclUserAccreditInfoService iAclUserAccreditInfoService;
-    @Resource
     private IWarehouseNoticeService iWarehouseNoticeService;
     @Resource
     private ISerialUtilService iSerialUtilService;
@@ -118,6 +116,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
     private IBrandService brandService;
     @Autowired
     private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private IPurchaseGroupUserService purchaseGroupUserService;
 
 
 
@@ -194,13 +194,13 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             }
             //赋值采购人名称
             if(StringUtils.isNotBlank(purchaseOrder.getPurchasePersonId())){
-                AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
-                aclUserAccreditInfo.setUserId(purchaseOrder.getPurchasePersonId());
-                AclUserAccreditInfo entityAclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
-                if(null == entityAclUserAccreditInfo){
+                PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
+                purchaseGroupUser.setId(Long.parseLong(purchaseOrder.getPurchasePersonId()));
+                purchaseGroupUser = purchaseGroupUserService.selectOne(purchaseGroupUser);
+                if(null == purchaseGroupUser){
                     LOGGER.error(String.format("根据采购人编码%s查询采购人信息为空", purchaseOrder.getPurchasePersonId()));
                 }else {
-                    purchaseOrder.setPurchasePerson(entityAclUserAccreditInfo.getName());
+                    purchaseOrder.setPurchasePerson(purchaseGroupUser.getName());
                 }
             }
             //赋值供应商名称
@@ -1039,12 +1039,10 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             purchaseOrder.setPurchaseGroupName(purchaseGroup.getName());
         }
         if(StringUtils.isNotBlank(purchaseOrder.getPurchasePersonId())){
-            AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
-            aclUserAccreditInfo.setUserId(purchaseOrder.getPurchasePersonId());
-            aclUserAccreditInfo = iAclUserAccreditInfoService.selectOne(aclUserAccreditInfo);
-            AssertUtil.notNull(aclUserAccreditInfo,"根据用户的userId查询用户信息失败");
+            PurchaseGroupUser groupUser = purchaseGroupUserService.selectByPrimaryKey(Long.parseLong(purchaseOrder.getPurchasePersonId()));
+            AssertUtil.notNull(groupUser, String.format("根据ID[%s]查询采购组员信息为空", purchaseOrder.getPurchasePersonId()));
             //赋值采购人的名称
-            purchaseOrder.setPurchasePerson(aclUserAccreditInfo.getName());
+            purchaseOrder.setPurchasePerson(groupUser.getName());
         }
         dicts = configBiz.findDictsByTypeNo("currency");
         for (Dict dict:dicts) {
