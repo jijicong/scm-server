@@ -288,7 +288,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOrderExtService.setArea(outOrder);
         allocateOrderExtService.setAllocateOrderWarehouseName(outOrder);
 		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
-				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())) {
+				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())
+					&& !(AllocateOutOrderStatusEnum.CANCEL.getCode().equals(outOrder.getStatus()) 
+							&& !DateCheckUtil.checkDate(outOrder.getUpdateTime()))) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
 		WarehouseInfo whi = new WarehouseInfo();
@@ -386,25 +388,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         }
 	}
 
-    @Override
-    public Response noticeSendGoods(Long id, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notNull(id, "调拨出库单主键不能为空");
-        AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
-        AssertUtil.notNull(allocateOutOrder, String.format("根据调拨单号主键%s查询调拨入库单信息为空", id));
-        //校验订单是否已经是取消状态
-        if(StringUtils.equals(AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode(), allocateOutOrder.getStatus()) ||
-                StringUtils.equals(AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode(), allocateOutOrder.getStatus()) ||
-                StringUtils.equals(AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode(), allocateOutOrder.getStatus())){
-            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前不允许出库！");
-        }
-        boolean flag = wmsAllocateOrderOutNotice(allocateOutOrder, aclUserAccreditInfo);
-        if(flag){
-            return ResultUtil.createSuccessResult("发货成功！", "");
-        }else{
-            return ResultUtil.createSuccessResult("发货失败", "");
-        }
-    }
-
     /**
      * 出库单取消通知
      */
@@ -421,43 +404,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             if (ZeroToNineEnum.ONE.getCode().equals(respResult.getFlag())) { // 取消成功
                 succ = true;
             }
-        }
-        return succ;
-    }
-
-    /**
-     * 出库单通知
-     */
-    private boolean wmsAllocateOrderOutNotice (AllocateOutOrder allocateOutOrder, AclUserAccreditInfo aclUserAccreditInfo) {
-        boolean succ = false;
-        ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
-        BeanUtils.copyProperties(allocateOutOrder, request);
-
-        String whName = commonService.getWarehoueType(allocateOutOrder.getOutWarehouseCode(), request);
-
-        AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
-
-        //记录操作日志
-        logInfoService.recordLog(allocateOutOrder,allocateOutOrder.getId().toString(),
-                aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_SEND_GOODS.getMessage(), "",null);
-
-        String status = null;
-        String logOp = null;
-        if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
-            status = AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode();
-            logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_SUCC.getMessage();
-            succ = true;
         } else {
-            status = AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().toString();
-            logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_FAIL.getMessage();
+        	logger.error("调拨出库单取消失败:", response.getDatabuffer());
         }
-        AllocateOutOrder record = new AllocateOutOrder();
-        record.setId(allocateOutOrder.getId());
-        record.setStatus(status);
-        allocateOutOrderService.updateByPrimaryKeySelective(record);
-        allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateOutOrder.getAllocateOrderCode());
-        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), whName,
-                logOp, null, null);
         return succ;
     }
 

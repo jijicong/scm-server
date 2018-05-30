@@ -80,7 +80,7 @@ public class AllocateOutOrderResource {
     }
     
     /**
-     * 出库通知
+     * 出库通知，重新出库
      */
     @PUT
     @Path(SupplyConstants.AllocateOutOrder.ALLOCATE_ORDER_OUT_NOTICE + "/{id}")
@@ -147,13 +147,4 @@ public class AllocateOutOrderResource {
         return res;
     }
 
-    /**
-     * 通知出库、重新发货
-     */
-    @PUT
-    @Path(SupplyConstants.AllocateOutOrder.NOTICE_SEND_GOODS + "/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response noticeSendGoods(@PathParam("id") Long id, @Context ContainerRequestContext requestContext){
-        return  allocateOutOrderBiz.noticeSendGoods(id, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
-    }
 }
