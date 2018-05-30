@@ -913,19 +913,21 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         criteria.andEqualTo("warehouseNoticeCode",noticeCode);
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         warehouseNotice = warehouseNotices.get(0);
+        String result = "" ;
         if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
-            warehouseNotice.setStatus(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
             warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+            result = "入库完成";
         }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
-            warehouseNotice.setStatus(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
             warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
         }else {
-            warehouseNotice.setStatus(WarehouseNoticeEnum.HAVE_NOTIFIED.getCode());
+            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
             warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
         }
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
-        return ResultUtil.createSuccessResult("反填入库通知单成功","");
+        return ResultUtil.createSuccessResult("反填入库通知单成功",result);
     }
 
     private void scmEntryOrder(List<WarehouseNotice> noticeList) {
