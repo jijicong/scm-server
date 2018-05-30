@@ -147,7 +147,9 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
                 List<WmsResource> wmsResources = wmsResourceService.selectByExample(exampleWmsResource);
                 if (!AssertUtil.collectionIsEmpty(wmsResources)) {
                     for (WmsResource wmsResource : wmsResources) {
-                        wmsResourceList.add(wmsResource.getName());
+                        if (!(wmsResource.getParentId()==0L)){
+                            wmsResourceList.add(wmsResource.getName());
+                        }
                     }
                     wmsUserAccredit.setResourceName(StringUtils.join(wmsResourceList, SupplyConstants.Symbol.COMMA));
                 }
@@ -445,8 +447,16 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
         criteria.andIsNotNull("id");
         List<WmsResource> wmsResourceList = wmsResourceService.selectByExample(example);
         AssertUtil.notEmpty(wmsResourceList, "查询所有仓级资源为空!");
+
         if (null == Id) {
-            return wmsResourceList;
+            //需要过滤掉精确资源
+            List<WmsResource> returnResourceList = new ArrayList<>();
+            for (WmsResource wmsResource:wmsResourceList) {
+                if (StringUtils.equals(wmsResource.getMethod(),ZeroToNineEnum.ONE.getCode())){
+                    returnResourceList.add(wmsResource);
+                }
+            }
+            return returnResourceList;
         }
         //1.查询用户资源关联表
         AclWmsUserResourceRelation aclWmsUserResourceRelation = new AclWmsUserResourceRelation();
@@ -465,7 +475,14 @@ public class AclWmsUserAccreditInfoBiz implements IAclWmsUserAccreditInfoBiz {
                 wmsResource.setCheck("true");
             }
         }
-        return wmsResourceList;
+        //需要过滤掉精确资源
+        List<WmsResource> returnResourceList = new ArrayList<>();
+        for (WmsResource wmsResource:wmsResourceList) {
+            if (StringUtils.equals(wmsResource.getMethod(),ZeroToNineEnum.ONE.getCode())){
+                returnResourceList.add(wmsResource);
+            }
+        }
+        return returnResourceList;
     }
 
     @Override

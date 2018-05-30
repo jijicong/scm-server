@@ -4,7 +4,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.form.outbound.OutBoundOrderForm;
 import org.trc.form.outbound.OutBoundOrderReceiverForm;
-import org.trc.service.IQimenService;
+import org.trc.form.outbound.OutboumdWmsDeliverResponseForm;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.Pagenation;
 
@@ -49,4 +49,10 @@ public interface IOutBoundOrderBiz {
      * @return
      */
     Response updateReceiverInfo(OutBoundOrderReceiverForm form, AclUserAccreditInfo aclUserAccreditInfo);
+
+    /**
+     * 自营仓库订单发货明细反馈接口
+     * @param from
+     */
+    void orderOutResultNotice(OutboumdWmsDeliverResponseForm from);
 }
