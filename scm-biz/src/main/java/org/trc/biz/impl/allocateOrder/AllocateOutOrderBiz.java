@@ -178,6 +178,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
         List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
 
+        String logMessage = "";
+        List<String> exceptionDetail = new ArrayList<>();
+
         List<WmsAllocateDetailRequest> wmsAllocateDetailRequests = req.getWmsAllocateDetailRequests();
         if(wmsAllocateDetailRequests != null && wmsAllocateDetailRequests.size() > 0){
             for(WmsAllocateDetailRequest detailRequest : wmsAllocateDetailRequests){
@@ -188,10 +191,13 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                             skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
                             skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
                             skuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+                            logMessage += skuDetail.getSkuCode() + ":" + "出库完成<br>";
                         }else{
                             skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
                             skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
                             skuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+                            logMessage += skuDetail.getSkuCode() + ":" + "出库异常<br>";
+                            exceptionDetail.add(skuDetail.getSkuCode());
                         }
                     }
                 }
@@ -205,6 +211,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateOutOrder = allocateOutOrders.get(0);
         String outStatus = getAllocateOutOrderStatusByDetail(allocateSkuDetails);
         allocateOutOrder.setStatus(outStatus);
+        if(exceptionDetail.size() > 0){
+            allocateOutOrder.setFailedCause("["+StringUtils.join(exceptionDetail, ",")+"]实际出库数量不等于要求出库数量。");
+        }
         allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
         //更新调拨入库单信息
         AllocateInOrder allocateInOrder = new AllocateInOrder();
@@ -230,6 +239,14 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_NORMAL.getCode());
         }
         allocateOrderService.updateByPrimaryKey(allocateOrder);
+
+        //记录日志
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setCode(allocateOutOrder.getOutWarehouseName());
+        warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+        logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
+                LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
+
         return ResultUtil.createSuccessResult("反填调拨出库信息成功！", result);
     }
 

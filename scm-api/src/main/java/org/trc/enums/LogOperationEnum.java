@@ -27,7 +27,9 @@ public enum LogOperationEnum {
 	ALLOCATE_ORDER_OUT_NOTICE_SUCC("出库仓接收成功"),
 	ALLOCATE_ORDER_OUT_NOTICE_FAIL("出库仓接收失败"),
 	ALLOCATE_ORDER_IN_NOTICE_SUCC("入库仓接收成功"),
-	ALLOCATE_ORDER_IN_NOTICE_FAIL("入库仓接收失败");
+	ALLOCATE_ORDER_IN_NOTICE_FAIL("入库仓接收失败"),
+    ALLOCATE_OUT("出库"),
+    ALLOCATE_IN("入库");
 
     private String message;
 
