@@ -15,7 +15,13 @@ import org.apache.commons.lang3.StringUtils;
 public enum WarehouseNoticeEnum {
 
 	TO_BE_NOTIFIED("0","待通知"),
-	HAVE_NOTIFIED("1","已通知");
+	WAREHOUSE_RECEIVE_FAILED("1","仓库接收失败"),
+	ON_WAREHOUSE_TICKLING("2","仓库接收成功"),
+	ALL_GOODS("3","全部入库"),
+	RECEIVE_GOODS_EXCEPTION("4","入库异常"),
+	RECEIVE_PARTIAL_GOODS("5","部分入库"),
+	DROPPED("6","作废"),
+	CANCELLATION("7","已取消");
 	
 	private String code;
 	private String name;
