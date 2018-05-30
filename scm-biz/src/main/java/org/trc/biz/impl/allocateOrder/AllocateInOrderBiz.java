@@ -285,6 +285,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
         List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
 
+        String logMessage = "";
+        List<String> exceptionDetail = new ArrayList<>();
+
         List<WmsAllocateDetailRequest> wmsAllocateDetailRequests = req.getWmsAllocateDetailRequests();
         if(wmsAllocateDetailRequests != null && wmsAllocateDetailRequests.size() > 0){
             for(WmsAllocateDetailRequest detailRequest : wmsAllocateDetailRequests){
@@ -294,12 +297,16 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                         skuDetail.setNornalInNum(detailRequest.getNornalInNum());
                         Long realInNum = detailRequest.getNornalInNum() + detailRequest.getDefectInNum();
                         skuDetail.setRealInNum(realInNum);
-                        if(realInNum == skuDetail.getPlanAllocateNum()){
+                        if(skuDetail.getRealOutNum() == skuDetail.getNornalInNum() &&
+                                skuDetail.getDefectInNum() == 0){
                             skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
                             skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
+                            logMessage += skuDetail.getSkuCode() + ":" + "入库完成<br>";
                         }else{
                             skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_EXCEPTION.getCode());
                             skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode()));
+                            logMessage += skuDetail.getSkuCode() + ":" + "入库异常<br>";
+                            exceptionDetail.add(skuDetail.getSkuCode());
                         }
                     }
                 }
@@ -315,6 +322,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         if(StringUtils.isNotEmpty(getAllocateInOrderStatusByDetail(allocateSkuDetails))){
             allocateInOrder.setStatus(getAllocateInOrderStatusByDetail(allocateSkuDetails));
         }
+        if(exceptionDetail.size() > 0){
+            allocateInOrder.setFailedCause("["+StringUtils.join(exceptionDetail, ",")+"]实际入库信息与实际出库信息不符。");
+        }
         allocateInOrderService.updateByPrimaryKey(allocateInOrder);
         //更新调拨单状态
         AllocateOrder allocateOrder = new AllocateOrder();
@@ -328,6 +338,14 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             result = "入库完成";
         }
         allocateOrderService.updateByPrimaryKey(allocateOrder);
+
+        //记录日志
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setCode(allocateInOrder.getInWarehouseCode());
+        warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+        logInfoService.recordLog(allocateInOrder, allocateInOrder.getId().toString(), warehouseInfo.getWarehouseName(),
+                LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
+
         return ResultUtil.createSuccessResult("反填调拨入库信息成功！", result);
     }
 
