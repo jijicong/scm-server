@@ -5,6 +5,8 @@ import org.trc.service.IBaseService;
 
 public interface IAllocateOutOrderService extends IBaseService<AllocateOutOrder, Long>{
 
-	void updateOutOrderStatusById(String status, Long id);
+	//void updateOutOrderStatusById(String status, Long id);
+
+	void updateOutOrderById(String status, Long id, String errMsg);
 
 }

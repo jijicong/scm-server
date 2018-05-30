@@ -15,4 +15,6 @@ public interface IAllocateSkuDetailService extends IBaseService<AllocateSkuDetai
 
 	List<AllocateSkuDetail> getDetailListByOrderCode(String allocateOrderCode);
 
+	void updateInSkuStatusByOrderCode(String status, String allocateOrderCode);
+
 }
