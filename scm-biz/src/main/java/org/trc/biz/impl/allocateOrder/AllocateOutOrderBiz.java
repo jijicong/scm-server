@@ -34,6 +34,7 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.AllocateOrderCacheEvict;
+import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.Response;
@@ -315,26 +316,28 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			request.setWarehouseType("JD");
 		}
 		AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
-		
+
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), uerAccredit.getUserId(),
                 LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE.getMessage(), null, null);
         
         String status = null;
         String logOp = null;
         String resultMsg = null;
+        String errMsg = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode();
-			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_FAIL.getMessage();
+			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_SUCC.getMessage();
 			resultMsg = "调拨出库通知成功！";
 		} else {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_FAIL.getMessage();
+			errMsg = response.getDatabuffer();
 			resultMsg = "调拨出库通知失败！";
 		}
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), warehouse.getWarehouseName(),
-        		logOp, null, null);
+        		logOp, errMsg, null);
 		
-		allocateOutOrderService.updateOutOrderStatusById(status,id);
+		allocateOutOrderService.updateOutOrderById(status, id, errMsg);
 		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
 	}

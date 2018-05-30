@@ -225,6 +225,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         String status = null;
         String logOp = null;
         String resultMsg = null;
+        String errMsg = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_SUCC.getMessage();
@@ -234,13 +235,14 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_FAIL.getMessage();
 			resultMsg = "调拨入库通知失败！";
+			errMsg = response.getDatabuffer();
 		}
-		if (needUpdate) {
-			allocateInOrderService.updateOutOrderStatusById(status, allocateInOrder.getId());
-			allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
-		}
+//		if (needUpdate) {
+			allocateInOrderService.updateInOrderStatusById(status, allocateInOrder.getId(), errMsg);
+			allocateSkuDetailService.updateInSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
+//		}
         logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whName,
-        		logOp, null, null);
+        		logOp, errMsg, null);
         return succ;
     }
 

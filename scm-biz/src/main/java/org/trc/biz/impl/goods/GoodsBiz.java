@@ -30,6 +30,7 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -59,6 +60,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.wms.IWmsItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.GoodsCacheEvict;
 import org.trc.util.cache.OutGoodsCacheEvict;
@@ -90,7 +92,7 @@ public class GoodsBiz implements IGoodsBiz {
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
     //分类名称全路径分割符号
-    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "-";
     //SKU的属性值ID分割符号
     public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
     //SKU的属性组合名称分割符号
@@ -179,6 +181,8 @@ public class GoodsBiz implements IGoodsBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IWmsItemInfoService wmsItemInfoService;
 
 
     @Override
@@ -357,7 +361,7 @@ public class GoodsBiz implements IGoodsBiz {
                     if(j == 0){
                         sb.append(namePathList.get(j));
                     }else{
-                        sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
+                        sb.append(namePathList.get(j)).append("-");
                     }
                 }
                 spuCategoryMap.put(items.getSpuCode(), sb.toString());
@@ -525,7 +529,11 @@ public class GoodsBiz implements IGoodsBiz {
             Set<String> barCodeSet =skusService.selectSkuListByBarCode(Arrays.asList(StringUtils.split(barCode,SupplyConstants.Symbol.COMMA)));
             Example example = new Example(Skus.class);
             Example.Criteria criteria2 = example.createCriteria();
-            criteria2.andIn("barCode", barCodeSet);
+            if (!AssertUtil.collectionIsEmpty(barCodeSet)){
+                criteria2.andIn("barCode", barCodeSet);
+            }else {
+                criteria2.andEqualTo("barCode", StringUtils.EMPTY);
+            }
             List<Skus> skusList = skusService.selectByExample(example);
             if(skusList.size() > 0){
                 for(Skus s : skusList){
@@ -867,15 +875,28 @@ public class GoodsBiz implements IGoodsBiz {
         warehouseItemInfo.setSpuCode(spuCode);
         warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+
+        //更新所有子仓库商品信息
+        WmsItemInfo wmsItemInfo = new WmsItemInfo();
+        wmsItemInfo.setSpuCode(spuCode);
+        List<WmsItemInfo> wmsItemInfoList = wmsItemInfoService.select(wmsItemInfo);
+
         //如果仓库不存在该spu信息则不更新
         if(warehouseItemInfoList == null || warehouseItemInfoList.size() < 1){
             return;
         }
 
+        boolean flag = false;
+        if(wmsItemInfoList != null && wmsItemInfoList.size() > 0){
+            flag = true;
+        }
+
         //获取需要修改的信息
         Map<Long, WarehouseItemInfo> warehouseItemInfoMap1 = new HashMap<>();
+        //子仓库需要修改的信息
+        Map<Long, WmsItemInfo> wmsItemInfoMapNeedChange = new HashMap<>();
 
-        List<Skus> updatelist = new ArrayList<Skus>();
+        List<Skus> updatelist = new ArrayList<>();
         if(warehouseItemInfoMap.containsKey("updateSkus")){
             updatelist = (List<Skus>)warehouseItemInfoMap.get("updateSkus");
         }
@@ -891,19 +912,45 @@ public class GoodsBiz implements IGoodsBiz {
                 if(StringUtils.equals(s.getSkuCode(), warehouseItemInfo1.getSkuCode())){
                     if(warehouseItemInfoMap1.containsKey(warehouseItemInfo1.getId())){
                         warehouseItemInfo1 = warehouseItemInfoMap1.get(warehouseItemInfo1.getId());
-                        warehouseItemInfo1.setItemName(s.getSkuName());
-                        warehouseItemInfo1.setBarCode(s.getBarCode());
-                        warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
-                        warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
-                    }else{
-                        warehouseItemInfo1.setItemName(s.getSkuName());
-                        warehouseItemInfo1.setBarCode(s.getBarCode());
-                        warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
-                        warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
                     }
+                    warehouseItemInfo1.setItemName(s.getSkuName());
+                    warehouseItemInfo1.setBarCode(s.getBarCode());
+                    warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
+                    warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
                 }
             }
         }
+
+        //更新子仓库商品信息
+        if(flag){
+            if(warehouseItemInfoMap.containsKey("brandId")){
+                Long brandId = (Long)warehouseItemInfoMap.get("brandId");
+                for(WmsItemInfo wmsItemInfoNeedChange : wmsItemInfoList){
+                    wmsItemInfoNeedChange.setBrandId(brandId);
+                    wmsItemInfoMapNeedChange.put(wmsItemInfoNeedChange.getId(), wmsItemInfoNeedChange);
+                }
+            }
+
+            for(WmsItemInfo wmsItemInfoNeedChange : wmsItemInfoList){
+                for(Skus s : updatelist){
+                    if(StringUtils.equals(s.getSkuCode(), wmsItemInfoNeedChange.getSkuCode())){
+                        if(wmsItemInfoMapNeedChange.containsKey(wmsItemInfoNeedChange.getId())){
+                            wmsItemInfoNeedChange = wmsItemInfoMapNeedChange.get(wmsItemInfoNeedChange.getId());
+                        }
+                        wmsItemInfoNeedChange.setSkuName(s.getSkuName());
+                        wmsItemInfoNeedChange.setBarCode(s.getBarCode());
+                        wmsItemInfoNeedChange.setSpecNatureInfo(s.getSpecInfo());
+                        wmsItemInfoMapNeedChange.put(wmsItemInfoNeedChange.getId(), wmsItemInfoNeedChange);
+                    }
+                }
+            }
+
+            for (Map.Entry<Long, WmsItemInfo> entry : wmsItemInfoMapNeedChange.entrySet()) {
+                WmsItemInfo wmsInfo = entry.getValue();
+                wmsItemInfoService.updateByPrimaryKey(wmsInfo);
+            }
+        }
+
 
         //更新仓库商品信息
         Map<Long, List<WarehouseItemInfo>> map = new HashMap<>();
@@ -1377,6 +1424,9 @@ public class GoodsBiz implements IGoodsBiz {
         Items items1 = itemsService.selectByPrimaryKey(items.getId());
         if(!StringUtils.equals(items1.getItemNo(), items.getItemNo())){
             map.put("itemNo", items.getItemNo());
+        }
+        if(items1.getBrandId() != items.getBrandId()){
+            map.put("brandId", items.getBrandId());
         }
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){
@@ -1892,6 +1942,13 @@ public class GoodsBiz implements IGoodsBiz {
             _isValid = ZeroToNineEnum.ONE.getCode();
         }
         skus.setIsValid(_isValid);
+        if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(),_isValid)){
+            //如果状态要改为启用 就要校验条形码
+            Skus barSku = new Skus();
+            barSku.setId(id);
+            barSku = skusService.selectOne(barSku);
+            checkBarcodeOnly(barSku.getBarCode(),"","");
+        }
         int count = skusService.updateByPrimaryKeySelective(skus);
         if(count == 0){
             String msg = "商品SKU启用/停用操作更新数据库失败";
@@ -1905,7 +1962,7 @@ public class GoodsBiz implements IGoodsBiz {
         skus2 = skusService.selectOne(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         //更新SKU库存启停用状态
-//        updateSkuStockIsValid(spuCode, skus2.getSkuCode(), _isValid);
+        //updateSkuStockIsValid(spuCode, skus2.getSkuCode(), _isValid);
         //更新采购单明细启停用状态
         updatePurchaseDetailIsValid(spuCode, skus2.getSkuCode(), _isValid);
         Items items = new Items();

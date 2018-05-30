@@ -5,26 +5,18 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 
-* @ClassName: OutboundOrderStatusEnum
-* @Description: 发货通知单状态枚举
-* @author sone
-*
+ * 仓库运营性质枚举
  */
-public enum OutboundOrderStatusEnum {
+public enum WarehouseOperateNatureEnum {
 
-	RECEIVE_FAIL("1", "仓库接收失败"),
-	WAITING("2","等待仓库发货"),
-//	ON_WAREHOUSE_NOTICE("3","仓库告知的过程中状态"),
-	ALL_GOODS("4","全部发货"),
-	PART_OF_SHIPMENT("5","部分发货"),
-	CANCELED("6","已取消"),
-	ON_CANCELED("7", "取消中");
+	OUTER_WAREHOUSE("0","第三方仓库"),
+	SELF_WAREHOUSE("1","自营仓库"),
+	;
 
 	private String code;
 	private String name;
 
-	OutboundOrderStatusEnum(String code, String name){
+	WarehouseOperateNatureEnum(String code, String name){
 		this.code = code;
 		this.name = name;
 	}
@@ -38,8 +30,8 @@ public enum OutboundOrderStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static OutboundOrderStatusEnum getOutboundOrderStatusEnumByName(String name){
-		for(OutboundOrderStatusEnum validEnum : OutboundOrderStatusEnum.values()){
+	public static WarehouseOperateNatureEnum getWarehouseOperateNatureEnumByName(String name){
+		for(WarehouseOperateNatureEnum validEnum : WarehouseOperateNatureEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
 			}
@@ -56,8 +48,8 @@ public enum OutboundOrderStatusEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static OutboundOrderStatusEnum getOutboundOrderStatusEnumByCode(String code){
-		for(OutboundOrderStatusEnum validEnum : OutboundOrderStatusEnum.values()){
+	public static WarehouseOperateNatureEnum getWarehouseOperateNatureEnumByCode(String code){
+		for(WarehouseOperateNatureEnum validEnum : WarehouseOperateNatureEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;
 			}
@@ -75,7 +67,7 @@ public enum OutboundOrderStatusEnum {
 	 */
 	public static JSONArray toJSONArray(){
 		JSONArray array = new JSONArray();
-		for(OutboundOrderStatusEnum sexEnum : OutboundOrderStatusEnum.values()){
+		for(WarehouseOperateNatureEnum sexEnum : WarehouseOperateNatureEnum.values()){
 			JSONObject obj = new JSONObject();
 			obj.put("code", sexEnum.getCode());
 			obj.put("name", sexEnum.getName());

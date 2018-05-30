@@ -38,6 +38,17 @@ public class AllocateSkuDetailService extends BaseService<AllocateSkuDetail, Lon
 		allocateSkuDetailMapper.updateByExampleSelective(record, example);
 		
 	}
+	
+	@Override
+	public void updateInSkuStatusByOrderCode(String status, String allocateOrderCode) {
+		AllocateSkuDetail record = new AllocateSkuDetail();
+		record.setInStatus(status);
+		Example example = new Example(AllocateSkuDetail.class);
+		Example.Criteria ca = example.createCriteria();
+		ca.andEqualTo("allocateOrderCode", allocateOrderCode);
+		allocateSkuDetailMapper.updateByExampleSelective(record, example);
+		
+	}
 
 	@Override
 	public List<AllocateSkuDetail> getDetailListByOrderCode(String allocateOrderCode) {

@@ -2,6 +2,7 @@ package org.trc.service.impl.warehouse;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.jcraft.jsch.HASH;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.constants.SupplyConstants;

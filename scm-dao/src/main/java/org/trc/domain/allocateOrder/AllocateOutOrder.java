@@ -117,10 +117,24 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
      */
     @Column(name = "is_valid")
     private String isValid;
-
-
-
+    
     /**
+     * 失败原因
+     */
+    @Column(name = "failed_cause")
+    private String failedCause;
+
+
+
+    public String getFailedCause() {
+		return failedCause;
+	}
+
+	public void setFailedCause(String failedCause) {
+		this.failedCause = failedCause;
+	}
+
+	/**
      * 获取主键
      *
      * @return id - 主键

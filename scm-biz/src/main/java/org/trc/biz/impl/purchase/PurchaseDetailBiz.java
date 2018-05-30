@@ -1,21 +1,26 @@
 package org.trc.biz.impl.purchase;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.trc.biz.category.ICategoryBiz;
 import org.trc.biz.purchase.IPurchaseDetailBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.category.Brand;
+import org.trc.domain.goods.Items;
 import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.purchase.PurchaseOrder;
 import org.trc.enums.ExceptionEnum;
 import org.trc.exception.PurchaseOrderDetailException;
 import org.trc.service.category.IBrandService;
+import org.trc.service.impl.goods.ItemsService;
 import org.trc.service.purchase.IPurchaseDetailService;
 import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.AssertUtil;
+import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +31,20 @@ import java.util.List;
 @Service("purchaseDetailBiz")
 public class PurchaseDetailBiz implements IPurchaseDetailBiz{
 
-    @Resource
+    @Autowired
     private IPurchaseDetailService iPurchaseDetailService;
 
-    @Resource
+    @Autowired
     private IPurchaseOrderService purchaseOrderService;
 
-    @Resource
+    @Autowired
     private IBrandService iBrandService;
+
+    @Autowired
+    private ICategoryBiz categoryBiz;
+
+    @Autowired
+    private ItemsService itemsService;
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.PURCHASE_ORDER)
@@ -68,11 +79,8 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         }
         //品牌的名称
         List<Long> brandIds = new ArrayList<>();
-        //分类的全路径
-        List<Long> categoryIds = new ArrayList<>();
         //获得所有分类的id 拼接，并且显示name的拼接--brand
         for (PurchaseDetail purchaseDetail: purchaseDetailList){
-            categoryIds.add(purchaseDetail.getCategoryId());
             brandIds.add(purchaseDetail.getBrandId());
             if(purchaseDetail.getPurchasePrice() != null){
                 purchaseDetail.setPurchasePriceD(new BigDecimal(purchaseDetail.getPurchasePrice()).divide(new BigDecimal(100)));
@@ -90,26 +98,46 @@ public class PurchaseDetailBiz implements IPurchaseDetailBiz{
         for (Brand brand :brandList) {
             for (PurchaseDetail purchaseDetail:purchaseDetailList) {
                 if(brand.getId().equals(purchaseDetail.getBrandId())){
-                    //purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
-                    //purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
                     purchaseDetail.setBrandName(brand.getName());
                 }
             }
         }
+        handCategoryName(purchaseDetailList);
+        setSkuQuality(purchaseDetailList);
+        return purchaseDetailList;
 
-        List<PurchaseDetail> temp = purchaseOrderService.selectAllCategory(categoryIds);
-        //categoryId    allCategoryName    allCategory >>>>>>分类全路径赋值
-        for (PurchaseDetail purchaseDetailTmp: temp) {
-            for (PurchaseDetail purchaseDetail:purchaseDetailList) {
-                if(purchaseDetailTmp.getCategoryId().equals(purchaseDetail.getCategoryId())){
-                    //purchaseDetail.setAllCategory(purchaseDetailTmp.getAllCategory());
-                    purchaseDetail.setAllCategoryName(purchaseDetailTmp.getAllCategoryName());
+    }
+
+    private void handCategoryName(List<PurchaseDetail> purchaseDetailList) throws Exception{
+        for (PurchaseDetail purchaseDetail: purchaseDetailList) {
+            purchaseDetail.setAllCategoryName(categoryBiz.getCategoryName(purchaseDetail.getCategoryId()));
+        }
+    }
+
+    /**
+     * 设置sku保质期
+     * @param purchaseDetailList
+     */
+    private void setSkuQuality(List<PurchaseDetail> purchaseDetailList){
+        List<String> spuCodes = new ArrayList<>();
+        for(PurchaseDetail detail: purchaseDetailList){
+            spuCodes.add(detail.getSpuCode());
+        }
+        Example example = new Example(Items.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("spuCode", spuCodes);
+        List<Items> itemsList = itemsService.selectByExample(example);
+        if(!CollectionUtils.isEmpty(itemsList)){
+            for(PurchaseDetail detail: purchaseDetailList){
+                for(Items items: itemsList){
+                    if(StringUtils.equals(detail.getSpuCode(), items.getSpuCode())){
+                        detail.setIsQuality(items.getIsQuality());
+                        detail.setQualityDay(items.getQualityDay());
+                        break;
+                    }
                 }
             }
         }
-
-        return purchaseDetailList;
-
     }
 
 }

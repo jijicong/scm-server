@@ -147,6 +147,23 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
      */
     @Transient
     private List<AllocateSkuDetail> skuDetailList;
+    
+    /**
+     * 失败原因
+     */
+    @Column(name = "failed_cause")
+    private String failedCause;
+
+
+
+    public String getFailedCause() {
+		return failedCause;
+	}
+
+	public void setFailedCause(String failedCause) {
+		this.failedCause = failedCause;
+	}
+
 
     /**
      * 获取主键

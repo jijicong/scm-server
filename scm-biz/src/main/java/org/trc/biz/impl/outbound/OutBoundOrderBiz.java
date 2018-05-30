@@ -14,7 +14,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.trc.biz.impl.config.LogInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.common.RequsetUpdateStock;
@@ -30,15 +29,13 @@ import org.trc.exception.OutboundOrderException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.*;
 import org.trc.form.order.OutboundForm;
-import org.trc.form.outbound.OutBoundOrderForm;
-import org.trc.form.outbound.OutBoundOrderReceiverForm;
+import org.trc.form.outbound.*;
 import org.trc.form.warehouse.*;
 import org.trc.model.ToGlyResultDO;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.impl.TrcService;
 import org.trc.service.impl.config.RequestFlowService;
-import org.trc.service.impl.outbound.OutBoundOrderService;
 import org.trc.service.impl.system.LogisticsCompanyService;
 import org.trc.service.order.IOrderItemService;
 import org.trc.service.outbound.IOutBoundOrderService;
@@ -57,7 +54,6 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service("outBoundOrderBiz")
 public class OutBoundOrderBiz implements IOutBoundOrderBiz {
@@ -1246,7 +1242,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         if (!StringUtils.equals(OutboundOrderStatusEnum.CANCELED.getCode(), outboundOrder.getStatus()) &&
                 !StringUtils.equals(OutboundOrderStatusEnum.RECEIVE_FAIL.getCode(), outboundOrder.getStatus())){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("发货单当前是%s状态，不能修改收货信息",
-                    OutboundOrderStatusEnum.getClearanceEnumByCode(outboundOrder.getStatus()).getName()));
+                    OutboundOrderStatusEnum.getOutboundOrderStatusEnumByCode(outboundOrder.getStatus()).getName()));
         }
         OutboundOrder _outboundOrder = new OutboundOrder();
         _outboundOrder.setId(outboundOrder.getId());
@@ -1260,6 +1256,91 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         logInfoService.recordLog(_outboundOrder,_outboundOrder.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.UPDATE_RECEIVER_INFO.getMessage(), null,null);
         return ResultUtil.createSuccessResult("更新收货信息成功", "");
     }
+
+    @Override
+    @OutboundOrderCacheEvict
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void orderOutResultNotice(OutboumdWmsDeliverResponseForm from) {
+        AssertUtil.notNull(from, "自营仓库反馈订单发货明细参数不能为空");
+        OutboundOrder outboundOrder = new OutboundOrder();
+        outboundOrder.setOutboundOrderCode(from.getOutboundOrderCode());
+        outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+        if(!StringUtils.equals(OutboundOrderStatusEnum.WAITING.getCode(), outboundOrder.getStatus()) &&
+                !StringUtils.equals(OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode(), outboundOrder.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("发货单%s当前处于%s状态,不能执行仓库反馈发货明细操作",
+                    from.getOutboundOrderCode(), OutboundOrderStatusEnum.getOutboundOrderStatusEnumByCode(outboundOrder.getStatus()).getName()));
+        }
+        AssertUtil.notNull(outboundOrder, String.format("根据发货单编码%s查询发货单信息为空", from.getOutboundOrderCode()));
+        OutboundDetail outboundDetail = new OutboundDetail();
+        outboundDetail.setOutboundOrderCode(from.getOutboundOrderCode());
+        List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
+        AssertUtil.notEmpty(outboundDetailList, String.format("根据发货单编码%s查询发货单商品明细信息为空", from.getOutboundOrderCode()));
+        List<OutboundDetailLogistics> outboundDetailLogisticsList = new ArrayList<>();
+        List<RequsetUpdateStock> requsetUpdateStocks = new ArrayList<>();
+        if(!CollectionUtils.isEmpty(from.getOutboumdWmsLogisticsInfoFormList())){
+            for(OutboundDetail detail: outboundDetailList){
+                long num = 0;
+                for(OutboumdWmsLogisticsInfoForm logisticsInfoForm: from.getOutboumdWmsLogisticsInfoFormList()){
+                    for(OutboumdWmsDeliverSkuInfoForm skuInfoForm: logisticsInfoForm.getOutboumdWmsDeliverSkuInfoFormList()){
+                        if(StringUtils.equals(detail.getSkuCode(), skuInfoForm.getSkuCode())){
+                            num += skuInfoForm.getNum();
+                            OutboundDetailLogistics logistics = new OutboundDetailLogistics();
+                            logistics.setOutboundDetailId(detail.getId());
+                            logistics.setLogisticsCode(logisticsInfoForm.getLogistictsCode());
+                            logistics.setLogisticsCorporation(logisticsInfoForm.getLogistictsName());
+                            logistics.setWaybillNumber(logisticsInfoForm.getWayBill());
+                            logistics.setItemNum(skuInfoForm.getNum());
+                            logistics.setCreateTime(new Date());
+                            outboundDetailLogisticsList.add(logistics);
+                        }
+                    }
+                }
+                if(num > 0){
+                    if(detail.getShouldSentItemNum().longValue() <= num){
+                        detail.setRealSentItemNum(num);
+                        detail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+                    }else{
+                        detail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());
+                    }
+                    RequsetUpdateStock requsetUpdateStock = new RequsetUpdateStock();
+                    requsetUpdateStock.setSkuCode(detail.getSkuCode());
+                    requsetUpdateStock.setWarehouseCode(from.getWarehouseCode());
+                    Map<String, String> stockType = new HashMap<>();
+                    stockType.put("frozen_inventory", String.valueOf((-1 * num)));
+                    stockType.put("real_inventory", String.valueOf((-1 * num)));
+                    requsetUpdateStock.setStockType(stockType);
+                    requsetUpdateStocks.add(requsetUpdateStock);
+                }
+
+            }
+        }
+        //更新发货单信息
+        if(outboundDetailLogisticsList.size() > 0){
+            for(OutboundDetail detail: outboundDetailList){
+                outboundDetailService.updateByPrimaryKeySelective(detail);
+            }
+            outboundDetailLogisticsService.insertList(outboundDetailLogisticsList);
+            String status = getOutboundOrderStatusByDetail(outboundDetailList);
+            outboundOrder.setStatus(status);
+            outBoundOrderService.updateByPrimaryKeySelective(outboundOrder);
+            //更新库存
+            try {
+                skuStockService.updateSkuStock(requsetUpdateStocks);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //更新订单状态
+            this.updateItemOrderSupplierOrderStatus(outboundOrder.getOutboundOrderCode(), outboundOrder.getWarehouseOrderCode());
+            //发货通知单下单结果通知渠道
+            scmOrderBiz.outboundOrderSubmitResultNoticeChannel(outboundOrder.getShopOrderCode());
+            //获取仓库名称
+            WarehouseInfo warehouse = warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
+            //记录日志
+            logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
+                    LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(requsetUpdateStocks, outboundOrder.getOutboundOrderCode()), null);
+        }
+    }
+
 
     //调用获取商品详情接口
     private void retryCancelOrder (List<ScmOrderCancelRequest> requests){
