@@ -92,7 +92,7 @@ public class GoodsBiz implements IGoodsBiz {
     //分类ID全路径分割符号
     public static final String CATEGORY_ID_SPLIT_SYMBOL = "|";
     //分类名称全路径分割符号
-    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "-";
     //SKU的属性值ID分割符号
     public static final String SKU_PROPERTY_VALUE_ID_SPLIT_SYMBOL = ",";
     //SKU的属性组合名称分割符号
@@ -361,7 +361,7 @@ public class GoodsBiz implements IGoodsBiz {
                     if(j == 0){
                         sb.append(namePathList.get(j));
                     }else{
-                        sb.append(namePathList.get(j)).append(CATEGORY_NAME_SPLIT_SYMBOL);
+                        sb.append(namePathList.get(j)).append("-");
                     }
                 }
                 spuCategoryMap.put(items.getSpuCode(), sb.toString());
@@ -529,7 +529,11 @@ public class GoodsBiz implements IGoodsBiz {
             Set<String> barCodeSet =skusService.selectSkuListByBarCode(Arrays.asList(StringUtils.split(barCode,SupplyConstants.Symbol.COMMA)));
             Example example = new Example(Skus.class);
             Example.Criteria criteria2 = example.createCriteria();
-            criteria2.andIn("barCode", barCodeSet);
+            if (!AssertUtil.collectionIsEmpty(barCodeSet)){
+                criteria2.andIn("barCode", barCodeSet);
+            }else {
+                criteria2.andEqualTo("barCode", StringUtils.EMPTY);
+            }
             List<Skus> skusList = skusService.selectByExample(example);
             if(skusList.size() > 0){
                 for(Skus s : skusList){
@@ -1938,6 +1942,13 @@ public class GoodsBiz implements IGoodsBiz {
             _isValid = ZeroToNineEnum.ONE.getCode();
         }
         skus.setIsValid(_isValid);
+        if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(),_isValid)){
+            //如果状态要改为启用 就要校验条形码
+            Skus barSku = new Skus();
+            barSku.setId(id);
+            barSku = skusService.selectOne(barSku);
+            checkBarcodeOnly(barSku.getBarCode(),"","");
+        }
         int count = skusService.updateByPrimaryKeySelective(skus);
         if(count == 0){
             String msg = "商品SKU启用/停用操作更新数据库失败";
@@ -1951,7 +1962,7 @@ public class GoodsBiz implements IGoodsBiz {
         skus2 = skusService.selectOne(skus2);
         AssertUtil.notNull(skus2, String.format("根据商品sku的ID[%s]查询SKU信息为空", id));
         //更新SKU库存启停用状态
-//        updateSkuStockIsValid(spuCode, skus2.getSkuCode(), _isValid);
+        //updateSkuStockIsValid(spuCode, skus2.getSkuCode(), _isValid);
         //更新采购单明细启停用状态
         updatePurchaseDetailIsValid(spuCode, skus2.getSkuCode(), _isValid);
         Items items = new Items();

@@ -99,6 +99,8 @@ public class PurchaseDetail extends BaseDO{
     //是否具有质保期
     @Transient
     private String isQuality;
+    @Transient
+    private Long qualityDay;
 
     public BigDecimal getPurchasePriceD() {
         return purchasePriceD;
@@ -316,6 +318,14 @@ public class PurchaseDetail extends BaseDO{
 
     public void setIsQuality(String isQuality) {
         this.isQuality = isQuality;
+    }
+
+    public Long getQualityDay() {
+        return qualityDay;
+    }
+
+    public void setQualityDay(Long qualityDay) {
+        this.qualityDay = qualityDay;
     }
 }
 

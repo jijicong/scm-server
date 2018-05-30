@@ -43,7 +43,7 @@ public class CategoryBiz implements ICategoryBiz {
     private final static Integer LENGTH = 3;
 
     //分类名称全路径分割符号
-    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "/";
+    public static final String CATEGORY_NAME_SPLIT_SYMBOL = "-";
 
     @Autowired
     private ICategoryService categoryService;
