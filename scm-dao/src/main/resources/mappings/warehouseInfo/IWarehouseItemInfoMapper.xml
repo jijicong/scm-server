@@ -17,7 +17,7 @@
             AND sku_code LIKE CONCAT('%', #{skuCode}, '%')
         </if>
         <if test="itemName != null and itemName != ''">
-            AND sku_name LIKE CONCAT('%', #{itemName}, '%')
+            AND item_name LIKE CONCAT('%', #{itemName}, '%')
         </if>
         <if test="noticeStatus != null and noticeStatus != ''">
             AND notice_status= #{noticeStatus}
@@ -47,7 +47,7 @@
             AND w.sku_code LIKE CONCAT('%', #{skuCode}, '%')
         </if>
         <if test="itemName != null and itemName != ''">
-            AND w.sku_name LIKE CONCAT('%', #{itemName}, '%')
+            AND w.item_name LIKE CONCAT('%', #{itemName}, '%')
         </if>
         <if test="noticeStatus != null and noticeStatus != ''">
             AND w.notice_status= #{noticeStatus}
