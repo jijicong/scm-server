@@ -30,6 +30,7 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.supplier.SupplierApply;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.GoodsException;
 import org.trc.exception.ParamValidException;
@@ -59,6 +60,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.wms.IWmsItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.GoodsCacheEvict;
 import org.trc.util.cache.OutGoodsCacheEvict;
@@ -179,6 +181,8 @@ public class GoodsBiz implements IGoodsBiz {
     private IWarehouseApiService warehouseApiService;
     @Autowired
     private IWarehouseInfoService warehouseInfoService;
+    @Autowired
+    private IWmsItemInfoService wmsItemInfoService;
 
 
     @Override
@@ -867,15 +871,28 @@ public class GoodsBiz implements IGoodsBiz {
         warehouseItemInfo.setSpuCode(spuCode);
         warehouseItemInfo.setIsDelete(Integer.parseInt(ZeroToNineEnum.ZERO.getCode()));
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.select(warehouseItemInfo);
+
+        //更新所有子仓库商品信息
+        WmsItemInfo wmsItemInfo = new WmsItemInfo();
+        wmsItemInfo.setSpuCode(spuCode);
+        List<WmsItemInfo> wmsItemInfoList = wmsItemInfoService.select(wmsItemInfo);
+
         //如果仓库不存在该spu信息则不更新
         if(warehouseItemInfoList == null || warehouseItemInfoList.size() < 1){
             return;
         }
 
+        boolean flag = false;
+        if(wmsItemInfoList != null && wmsItemInfoList.size() > 0){
+            flag = true;
+        }
+
         //获取需要修改的信息
         Map<Long, WarehouseItemInfo> warehouseItemInfoMap1 = new HashMap<>();
+        //子仓库需要修改的信息
+        Map<Long, WmsItemInfo> wmsItemInfoMapNeedChange = new HashMap<>();
 
-        List<Skus> updatelist = new ArrayList<Skus>();
+        List<Skus> updatelist = new ArrayList<>();
         if(warehouseItemInfoMap.containsKey("updateSkus")){
             updatelist = (List<Skus>)warehouseItemInfoMap.get("updateSkus");
         }
@@ -891,19 +908,45 @@ public class GoodsBiz implements IGoodsBiz {
                 if(StringUtils.equals(s.getSkuCode(), warehouseItemInfo1.getSkuCode())){
                     if(warehouseItemInfoMap1.containsKey(warehouseItemInfo1.getId())){
                         warehouseItemInfo1 = warehouseItemInfoMap1.get(warehouseItemInfo1.getId());
-                        warehouseItemInfo1.setItemName(s.getSkuName());
-                        warehouseItemInfo1.setBarCode(s.getBarCode());
-                        warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
-                        warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
-                    }else{
-                        warehouseItemInfo1.setItemName(s.getSkuName());
-                        warehouseItemInfo1.setBarCode(s.getBarCode());
-                        warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
-                        warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
                     }
+                    warehouseItemInfo1.setItemName(s.getSkuName());
+                    warehouseItemInfo1.setBarCode(s.getBarCode());
+                    warehouseItemInfo1.setSpecNatureInfo(s.getSpecInfo());
+                    warehouseItemInfoMap1.put(warehouseItemInfo1.getId(), warehouseItemInfo1);
                 }
             }
         }
+
+        //更新子仓库商品信息
+        if(flag){
+            if(warehouseItemInfoMap.containsKey("brandId")){
+                Long brandId = (Long)warehouseItemInfoMap.get("brandId");
+                for(WmsItemInfo wmsItemInfoNeedChange : wmsItemInfoList){
+                    wmsItemInfoNeedChange.setBrandId(brandId);
+                    wmsItemInfoMapNeedChange.put(wmsItemInfoNeedChange.getId(), wmsItemInfoNeedChange);
+                }
+            }
+
+            for(WmsItemInfo wmsItemInfoNeedChange : wmsItemInfoList){
+                for(Skus s : updatelist){
+                    if(StringUtils.equals(s.getSkuCode(), wmsItemInfoNeedChange.getSkuCode())){
+                        if(wmsItemInfoMapNeedChange.containsKey(wmsItemInfoNeedChange.getId())){
+                            wmsItemInfoNeedChange = wmsItemInfoMapNeedChange.get(wmsItemInfoNeedChange.getId());
+                        }
+                        wmsItemInfoNeedChange.setSkuName(s.getSkuName());
+                        wmsItemInfoNeedChange.setBarCode(s.getBarCode());
+                        wmsItemInfoNeedChange.setSpecNatureInfo(s.getSpecInfo());
+                        wmsItemInfoMapNeedChange.put(wmsItemInfoNeedChange.getId(), wmsItemInfoNeedChange);
+                    }
+                }
+            }
+
+            for (Map.Entry<Long, WmsItemInfo> entry : wmsItemInfoMapNeedChange.entrySet()) {
+                WmsItemInfo wmsInfo = entry.getValue();
+                wmsItemInfoService.updateByPrimaryKey(wmsInfo);
+            }
+        }
+
 
         //更新仓库商品信息
         Map<Long, List<WarehouseItemInfo>> map = new HashMap<>();
@@ -1377,6 +1420,9 @@ public class GoodsBiz implements IGoodsBiz {
         Items items1 = itemsService.selectByPrimaryKey(items.getId());
         if(!StringUtils.equals(items1.getItemNo(), items.getItemNo())){
             map.put("itemNo", items.getItemNo());
+        }
+        if(items1.getBrandId() != items.getBrandId()){
+            map.put("brandId", items.getBrandId());
         }
         int count = itemsService.updateByPrimaryKeySelective(items);
         if(count == 0){

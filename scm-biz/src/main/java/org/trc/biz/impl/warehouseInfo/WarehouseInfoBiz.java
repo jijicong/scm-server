@@ -30,6 +30,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.domain.wms.WmsItemInfo;
 import org.trc.enums.*;
 import org.trc.exception.WarehouseInfoException;
 import org.trc.form.JDWmsConstantConfig;
@@ -48,6 +49,7 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.service.wms.IWmsItemInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.WarehouseCacheEvict;
 import org.trc.util.cache.WarehouseItemCacheEvict;
@@ -108,6 +110,8 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
     private ISkuStockService skuStockService;
     @Autowired
     private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private IWmsItemInfoService wmsItemInfoService;
     @Value("${exception.notice.upload.address}")
     private String EXCEPTION_NOTICE_UPLOAD_ADDRESS;
 
@@ -525,14 +529,50 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         //新增库存表信息
         if(StringUtils.isEquals(OperationalNatureEnum.SELF_SUPPORT.getCode(), operationalNature)){
             saveSkuStockIsNotice(list, warehouseInfo);
+            //更新子系统商品
+            this.saveWmsItemInfo(list);
         }else{
             this.saveSkuStock(list, warehouseInfo);
         }
+
         return ResultUtil.createSuccessResult("添加新商品成功","success");
     }
 
+    private void saveWmsItemInfo(List<WarehouseItemInfo> list){
+        List<WmsItemInfo> wmsItemInfos = new ArrayList<>();
+        for(WarehouseItemInfo info : list){
+            Items items = new Items();
+            items.setSpuCode(info.getSpuCode());
+            items = iItemsService.selectOne(items);
+
+            WmsItemInfo wmsItemInfo = new WmsItemInfo();
+            wmsItemInfo.setWarehouseCode(info.getWarehouseCode());
+            wmsItemInfo.setBrandId(items.getBrandId());
+            wmsItemInfo.setCategoryId(items.getCategoryId());
+            wmsItemInfo.setBarCode(info.getBarCode());
+            wmsItemInfo.setSkuCode(info.getSkuCode());
+            wmsItemInfo.setSpuCode(info.getSpuCode());
+            wmsItemInfo.setSkuName(info.getItemName());
+            wmsItemInfo.setSpecNatureInfo(info.getSpecNatureInfo());
+            wmsItemInfo.setOutSkuCode(info.getSkuCode());
+            wmsItemInfo.setRealInventory(0L);
+            wmsItemInfo.setLockDefectiveInventory(0L);
+            wmsItemInfo.setLockInventory(0L);
+            wmsItemInfo.setRealDefectiveInventory(0L);
+            wmsItemInfo.setLockAllocateInventory(0L);
+            wmsItemInfo.setLockAllocateDefectiveInventory(0L);
+            wmsItemInfo.setDefectiveOnWayInventory(0L);
+            wmsItemInfo.setOnWayInventory(0L);
+            wmsItemInfo.setFrozenInventory(0L);
+            wmsItemInfos.add(wmsItemInfo);
+        }
+        if(wmsItemInfos.size() > 0){
+            wmsItemInfoService.insertList(wmsItemInfos);
+        }
+    }
+
     private void saveSkuStock(List<WarehouseItemInfo> list, WarehouseInfo warehouseInfo){
-        List<SkuStock> skuStockList = new ArrayList<SkuStock>();
+        List<SkuStock> skuStockList = new ArrayList<>();
         SkuStock skuStock = null;
         for(WarehouseItemInfo warehouseItemInfo : list){
             skuStock = new SkuStock();
