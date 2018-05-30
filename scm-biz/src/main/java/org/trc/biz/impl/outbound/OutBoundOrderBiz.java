@@ -1265,12 +1265,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         OutboundOrder outboundOrder = new OutboundOrder();
         outboundOrder.setOutboundOrderCode(from.getOutboundOrderCode());
         outboundOrder = outBoundOrderService.selectOne(outboundOrder);
+        AssertUtil.notNull(outboundOrder, String.format("根据发货单编码%s查询发货单信息为空", from.getOutboundOrderCode()));
         if(!StringUtils.equals(OutboundOrderStatusEnum.WAITING.getCode(), outboundOrder.getStatus()) &&
                 !StringUtils.equals(OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode(), outboundOrder.getStatus())){
             throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("发货单%s当前处于%s状态,不能执行仓库反馈发货明细操作",
                     from.getOutboundOrderCode(), OutboundOrderStatusEnum.getOutboundOrderStatusEnumByCode(outboundOrder.getStatus()).getName()));
         }
-        AssertUtil.notNull(outboundOrder, String.format("根据发货单编码%s查询发货单信息为空", from.getOutboundOrderCode()));
         OutboundDetail outboundDetail = new OutboundDetail();
         outboundDetail.setOutboundOrderCode(from.getOutboundOrderCode());
         List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
