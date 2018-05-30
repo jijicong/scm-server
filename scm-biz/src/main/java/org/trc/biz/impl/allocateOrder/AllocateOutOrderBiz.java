@@ -242,7 +242,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         //记录日志
         WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setCode(allocateOutOrder.getOutWarehouseName());
+        warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
         logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);

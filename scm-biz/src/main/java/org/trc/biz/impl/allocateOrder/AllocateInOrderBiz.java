@@ -328,7 +328,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 
         //记录日志
         WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setCode(allocateInOrder.getInWarehouseName());
+        warehouseInfo.setCode(allocateInOrder.getInWarehouseCode());
         warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
         logInfoService.recordLog(allocateInOrder, allocateInOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
