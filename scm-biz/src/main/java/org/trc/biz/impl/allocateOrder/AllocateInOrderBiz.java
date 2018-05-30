@@ -19,15 +19,13 @@ import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.ExceptionEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.ZeroToNineEnum;
-import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
-import org.trc.exception.AllocateOutOrderException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
@@ -52,7 +50,6 @@ import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
-
 
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
