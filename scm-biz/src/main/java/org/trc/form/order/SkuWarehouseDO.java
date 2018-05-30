@@ -15,6 +15,10 @@ public class SkuWarehouseDO {
      */
     private String channelCode;
     /**
+     * 货主编码
+     */
+    private String ownerCode;
+    /**
      * 仓库编码
      */
     private String warehouseCode;
@@ -61,5 +65,13 @@ public class SkuWarehouseDO {
 
     public void setItemId(String itemId) {
         this.itemId = itemId;
+    }
+
+    public String getOwnerCode() {
+        return ownerCode;
+    }
+
+    public void setOwnerCode(String ownerCode) {
+        this.ownerCode = ownerCode;
     }
 }

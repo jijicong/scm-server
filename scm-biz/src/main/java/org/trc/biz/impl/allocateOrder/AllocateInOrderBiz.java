@@ -7,6 +7,8 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,6 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.LogOperationEnum;
-import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
@@ -30,7 +31,6 @@ import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
-import org.trc.form.warehouse.ScmWarehouseRequestBase;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
@@ -45,6 +45,7 @@ import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
+import org.trc.util.DateCheckUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.ResponseAck;
@@ -55,7 +56,8 @@ import tk.mybatis.mapper.util.StringUtil;
 
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
-
+	
+	private Logger logger = LoggerFactory.getLogger(AllocateInOrderBiz.class);
     @Autowired
     private IAllocateOrderExtService allocateOrderExtService;
     @Autowired
@@ -144,10 +146,16 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             	throw new RuntimeException("调拨入库单取消失败");
             }
         } else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)) {//重新收货
-            logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
-            if (!wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false)) {
-            	throw new RuntimeException("调拨入库单重新收货失败");
+        	
+            if (AllocateInOrderStatusEnum.CANCEL.getCode().equals(form.getAllocateInOrder().getStatus())
+            		&& DateCheckUtil.checkDate(form.getAllocateInOrder().getUpdateTime())) {
+            	throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前调拨入单取消时间过长，不能重新收货");
             }
+            logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
+            wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false);
+//            if (!wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false)) {
+//            	throw new RuntimeException("调拨入库单重新收货失败");
+//            }
         }
         
         //记录操作日志
@@ -191,6 +199,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 //				status = AllocateInOrderStatusEnum.CANCEL.getCode().toString();
 				succ = true;
 			}
+		} else {
+			logger.error("调拨入库单取消失败:", response.getDatabuffer());
 		}
 		//allocateInOrderService.updateOutOrderStatusById(status, inOder.getId());
 		//allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, inOder.getAllocateOrderCode());

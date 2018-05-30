@@ -126,7 +126,8 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
      * 获取可用仓库信息
      * @return
      */
-    private List<WarehouseInfo> getWarehouseInfo(){
+    @Override
+    public List<WarehouseInfo> getWarehouseInfo(){
         WarehouseInfo warehouseInfo = new WarehouseInfo();
         warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
         warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用

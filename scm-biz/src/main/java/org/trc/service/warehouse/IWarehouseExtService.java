@@ -1,5 +1,6 @@
 package org.trc.service.warehouse;
 
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.WarehouseTypeEnum;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
@@ -7,6 +8,12 @@ import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import java.util.List;
 
 public interface IWarehouseExtService {
+
+    /**
+     * 获取所有仓库
+     * @return
+     */
+    List<WarehouseInfo> getWarehouseInfo();
 
     /**
      * 获取商品库存
