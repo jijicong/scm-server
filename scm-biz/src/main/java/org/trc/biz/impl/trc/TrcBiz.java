@@ -835,6 +835,7 @@ public class TrcBiz implements ITrcBiz {
         if (StringUtil.isNotEmpty(queryModel.getIsValid())) {
             criteria.andEqualTo("isValid", queryModel.getIsValid());
         }
+        criteria.andEqualTo("supplierKindCode", SupplyConstants.Supply.Supplier.SUPPLIER_ONE_AGENT_SELLING);//一件代发供应商
         example.orderBy("isValid").desc();
         example.orderBy("updateTime").desc();
         page = supplierService.pagination(example, page, queryModel);
