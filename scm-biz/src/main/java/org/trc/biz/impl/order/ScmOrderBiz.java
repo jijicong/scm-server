@@ -332,6 +332,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(form.getShopOrderCode())){//店铺订单号
             criteria.andLike("shopOrderCode", "%" + form.getShopOrderCode() + "%");
         }
+        if (StringUtil.isNotEmpty(form.getScmShopOrderCode())) {//系统订单号
+            criteria.andLike("scmShopOrderCode", "%" + form.getScmShopOrderCode() + "%");
+        }
         if(StringUtils.isNotBlank(form.getSupplierCode())){//供应商编码
             criteria.andEqualTo("supplierCode", form.getSupplierCode());
         }
