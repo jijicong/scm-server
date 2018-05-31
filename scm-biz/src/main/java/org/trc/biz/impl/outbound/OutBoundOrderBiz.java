@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.trc.biz.order.IOrderExtBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.biz.outbuond.IOutBoundOrderBiz;
 import org.trc.common.RequsetUpdateStock;
@@ -110,6 +111,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IRealIpService iRealIpService;
     @Autowired
     private IWarehouseMockService warehouseMockService;
+    @Autowired
+    private IOrderExtBiz orderExtBiz;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -140,6 +143,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 order.setIsTimeOut(ZeroToNineEnum.ZERO.getCode());
             }
         }
+
+        orderExtBiz.setOrderSellName(pagenation);
         return pagenation;
     }
 
