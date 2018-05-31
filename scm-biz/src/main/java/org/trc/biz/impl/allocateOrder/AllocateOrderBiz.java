@@ -661,6 +661,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			}
 		} else {
 			// 审核通过
+			allocateOrder.setAuditOpinion(auditOpinion);
 			allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
 			operation = LogOperationEnum.AUDIT_PASS;
 		}
