@@ -20,36 +20,36 @@ public class WarehouseNoticeDetails implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     //'入库通知单编号',
-    @Column(name = "warehouseNoticeCode")
+    @Column(name = "warehouse_notice_code")
     private String warehouseNoticeCode;
     //'商品名称',
-    @Column(name = "skuName")
+    @Column(name = "sku_name")
     private String skuName;
     //'sku编码',
-    @Column(name = "skuCode")
+    @Column(name = "sku_code")
     private String skuCode;
     //'品牌',
-    @Column(name = "brandId")
+    @Column(name = "brand_id")
     private Long brandId;
     //品牌名称
     @Transient
     private String brandName;
     //'分类',
-    @Column(name = "categoryId")
+    @Column(name = "category_id")
     private Long categoryId;
     @Transient
     private String allCategoryName;
     //'采购价,单位/分',
-    @Column(name = "purchasePrice")
+    @Column(name = "purchase_price")
     private Long purchasePrice;
     //采购价格转化成元
     @Transient
     private BigDecimal purchasePriceT;
     //'采购数量',
-    @Column(name = "purchasingQuantity")
+    @Column(name = "purchasing_quantity")
     private Long purchasingQuantity;
     //'实际入库数量',
-    @Column(name = "actualStorageQuantity")
+    @Column(name = "actual_storage_quantity")
     private Long actualStorageQuantity;
     //'创建时间,格式yyyy-mm-dd hh:mi:ss',
     @JsonSerialize(using = CustomDateSerializer.class)
@@ -62,16 +62,16 @@ public class WarehouseNoticeDetails implements Serializable{
      * scm2.0新增字段 
      **/
     //条形码
-    @Column(name = "barCode")
+    @Column(name = "bar_code")
     private String barCode;
     //规格
-    @Column(name = "specInfo")
+    @Column(name = "spec_info")
     private String specInfo;
     //批次号
-    @Column(name = "batchNo")
+    @Column(name = "batch_no")
     private String batchNo;
     //生产编码
-    @Column(name = "productionCode")
+    @Column(name = "production_code")
     private String productionCode;
     //生产日期
     @JsonSerialize(using = SimpleDateSerializer.class)
@@ -80,7 +80,7 @@ public class WarehouseNoticeDetails implements Serializable{
     @JsonSerialize(using = SimpleDateSerializer.class)
     private Date expiredDate;	
     //理论保质期限（天）
-    @Column(name = "expiredDay")
+    @Column(name = "expired_day")
     private Integer expiredDay;
     //采购总金额, 单位/分
     @JsonSerialize(using = MoneySerializer.class)
@@ -89,26 +89,26 @@ public class WarehouseNoticeDetails implements Serializable{
     @Column(name = "status")
     private Integer status;
     //正品入库数量
-    @Column(name = "normalStorageQuantity")
+    @Column(name = "normal_storage_quantity")
     private Long normalStorageQuantity;
     //残次品入库数量
-    @Column(name = "defectiveStorageQuantity")
+    @Column(name = "defective_storage_quantity")
     private Long defectiveStorageQuantity;
     //货主编码
-    @Column(name = "ownerCode")
+    @Column(name = "owner_code")
     private String ownerCode;
     //第三方仓库商品ID
-    @Column(name = "itemId")
+    @Column(name = "item_id")
     private String itemId;
     //实际入库时间
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date actualInstockTime;	
     // 入库异常原因
-    @Column(name = "instockException")
+    @Column(name = "instock_exception")
     private String instockException;
 
     //库存表对应的
-    @Column(name = "skuStockId")
+    @Column(name = "sku_stock_id")
     private Long skuStockId;
     
     
