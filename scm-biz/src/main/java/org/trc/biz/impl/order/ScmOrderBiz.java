@@ -2683,16 +2683,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         ScmDeliveryOrderCreateRequest requestZY = new ScmDeliveryOrderCreateRequest();
         requestZY.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
         List<ScmDeliveryOrderDO> scmDeliveryOrderDOListZY = new ArrayList<>();
+        Set<String> channelCodes = new HashSet<>();
+        Set<String> sellCodes = new HashSet<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
             OutboundForm outboundForm = entry.getValue();
             OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
             List<OutboundDetail> outboundDetailList = outboundForm.getOutboundDetailList();
+            channelCodes.add(outboundOrder.getChannelCode());
+            sellCodes.add(outboundOrder.getSellCode());
             ScmDeliveryOrderDO scmDeliveryOrderDO = getScmDeliveryOrderDO(outboundOrder, warehouseItemInfoList);
-            List<ScmDeliveryOrderItem> scmDeliveryOrderItemList = new ArrayList<>();
-            for(OutboundDetail detail: outboundDetailList){
-                scmDeliveryOrderItemList.add(getScmDeliveryOrderItem(outboundOrder, detail, warehouseItemInfoList));
-            }
-            scmDeliveryOrderDO.setScmDeleveryOrderItemList(scmDeliveryOrderItemList);
+            ScmOrderTypeEnum scmOrderType = ScmOrderTypeEnum.NOT_STORE_ORDRE;
             for(WarehouseInfo warehouseInfo: warehouseInfoList){
                 if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseInfo.getCode())){
                     if(StringUtils.equals(WarehouseOperateNatureEnum.OUTER_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//第三方仓库
@@ -2702,22 +2702,88 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }else if(StringUtils.equals(WarehouseOperateNatureEnum.SELF_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//自营仓库
                         scmDeliveryOrderDOListZY.add(scmDeliveryOrderDO);
                     }
+                    if(StringUtils.equals(WarehouseOperateTypeEnum.STORE.getCode(), warehouseInfo.getOperationalType()) ||
+                            StringUtils.equals(WarehouseOperateTypeEnum.NO_SAILER_STORE.getCode(), warehouseInfo.getOperationalType())){
+                        scmOrderType = ScmOrderTypeEnum.STORE_ORDRE;
+                    }
                     break;
                 }
             }
+            scmDeliveryOrderDO.setScmOrderType(scmOrderType.getCode());
+            List<ScmDeliveryOrderItem> scmDeliveryOrderItemList = new ArrayList<>();
+            for(OutboundDetail detail: outboundDetailList){
+                scmDeliveryOrderItemList.add(getScmDeliveryOrderItem(outboundOrder, detail, warehouseItemInfoList));
+            }
+            scmDeliveryOrderDO.setScmDeleveryOrderItemList(scmDeliveryOrderItemList);
         }
+        //查询采发货单相关业务线
+        List<Channel> channelList = getOutboundChannels(channelCodes);
+        //查询采发货单相关销售渠道
+        List<SellChannel> sellChannelList = getOutboundSellChannes(sellCodes);
         List<ScmDeliveryOrderCreateResponse> responseList = new ArrayList<>();
+
         if(scmDeliveryOrderDOListJD.size()> 0){
             requestJD.setScmDeleveryOrderDOList(scmDeliveryOrderDOListJD);
+            //设置发货单创建参数渠道名称
+            setScmDeliveryOrderCreateParamChannelNames(requestJD, channelList, sellChannelList);
             AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = warehouseApiService.deliveryOrderCreate(requestJD);
             responseList.addAll(getDeliveryOrderCreateResult(scmDeliveryOrderDOListJD, appResult));
         }
         if(scmDeliveryOrderDOListZY.size()> 0){
             requestZY.setScmDeleveryOrderDOList(scmDeliveryOrderDOListZY);
+            //设置发货单创建参数渠道名称
+            setScmDeliveryOrderCreateParamChannelNames(requestZY, channelList, sellChannelList);
             AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = warehouseApiService.deliveryOrderCreate(requestZY);
             responseList.addAll(getDeliveryOrderCreateResult(scmDeliveryOrderDOListZY, appResult));
         }
         return new AppResult<>(ResponseAck.SUCCESS_CODE, "", responseList);
+    }
+
+    /**
+     * 查询采发货单相关业务线
+     * @param channelCodes
+     * @return
+     */
+    private List<Channel> getOutboundChannels(Set<String> channelCodes){
+        Example example = new Example(Channel.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("code", channelCodes);
+        return channelService.selectByExample(example);
+    }
+
+    /**
+     * 查询采发货单相关销售渠道
+     * @param sellCodes
+     * @return
+     */
+    private List<SellChannel> getOutboundSellChannes(Set<String> sellCodes){
+        Example example = new Example(SellChannel.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("sellCode", sellCodes);
+        return sellChannelService.selectByExample(example);
+    }
+
+    /**
+     * 设置发货单创建参数渠道名称
+     * @param request
+     * @param channelList
+     * @param sellChannelList
+     */
+    private void setScmDeliveryOrderCreateParamChannelNames(ScmDeliveryOrderCreateRequest request, List<Channel> channelList, List<SellChannel> sellChannelList){
+        for(ScmDeliveryOrderDO scmDeliveryOrderDO: request.getScmDeleveryOrderDOList()){
+            for(Channel channel: channelList){
+                if(StringUtils.equals(scmDeliveryOrderDO.getChannelCode(), channel.getCode())){
+                    scmDeliveryOrderDO.setChannelName(channel.getName());
+                    break;
+                }
+            }
+            for(SellChannel channel: sellChannelList){
+                if(StringUtils.equals(scmDeliveryOrderDO.getSellChannelCode(), channel.getSellCode())){
+                    scmDeliveryOrderDO.setSellChannelName(channel.getSellName());
+                    break;
+                }
+            }
+        }
     }
 
     private List<ScmDeliveryOrderCreateResponse> getDeliveryOrderCreateResult(List<ScmDeliveryOrderDO> scmDeliveryOrderDOList, AppResult<List<ScmDeliveryOrderCreateResponse>> appResult){
@@ -2878,6 +2944,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         scmDeliveryOrderDO.setBuyerMessage(outboundOrder.getBuyerMessage());
         //scmDeliveryOrderDO.setSellerMessage("");//
         scmDeliveryOrderDO.setPlaceOrderTime(outboundOrder.getCreateTime());//下单时间
+        scmDeliveryOrderDO.setPayTime(outboundOrder.getPayTime());
+        scmDeliveryOrderDO.setShopOrderCode(outboundOrder.getShopOrderCode());
+        scmDeliveryOrderDO.setChannelCode(outboundOrder.getChannelCode());
+        scmDeliveryOrderDO.setSellChannelCode(outboundOrder.getSellCode());
 
         /**
          * 京东专有参数
@@ -2892,11 +2962,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ScmDeliveryOrderItem getScmDeliveryOrderItem(OutboundOrder outboundOrder, OutboundDetail outboundDetail, List<WarehouseItemInfo> warehouseItemInfoList){
         ScmDeliveryOrderItem scmDeliveryOrderItem = new ScmDeliveryOrderItem();
         scmDeliveryOrderItem.setItemCode(outboundDetail.getSkuCode());
+        scmDeliveryOrderItem.setSkuName(outboundDetail.getSkuName());
+        scmDeliveryOrderItem.setSpecInfo(outboundDetail.getSpecNatureInfo());
         String warehouseOwnerId = "";
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseItemInfo.getWarehouseCode()) &&
                     StringUtils.equals(outboundDetail.getSkuCode(), warehouseItemInfo.getSkuCode())){
                 scmDeliveryOrderItem.setItemId(warehouseItemInfo.getWarehouseItemId());
+                scmDeliveryOrderItem.setBarCode(warehouseItemInfo.getBarCode());
                 warehouseOwnerId = warehouseItemInfo.getWarehouseOwnerId();
                 break;
             }
@@ -5455,6 +5528,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String code = serialUtilService.generateCode(SupplyConstants.Serial.OUTBOUND_ORDER_LENGTH, SupplyConstants.Serial.OUTBOUND_ORDER, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
         outboundOrder.setScmShopOrderCode(warehouseOrder.getScmShopOrderCode());
         outboundOrder.setChannelCode(shopOrder.getChannelCode());
+        outboundOrder.setSellCode(shopOrder.getSellCode());
         outboundOrder.setOutboundOrderCode(code);
         outboundOrder.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
         outboundOrder.setWarehouseCode(warehouseOrder.getWarehouseCode());

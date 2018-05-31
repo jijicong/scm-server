@@ -71,6 +71,8 @@ public class OutboundOrder implements Serializable {
 
     private String channelCode;
 
+    private String sellCode;
+
     private String buyerMessage;
 
     private String sellerMessage;
@@ -388,5 +390,13 @@ public class OutboundOrder implements Serializable {
 
     public void setScmShopOrderCode(String scmShopOrderCode) {
         this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
     }
 }
