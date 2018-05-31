@@ -247,6 +247,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
+        logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
+                LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
+
         return ResultUtil.createSuccessResult("反填调拨出库信息成功！", result);
     }
 

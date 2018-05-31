@@ -343,6 +343,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         logInfoService.recordLog(allocateInOrder, allocateInOrder.getId().toString(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
 
+        logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
+                LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
+
         return ResultUtil.createSuccessResult("反填调拨入库信息成功！", result);
     }
 
