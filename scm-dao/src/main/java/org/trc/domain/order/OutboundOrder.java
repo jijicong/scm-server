@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class OutboundOrder implements Serializable {
+public class OutboundOrder extends OrderBase {
 
     // 主键
     @Id

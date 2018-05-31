@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Created by Ding on 2017/6/21.
  */
-public class WarehouseOrder implements Serializable {
+public class WarehouseOrder extends OrderBaseDO {
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,11 +51,6 @@ public class WarehouseOrder implements Serializable {
 
     // 渠道编码
     private String channelCode;
-
-    // 销售渠道编码
-    @NotEmpty
-    @Length(max = 32)
-    private String sellCode;
 
     // 来源平台编码
     private String platformCode;
@@ -658,14 +653,6 @@ public class WarehouseOrder implements Serializable {
 
     public void setHandCancelTime(Date handCancelTime) {
         this.handCancelTime = handCancelTime;
-    }
-
-    public String getSellCode() {
-        return sellCode;
-    }
-
-    public void setSellCode(String sellCode) {
-        this.sellCode = sellCode;
     }
 
     public String getWarehouseCode() {

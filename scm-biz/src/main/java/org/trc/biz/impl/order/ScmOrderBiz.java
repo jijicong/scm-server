@@ -271,6 +271,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if (StringUtil.isNotEmpty(queryModel.getShopOrderCode())) {//店铺订单编码
             criteria.andLike("shopOrderCode", "%" + queryModel.getShopOrderCode() + "%");
         }
+        if (StringUtil.isNotEmpty(queryModel.getScmShopOrderCode())) {//系统订单号
+            criteria.andLike("scmShopOrderCode", "%" + queryModel.getScmShopOrderCode() + "%");
+        }
         if (StringUtil.isNotEmpty(queryModel.getShopName())) {//店铺名称
             criteria.andLike("shopName", "%" + queryModel.getShopName() + "%");
         }
@@ -291,10 +294,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return page;
             }
         }
-        example.orderBy("payTime").desc();
+        example.orderBy("createTime").desc();
         page = shopOrderService.pagination(example, page, new QueryModel());
         if(page.getResult().size() > 0){
             handlerOrderInfo(page, platformOrderList);
+            orderExtBiz.setOrderSellName(page);
         }
         return page;
     }
@@ -347,6 +351,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         example.orderBy("updateTime").desc();
         page = warehouseOrderService.pagination(example, page, form);
         handlerWarehouseOrderInfo(page, platformOrderList);
+        orderExtBiz.setOrderSellName(page);
         return page;
     }
 
@@ -5094,6 +5099,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(form.getShopOrderCode())){//店铺订单编码
             criteria.andLike("shopOrderCode", "%" + form.getShopOrderCode() + "%");
         }
+        if(StringUtils.isNotBlank(form.getScmShopOrderCode())){//系统订单号
+            criteria.andLike("scmShopOrderCode", "%" + form.getScmShopOrderCode() + "%");
+        }
         if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//平台订单编码
             criteria.andLike("platformOrderCode", "%" + form.getPlatformOrderCode() + "%");
         }
@@ -5111,6 +5119,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         example.orderBy("status").asc();
         example.orderBy("createTime").desc();
         page = exceptionOrderService.pagination(example, page, form);
+        orderExtBiz.setOrderSellName(page);
         return page;
     }
 

@@ -17,6 +17,14 @@ public class ShopOrderForm extends QueryModel{
     @Length(max = 32, message = "店铺订单编码长度不能超过32个")
     private String shopOrderCode;
 
+    @QueryParam("scmShopOrderCode")
+    @Length(max = 32, message = "系统订单号长度不能超过32个")
+    private String scmShopOrderCode;
+
+    @QueryParam("sellCode")
+    @Length(max = 32, message = "销售渠道编码长度不能超过32个")
+    private String sellCode;
+
     // 平台订单编码
     @QueryParam("platformOrderCode")
     @Length(max = 32, message = "平台订单编码长度不能超过32个")
@@ -46,6 +54,21 @@ public class ShopOrderForm extends QueryModel{
     private String supplierOrderStatus;
 
 
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public String getSellCode() {
+        return sellCode;
+    }
+
+    public void setSellCode(String sellCode) {
+        this.sellCode = sellCode;
+    }
 
     public String getShopOrderCode() {
         return shopOrderCode;
