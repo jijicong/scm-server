@@ -7,17 +7,16 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * 文件类型枚举
  */
-public enum WarehouseTypeEnum {
+public enum ScmOrderTypeEnum {
 
-	Qimen("QM","奇门"),
-	Jingdong("JD","京东"),
-	Zy("TRC","自营"),
+	STORE_ORDRE("0","门店订单"),
+	NOT_STORE_ORDRE("1","非门店订单"),
 	;
 
 	private String code;
 	private String name;
 
-	WarehouseTypeEnum(String code, String name){
+	ScmOrderTypeEnum(String code, String name){
 		this.code = code;
 		this.name = name;
 	}
@@ -31,8 +30,8 @@ public enum WarehouseTypeEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseTypeEnum getValidEnumByName(String name){
-		for(WarehouseTypeEnum validEnum : WarehouseTypeEnum.values()){
+	public static ScmOrderTypeEnum getScmOrderTypeEnumByName(String name){
+		for(ScmOrderTypeEnum validEnum : ScmOrderTypeEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
 			}
@@ -49,8 +48,8 @@ public enum WarehouseTypeEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseTypeEnum getValidEnumByCode(String code){
-		for(WarehouseTypeEnum validEnum : WarehouseTypeEnum.values()){
+	public static ScmOrderTypeEnum getScmOrderTypeEnumByCode(String code){
+		for(ScmOrderTypeEnum validEnum : ScmOrderTypeEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;
 			}
@@ -68,7 +67,7 @@ public enum WarehouseTypeEnum {
 	 */
 	public static JSONArray toJSONArray(){
 		JSONArray array = new JSONArray();
-		for(WarehouseTypeEnum sexEnum : WarehouseTypeEnum.values()){
+		for(ScmOrderTypeEnum sexEnum : ScmOrderTypeEnum.values()){
 			JSONObject obj = new JSONObject();
 			obj.put("code", sexEnum.getCode());
 			obj.put("name", sexEnum.getName());

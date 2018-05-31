@@ -32,16 +32,17 @@ public class WarehouseNotice implements Serializable{
     //采购订单id
     @Transient
     private Long purhcaseOrderId;
+
     //'采购合同编号',
-    @Column(name ="contractCode")
     /*@NotEmpty*/
+    @Column(name ="contractCode")
     @Length(max = 32, message = "采购合同的编码字母和数字不能超过32个,汉字不能超过16个")
     private String contractCode;
     @Transient //采购组名称
     private String purchaseGroupName;
     //'归属采购组编号',
-    @Column(name ="purchaseGroupCode")
     /*@NotEmpty*/
+    @Column(name ="purchaseGroupCode")
     @Length(max = 32, message = "采购组的编码字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseGroupCode;
     //'所在仓库id',
@@ -83,6 +84,7 @@ public class WarehouseNotice implements Serializable{
     @Transient
     private String purchaseTypeName;
     //'归属采购人编号',
+    @Column(name ="purchasePersonId")
     private String purchasePersonId;
     @Transient //归属采购人名称
     private String purchasePersonName;
@@ -113,7 +115,7 @@ public class WarehouseNotice implements Serializable{
     @Column(name ="entryOrderId")
     private String entryOrderId;
     //货主编码
-    @Column(name ="entryOrderId")
+    @Column(name ="ownerCode")
     private String ownerCode;
     //奇门仓库编码
     @Column(name ="qimenWarehouseCode")
