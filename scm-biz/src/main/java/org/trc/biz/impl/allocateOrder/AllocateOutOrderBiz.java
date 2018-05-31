@@ -187,7 +187,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                 for(AllocateSkuDetail skuDetail : allocateSkuDetails){
                     if(StringUtils.equals(detailRequest.getSkuCode(), skuDetail.getSkuCode())){
                         skuDetail.setRealOutNum(detailRequest.getRealOutNum());
-                        if(detailRequest.getRealOutNum() == skuDetail.getPlanAllocateNum()){
+                        if(detailRequest.getRealOutNum().longValue() == skuDetail.getPlanAllocateNum().longValue()){
                             skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
                             skuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
                             skuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());

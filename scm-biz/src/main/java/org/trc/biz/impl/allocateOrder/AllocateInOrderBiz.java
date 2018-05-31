@@ -294,8 +294,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                         skuDetail.setNornalInNum(detailRequest.getNornalInNum());
                         Long realInNum = detailRequest.getNornalInNum() + detailRequest.getDefectInNum();
                         skuDetail.setRealInNum(realInNum);
-                        if(skuDetail.getRealOutNum() == skuDetail.getNornalInNum() &&
-                                skuDetail.getDefectInNum() == 0){
+                        if(skuDetail.getRealOutNum().longValue() == skuDetail.getNornalInNum().longValue() &&
+                                skuDetail.getDefectInNum().longValue() == 0){
                             skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
                             skuDetail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
                             logMessage += skuDetail.getSkuCode() + ":" + "入库完成<br>";
