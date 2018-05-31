@@ -5,12 +5,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Transient;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.PathParam;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,19 +13,19 @@ import java.util.Date;
  * 入库通知单信息
  * Created by sone on 2017/7/10.
  */
+@Table(name = "warehouse_notice")
 public class WarehouseNotice implements Serializable{
 
     @Id
-    @PathParam("id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     //'入库通知单编号',
-    @FormParam("warehouseNoticeCode")
+    @Column(name ="warehouseNoticeCode")
     @NotEmpty
     @Length(max = 64, message = "入库通知的编码字母和数字不能超过64个,汉字不能超过32个")
     private String warehouseNoticeCode;
     //'采购单编号',
-    @FormParam("purchaseOrderCode")
+    @Column(name ="purchaseOrderCode")
     @NotEmpty
     @Length(max = 32, message = "采购订单的编码字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseOrderCode;
@@ -38,52 +33,52 @@ public class WarehouseNotice implements Serializable{
     @Transient
     private Long purhcaseOrderId;
     //'采购合同编号',
-    @FormParam("contractCode")
+    @Column(name ="contractCode")
     /*@NotEmpty*/
     @Length(max = 32, message = "采购合同的编码字母和数字不能超过32个,汉字不能超过16个")
     private String contractCode;
     @Transient //采购组名称
     private String purchaseGroupName;
     //'归属采购组编号',
-    @FormParam("purchaseGroupCode")
+    @Column(name ="purchaseGroupCode")
     /*@NotEmpty*/
     @Length(max = 32, message = "采购组的编码字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseGroupCode;
     //'所在仓库id',
-    @FormParam("warehouseId")
+    @Column(name ="warehouseId")
     private Long warehouseId;
     //'仓库编号',
-    @FormParam("warehouseCode")
+    @Column(name ="warehouseCode")
     @NotEmpty
     @Length(max = 32, message = "仓库的编码字母和数字不能超过32个,汉字不能超过16个")
     private String warehouseCode;
     //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
     @Transient
     private String warehouseName;
-    @FormParam("status")
+    @Column(name ="status")
     @NotEmpty
     @Length(max = 2, message = "状态字母和数字不能超过2个")
     private String status;
     //'供应商id',
-    @FormParam("supplierId")
+    @Column(name ="supplierId")
     private Long supplierId;
     //'供应商编号',
-    @FormParam("supplierCode")
+    @Column(name ="supplierCode")
     @Length(max = 32, message = "供应商编码字母和数字不能超过32个,汉字不能超过16个")
     private String supplierCode;
     //供应商名称
     @Transient
     private String supplierName;
     //'采购类型编号',
-    @FormParam("purchaseType")
+    @Column(name ="purchaseType")
     @NotEmpty
     @Length(max = 32, message = "采购类型字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseType;
     //货主ID
-    @FormParam("channelCode")
+    @Column(name ="channelCode")
     private String channelCode;
     //仓库信息主键
-    @FormParam("warehouseInfoId")
+    @Column(name ="warehouseInfoId")
     private Long warehouseInfoId;
     @Transient
     private String purchaseTypeName;
@@ -92,15 +87,19 @@ public class WarehouseNotice implements Serializable{
     @Transient //归属采购人名称
     private String purchasePersonName;
     //'提运单号',
-    @FormParam("takeGoodsNo")
+    @Column(name ="takeGoodsNo")
     private String takeGoodsNo;
     // '要求到货日期,格式:yyyy-mm-dd',
+    @Column(name ="requriedReceiveDate")
     private String requriedReceiveDate;
     //'截止到货日期,格式:yyyy-mm-dd',
+    @Column(name ="endReceiveDate")
     private String endReceiveDate;
     //'备注',
+    @Column(name ="remark")
     private String remark;
     //'创建人',
+    @Column(name ="createOperator")
     private String createOperator;
     //'创建时间,格式yyyy-mm-dd hh:mi:ss',
     @JsonSerialize(using = CustomDateSerializer.class)
@@ -111,36 +110,52 @@ public class WarehouseNotice implements Serializable{
      * scm2.0新增字段 
      **/
     //仓储系统入库单编码,入库单申请时返回
+    @Column(name ="entryOrderId")
     private String entryOrderId;
     //货主编码
+    @Column(name ="entryOrderId")
     private String ownerCode;
     //奇门仓库编码
+    @Column(name ="qimenWarehouseCode")
     private String qimenWarehouseCode;
     //发件人
+    @Column(name ="sender")
     private String sender;
     //收货人手机
+    @Column(name ="receiverNumber")
     private String receiverNumber;
     //收货人
+    @Column(name ="receiver")
     private String receiver;
     //发件人所在省
+    @Column(name ="senderProvince")
     private String senderProvince;
     //发件人所在城市
+    @Column(name ="senderCity")
     private String senderCity;
     //发件人手机
+    @Column(name ="senderNumber")
     private String senderNumber;
     //发件方详细地址
+    @Column(name ="senderAddress")
     private String senderAddress;
     //收件方省份
+    @Column(name ="receiverProvince")
     private String receiverProvince;
     //收件方地址
+    @Column(name ="receiverAddress")
     private String receiverAddress;
     //收件方城市
+    @Column(name ="receiverCity")
     private String receiverCity;
     // 仓库接收失败原因warehouseNotice
+    @Column(name ="failureCause")
     private String failureCause;
     //异常原因
+    @Column(name ="exceptionCause")
     private String exceptionCause;
     //完成状态：0-未完成，1-已完成 (仓库反馈收货完成的、作废的、已取消的都是已完成)
+    @Column(name ="finishStatus")
     private String finishStatus;
 
     public String getFinishStatus() {
