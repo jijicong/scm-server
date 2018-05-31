@@ -421,15 +421,23 @@
 
     <profiles>
         <profile>
-            <!-- 本地开发环境 -->
-            <id>dev</id>
+            <!-- 本地环境 -->
+            <id>local</id>
             <properties>
-                <package.environment>dev</package.environment>
+                <package.environment>local</package.environment>
                 <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+        </profile>
+        <profile>
+            <!-- 开发环境 -->
+            <id>dev</id>
+            <properties>
+                <package.environment>dev</package.environment>
+                <jvm.opt.args>-server -Xms256m -Xmx512m -Xmn192m -XX:MetaspaceSize=128m</jvm.opt.args>
+            </properties>
         </profile>
         <profile>
             <!-- 测试环境 -->

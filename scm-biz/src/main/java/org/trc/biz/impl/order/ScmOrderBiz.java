@@ -2671,11 +2671,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Override
     public AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap) {
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
+        //获取采购单相关仓库
+        List<WarehouseInfo> warehouseInfoList = getOutboundWarehouseInfo(entries);
         //获取采购单相关商品的仓库对接信息
         List<WarehouseItemInfo> warehouseItemInfoList = getWarehouseItemInfos(entries);
-        //准备下单参数
-        ScmDeliveryOrderCreateRequest request = new ScmDeliveryOrderCreateRequest();
-        List<ScmDeliveryOrderDO> scmDeliveryOrderDOList = new ArrayList<>();
+        //京东仓库下单参数
+        ScmDeliveryOrderCreateRequest requestJD = new ScmDeliveryOrderCreateRequest();
+        requestJD.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
+        List<ScmDeliveryOrderDO> scmDeliveryOrderDOListJD = new ArrayList<>();
+        //自营仓库下单参数
+        ScmDeliveryOrderCreateRequest requestZY = new ScmDeliveryOrderCreateRequest();
+        requestZY.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+        List<ScmDeliveryOrderDO> scmDeliveryOrderDOListZY = new ArrayList<>();
         for(Map.Entry<String, OutboundForm> entry: entries){
             OutboundForm outboundForm = entry.getValue();
             OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
@@ -2686,10 +2693,63 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 scmDeliveryOrderItemList.add(getScmDeliveryOrderItem(outboundOrder, detail, warehouseItemInfoList));
             }
             scmDeliveryOrderDO.setScmDeleveryOrderItemList(scmDeliveryOrderItemList);
-            scmDeliveryOrderDOList.add(scmDeliveryOrderDO);
+            for(WarehouseInfo warehouseInfo: warehouseInfoList){
+                if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseInfo.getCode())){
+                    if(StringUtils.equals(WarehouseOperateNatureEnum.OUTER_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//第三方仓库
+                        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(),warehouseInfo.getIsThroughWms().toString())){//京东仓储
+                            scmDeliveryOrderDOListJD.add(scmDeliveryOrderDO);
+                        }
+                    }else if(StringUtils.equals(WarehouseOperateNatureEnum.SELF_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//自营仓库
+                        scmDeliveryOrderDOListZY.add(scmDeliveryOrderDO);
+                    }
+                    break;
+                }
+            }
         }
-        request.setScmDeleveryOrderDOList(scmDeliveryOrderDOList);
-        return warehouseApiService.deliveryOrderCreate(request);
+        List<ScmDeliveryOrderCreateResponse> responseList = new ArrayList<>();
+        if(scmDeliveryOrderDOListJD.size()> 0){
+            requestJD.setScmDeleveryOrderDOList(scmDeliveryOrderDOListJD);
+            AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = warehouseApiService.deliveryOrderCreate(requestJD);
+            responseList.addAll(getDeliveryOrderCreateResult(scmDeliveryOrderDOListJD, appResult));
+        }
+        if(scmDeliveryOrderDOListZY.size()> 0){
+            requestZY.setScmDeleveryOrderDOList(scmDeliveryOrderDOListZY);
+            AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = warehouseApiService.deliveryOrderCreate(requestZY);
+            responseList.addAll(getDeliveryOrderCreateResult(scmDeliveryOrderDOListZY, appResult));
+        }
+        return new AppResult<>(ResponseAck.SUCCESS_CODE, "", responseList);
+    }
+
+    private List<ScmDeliveryOrderCreateResponse> getDeliveryOrderCreateResult(List<ScmDeliveryOrderDO> scmDeliveryOrderDOList, AppResult<List<ScmDeliveryOrderCreateResponse>> appResult){
+        if(StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)){
+            return (List<ScmDeliveryOrderCreateResponse>)appResult.getResult();
+        }else{
+            List<ScmDeliveryOrderCreateResponse> failDeliveryOrderCreateResponseList = new ArrayList<>();
+            for(ScmDeliveryOrderDO scmDeliveryOrderDO: scmDeliveryOrderDOList){
+                ScmDeliveryOrderCreateResponse response = new ScmDeliveryOrderCreateResponse();
+                response.setCode(appResult.getAppcode());
+                response.setDeliveryOrderCode(scmDeliveryOrderDO.getDeliveryOrderCode());
+                response.setMessage(appResult.getDatabuffer());
+                failDeliveryOrderCreateResponseList.add(response);
+            }
+            return failDeliveryOrderCreateResponseList;
+        }
+    }
+
+    /**
+     * 获取采购单相关仓库
+     * @param entries
+     * @return
+     */
+    private List<WarehouseInfo> getOutboundWarehouseInfo(Set<Map.Entry<String, OutboundForm>> entries){
+        Set<String> warehouserIds = new HashSet<>();
+        for(Map.Entry<String, OutboundForm> entry: entries){
+            warehouserIds.add(entry.getValue().getOutboundOrder().getWarehouseCode());
+        }
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("code", warehouserIds);
+        return warehouseInfoService.selectByExample(example);
     }
 
     @Override
@@ -2782,7 +2842,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("warehouseCode", warehoseCodes);
         criteria.andIn("skuCode", skuCodes);
-        criteria.andEqualTo("isValid", ValidStateEnum.ENABLE.getCode());
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
         AssertUtil.notEmpty(warehouseItemInfoList, String.format("发货单[%s]的相关商品全部不可用", CommonUtil.converCollectionToString(outboudOrderCodes)));
         return warehouseItemInfoList;
@@ -4055,7 +4114,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     _inventoryQueryItemList.add(item);
                 }
             }
-
             //按仓库库存降序排序
             /*if(_inventoryQueryItemList.size() > 0){
                 Collections.sort(_inventoryQueryItemList, new Comparator<ScmInventoryQueryResponse>() {
@@ -4089,6 +4147,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
                 skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
                 skuWarehouseDO.setChannelCode(_skuStock.getChannelCode());
+                skuWarehouseDO.setOwnerCode(scmInventoryQueryResponse.getOwnerCode());
                 skuWarehouseDO.setWarehouseCode(_skuStock.getWarehouseCode());
                 for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
                     if(StringUtils.equals(_skuStock.getSkuCode(), item.getItemCode())){
