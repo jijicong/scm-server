@@ -5,19 +5,19 @@ import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 文件类型枚举
+ * 仓库运营类型枚举
  */
-public enum WarehouseTypeEnum {
+public enum WarehouseOperateTypeEnum {
 
-	Qimen("QM","奇门"),
-	Jingdong("JD","京东"),
-	Zy("TRC","自营"),
+	WAREHOUSE("0","纯仓库"),
+	STORE("1","普通门店"),
+	NO_SAILER_STORE("2","无人门店)"),
 	;
 
 	private String code;
 	private String name;
 
-	WarehouseTypeEnum(String code, String name){
+	WarehouseOperateTypeEnum(String code, String name){
 		this.code = code;
 		this.name = name;
 	}
@@ -31,8 +31,8 @@ public enum WarehouseTypeEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseTypeEnum getValidEnumByName(String name){
-		for(WarehouseTypeEnum validEnum : WarehouseTypeEnum.values()){
+	public static WarehouseOperateTypeEnum getWarehouseOperateTypeEnumByName(String name){
+		for(WarehouseOperateTypeEnum validEnum : WarehouseOperateTypeEnum.values()){
 			if(StringUtils.equals(name, validEnum.getName())){
 				return validEnum;
 			}
@@ -49,8 +49,8 @@ public enum WarehouseTypeEnum {
 	* @return ValidEnum
 	* @throws
 	 */
-	public static WarehouseTypeEnum getValidEnumByCode(String code){
-		for(WarehouseTypeEnum validEnum : WarehouseTypeEnum.values()){
+	public static WarehouseOperateTypeEnum getWarehouseOperateTypeEnumByCode(String code){
+		for(WarehouseOperateTypeEnum validEnum : WarehouseOperateTypeEnum.values()){
 			if(StringUtils.equals(validEnum.getCode(), code)){
 				return validEnum;
 			}
@@ -68,7 +68,7 @@ public enum WarehouseTypeEnum {
 	 */
 	public static JSONArray toJSONArray(){
 		JSONArray array = new JSONArray();
-		for(WarehouseTypeEnum sexEnum : WarehouseTypeEnum.values()){
+		for(WarehouseOperateTypeEnum sexEnum : WarehouseOperateTypeEnum.values()){
 			JSONObject obj = new JSONObject();
 			obj.put("code", sexEnum.getCode());
 			obj.put("name", sexEnum.getName());

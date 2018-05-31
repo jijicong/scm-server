@@ -1,7 +1,12 @@
 package org.trc.form.warehouse;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
+@Setter
+@Getter
 public class ScmDeliveryOrderItem {
 
     /**
@@ -38,52 +43,20 @@ public class ScmDeliveryOrderItem {
      */
     private BigDecimal actualPrice;
 
+    /**
+     * sku名称
+     * @return
+     */
+    private String skuName;
 
-    public String getOwnerCode() {
-        return ownerCode;
-    }
-
-    public void setOwnerCode(String ownerCode) {
-        this.ownerCode = ownerCode;
-    }
-
-    public String getItemCode() {
-        return itemCode;
-    }
-
-    public void setItemCode(String itemCode) {
-        this.itemCode = itemCode;
-    }
-
-    public String getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
-
-    public Long getPlanQty() {
-        return planQty;
-    }
-
-    public void setPlanQty(Long planQty) {
-        this.planQty = planQty;
-    }
-
-    public String getInventoryType() {
-        return inventoryType;
-    }
-
-    public void setInventoryType(String inventoryType) {
-        this.inventoryType = inventoryType;
-    }
-
-    public BigDecimal getActualPrice() {
-        return actualPrice;
-    }
-
-    public void setActualPrice(BigDecimal actualPrice) {
-        this.actualPrice = actualPrice;
-    }
+    /**
+     * sku规格信息
+     * @return
+     */
+    private String specInfo;
+    /**
+     * 条形码
+     * @return
+     */
+    private String barCode;
 }
