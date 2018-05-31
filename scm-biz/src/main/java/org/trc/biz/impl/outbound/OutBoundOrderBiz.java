@@ -51,6 +51,7 @@ import org.trc.util.*;
 import org.trc.util.cache.OutboundOrderCacheEvict;
 import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.StringUtil;
 
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
@@ -1476,6 +1477,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     public void setQueryParam(Example example, OutBoundOrderForm form, String channelCode) {
         Example.Criteria criteria = example.createCriteria();
+        if(StringUtils.isNotBlank(form.getSellCode())){
+            criteria.andEqualTo("sellCode", form.getSellCode());
+        }
+        if (StringUtil.isNotEmpty(form.getScmShopOrderCode())) {//系统订单号
+            criteria.andLike("scmShopOrderCode", "%" + form.getScmShopOrderCode() + "%");
+        }
         //发货通知单编号
         if (!StringUtils.isBlank(form.getOutboundOrderCode())) {
             criteria.andLike("outboundOrderCode", "%" + form.getOutboundOrderCode() + "%");

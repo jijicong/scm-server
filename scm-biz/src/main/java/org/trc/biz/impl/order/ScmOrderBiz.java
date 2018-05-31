@@ -225,8 +225,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Autowired
     private ISkusService skusService;
     @Autowired
-    private IItemsService itemsService;
-    @Autowired
     private IOrderExtBiz orderExtBiz;
     @Autowired
     private IWarehouseApiService warehouseApiService;
@@ -257,7 +255,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
@@ -316,14 +314,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
             criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
         }
-
+        if(StringUtils.isNotBlank(form.getSellCode())){
+            criteria.andEqualTo("sellCode", form.getSellCode());
+        }
         if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
             criteria.andEqualTo("orderType", form.getOrderType());
         }
         if(StringUtils.isNotBlank(form.getSupplierOrderStatus())){//状态
             criteria.andEqualTo("supplierOrderStatus", form.getSupplierOrderStatus());
         }
-        if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//平台订单编号
+        if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//销售渠道平台订单号
             criteria.andLike("platformOrderCode", "%" + form.getPlatformOrderCode() + "%");
         }
         if(StringUtils.isNotBlank(form.getWarehouseOrderCode())){//供应商订单编号
@@ -362,7 +362,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
