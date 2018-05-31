@@ -21,12 +21,12 @@ public class WarehouseNotice implements Serializable{
     private Long id;
     //'入库通知单编号',
     @Column(name ="warehouse_notice_code")
-    @NotEmpty
+    @NotEmpty(message ="入库通知单编号不能为空")
     @Length(max = 64, message = "入库通知的编码字母和数字不能超过64个,汉字不能超过32个")
     private String warehouseNoticeCode;
     //'采购单编号',
     @Column(name ="purchase_order_code")
-    @NotEmpty
+    @NotEmpty(message ="采购单编号不能为空")
     @Length(max = 32, message = "采购订单的编码字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseOrderCode;
     //采购订单id
@@ -50,14 +50,14 @@ public class WarehouseNotice implements Serializable{
     private Long warehouseId;
     //'仓库编号',
     @Column(name ="warehouse_code")
-    @NotEmpty
+    @NotEmpty(message ="仓库编号不能为空")
     @Length(max = 32, message = "仓库的编码字母和数字不能超过32个,汉字不能超过16个")
     private String warehouseCode;
     //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
     @Transient
     private String warehouseName;
     @Column(name ="status")
-    @NotEmpty
+    @NotEmpty(message ="状态不能为空")
     @Length(max = 2, message = "状态字母和数字不能超过2个")
     private String status;
     //'供应商id',
@@ -72,7 +72,7 @@ public class WarehouseNotice implements Serializable{
     private String supplierName;
     //'采购类型编号',
     @Column(name ="purchase_type")
-    @NotEmpty
+    @NotEmpty(message ="采购类型编号不能为空")
     @Length(max = 32, message = "采购类型字母和数字不能超过32个,汉字不能超过16个")
     private String purchaseType;
     //货主ID
