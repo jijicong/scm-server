@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Created by hzcyn on 2017/11/13.
  */
-public class ExceptionOrder implements Serializable {
+public class ExceptionOrder extends OrderBaseDO {
 
     // 主键
     @Id
@@ -53,8 +53,6 @@ public class ExceptionOrder implements Serializable {
     private Date createTime;
     // 更新时间
     private Date updateTime;
-    //销售渠道编号
-    private String sellCode;
 
 
     /**
@@ -197,14 +195,6 @@ public class ExceptionOrder implements Serializable {
         this.platformOrder = platformOrder;
     }
 
-    public String getSellCode() {
-        return sellCode;
-    }
-
-    public void setSellCode(String sellCode) {
-        this.sellCode = sellCode;
-    }
-
     public String getScmShopOrderCode() {
         return scmShopOrderCode;
     }
@@ -230,7 +220,6 @@ public class ExceptionOrder implements Serializable {
                 ", itemNum=" + itemNum +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
-                ", sellCode='" + sellCode + '\'' +
                 ", exceptionOrderItemList=" + exceptionOrderItemList +
                 ", platformOrder=" + platformOrder +
                 '}';

@@ -18,6 +18,9 @@ public class ExceptionOrderForm extends QueryModel{
     @QueryParam("shopOrderCode")
     @Length(max = 32, message = "店铺订单编码长度不能超过32个")
     private String shopOrderCode;
+    @QueryParam("scmShopOrderCode")
+    @Length(max = 32, message = "系统订单号长度不能超过32个")
+    private String scmShopOrderCode;
     @QueryParam("platformOrderCode")
     @Length(max = 32, message = "平台订单编码长度不能超过32个")
     private String platformOrderCode;
@@ -77,6 +80,14 @@ public class ExceptionOrderForm extends QueryModel{
 
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 
     @Override
