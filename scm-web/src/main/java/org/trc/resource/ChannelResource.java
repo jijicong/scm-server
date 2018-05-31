@@ -121,4 +121,13 @@ public class ChannelResource {
         channelBiz.updateChannelState(channel);
        return ResultUtil.createSuccessResult("状态修改成功","");
     }
+
+    //查询当前登录用户所属业务线已关联的销售渠道
+    @GET
+    @Path(SupplyConstants.Channel.YWX_SELL_CHANNEL_LIST)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response ywxSellChannelList(@Context ContainerRequestContext requestContext){
+        return ResultUtil.createSuccessResult("查询当前登录用户所属业务线已关联的销售渠道成功",
+                channelBiz.querySellChannelList((AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO)));
+    }
 }

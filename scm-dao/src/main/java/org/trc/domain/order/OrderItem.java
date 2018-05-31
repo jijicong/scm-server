@@ -244,6 +244,9 @@ public class OrderItem implements Serializable {
     // 供货价,单位/元
     private BigDecimal supplyPrice;
 
+    // 交易备注
+    private String tradeMemo;
+
     public OrderItem(){
 
     }
@@ -1378,5 +1381,13 @@ public class OrderItem implements Serializable {
 
     public void setScmShopOrderCode(String scmShopOrderCode) {
         this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public String getTradeMemo() {
+        return tradeMemo;
+    }
+
+    public void setTradeMemo(String tradeMemo) {
+        this.tradeMemo = tradeMemo;
     }
 }

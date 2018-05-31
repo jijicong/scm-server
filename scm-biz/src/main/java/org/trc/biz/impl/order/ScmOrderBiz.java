@@ -257,13 +257,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
         Example.Criteria criteria = example.createCriteria();
         if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
             criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
+        if(StringUtils.isNotBlank(queryModel.getSellCode())){
+            criteria.andEqualTo("sellCode", queryModel.getSellCode());
         }
         if (StringUtil.isNotEmpty(queryModel.getPlatformOrderCode())) {//平台订单编码
             criteria.andLike("platformOrderCode", "%" + queryModel.getPlatformOrderCode() + "%");
@@ -356,7 +359,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public List<ShopOrder> queryShopOrders(ShopOrderForm form) {
         AssertUtil.notNull(form, "查询商铺订单列表参数不能为空");
         ShopOrder shopOrder = new ShopOrder();
@@ -6271,6 +6274,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private final static String BUYER_MESSAGE = "买家留言";
     //商家备注
     private final static String SHOP_MEMO = "商家备注";
+    //备注
+    private final static String MEMO = "备注";
     //付款时间
     private final static String PAY_TIME = "付款时间";
     //付款时间
@@ -6460,6 +6465,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(!StringUtils.equals(ImportExcel.NULL_STRING, shopMemo)){
                 detail.setShopMemo(shopMemo);
             }
+            String memo = getColumVal(columVals, titleResult, MEMO);
+            if(!StringUtils.equals(ImportExcel.NULL_STRING, memo)){
+                detail.setMemo(memo);
+            }
 
             String num = getColumVal(columVals, titleResult, NUM);
             if(StringUtils.isNotBlank(num)){
@@ -6541,6 +6550,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderItem.setScmShopOrderCode(scmShopOrderCode);
                 orderItem.setItemName(detail.getSkuName());
                 orderItem.setPostDiscount(detail.getPostFee());//邮费
+                orderItem.setTradeMemo(detail.getMemo());
                 orderItem.setCreateTime(detail.getPayTime());
                 orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
                 orderItemList.add(orderItem);
