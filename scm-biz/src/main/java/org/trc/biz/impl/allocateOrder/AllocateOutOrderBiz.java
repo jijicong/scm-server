@@ -40,7 +40,9 @@ import tk.mybatis.mapper.entity.Example;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service("allocateOutOrderBiz")
 public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
@@ -385,9 +387,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                 logger.error(msg);
                 throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
             }
-
-            if (!wmsCancelNotice(allocateOutOrder)) {
-                throw new RuntimeException("调拨入库单取消失败");
+            Map<String, String> map = new HashMap<>();
+            if (!wmsCancelNotice(allocateOutOrder, map)) {
+                throw new RuntimeException("调拨出库单取消失败:" + map.get("msg"));
             }
         }
 
@@ -411,7 +413,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     /**
      * 出库单取消通知
      */
-    private boolean wmsCancelNotice (AllocateOutOrder outOder) {
+    private boolean wmsCancelNotice (AllocateOutOrder outOder, Map<String, String> errMsg) {
         boolean succ = false;
         ScmOrderCancelRequest request = new ScmOrderCancelRequest();
         request.setOrderType(CancelOrderType.ALLOCATE_OUT.getCode());
@@ -425,7 +427,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                 succ = true;
             }
         } else {
-        	logger.error("调拨出库单取消失败:", response.getDatabuffer());
+        	errMsg.put("msg", response.getDatabuffer());
+        	logger.error("调拨出库单取消失败:{}", response.getDatabuffer());
         }
         return succ;
     }
