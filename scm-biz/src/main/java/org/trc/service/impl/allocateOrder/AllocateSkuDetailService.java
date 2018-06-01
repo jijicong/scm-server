@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.mapper.allocateOrder.AllocateSkuDetailMapper;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.impl.BaseService;
@@ -55,6 +56,7 @@ public class AllocateSkuDetailService extends BaseService<AllocateSkuDetail, Lon
 		Example example = new Example(AllocateSkuDetail.class);
 		Criteria ca = example.createCriteria();
 		ca.andEqualTo("allocateOrderCode", allocateOrderCode);
+		ca.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
 		return allocateSkuDetailMapper.selectByExample(example);
 	}
 

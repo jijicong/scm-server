@@ -2,7 +2,9 @@ package org.trc.biz.impl.allocateOrder;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -142,8 +144,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         LogOperationEnum logOperationEnum = null;
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)) {//取消收货
             logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
-            if (!wmsCancelNotice(form.getAllocateInOrder())) {
-            	throw new RuntimeException("调拨入库单取消失败");
+            Map<String, String> map = new HashMap<>();
+            if (!wmsCancelNotice(form.getAllocateInOrder(), map)) {
+            	throw new RuntimeException("调拨入库单取消失败" +map.get("msg"));
             }
         } else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)) {//重新收货
         	
@@ -183,7 +186,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     /**
      * 入库单取消通知
      */
-    private boolean wmsCancelNotice (AllocateInOrder inOder) {
+    private boolean wmsCancelNotice (AllocateInOrder inOder,  Map<String, String> errMsg) {
     	boolean succ = false;
     	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
     	request.setOrderType(CancelOrderType.ALLOCATE_IN.getCode());
@@ -200,6 +203,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 				succ = true;
 			}
 		} else {
+			errMsg.put("msg", response.getDatabuffer());
 			logger.error("调拨入库单取消失败:", response.getDatabuffer());
 		}
 		//allocateInOrderService.updateOutOrderStatusById(status, inOder.getId());
@@ -229,7 +233,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
         
         //记录操作日志
-        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), 
+        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(),
         		aclUserAccreditInfo.getUserId(), LogOperationEnum.NOTICE_RECIVE_GOODS.getMessage(), "",null);
 
         String status = null;
@@ -257,6 +261,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void noticeReciveGoods(String allocateOrderCode, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
         AllocateInOrder allocateInOrder = new AllocateInOrder();

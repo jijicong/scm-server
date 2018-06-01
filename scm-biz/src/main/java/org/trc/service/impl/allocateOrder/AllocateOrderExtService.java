@@ -216,7 +216,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     	
         allocateInOrderService.insert(allocateInOrder);
         //记录操作日志
-        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+        logInfoService.recordLog(allocateInOrder,allocateInOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), "",null);
         return code;
     }
 
@@ -241,7 +241,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         
         allocateOutOrderService.insert(outOrder);
         //记录操作日志
-        logInfoService.recordLog(outOrder, outOrder.getId().toString(), createOperator, LogOperationEnum.CREATE.getMessage(), "",null);
+        logInfoService.recordLog(outOrder, outOrder.getId().toString(), SYSTEM, LogOperationEnum.CREATE.getMessage(), "",null);
         return code;
     }
 
