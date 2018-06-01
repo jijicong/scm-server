@@ -315,7 +315,6 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
         allocateInOrder = allocateInOrders.get(0);
-        String result = "" ;
         if(StringUtils.isNotEmpty(getAllocateInOrderStatusByDetail(allocateSkuDetails))){
             allocateInOrder.setStatus(getAllocateInOrderStatusByDetail(allocateSkuDetails));
         }
@@ -332,7 +331,6 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.IN_EXCEPTION.getCode());
         }else if(StringUtils.equals(allocateInOrder.getStatus(), String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()))){
             allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.IN_NORMAL.getCode());
-            result = "入库完成";
         }
         allocateOrderService.updateByPrimaryKey(allocateOrder);
 
@@ -346,7 +344,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
 
-        return ResultUtil.createSuccessResult("反填调拨入库信息成功！", result);
+        return ResultUtil.createSuccessResult("反填调拨入库信息成功！", "");
     }
 
     //获取状态

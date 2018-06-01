@@ -14,10 +14,7 @@ import org.trc.biz.system.ISellChannelBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.ValidEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.SellChannelException;
 import org.trc.form.system.SellChannelFrom;
 import org.trc.service.System.ISellChannelService;
@@ -99,14 +96,19 @@ public class SellChannelBiz implements ISellChannelBiz{
         if (null!=tmp){
            throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, "该销售渠道名称已存在!");
         }
+
         checkSaveSellChannel(sellChannel);
         SellChannel saveSellChannel = new SellChannel();
+        String sellType = sellChannel.getSellType();
         saveSellChannel.setSellCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
         saveSellChannel.setIsValid(ValidEnum.VALID.getCode());
         saveSellChannel.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         saveSellChannel.setCreateOperator(aclUserAccreditInfo.getUserId());
         saveSellChannel.setSellName(sellChannel.getSellName());
-        saveSellChannel.setSellType(sellChannel.getSellType());
+        saveSellChannel.setSellType(sellType);
+        if(StringUtils.equals(sellChannel.getSellType(), SellChannelTypeEnum.STORE.getCode().toString())){
+            saveSellChannel.setStoreId(sellChannel.getStoreId());
+        }
         saveSellChannel.setRemark(sellChannel.getRemark());
         int count = sellChannelService.insert(saveSellChannel);
         if (count == 0) {
@@ -130,6 +132,7 @@ public class SellChannelBiz implements ISellChannelBiz{
                 throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_UPDATE_EXCEPTION, "该销售渠道名称已存在");
             }
         }
+        checkSaveSellChannel(sellChannel);
         sellChannel.setUpdateTime(Calendar.getInstance().getTime());
         int count = sellChannelService.updateByPrimaryKeySelective(sellChannel);
         if (count == 0) {
@@ -179,5 +182,8 @@ public class SellChannelBiz implements ISellChannelBiz{
     private void checkSaveSellChannel(SellChannel sellChannel){
         AssertUtil.notBlank(sellChannel.getSellName(), "销售渠道参数sellName不能为空");
         AssertUtil.notBlank(sellChannel.getSellType(), "销售渠道参数sellType不能为空");
+        if(StringUtils.equals(sellChannel.getSellType(), SellChannelTypeEnum.STORE.getCode().toString())){
+            AssertUtil.notBlank(sellChannel.getStoreId(), "销售渠道参数门店ID不能为空");
+        }
     }
 }
