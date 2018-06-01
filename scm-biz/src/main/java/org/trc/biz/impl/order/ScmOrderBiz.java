@@ -225,8 +225,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
     @Autowired
     private ISkusService skusService;
     @Autowired
-    private IItemsService itemsService;
-    @Autowired
     private IOrderExtBiz orderExtBiz;
     @Autowired
     private IWarehouseApiService warehouseApiService;
@@ -264,6 +262,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
             criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
+        }
+        if(StringUtils.isNotBlank(queryModel.getSellCode())){
+            criteria.andEqualTo("sellCode", queryModel.getSellCode());
         }
         if (StringUtil.isNotEmpty(queryModel.getPlatformOrderCode())) {//平台订单编码
             criteria.andLike("platformOrderCode", "%" + queryModel.getPlatformOrderCode() + "%");
@@ -313,14 +314,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.isNotBlank(aclUserAccreditInfo.getChannelCode())){
             criteria.andEqualTo("channelCode", aclUserAccreditInfo.getChannelCode());
         }
-
+        if(StringUtils.isNotBlank(form.getSellCode())){
+            criteria.andEqualTo("sellCode", form.getSellCode());
+        }
         if(StringUtils.isNotBlank(form.getOrderType())){//订单类型
             criteria.andEqualTo("orderType", form.getOrderType());
         }
         if(StringUtils.isNotBlank(form.getSupplierOrderStatus())){//状态
             criteria.andEqualTo("supplierOrderStatus", form.getSupplierOrderStatus());
         }
-        if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//平台订单编号
+        if(StringUtils.isNotBlank(form.getPlatformOrderCode())){//销售渠道平台订单号
             criteria.andLike("platformOrderCode", "%" + form.getPlatformOrderCode() + "%");
         }
         if(StringUtils.isNotBlank(form.getWarehouseOrderCode())){//供应商订单编号
@@ -328,6 +331,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.isNotBlank(form.getShopOrderCode())){//店铺订单号
             criteria.andLike("shopOrderCode", "%" + form.getShopOrderCode() + "%");
+        }
+        if (StringUtil.isNotEmpty(form.getScmShopOrderCode())) {//系统订单号
+            criteria.andLike("scmShopOrderCode", "%" + form.getScmShopOrderCode() + "%");
         }
         if(StringUtils.isNotBlank(form.getSupplierCode())){//供应商编码
             criteria.andEqualTo("supplierCode", form.getSupplierCode());
@@ -6271,6 +6277,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private final static String BUYER_MESSAGE = "买家留言";
     //商家备注
     private final static String SHOP_MEMO = "商家备注";
+    //备注
+    private final static String MEMO = "备注";
     //付款时间
     private final static String PAY_TIME = "付款时间";
     //付款时间
@@ -6460,6 +6468,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(!StringUtils.equals(ImportExcel.NULL_STRING, shopMemo)){
                 detail.setShopMemo(shopMemo);
             }
+            String memo = getColumVal(columVals, titleResult, MEMO);
+            if(!StringUtils.equals(ImportExcel.NULL_STRING, memo)){
+                detail.setMemo(memo);
+            }
 
             String num = getColumVal(columVals, titleResult, NUM);
             if(StringUtils.isNotBlank(num)){
@@ -6541,6 +6553,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderItem.setScmShopOrderCode(scmShopOrderCode);
                 orderItem.setItemName(detail.getSkuName());
                 orderItem.setPostDiscount(detail.getPostFee());//邮费
+                orderItem.setTradeMemo(detail.getMemo());
                 orderItem.setCreateTime(detail.getPayTime());
                 orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
                 orderItemList.add(orderItem);

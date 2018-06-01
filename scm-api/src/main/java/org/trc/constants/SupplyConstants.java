@@ -304,6 +304,8 @@ public class SupplyConstants {
          * 查询所有的销售渠道
          */
         public static final String SELL_CHANNEL_LIST= "channelList";
+        //查询业务线相关销售渠道
+        public static final String YWX_SELL_CHANNEL_LIST= "ywxSellChannelList";
     }
 
     /**
