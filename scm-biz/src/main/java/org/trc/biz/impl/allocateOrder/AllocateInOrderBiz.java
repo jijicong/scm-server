@@ -285,6 +285,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         //获取所有调拨出库详情明细
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
         allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        allocateSkuDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
 
         String logMessage = "";
