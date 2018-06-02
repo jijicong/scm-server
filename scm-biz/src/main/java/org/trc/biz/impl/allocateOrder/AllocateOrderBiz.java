@@ -599,6 +599,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         Example example = new Example(AllocateSkuDetail.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("allocateOrderCode", orderId);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         allocateSkuDetailService.updateByExampleSelective(skuDetail, example);
 		
 		logInfoService.recordLog(new AllocateOrder(), orderId, 
@@ -684,6 +685,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         }
         page.setTotalCount(totalCount);
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
+        pagenation.setPageNo(page.getPageNo());
         pagenation.setStart(page.getStart());
         pagenation.setPageSize(page.getPageSize());
         pagenation.setTotalCount(totalCount);

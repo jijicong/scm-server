@@ -36,6 +36,7 @@ public class AllocateSkuDetailService extends BaseService<AllocateSkuDetail, Lon
         Example example = new Example(AllocateSkuDetail.class);
         Example.Criteria ca = example.createCriteria();
         ca.andEqualTo("allocateOrderCode", allocateOrderCode);
+        ca.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
 		allocateSkuDetailMapper.updateByExampleSelective(record, example);
 		
 	}
@@ -47,6 +48,7 @@ public class AllocateSkuDetailService extends BaseService<AllocateSkuDetail, Lon
 		Example example = new Example(AllocateSkuDetail.class);
 		Example.Criteria ca = example.createCriteria();
 		ca.andEqualTo("allocateOrderCode", allocateOrderCode);
+		ca.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
 		allocateSkuDetailMapper.updateByExampleSelective(record, example);
 		
 	}

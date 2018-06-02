@@ -478,7 +478,8 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         page.setTotalCount(purchaseDetailListCount);
         Pagenation<WarehouseItemInfo> pagenation = new Pagenation();
         pagenation.setStart(page.getStart());
-        pagenation.setPageSize(page.getStart());
+        pagenation.setPageSize(page.getPageSize());
+        pagenation.setPageNo(page.getPageNo());
         pagenation.setTotalCount(purchaseDetailListCount);
         List<PurchaseDetail>  purchaseDetailList = getPurchaseOrderItemsBySupplier(supplierCode, warehouseInfoId, form.getSkuCode(), form.getSkuName(), form.getBarCode(),
                 form.getItemNo(), form.getBrandName(), skus, pagenation);

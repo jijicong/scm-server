@@ -120,6 +120,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         AssertUtil.notNull(allocateInOrder, String.format("查询调拨单[%s]信息为空", allocateOrderCode));
         AllocateSkuDetail record = new AllocateSkuDetail();
         record.setAllocateOrderCode(allocateOrderCode);
+        record.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(record);
         AssertUtil.notEmpty(allocateSkuDetailList, String.format("查询调拨单[%s]明细为空", allocateOrderCode));
         allocateInOrder.setSkuDetailList(allocateSkuDetailList);
