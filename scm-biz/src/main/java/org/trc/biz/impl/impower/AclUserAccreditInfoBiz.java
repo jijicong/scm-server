@@ -318,7 +318,7 @@ public class AclUserAccreditInfoBiz implements IAclUserAccreditInfoBiz {
     @UserCacheEvict
     public void saveUserAccreditInfo(AclUserAddPageDate userAddPageDate, AclUserAccreditInfo aclUserAccreditInfoContext) throws Exception {
         checkUserAddPageDate(userAddPageDate);
-        if (Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
+        if (!Pattern.matches(REGEX_MOBILE, userAddPageDate.getPhone())) {
             String msg = "手机号格式错误," + userAddPageDate.getPhone();
             LOGGER.error(msg);
             throw new UserAccreditInfoException(ExceptionEnum.SYSTEM_ACCREDIT_SAVE_EXCEPTION, msg);
