@@ -1,5 +1,7 @@
 package org.trc.domain.System;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.trc.domain.BaseDO;
 
@@ -12,6 +14,8 @@ import javax.ws.rs.PathParam;
 /**
  * @author hzszy
  */
+@Setter
+@Getter
 public class SellChannel extends BaseDO{
     @PathParam("id")
     @Id
@@ -35,43 +39,8 @@ public class SellChannel extends BaseDO{
     @Length(max = 300, message = "销售渠道备注长度不能超过300")
     private String remark;
 
-    public Long getId() {
-        return id;
-    }
+    @FormParam("storeId")
+    @Length(max = 255, message = "门店ID不能超过255")
+    private String storeId;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getSellCode() {
-        return sellCode;
-    }
-
-    public void setSellCode(String sellCode) {
-        this.sellCode = sellCode;
-    }
-
-    public String getSellName() {
-        return sellName;
-    }
-
-    public void setSellName(String sellName) {
-        this.sellName = sellName;
-    }
-
-    public String getSellType() {
-        return sellType;
-    }
-
-    public void setSellType(String sellType) {
-        this.sellType = sellType;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
 }

@@ -12,6 +12,7 @@
     <artifactId>scm-common</artifactId>
 
     <dependencies>
+        
         <dependency>
             <groupId>org.trc</groupId>
             <artifactId>scm-util</artifactId>

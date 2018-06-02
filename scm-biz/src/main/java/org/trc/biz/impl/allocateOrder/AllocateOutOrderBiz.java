@@ -178,6 +178,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         //获取所有调拨出库详情明细
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
         allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        allocateSkuDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
 
         String logMessage = "";
@@ -222,12 +223,10 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
         allocateInOrder = allocateInOrders.get(0);
-        String result = "";
         if(StringUtils.equals(outStatus, AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
             allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
         }else if(StringUtils.equals(outStatus, AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
             allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
-            result = "出库完成";
         }
         allocateInOrderService.updateByPrimaryKey(allocateInOrder);
         //更新调拨单状态
@@ -252,7 +251,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
                 LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
 
-        return ResultUtil.createSuccessResult("反填调拨出库信息成功！", result);
+        return ResultUtil.createSuccessResult("反填调拨出库信息成功！", "");
     }
 
     //获取状态

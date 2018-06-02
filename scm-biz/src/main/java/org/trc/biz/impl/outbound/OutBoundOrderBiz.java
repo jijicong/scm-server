@@ -26,6 +26,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.*;
+import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.OutboundOrderException;
 import org.trc.exception.ParamValidException;
 import org.trc.form.*;
@@ -1103,6 +1104,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             scmOrderCancelRequest.setOrderCode(outboundOrder.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
 
+            //查询发货单所属仓库信息
+            WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
+            AssertUtil.notNull(warehouseInfo, String.format("根据仓库ID[%s]查询仓库信息为空", outboundOrder.getWarehouseId()));
+            scmOrderCancelRequest.setOrderType(CancelOrderType.DELIVERY.getCode());
 
             //组装请求信息
             ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
