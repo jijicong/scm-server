@@ -43,6 +43,9 @@
                 <if test="skuDetail.allocateOutStatus != null and skuDetail.allocateOutStatus != ''">
                     allocate_out_status = #{skuDetail.allocateOutStatus},
                 </if>
+                <if test="skuDetail.allocateInStatus != null and skuDetail.allocateInStatus != ''">
+                    allocate_in_status = #{skuDetail.allocateInStatus},
+                </if>
                 <if test="skuDetail.outStatus != null and skuDetail.outStatus != ''">
                     out_status = #{skuDetail.outStatus},
                 </if>
@@ -64,9 +67,12 @@
                 <if test="skuDetail.oldOutStatus != null and skuDetail.oldOutStatus != ''">
                     old_out_status = #{skuDetail.oldOutStatus}
                 </if>
+                <if test="skuDetail.oldInStatus != null and skuDetail.oldInStatus != ''">
+                    old_in_status = #{skuDetail.oldInStatus}
+                </if>
             </set>
             where
-              id = #{skuDetail.id}
+              id = #{skuDetail.id} and is_deleted = '0'
         </foreach>
     </update>
     

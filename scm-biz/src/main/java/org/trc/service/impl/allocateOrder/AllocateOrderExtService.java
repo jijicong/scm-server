@@ -346,9 +346,10 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         }
 
         allocateInOrderService.updateByPrimaryKeySelective(allocateInOrder);
-        for(AllocateSkuDetail detail: allocateSkuDetailList){
-            allocateSkuDetailService.updateByPrimaryKeySelective(detail);
-        }
+//        for(AllocateSkuDetail detail: allocateSkuDetailList){
+//            allocateSkuDetailService.updateByPrimaryKeySelective(detail);
+//        }
+        allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
 
         AllocateInOrderParamForm form = new AllocateInOrderParamForm();
         form.setAllocateInOrder(allocateInOrder);
