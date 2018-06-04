@@ -47,7 +47,8 @@ public class WarehouseNotice implements Serializable{
     @Length(max = 32, message = "采购合同的编码字母和数字不能超过32个,汉字不能超过16个")
     private String contractCode;
 
-    @Transient //采购组名称
+   /* @Transient //采购组名称*/
+   @FormParam("purchaseGroupName")
     private String purchaseGroupName;
     //'归属采购组编号',
     /*@NotEmpty*/
@@ -56,7 +57,7 @@ public class WarehouseNotice implements Serializable{
     private String purchaseGroupCode;
 
     //'所在仓库id',
-    @FormParam("warehouseId")
+    @Transient
     private Long warehouseId;
     //'仓库编号',
     @FormParam("warehouseCode")
@@ -64,7 +65,8 @@ public class WarehouseNotice implements Serializable{
     @Length(max = 32, message = "仓库的编码字母和数字不能超过32个,汉字不能超过16个")
     private String warehouseCode;
     //'状态:1-待通知收货,2-待仓库反馈,3-收货异常,4-全部收货,5-作废',
-    @Transient
+
+    @FormParam("warehouseName")
     private String warehouseName;
     @FormParam("status")
     @NotEmpty(message ="状态不能为空")
@@ -78,7 +80,7 @@ public class WarehouseNotice implements Serializable{
     @Length(max = 32, message = "供应商编码字母和数字不能超过32个,汉字不能超过16个")
     private String supplierCode;
     //供应商名称
-    @Transient
+    @FormParam("supplierName")
     private String supplierName;
     //'采购类型编号',
     @FormParam("purchaseType")
@@ -93,13 +95,13 @@ public class WarehouseNotice implements Serializable{
     @FormParam("warehouseInfoId")
     private Long warehouseInfoId;
 
-    @Transient
+    @FormParam("purchaseTypeName")
     private String purchaseTypeName;
     //'归属采购人编号',
-
+    @Transient
     private String purchasePersonId;
 
-    @Transient //归属采购人名称
+    @FormParam("purchasePersonName") //归属采购人名称
     private String purchasePersonName;
     //'提运单号',
     @FormParam("takeGoodsNo")
