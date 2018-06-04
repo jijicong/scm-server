@@ -217,7 +217,7 @@ public interface IScmOrderBiz {
      * @param uploadedInputStream
      * @param fileDetail
      */
-    Response importOrder(String channelCode, String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo);
+    Response importOrder(String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo);
 
     /**
      * 下载错误订单

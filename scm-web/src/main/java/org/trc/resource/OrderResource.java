@@ -120,9 +120,9 @@ public class OrderResource {
     @Path(SupplyConstants.Order.ORDER_IMPORT)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/octet-stream")
-    public Response orderImport(@FormDataParam("channelCode") String channelCode, @FormDataParam("sellCode") String sellCode, @FormDataParam("file") InputStream uploadedInputStream,
+    public Response orderImport(@FormDataParam("sellCode") String sellCode, @FormDataParam("file") InputStream uploadedInputStream,
                                 @FormDataParam("file") FormDataContentDisposition fileDetail,@Context ContainerRequestContext requestContext) {
-        return scmOrderBiz.importOrder(channelCode, sellCode, uploadedInputStream, fileDetail, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return scmOrderBiz.importOrder(sellCode, uploadedInputStream, fileDetail, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     }
 
     @GET
