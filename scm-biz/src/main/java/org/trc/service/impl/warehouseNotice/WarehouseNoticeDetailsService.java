@@ -18,14 +18,14 @@ import java.util.List;
 public class WarehouseNoticeDetailsService extends BaseService<WarehouseNoticeDetails,Long> implements IWarehouseNoticeDetailsService{
 
     @Autowired
-    IWarehouseNoticeDetailsMapper mapper;
+    private IWarehouseNoticeDetailsMapper mapper;
     @Override
     public void updateWarehouseNoticeLists(List<WarehouseNoticeDetails> detailsList) {
         for (WarehouseNoticeDetails warehouseNoticeDetails : detailsList) {
-            Example example = new Example(WarehouseNoticeDetails.class);
-            Example.Criteria criteria = example.createCriteria();
-            criteria.andEqualTo("warehouseNoticeDetails",warehouseNoticeDetails);
-            mapper.updateByExampleSelective(warehouseNoticeDetails,example);
+//            Example example = new Example(WarehouseNoticeDetails.class);
+//            Example.Criteria criteria = example.createCriteria();
+//            criteria.andEqualTo("warehouseNoticeDetails",warehouseNoticeDetails);
+            mapper.updateByPrimaryKeySelective(warehouseNoticeDetails);
         }
     }
 }
