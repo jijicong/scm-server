@@ -894,10 +894,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         detail.setActualStorageQuantity(normalStorageQuantity+defectiveStorageQuantity);
                         detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
                         if(defectiveStorageQuantity==0){
-                            if(detail.getPurchasingQuantity()==normalStorageQuantity){
+                            if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
                                 detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
-                            }else{
-                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+                            }else if (detail.getPurchasingQuantity().longValue() > normalStorageQuantity.longValue()){
+                            	detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                            } else {
+                            	detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
                             }
 
                         }else{
@@ -911,24 +913,42 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         warehouseNoticeDetailsService.updateWarehouseNoticeLists(details);  //FIXME  方法有待改进
         //更新入库通知单
         WarehouseNotice warehouseNotice = new WarehouseNotice();
-        warehouseNotice.setWarehouseNoticeCode(noticeCode);
+//        warehouseNotice.setWarehouseNoticeCode(noticeCode);
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("warehouseNoticeCode",noticeCode);
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         warehouseNotice = warehouseNotices.get(0);
-        String result = "" ;
-        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
-            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
-            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
-            result = "入库完成";
-        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
-            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        }else {
-            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
-            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+        String result = "入库完成";
+        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+        boolean flgExp = false;
+        boolean flgPart = false;
+        for (WarehouseNoticeDetails wnd : details) {
+        	if (WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode().equals(wnd.getStatus().toString())) {
+        		flgExp = true;
+        		break;
+        	} else if (WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode().equals(wnd.getStatus().toString())) {
+        		flgPart = true;
+        	}
         }
+        if (flgExp) {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+        } else if (flgPart) {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
+        } else {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
+        }
+//        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+//            result = "入库完成";
+//        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//        }else {
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//        }
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
         return ResultUtil.createSuccessResult("反填入库通知单成功",result);

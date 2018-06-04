@@ -171,7 +171,7 @@ public class AllocateOrder extends AllocateOrderBase{
      */
     @Transient
     private String submitOperatorName;
-
+    
     public String getSubmitOperatorName() {
 		return submitOperatorName;
 	}
