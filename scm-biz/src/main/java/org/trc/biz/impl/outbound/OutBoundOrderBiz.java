@@ -46,6 +46,7 @@ import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
@@ -115,6 +116,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IWarehouseMockService warehouseMockService;
     @Autowired
     private IOrderExtBiz orderExtBiz;
+    @Autowired
+    private IWarehouseExtService warehouseExtService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -1095,22 +1098,21 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
             }
 
-            //获取仓库信息
+            //获取仓库类型
             WarehouseInfo warehouse =warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
-
+            AssertUtil.notNull(warehouse, String.format("根据仓库ID[%s]查询仓库信息为空", outboundOrder.getWarehouseId()));
             //组装请求
             ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
             scmOrderCancelRequest.setCancelReason(remark);
             scmOrderCancelRequest.setOrderCode(outboundOrder.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
-
-            //查询发货单所属仓库信息
-            WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
-            AssertUtil.notNull(warehouseInfo, String.format("根据仓库ID[%s]查询仓库信息为空", outboundOrder.getWarehouseId()));
             scmOrderCancelRequest.setOrderType(CancelOrderType.DELIVERY.getCode());
+            WarehouseTypeEnum warehouseType = warehouseExtService.getWarehouseType(warehouse.getCode());
+            scmOrderCancelRequest.setWarehouseType(warehouseType.getCode());
 
             //组装请求信息
             ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
+            request.setWarehouseType(warehouseType.getCode());
             request.setOrderCode(outboundOrder.getOutboundOrderCode());
             request.setOrderId(outboundOrder.getWmsOrderCode());
             request.setOwnerCode(warehouse.getWarehouseOwnerId());
