@@ -118,7 +118,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         }
 
         example.setOrderByClause("field(status,0,2,1,3,4,5)");
-        example.orderBy("updateTime").desc();
+        example.orderBy("createTime").desc();
 
         Pagenation<AllocateOutOrder> pagenation = allocateOutOrderService.pagination(example, page, form);
 
