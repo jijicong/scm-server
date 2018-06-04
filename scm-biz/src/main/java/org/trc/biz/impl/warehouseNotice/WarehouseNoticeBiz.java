@@ -599,6 +599,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setPurchaseOrderCode(notice.getPurchaseOrderCode());
             
             scmEntryOrderItem.setOwnerCode(details.getOwnerCode());
+            scmEntryOrderItem.setSkuCode(details.getSkuCode());
             scmEntryOrderItem.setItemCode(details.getSkuCode());
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());

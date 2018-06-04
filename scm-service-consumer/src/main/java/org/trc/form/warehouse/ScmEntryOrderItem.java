@@ -61,7 +61,7 @@ public class ScmEntryOrderItem {
      * 商品sku编码
      * @return
      */
-//    private String skuCode;
+    private String skuCode;
 
     /**
      * 规格描述
