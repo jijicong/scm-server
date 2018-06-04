@@ -47,8 +47,7 @@ public class WarehouseNotice implements Serializable{
     @Length(max = 32, message = "采购合同的编码字母和数字不能超过32个,汉字不能超过16个")
     private String contractCode;
 
-   /* @Transient //采购组名称*/
-   @FormParam("purchaseGroupName")
+    @Transient //采购组名称
     private String purchaseGroupName;
     //'归属采购组编号',
     /*@NotEmpty*/
