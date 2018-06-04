@@ -5857,8 +5857,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    public Response importOrder(String channelCode, String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo) {
-        AssertUtil.notBlank(channelCode, "业务线编码不能为空");
+    public Response importOrder(String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(sellCode, "销售渠道编码不能为空");
         AssertUtil.notNull(uploadedInputStream, "上传文件不能为空");
         AssertUtil.notBlank(aclUserAccreditInfo.getUserId(), "当前操作用户信息为空");
@@ -5886,7 +5885,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
             }
             //获取导入订单sku明细
-            List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(channelCode, sellCode, titleResult, contentResult);
+            List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(aclUserAccreditInfo.getChannelCode(), sellCode, titleResult, contentResult);
             //检查导入订单是否重复导入
             checkOrderRepeat(importOrderInfoList);
             Set<String> skuCodes = new HashSet<>();

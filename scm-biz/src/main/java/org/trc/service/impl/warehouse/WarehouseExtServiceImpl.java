@@ -54,6 +54,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
          */
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListQimen = new ArrayList<>();
         List<WarehouseOwernSkuDO> warehouseOwernSkuDOListJingdong = new ArrayList<>();
+        List<WarehouseOwernSkuDO> warehouseOwernSkuDOListZy = new ArrayList<>();
         for(WarehouseInfo warehouseInfo: warehouseInfoList){
             List<WarehouseItemInfo> tmpWarehouseItemInfoList = new ArrayList<>();
             WarehouseOwernSkuDO warehouseOwernSkuDO = new WarehouseOwernSkuDO();
@@ -65,12 +66,17 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
             if(tmpWarehouseItemInfoList.size() > 0){
                 warehouseOwernSkuDO.setWarehouseInfo(warehouseInfo);
                 warehouseOwernSkuDO.setWarehouseItemInfoList(tmpWarehouseItemInfoList);
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
-                    warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
-                }else{//京东仓储
-                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
-                    warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
+                if(StringUtils.equals(WarehouseOperateNatureEnum.OUTER_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//第三方仓库
+                    warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
+                    warehouseOwernSkuDOListZy.add(warehouseOwernSkuDO);
+                }else if(StringUtils.equals(WarehouseOperateNatureEnum.SELF_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//自营仓库
+                    if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(),warehouseInfo.getIsThroughWms().toString())){//奇门仓储
+                        warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Qimen.getCode());
+                        warehouseOwernSkuDOListQimen.add(warehouseOwernSkuDO);
+                    }else{//京东仓储
+                        warehouseOwernSkuDO.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
+                        warehouseOwernSkuDOListJingdong.add(warehouseOwernSkuDO);
+                    }
                 }
             }
         }
@@ -81,6 +87,9 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         }
         if(warehouseOwernSkuDOListJingdong.size() > 0){
             scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong));
+        }
+        if(warehouseOwernSkuDOListZy.size() > 0){
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Zy.getCode(), warehouseOwernSkuDOListZy));
         }
         if(!CollectionUtils.isEmpty(scmInventoryQueryResponseList)){
             for(ScmInventoryQueryResponse response : scmInventoryQueryResponseList){
