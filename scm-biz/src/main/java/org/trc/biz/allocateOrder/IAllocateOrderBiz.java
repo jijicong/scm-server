@@ -1,14 +1,14 @@
 package org.trc.biz.allocateOrder;
 
+import java.util.Map;
+
 import javax.ws.rs.core.Response;
 
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
-import org.trc.form.purchase.ItemForm;
 import org.trc.util.Pagenation;
 
 public interface IAllocateOrderBiz {
@@ -31,5 +31,7 @@ public interface IAllocateOrderBiz {
 	void allocateOrderAudit(String orderId, String auditOpinion, String auditResult, AclUserAccreditInfo property);
 
 	Response queryWarehouse();
+
+	Map<String, Long> inventoryQuery(String warehouseCode, String queryStr);
 
 }

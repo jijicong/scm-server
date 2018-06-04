@@ -2,6 +2,7 @@ package org.trc.resource;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -27,7 +28,6 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
-import org.trc.util.AssertUtil;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
 
@@ -175,8 +175,15 @@ public class AllocateOrderResource {
     @GET
     @Path("warehouseList")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryWarehouse()  {
+    public Response queryWarehouse() {
         return allocateOrderBiz.queryWarehouse();
+    }
+    
+    @POST
+    @Path("inventoryQuery/{warehouseCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response inventoryQuery(@PathParam("warehouseCode") String warehouseCode, @FormParam("queryStr") String queryStr) {
+    	 return ResultUtil.createSuccessResult("", allocateOrderBiz.inventoryQuery(warehouseCode, queryStr));
     }
     
     

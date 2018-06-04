@@ -81,6 +81,41 @@ public class AllocateOrderEnum {
 	/**
 	 * 
 	 * @author admin
+	 * 调拨单商品库存状态
+	 */
+	public enum AllocateOrderInventoryStatusEnum {
+		
+		GOOD("0","良品"),
+		Quality("1","残品");
+		
+		private String code;
+		private String name;
+		
+		AllocateOrderInventoryStatusEnum(String code, String name) {
+			this.code = code;
+			this.name = name;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public void setName(String name) {
+			this.name = name;
+		}
+		
+		public String getCode() {
+			return code;
+		}
+		
+		public void setCode(String code) {
+			this.code = code;
+		}
+		
+	}
+	/**
+	 * 
+	 * @author admin
 	 * 调拨单审核结果状态
 	 */
 	public enum AllocateOrderAuditResultEnum {
