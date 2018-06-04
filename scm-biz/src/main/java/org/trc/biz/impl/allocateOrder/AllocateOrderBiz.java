@@ -33,10 +33,16 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
 import org.trc.enums.ExceptionEnum;
+import org.trc.enums.ItemNoticeStateEnum;
+import org.trc.enums.ItemTypeEnum;
+import org.trc.enums.JingdongInventoryStateEnum;
+import org.trc.enums.JingdongInventoryTypeEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.NoticsWarehouseStateEnum;
 import org.trc.enums.ValidStateEnum;
@@ -45,6 +51,10 @@ import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.AllocateOrderException;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
+import org.trc.form.AllocateOrder.QuerySkuInventory;
+import org.trc.form.warehouse.ScmInventoryQueryItem;
+import org.trc.form.warehouse.ScmInventoryQueryRequest;
+import org.trc.form.warehouse.ScmInventoryQueryResponse;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
@@ -54,14 +64,18 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.goods.IItemsService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.jingdong.ICommonService;
 import org.trc.service.util.ISerialUtilService;
+import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.CommonUtil;
 import org.trc.util.DateUtils;
 import org.trc.util.Pagenation;
 import org.trc.util.QueryModel;
+import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
 import com.alibaba.fastjson.JSONArray;
@@ -99,6 +113,11 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	private IAllocateOrderExtService allocateOrderExtService;
 	@Autowired
 	private ILogInfoService logInfoService;
+	@Autowired
+	private ICommonService commonService;
+	@Autowired
+	private IWarehouseApiService warehouseApiService;
+	
     /**
      * 调拨单分页查询
      */
@@ -1030,6 +1049,56 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	}
 
 
+	@Override
+	public Map<String, Long> inventoryQuery(String warehouseCode, String skus) {
+       // List<String> skuList = Arrays.asList(skus.split(SupplyConstants.Symbol.COMMA))
+		List<QuerySkuInventory> queryList = JSONArray.parseArray(skus, QuerySkuInventory.class);
+		List<String> skuList = queryList.stream().map(item -> item.getSkuCode()).collect(Collectors.toList());
+		Map<String, String> queryMap = queryList.stream()
+				.collect(Collectors.toMap(QuerySkuInventory::getSkuCode, QuerySkuInventory::getInventoryType));
+		
+        List<WarehouseItemInfo> whItemList = new ArrayList<>();
+        
+        Example example = new Example(WarehouseItemInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("warehouseCode", warehouseCode);
+        criteria.andIn("skuCode", skuList);
+        criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
+        criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        whItemList = warehouseItemInfoService.selectByExample(example);
+        
+		ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
+        commonService.getWarehoueType(warehouseCode, request);
+        
+        List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
+        
+        ScmInventoryQueryItem item = null;
+        for (WarehouseItemInfo itemInfo: whItemList) {
+        	item = new ScmInventoryQueryItem();
+            item.setWarehouseCode(itemInfo.getWarehouseCode());
+            item.setInventoryStatus((AllocateOrderInventoryStatusEnum.GOOD.getCode().equals(queryMap.get(itemInfo.getSkuCode())))? 
+            		JingdongInventoryStateEnum.GOOD.getCode() : JingdongInventoryStateEnum.Quality.getCode());//库存状态，枚举值：1.良品；2.残品；3.样品。
+            item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());// 可销售
+            item.setOwnerCode(itemInfo.getWarehouseOwnerId());// 京东仓库需要
+            item.setItemCode(itemInfo.getSkuCode());
+            item.setItemId(itemInfo.getWarehouseItemId());
+            scmInventoryQueryItemList.add(item);
+        }
+        request.setScmInventoryQueryItemList(scmInventoryQueryItemList);
+        AppResult<List<ScmInventoryQueryResponse>> appResult = warehouseApiService.inventoryQuery(request);
+        List<ScmInventoryQueryResponse> resList = new ArrayList<>();
+        if (StringUtils.equals(ResponseAck.SUCCESS_CODE, appResult.getAppcode())) {
+        	resList = (List<ScmInventoryQueryResponse>) appResult.getResult();
+//        	resList.stream()
+//				.filter((res) -> (InventoryQueryResponseEnum.MARKETABLE.getCode().equals(res.getInventoryStatus())
+//						&& EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode().equals(res.getInventoryStatus()))
+//				.forEach((res) -> item.setInventoryType("1"));
+        	return resList.stream()
+        		.collect(Collectors.toMap(ScmInventoryQueryResponse::getItemId, ScmInventoryQueryResponse::getQuantity));
+        } else {
+        	throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_QUERY_INVENTORY_EXCEPTION, appResult.getDatabuffer());
+        }
+	}
 
 
 }

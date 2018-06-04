@@ -46,6 +46,7 @@ import org.trc.service.outbound.IOutboundDetailService;
 import org.trc.service.outbound.IOutboundPackageInfoService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
@@ -115,6 +116,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     private IWarehouseMockService warehouseMockService;
     @Autowired
     private IOrderExtBiz orderExtBiz;
+    @Autowired
+    private IWarehouseExtService warehouseExtService;
 
     @Override
     public Pagenation<OutboundOrder> outboundOrderPage(OutBoundOrderForm form, Pagenation<OutboundOrder> page, AclUserAccreditInfo aclUserAccreditInfo) throws Exception {
@@ -1095,58 +1098,60 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
             }
 
-            //获取仓库信息
+            //获取仓库类型
             WarehouseInfo warehouse =warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
-
+            AssertUtil.notNull(warehouse, String.format("根据仓库ID[%s]查询仓库信息为空", outboundOrder.getWarehouseId()));
             //组装请求
             ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
             scmOrderCancelRequest.setCancelReason(remark);
             scmOrderCancelRequest.setOrderCode(outboundOrder.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
-
-            //查询发货单所属仓库信息
-            WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId());
-            AssertUtil.notNull(warehouseInfo, String.format("根据仓库ID[%s]查询仓库信息为空", outboundOrder.getWarehouseId()));
             scmOrderCancelRequest.setOrderType(CancelOrderType.DELIVERY.getCode());
+            WarehouseTypeEnum warehouseType = warehouseExtService.getWarehouseType(warehouse.getCode());
+            scmOrderCancelRequest.setWarehouseType(warehouseType.getCode());
 
-            //组装请求信息
-            ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
-            request.setOrderCode(outboundOrder.getOutboundOrderCode());
-            request.setOrderId(outboundOrder.getWmsOrderCode());
-            request.setOwnerCode(warehouse.getWarehouseOwnerId());
-            request.setWarehouseCode(warehouse.getCode());
-            AppResult<ScmDeliveryOrderDetailResponse>  result = null;
-            if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
-                result = warehouseMockService.deliveryOrderDetail(request);
-            }else{
-                result =
-                        warehouseApiService.deliveryOrderDetail(request);
-            }
             String userId = aclUserAccreditInfo.getUserId();
-            if(StringUtils.equals(result.getAppcode(), SUCCESS)){
-                ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
-                if(response == null || StringUtils.isEmpty(response.getCurrentStatus())){
-                    String msg = "发货通知单状态查询为空，无法取消!";
-                    logger.error(msg);
-                    logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                            "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
-                            null);
-                    throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
-                }else if(response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus())){
-                    String msg = "订单已完成复核流程，无法取消!";
+
+            if(StringUtils.equals(WarehouseTypeEnum.Jingdong.getCode(), warehouseType.getCode())){//京东仓库
+                //组装请求信息
+                ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
+                request.setWarehouseType(warehouseType.getCode());
+                request.setOrderCode(outboundOrder.getOutboundOrderCode());
+                request.setOrderId(outboundOrder.getWmsOrderCode());
+                request.setOwnerCode(warehouse.getWarehouseOwnerId());
+                request.setWarehouseCode(warehouse.getCode());
+                AppResult<ScmDeliveryOrderDetailResponse>  result = null;
+                if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                    result = warehouseMockService.deliveryOrderDetail(request);
+                }else{
+                    result =
+                            warehouseApiService.deliveryOrderDetail(request);
+                }
+                if(StringUtils.equals(result.getAppcode(), SUCCESS)){
+                    ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse)result.getResult();
+                    if(response == null || StringUtils.isEmpty(response.getCurrentStatus())){
+                        String msg = "发货通知单状态查询为空，无法取消!";
+                        logger.error(msg);
+                        logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                                "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
+                                null);
+                        throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+                    }else if(response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus())){
+                        String msg = "订单已完成复核流程，无法取消!";
+                        logger.error(msg);
+                        logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
+                                "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
+                                null);
+                        throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
+                    }
+                }else{
+                    String msg = "获取发货单状态失败!";
                     logger.error(msg);
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
                             "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
                             null);
                     throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
                 }
-            }else{
-                String msg = "获取发货单状态失败!";
-                logger.error(msg);
-                logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()),userId,
-                        "取消发货", "取消原因:"+remark+"<br>取消结果:取消失败,"+msg,
-                        null);
-                throw new OutboundOrderException(ExceptionEnum.OUTBOUND_ORDER_EXCEPTION, msg);
             }
 
             //调用奇门接口

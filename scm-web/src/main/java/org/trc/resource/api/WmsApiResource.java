@@ -1,6 +1,7 @@
 package org.trc.resource.api;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,11 @@ public class WmsApiResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response orderOutResultNotice(@FormParam("request") String request) throws Exception {
         OutboumdWmsDeliverResponseForm req = JSON.parseObject(request, OutboumdWmsDeliverResponseForm.class);
-        outBoundOrderBiz.orderOutResultNotice(req);
+        try{
+            outBoundOrderBiz.orderOutResultNotice(req);
+        }catch (Exception e){
+            return ResultUtil.createfailureResult(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+        }
         return ResultUtil.createSuccessResult("通知成功", "");
     }
 
