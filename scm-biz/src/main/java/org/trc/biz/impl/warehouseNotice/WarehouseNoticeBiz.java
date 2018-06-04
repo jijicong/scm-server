@@ -567,7 +567,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setSenderProvince(notice.getSenderProvince());
         scmEntryOrderCreateRequest.setSenderCity(notice.getSenderCity());
         scmEntryOrderCreateRequest.setSenderDetailAddress(notice.getSenderAddress());
-        scmEntryOrderCreateRequest.setCreateOperatorName(notice.getCreateOperator());
+
 
         //收货人信息
         scmEntryOrderCreateRequest.setReciverName(notice.getReceiver());
@@ -606,6 +606,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
+            scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
             scmEntryOrderItemList.add(scmEntryOrderItem);
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);

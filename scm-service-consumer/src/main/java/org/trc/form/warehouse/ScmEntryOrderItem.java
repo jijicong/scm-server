@@ -79,7 +79,9 @@ public class ScmEntryOrderItem {
      * 采购数量
      * @return
      */
-//    private Long purchasingQuantity;
+    private Long purchasingQuantity;
+
+
 
     /**
      * 批次号
