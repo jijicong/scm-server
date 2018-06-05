@@ -1,10 +1,11 @@
 package org.trc.domain.allocateOrder;
 
 import java.util.Date;
-import javax.persistence.*;
-import javax.ws.rs.FormParam;
 
-import org.hibernate.validator.constraints.Length;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "allocate_sku_detail")
 public class AllocateSkuDetail {
