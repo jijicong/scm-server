@@ -4399,7 +4399,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private void checkCustmerInfo(PlatformOrder platformOrder, List<SellChannel> sellChannelList){
         for(SellChannel sellChannel: sellChannelList){
-            if(!StringUtils.equals(SellChannelTypeEnum.ON_LINE.getCode().toString(), sellChannel.getSellType())){
+            if(StringUtils.equals(SellChannelTypeEnum.ON_LINE.getCode().toString(), sellChannel.getSellType())){
                 //AssertUtil.notBlank(platformOrder.getUserId(), "平台订单会员id不能为空");
                 //AssertUtil.notBlank(platformOrder.getUserName(), "平台订单会员名称不能为空");
                 AssertUtil.notBlank(platformOrder.getReceiverName(), "平台订单收货人姓名不能为空");
