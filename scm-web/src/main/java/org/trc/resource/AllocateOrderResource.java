@@ -2,7 +2,6 @@ package org.trc.resource;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
