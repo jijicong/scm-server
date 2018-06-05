@@ -79,7 +79,7 @@ public class WarehouseNotice implements Serializable{
     private String supplierCode;
 
     //供应商名称
-
+    @Transient
     private String supplierName;
     //'采购类型编号',
     @FormParam("purchaseType")

@@ -556,7 +556,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
         scmEntryOrderCreateRequest.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
-        scmEntryOrderCreateRequest.setSupplierName(notice.getSupplierName());
+
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(notice.getSupplierCode());
+        supplier = iSupplierService.selectOne(supplier);
+        scmEntryOrderCreateRequest.setSupplierName(supplier.getSupplierName());
+
+
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
         scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
         scmEntryOrderCreateRequest.setExpectEndTime(DateUtils.parseDateTime(notice.getEndReceiveDate()));
