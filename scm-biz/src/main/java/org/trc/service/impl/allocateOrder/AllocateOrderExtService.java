@@ -422,5 +422,34 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         }
     }
 
+    @Override
+    public void setDistrictName(AllocateOrderBase baseOrder){
+        if (null == baseOrder) {
+            return;
+        }
+        String inDistrictName = getDistrictNameForWarehouseCode(baseOrder.getInWarehouseCode());
+        String outDistrictName = getDistrictNameForWarehouseCode(baseOrder.getOutWarehouseCode());
+        baseOrder.setReceiverDistrictName(inDistrictName);
+        baseOrder.setSenderDistrictName(outDistrictName);
+    }
 
+    private String getDistrictNameForWarehouseCode(String warehouseCode){
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("code", warehouseCode);
+        List<WarehouseInfo> warehouseInfoList = warehouseInfoService.selectByExample(example);
+        if(warehouseInfoList != null && warehouseInfoList.size() > 0){
+            WarehouseInfo warehouseInfo = warehouseInfoList.get(0);
+            String areaCode = warehouseInfo.getArea();
+            if(StringUtils.isNotEmpty(areaCode)){
+                Area area = new Area();
+                area.setCode(areaCode);
+                area = locationUtilService.selectOne(area);
+                if(area != null){
+                    return area.getDistrict();
+                }
+            }
+        }
+        return "";
+    }
 }

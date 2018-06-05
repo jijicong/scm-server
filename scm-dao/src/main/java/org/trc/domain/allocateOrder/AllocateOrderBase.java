@@ -1,5 +1,7 @@
 package org.trc.domain.allocateOrder;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.trc.domain.util.CommonDO;
@@ -7,6 +9,8 @@ import javax.persistence.Column;
 import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 
+@Getter
+@Setter
 public class AllocateOrderBase extends CommonDO{
 
     /**
@@ -86,109 +90,10 @@ public class AllocateOrderBase extends CommonDO{
     @Transient
     private String senderCityName;
 
+    @Transient
+    private String senderDistrictName;
 
+    @Transient
+    private String receiverDistrictName;
 
-    public String getInWarehouseCode() {
-        return inWarehouseCode;
-    }
-
-    public void setInWarehouseCode(String inWarehouseCode) {
-        this.inWarehouseCode = inWarehouseCode;
-    }
-
-    public String getInWarehouseName() {
-        return inWarehouseName;
-    }
-
-    public void setInWarehouseName(String inWarehouseName) {
-        this.inWarehouseName = inWarehouseName;
-    }
-
-    public String getOutWarehouseCode() {
-        return outWarehouseCode;
-    }
-
-    public void setOutWarehouseCode(String outWarehouseCode) {
-        this.outWarehouseCode = outWarehouseCode;
-    }
-
-    public String getOutWarehouseName() {
-        return outWarehouseName;
-    }
-
-    public void setOutWarehouseName(String outWarehouseName) {
-        this.outWarehouseName = outWarehouseName;
-    }
-
-    public String getCreateOperatorName() {
-        return createOperatorName;
-    }
-
-    public void setCreateOperatorName(String createOperatorName) {
-        this.createOperatorName = createOperatorName;
-    }
-
-    public String getReceiverProvince() {
-        return receiverProvince;
-    }
-
-    public void setReceiverProvince(String receiverProvince) {
-        this.receiverProvince = receiverProvince;
-    }
-
-    public String getReceiverCity() {
-        return receiverCity;
-    }
-
-    public void setReceiverCity(String receiverCity) {
-        this.receiverCity = receiverCity;
-    }
-
-    public String getSenderProvince() {
-        return senderProvince;
-    }
-
-    public void setSenderProvince(String senderProvince) {
-        this.senderProvince = senderProvince;
-    }
-
-    public String getSenderCity() {
-        return senderCity;
-    }
-
-    public void setSenderCity(String senderCity) {
-        this.senderCity = senderCity;
-    }
-
-    public String getReceiverProvinceName() {
-        return receiverProvinceName;
-    }
-
-    public void setReceiverProvinceName(String receiverProvinceName) {
-        this.receiverProvinceName = receiverProvinceName;
-    }
-
-    public String getReceiverCityName() {
-        return receiverCityName;
-    }
-
-    public void setReceiverCityName(String receiverCityName) {
-        this.receiverCityName = receiverCityName;
-    }
-
-    public String getSenderProvinceName() {
-        return senderProvinceName;
-    }
-
-    public void setSenderProvinceName(String senderProvinceName) {
-        this.senderProvinceName = senderProvinceName;
-    }
-
-    public String getSenderCityName() {
-        return senderCityName;
-    }
-
-    public void setSenderCityName(String senderCityName) {
-        this.senderCityName = senderCityName;
-    }
 }

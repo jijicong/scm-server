@@ -255,5 +255,7 @@ public class ScmAllocateOrderInRequest extends ScmWarehouseRequestBase{
 
     private String senderCityName;
 
+    private String senderDistrictName;
 
+    private String receiverDistrictName;
 }
