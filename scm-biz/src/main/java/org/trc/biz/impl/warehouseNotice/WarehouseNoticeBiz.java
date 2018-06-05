@@ -556,7 +556,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
         scmEntryOrderCreateRequest.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
-        scmEntryOrderCreateRequest.setSupplierName(notice.getSupplierName());
+
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(notice.getSupplierCode());
+        supplier = iSupplierService.selectOne(supplier);
+        scmEntryOrderCreateRequest.setSupplierName(supplier.getSupplierName());
+
+
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
         scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
         scmEntryOrderCreateRequest.setExpectEndTime(DateUtils.parseDateTime(notice.getEndReceiveDate()));
@@ -606,8 +612,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
+
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
+            scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
+            scmEntryOrderItem.setProductionCode(details.getProductionCode());
+            scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));
             scmEntryOrderItemList.add(scmEntryOrderItem);
+
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
         
@@ -617,6 +628,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 		AssertUtil.notNull(warehouse, "采购入库仓库不存在");
 		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
 			scmEntryOrderCreateRequest.setWarehouseType("TRC");
+			//判断是第三方仓库还是自营仓库
+            scmEntryOrderCreateRequest.setWarehouseCode(whi.getCode());
 		} else {
 			scmEntryOrderCreateRequest.setWarehouseType("JD");
 		}

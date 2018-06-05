@@ -222,6 +222,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 		boolean succ = false;
 
         allocateOrderExtService.setArea(allocateInOrder);
+        allocateOrderExtService.setDistrictName(allocateInOrder);
         allocateOrderExtService.setAllocateOrderWarehouseName(allocateInOrder);
 
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();

@@ -307,6 +307,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		AllocateOutOrder outOrder = allocateOutOrderService.selectByPrimaryKey(id);
 		AssertUtil.notNull(outOrder, "调拨出库单不存在");
         allocateOrderExtService.setArea(outOrder);
+        allocateOrderExtService.setDistrictName(outOrder);
         allocateOrderExtService.setAllocateOrderWarehouseName(outOrder);
 		if (!AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode().equals(outOrder.getStatus())
 				&& !AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode().equals(outOrder.getStatus())

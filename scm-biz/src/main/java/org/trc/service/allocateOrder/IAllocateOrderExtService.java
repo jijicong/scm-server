@@ -105,4 +105,10 @@ public interface IAllocateOrderExtService {
 	 */
 	void setAllocateOrderWarehouseName(AllocateOrderBase allocateOrderBase);
 
+    /**
+     * 设置区域名称
+     * @param baseOrder
+     */
+    void setDistrictName(AllocateOrderBase baseOrder);
+
 }
