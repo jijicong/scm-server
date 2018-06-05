@@ -40,7 +40,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
 
 
     @Override
-    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes) {
+    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes,String inventoryType) {
         //获取可用仓库信息
         List<WarehouseInfo> warehouseInfoList = getWarehouseInfo();
         List<String> warehouseInfoIds = new ArrayList<>();
@@ -83,13 +83,13 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
 
         List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
         if(warehouseOwernSkuDOListQimen.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(), warehouseOwernSkuDOListQimen));
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Qimen.getCode(), warehouseOwernSkuDOListQimen,inventoryType));
         }
         if(warehouseOwernSkuDOListJingdong.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong));
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Jingdong.getCode(), warehouseOwernSkuDOListJingdong,inventoryType));
         }
         if(warehouseOwernSkuDOListZy.size() > 0){
-            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Zy.getCode(), warehouseOwernSkuDOListZy));
+            scmInventoryQueryResponseList.addAll(getWarehouseSkuStock(WarehouseTypeEnum.Zy.getCode(), warehouseOwernSkuDOListZy,inventoryType));
         }
         if(!CollectionUtils.isEmpty(scmInventoryQueryResponseList)){
             for(ScmInventoryQueryResponse response : scmInventoryQueryResponseList){
@@ -106,7 +106,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         return scmInventoryQueryResponseList;
     }
 
-    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList){
+    private List<ScmInventoryQueryResponse> getWarehouseSkuStock(String warehouseType, List<WarehouseOwernSkuDO> warehouseOwernSkuDOList,String inventoryType){
         ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
         request.setWarehouseType(warehouseType);
         List<ScmInventoryQueryItem> scmInventoryQueryItemList = new ArrayList<>();
@@ -118,7 +118,9 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
                 } else {
                 	item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
                 }
-                item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
+                if (StringUtils.isNotBlank(inventoryType)){
+                    item.setInventoryType(inventoryType);//可销售
+                }
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
                 item.setItemCode(warehouseItemInfo.getSkuCode());
                 item.setItemId(warehouseItemInfo.getWarehouseItemId());

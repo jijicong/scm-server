@@ -405,7 +405,7 @@ public class GoodsBiz implements IGoodsBiz {
             skuCodes.add(skus.getSkuCode());
         }
         List<SkuStock> skuStockList = new ArrayList<>();
-        inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes);
+        inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes,null);
         if (!AssertUtil.collectionIsEmpty(inventoryQueryResponseList)){
             //sku计算库存总和
             for (String skuCode:skuCodes) {
@@ -2147,7 +2147,7 @@ public class GoodsBiz implements IGoodsBiz {
             skuCodes.add(s.getSkuCode());
             List<RequestSkuStock> skuStockList = new ArrayList<>();
             //所有库存类型
-            inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes);
+            inventoryQueryResponseList= warehouseExtService.getWarehouseInventory(skuCodes,null);
                 for (WarehouseInfo warehouse : warehouseInfoList) {
                     RequestSkuStock skuStock = new RequestSkuStock();
                     skuStock.setWarehouseName(warehouse.getWarehouseName());
