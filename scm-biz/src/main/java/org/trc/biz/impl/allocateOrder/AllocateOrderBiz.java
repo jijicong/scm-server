@@ -508,6 +508,47 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 //					"删除调拨单详情失败");
 //		}
 	}
+
+	@Override
+	@Transactional
+	public void setDropAllocateOrder(String orderId, AclUserAccreditInfo userInfo) {
+		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (queryOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION,
+					"未查的相关调拨单信息");
+		}
+		String status = queryOrder.getOrderStatus();
+
+		/**
+		 * 以下两种情况满足其一可以作废：
+		 * 1.审核通过
+		 * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”)
+		 */
+
+		// 是否可以作废标识  true表示可以作废
+		boolean canDropFlg = false;
+		if (AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode().equals(status)) {
+			canDropFlg = true;
+		}
+
+		if (!canDropFlg) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION,
+					"当前调拨单状态不满足作废条件");
+		}
+
+		AllocateOrder allocateOrder = new AllocateOrder();
+		allocateOrder.setAllocateOrderCode(orderId);
+		allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.DROP.getCode());
+		int count = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);
+		if (count < 1) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION,
+					"作废调拨单失败");
+		}
+
+		logInfoService.recordLog(new AllocateOrder(), orderId,
+				userInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+
+	}
 	
 	@Override
 	@Transactional
