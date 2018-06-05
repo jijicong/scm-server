@@ -113,7 +113,11 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         for(WarehouseOwernSkuDO warehouseOwernSkuDO: warehouseOwernSkuDOList){
             for(WarehouseItemInfo warehouseItemInfo: warehouseOwernSkuDO.getWarehouseItemInfoList()){
                 ScmInventoryQueryItem item = new ScmInventoryQueryItem();
-                item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
+                if (WarehouseTypeEnum.Zy.getCode().equals(warehouseType)) {
+                	item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getCode());
+                } else {
+                	item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
+                }
                 item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
                 item.setItemCode(warehouseItemInfo.getSkuCode());
