@@ -616,7 +616,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
             scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             scmEntryOrderItem.setProductionCode(details.getProductionCode());
-            scmEntryOrderItem.setProductionDate(details.getProductionDate().toString());
+            scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));
             scmEntryOrderItemList.add(scmEntryOrderItem);
 
         }
