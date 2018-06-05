@@ -2,7 +2,6 @@ package org.trc.resource;
 
 import javax.annotation.Resource;
 import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -146,6 +145,17 @@ public class AllocateOrderResource {
 				getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
     	return ResultUtil.createSuccessResult("作废调拨单成功","");
     	
+    }
+
+    @PUT
+    @Path("setDrop/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setDropAllocateOrder(@PathParam("id") String orderId,
+                                      @Context ContainerRequestContext requestContext) {
+        allocateOrderBiz.setDropAllocateOrder(orderId, (AclUserAccreditInfo) requestContext.
+                getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+        return ResultUtil.createSuccessResult("作废调拨单成功","");
+
     }
     
     /**

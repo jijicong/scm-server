@@ -20,7 +20,7 @@ public interface IWarehouseExtService {
      * @param skuCodes
      * @return
      */
-    List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes);
+    List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes,String inventoryType);
 
     /**
      * 获取仓库类型

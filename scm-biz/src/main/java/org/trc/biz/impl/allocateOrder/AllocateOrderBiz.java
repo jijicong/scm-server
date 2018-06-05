@@ -78,6 +78,7 @@ import org.trc.util.QueryModel;
 import org.trc.util.ResponseAck;
 import org.trc.util.ResultUtil;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -507,6 +508,47 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 //					"删除调拨单详情失败");
 //		}
 	}
+
+	@Override
+	@Transactional
+	public void setDropAllocateOrder(String orderId, AclUserAccreditInfo userInfo) {
+		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
+		if (queryOrder == null) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION,
+					"未查的相关调拨单信息");
+		}
+		String status = queryOrder.getOrderStatus();
+
+		/**
+		 * 以下两种情况满足其一可以作废：
+		 * 1.审核通过
+		 * 2.通知仓库 && (对应的调拨出库通知单的状态=“待通知出库”或“出库仓接收失败”)
+		 */
+
+		// 是否可以作废标识  true表示可以作废
+		boolean canDropFlg = false;
+		if (AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode().equals(status)) {
+			canDropFlg = true;
+		}
+
+		if (!canDropFlg) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION,
+					"当前调拨单状态不满足作废条件");
+		}
+
+		AllocateOrder allocateOrder = new AllocateOrder();
+		allocateOrder.setAllocateOrderCode(orderId);
+		allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.DROP.getCode());
+		int count = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);
+		if (count < 1) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION,
+					"作废调拨单失败");
+		}
+
+		logInfoService.recordLog(new AllocateOrder(), orderId,
+				userInfo.getUserId(), LogOperationEnum.CANCEL.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
+
+	}
 	
 	@Override
 	@Transactional
@@ -638,16 +680,19 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.select(queryDetail);
 		if (!CollectionUtils.isEmpty(detailList)) {
+			QuerySkuInventory querySku = null;
+			List<QuerySkuInventory> querySkuList = new ArrayList<>();
+			for (AllocateSkuDetail detail : detailList) {
+				querySku = new QuerySkuInventory();
+				querySku.setSkuCode(detail.getSkuCode());
+				querySku.setInventoryType(detail.getInventoryType());
+				querySkuList.add(querySku);
+			}
+			if (!CollectionUtils.isEmpty(querySkuList)) {
+				Map<String, Long> inventryMap = inventoryQuery(retOrder.getOutWarehouseCode(), JSON.toJSONString(querySkuList));
+				detailList.forEach(item -> item.setInventoryNum(inventryMap.get(item.getSkuCode())));
+			}
 			retOrder.setSkuDetailList(detailList);
-//			QuerySkuInventory querySku = null;
-//			for (AllocateSkuDetail detail : detailList) {
-//				querySku = new QuerySkuInventory();
-//				querySku.setSkuCode(detail.getSkuCode());
-//				querySku.setInventoryType(detail.getInventoryType());
-//			}
-			
-//			querySku
-			//inventoryQuery(retOrder.getOutWarehouseCode(), "");
 		}
 		allocateOrderExtService.setAllocateOrderWarehouseName(retOrder);
 		allocateOrderExtService.setArea(retOrder);
@@ -689,7 +734,43 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				operation = LogOperationEnum.AUDIT_REJECT;
 			}
 		} else {
-			// 审核通过
+			// 审核通过，需要校验仓库的实时库存
+			AllocateSkuDetail queryDetail = new AllocateSkuDetail();
+			queryDetail.setAllocateOrderCode(orderId);
+			queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+			List<AllocateSkuDetail> detailList = allocateSkuDetailService.select(queryDetail);
+			if (!CollectionUtils.isEmpty(detailList)) {
+				QuerySkuInventory querySku = null;
+				List<QuerySkuInventory> querySkuList = new ArrayList<>();
+				for (AllocateSkuDetail detail : detailList) {
+					querySku = new QuerySkuInventory();
+					querySku.setSkuCode(detail.getSkuCode());
+					querySku.setInventoryType(detail.getInventoryType());
+					querySkuList.add(querySku);
+				}
+				if (!CollectionUtils.isEmpty(querySkuList)) {
+					Map<String, Long> inventryMap = inventoryQuery(retOrder.getOutWarehouseCode(), JSON.toJSONString(querySkuList));
+					for (AllocateSkuDetail detail : detailList) {
+						long planNum = detail.getPlanAllocateNum() == null ? 0l : detail.getPlanAllocateNum().longValue();
+						if (null == inventryMap.get(detail.getSkuCode())) {
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+									"调拨单商品" + detail.getSkuCode() + "暂无库存信息");
+						}
+						if (planNum > inventryMap.get(detail.getSkuCode()).longValue()) {
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+									"调拨单商品" + detail.getSkuCode() + "调拨数量大于库存数量");
+						}
+					}
+					
+				} else {
+					throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+						"调拨单商品暂无库存信息");
+				}
+			} else {
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
+						"未查到相关调拨单的商品信息");
+			}
+			
 			allocateOrder.setAuditOpinion(auditOpinion);
 			allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
 			operation = LogOperationEnum.AUDIT_PASS;

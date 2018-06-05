@@ -522,9 +522,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
         String userId = aclUserAccreditInfo.getUserId();
+        WarehouseInfo warehouseInfo = new WarehouseInfo();
+        warehouseInfo.setCode(warehouseNotice.getWarehouseCode());
+        warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
 
         try {
-            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
+            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), warehouseInfo.getWarehouseName(),
                     LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
         } catch (Exception e) {
             logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());

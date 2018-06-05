@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.ws.rs.FormParam;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.trc.custom.CustomDateSerializer;
@@ -59,6 +60,7 @@ public class AllocateOrder extends AllocateOrderBase{
      * 收货人
      */
    // @NotBlank(message = "收货人不能为空")
+    @Length(max = 32, message = "收货人名称不得超过32个字符")
     @FormParam("receiver")
     private String receiver;
 
@@ -81,6 +83,7 @@ public class AllocateOrder extends AllocateOrderBase{
      * 发件人
      */
     //@NotBlank(message = "发件人不能为空")
+    @Length(max = 32, message = "发件人名称不得超过32个字符")
     @FormParam("sender")
     private String sender;
 
