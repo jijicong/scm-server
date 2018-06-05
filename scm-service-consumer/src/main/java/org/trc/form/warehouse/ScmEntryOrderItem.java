@@ -61,7 +61,7 @@ public class ScmEntryOrderItem {
      * 商品sku编码
      * @return
      */
-//    private String skuCode;
+    private String skuCode;
 
     /**
      * 规格描述
@@ -79,7 +79,9 @@ public class ScmEntryOrderItem {
      * 采购数量
      * @return
      */
-//    private Long purchasingQuantity;
+    private Long purchasingQuantity;
+
+
 
     /**
      * 批次号

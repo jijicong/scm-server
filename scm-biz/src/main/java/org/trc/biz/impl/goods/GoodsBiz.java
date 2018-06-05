@@ -434,11 +434,11 @@ public class GoodsBiz implements IGoodsBiz {
                     }
                     if (flag){
                         //判断库存类型,可销售
-                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.MARKETABLE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),JingdongInventoryTypeEnum.SALE.getCode())&&StringUtils.equals(inventoryQueryResponse.getInventoryStatus(),JingdongInventoryStateEnum.GOOD.getCode())){
                             skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity()==null?0:inventoryQueryResponse.getQuantity())+(skuStock.getAvailableInventory()==null?0:skuStock.getAvailableInventory()));
                         }
                         //判断库存类型,仓库锁定
-                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())){
+                        if (StringUtils.equals(inventoryQueryResponse.getInventoryType(),JingdongInventoryTypeEnum.WAREHOUSE_LOCK.getCode())){
                             skuStock.setLockInventory((inventoryQueryResponse.getTotalNum()==null?0:inventoryQueryResponse.getTotalNum())+(skuStock.getLockInventory()==null?0:skuStock.getLockInventory()));
                         }
                     }
@@ -2155,24 +2155,24 @@ public class GoodsBiz implements IGoodsBiz {
                         for (ScmInventoryQueryResponse inventoryQueryResponse : inventoryQueryResponseList) {
                             if (StringUtils.equals(warehouse.getWmsWarehouseCode(), inventoryQueryResponse.getWarehouseCode())) {
                                 //判断库存类型,可销售
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.MARKETABLE.getCode()) 
-                                		&& StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.SALE.getCode()) 
+                                		&& StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.GOOD.getCode())) {
                                     skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity() == null ? 0 : inventoryQueryResponse.getQuantity()) + (skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()));
                                 }
                                 //判断库存类型,仓库锁定
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.WAREHOUSE_LOCK.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.WAREHOUSE_LOCK.getCode())) {
                                     skuStock.setWarehouseLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getWarehouseLockInventory() == null ? 0 : skuStock.getWarehouseLockInventory()));
                                 }
                                 //判断库存类型,临期锁定
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.ADVENT_LOCK.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.ADVENT_LOCK.getCode())) {
                                     skuStock.setAdventLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getAdventLockInventory() == null ? 0 : skuStock.getAdventLockInventory()));
                                 }
                                 //判断库存类型,盘点锁定
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), InventoryQueryResponseEnum.CHECK_LOCK.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.INVENTORY_LOCK.getCode())) {
                                     skuStock.setCheckLockInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getCheckLockInventory() == null ? 0 : skuStock.getCheckLockInventory()));
                                 }
                                 //残品库存
-                                if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())) {
+                                if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.Quality.getCode())) {
                                     skuStock.setDefectiveInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getDefectiveInventory() == null ? 0 : skuStock.getDefectiveInventory()));
                                 }
                             }

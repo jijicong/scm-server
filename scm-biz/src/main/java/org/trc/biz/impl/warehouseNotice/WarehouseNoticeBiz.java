@@ -556,7 +556,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setOrderType(JdPurchaseOrderTypeEnum.B2C.getCode());
         scmEntryOrderCreateRequest.setBillOfLading(notice.getTakeGoodsNo());
         scmEntryOrderCreateRequest.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
-        scmEntryOrderCreateRequest.setSupplierName(notice.getSupplierName());
+
+        Supplier supplier = new Supplier();
+        supplier.setSupplierCode(notice.getSupplierCode());
+        supplier = iSupplierService.selectOne(supplier);
+        scmEntryOrderCreateRequest.setSupplierName(supplier.getSupplierName());
+
+
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
         scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
         scmEntryOrderCreateRequest.setExpectEndTime(DateUtils.parseDateTime(notice.getEndReceiveDate()));
@@ -567,6 +573,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         scmEntryOrderCreateRequest.setSenderProvince(notice.getSenderProvince());
         scmEntryOrderCreateRequest.setSenderCity(notice.getSenderCity());
         scmEntryOrderCreateRequest.setSenderDetailAddress(notice.getSenderAddress());
+
+
         //收货人信息
         scmEntryOrderCreateRequest.setReciverName(notice.getReceiver());
         scmEntryOrderCreateRequest.setReciverProvince(notice.getReceiverProvince());
@@ -599,11 +607,18 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setPurchaseOrderCode(notice.getPurchaseOrderCode());
             
             scmEntryOrderItem.setOwnerCode(details.getOwnerCode());
+            scmEntryOrderItem.setSkuCode(details.getSkuCode());
             scmEntryOrderItem.setItemCode(details.getSkuCode());
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
+
+            scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
+            scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
+            scmEntryOrderItem.setProductionCode(details.getProductionCode());
+            scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));
             scmEntryOrderItemList.add(scmEntryOrderItem);
+
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
         
@@ -613,6 +628,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 		AssertUtil.notNull(warehouse, "采购入库仓库不存在");
 		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
 			scmEntryOrderCreateRequest.setWarehouseType("TRC");
+			//判断是第三方仓库还是自营仓库
+            scmEntryOrderCreateRequest.setWarehouseCode(whi.getCode());
 		} else {
 			scmEntryOrderCreateRequest.setWarehouseType("JD");
 		}
@@ -890,10 +907,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         detail.setActualStorageQuantity(normalStorageQuantity+defectiveStorageQuantity);
                         detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
                         if(defectiveStorageQuantity==0){
-                            if(detail.getPurchasingQuantity()==normalStorageQuantity){
+                            if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
                                 detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
-                            }else{
-                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+                            }else if (detail.getPurchasingQuantity().longValue() > normalStorageQuantity.longValue()){
+                            	detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                            } else {
+                            	detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
                             }
 
                         }else{
@@ -907,24 +926,42 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         warehouseNoticeDetailsService.updateWarehouseNoticeLists(details);  //FIXME  方法有待改进
         //更新入库通知单
         WarehouseNotice warehouseNotice = new WarehouseNotice();
-        warehouseNotice.setWarehouseNoticeCode(noticeCode);
+//        warehouseNotice.setWarehouseNoticeCode(noticeCode);
         Example example = new Example(WarehouseNotice.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("warehouseNoticeCode",noticeCode);
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         warehouseNotice = warehouseNotices.get(0);
-        String result = "" ;
-        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
-            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
-            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
-            result = "入库完成";
-        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
-            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        }else {
-            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
-            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+        String result = "入库完成";
+        warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
+        boolean flgExp = false;
+        boolean flgPart = false;
+        for (WarehouseNoticeDetails wnd : details) {
+        	if (WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode().equals(wnd.getStatus().toString())) {
+        		flgExp = true;
+        		break;
+        	} else if (WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode().equals(wnd.getStatus().toString())) {
+        		flgPart = true;
+        	}
         }
+        if (flgExp) {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+        } else if (flgPart) {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
+        } else {
+        	warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
+        }
+//        if (StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.ALL_GOODS.getCode())){
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.ALL_GOODS.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.ALL_GOODS.getCode());
+//            result = "入库完成";
+//        }else if(StringUtils.equals(noticeDetail.getStatus().toString(),WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode())){
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode());
+//        }else {
+//            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
+//        }
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
         return ResultUtil.createSuccessResult("反填入库通知单成功",result);

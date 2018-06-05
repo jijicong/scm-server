@@ -148,9 +148,22 @@ public class AllocateSkuDetail {
     
     @Transient
     private String  allCategoryName;
-
     
-    public String getAllCategoryName() {
+    /**
+     * 实时库存
+     */
+    @Transient
+    private Long inventoryNum;
+    
+    public Long getInventoryNum() {
+		return inventoryNum;
+	}
+
+	public void setInventoryNum(Long inventoryNum) {
+		this.inventoryNum = inventoryNum;
+	}
+
+	public String getAllCategoryName() {
 		return allCategoryName;
 	}
 
