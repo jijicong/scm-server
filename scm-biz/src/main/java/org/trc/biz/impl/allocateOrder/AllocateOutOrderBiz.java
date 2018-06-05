@@ -117,7 +117,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             criteria.andLessThanOrEqualTo("createTime", form.getEndDate());
         }
 
-        example.setOrderByClause("field(status,0,2,1,3,4,5)");
+        example.setOrderByClause("field(status,2,0) desc");
         example.orderBy("createTime").desc();
 
         Pagenation<AllocateOutOrder> pagenation = allocateOutOrderService.pagination(example, page, form);

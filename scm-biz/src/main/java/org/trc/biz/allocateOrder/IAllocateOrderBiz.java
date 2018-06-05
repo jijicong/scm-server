@@ -22,6 +22,8 @@ public interface IAllocateOrderBiz {
 
 	void dropAllocateOrder(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
+	void setDropAllocateOrder(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
+
 	void noticeWarehouse(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
 	AllocateOrder allocateOrderEditGet(String orderId);
