@@ -639,15 +639,15 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.select(queryDetail);
 		if (!CollectionUtils.isEmpty(detailList)) {
 			retOrder.setSkuDetailList(detailList);
-			QuerySkuInventory querySku = null;
-			for (AllocateSkuDetail detail : detailList) {
-				querySku = new QuerySkuInventory();
-				querySku.setSkuCode(detail.getSkuCode());
-				querySku.setInventoryType(detail.getInventoryType());
-			}
+//			QuerySkuInventory querySku = null;
+//			for (AllocateSkuDetail detail : detailList) {
+//				querySku = new QuerySkuInventory();
+//				querySku.setSkuCode(detail.getSkuCode());
+//				querySku.setInventoryType(detail.getInventoryType());
+//			}
 			
 //			querySku
-			inventoryQuery(retOrder.getOutWarehouseCode(), "");
+			//inventoryQuery(retOrder.getOutWarehouseCode(), "");
 		}
 		allocateOrderExtService.setAllocateOrderWarehouseName(retOrder);
 		allocateOrderExtService.setArea(retOrder);
