@@ -617,6 +617,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 		AssertUtil.notNull(warehouse, "采购入库仓库不存在");
 		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
 			scmEntryOrderCreateRequest.setWarehouseType("TRC");
+			//判断是第三方仓库还是自营仓库
+            scmEntryOrderCreateRequest.setWarehouseCode(whi.getCode());
 		} else {
 			scmEntryOrderCreateRequest.setWarehouseType("JD");
 		}
