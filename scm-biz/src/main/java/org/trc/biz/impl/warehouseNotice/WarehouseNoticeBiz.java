@@ -606,8 +606,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setItemId(details.getItemId());
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
+
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
+            scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
+            scmEntryOrderItem.setProductionCode(details.getProductionCode());
+            scmEntryOrderItem.setProductionDate(details.getProductionDate().toString());
             scmEntryOrderItemList.add(scmEntryOrderItem);
+
         }
         scmEntryOrderCreateRequest.setEntryOrderItemList(scmEntryOrderItemList);
         

@@ -77,8 +77,9 @@ public class WarehouseNotice implements Serializable{
     @FormParam("supplierCode")
     @Length(max = 32, message = "供应商编码字母和数字不能超过32个,汉字不能超过16个")
     private String supplierCode;
+
     //供应商名称
-    @Transient
+
     private String supplierName;
     //'采购类型编号',
     @FormParam("purchaseType")
