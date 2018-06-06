@@ -85,8 +85,8 @@ public class AllocateOrderEnum {
 	 */
 	public enum AllocateOrderInventoryStatusEnum {
 		
-		GOOD("0","良品"),
-		Quality("1","残品");
+		GOOD("1","良品"),
+		Quality("2","残品");
 		
 		private String code;
 		private String name;
