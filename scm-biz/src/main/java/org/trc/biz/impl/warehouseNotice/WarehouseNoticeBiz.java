@@ -948,10 +948,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     if(StringUtils.equals(inNoticeDetailRequest.getSkuCode(),detail.getSkuCode())){
                         Long normalStorageQuantity= inNoticeDetailRequest.getNormalStorageQuantity();
                         Long defectiveStorageQuantity=inNoticeDetailRequest.getDefectiveStorageQuantity();
+                        Long actualStorageQuantity = inNoticeDetailRequest.getActualStorageQuantity();
 
                         detail.setNormalStorageQuantity(normalStorageQuantity);
                         detail.setDefectiveStorageQuantity(defectiveStorageQuantity);
-                        detail.setActualStorageQuantity(normalStorageQuantity+defectiveStorageQuantity);
+                        detail.setActualStorageQuantity(actualStorageQuantity);
                         detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
                         if(defectiveStorageQuantity==0){
                             if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
