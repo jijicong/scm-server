@@ -270,6 +270,12 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo _warehouse = warehouseInfoService.selectByPrimaryKey(warehouse.getId());
         AssertUtil.notNull(_warehouse, "根据id查询仓库为空");
 
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), _warehouse.getOperationalNature())){
+            String msg = "仓库为自营仓不允许修改！" ;
+            logger.error(msg);
+            throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
+        }
+
         if(warehouse.getIsThroughWms() == Integer.parseInt(ZeroToNineEnum.ONE.getCode()) &&
                 StringUtils.isEmpty(warehouse.getWmsWarehouseCode())){
             String msg = "奇门仓库编码不能为空！" ;
@@ -325,9 +331,10 @@ public class WarehouseBiz implements IWarehouseBiz {
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
     public List<WarehouseInfo> findWarehouse() {
         WarehouseInfo warehouse = new WarehouseInfo();
+        warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         if (warehouseList == null) {
-            warehouseList = new ArrayList<WarehouseInfo>();
+            warehouseList = new ArrayList<>();
         }
         return warehouseList;
     }
@@ -340,7 +347,8 @@ public class WarehouseBiz implements IWarehouseBiz {
         WarehouseInfo tmp = findWarehouseByName(warehouse.getWarehouseName());
         AssertUtil.isNull(tmp, String.format("仓库名称[name=%s]的数据已存在,请使用其他名称", warehouse.getWarehouseName()));
         ParamsUtil.setBaseDO(warehouse);
-        warehouse.setCode(serialUtilService.generateCode(LENGTH, SERIALNAME));
+        String warehouseCode = serialUtilService.generateCode(LENGTH, SERIALNAME);
+        warehouse.setCode(warehouseCode);
         /*
         校验如果是保税仓，必须要是否支持清关的数据<否则，为不合理的，或者非法提交>
         如果是其它仓，不能接受是否支持清关的数据
@@ -377,7 +385,7 @@ public class WarehouseBiz implements IWarehouseBiz {
                 logger.error(msg);
                 throw new WarehouseException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION, msg);
             }
-
+            warehouse.setWmsWarehouseCode(warehouseCode);
             if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
                 if(StringUtils.isEmpty(storeCorrespondChannel)){
                     String msg = "门店仓对应销售渠道不能为空";
