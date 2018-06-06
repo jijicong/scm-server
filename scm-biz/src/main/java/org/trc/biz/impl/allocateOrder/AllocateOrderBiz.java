@@ -1166,8 +1166,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         for (WarehouseItemInfo itemInfo: whItemList) {
         	item = new ScmInventoryQueryItem();
             item.setWarehouseCode(itemInfo.getWarehouseCode());
-            item.setInventoryStatus((AllocateOrderInventoryStatusEnum.GOOD.getCode().equals(queryMap.get(itemInfo.getSkuCode())))? 
-            		JingdongInventoryStateEnum.GOOD.getCode() : JingdongInventoryStateEnum.Quality.getCode());//库存状态，枚举值：1.良品；2.残品；3.样品。
+            item.setInventoryStatus(queryMap.get(itemInfo.getSkuCode()));//库存状态，枚举值：1.良品；2.残品；3.样品。
             item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());// 可销售
             item.setOwnerCode(itemInfo.getWarehouseOwnerId());// 京东仓库需要
             item.setItemCode(itemInfo.getSkuCode());

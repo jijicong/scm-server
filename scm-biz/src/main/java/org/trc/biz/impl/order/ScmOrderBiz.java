@@ -2020,7 +2020,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //设置自采商品spu编码
             setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
             //获取自采商品仓库库存
-            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes);
+            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes,JingdongInventoryTypeEnum.SALE.getCode());
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
             //查询仓库匹配优先级

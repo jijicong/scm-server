@@ -1240,7 +1240,7 @@ public class TrcBiz implements ITrcBiz {
             return scmInventoryQueryResponseList;
         }
         try{
-            scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(new ArrayList<>(skuCodes));
+            scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(new ArrayList<>(skuCodes),JingdongInventoryTypeEnum.SALE.getCode());
         }catch (Exception e){
             logger.error("查询库存异常", e);
         }
