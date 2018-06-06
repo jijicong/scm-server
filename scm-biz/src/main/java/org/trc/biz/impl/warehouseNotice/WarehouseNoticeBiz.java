@@ -660,7 +660,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                 scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             }
             //截止保质日期
-            scmEntryOrderItem.setExpiredDate(DateUtils.dateToString(details.getExpiredDate(),DateUtils.NORMAL_DATE_FORMAT));
+            scmEntryOrderItem.setExpireDate(DateUtils.dateToString(details.getExpiredDate(),DateUtils.NORMAL_DATE_FORMAT));
 
             scmEntryOrderItem.setProductionCode(details.getProductionCode());
             scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));

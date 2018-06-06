@@ -119,6 +119,6 @@ public class ScmEntryOrderItem {
      * 理论保质期
      * @return
      */
-    private String expiredDate;
+    private String expireDate;
 
 }
