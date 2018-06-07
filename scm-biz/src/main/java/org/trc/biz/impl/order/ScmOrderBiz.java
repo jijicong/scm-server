@@ -6383,6 +6383,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             String receiverMobil = getColumVal(columVals, titleResult, RECIVE_MOBILE);
             if(StringUtils.isNotBlank(receiverMobil)){
+                if(!CommonUtil.checkMobilePhone(receiverMobil)){
+                    if(detail.getFlag()){
+                        detail.setFlag(false);
+                    }
+                    setImportOrderErrorMsg(detail, "收货人手机号码格式错误");
+                }
                 detail.setReceiverMobile(receiverMobil);
             }else{
                 if(detail.getFlag()){
@@ -6851,9 +6857,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return false;
     }
-
-
-
 
 
 
