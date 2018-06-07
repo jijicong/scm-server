@@ -659,6 +659,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             }else {
                 scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             }
+            //截止保质日期
+            scmEntryOrderItem.setExpireDate(DateUtils.dateToString(details.getExpiredDate(),DateUtils.NORMAL_DATE_FORMAT));
+
             scmEntryOrderItem.setProductionCode(details.getProductionCode());
             scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));
             scmEntryOrderItemList.add(scmEntryOrderItem);
@@ -945,10 +948,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     if(StringUtils.equals(inNoticeDetailRequest.getSkuCode(),detail.getSkuCode())){
                         Long normalStorageQuantity= inNoticeDetailRequest.getNormalStorageQuantity();
                         Long defectiveStorageQuantity=inNoticeDetailRequest.getDefectiveStorageQuantity();
+                        Long actualStorageQuantity = inNoticeDetailRequest.getActualStorageQuantity();
 
                         detail.setNormalStorageQuantity(normalStorageQuantity);
                         detail.setDefectiveStorageQuantity(defectiveStorageQuantity);
-                        detail.setActualStorageQuantity(normalStorageQuantity+defectiveStorageQuantity);
+                        detail.setActualStorageQuantity(actualStorageQuantity);
                         detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
                         if(defectiveStorageQuantity==0){
                             if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
