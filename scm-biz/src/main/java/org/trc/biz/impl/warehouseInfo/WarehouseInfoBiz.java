@@ -411,6 +411,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             example.orderBy("noticeStatus").asc();
             example.orderBy("updateTime").desc();
             List<WarehouseItemInfo> list = warehouseItemInfoService.selectByExample(example);
+
             List<WarehouseItemsResult> results = converItemsResult(list);
             //开始导出商品信息
             log.info("开始导出商品信息=========》");
