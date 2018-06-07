@@ -126,7 +126,7 @@ public class ScmEntryOrderItem {
      * 品牌ID
      * @return
      */
-    private String brandId;
+    private Long brandId;
 
     /**
      * 商品名称
