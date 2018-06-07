@@ -583,7 +583,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param userId
      * @param notice
      */
-    private void entryOrderCreate(WarehouseNotice notice, String userId) {
+    private void entryOrderCreate(WarehouseNotice notice, String userId)  {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
         WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
@@ -653,12 +653,24 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
 
+            scmEntryOrderItem.setBrandId(details.getBrandId());
+            Brand brand = brandService.selectByPrimaryKey(details.getBrandId());
+            if(brand!=null){
+                scmEntryOrderItem.setBrandName(brand.getName());
+            }else {
+                scmEntryOrderItem.setBrandName("");
+            }
+
+
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
             if(details.getExpiredDay()==null){
                 scmEntryOrderItem.setExpireDay(0L);
             }else {
                 scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             }
+            //截止保质日期
+            scmEntryOrderItem.setExpireDate(DateUtils.dateToString(details.getExpiredDate(),DateUtils.NORMAL_DATE_FORMAT));
+
             scmEntryOrderItem.setProductionCode(details.getProductionCode());
             scmEntryOrderItem.setProductionDate(DateUtils.dateToString(details.getProductionDate(),DateUtils.NORMAL_DATE_FORMAT));
             scmEntryOrderItemList.add(scmEntryOrderItem);
@@ -945,10 +957,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                     if(StringUtils.equals(inNoticeDetailRequest.getSkuCode(),detail.getSkuCode())){
                         Long normalStorageQuantity= inNoticeDetailRequest.getNormalStorageQuantity();
                         Long defectiveStorageQuantity=inNoticeDetailRequest.getDefectiveStorageQuantity();
+                        Long actualStorageQuantity = inNoticeDetailRequest.getActualStorageQuantity();
 
                         detail.setNormalStorageQuantity(normalStorageQuantity);
                         detail.setDefectiveStorageQuantity(defectiveStorageQuantity);
-                        detail.setActualStorageQuantity(normalStorageQuantity+defectiveStorageQuantity);
+                        detail.setActualStorageQuantity(actualStorageQuantity);
                         detail.setActualInstockTime(inNoticeDetailRequest.getActualInstockTime());
                         if(defectiveStorageQuantity==0){
                             if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){

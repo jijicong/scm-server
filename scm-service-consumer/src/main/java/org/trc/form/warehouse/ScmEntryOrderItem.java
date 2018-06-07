@@ -3,6 +3,8 @@ package org.trc.form.warehouse;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Setter
 @Getter
 public class ScmEntryOrderItem {
@@ -112,4 +114,24 @@ public class ScmEntryOrderItem {
      * @return
      */
     private String skuNo;
+
+    /**
+     * 理论保质期
+     * @return
+     */
+    private String expireDate;
+
+
+    /**
+     * 品牌ID
+     * @return
+     */
+    private Long brandId;
+
+    /**
+     * 商品名称
+     * @return
+     */
+    private String brandName;
+
 }
