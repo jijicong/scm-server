@@ -658,13 +658,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             if(brand!=null){
                 scmEntryOrderItem.setBrandName(brand.getName());
             }else {
-                scmEntryOrderItem.setBrandName("");
+                scmEntryOrderItem.setBrandName(null);
             }
 
 
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
             if(details.getExpiredDay()==null){
-                scmEntryOrderItem.setExpireDay(0L);
+                scmEntryOrderItem.setExpireDay(null);
             }else {
                 scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             }
