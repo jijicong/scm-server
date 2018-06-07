@@ -114,7 +114,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         //创建日期结束
         if (!StringUtils.isBlank(form.getEndDate())) {
-            criteria.andLessThanOrEqualTo("createTime", form.getEndDate());
+            criteria.andLessThanOrEqualTo("createTime", form.getEndDate() + " 23:59:59");
         }
 
         example.setOrderByClause("field(status,2,0) desc");
