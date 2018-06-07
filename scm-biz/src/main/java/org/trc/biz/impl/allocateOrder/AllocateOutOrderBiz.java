@@ -1,6 +1,16 @@
 package org.trc.biz.impl.allocateOrder;
 
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,16 +20,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateOutOrderBiz;
-import org.trc.domain.allocateOrder.*;
+import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.domain.allocateOrder.AllocateOrder;
+import org.trc.domain.allocateOrder.AllocateOrderBase;
+import org.trc.domain.allocateOrder.AllocateOutOrder;
+import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
+import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
-import org.trc.enums.*;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
+import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
+import org.trc.enums.ExceptionEnum;
+import org.trc.enums.JdDeliverOrderTypeEnum;
+import org.trc.enums.LogOperationEnum;
+import org.trc.enums.OperationalNatureEnum;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
-import org.trc.exception.ParamValidException;
+import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
+import org.trc.form.warehouse.ScmDeliveryOrderDO;
+import org.trc.form.warehouse.ScmDeliveryOrderItem;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
@@ -27,22 +50,26 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
-import org.trc.service.allocateOrder.*;
+import org.trc.service.allocateOrder.IAllocateInOrderService;
+import org.trc.service.allocateOrder.IAllocateOrderExtService;
+import org.trc.service.allocateOrder.IAllocateOrderService;
+import org.trc.service.allocateOrder.IAllocateOutOrderService;
+import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
+import org.trc.service.util.ILocationUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
-import org.trc.util.*;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
+import org.trc.util.AppResult;
+import org.trc.util.AssertUtil;
+import org.trc.util.DateCheckUtil;
+import org.trc.util.Pagenation;
+import org.trc.util.ResponseAck;
+import org.trc.util.ResultUtil;
 import org.trc.util.cache.AllocateOrderCacheEvict;
-import org.trc.util.lock.RedisLock;
-import tk.mybatis.mapper.entity.Example;
 
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import tk.mybatis.mapper.entity.Example;
 
 @Service("allocateOutOrderBiz")
 public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
@@ -66,6 +93,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IAllocateOrderService allocateOrderService;
 	@Autowired
     private ICommonService commonService;
+    @Autowired
+    private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private ILocationUtilService locationUtilService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
 
     /**
      * 调拨单分页查询
@@ -321,22 +354,63 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		AssertUtil.notNull(warehouse, "调出仓库不存在");
 		
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.getDetailListByOrderCode(outOrder.getAllocateOrderCode());
-		List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
-		ScmAllocateOrderItem item = null;
-		for (AllocateSkuDetail detail : detailList) {
-			item = new ScmAllocateOrderItem();
-			BeanUtils.copyProperties(detail, item);
-			allocateOrderItemList.add(item);
-		}
-		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
-		BeanUtils.copyProperties(outOrder, request);
-		request.setAllocateOrderItemList(allocateOrderItemList);
-        request.setCreateOperatorName(uerAccredit.getName());
-        request.setCreateOperatorNumber(uerAccredit.getPhone());
 		
+		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
 		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+			List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
+			ScmAllocateOrderItem item = null;
+			for (AllocateSkuDetail detail : detailList) {
+				item = new ScmAllocateOrderItem();
+				BeanUtils.copyProperties(detail, item);
+				allocateOrderItemList.add(item);
+			}
+			BeanUtils.copyProperties(outOrder, request);
+			request.setAllocateOrderItemList(allocateOrderItemList);
+	        request.setCreateOperatorName(uerAccredit.getName());
+	        request.setCreateOperatorNumber(uerAccredit.getPhone());
 			request.setWarehouseType("TRC");
 		} else {
+			// 京东调拨单采用发货单的逻辑
+			List<ScmDeliveryOrderDO> scmDeleveryOrderDOList = new ArrayList<>();
+			ScmDeliveryOrderDO orderDo = new ScmDeliveryOrderDO();
+			orderDo.setDeliveryOrderCode(outOrder.getAllocateOutOrderCode());//调拨出库单号
+			orderDo.setIsvSource(jDWmsConstantConfig.getIsvSource());//开放平台的ISV编号，编号线下获取
+			orderDo.setOwnerCode(jDWmsConstantConfig.getDeptNo());// 开放平台事业部编号
+			orderDo.setShopNo(jDWmsConstantConfig.getShopNo());// 店铺编号
+			orderDo.setWarehouseCode(warehouse.getWmsWarehouseCode());//开放平台库房编号
+			orderDo.setShipperNo(jDWmsConstantConfig.getShipperNo()); // 承运商编号
+			orderDo.setSalePlatformSource(jDWmsConstantConfig.getSalePlatformSource());//销售平台编号
+			orderDo.setReciverName(outOrder.getReceiver());//客户姓名
+			orderDo.setReciverMobile(outOrder.getReceiverMobile());//客户手机
+			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2B.getCode()); // b2b
+			
+			orderDo.setReciverProvince(getAreaName(whi.getProvince(), "Province"));// 省
+			orderDo.setReciverCity(getAreaName(whi.getCity(), "City"));// 城市
+			orderDo.setReciverCountry(getAreaName(whi.getArea(), "Arae"));// 区
+			orderDo.setReciverDetailAddress(whi.getAddress()); // 地址取自仓库
+			orderDo.setOrderMark(jDWmsConstantConfig.getOrderMark());// 订单标记位
+			
+			List<ScmDeliveryOrderItem> itemList = new ArrayList<>();
+			ScmDeliveryOrderItem item = null;
+			List<String> skuCodeList = detailList.stream().map(
+					detail -> detail.getSkuCode()).collect(Collectors.toList());
+	        Example example = new Example(WarehouseItemInfo.class);
+	        Example.Criteria ca = example.createCriteria();
+	        ca.andIn("skuCode", skuCodeList);
+	        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+	        for (AllocateSkuDetail detail : detailList) {
+	        	for (WarehouseItemInfo info : warehouseItemInfoList) {
+					if (StringUtils.equals(info.getSkuCode(), detail.getSkuCode())) {
+						item = new ScmDeliveryOrderItem();
+						item.setItemId(info.getWarehouseItemId());
+						item.setPlanQty(detail.getPlanAllocateNum());
+						itemList.add(item);
+						break;
+					}
+				}
+			}
+	        orderDo.setScmDeleveryOrderItemList(itemList);
+			scmDeleveryOrderDOList.add(orderDo);
 			request.setWarehouseType("JD");
 		}
 		AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
@@ -348,9 +422,12 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         String logOp = null;
         String resultMsg = null;
         String errMsg = null;
+        String wmsAllocatOutCode = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_SUCC.getMessage();
+			ScmAllocateOrderOutResponse rep = (ScmAllocateOrderOutResponse) response.getResult();
+			wmsAllocatOutCode = rep.getWmsAllocateOrderOutCode();
 			resultMsg = "调拨出库通知成功！";
 		} else {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode();
@@ -361,11 +438,28 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), warehouse.getWarehouseName(),
         		logOp, errMsg, null);
 		
-		allocateOutOrderService.updateOutOrderById(status, id, errMsg);
+		allocateOutOrderService.updateOutOrderById(status, id, errMsg, wmsAllocatOutCode);
 		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String getAreaName (String code, String areaFiledName) {
+		try {
+			Area area = new Area();
+	        area.setCode(code);
+	        area = locationUtilService.selectOne(area);
+	        Class cls = Area.class;
+	        Method md = cls.getDeclaredMethod("get" + areaFiledName);
+	        
+	        return (String) md.invoke(area);
+		} catch (Exception e) {
+			logger.error("getAreaName error :", e);
+			return "";
+		}
+
+	}
+	
 	@Override
 	public Response closeOrCancel(Long id, String remark, AclUserAccreditInfo aclUserAccreditInfo, boolean isClose) {
         AssertUtil.notNull(id, "调拨出库单主键不能为空");
