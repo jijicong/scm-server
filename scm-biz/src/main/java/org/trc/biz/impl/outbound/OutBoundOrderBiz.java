@@ -791,7 +791,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 String code = result.getAppcode();
                 msg = result.getDatabuffer();
                 //调用重新发货接口插入一条日志记录
-                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
+                String outboundOrderSeq = outboundOrder.getOutboundOrderCode() + "_" + outboundOrder.getNewCode();
+                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送", outboundOrderSeq,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
                     if(StringUtils.equals(SUCCESS, responses.get(0).getCode())){
