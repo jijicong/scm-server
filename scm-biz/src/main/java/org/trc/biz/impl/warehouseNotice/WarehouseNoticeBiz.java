@@ -604,8 +604,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
-        scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
-        scmEntryOrderCreateRequest.setExpectEndTime(DateUtils.parseDateTime(notice.getEndReceiveDate()));
+        scmEntryOrderCreateRequest.setExpectStartTime(notice.getRequriedReceiveDate());
+        scmEntryOrderCreateRequest.setExpectEndTime(notice.getEndReceiveDate());
         scmEntryOrderCreateRequest.setRemark(notice.getRemark());
         //发货人信息
         scmEntryOrderCreateRequest.setSenderName(notice.getSender());
