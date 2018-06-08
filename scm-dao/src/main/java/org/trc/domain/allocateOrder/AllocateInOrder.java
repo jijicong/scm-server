@@ -153,10 +153,22 @@ public class AllocateInOrder extends AllocateOutInOrderBase{
      */
     @Column(name = "failed_cause")
     private String failedCause;
+    
+    /**
+     * 仓库入库单号
+     */
+    @Column(name = "wms_allocate_in_order_code")
+    private String wmsAllocateInOrderCode;
 
+    public String getWmsAllocateInOrderCode() {
+		return wmsAllocateInOrderCode;
+	}
 
+	public void setWmsAllocateInOrderCode(String wmsAllocateInOrderCode) {
+		this.wmsAllocateInOrderCode = wmsAllocateInOrderCode;
+	}
 
-    public String getFailedCause() {
+	public String getFailedCause() {
 		return failedCause;
 	}
 

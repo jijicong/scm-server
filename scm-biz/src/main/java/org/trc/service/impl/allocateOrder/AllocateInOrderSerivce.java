@@ -14,11 +14,12 @@ public class AllocateInOrderSerivce extends BaseService<AllocateInOrder, Long> i
 	private AllocateInOrderMapper mapper;
 	
 	@Override
-	public void updateInOrderStatusById(String status, Long id, String errMsg) {
+	public void updateInOrderById(String status, Long id, String errMsg, String wmsAllocatInCode) {
 		AllocateInOrder record = new AllocateInOrder();
 		record.setId(id);
 		record.setStatus(status);
 		record.setFailedCause(errMsg);
+		record.setWmsAllocateInOrderCode(wmsAllocatInCode);
 		mapper.updateByPrimaryKeySelective(record);
 	}
 

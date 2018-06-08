@@ -16,6 +16,7 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
@@ -173,7 +174,9 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         if(isClose){
             allocateOutInOrderBase.setIsClose(ZeroToNineEnum.ONE.getCode());
         }else {
-            allocateOutInOrderBase.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        	if (AllocateOutOrderStatusEnum.CANCEL.getCode().equals(status)) {//这里过滤掉取消中的状态
+        		allocateOutInOrderBase.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        	}
         }
         allocateOutInOrderBase.setUpdateTime(Calendar.getInstance().getTime());
 //        allocateOutInOrderBase.setMemo(remark);
@@ -222,9 +225,11 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     @Override
     public void discardedAllocateInOrder(String allocateOrderCode) {
-        AllocateInOrderParamForm form = this.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.TWO.getCode(), ZeroToNineEnum.ZERO.getCode(), ALLOCATE_ORDER_DESCARD);
+        AllocateInOrderParamForm form = this.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.TWO.getCode(),
+        		ZeroToNineEnum.ZERO.getCode(), ALLOCATE_ORDER_DESCARD, null);
         //记录操作日志
-        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
+        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), 
+        		SYSTEM, LogOperationEnum.DISCARDED.getMessage(), ALLOCATE_ORDER_DESCARD,null);
     }
 
     @Override
@@ -289,7 +294,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     }
 
     @Override
-    public AllocateInOrderParamForm updateAllocateInOrderByCancel(String allocateOrderCode, String type, String flag, String cancelReson) {
+    public AllocateInOrderParamForm updateAllocateInOrderByCancel(String allocateOrderCode, 
+    		String type, String flag, String cancelReson, String cancelResult) {
         AllocateInOrder allocateInOrder = new AllocateInOrder();
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
@@ -304,6 +310,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前不是取消状态！请刷新页面查看最新数据！");
             }
         }
+
         AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
         allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
         List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
@@ -319,13 +326,19 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
                 allocateInOrder.setStatus(allocateInOrder.getOldStatus());
                 allocateInOrder.setIsClose(ZeroToNineEnum.ZERO.getCode());
             }
-        }else if(StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())){//取消发货类型
+        }else if(StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())){//发货类型
             if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//取消发货
-                allocateInOrder.setOldStatus(allocateInOrder.getStatus());
-                allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
-                allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+            	if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(cancelResult)) { // 已取消状态
+            		allocateInOrder.setOldStatus(allocateInOrder.getStatus());
+            		allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+            	}
+                allocateInOrder.setStatus(cancelResult);
                 //allocateInOrder.setMemo(cancelReson);
             }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//重新发货
+                if (AllocateInOrderStatusEnum.CANCEL.getCode().equals(allocateInOrder.getStatus())
+                		&& DateCheckUtil.checkDate(allocateInOrder.getUpdateTime())) {
+                	throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前调拨入单取消时间过长，不能重新收货");
+                }
                 allocateInOrder.setStatus(allocateInOrder.getOldStatus());
                 allocateInOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
             }
@@ -336,8 +349,17 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         }
         if(StringUtils.equals(type, ZeroToNineEnum.TWO.getCode()) || StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//作废/关闭/取消发货
             for(AllocateSkuDetail detail: allocateSkuDetailList){
-                detail.setOldInStatus(detail.getInStatus());
-                detail.setInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
+            	if (StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())
+            			&& StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())) {//取消发货
+            		if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(cancelResult)) { // 已取消状态，取消成功后才置oldinstatus
+            			detail.setOldInStatus(detail.getInStatus()); 
+            		}
+            		detail.setInStatus(cancelResult);
+            	} else {
+            		detail.setOldInStatus(detail.getInStatus());
+            		detail.setInStatus(AllocateInOrderDetailStatusEnum.CANCEL.getCode().toString());
+            	}
+                
             }
         }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消关闭/重新发货
             for(AllocateSkuDetail detail: allocateSkuDetailList){
@@ -356,6 +378,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         form.setAllocateSkuDetailList(allocateSkuDetailList);
         return form;
     }
+    
+    
 
     @Override
     public void setArea(AllocateOrderBase allocateOrderBase) {

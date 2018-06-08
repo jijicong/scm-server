@@ -30,11 +30,13 @@ import org.trc.domain.util.Area;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.JdDeliverOrderTypeEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OperationalNatureEnum;
+import org.trc.enums.OrderCancelResultEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
@@ -147,7 +149,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         //创建日期结束
         if (!StringUtils.isBlank(form.getEndDate())) {
-            criteria.andLessThanOrEqualTo("createTime", form.getEndDate() + " 23:59:59");
+            criteria.andLessThanOrEqualTo("createTime", form.getEndDate());
         }
 
         example.setOrderByClause("field(status,2,0) desc");
@@ -373,6 +375,32 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			// 京东调拨单采用发货单的逻辑
 			List<ScmDeliveryOrderDO> scmDeleveryOrderDOList = new ArrayList<>();
 			ScmDeliveryOrderDO orderDo = new ScmDeliveryOrderDO();
+			
+			// 商品详情
+			List<ScmDeliveryOrderItem> itemList = new ArrayList<>();
+			ScmDeliveryOrderItem item = null;
+			List<String> skuCodeList = detailList.stream().map(
+					detail -> detail.getSkuCode()).collect(Collectors.toList());
+	        Example example = new Example(WarehouseItemInfo.class);
+	        Example.Criteria ca = example.createCriteria();
+	        ca.andIn("skuCode", skuCodeList);
+	        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+	        for (AllocateSkuDetail detail : detailList) {
+	        	if (AllocateOrderInventoryStatusEnum.Quality.getCode().equals(detail.getInventoryType())) {
+	        		throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "京东仓暂时不允许残品调拨"); 
+	        	}
+	        	for (WarehouseItemInfo info : warehouseItemInfoList) {
+					if (StringUtils.equals(info.getSkuCode(), detail.getSkuCode())) {
+						item = new ScmDeliveryOrderItem();
+						item.setItemId(info.getWarehouseItemId());
+						item.setPlanQty(detail.getPlanAllocateNum());
+						itemList.add(item);
+						break;
+					}
+				}
+			}
+	        orderDo.setScmDeleveryOrderItemList(itemList);
+			
 			orderDo.setDeliveryOrderCode(outOrder.getAllocateOutOrderCode());//调拨出库单号
 			orderDo.setIsvSource(jDWmsConstantConfig.getIsvSource());//开放平台的ISV编号，编号线下获取
 			orderDo.setOwnerCode(jDWmsConstantConfig.getDeptNo());// 开放平台事业部编号
@@ -390,26 +418,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			orderDo.setReciverDetailAddress(whi.getAddress()); // 地址取自仓库
 			orderDo.setOrderMark(jDWmsConstantConfig.getOrderMark());// 订单标记位
 			
-			List<ScmDeliveryOrderItem> itemList = new ArrayList<>();
-			ScmDeliveryOrderItem item = null;
-			List<String> skuCodeList = detailList.stream().map(
-					detail -> detail.getSkuCode()).collect(Collectors.toList());
-	        Example example = new Example(WarehouseItemInfo.class);
-	        Example.Criteria ca = example.createCriteria();
-	        ca.andIn("skuCode", skuCodeList);
-	        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
-	        for (AllocateSkuDetail detail : detailList) {
-	        	for (WarehouseItemInfo info : warehouseItemInfoList) {
-					if (StringUtils.equals(info.getSkuCode(), detail.getSkuCode())) {
-						item = new ScmDeliveryOrderItem();
-						item.setItemId(info.getWarehouseItemId());
-						item.setPlanQty(detail.getPlanAllocateNum());
-						itemList.add(item);
-						break;
-					}
-				}
-			}
-	        orderDo.setScmDeleveryOrderItemList(itemList);
 			scmDeleveryOrderDOList.add(orderDo);
 			request.setWarehouseType("JD");
 		}
@@ -467,32 +475,36 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         //获取出库单信息
         AllocateOutOrder allocateOutOrder = allocateOutOrderService.selectByPrimaryKey(id);
-
-        if(isClose){
+        // 商品详情初始化为已取消状态
+        String skuDatailStatus = AllocateOutOrderStatusEnum.CANCEL.getCode();
+        
+        if(isClose){ // 手工关闭
             if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode()) &&
                     !StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode())){
                 String msg = "调拨出库通知单状态必须为出库仓接收失败或待通知出库!";
                 logger.error(msg);
                 throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
             }
-        }else{
+        }else{// 取消出库
             if(!StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode())){
                 String msg = "调拨出库通知单状态必须为出库仓接收成功!";
                 logger.error(msg);
                 throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_CLOSE_EXCEPTION, msg);
             }
             Map<String, String> map = new HashMap<>();
-            if (!wmsCancelNotice(allocateOutOrder, map)) {
+            OrderCancelResultEnum resultEnum = wmsCancelNotice(allocateOutOrder, map);
+            if (OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)) {
                 throw new RuntimeException("调拨出库单取消失败:" + map.get("msg"));
+            } else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)) {
+            	skuDatailStatus = AllocateOutOrderStatusEnum.CANCELLING.getCode(); // 取消中
             }
         }
 
         //修改状态
-        this.updateDetailStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode(),
-                allocateOutOrder.getAllocateOrderCode(), AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
+        this.updateDetailStatus(skuDatailStatus, allocateOutOrder.getAllocateOrderCode(), 
+        		AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
 
-        allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, isClose,
-                AllocateOrderEnum.AllocateOutOrderStatusEnum.CANCEL.getCode());
+        allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, remark, isClose, skuDatailStatus);
 
         String userId = aclUserAccreditInfo.getUserId();
         if(isClose){
@@ -507,24 +519,27 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     /**
      * 出库单取消通知
      */
-    private boolean wmsCancelNotice (AllocateOutOrder outOder, Map<String, String> errMsg) {
-        boolean succ = false;
-        ScmOrderCancelRequest request = new ScmOrderCancelRequest();
+    private OrderCancelResultEnum wmsCancelNotice (AllocateOutOrder outOder, Map<String, String> errMsg) {
+    	OrderCancelResultEnum resultEnum = OrderCancelResultEnum.CANCEL_FAIL;// 取消失败
+    	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
         request.setOrderType(CancelOrderType.ALLOCATE_OUT.getCode());
-        request.setAllocateOutOrderCode(outOder.getAllocateOutOrderCode());
+        // 自营仓 和 三方仓库 统一取WmsAllocateOutOrderCode
+        request.setOrderCode(outOder.getWmsAllocateOutOrderCode());
         commonService.getWarehoueType(outOder.getInWarehouseCode(), request);
 
         AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
         if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
             ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
-            if (ZeroToNineEnum.ONE.getCode().equals(respResult.getFlag())) { // 取消成功
-                succ = true;
+            if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(respResult.getFlag())) { // 取消成功
+            	resultEnum = OrderCancelResultEnum.CANCEL_SUCC;
+            } else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
+            	resultEnum = OrderCancelResultEnum.CANCELLING;
             }
         } else {
         	errMsg.put("msg", response.getDatabuffer());
         	logger.error("调拨出库单取消失败:{}", response.getDatabuffer());
         }
-        return succ;
+        return resultEnum;
     }
 
 }
