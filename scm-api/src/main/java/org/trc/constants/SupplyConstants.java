@@ -464,6 +464,10 @@ public class SupplyConstants {
         public static final String JURISDICTION_HTML = "jurisdictionHtml";
 
 
+        //页面资源
+        public static final String HTML = "html";
+
+
     }
 
     /**
