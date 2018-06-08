@@ -2978,7 +2978,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     private ScmDeliveryOrderDO getScmDeliveryOrderDO(OutboundOrder outboundOrder, List<WarehouseItemInfo> warehouseItemInfoList){
         ScmDeliveryOrderDO scmDeliveryOrderDO = new ScmDeliveryOrderDO();
-        scmDeliveryOrderDO.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());//发货单编码
+        String code = outboundOrder.getOutboundOrderCode() + "_"  + outboundOrder.getNewCode();
+        scmDeliveryOrderDO.setDeliveryOrderCode(code);//发货单编码
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseItemInfo.getWarehouseCode())){
                 scmDeliveryOrderDO.setWarehouseCode(warehouseItemInfo.getWmsWarehouseCode());
