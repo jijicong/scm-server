@@ -23,6 +23,7 @@ import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /** 
  * @ClassName: CommonUtil 
@@ -392,6 +393,20 @@ public class CommonUtil {
 			e.printStackTrace();
 		}
 		return xmlUTF8;
+	}
+
+	/**
+	 * 验证手机号码
+	 * 移动号码段:139、138、137、136、135、134、150、151、152、157、158、159、182、183、187、188、147
+	 * 联通号码段:130、131、132、136、185、186、145
+	 * 电信号码段:133、153、180、189
+	 *
+	 * @param phoneNo
+	 * @return
+	 */
+	public static boolean checkMobilePhone(String phoneNo) {
+		String regex = "^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\\d{8}$";
+		return Pattern.matches(regex, phoneNo);
 	}
 
 }

@@ -583,7 +583,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
      * @param userId
      * @param notice
      */
-    private void entryOrderCreate(WarehouseNotice notice, String userId) {
+    private void entryOrderCreate(WarehouseNotice notice, String userId)  {
         String noticeCode = notice.getWarehouseNoticeCode(); // 入库通知单号
         ScmEntryOrderCreateRequest scmEntryOrderCreateRequest = new ScmEntryOrderCreateRequest();
         WarehouseTypeEnum warehouseTypeEnum = warehouseExtService.getWarehouseType(notice.getWarehouseCode());
@@ -653,9 +653,18 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             scmEntryOrderItem.setGoodsStatus(EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode());
             scmEntryOrderItem.setPlanQty(details.getPurchasingQuantity()); // 采购数量
 
+            scmEntryOrderItem.setBrandId(details.getBrandId());
+            Brand brand = brandService.selectByPrimaryKey(details.getBrandId());
+            if(brand!=null){
+                scmEntryOrderItem.setBrandName(brand.getName());
+            }else {
+                scmEntryOrderItem.setBrandName(null);
+            }
+
+
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
             if(details.getExpiredDay()==null){
-                scmEntryOrderItem.setExpireDay(0L);
+                scmEntryOrderItem.setExpireDay(null);
             }else {
                 scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             }

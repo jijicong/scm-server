@@ -121,4 +121,17 @@ public class ScmEntryOrderItem {
      */
     private String expireDate;
 
+
+    /**
+     * 品牌ID
+     * @return
+     */
+    private Long brandId;
+
+    /**
+     * 商品名称
+     * @return
+     */
+    private String brandName;
+
 }

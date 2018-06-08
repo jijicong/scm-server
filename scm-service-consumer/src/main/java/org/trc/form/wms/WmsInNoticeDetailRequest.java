@@ -16,7 +16,7 @@ public class WmsInNoticeDetailRequest implements Serializable {
     //残次品入库数量
     private Long defectiveStorageQuantity;
     //实际入库数量
-    private Long actualStorageQuantity=normalStorageQuantity+defectiveStorageQuantity;
+    private Long actualStorageQuantity;
     //实际入库时间
     private Date actualInstockTime;
     //'sku编码',
