@@ -30,6 +30,7 @@ public class DateUtils {
 	public static final String NORMAL_DATE_FORMAT_NEW = "yyyy-mm-dd hh24:mi:ss";
 	public static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	public static final String DATETIME_FORMAT2 = "yyyy/MM/dd HH:mm:ss";
 	public static final String DATE_ALL = "yyyyMMddHHmmssS";
 	public static final String DATE_UNION_QUOT = "-";
 
@@ -241,6 +242,19 @@ public class DateUtils {
 		if ((paramString == null) || (paramString.trim().equals("")))
 			return null;
 		SimpleDateFormat localSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		localSimpleDateFormat.setLenient(false);
+		try {
+			return localSimpleDateFormat.parse(paramString);
+		} catch (ParseException localParseException) {
+			log.error(CommonUtil.joinStr("日期转换出错，异常信息：",localParseException.getMessage()).toString());
+		}
+		return null;
+	}
+
+	public static Date parseDateTimeFormate(String paramString, String dateformate) {
+		if ((paramString == null) || (paramString.trim().equals("")))
+			return null;
+		SimpleDateFormat localSimpleDateFormat = new SimpleDateFormat(dateformate);
 		localSimpleDateFormat.setLenient(false);
 		try {
 			return localSimpleDateFormat.parse(paramString);
@@ -547,8 +561,11 @@ public class DateUtils {
 
 	public static void main(String[] paramArrayOfString) {
 		try {
-			Date date1 = DateUtils.parseDate("2017-11-09");
-			System.out.println(getDaysBetween(date1, Calendar.getInstance().getTime()));
+			/*Date date1 = DateUtils.parseDate("2017-11-09");
+			System.out.println(getDaysBetween(date1, Calendar.getInstance().getTime()));*/
+			String time = "2018-06-07 12:23:23";
+			Date date = parseDateTimeFormate("2018/06/07 12:23:23", DATETIME_FORMAT2);
+			System.out.println(time.contains("/"));
 		} catch (Exception localException) {
 			System.out.println(localException);
 		}

@@ -140,6 +140,11 @@ public class ImportOrderInfo implements Serializable{
     private Date payTime;
 
     /**
+     * 付款时间原始导入字符串
+     */
+    private String orignalPaytimeStr;
+
+    /**
      * 付款时间
      */
     private Date createTime;
@@ -166,6 +171,22 @@ public class ImportOrderInfo implements Serializable{
     @Transient
     private Boolean flag = true;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getImportOrderCode() {
+        return importOrderCode;
+    }
+
+    public void setImportOrderCode(String importOrderCode) {
+        this.importOrderCode = importOrderCode;
+    }
+
     public String getChannelCode() {
         return channelCode;
     }
@@ -180,6 +201,22 @@ public class ImportOrderInfo implements Serializable{
 
     public void setSellCode(String sellCode) {
         this.sellCode = sellCode;
+    }
+
+    public String getPlatformOrderCode() {
+        return platformOrderCode;
+    }
+
+    public void setPlatformOrderCode(String platformOrderCode) {
+        this.platformOrderCode = platformOrderCode;
+    }
+
+    public String getScmShopOrderCode() {
+        return scmShopOrderCode;
+    }
+
+    public void setScmShopOrderCode(String scmShopOrderCode) {
+        this.scmShopOrderCode = scmShopOrderCode;
     }
 
     public String getShopOrderCode() {
@@ -310,30 +347,6 @@ public class ImportOrderInfo implements Serializable{
         this.shopMemo = shopMemo;
     }
 
-    public Date getPayTime() {
-        return payTime;
-    }
-
-    public void setPayTime(Date payTime) {
-        this.payTime = payTime;
-    }
-
-    public String getItemNo() {
-        return itemNo;
-    }
-
-    public void setItemNo(String itemNo) {
-        this.itemNo = itemNo;
-    }
-
-    public Boolean getFlag() {
-        return flag;
-    }
-
-    public void setFlag(Boolean flag) {
-        this.flag = flag;
-    }
-
     public String getMemo() {
         return memo;
     }
@@ -350,20 +363,20 @@ public class ImportOrderInfo implements Serializable{
         this.errorMessage = errorMessage;
     }
 
-    public String getPlatformOrderCode() {
-        return platformOrderCode;
+    public Date getPayTime() {
+        return payTime;
     }
 
-    public void setPlatformOrderCode(String platformOrderCode) {
-        this.platformOrderCode = platformOrderCode;
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
     }
 
-    public Long getId() {
-        return id;
+    public String getOrignalPaytimeStr() {
+        return orignalPaytimeStr;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setOrignalPaytimeStr(String orignalPaytimeStr) {
+        this.orignalPaytimeStr = orignalPaytimeStr;
     }
 
     public Date getCreateTime() {
@@ -390,19 +403,19 @@ public class ImportOrderInfo implements Serializable{
         this.isFail = isFail;
     }
 
-    public String getImportOrderCode() {
-        return importOrderCode;
+    public String getItemNo() {
+        return itemNo;
     }
 
-    public void setImportOrderCode(String importOrderCode) {
-        this.importOrderCode = importOrderCode;
+    public void setItemNo(String itemNo) {
+        this.itemNo = itemNo;
     }
 
-    public String getScmShopOrderCode() {
-        return scmShopOrderCode;
+    public Boolean getFlag() {
+        return flag;
     }
 
-    public void setScmShopOrderCode(String scmShopOrderCode) {
-        this.scmShopOrderCode = scmShopOrderCode;
+    public void setFlag(Boolean flag) {
+        this.flag = flag;
     }
 }
