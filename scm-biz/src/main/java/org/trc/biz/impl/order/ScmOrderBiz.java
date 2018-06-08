@@ -6061,7 +6061,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 4000);
-            CellDefinition payTime = new CellDefinition("payTime", PAY_TIME, CellDefinition.DATE_TIME, 5000);
+            CellDefinition orignalPaytimeStr = new CellDefinition("orignalPaytimeStr", PAY_TIME, CellDefinition.DATE_TIME, 5000);
             CellDefinition receiverName = new CellDefinition("receiverName", RECIVE_NAME, CellDefinition.TEXT, 3000);
             CellDefinition receiverMobile = new CellDefinition("receiverMobile", RECIVE_MOBILE, CellDefinition.TEXT, 4000);
             CellDefinition receiverProvince = new CellDefinition("receiverProvince", RECIVE_PROVINCE, CellDefinition.TEXT, 3000);
@@ -6078,7 +6078,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             CellDefinition shopMemo = new CellDefinition("shopMemo", SHOP_MEMO, CellDefinition.TEXT, 10000);
             CellDefinition errorMessage = new CellDefinition("errorMessage", ERROR_MESSAGE, CellDefinition.TEXT, 10000);
             cellDefinitionList.add(shopOrderCode);
-            cellDefinitionList.add(payTime);
+            cellDefinitionList.add(orignalPaytimeStr);
             cellDefinitionList.add(receiverName);
             cellDefinitionList.add(receiverMobile);
             cellDefinitionList.add(receiverProvince);
@@ -6214,9 +6214,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ImportOrderInfo importOrderInfo: importOrderInfoList){
             importOrderInfo.setImportOrderCode(importOrdrCode);
             if(importOrderInfo.getFlag()){
-                importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());
-            }else{
                 importOrderInfo.setIsFail(ZeroToNineEnum.ZERO.getCode());
+            }else{
+                importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());
             }
         }
         if(!CollectionUtils.isEmpty(importOrderInfoList)){
@@ -6450,15 +6450,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             String paytime = getColumVal(columVals, titleResult, PAY_TIME);
             if(StringUtils.isNotBlank(paytime)){
-                Date date = DateUtils.parseDateTime(paytime);
+                String dateFormate = "";
+                if(paytime.contains(SupplyConstants.Symbol.XIE_GANG)){
+                    dateFormate = DateUtils.DATETIME_FORMAT2;
+                }else if(paytime.contains(SupplyConstants.Symbol.MINUS)){
+                    dateFormate = DateUtils.DATETIME_FORMAT;
+                }
+                Date date = DateUtils.parseDateTimeFormate(paytime, dateFormate);
                 if(null == date){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
-                    setImportOrderErrorMsg(detail, "付款时间格式错误");
+                    setImportOrderErrorMsg(detail, "付款时间格式错误,必须是yyyy-MM-dd HH:mm:ss或者yyyy/MM/ dd HH:mm:ss格式字符串");
                 }else{
                     detail.setPayTime(date);
                 }
+                detail.setOrignalPaytimeStr(paytime);
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);

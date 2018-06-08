@@ -19,6 +19,7 @@ import org.trc.enums.ZeroToNineEnum;
 import org.trc.exception.CategoryException;
 import org.trc.exception.JurisdictionException;
 import org.trc.form.impower.JurisdictionTreeNode;
+import org.trc.form.impower.MenuNode;
 import org.trc.service.impower.*;
 import org.trc.util.AssertUtil;
 import org.trc.util.cache.UserCacheEvict;
@@ -27,7 +28,6 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.*;
 
 /**
- *
  * @author sone
  * @date 2017/5/11
  */
@@ -46,7 +46,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     @Autowired
     private IAclUserAccreditRoleRelationService userAccreditInfoRoleRelationService;
     @Autowired
-    private  IAclUserChannelSellService aclUserChannelSellService;
+    private IAclUserChannelSellService aclUserChannelSellService;
 
     /**
      * 全局角色的所属
@@ -79,18 +79,18 @@ public class AclResourceBiz implements IAclResourceBiz {
         List<AclResource> wholeAclResourceList = jurisdictionService.select(aclResource);
         AssertUtil.notNull(wholeAclResourceList, "查询全局权限列表,数据库操作失败");
         List<AclResource> wholeAclResourceList2 = new ArrayList<>();
-        if (!StringUtils.equals(userAccreditInfo.getUserId(),ADMIN_ID)){
-            for (int i = 0; i <wholeAclResourceList.size() ; i++) {
-                AclResource resource =wholeAclResourceList.get(i);
-                if (resource.getCode().equals(10402L)||
-                        resource.getCode().equals(10404L)|| resource.getCode().equals(10405L)||
-                        resource.getCode().equals(10406L)||resource.getCode().equals(10501L)||
-                        resource.getCode().equals(105L)){
-             }else {
+        if (!StringUtils.equals(userAccreditInfo.getUserId(), ADMIN_ID)) {
+            for (int i = 0; i < wholeAclResourceList.size(); i++) {
+                AclResource resource = wholeAclResourceList.get(i);
+                if (resource.getCode().equals(10402L) ||
+                        resource.getCode().equals(10404L) || resource.getCode().equals(10405L) ||
+                        resource.getCode().equals(10406L) || resource.getCode().equals(10501L) ||
+                        resource.getCode().equals(105L)) {
+                } else {
                     wholeAclResourceList2.add(resource);
                 }
-           }
-        }else {
+            }
+        } else {
             return wholeAclResourceList;
         }
         return wholeAclResourceList2;
@@ -178,26 +178,26 @@ public class AclResourceBiz implements IAclResourceBiz {
 
     @Override
     public JSONArray queryChannelList(String userId) {
-        AssertUtil.notBlank(userId,"用户UserId为空,请检查用户");
+        AssertUtil.notBlank(userId, "用户UserId为空,请检查用户");
 
-        AclUserAccreditInfo aclUserAccreditInfo =new  AclUserAccreditInfo();
+        AclUserAccreditInfo aclUserAccreditInfo = new AclUserAccreditInfo();
         aclUserAccreditInfo.setUserId(userId);
-        aclUserAccreditInfo =  userAccreditInfoService.selectOne(aclUserAccreditInfo);
-        AssertUtil.notNull(aclUserAccreditInfo,"查询用户信息为空");
+        aclUserAccreditInfo = userAccreditInfoService.selectOne(aclUserAccreditInfo);
+        AssertUtil.notNull(aclUserAccreditInfo, "查询用户信息为空");
         JSONArray jsonArray = new JSONArray();
-        if (StringUtils.equals(aclUserAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
-            JSONObject object= new JSONObject();
-            object.put("userType",aclUserAccreditInfo.getUserType());
+        if (StringUtils.equals(aclUserAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())) {
+            JSONObject object = new JSONObject();
+            object.put("userType", aclUserAccreditInfo.getUserType());
             jsonArray.add(object);
             return jsonArray;
         }
         List<AclUserAccreditInfo> aclUserAccreditInfoList = userAccreditInfoService.selectUserListByUserId2(userId);
-        AssertUtil.notEmpty(aclUserAccreditInfoList,"当前用户没有相关的销售渠道,请确认该用户是否已经授权!");
-        for (AclUserAccreditInfo userAccreditInfo:aclUserAccreditInfoList) {
-            JSONObject object= new JSONObject();
-            object.put("userType",userAccreditInfo.getUserType());
-            object.put("channelCode",userAccreditInfo.getChannelCode());
-            object.put("channelName",userAccreditInfo.getChannelName());
+        AssertUtil.notEmpty(aclUserAccreditInfoList, "当前用户没有相关的销售渠道,请确认该用户是否已经授权!");
+        for (AclUserAccreditInfo userAccreditInfo : aclUserAccreditInfoList) {
+            JSONObject object = new JSONObject();
+            object.put("userType", userAccreditInfo.getUserType());
+            object.put("channelCode", userAccreditInfo.getChannelCode());
+            object.put("channelName", userAccreditInfo.getChannelName());
             jsonArray.add(object);
         }
         return jsonArray;
@@ -228,12 +228,12 @@ public class AclResourceBiz implements IAclResourceBiz {
     @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public Boolean authCheck(String userId, String url, String method) {
         /*
-        * 1.查询用户授权信息表
-        * 2.查询用户所拥有的角色
-        * 3.查询用户所有角色下的父级权限
-        * 4.查询父级权限下的具体的权限
-        * 5.验证权限
-        * */
+         * 1.查询用户授权信息表
+         * 2.查询用户所拥有的角色
+         * 3.查询用户所有角色下的父级权限
+         * 4.查询父级权限下的具体的权限
+         * 5.验证权限
+         * */
         //1.查询用户授权信息表
         List<AclResource> aclResourceList = getAclResources(userId);
         //5.验证权限,正则匹配url，方法类型匹配
@@ -442,7 +442,7 @@ public class AclResourceBiz implements IAclResourceBiz {
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
+//    @Cacheable(value = SupplyConstants.Cache.SCM_USER)
     public List<Map<String, Object>> getHtmlJurisdiction(String userId) {
         List<Map<String, Object>> jurisdictionList = new ArrayList<>();
         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
@@ -491,35 +491,171 @@ public class AclResourceBiz implements IAclResourceBiz {
             jurisdictionList.add(jurisdictionMap);
         }
         //两个商品管理需要合并
-        if(!AssertUtil.collectionIsEmpty(jurisdictionList)){
+        if (!AssertUtil.collectionIsEmpty(jurisdictionList)) {
             List<Map<String, Object>> needRemoveJurisdictionList = new ArrayList<>();
-            for (Map<String, Object> map1: jurisdictionList) {
-                if(map1.get("parentCode").equals(102l)){
-                    for (Map<String, Object> map2: jurisdictionList ) {
-                        if(map2.get("parentCode").equals(201l)){
-                            Set<Long> longSet1= (Set<Long>) map1.get("codeList");
-                            Set<Long> longSet2= (Set<Long>) map2.get("codeList");
+            for (Map<String, Object> map1 : jurisdictionList) {
+                if (map1.get("parentCode").equals(102l)) {
+                    for (Map<String, Object> map2 : jurisdictionList) {
+                        if (map2.get("parentCode").equals(201l)) {
+                            Set<Long> longSet1 = (Set<Long>) map1.get("codeList");
+                            Set<Long> longSet2 = (Set<Long>) map2.get("codeList");
                             longSet1.addAll(longSet2);
                             needRemoveJurisdictionList.add(map2);
                         }
                     }
                 }
-                if(map1.get("parentCode").equals(103l)){
-                    for (Map<String, Object> map2: jurisdictionList ) {
-                        if(map2.get("parentCode").equals(202l)){
-                            Set<Long> longSet1= (Set<Long>) map1.get("codeList");
-                            Set<Long> longSet2= (Set<Long>) map2.get("codeList");
+                if (map1.get("parentCode").equals(103l)) {
+                    for (Map<String, Object> map2 : jurisdictionList) {
+                        if (map2.get("parentCode").equals(202l)) {
+                            Set<Long> longSet1 = (Set<Long>) map1.get("codeList");
+                            Set<Long> longSet2 = (Set<Long>) map2.get("codeList");
                             longSet1.addAll(longSet2);
                             needRemoveJurisdictionList.add(map2);
                         }
                     }
                 }
             }
-            if(!AssertUtil.collectionIsEmpty(needRemoveJurisdictionList)){
+            if (!AssertUtil.collectionIsEmpty(needRemoveJurisdictionList)) {
                 jurisdictionList.removeAll(needRemoveJurisdictionList);
             }
         }
+
+
         return jurisdictionList;
+    }
+
+    @Override
+    public List<MenuNode> getHtml(String userId) {
+        List<MenuNode> menuNodeList = new ArrayList<>();
+        AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
+        try {
+            AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息不存在");
+        } catch (IllegalArgumentException e) {
+            return menuNodeList;
+        }
+        //2.查询用户所拥有的角色
+        List<AclUserAccreditRoleRelation> userRoleRelationList = userAccreditInfoRoleRelationService.selectListByUserAcId(aclUserAccreditInfo.getId());
+        if (AssertUtil.collectionIsEmpty(userRoleRelationList)) {
+            return menuNodeList;
+        }
+        Long[] roleIds = new Long[userRoleRelationList.size()];
+        for (int i = 0; i < userRoleRelationList.size(); i++) {
+            roleIds[i] = userRoleRelationList.get(i).getRoleId();
+        }
+        //3.查询用户所有角色下的权限
+        Example example = new Example(AclRoleResourceRelation.class);
+        Example.Criteria criteria = example.createCriteria();
+        List<Long> roleIdList = new ArrayList<>();
+        Collections.addAll(roleIdList, roleIds);
+        criteria.andIn("roleId", roleIdList);
+        List<AclRoleResourceRelation> roleJdRelationList = roleJurisdictionRelationService.selectByExample(example);
+        if (AssertUtil.collectionIsEmpty(roleJdRelationList)) {
+            return menuNodeList;
+        }
+        Set<Long> resourceCodeSet = new HashSet<>();
+        for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
+            //取得资源码前3位
+            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode() / 100);
+        }
+        for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
+            //取得资源码前3位
+            resourceCodeSet.add(aclRoleResourceRelation.getResourceCode() / 100);
+        }
+        for (Long resourceCode : resourceCodeSet) {
+            MenuNode menuNode = new MenuNode();
+            menuNode.setParentCode(resourceCode);
+            Set<Long> longSet = new HashSet<>();
+            for (AclRoleResourceRelation aclRoleResourceRelation : roleJdRelationList) {
+                //取得资源码前3位
+                if (resourceCode.equals(aclRoleResourceRelation.getResourceCode() / 100)) {
+                    //取得资源码前5位
+                    longSet.add(aclRoleResourceRelation.getResourceCode());
+                }
+            }
+            menuNode.setCodeList(longSet);
+            menuNodeList.add(menuNode);
+        }
+
+
+        //两个商品管理需要合并
+        if (!AssertUtil.collectionIsEmpty(menuNodeList)) {
+            List<MenuNode> needRemoveJurisdictionList = new ArrayList<>();
+            for (MenuNode map1 : menuNodeList) {
+                if (map1.getParentCode().equals(102l)) {
+                    for (MenuNode map2 : menuNodeList) {
+                        if (map2.getParentCode().equals(201l)) {
+                            Set<Long> longSet1 = map1.getCodeList();
+                            Set<Long> longSet2 = map2.getCodeList();
+                            longSet1.addAll(longSet2);
+                            needRemoveJurisdictionList.add(map2);
+                        }
+                    }
+                }
+                if (map1.getParentCode().equals(103l)) {
+                    for (MenuNode map2 : menuNodeList) {
+                        if (map2.getParentCode().equals(202l)) {
+                            Set<Long> longSet1 = map1.getCodeList();
+                            Set<Long> longSet2 = map2.getCodeList();
+                            longSet1.addAll(longSet2);
+                            needRemoveJurisdictionList.add(map2);
+                        }
+                    }
+                }
+            }
+            if (!AssertUtil.collectionIsEmpty(needRemoveJurisdictionList)) {
+                menuNodeList.removeAll(needRemoveJurisdictionList);
+            }
+        }
+        //四级处理,
+        if (!AssertUtil.collectionIsEmpty(menuNodeList)) {
+            List<Long> resourceCodeList = new ArrayList<>();
+
+            for (MenuNode node : menuNodeList) {
+                resourceCodeList.addAll(node.getCodeList());
+            }
+            //查询为子模块的资源
+            Example exampleResource = new Example(AclResource.class);
+            Example.Criteria criteriaResource = exampleResource.createCriteria();
+            criteriaResource.andIn("code", resourceCodeList);
+            criteriaResource.andNotEqualTo("isBelong", 0L);
+            List<AclResource> aclResourceList = jurisdictionService.selectByExample(exampleResource);
+
+            if (!AssertUtil.collectionIsEmpty(aclResourceList)) {
+
+                for (MenuNode menuNode : menuNodeList) {
+                    Set<Long> codeItemList = menuNode.getCodeList();
+                    MenuNode menuNodeChild = new MenuNode();
+                    Set<Long> codeChildSet = new HashSet<>();
+                    for (AclResource resource : aclResourceList) {
+                        for (Long codeItem : codeItemList) {
+                            if (resource.getIsBelong().equals(codeItem)) {
+                                menuNodeChild.setParentCode(resource.getIsBelong());
+                                codeChildSet.add(resource.getCode());
+                            }
+                        }
+                    }
+                    if (!codeChildSet.isEmpty()) {
+                        menuNodeChild.setCodeList(codeChildSet);
+                    }
+                    Set<Long> newCodeItemList = new HashSet<>();
+                    for (Long codeItem : codeItemList) {
+                        boolean Flag = true;
+                        for (AclResource resource : aclResourceList) {
+                            if (resource.getCode().equals(codeItem)) {
+                                Flag = false;
+                            }
+                        }
+                        if (Flag){
+                            newCodeItemList.add(codeItem) ;
+                        }
+                    }
+                    menuNode.setCodeList(newCodeItemList);
+                    menuNode.setMenuNode(menuNodeChild);
+                }
+            }
+        }
+        System.out.println(JSON.toJSONString(menuNodeList));
+        return menuNodeList;
     }
 
 }
