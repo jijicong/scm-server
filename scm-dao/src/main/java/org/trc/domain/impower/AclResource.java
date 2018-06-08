@@ -34,6 +34,8 @@ public class AclResource extends CommonDO {
     @Transient
     private String check;
 
+    private Long isBelong;
+
     public String getType() {
         return type;
     }
@@ -112,5 +114,13 @@ public class AclResource extends CommonDO {
 
     public void setParentId(Long parentId) {
         this.parentId = parentId;
+    }
+
+    public Long getIsBelong() {
+        return isBelong;
+    }
+
+    public void setIsBelong(Long isBelong) {
+        this.isBelong = isBelong;
     }
 }

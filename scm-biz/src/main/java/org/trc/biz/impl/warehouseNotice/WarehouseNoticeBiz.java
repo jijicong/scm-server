@@ -604,8 +604,8 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 
 
         scmEntryOrderCreateRequest.setOrderCreateTime(notice.getCreateTime());
-        scmEntryOrderCreateRequest.setExpectStartTime(DateUtils.parseDateTime(notice.getRequriedReceiveDate()));
-        scmEntryOrderCreateRequest.setExpectEndTime(DateUtils.parseDateTime(notice.getEndReceiveDate()));
+        scmEntryOrderCreateRequest.setExpectStartTime(notice.getRequriedReceiveDate());
+        scmEntryOrderCreateRequest.setExpectEndTime(notice.getEndReceiveDate());
         scmEntryOrderCreateRequest.setRemark(notice.getRemark());
         //发货人信息
         scmEntryOrderCreateRequest.setSenderName(notice.getSender());
@@ -658,13 +658,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             if(brand!=null){
                 scmEntryOrderItem.setBrandName(brand.getName());
             }else {
-                scmEntryOrderItem.setBrandName("");
+                scmEntryOrderItem.setBrandName(null);
             }
 
 
             scmEntryOrderItem.setPurchasingQuantity(details.getPurchasingQuantity());
             if(details.getExpiredDay()==null){
-                scmEntryOrderItem.setExpireDay(0L);
+                scmEntryOrderItem.setExpireDay(null);
             }else {
                 scmEntryOrderItem.setExpireDay(Long.valueOf(details.getExpiredDay()));
             }

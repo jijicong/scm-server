@@ -14,6 +14,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserChannelSell;
@@ -22,7 +23,6 @@ import org.trc.service.System.IChannelService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.impower.IAclUserChannelSellService;
-import org.trc.util.AssertUtil;
 import org.trc.util.CommonConfigUtil;
 import tk.mybatis.mapper.entity.Example;
 
@@ -48,6 +48,8 @@ public class AclUserChannelSellTest extends AbstractJUnit4SpringContextTests {
     private ISellChannelService sellChannelService;
     @Autowired
     private IAclUserAccreditInfoBiz userAccreditInfoBiz;
+    @Autowired
+    private IAclResourceBiz aclResourceBiz;
     @Value("${apply.id}")
     private String applyId;
 
@@ -99,6 +101,11 @@ public class AclUserChannelSellTest extends AbstractJUnit4SpringContextTests {
         CSPKernelSDK sdk = CSPKernelSDK.instance(config);
         TokenDeliverDTO tokenInfo = sdk.user.tenantValidate(token, "", config).getBody();
         System.out.println(JSON.toJSONString(tokenInfo));
+    }
+
+    @Test
+    public  void  testHtml(){
+        aclResourceBiz.getHtml("B571346F625E44DB8FCBA8116E72593D");
     }
 
 }

@@ -205,7 +205,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
             //组装请求信息
             ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
-            request.setOrderCode(order.getOutboundOrderCode());
+            request.setOrderCode(getOutboundCode(order));
             request.setOrderId(order.getWmsOrderCode());
             request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
             request.setWarehouseCode(warehouseInfo.getCode());
@@ -215,6 +215,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         //调用接口
         this.deliveryOrderDetail(requests);
 
+    }
+
+    private String getOutboundCode(OutboundOrder order){
+        String outboundCode = order.getOutboundOrderCode();
+        int newCode = order.getNewCode();
+        return outboundCode + "_" + newCode;
     }
 
     private boolean isCompound(String num){
@@ -753,6 +759,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                     outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), true));
         }
+
+        outboundOrder.setNewCode(outboundOrder.getNewCode() + 1);
+        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+
         //设置发货通知单参数
         Map<String, OutboundForm> outboundMap = new HashMap<>();
         OutboundForm outboundForm = new OutboundForm();
@@ -768,6 +778,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         try{
             identifier = redisLock.Lock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() + CREATE_OUTBOUND+outboundOrderCode, 500, 3000);
             if (StringUtils.isNotBlank(identifier)) {
+
                 //查询发货通知单状态，如果是成功，则返回，不在掉用接口
                 OutboundOrder outboundOrder01 = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
                 if (StringUtils.equals(outboundOrder01.getStatus(),ZeroToNineEnum.TWO.getCode())){
