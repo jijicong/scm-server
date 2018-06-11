@@ -7,6 +7,6 @@ public interface IAllocateOutOrderService extends IBaseService<AllocateOutOrder,
 
 	//void updateOutOrderStatusById(String status, Long id);
 
-	void updateOutOrderById(String status, Long id, String errMsg);
+	void updateOutOrderById(String status, Long id, String errMsg, String wmsAllocatOutCode, Integer orderSeq);
 
 }

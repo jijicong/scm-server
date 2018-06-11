@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
@@ -22,15 +23,22 @@ import org.trc.domain.allocateOrder.AllocateOrderBase;
 import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
+import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.CommonExceptionEnum;
+import org.trc.enums.JdPurchaseOrderTypeEnum;
 import org.trc.enums.LogOperationEnum;
+import org.trc.enums.OrderCancelResultEnum;
+import org.trc.enums.WarehouseTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.ParamValidException;
+import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
+import org.trc.form.warehouse.ScmEntryOrderItem;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
@@ -44,7 +52,9 @@ import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
+import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 import org.trc.util.DateCheckUtil;
@@ -76,6 +86,13 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IAllocateOrderService allocateOrderService;
     @Autowired
     private ICommonService commonService;
+    @Autowired
+    private JDWmsConstantConfig jDWmsConstantConfig;
+    @Autowired
+    private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IWarehouseItemInfoService warehouseItemInfoService;
+    
 
     @Override
     public Pagenation<AllocateInOrder> allocateInOrderPage(AllocateInOrderForm form, Pagenation<AllocateInOrder> page) {
@@ -140,30 +157,48 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//取消收货操作
             AssertUtil.notBlank(cancelReson, "参数关闭原因cancelReson不能为空");
         }
-        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ONE.getCode(), flag, cancelReson);
         
+        AllocateInOrder allocateInOrder = new AllocateInOrder();
+        allocateInOrder.setAllocateOrderCode(allocateOrderCode);
+        allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
+        AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空"));
+        
+        // 取消结果
+        String cancelResult = "";
         LogOperationEnum logOperationEnum = null;
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)) {//取消收货
+        	
             logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
+            
             Map<String, String> map = new HashMap<>();
-            if (!wmsCancelNotice(form.getAllocateInOrder(), map)) {
-            	throw new RuntimeException("调拨入库单取消失败" +map.get("msg"));
+
+            
+            OrderCancelResultEnum resultEnum = wmsCancelNotice(allocateInOrder, map);
+            
+            if (OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)) {
+                throw new RuntimeException("调拨入库单取消失败:" + map.get("msg"));
+            } else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)) {
+            	cancelResult = AllocateInOrderStatusEnum.CANCELLING.getCode().toString(); // 取消中
+            } else if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(resultEnum.code)) {
+            	cancelResult = AllocateInOrderStatusEnum.CANCEL.getCode().toString();// 已取消
             }
+            
         } else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)) {//重新收货
         	
-            if (AllocateInOrderStatusEnum.CANCEL.getCode().equals(form.getAllocateInOrder().getStatus())
-            		&& DateCheckUtil.checkDate(form.getAllocateInOrder().getUpdateTime())) {
-            	throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前调拨入单取消时间过长，不能重新收货");
-            }
+            
             logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
-            wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false);
+            wmsAllocateOrderInNotice(allocateInOrder, aclUserAccreditInfo, false);
 //            if (!wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false)) {
 //            	throw new RuntimeException("调拨入库单重新收货失败");
 //            }
         }
         
+        AllocateInOrderParamForm form = allocateOrderExtService.
+        		updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ONE.getCode(), flag, cancelReson, cancelResult);
+
         //记录操作日志
-        logInfoService.recordLog(form.getAllocateInOrder(),form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
+        logInfoService.recordLog(form.getAllocateInOrder(),
+        		form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
     }
 
     @Override
@@ -173,7 +208,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭操作
             AssertUtil.notBlank(cancelReson, "参数关闭原因cancelReson不能为空");
         }
-        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ZERO.getCode(), flag, cancelReson);
+        AllocateInOrderParamForm form = allocateOrderExtService.updateAllocateInOrderByCancel(allocateOrderCode, 
+        		ZeroToNineEnum.ZERO.getCode(), flag, cancelReson, null);
         LogOperationEnum logOperationEnum = null;
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//关闭
             logOperationEnum = LogOperationEnum.HAND_CLOSE;
@@ -187,29 +223,31 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     /**
      * 入库单取消通知
      */
-    private boolean wmsCancelNotice (AllocateInOrder inOder,  Map<String, String> errMsg) {
-    	boolean succ = false;
+    private OrderCancelResultEnum wmsCancelNotice (AllocateInOrder inOder,  Map<String, String> errMsg) {
+    	
+    	OrderCancelResultEnum resultEnum = OrderCancelResultEnum.CANCEL_FAIL;// 取消失败
+    	
     	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
     	request.setOrderType(CancelOrderType.ALLOCATE_IN.getCode());
-    	request.setAllocateInOrderCode(inOder.getAllocateInOrderCode());
+    	// 自营仓 和 三方仓库 统一取WmsAllocateInOrderCode
+    	request.setOrderCode(inOder.getAllocateInOrderCode());
 		//BeanUtils.copyProperties(allocateInOrder, request);
         commonService.getWarehoueType(inOder.getInWarehouseCode(), request);
     	
     	AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
-//        String status = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+			
 			ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
-			if (ZeroToNineEnum.ONE.getCode().equals(respResult.getFlag())) { // 取消成功
-//				status = AllocateInOrderStatusEnum.CANCEL.getCode().toString();
-				succ = true;
+			if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(respResult.getFlag())) { // 取消成功
+				resultEnum = OrderCancelResultEnum.CANCEL_SUCC;
+			} else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
+				resultEnum = OrderCancelResultEnum.CANCELLING;
 			}
 		} else {
 			errMsg.put("msg", response.getDatabuffer());
 			logger.error("调拨入库单取消失败:", response.getDatabuffer());
 		}
-		//allocateInOrderService.updateOutOrderStatusById(status, inOder.getId());
-		//allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, inOder.getAllocateOrderCode());
-    	return succ;
+    	return resultEnum;
     	
      }
     
@@ -226,11 +264,48 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         allocateOrderExtService.setAllocateOrderWarehouseName(allocateInOrder);
 
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
-		BeanUtils.copyProperties(allocateInOrder, request);
-        request.setCreateOperatorName(aclUserAccreditInfo.getName());
-        request.setCreateOperatorNumber(aclUserAccreditInfo.getPhone());
-
 		String whName = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
+		
+		if (WarehouseTypeEnum.Jingdong.getCode().equals(request.getWarehouseType())) {
+			/**
+			 * 自营仓处理逻辑 
+			 **/
+			List<ScmEntryOrderItem> list = new ArrayList<>();
+			ScmEntryOrderItem scmEntryOrderItem = null;
+			List<AllocateSkuDetail> detailList = allocateSkuDetailService
+					.getDetailListByOrderCode(allocateInOrder.getAllocateOrderCode());
+			List<String> skuCodeList = detailList.stream().map(
+					detail -> detail.getSkuCode()).collect(Collectors.toList());
+	        Example example = new Example(WarehouseItemInfo.class);
+	        Example.Criteria ca = example.createCriteria();
+	        ca.andIn("skuCode", skuCodeList);
+	        List<WarehouseItemInfo> whiList = warehouseItemInfoService.selectByExample(example);
+	        for (AllocateSkuDetail detail : detailList) {
+	        	for (WarehouseItemInfo info : whiList) {
+					if (StringUtils.equals(info.getSkuCode(), detail.getSkuCode())) {
+						scmEntryOrderItem = new ScmEntryOrderItem();
+						scmEntryOrderItem.setItemId(info.getWarehouseItemId());
+						scmEntryOrderItem.setPlanQty(detail.getPlanAllocateNum());
+						list.add(scmEntryOrderItem);
+						break;
+					}
+				}
+	        }
+	        request.setEntryOrderItemList(list);
+	        
+			request.setEntryOrderCode(allocateInOrder.getAllocateInOrderCode());// SCM采购入库通知单编号
+			request.setPoType(JdPurchaseOrderTypeEnum.B2B.getCode());
+			request.setOwnerCode(jDWmsConstantConfig.getDeptNo());//开放平台事业部编号, 货主id
+			request.setWarehouseCode(warehouseExtService.getWmsWarehouseCode(allocateInOrder.getInWarehouseCode()));// 开放平台库房编号
+			request.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
+			
+		} else {
+			
+			BeanUtils.copyProperties(allocateInOrder, request);
+			request.setCreateOperatorName(aclUserAccreditInfo.getName());
+			request.setCreateOperatorNumber(aclUserAccreditInfo.getPhone());
+		}
+
 	
 		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
         
@@ -242,10 +317,13 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         String logOp = null;
         String resultMsg = null;
         String errMsg = null;
+        String wmsAllocatInCode = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_IN_NOTICE_SUCC.getMessage();
 			resultMsg = "调拨入库通知成功！";
+			ScmAllocateOrderInResponse rep = (ScmAllocateOrderInResponse) response.getResult();
+			wmsAllocatInCode = rep.getWmsAllocateOrderInCode();
 			succ = true;
 		} else {
 			status = AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString();
@@ -254,7 +332,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			errMsg = response.getDatabuffer();
 		}
 //		if (needUpdate) {
-			allocateInOrderService.updateInOrderStatusById(status, allocateInOrder.getId(), errMsg);
+			allocateInOrderService.updateInOrderById(status, allocateInOrder.getId(), errMsg, wmsAllocatInCode);
 			allocateSkuDetailService.updateInSkuStatusByOrderCode(status, allocateInOrder.getAllocateOrderCode());
 //		}
         logInfoService.recordLog(new AllocateInOrder(), allocateInOrder.getId().toString(), whName,

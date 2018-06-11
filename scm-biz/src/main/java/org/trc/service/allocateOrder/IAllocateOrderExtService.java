@@ -90,8 +90,9 @@ public interface IAllocateOrderExtService {
      * @param type 取消类型：0-关闭, 1-取消发货, 2-作废
      * @param flag 操作标识: 0-关闭/取消发货,1-取消关闭/重新发货
      * @param cancelReson 关闭原因
+     * @param cancelResult  取消结果
      */
-    AllocateInOrderParamForm updateAllocateInOrderByCancel(String allocateOrderCode, String type, String flag, String cancelReson);
+    AllocateInOrderParamForm updateAllocateInOrderByCancel(String allocateOrderCode, String type, String flag, String cancelReson, String cancelResult);
 
     /**
      * 设置地方名称
