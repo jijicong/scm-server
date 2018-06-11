@@ -18,8 +18,8 @@ import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
-import org.trc.exception.ParamValidException;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
+import org.trc.form.warehouse.ScmDeliveryOrderDetailRequest;
 import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
@@ -30,19 +30,15 @@ import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.*;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
+import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.util.*;
 import org.trc.util.cache.AllocateOrderCacheEvict;
-import org.trc.util.lock.RedisLock;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service("allocateOutOrderBiz")
 public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
@@ -66,6 +62,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IAllocateOrderService allocateOrderService;
 	@Autowired
     private ICommonService commonService;
+	@Autowired
+    private IRealIpService iRealIpService;
 
     /**
      * 调拨单分页查询
@@ -409,6 +407,36 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             return ResultUtil.createSuccessResult("调拨出库通知单取消成功！", "");
         }
 	}
+
+    @Override
+    public void updateAllocateOutDetail() {
+        if (!iRealIpService.isRealTimerService()) return;
+
+        //获取调拨出库信息
+        Example example = new Example(AllocateOutOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("status", AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode());
+        List<AllocateOutOrder> allocateOutOrders = allocateOutOrderService.selectByExample(example);
+
+        //组装数据
+        List<ScmDeliveryOrderDetailRequest> requests = new ArrayList<>();
+        for(AllocateOutOrder order : allocateOutOrders){
+            //获取仓库信息
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(order.getOutWarehouseCode());
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+            if(warehouseInfoList == null || warehouseInfoList.size() < 1){
+                continue;
+            }
+
+            //组装请求信息
+            ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
+//            request.setOrderId(order.ge);
+            request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
+            request.setWarehouseCode(warehouseInfo.getCode());
+            requests.add(request);
+        }
+    }
 
     /**
      * 出库单取消通知
