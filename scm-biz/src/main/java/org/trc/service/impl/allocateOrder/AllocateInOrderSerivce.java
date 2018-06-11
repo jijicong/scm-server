@@ -3,6 +3,7 @@ package org.trc.service.impl.allocateOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.trc.domain.allocateOrder.AllocateInOrder;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.mapper.allocateOrder.AllocateInOrderMapper;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
 import org.trc.service.impl.BaseService;
@@ -20,6 +21,7 @@ public class AllocateInOrderSerivce extends BaseService<AllocateInOrder, Long> i
 		record.setStatus(status);
 		record.setFailedCause(errMsg);
 		record.setWmsAllocateInOrderCode(wmsAllocatInCode);
+		record.setIsCancel(ZeroToNineEnum.ZERO.getCode());
 		mapper.updateByPrimaryKeySelective(record);
 	}
 
