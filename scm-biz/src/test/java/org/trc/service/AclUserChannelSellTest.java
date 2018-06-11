@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.tairanchina.csp.foundation.common.sdk.CommonConfig;
 import com.tairanchina.csp.foundation.sdk.CSPKernelSDK;
 import com.tairanchina.csp.foundation.sdk.dto.TokenDeliverDTO;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +19,19 @@ import org.trc.biz.impower.IAclResourceBiz;
 import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.impower.AclUserChannelSell;
+import org.trc.domain.purchase.PurchaseOrder;
+import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.service.System.IChannelSellChannelService;
 import org.trc.service.System.IChannelService;
 import org.trc.service.System.ISellChannelService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.service.impower.IAclUserChannelSellService;
+import org.trc.service.purchase.IPurchaseOrderService;
 import org.trc.util.CommonConfigUtil;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //标记测试运行的环境
@@ -50,6 +55,9 @@ public class AclUserChannelSellTest extends AbstractJUnit4SpringContextTests {
     private IAclUserAccreditInfoBiz userAccreditInfoBiz;
     @Autowired
     private IAclResourceBiz aclResourceBiz;
+
+    @Autowired
+    private IPurchaseOrderService purchaseOrderService;
     @Value("${apply.id}")
     private String applyId;
 
@@ -106,6 +114,29 @@ public class AclUserChannelSellTest extends AbstractJUnit4SpringContextTests {
     @Test
     public  void  testHtml(){
         aclResourceBiz.getHtml("B571346F625E44DB8FCBA8116E72593D");
+    }
+
+    @Test
+    public  void  purchase(){
+        Example example = new Example(PurchaseOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIsNotNull("id");
+        List<PurchaseOrder> purchaseOrderList = purchaseOrderService.selectByExample(example);
+
+        Example exampleAcl = new Example(AclUserAccreditInfo.class);
+        Example.Criteria criteriaAcl = exampleAcl.createCriteria();
+        criteriaAcl.andIsNotNull("id");
+        List<AclUserAccreditInfo> accreditInfoList = aclUserAccreditInfoService.selectByExample(exampleAcl);
+
+        for (PurchaseOrder purchaseOrder:purchaseOrderList) {
+            for (AclUserAccreditInfo a:accreditInfoList) {
+                if (StringUtils.equals(purchaseOrder.getPurchasePersonId(),a.getUserId())){
+                    purchaseOrder.setPurchasePersonId(String.valueOf(a.getId()));
+                }
+            }
+            purchaseOrderService.updateByPrimaryKeySelective(purchaseOrder);
+        }
+
     }
 
 }
