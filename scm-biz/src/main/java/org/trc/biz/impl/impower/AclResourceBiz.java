@@ -645,16 +645,19 @@ public class AclResourceBiz implements IAclResourceBiz {
                                 Flag = false;
                             }
                         }
-                        if (Flag){
-                            newCodeItemList.add(codeItem) ;
+                        if (Flag) {
+                            newCodeItemList.add(codeItem);
                         }
                     }
-                    menuNode.setCodeList(newCodeItemList);
-                    menuNode.setMenuNode(menuNodeChild);
+                    if (null == menuNodeChild.getCodeList() && null == menuNodeChild.getMenuNode() && null == menuNodeChild.getParentCode()) {
+
+                    } else {
+                        menuNode.setCodeList(newCodeItemList);
+                        menuNode.setMenuNode(menuNodeChild);
+                    }
                 }
             }
         }
-        System.out.println(JSON.toJSONString(menuNodeList));
         return menuNodeList;
     }
 
