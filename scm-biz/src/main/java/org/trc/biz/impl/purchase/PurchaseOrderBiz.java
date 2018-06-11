@@ -1246,6 +1246,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId= aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        purchaseOrderLog.setUpdateTime(purchaseOrder.getUpdateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,LogOperationEnum.UPDATE.getMessage(),null,ZeroToNineEnum.ZERO.getCode());
         //修改提交审核
         if(PurchaseOrderStatusEnum.AUDIT.getCode().equals(purchaseOrder.getStatus())){
@@ -1285,6 +1286,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
         String userId=aclUserAccreditInfo.getUserId();
         PurchaseOrder purchaseOrderLog = new PurchaseOrder();
         purchaseOrderLog.setCreateTime(purchaseOrder.getCreateTime());
+        purchaseOrderLog.setUpdateTime(purchaseOrder.getUpdateTime());
         logInfoService.recordLog(purchaseOrderLog,purchaseOrder.getId().toString(),userId,AuditStatusEnum.COMMIT.getName(),null,ZeroToNineEnum.ZERO.getCode());
 
     }
