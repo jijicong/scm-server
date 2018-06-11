@@ -65,7 +65,7 @@
                     defect_in_num = #{skuDetail.defectInNum},
                 </if>
                 <if test="skuDetail.oldOutStatus != null and skuDetail.oldOutStatus != ''">
-                    old_out_status = #{skuDetail.oldOutStatus}
+                    old_out_status = #{skuDetail.oldOutStatus},
                 </if>
                 <if test="skuDetail.oldInStatus != null and skuDetail.oldInStatus != ''">
                     old_in_status = #{skuDetail.oldInStatus}

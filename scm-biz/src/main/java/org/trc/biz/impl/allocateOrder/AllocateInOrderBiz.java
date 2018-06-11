@@ -148,17 +148,25 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         AllocateInOrder allocateInOrder = new AllocateInOrder();
         allocateInOrder.setAllocateOrderCode(allocateOrderCode);
         allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
-        AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空"));
+        AssertUtil.notNull(allocateInOrder, String.format("根据调拨单号%s查询调拨入库单信息为空", allocateOrderCode));
+        
+        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+        allocateSkuDetail.setAllocateOrderCode(allocateOrderCode);
+        List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
+        AssertUtil.notEmpty(allocateSkuDetailList, String.format("根据调拨单号%s查询调拨入库单明细信息为空", allocateInOrder));
         
         // 取消结果
         String cancelResult = "";
         LogOperationEnum logOperationEnum = null;
         if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)) {//取消收货
-        	
+            
+            if(StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前已经是取消状态!");
+            }
+            
             logOperationEnum = LogOperationEnum.CANCEL_RECIVE_GOODS;
             
             Map<String, String> map = new HashMap<>();
-
             
             OrderCancelResultEnum resultEnum = wmsCancelNotice(allocateInOrder, map);
             
@@ -170,25 +178,55 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             	cancelResult = AllocateInOrderStatusEnum.CANCEL.getCode().toString();// 已取消
             }
             
+        	if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(cancelResult)) { // 已取消状态
+        		allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
+        	}
+        	allocateInOrder.setOldStatus(allocateInOrder.getStatus());
+            allocateInOrder.setStatus(cancelResult);
+            
+            for (AllocateSkuDetail detail: allocateSkuDetailList) {
+            	detail.setOldInStatus(detail.getInStatus()); 
+            	detail.setInStatus(cancelResult);
+            	
+            }
+            
+            allocateInOrderService.updateByPrimaryKeySelective(allocateInOrder);
+            allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
+            
         } else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)) {//重新收货
         	
+            if (!StringUtils.equals(AllocateInOrderStatusEnum.CANCEL.getCode().toString(), allocateInOrder.getStatus())
+            		&& !StringUtils.equals(AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_FAILURE.getCode().toString(), allocateInOrder.getStatus())) {
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "调拨单当前状态不能进行重新发货");
+            }
+            
+            if (AllocateInOrderStatusEnum.CANCEL.getCode().equals(allocateInOrder.getStatus())
+            		&& DateCheckUtil.checkDate(allocateInOrder.getUpdateTime())) {
+            	throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前调拨入单取消时间过长，不能重新收货");
+            }
             
             logOperationEnum = LogOperationEnum.RE_RECIVE_GOODS;
+            
+            //allocateInOrder.setStatus(allocateInOrder.getOldStatus());
+            
             wmsAllocateOrderInNotice(allocateInOrder, aclUserAccreditInfo, false);
+            //allocateInOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
 //            if (!wmsAllocateOrderInNotice(form.getAllocateInOrder(), aclUserAccreditInfo, false)) {
 //            	throw new RuntimeException("调拨入库单重新收货失败");
 //            }
         }
+       
         
-        AllocateInOrderParamForm form = allocateOrderExtService.
-        		updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ONE.getCode(), flag, cancelReson, cancelResult);
+//        AllocateInOrderParamForm form = allocateOrderExtService.
+//        		updateAllocateInOrderByCancel(allocateOrderCode, ZeroToNineEnum.ONE.getCode(), flag, cancelReson, cancelResult);
 
         //记录操作日志
-        logInfoService.recordLog(form.getAllocateInOrder(),
-        		form.getAllocateInOrder().getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson,null);
+        logInfoService.recordLog(allocateInOrder,
+        		allocateInOrder.getId().toString(), aclUserAccreditInfo.getUserId(), logOperationEnum.getMessage(), cancelReson, null);
     }
 
     @Override
+    @Transactional
     public void orderClose(String allocateOrderCode, String flag, String cancelReson, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(allocateOrderCode, "参数调拨单号allocateOrderCode不能为空");
         AssertUtil.notBlank(flag, "参数操作类型flag不能为空");
