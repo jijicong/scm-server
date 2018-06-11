@@ -43,11 +43,7 @@ import org.trc.enums.warehouse.CancelOrderType;
 import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.AllocateOrder.AllocateOutOrderForm;
-import org.trc.form.warehouse.ScmDeliveryOrderDetailRequest;
-import org.trc.form.warehouse.ScmDeliveryOrderDO;
-import org.trc.form.warehouse.ScmDeliveryOrderItem;
-import org.trc.form.warehouse.ScmOrderCancelRequest;
-import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.*;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
@@ -555,13 +551,223 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             if(warehouseInfoList == null || warehouseInfoList.size() < 1){
                 continue;
             }
+            warehouseInfo = warehouseInfoList.get(0);
 
             //组装请求信息
             ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
-//            request.setOrderId(order.ge);
+            request.setOrderCode(order.getAllocateOutOrderCode());
+            request.setOrderId(order.getWmsAllocateOutOrderCode());
             request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
             request.setWarehouseCode(warehouseInfo.getCode());
             requests.add(request);
+        }
+
+        //调用接口
+        this.deliveryOrderDetail(requests);
+    }
+
+    //调用获取商品详情接口
+    private void deliveryOrderDetail (List<ScmDeliveryOrderDetailRequest> requests){
+        try{
+            for (ScmDeliveryOrderDetailRequest request : requests) {
+                new Thread(() -> {
+                    //调用接口
+                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult =
+                            warehouseApiService.deliveryOrderDetail(request);
+                    //回写数据
+                    try {
+                        this.updateDeliveryOrderDetail(responseAppResult, request.getOrderCode(), request.getOrderId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        logger.error("调拨出库单号:{},物流信息获取异常{}", request.getOrderCode(),e.getMessage());
+                    }
+                }).start();
+            }
+        }catch(Exception e){
+            logger.error("获取调拨商品详情失败", e);
+        }
+    }
+
+    //修改发货单详情
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void updateDeliveryOrderDetail(AppResult<ScmDeliveryOrderDetailResponse> responseAppResult,
+                                          String allocateOutOrderCode, String orderId) throws Exception{
+        if(StringUtils.equals("200", responseAppResult.getAppcode())){
+            ScmDeliveryOrderDetailResponse response = (ScmDeliveryOrderDetailResponse) responseAppResult.getResult();
+            //获取调拨出库单
+            AllocateOutOrder allocateOutOrder = new AllocateOutOrder();
+            allocateOutOrder.setAllocateOutOrderCode(allocateOutOrderCode);
+            allocateOutOrder = allocateOutOrderService.selectOne(allocateOutOrder);
+
+            //获取仓库名称
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+            warehouseInfo = warehouseInfoList.get(0);
+
+            if(response.getCurrentStatus() != null && StringUtils.equals("10028", response.getCurrentStatus())){
+                this.updateDetailStatus(AllocateOutOrderStatusEnum.CANCEL.getCode(), allocateOutOrder.getAllocateOrderCode(),
+                        AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), false);
+                allocateOrderExtService.updateOrderCancelInfo(allocateOutOrder, "线下取消",false,
+                        AllocateOutOrderStatusEnum.CANCEL.getCode());
+
+                //记录日志
+                logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
+                        "取消发货", "仓库平台取消发货", null);
+                return ;
+            }
+
+            //只获取复合过的发货单详情
+            if(response != null && response.getCurrentStatus() != null && this.isCompound(response.getCurrentStatus()) ){
+                //组装获取包裹信息
+                ScmOrderPacksRequest request = new ScmOrderPacksRequest();
+                request.setOrderIds(orderId);
+                //调用京东接口获取包裹信息
+                AppResult<ScmOrderPacksResponse> packageResponseAppResult = null;
+                packageResponseAppResult = warehouseApiService.orderPack(request);
+                if(StringUtils.equals("200", packageResponseAppResult.getAppcode())){
+                    ScmOrderPacksResponse packsResponse = (ScmOrderPacksResponse) packageResponseAppResult.getResult();
+
+                    if(!StringUtils.equals(packsResponse.getScmOrderDefaultResults().get(0).getOrderCode(), allocateOutOrderCode)){
+                        logger.error("调拨出库单号:{},物流信息获取异常", allocateOutOrderCode);
+                        return;
+                    }
+
+                    //更新发货单信息
+                    this.updateAllocateSkuDetail(packsResponse, allocateOutOrder);
+                }
+            }
+        }else{
+            logger.error("调拨出库单号:{},物流信息获取异常：{}", allocateOutOrderCode, responseAppResult.getResult());
+        }
+    }
+
+    private void updateAllocateSkuDetail(ScmOrderPacksResponse response, AllocateOutOrder allocateOutOrder){
+        List<ScmOrderDefaultResult> results = response.getScmOrderDefaultResults();
+        List<AllocateSkuDetail>  allocateSkuDetailList = new ArrayList<>();
+
+        //遍历获取包裹信息
+        for(ScmOrderDefaultResult result : results){
+            List<ScmOrderPackage> scmOrderPackageList = result.getScmOrderPackageList();
+            if(scmOrderPackageList == null || scmOrderPackageList.size() < 1){
+                return;
+            }
+
+            //遍历所有包裹
+            for(ScmOrderPackage pack : scmOrderPackageList){
+                List<ScmDeliveryOrderDetailResponseItem> items = pack.getScmDeliveryOrderDetailResponseItems();
+                String logMessage = "";
+                List<String> exceptionDetail = new ArrayList<>();
+                Set<Long> idSet = new HashSet<>();
+                //遍历所有商品详情
+                if(items != null && items.size() > 0){
+                    for (ScmDeliveryOrderDetailResponseItem item : items) {
+                        Long sentNum = item.getActualQty();
+                        //获取发货详情
+                        WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+                        warehouseItemInfo.setWarehouseItemId(item.getItemId());
+                        warehouseItemInfo.setWarehouseCode(allocateOutOrder.getOutWarehouseCode());
+                        List<WarehouseItemInfo> warehouseItemInfos = warehouseItemInfoService.select(warehouseItemInfo);
+                        if(warehouseItemInfos == null || warehouseItemInfos.size() < 1){
+                            continue;
+                        }
+                        warehouseItemInfo = warehouseItemInfos.get(0);
+                        String skuCode = warehouseItemInfo.getSkuCode();
+
+                        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                        allocateSkuDetail.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+                        allocateSkuDetail.setSkuCode(skuCode);
+                        List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
+                        if(allocateSkuDetails == null || allocateSkuDetails.size() < 1){
+                            continue;
+                        }
+                        allocateSkuDetail = allocateSkuDetails.get(0);
+                        allocateSkuDetail.setRealOutNum(sentNum);
+                        idSet.add(allocateSkuDetail.getId());
+
+                        if(sentNum.longValue() == allocateSkuDetail.getPlanAllocateNum().longValue()){
+                            allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_NORMAL.getCode());
+                            allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode());
+                            allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+                            logMessage += skuCode + ":" + "出库完成<br>";
+                        }else{
+                            allocateSkuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
+                            allocateSkuDetail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
+                            allocateSkuDetail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+                            logMessage += skuCode + ":" + "出库异常<br>";
+                            exceptionDetail.add(allocateSkuDetail.getSkuCode());
+                        }
+                        allocateSkuDetailList.add(allocateSkuDetail);
+                    }
+
+                    AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                    allocateSkuDetail.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+                    List<AllocateSkuDetail> allocateSkuDetailAll = allocateSkuDetailService.select(allocateSkuDetail);
+                    for(AllocateSkuDetail detail : allocateSkuDetailAll){
+                        if(!idSet.contains(detail.getId())){
+                            detail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.OUT_EXCEPTION.getCode());
+                            detail.setOutStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode());
+                            detail.setInStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+                            logMessage += detail.getSkuCode() + ":" + "出库异常<br>";
+                            exceptionDetail.add(detail.getSkuCode());
+                            allocateSkuDetailList.add(detail);
+                        }
+                    }
+                    allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
+
+                    //更新调拨出库单状态
+                    String outStatus = getAllocateOutOrderStatusByDetail(allocateSkuDetailList);
+                    allocateOutOrder.setStatus(outStatus);
+                    if(exceptionDetail.size() > 0){
+                        allocateOutOrder.setFailedCause("["+StringUtils.join(exceptionDetail, ",")+"]实际出库数量不等于要求出库数量。");
+                    }
+                    allocateOutOrderService.updateByPrimaryKey(allocateOutOrder);
+                    //更新调拨入库单信息
+                    AllocateInOrder allocateInOrder = new AllocateInOrder();
+                    allocateInOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+                    List<AllocateInOrder> allocateInOrders = allocateInOrderService.select(allocateInOrder);
+                    allocateInOrder = allocateInOrders.get(0);
+                    if(StringUtils.equals(outStatus, AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
+                        allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_EXCEPTION.getCode().toString());
+                    }else if(StringUtils.equals(outStatus, AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                        allocateInOrder.setStatus(AllocateInOrderStatusEnum.OUT_WMS_FINISH.getCode().toString());
+                    }
+                    allocateInOrderService.updateByPrimaryKey(allocateInOrder);
+                    //更新调拨单状态
+                    AllocateOrder allocateOrder = new AllocateOrder();
+                    allocateOrder.setAllocateOrderCode(allocateOutOrder.getAllocateOrderCode());
+                    List<AllocateOrder> allocateOrders = allocateOrderService.select(allocateOrder);
+                    allocateOrder = allocateOrders.get(0);
+                    if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_EXCEPTION.getCode())){
+                        allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_EXCEPTION.getCode());
+                    }else if(StringUtils.equals(allocateOutOrder.getStatus(), AllocateOrderEnum.AllocateOutOrderStatusEnum.OUT_SUCCESS.getCode())){
+                        allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.OUT_NORMAL.getCode());
+                    }
+                    allocateOrderService.updateByPrimaryKey(allocateOrder);
+
+                    //记录日志
+                    WarehouseInfo warehouseInfo = new WarehouseInfo();
+                    warehouseInfo.setCode(allocateOutOrder.getOutWarehouseCode());
+                    warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+                    logInfoService.recordLog(allocateOutOrder, allocateOutOrder.getId().toString(), warehouseInfo.getWarehouseName(),
+                            LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
+
+                    logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
+                            LogOperationEnum.ALLOCATE_OUT.getMessage(), logMessage, null);
+                }
+            }
+        }
+    }
+
+    private boolean isCompound(String num){
+        List<String> list = new ArrayList<>();
+        list.add("10017");
+        list.add(num);
+        Collections.sort(list);
+        if(StringUtils.equals("10017", list.get(1))){
+            return false;
+        }else{
+            return true;
         }
     }
 

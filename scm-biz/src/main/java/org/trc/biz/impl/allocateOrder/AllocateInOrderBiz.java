@@ -1,14 +1,11 @@
 package org.trc.biz.impl.allocateOrder;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
+import org.trc.constants.SupplyConstants;
 import org.trc.domain.allocateOrder.AllocateInOrder;
 import org.trc.domain.allocateOrder.AllocateOrder;
 import org.trc.domain.allocateOrder.AllocateOrderBase;
@@ -24,13 +22,7 @@ import org.trc.domain.allocateOrder.AllocateSkuDetail;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.enums.AllocateOrderEnum;
-import org.trc.enums.CommonExceptionEnum;
-import org.trc.enums.JdPurchaseOrderTypeEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.OrderCancelResultEnum;
-import org.trc.enums.WarehouseTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
@@ -38,9 +30,7 @@ import org.trc.exception.ParamValidException;
 import org.trc.form.JDWmsConstantConfig;
 import org.trc.form.AllocateOrder.AllocateInOrderForm;
 import org.trc.form.AllocateOrder.AllocateInOrderParamForm;
-import org.trc.form.warehouse.ScmEntryOrderItem;
-import org.trc.form.warehouse.ScmOrderCancelRequest;
-import org.trc.form.warehouse.ScmOrderCancelResponse;
+import org.trc.form.warehouse.*;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.wms.WmsAllocateDetailRequest;
@@ -51,17 +41,12 @@ import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateSkuDetailService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.jingdong.ICommonService;
+import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateCheckUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
-import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
+import org.trc.util.*;
 
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
@@ -92,6 +77,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IWarehouseExtService warehouseExtService;
     @Autowired
     private IWarehouseItemInfoService warehouseItemInfoService;
+    @Autowired
+    private IRealIpService realIpService;
     
 
     @Override
@@ -431,6 +418,186 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
                 LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
 
         return ResultUtil.createSuccessResult("反填调拨入库信息成功！", "");
+    }
+
+    private Map<String,Long> delStock(List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList, AllocateSkuDetail detail, String warehouseCode) {
+        //用Map存库存信息
+        Map<String,Long> stockMap = new HashMap<>();
+        //残次品入库数量
+        Long defectiveQuantity = 0L;
+        //正品入库数量
+        Long normalQuantity = 0L;
+        for (ScmEntryOrderDetailResponseItem entryOrderDetailOrder : scmEntryOrderDetailResponseItemList) {
+
+            //获取发货详情
+            WarehouseItemInfo warehouseItemInfo = new WarehouseItemInfo();
+            warehouseItemInfo.setWarehouseItemId(entryOrderDetailOrder.getItemId());
+            warehouseItemInfo.setWarehouseCode(warehouseCode);
+            List<WarehouseItemInfo> warehouseItemInfos = warehouseItemInfoService.select(warehouseItemInfo);
+            if(warehouseItemInfos == null || warehouseItemInfos.size() < 1){
+                continue;
+            }
+            warehouseItemInfo = warehouseItemInfos.get(0);
+            String skuCode = warehouseItemInfo.getSkuCode();
+
+            if (StringUtils.equals(skuCode, detail.getSkuCode())){
+                //计算反馈库存
+                if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(), EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode())){
+                    normalQuantity = (detail.getNornalInNum() == null ? 0 : detail.getNornalInNum()) + (entryOrderDetailOrder.getActualQty()) + (normalQuantity);
+                }else if (StringUtils.equals(entryOrderDetailOrder.getGoodsStatus(),EntryOrderDetailItemStateEnum.DEFECTIVE_PRODUCTS.getCode())){
+                    defectiveQuantity =detail.getDefectInNum()==null?0:detail.getDefectInNum()+entryOrderDetailOrder.getActualQty()+defectiveQuantity;
+                }
+            }
+        }
+        stockMap.put("normalQ",normalQuantity);
+        stockMap.put("defectiveQ",defectiveQuantity);
+
+        return  stockMap;
+    }
+
+    @Override
+    public void updateAllocateInDetail() {
+        if (!realIpService.isRealTimerService()){
+            return;
+        }
+        Example example = new Example(AllocateInOrder.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("status", AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode());
+        List<AllocateInOrder> allocateInOrderList = allocateInOrderService.selectByExample(example);
+        if (!AssertUtil.collectionIsEmpty(allocateInOrderList)){
+            List<List<AllocateInOrder>> splitAllocateInOrderList = ListSplit.split(allocateInOrderList,10);
+            for (List<AllocateInOrder> orderList:splitAllocateInOrderList) {
+                scmEntryOrder(orderList);
+            }
+        }else {
+            logger.info("未查询到符合条件的调拨入库通知单！");
+        }
+    }
+
+    private void judgeWarehouseNoticeDetailState(Map<String,Long> stockMap, AllocateSkuDetail detail, String logMessage,
+                                                 List<String> exceptionDetail) {
+        //正品入库
+        Long normalQuantity = stockMap.get("normalQ");
+        //残次品入库
+        Long defectiveQuantity = stockMap.get("defectiveQ");
+        //判断收货状态
+        detail.setDefectInNum(normalQuantity);
+        detail.setNornalInNum(defectiveQuantity);
+        Long realInNum = normalQuantity + defectiveQuantity;
+        detail.setRealInNum(realInNum);
+        if(detail.getRealOutNum().longValue() == detail.getNornalInNum().longValue() &&
+                detail.getDefectInNum().longValue() == 0){
+            detail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_NORMAL.getCode());
+            detail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()));
+            logMessage += detail.getSkuCode() + ":" + "入库完成<br>";
+        }else{
+            detail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.IN_EXCEPTION.getCode());
+            detail.setInStatus(String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode()));
+            logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+            exceptionDetail.add(detail.getSkuCode());
+        }
+        //设置入库时间
+        detail.setUpdateTime(Calendar.getInstance().getTime());
+        //更新入库通知单
+        int count = allocateSkuDetailService.updateByPrimaryKey(detail);
+        if (count == 0) {
+            String msg = "修改入库通知单详情" + JSON.toJSONString(detail) + "数据库操作失败";
+            throw new RuntimeException(msg);
+        }
+    }
+
+    private void scmEntryOrder(List<AllocateInOrder> allocateInOrderList) {
+        List<String> wmsOrderCodeList = new ArrayList<>();
+        for (AllocateInOrder allocateInOrder : allocateInOrderList) {
+            wmsOrderCodeList.add(allocateInOrder.getWmsAllocateInOrderCode());
+        }
+        ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
+        entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
+        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
+        List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseListRequest =
+                (List<ScmEntryOrderDetailResponse>) appResult.getResult();
+        for (AllocateInOrder allocateInOrder : allocateInOrderList) {
+            String warehouseCode = allocateInOrder.getInWarehouseCode();
+            //获取当前入库单对应的入库查询结果
+            List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseList = new ArrayList<>();
+            for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseListRequest) {
+                if (StringUtils.equals(entryOrderDetail.getPoOrderNo(), allocateInOrder.getWmsAllocateInOrderCode())){
+                    scmEntryOrderDetailResponseList.add(entryOrderDetail);
+                }
+            }
+            //处理库存信息
+            if (!AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseList)) {
+                for (ScmEntryOrderDetailResponse entryOrderDetail : scmEntryOrderDetailResponseList) {
+                    if (!StringUtils.equals(entryOrderDetail.getStatus(), "70")) {
+                        //如果不是70的完成状态,当前采购单入库详情就跳过处理
+                        continue;
+                    }
+                    /* 定位到入库通知单 */
+                    AllocateInOrder allocateInOrderTemp = new AllocateInOrder();
+                    allocateInOrderTemp.setWmsAllocateInOrderCode(entryOrderDetail.getPoOrderNo());
+                    allocateInOrderTemp = allocateInOrderService.selectOne(allocateInOrderTemp);
+                    //查询到入库通知单,查询到关联的入库通知单详情
+                    if (null != allocateInOrderTemp) {
+                        //异常入库的通知单详情
+                        Set<String> exceptionSku = new HashSet<>();
+                        Set<String> exceptionSkuCount = new HashSet<>();
+                        //查询入库通知单编号为entryOrderDetail.getEntryOrderCode()的入库通知单详情
+                        AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                        allocateSkuDetail.setAllocateOrderCode(allocateInOrder.getAllocateOrderCode());
+                        List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
+                        List<ScmEntryOrderDetailResponseItem> scmEntryOrderDetailResponseItemList = entryOrderDetail.getScmEntryOrderDetailResponseItemList();
+                        if (!AssertUtil.collectionIsEmpty(allocateSkuDetailList) && !AssertUtil.collectionIsEmpty(scmEntryOrderDetailResponseItemList)) {
+                            String logMessage = "";
+                            List<String> exceptionDetail = new ArrayList<>();
+
+                            for (AllocateSkuDetail detail : allocateSkuDetailList) {
+                                //获取当前入库单详情的库存情况,目前只有两种状态
+                                Map<String, Long> stockMap = delStock(scmEntryOrderDetailResponseItemList, detail, warehouseCode);
+                                //判断入库为0的时候 直接跳过
+                                if (stockMap.get("defectiveQ").longValue() == 0L && stockMap.get("normalQ").longValue() == 0L) {
+                                    continue;
+                                }
+                                //更新状态
+                                judgeWarehouseNoticeDetailState(stockMap, detail, logMessage, exceptionDetail);
+                            }
+
+                            allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
+                            //更新调拨入库单状态
+                            if(StringUtils.isNotEmpty(getAllocateInOrderStatusByDetail(allocateSkuDetailList))){
+                                allocateInOrder.setStatus(getAllocateInOrderStatusByDetail(allocateSkuDetailList));
+                            }
+                            if(exceptionDetail.size() > 0){
+                                allocateInOrder.setFailedCause("["+StringUtils.join(exceptionDetail, ",")+"]实际入库信息与实际出库信息不符。");
+                            }
+                            allocateInOrderService.updateByPrimaryKey(allocateInOrder);
+                            //更新调拨单状态
+                            AllocateOrder allocateOrder = new AllocateOrder();
+                            allocateOrder.setAllocateOrderCode(allocateInOrder.getAllocateOrderCode());
+                            List<AllocateOrder> allocateOrders = allocateOrderService.select(allocateOrder);
+                            allocateOrder = allocateOrders.get(0);
+                            if(StringUtils.equals(allocateInOrder.getStatus(), String.valueOf(AllocateInOrderStatusEnum.IN_WMS_EXCEPTION.getCode()))){
+                                allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.IN_EXCEPTION.getCode());
+                            }else if(StringUtils.equals(allocateInOrder.getStatus(), String.valueOf(AllocateInOrderStatusEnum.IN_WMS_FINISH.getCode()))){
+                                allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.IN_NORMAL.getCode());
+                            }
+                            allocateOrderService.updateByPrimaryKey(allocateOrder);
+
+                            //记录日志
+                            WarehouseInfo warehouseInfo = new WarehouseInfo();
+                            warehouseInfo.setCode(allocateInOrder.getInWarehouseCode());
+                            warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+                            logInfoService.recordLog(allocateInOrder, allocateInOrder.getId().toString(), warehouseInfo.getWarehouseName(),
+                                    LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
+
+                            logInfoService.recordLog(allocateOrder, allocateOrder.getAllocateOrderCode(), warehouseInfo.getWarehouseName(),
+                                    LogOperationEnum.ALLOCATE_IN.getMessage(), logMessage, null);
+                        } else {
+                            logger.error("本地未查询到通知单编号为" + entryOrderDetail.getEntryOrderCode() + "的调拨入库通知单详情,反馈的通知单详情为空");
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //获取状态
