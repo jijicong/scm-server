@@ -129,10 +129,22 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
      */
     @Column(name = "wms_allocate_out_order_code")
     private String wmsAllocateOutOrderCode;
+    
+    /**
+     * 调拨出库单序号-京东仓库重新发货用
+     */
+    @Column(name = "out_order_seq")
+    private Integer outOrderSeq;
 
+    public Integer getOutOrderSeq() {
+		return outOrderSeq;
+	}
 
+	public void setOutOrderSeq(Integer outOrderSeq) {
+		this.outOrderSeq = outOrderSeq;
+	}
 
-    public String getWmsAllocateOutOrderCode() {
+	public String getWmsAllocateOutOrderCode() {
 		return wmsAllocateOutOrderCode;
 	}
 

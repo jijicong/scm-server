@@ -329,9 +329,9 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         }else if(StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())){//发货类型
             if(StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())){//取消发货
             	if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(cancelResult)) { // 已取消状态
-            		allocateInOrder.setOldStatus(allocateInOrder.getStatus());
             		allocateInOrder.setIsCancel(ZeroToNineEnum.ONE.getCode());
             	}
+            	allocateInOrder.setOldStatus(allocateInOrder.getStatus());
                 allocateInOrder.setStatus(cancelResult);
                 //allocateInOrder.setMemo(cancelReson);
             }else if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//重新发货
@@ -351,9 +351,10 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
             for(AllocateSkuDetail detail: allocateSkuDetailList){
             	if (StringUtils.equals(type, ZeroToNineEnum.ONE.getCode())
             			&& StringUtils.equals(flag, ZeroToNineEnum.ZERO.getCode())) {//取消发货
-            		if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(cancelResult)) { // 已取消状态，取消成功后才置oldinstatus
-            			detail.setOldInStatus(detail.getInStatus()); 
-            		}
+//            		if (AllocateInOrderStatusEnum.CANCEL.getCode().toString().equals(cancelResult)) { // 已取消状态，取消成功后才置oldinstatus
+//            			detail.setOldInStatus(detail.getInStatus()); 
+//            		}
+            		detail.setOldInStatus(detail.getInStatus()); 
             		detail.setInStatus(cancelResult);
             	} else {
             		detail.setOldInStatus(detail.getInStatus());

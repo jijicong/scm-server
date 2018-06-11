@@ -358,7 +358,10 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.getDetailListByOrderCode(outOrder.getAllocateOrderCode());
 		
 		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
-		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+		
+		String reNoticeOrderCode = null;// 重新发货单号
+		
+		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {// 自营仓逻辑
 			List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
 			ScmAllocateOrderItem item = null;
 			for (AllocateSkuDetail detail : detailList) {
@@ -371,10 +374,18 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 	        request.setCreateOperatorName(uerAccredit.getName());
 	        request.setCreateOperatorNumber(uerAccredit.getPhone());
 			request.setWarehouseType("TRC");
+			
 		} else {
 			// 京东调拨单采用发货单的逻辑
 			List<ScmDeliveryOrderDO> scmDeleveryOrderDOList = new ArrayList<>();
 			ScmDeliveryOrderDO orderDo = new ScmDeliveryOrderDO();
+			if (StringUtils.isNotBlank(outOrder.getWmsAllocateOutOrderCode())) { // 重新发货
+				Integer orderSeq = (outOrder.getOutOrderSeq() == null ? 0 : outOrder.getOutOrderSeq()) + 1;
+				reNoticeOrderCode = outOrder.getAllocateOutOrderCode() + "_" + orderSeq;
+				orderDo.setDeliveryOrderCode(reNoticeOrderCode);//调拨出库单号
+			} else {
+				orderDo.setDeliveryOrderCode(outOrder.getAllocateOutOrderCode());//调拨出库单号
+			}
 			
 			// 商品详情
 			List<ScmDeliveryOrderItem> itemList = new ArrayList<>();
@@ -401,7 +412,6 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			}
 	        orderDo.setScmDeleveryOrderItemList(itemList);
 			
-			orderDo.setDeliveryOrderCode(outOrder.getAllocateOutOrderCode());//调拨出库单号
 			orderDo.setIsvSource(jDWmsConstantConfig.getIsvSource());//开放平台的ISV编号，编号线下获取
 			orderDo.setOwnerCode(jDWmsConstantConfig.getDeptNo());// 开放平台事业部编号
 			orderDo.setShopNo(jDWmsConstantConfig.getShopNo());// 店铺编号
@@ -424,18 +434,20 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
 
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), uerAccredit.getUserId(),
-                LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE.getMessage(), null, null);
+                LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE.getMessage(), reNoticeOrderCode, null);
         
         String status = null;
         String logOp = null;
         String resultMsg = null;
         String errMsg = null;
         String wmsAllocatOutCode = null;
+        Integer orderSeq = null;
 		if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode();
 			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_SUCC.getMessage();
 			ScmAllocateOrderOutResponse rep = (ScmAllocateOrderOutResponse) response.getResult();
 			wmsAllocatOutCode = rep.getWmsAllocateOrderOutCode();
+			orderSeq = (outOrder.getOutOrderSeq() == null ? 0 : outOrder.getOutOrderSeq()) + 1;
 			resultMsg = "调拨出库通知成功！";
 		} else {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode();
@@ -446,7 +458,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         logInfoService.recordLog(new AllocateOutOrder(), id.toString(), warehouse.getWarehouseName(),
         		logOp, errMsg, null);
 		
-		allocateOutOrderService.updateOutOrderById(status, id, errMsg, wmsAllocatOutCode);
+		allocateOutOrderService.updateOutOrderById(status, id, errMsg, wmsAllocatOutCode, orderSeq);
 		allocateSkuDetailService.updateOutSkuStatusByOrderCode(status, outOrder.getAllocateOrderCode());
 		return ResultUtil.createSuccessResult(resultMsg, "");
 	}

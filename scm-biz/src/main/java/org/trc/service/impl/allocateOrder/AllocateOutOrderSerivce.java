@@ -14,11 +14,12 @@ public class AllocateOutOrderSerivce extends BaseService<AllocateOutOrder, Long>
 	private AllocateOutOrderMapper mapper;
 	
 	@Override
-	public void updateOutOrderById(String status, Long id, String errMsg, String wmsAllocatOutCode) {
+	public void updateOutOrderById(String status, Long id, String errMsg, String wmsAllocatOutCode, Integer orderSeq) {
 		AllocateOutOrder record = new AllocateOutOrder();
 		record.setId(id);
 		record.setStatus(status);
 		record.setFailedCause(errMsg);
+		record.setOutOrderSeq(orderSeq);
 		record.setWmsAllocateOutOrderCode(wmsAllocatOutCode);
 		mapper.updateByPrimaryKeySelective(record);
 	}
