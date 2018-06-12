@@ -422,14 +422,15 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			orderDo.setReciverMobile(outOrder.getReceiverMobile());//客户手机
 			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2B.getCode()); // b2b
 			
-			orderDo.setReciverProvince(getAreaName(whi.getProvince(), "Province"));// 省
-			orderDo.setReciverCity(getAreaName(whi.getCity(), "City"));// 城市
-			orderDo.setReciverCountry(getAreaName(whi.getArea(), "Arae"));// 区
-			orderDo.setReciverDetailAddress(whi.getAddress()); // 地址取自仓库
+			orderDo.setReciverProvince(getAreaName(warehouse.getProvince(), "Province"));// 省
+			orderDo.setReciverCity(getAreaName(warehouse.getCity(), "City"));// 城市
+			orderDo.setReciverCountry(getAreaName(warehouse.getArea(), "District"));// 区
+			orderDo.setReciverDetailAddress(warehouse.getAddress()); // 地址取自仓库
 			orderDo.setOrderMark(jDWmsConstantConfig.getOrderMark());// 订单标记位
 			
 			scmDeleveryOrderDOList.add(orderDo);
 			request.setWarehouseType("JD");
+			request.setScmDeleveryOrderDOList(scmDeleveryOrderDOList);
 		}
 		AppResult<ScmAllocateOrderOutResponse> response = warehouseApiService.allocateOrderOutNotice(request);
 
@@ -537,7 +538,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
         request.setOrderType(CancelOrderType.ALLOCATE_OUT.getCode());
         // 自营仓 和 三方仓库 统一取WmsAllocateOutOrderCode
         request.setOrderCode(outOder.getWmsAllocateOutOrderCode());
-        commonService.getWarehoueType(outOder.getInWarehouseCode(), request);
+        commonService.getWarehoueType(outOder.getOutWarehouseCode(), request);
 
         AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
         if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
@@ -546,6 +547,8 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             	resultEnum = OrderCancelResultEnum.CANCEL_SUCC;
             } else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
             	resultEnum = OrderCancelResultEnum.CANCELLING;
+            } else {
+            	errMsg.put("msg", respResult.getMessage());
             }
         } else {
         	errMsg.put("msg", response.getDatabuffer());

@@ -332,17 +332,17 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response.setLockQuantity(0L);
             scmInventoryQueryResponseList.add(response);
 
-            ScmInventoryQueryResponse response2 = new ScmInventoryQueryResponse();
-            response2.setWarehouseCode(queryItem.getWarehouseCode());
-            response2.setOwnerCode(queryItem.getOwnerCode());
-            response2.setItemCode(queryItem.getItemCode());
-            response2.setItemId(queryItem.getItemId());
-            response2.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
-            response2.setTotalNum(10L);
-            response2.setQuantity(10L);
-            response2.setInventoryStatus(JingdongInventoryStateEnum.Quality.getCode());//残品
-            response2.setLockQuantity(0L);
-            scmInventoryQueryResponseList.add(response2);
+//            ScmInventoryQueryResponse response2 = new ScmInventoryQueryResponse();
+//            response2.setWarehouseCode(queryItem.getWarehouseCode());
+//            response2.setOwnerCode(queryItem.getOwnerCode());
+//            response2.setItemCode(queryItem.getItemCode());
+//            response2.setItemId(queryItem.getItemId());
+//            response2.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
+//            response2.setTotalNum(10L);
+//            response2.setQuantity(10L);
+//            response2.setInventoryStatus(JingdongInventoryStateEnum.Quality.getCode());//残品
+//            response2.setLockQuantity(0L);
+//            scmInventoryQueryResponseList.add(response2);
         }
         appResult.setResult(scmInventoryQueryResponseList);
         return appResult;

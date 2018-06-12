@@ -43,6 +43,7 @@ import org.trc.form.warehouse.ScmOrderCancelRequest;
 import org.trc.form.warehouse.ScmOrderCancelResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
 import org.trc.form.wms.WmsAllocateDetailRequest;
 import org.trc.form.wms.WmsAllocateOutInRequest;
 import org.trc.service.allocateOrder.IAllocateInOrderService;
@@ -268,7 +269,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     	ScmOrderCancelRequest request = new ScmOrderCancelRequest();
     	request.setOrderType(CancelOrderType.ALLOCATE_IN.getCode());
     	// 自营仓 和 三方仓库 统一取WmsAllocateInOrderCode
-    	request.setOrderCode(inOder.getAllocateInOrderCode());
+    	request.setOrderCode(inOder.getWmsAllocateInOrderCode());
 		//BeanUtils.copyProperties(allocateInOrder, request);
         commonService.getWarehoueType(inOder.getInWarehouseCode(), request);
     	
@@ -280,7 +281,9 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 				resultEnum = OrderCancelResultEnum.CANCEL_SUCC;
 			} else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
 				resultEnum = OrderCancelResultEnum.CANCELLING;
-			}
+			} else {
+            	errMsg.put("msg", respResult.getMessage());
+            }
 		} else {
 			errMsg.put("msg", response.getDatabuffer());
 			logger.error("调拨入库单取消失败:", response.getDatabuffer());
@@ -304,14 +307,15 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 		ScmAllocateOrderInRequest request = new ScmAllocateOrderInRequest();
 		String whName = commonService.getWarehoueType(allocateInOrder.getInWarehouseCode(), request);
 		
+		List<AllocateSkuDetail> detailList = allocateSkuDetailService
+				.getDetailListByOrderCode(allocateInOrder.getAllocateOrderCode());
+		
 		if (WarehouseTypeEnum.Jingdong.getCode().equals(request.getWarehouseType())) {
 			/**
-			 * 自营仓处理逻辑 
+			 * 京东仓处理逻辑 
 			 **/
 			List<ScmEntryOrderItem> list = new ArrayList<>();
 			ScmEntryOrderItem scmEntryOrderItem = null;
-			List<AllocateSkuDetail> detailList = allocateSkuDetailService
-					.getDetailListByOrderCode(allocateInOrder.getAllocateOrderCode());
 			List<String> skuCodeList = detailList.stream().map(
 					detail -> detail.getSkuCode()).collect(Collectors.toList());
 	        Example example = new Example(WarehouseItemInfo.class);
@@ -338,12 +342,19 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			request.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
 			
 		} else {
+			List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
+			ScmAllocateOrderItem item = null;
+			for (AllocateSkuDetail detail : detailList) {
+				item = new ScmAllocateOrderItem();
+				BeanUtils.copyProperties(detail, item);
+				allocateOrderItemList.add(item);
+			}
 			
 			BeanUtils.copyProperties(allocateInOrder, request);
+			request.setAllocateOrderItemList(allocateOrderItemList);
 			request.setCreateOperatorName(aclUserAccreditInfo.getName());
 			request.setCreateOperatorNumber(aclUserAccreditInfo.getPhone());
 		}
-
 	
 		AppResult<ScmAllocateOrderInResponse> response = warehouseApiService.allocateOrderInNotice(request);
         

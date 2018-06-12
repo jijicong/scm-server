@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -1165,7 +1166,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         ScmInventoryQueryItem item = null;
         for (WarehouseItemInfo itemInfo: whItemList) {
         	item = new ScmInventoryQueryItem();
-            item.setWarehouseCode(itemInfo.getWarehouseCode());
+            item.setWarehouseCode(itemInfo.getWmsWarehouseCode());
             item.setInventoryStatus(queryMap.get(itemInfo.getSkuCode()));//库存状态，枚举值：1.良品；2.残品；3.样品。
             item.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());// 可销售
             item.setOwnerCode(itemInfo.getWarehouseOwnerId());// 京东仓库需要
@@ -1182,8 +1183,22 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 //				.filter((res) -> (InventoryQueryResponseEnum.MARKETABLE.getCode().equals(res.getInventoryStatus())
 //						&& EntryOrderDetailItemStateEnum.QUALITY_PRODUCTS.getCode().equals(res.getInventoryStatus()))
 //				.forEach((res) -> item.setInventoryType("1"));
-        	return resList.stream()
-        		.collect(Collectors.toMap(ScmInventoryQueryResponse::getItemId, ScmInventoryQueryResponse::getQuantity));
+        	try {
+        		Map<String, Long> retTempMap = resList.stream()
+        				.collect(Collectors.toMap(ScmInventoryQueryResponse::getItemId, ScmInventoryQueryResponse::getQuantity));
+                
+        		Map<String, Long> retMap = new HashMap<>();
+        		for (WarehouseItemInfo itemInfo: whItemList) {
+        			if (retTempMap.get(itemInfo.getWarehouseItemId()) != null) {
+        				retMap.put(itemInfo.getSkuCode(), retTempMap.get(itemInfo.getWarehouseItemId()));
+        			}
+                }
+        		return retMap;
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        		logger.error("库存查询返回的格式有误:", e);
+        		throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_QUERY_INVENTORY_EXCEPTION, "库存查询返回的格式有误");
+        	}
         } else {
         	throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_QUERY_INVENTORY_EXCEPTION, appResult.getDatabuffer());
         }
