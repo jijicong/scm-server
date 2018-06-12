@@ -113,7 +113,7 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         map.put("channelCode",channelCode);
         List<PurchaseOrderAddAudit> pageDateList = purchaseOrderAuditService.selectPurchaseOrderAuditList(map);
 
-        //更新提交审核时间
+        //更新提交审核时间为最后一次提交审核时间
         for (PurchaseOrderAddAudit addAudit : pageDateList) {
             String purchaseOrderCode = addAudit.getPurchaseOrderCode();
             Example example = new Example(PurchaseOrderAudit.class);
