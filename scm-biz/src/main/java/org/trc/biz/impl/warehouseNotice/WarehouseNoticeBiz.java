@@ -559,12 +559,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             throw new WarehouseNoticeException(ExceptionEnum.WAREHOUSE_NOTICE_UPDATE_EXCEPTION, msg);
         }
         String userId = aclUserAccreditInfo.getUserId();
-        WarehouseInfo warehouseInfo = new WarehouseInfo();
-        warehouseInfo.setCode(warehouseNotice.getWarehouseCode());
-        warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
 
         try {
-            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), warehouseInfo.getWarehouseName(),
+            logInfoService.recordLog(warehouseNotice, warehouseNotice.getId().toString(), userId,
                     LogOperationEnum.NOTICE_RECEIVE.getMessage(), null, null);
         } catch (Exception e) {
             logger.error("通知收货时，操作日志记录异常信息失败：{}", e.getMessage());
@@ -702,11 +699,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         } else {
             // 仓库接收失败
             try {
-                WarehouseInfo warehouseInfo = new WarehouseInfo();
-                warehouseInfo.setCode(notice.getWarehouseCode());
-                warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
-
-                logInfoService.recordLog(notice, notice.getId().toString(), warehouseInfo.getWarehouseName(),
+                logInfoService.recordLog(notice, notice.getId().toString(), whi.getWarehouseName(),
                         LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), appResult.getDatabuffer(), null);
             } catch (Exception e) {
                 logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
