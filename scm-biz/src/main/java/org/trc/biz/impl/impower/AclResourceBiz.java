@@ -657,7 +657,6 @@ public class AclResourceBiz implements IAclResourceBiz {
                 }
             }
         }
-        System.out.println(JSON.toJSONString(menuNodeList));
         return menuNodeList;
     }
 
