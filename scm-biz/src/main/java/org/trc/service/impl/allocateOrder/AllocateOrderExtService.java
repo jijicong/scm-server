@@ -293,6 +293,9 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
 
     }
 
+    /* (non-Javadoc)
+     * 因为需要调用接口之后，才能判断取消发货和重新发货的状态，故将取消中发货和重新发货移除
+     */
     @Override
     public AllocateInOrderParamForm updateAllocateInOrderByCancel(String allocateOrderCode, 
     		String type, String flag, String cancelReson, String cancelResult) {

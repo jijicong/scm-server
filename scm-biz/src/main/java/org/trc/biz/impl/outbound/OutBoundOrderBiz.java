@@ -205,7 +205,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
             //组装请求信息
             ScmDeliveryOrderDetailRequest request = new ScmDeliveryOrderDetailRequest();
-            request.setOrderCode(getOutboundCode(order));
+            request.setOrderCode(order.getOutboundOrderCode());
             request.setOrderId(order.getWmsOrderCode());
             request.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
             request.setWarehouseCode(warehouseInfo.getCode());
