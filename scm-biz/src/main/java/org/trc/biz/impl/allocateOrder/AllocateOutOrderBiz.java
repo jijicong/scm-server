@@ -535,10 +535,19 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     public void updateAllocateOutDetail() {
         if (!iRealIpService.isRealTimerService()) return;
 
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         //获取调拨出库信息
         Example example = new Example(AllocateOutOrder.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("status", AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode());
+        criteria.andNotIn("outWarehouseCode", warehouseCodeList);
         List<AllocateOutOrder> allocateOutOrders = allocateOutOrderService.selectByExample(example);
 
         //组装数据

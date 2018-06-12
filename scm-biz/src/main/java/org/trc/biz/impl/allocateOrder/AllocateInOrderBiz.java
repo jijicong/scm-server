@@ -498,9 +498,19 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         if (!realIpService.isRealTimerService()){
             return;
         }
+
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         Example example = new Example(AllocateInOrder.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("status", AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode());
+        criteria.andNotIn("inWarehouseCode", warehouseCodeList);
         List<AllocateInOrder> allocateInOrderList = allocateInOrderService.selectByExample(example);
         if (!AssertUtil.collectionIsEmpty(allocateInOrderList)){
             List<List<AllocateInOrder>> splitAllocateInOrderList = ListSplit.split(allocateInOrderList,10);
