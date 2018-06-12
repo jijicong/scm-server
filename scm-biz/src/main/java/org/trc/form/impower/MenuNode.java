@@ -1,5 +1,6 @@
 package org.trc.form.impower;
 
+import java.util.List;
 import java.util.Set;
 
 public class MenuNode {
@@ -8,7 +9,7 @@ public class MenuNode {
 
     private Set<Long> codeList;
 
-    private MenuNode menuNode;
+    private List<MenuNode> menuNodeList;
 
     public Long getParentCode() {
         return parentCode;
@@ -26,11 +27,11 @@ public class MenuNode {
         this.codeList = codeList;
     }
 
-    public MenuNode getMenuNode() {
-        return menuNode;
+    public List<MenuNode> getMenuNodeList() {
+        return menuNodeList;
     }
 
-    public void setMenuNode(MenuNode menuNode) {
-        this.menuNode = menuNode;
+    public void setMenuNodeList(List<MenuNode> menuNodeList) {
+        this.menuNodeList = menuNodeList;
     }
 }
