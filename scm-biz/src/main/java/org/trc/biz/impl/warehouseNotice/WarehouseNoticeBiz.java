@@ -702,7 +702,11 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         } else {
             // 仓库接收失败
             try {
-                logInfoService.recordLog(notice, notice.getId().toString(), userId,
+                WarehouseInfo warehouseInfo = new WarehouseInfo();
+                warehouseInfo.setCode(notice.getWarehouseCode());
+                warehouseInfo = warehouseInfoService.selectOne(warehouseInfo);
+
+                logInfoService.recordLog(notice, notice.getId().toString(), warehouseInfo.getWarehouseName(),
                         LogOperationEnum.WMS_RECEIVE_FAILED.getMessage(), appResult.getDatabuffer(), null);
             } catch (Exception e) {
                 logger.error("仓库接收时，操作日志记录异常信息失败：{}", e.getMessage());
