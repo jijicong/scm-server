@@ -115,9 +115,12 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
 
         //更新提交审核时间
         for (PurchaseOrderAddAudit addAudit : pageDateList) {
-            Long id = addAudit.getId();
-            PurchaseOrderAudit purchaseOrderAudit = purchaseOrderAuditService.selectByPrimaryKey(id);
-            addAudit.setSubmitTime(purchaseOrderAudit.getUpdateTime());
+            String purchaseOrderCode = addAudit.getPurchaseOrderCode();
+            Example example = new Example(PurchaseOrderAudit.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("purchaseOrderCode",purchaseOrderCode);
+            List<PurchaseOrderAudit> purchaseOrderAudits = purchaseOrderAuditService.selectByExample(example);
+            addAudit.setSubmitTime(purchaseOrderAudits.get(0).getUpdateTime());
         }
 
         iUserNameUtilService.handleUserName(pageDateList);
