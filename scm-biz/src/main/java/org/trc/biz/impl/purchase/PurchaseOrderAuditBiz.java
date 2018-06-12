@@ -112,6 +112,17 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         map.put("startDate",form.getStartDate());
         map.put("channelCode",channelCode);
         List<PurchaseOrderAddAudit> pageDateList = purchaseOrderAuditService.selectPurchaseOrderAuditList(map);
+
+        //更新提交审核时间为最后一次提交审核时间
+        for (PurchaseOrderAddAudit addAudit : pageDateList) {
+            String purchaseOrderCode = addAudit.getPurchaseOrderCode();
+            Example example = new Example(PurchaseOrderAudit.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("purchaseOrderCode",purchaseOrderCode);
+            List<PurchaseOrderAudit> purchaseOrderAudits = purchaseOrderAuditService.selectByExample(example);
+            addAudit.setSubmitTime(purchaseOrderAudits.get(0).getUpdateTime());
+        }
+
         iUserNameUtilService.handleUserName(pageDateList);
         if(CollectionUtils.isEmpty(pageDateList)){
             page.setTotalCount(0);

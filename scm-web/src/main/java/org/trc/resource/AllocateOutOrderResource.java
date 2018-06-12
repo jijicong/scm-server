@@ -112,7 +112,7 @@ public class AllocateOutOrderResource {
         }
     	return res;
     }
-    
+
     /**
      * 取消出库
      */
