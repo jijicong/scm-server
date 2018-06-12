@@ -2005,7 +2005,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderMoneyCheck(platformOrder, shopOrderList, tmpOrderItemList);
         }
         //校验商品是否从供应链新增
-        isScmItems(tmpOrderItemList);
+        //isScmItems(tmpOrderItemList);
 
         List<ExternalItemSku> externalItemSkuList = null;
         if(supplierOrderItemList.size() > 0){
