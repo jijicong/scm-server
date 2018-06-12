@@ -5950,7 +5950,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //设置商品信息
             setImportSkuInfo(importOrderInfoList, skusList, externalItemSkuList);
             //校验导入订单商品是否供应链商品
-            isScmItems2(importOrderInfoList, externalItemSkuList);
+            //isScmItems2(importOrderInfoList, externalItemSkuList);
             //获取导入订单的店铺订单
             List<ShopOrder> shopOrderList = getImportShopOrders(importOrderInfoList);
             //获取导入订单的平台订单
@@ -6115,7 +6115,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 校验导入订单商品是否供应链商品
      * @param importOrderInfoList
      */
-    private void isScmItems2(List<ImportOrderInfo> importOrderInfoList, List<ExternalItemSku> externalItemSkuList){
+    /*private void isScmItems2(List<ImportOrderInfo> importOrderInfoList, List<ExternalItemSku> externalItemSkuList){
         Set<String> skuCodes = new HashSet<String>();
         Set<String> channelCodes = new HashSet<String>();
         for(ImportOrderInfo detail: importOrderInfoList){
@@ -6152,7 +6152,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
-    }
+    }*/
 
 
 
