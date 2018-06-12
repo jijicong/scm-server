@@ -414,7 +414,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 											"商品明细商品参数不完整");
 								}
 
-								if (jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
+								if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
 									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
 								}
 							}
