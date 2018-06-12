@@ -125,7 +125,12 @@ public class ImportExcel {
                 // 也可以将每个单元格的数据设置到一个javabean的属性中，此时需要新建一个javabean
                 String colVal = "";
                 if(null != row.getCell((short) j)){
-                    colVal = getStringCellValue(row.getCell((short) j)).trim();
+                    String val = getStringCellValue(row.getCell((short) j)).trim();
+                    if(StringUtils.isNotBlank(val)){
+                        colVal = val;
+                    }else{
+                        colVal = NULL_STRING;
+                    }
                 }else{
                     colVal = NULL_STRING;
                 }
