@@ -318,6 +318,7 @@ public class AclResourceBiz implements IAclResourceBiz {
             treeNode.setMethod(aclResource.getMethod());
             treeNode.setParentId(aclResource.getParentId());
             treeNode.setBelong(aclResource.getBelong());
+            treeNode.setIsBelong(aclResource.getIsBelong());
             //treeNode.setIsValid(aclResource.getIsValid());
             treeNode.setId(aclResource.getId());
             treeNode.setCreateOperator(aclResource.getCreateOperator());
@@ -609,7 +610,6 @@ public class AclResourceBiz implements IAclResourceBiz {
         //四级处理,
         if (!AssertUtil.collectionIsEmpty(menuNodeList)) {
             List<Long> resourceCodeList = new ArrayList<>();
-
             for (MenuNode node : menuNodeList) {
                 resourceCodeList.addAll(node.getCodeList());
             }
@@ -619,41 +619,40 @@ public class AclResourceBiz implements IAclResourceBiz {
             criteriaResource.andIn("code", resourceCodeList);
             criteriaResource.andNotEqualTo("isBelong", 0L);
             List<AclResource> aclResourceList = jurisdictionService.selectByExample(exampleResource);
-
+            Map<Long,Set<Long>> codeMap = new HashMap<>();
+            Set<Long> parentCodeSet = new HashSet<>();
             if (!AssertUtil.collectionIsEmpty(aclResourceList)) {
+                for (AclResource aclResource:aclResourceList) {
+                    parentCodeSet.add(aclResource.getIsBelong());
+                }
+                for (Long code:parentCodeSet) {
+                    Set<Long> childCodeList  = new HashSet<>();
+                    for (AclResource aclResource:aclResourceList) {
+                       if (code.equals(aclResource.getIsBelong())){
+                           childCodeList.add(aclResource.getCode());
+                       }
+                    }
+                    if (!AssertUtil.collectionIsEmpty(childCodeList)){
+                        codeMap.put(code,childCodeList);
+                    }
+                }
+            }
+            for (MenuNode menuNode:menuNodeList){
+                Set<Long> level2CodeList = menuNode.getCodeList();
+                List<MenuNode> childMenuList = new ArrayList<>();
+                if (!level2CodeList.isEmpty()){
+                    for (Long level2Code:level2CodeList) {
+                        Set<Long> childCodeList = codeMap.get(level2Code);
+                       if (!AssertUtil.collectionIsEmpty(childCodeList)){
+                           MenuNode menuChild = new MenuNode();
+                           menuChild.setParentCode(level2Code);
+                           menuChild.setCodeList(childCodeList);
+                           childMenuList.add(menuChild);
+                       }
+                    }
 
-                for (MenuNode menuNode : menuNodeList) {
-                    Set<Long> codeItemList = menuNode.getCodeList();
-                    MenuNode menuNodeChild = new MenuNode();
-                    Set<Long> codeChildSet = new HashSet<>();
-                    for (AclResource resource : aclResourceList) {
-                        for (Long codeItem : codeItemList) {
-                            if (resource.getIsBelong().equals(codeItem)) {
-                                menuNodeChild.setParentCode(resource.getIsBelong());
-                                codeChildSet.add(resource.getCode());
-                            }
-                        }
-                    }
-                    if (!codeChildSet.isEmpty()) {
-                        menuNodeChild.setCodeList(codeChildSet);
-                    }
-                    Set<Long> newCodeItemList = new HashSet<>();
-                    for (Long codeItem : codeItemList) {
-                        boolean Flag = true;
-                        for (AclResource resource : aclResourceList) {
-                            if (resource.getCode().equals(codeItem)) {
-                                Flag = false;
-                            }
-                        }
-                        if (Flag) {
-                            newCodeItemList.add(codeItem);
-                        }
-                    }
-                    if (null == menuNodeChild.getCodeList() && null == menuNodeChild.getMenuNode() && null == menuNodeChild.getParentCode()) {
-
-                    } else {
-                        menuNode.setCodeList(newCodeItemList);
-                        menuNode.setMenuNode(menuNodeChild);
+                    if (!AssertUtil.collectionIsEmpty(childMenuList)){
+                        menuNode.setMenuNodeList(childMenuList);
                     }
                 }
             }

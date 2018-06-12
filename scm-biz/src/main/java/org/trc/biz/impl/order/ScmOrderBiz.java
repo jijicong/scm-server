@@ -4146,9 +4146,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             long qimenStock = 0;//奇门库存
             long localStock = 0;//本地库存
             List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
-            for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                if(StringUtils.equals(orderItem.getSkuCode(), item.getItemCode())){
-                    _inventoryQueryItemList.add(item);
+            for(ScmInventoryQueryResponse items: scmInventoryQueryResponseList){
+                if(StringUtils.equals(orderItem.getSkuCode(), items.getItemCode())){
+                    _inventoryQueryItemList.add(items);
                 }
             }
             //按仓库库存降序排序
@@ -4203,9 +4203,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
                 skuWarehouseDO.setChannelCode(maxSkuStock.getChannelCode());
                 skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
-                for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                    if(StringUtils.equals(maxSkuStock.getSkuCode(), item.getItemCode())){
-                        skuWarehouseDO.setItemId(item.getItemId());
+                for(ScmInventoryQueryResponse items: scmInventoryQueryResponseList){
+                    if(StringUtils.equals(maxSkuStock.getSkuCode(), items.getItemCode())){
+                        skuWarehouseDO.setItemId(items.getItemId());
                     }
                 }
                 skuWarehouseDOList.add(skuWarehouseDO);
@@ -6061,7 +6061,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 4000);
-            CellDefinition orignalPaytimeStr = new CellDefinition("orignalPaytimeStr", PAY_TIME, CellDefinition.DATE_TIME, 5000);
+            CellDefinition orignalPaytimeStr = new CellDefinition("orignalPaytimeStr", PAY_TIME, CellDefinition.TEXT, 5000);
             CellDefinition receiverName = new CellDefinition("receiverName", RECIVE_NAME, CellDefinition.TEXT, 3000);
             CellDefinition receiverMobile = new CellDefinition("receiverMobile", RECIVE_MOBILE, CellDefinition.TEXT, 4000);
             CellDefinition receiverProvince = new CellDefinition("receiverProvince", RECIVE_PROVINCE, CellDefinition.TEXT, 3000);
@@ -6355,9 +6355,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 continue;
             }
             String record = entry.getValue();
-            String[] columVals2 = StringUtils.split(record, SupplyConstants.Symbol.COMMA);
-            System.out.println(columVals2);
             String[] columVals = record.split(SupplyConstants.Symbol.COMMA);
+            for(int i=0; i<columVals.length; i++){
+                if(StringUtils.equals(ImportExcel.NULL_STRING, columVals[i])){
+                    columVals[i] = "";
+                }
+            }
             ImportOrderInfo detail = new ImportOrderInfo();
             detail.setChannelCode(channelCode);
             detail.setSellCode(sellCode);

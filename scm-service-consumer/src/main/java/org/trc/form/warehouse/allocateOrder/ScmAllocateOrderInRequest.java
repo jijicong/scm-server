@@ -258,4 +258,9 @@ public class ScmAllocateOrderInRequest extends ScmWarehouseRequestBase{
     private String senderDistrictName;
 
     private String receiverDistrictName;
+    
+    /**
+     * 商品列表
+     */
+    List<ScmAllocateOrderItem> allocateOrderItemList;
 }

@@ -57,5 +57,10 @@ public class ScmAllocateOrderItem {
      * 计划调拨数量
      */
     private Long planAllocateNum;
+    
+    /**
+     * 实际出库数量
+     */
+    private Long realOutNum;
 
 }
