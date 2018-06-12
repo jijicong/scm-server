@@ -309,14 +309,14 @@ public class ChannelBiz implements IChannelBiz {
 
     @Override
     public List<SellChannel> querySellChannelByChannelCode(AclUserAccreditInfo aclUserAccreditInfo) {
-        long channelId = aclUserAccreditInfo.getChannelId();
-        ChannelSellChannel channelSellChannel  = new ChannelSellChannel();
-        channelSellChannel.setChannelId(channelId);
-        List<ChannelSellChannel> channelSellChannelList=  channelSellChannelService.select(channelSellChannel);
-        List<Long> sellChannelIdList =  new ArrayList<>();
-        for (ChannelSellChannel sellChannel:channelSellChannelList){
-            sellChannelIdList.add(sellChannel.getSellChannelId());
-        }
+//        long channelId = aclUserAccreditInfo.getChannelId();
+//        ChannelSellChannel channelSellChannel  = new ChannelSellChannel();
+//        channelSellChannel.setChannelId(channelId);
+//        List<ChannelSellChannel> channelSellChannelList=  channelSellChannelService.select(channelSellChannel);
+//        List<Long> sellChannelIdList =  new ArrayList<>();
+//        for (ChannelSellChannel sellChannel:channelSellChannelList){
+//            sellChannelIdList.add(sellChannel.getSellChannelId());
+//        }
 
 //        Example example = new Example(WarehouseInfo.class);
 //        Example.Criteria criteria = example.createCriteria();
@@ -330,14 +330,14 @@ public class ChannelBiz implements IChannelBiz {
 //        }
 
         List<SellChannel> sellChannelList = new ArrayList<>();
-        if (!AssertUtil.collectionIsEmpty(sellChannelIdList)) {
+//        if (!AssertUtil.collectionIsEmpty(sellChannelIdList)) {
             Example exampleSell = new Example(SellChannel.class);
             Example.Criteria criteriaSell = exampleSell.createCriteria();
-            criteriaSell.andIn("id", sellChannelIdList);
+//            criteriaSell.andIn("id", sellChannelIdList);
 //            criteriaSell.andNotIn("sellCode", storeCorrespondChannels);
             criteriaSell.andEqualTo("sellType", SellChannelTypeEnum.STORE.getCode());
             sellChannelList = sellChannelService.selectByExample(exampleSell);
-        }
+//        }
         return sellChannelList;
     }
 

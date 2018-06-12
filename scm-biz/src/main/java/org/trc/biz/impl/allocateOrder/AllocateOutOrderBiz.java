@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +60,7 @@ import org.trc.service.jingdong.ICommonService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.util.ILocationUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
+import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.AppResult;
@@ -78,6 +80,10 @@ import java.util.*;
 public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     private Logger logger = LoggerFactory.getLogger(AllocateOutOrderBiz.class);
+
+    @Value("${mock.outer.interface}")
+    private String mockOuterInterface;
+
     @Autowired
     private IAllocateOutOrderService allocateOutOrderService;
     @Autowired
@@ -104,6 +110,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     private IWarehouseItemInfoService warehouseItemInfoService;
 	@Autowired
     private IRealIpService iRealIpService;
+    @Autowired
+    private IWarehouseMockService warehouseMockService;
+
 
     /**
      * 调拨单分页查询
@@ -581,8 +590,13 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             for (ScmDeliveryOrderDetailRequest request : requests) {
                 new Thread(() -> {
                     //调用接口
-                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult =
-                            warehouseApiService.deliveryOrderDetail(request);
+                    AppResult<ScmDeliveryOrderDetailResponse> responseAppResult = null;
+                    if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+                        responseAppResult = warehouseMockService.deliveryOrderDetail(request);
+                    }else{
+                        responseAppResult =
+                                warehouseApiService.deliveryOrderDetail(request);
+                    }
                     //回写数据
                     try {
                         this.updateDeliveryOrderDetail(responseAppResult, request.getOrderCode(), request.getOrderId());

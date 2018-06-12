@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trc.biz.allocateOrder.IAllocateInOrderBiz;
@@ -44,6 +45,7 @@ import org.trc.service.jingdong.ICommonService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouse.IWarehouseExtService;
+import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
 import org.trc.util.*;
@@ -55,6 +57,10 @@ import tk.mybatis.mapper.util.StringUtil;
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 	
 	private Logger logger = LoggerFactory.getLogger(AllocateInOrderBiz.class);
+
+    @Value("${mock.outer.interface}")
+    private String mockOuterInterface;
+
     @Autowired
     private IAllocateOrderExtService allocateOrderExtService;
     @Autowired
@@ -79,6 +85,8 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
     private IWarehouseItemInfoService warehouseItemInfoService;
     @Autowired
     private IRealIpService realIpService;
+    @Autowired
+    private IWarehouseMockService warehouseMockService;
     
 
     @Override
@@ -561,7 +569,12 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
         }
         ScmEntryOrderDetailRequest entryOrderDetailRequest = new ScmEntryOrderDetailRequest();
         entryOrderDetailRequest.setEntryOrderCode(StringUtils.join(wmsOrderCodeList, SupplyConstants.Symbol.COMMA));
-        AppResult appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
+        AppResult appResult = null;
+        if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){//仓库接口mock
+            appResult = warehouseMockService.entryOrderDetail(entryOrderDetailRequest);
+        }else{
+            appResult = warehouseApiService.entryOrderDetail(entryOrderDetailRequest);
+        }
         List<ScmEntryOrderDetailResponse> scmEntryOrderDetailResponseListRequest =
                 (List<ScmEntryOrderDetailResponse>) appResult.getResult();
         for (AllocateInOrder allocateInOrder : allocateInOrderList) {
