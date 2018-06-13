@@ -233,7 +233,7 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
     }
 
     @Override
-    public String createAllocateOutOrder(AllocateOutOrder outOrder, String createOperator) {
+    public String createAllocateOutOrder(AllocateOutOrder outOrder, String createOperator, String status) {
     	
         String code = serialUtilService.generateCode(SupplyConstants.Serial.ALLOCATE_ORDER_OUT_LENGTH, 
         		SupplyConstants.Serial.ALLOCATE_ORDER_OUT_CODE,
@@ -242,7 +242,8 @@ public class AllocateOrderExtService implements IAllocateOrderExtService {
         outOrder.setCreateOperator(createOperator);
         outOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         outOrder.setIsValid(ZeroToNineEnum.ONE.getCode());
-        outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
+        outOrder.setStatus(status);
+//        outOrder.setStatus(AllocateOrderEnum.AllocateOutOrderStatusEnum.WAIT_NOTICE.getCode());
         
         allocateOutOrderService.insert(outOrder);
         //记录操作日志

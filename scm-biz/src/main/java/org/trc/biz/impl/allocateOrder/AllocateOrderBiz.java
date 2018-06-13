@@ -34,28 +34,33 @@ import org.trc.domain.category.Brand;
 import org.trc.domain.goods.Items;
 import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
-import org.trc.domain.purchase.PurchaseDetail;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.enums.AllocateOrderEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
+import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
 import org.trc.enums.ExceptionEnum;
 import org.trc.enums.ItemNoticeStateEnum;
 import org.trc.enums.ItemTypeEnum;
-import org.trc.enums.JingdongInventoryStateEnum;
 import org.trc.enums.JingdongInventoryTypeEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.NoticsWarehouseStateEnum;
+import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.ValidStateEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.AllocateOrderException;
+import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.form.AllocateOrder.QuerySkuInventory;
 import org.trc.form.warehouse.ScmInventoryQueryItem;
 import org.trc.form.warehouse.ScmInventoryQueryRequest;
 import org.trc.form.warehouse.ScmInventoryQueryResponse;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderItem;
+import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
+import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderRequest;
+import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderResponse;
 import org.trc.service.allocateOrder.IAllocateOrderExtService;
 import org.trc.service.allocateOrder.IAllocateOrderService;
 import org.trc.service.allocateOrder.IAllocateOutOrderService;
@@ -608,13 +613,37 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 
 	}
 	
+	private boolean isJosAllocateOrder (AllocateOrder queryOrder) {
+		// 是否京东仓间调拨，true表示是
+		boolean flg = true;
+		List<String> whiCodeList = new ArrayList<>();
+		whiCodeList.add(queryOrder.getInWarehouseCode());
+		whiCodeList.add(queryOrder.getOutWarehouseCode());
+		
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria ca = example.createCriteria();
+        ca.andIn("code", whiCodeList);
+		List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(example);
+		if (!CollectionUtils.isEmpty(warehouseList) && warehouseList.size() == 2) {
+			for (WarehouseInfo warehouse : warehouseList) {
+				if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
+					flg = false;
+				}
+			}
+		} else {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
+					"出入仓库查询异常");
+		}
+		return flg;
+	}
+	
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void noticeWarehouse(String orderId, AclUserAccreditInfo userInfo) {
 		AllocateOrder queryOrder = allocateOrderService.selectByPrimaryKey(orderId);
 		if (queryOrder == null) {
-			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
 					"未查的相关调拨单信息");
 		}
 		String status = queryOrder.getOrderStatus();
@@ -622,31 +651,99 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		 * 审核通过 的状态才能通知仓库
 		 */
 		if (!AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode().equals(status)) {
-			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_DROP_EXCEPTION, 
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
 					"当前调拨单状态不满足通知仓库条件");
 		}
 		
+		noticeWarehouseProcess(queryOrder, userInfo, null, AllocateOutOrderStatusEnum.WAIT_NOTICE);
+		
+		
+		/**
+		 * 京东仓库间的调拨暂时先按照发货出库单，采购单入库单的逻辑走，
+		 * 故京东仓间的调拨接口暂时先不接
+		 **/
+/*		if (isJosAllocateOrder(queryOrder)) {
+			*//**
+			 * 出入仓都是京东仓的情况下，调用京东仓间调拨
+			 *//*
+			ScmJosAllocateOrderRequest req = new ScmJosAllocateOrderRequest();
+			
+			List<ScmAllocateOrderItem> itemList = new ArrayList<>();
+			List<AllocateSkuDetail> skuList = allocateSkuDetailService.getDetailListByOrderCode(queryOrder.getAllocateOrderCode());
+			
+			List<String> skuCodeList = skuList.stream().map(
+					detail -> detail.getSkuCode()).collect(Collectors.toList());
+	        Example example = new Example(WarehouseItemInfo.class);
+	        Example.Criteria ca = example.createCriteria();
+	        ca.andIn("skuCode", skuCodeList);
+	        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
+			ScmAllocateOrderItem item = null;
+			
+			for (AllocateSkuDetail sku : skuList) {
+				
+	        	if (AllocateOrderInventoryStatusEnum.Quality.getCode().equals(sku.getInventoryType())) {
+	        		throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "京东仓暂时不允许残品调拨");
+	        	}
+	        	
+	        	for (WarehouseItemInfo info : warehouseItemInfoList) {
+	        		if (StringUtils.equals(info.getSkuCode(), sku.getSkuCode())) {
+	        			item = new ScmAllocateOrderItem();
+	        			item.setPlanAllocateNum(sku.getPlanAllocateNum());// 计划配出数量 
+	        			item.setSkuCode(sku.getSkuCode()); // 仓库商品编号 
+	        			itemList.add(item);
+	        			break;
+	        		}
+	        	}
+	        	
+			}
+			req.setInWarehouseCode(queryOrder.getInWarehouseCode());
+			req.setOutWarehouseCode(queryOrder.getOutWarehouseCode());
+			req.setAllocateOrderCode(queryOrder.getAllocateOrderCode());
+			req.setAllocateOrderItemList(itemList);
+			
+			AppResult<ScmJosAllocateOrderResponse> response = warehouseApiService.josAllocateOrderCreate(req);
+
+			if (StringUtils.equals(response.getAppcode(), ResponseAck.SUCCESS_CODE)) {
+				ScmJosAllocateOrderResponse rep = (ScmJosAllocateOrderResponse) response.getResult();
+				// 生成出入通知单时 初始化状态为 出库仓接收成功
+				noticeWarehouseProcess(queryOrder, userInfo, rep.getWmsAllocateOrderCode(), 
+						AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC);
+			} else {
+				throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, response.getDatabuffer());
+			}
+			
+		} else {
+			noticeWarehouseProcess(queryOrder, userInfo, null, AllocateOutOrderStatusEnum.WAIT_NOTICE);
+			
+		}*/
+		
+	}
+	
+	private void noticeWarehouseProcess (AllocateOrder queryOrder, AclUserAccreditInfo userInfo, String wmsAllocateOrderCode,
+			AllocateOutOrderStatusEnum outstatus) {
 		/**
 		 * 生成出入库通知单
 		 */
 		AllocateOutOrder outOrder = new AllocateOutOrder();
 		BeanUtils.copyProperties(queryOrder, outOrder);
-		String outCode = allocateOrderExtService.createAllocateOutOrder(outOrder, userInfo.getUserId());
+		String outCode = allocateOrderExtService.createAllocateOutOrder(outOrder, userInfo.getUserId(),outstatus.getCode());
 		
 		AllocateInOrder inOrder = new AllocateInOrder();
 		BeanUtils.copyProperties(queryOrder, inOrder);
 		String inCode = allocateOrderExtService.createAllocateInOrder(inOrder, userInfo.getUserId());
-        //allocateOutOrderService.insertSelective(outOrder);
+		//allocateOutOrderService.insertSelective(outOrder);
 		
 		/**
 		 * 更新调拨单
 		 */
+		String allocateOrderCode = queryOrder.getAllocateOrderCode();
 		AllocateOrder allocateOrder = new AllocateOrder();
-		allocateOrder.setAllocateOrderCode(orderId);
+		allocateOrder.setAllocateOrderCode(allocateOrderCode);
 		allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.WAIT.getCode());
 		allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.WAREHOUSE_NOTICE.getCode());
 		allocateOrder.setAllocateInOrderCode(inCode);
 		allocateOrder.setAllocateOutOrderCode(outCode);
+		allocateOrder.setWmsAllocateOrderCode(wmsAllocateOrderCode);
 		int count = allocateOrderService.updateByPrimaryKeySelective(allocateOrder);	
 		if (count < 1) {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_WAREHOUSE_EXCEPTION, 
@@ -658,13 +755,13 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		AllocateSkuDetail skuDetail = new AllocateSkuDetail();
 		skuDetail.setAllocateInStatus(AllocateOrderEnum.AllocateOrderSkuInStatusEnum.WAIT_IN.getCode());
 		skuDetail.setAllocateOutStatus(AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode());
-        Example example = new Example(AllocateSkuDetail.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("allocateOrderCode", orderId);
-        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
-        allocateSkuDetailService.updateByExampleSelective(skuDetail, example);
+		Example example = new Example(AllocateSkuDetail.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("allocateOrderCode", allocateOrderCode);
+		criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
+		allocateSkuDetailService.updateByExampleSelective(skuDetail, example);
 		
-		logInfoService.recordLog(new AllocateOrder(), orderId, 
+		logInfoService.recordLog(new AllocateOrder(), allocateOrderCode, 
 				userInfo.getUserId(), LogOperationEnum.NOTICE_WMS.getMessage(), null, ZeroToNineEnum.ZERO.getCode());
 	}
 	

@@ -23,6 +23,8 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
+import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderRequest;
+import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderResponse;
 import org.trc.util.AppResult;
 
 /**
@@ -107,4 +109,11 @@ public interface IWarehouseApiService {
      * @return
      */
 	AppResult<ScmAllocateOrderInResponse> allocateOrderInNotice(ScmAllocateOrderInRequest request);
+
+    /**
+     * 创建京东仓间调拨单
+     * @param 
+     * @return
+     */
+	AppResult<ScmJosAllocateOrderResponse> josAllocateOrderCreate(ScmJosAllocateOrderRequest req);
 }

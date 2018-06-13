@@ -115,6 +115,13 @@ public class ExternalSupplierConfig {
      * 调拨入库单通知接口URL
      */
     private String allocateOrderInUrl;
+    
+    /**
+     * 京东仓间调拨单创建接口URL
+     */
+    private String josAllocateOrderCreateUrl;
+
+
 
 
 }
