@@ -273,7 +273,43 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		allocateOrderExtService.setAllocateOrderOtherNames(page);
         return page;
     }
+    
+    
+	private void checkJosIsGood(String skuDetail, String outWhCode, String inWhCode) {
 
+		List<String> whiCodeList = Arrays.asList(outWhCode, inWhCode);
+		
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria ca = example.createCriteria();
+        ca.andIn("code", whiCodeList);
+        ca.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());//未删除
+        ca.andEqualTo("isValid", ZeroToNineEnum.ONE.getCode());//有效
+		List<WarehouseInfo> warehouseList = warehouseInfoService.selectByExample(example);
+		
+		if (!CollectionUtils.isEmpty(warehouseList) && warehouseList.size() == 2) {
+			
+			WarehouseInfo whInfo = warehouseList.stream().filter(warehouse -> 
+				OperationalNatureEnum.THIRD_PARTY.getCode().equals(warehouse.getOperationalNature())).findAny().orElse(null);
+			
+			if (whInfo != null) {
+				//  存在京东仓的情况
+				List<AllocateSkuDetail> skuDetailList = JSON.parseArray(skuDetail, AllocateSkuDetail.class);
+				AllocateSkuDetail allocateSku = skuDetailList.stream().filter(sku -> 
+					AllocateOrderInventoryStatusEnum.Quality.getCode().equals(sku.getInventoryType())).findAny().orElse(null);
+				if (allocateSku != null) {
+				//  存在残品调拨的情况
+					throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, "京东仓暂时不允许残品调拨");
+				}
+			}
+			
+		} else {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+					"出入仓库查询异常，是否已停用或者删除");
+		}
+		
+		
+
+	}
 
 	@Override
 	@Transactional
@@ -281,6 +317,13 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			String skuDetail, AclUserAccreditInfo aclUserAccreditInfo) {
 		// 设置调拨单初始状态-暂存
 		String orderStatus = AllocateOrderEnum.AllocateOrderStatusEnum.INIT.getCode();
+		
+		String outWhCode = allocateOrder.getOutWarehouseCode();
+		String inWhCode = allocateOrder.getInWarehouseCode();
+		if (outWhCode.equalsIgnoreCase(inWhCode)) {
+			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
+					"调拨单的出入库仓库不能相同");
+		}
 		
 		/**
 		 * 提交审核的情况 (isReview = 1)
@@ -306,7 +349,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 							"请至少选择一项商品");
 				}
 				
+				//提交审核的时候，如果为京东仓，需要校验所有调拨商品为正品
+				checkJosIsGood(skuDetail, outWhCode, inWhCode);
+				
 			}
+			
+				
 			// 校验商品是否停用
 			checkSkuIsVaild(skuDetail);
 			allocateOrder.setSubmitOperator(aclUserAccreditInfo.getUserId());
@@ -341,6 +389,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 					JSONArray skuDetailArray = JSONArray.parseArray(skuDetail);
 					for (Object obj : skuDetailArray) {
 						JSONObject jsonObj = (JSONObject) obj;
+						
 						AllocateSkuDetail insertDetail = new AllocateSkuDetail();
 						// 设置调拨单详情数据
 						setAllocateSkuDetail(aclUserAccreditInfo, insertDetail, code, jsonObj, isReviewFlg);
@@ -468,6 +517,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			}
 			Skus record = new Skus();
 			record.setSkuCode(skuCode);
+			record.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
 			Skus sku = skusService.selectOne(record);
 			if (sku == null) {
 				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
@@ -777,6 +827,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_EDIT_EXCEPTION, 
 					"未查到相关调拨单信息");
 		}
+		
 		AllocateSkuDetail queryDetail = new AllocateSkuDetail();
 		queryDetail.setAllocateOrderCode(orderId);
 		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -1222,10 +1273,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 	private void setDetailAddress(AllocateOrder allocateOrder) {
 		String outWhCode = allocateOrder.getOutWarehouseCode();
 		String inWhCode = allocateOrder.getInWarehouseCode();
-		if (outWhCode.equals(inWhCode)) {
-			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
-					"调拨单的出入库仓库不能相同");
-		}
+		
         WarehouseInfo queryRecord = new WarehouseInfo();
         queryRecord.setCode(inWhCode);
         queryRecord.setIsDeleted(ZeroToNineEnum.ZERO.getCode());//未删除
