@@ -418,6 +418,10 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
 											"商品明细商品参数不完整");
 								}
+
+								if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
+									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+								}
 							}
 							detail.setInventoryType(jsonObj.getString("inventoryType"));
 							detail.setPlanAllocateNum(jsonObj.getLong("planAllocateNum"));
@@ -1184,6 +1188,12 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_REVIEW_SAVE_EXCEPTION, 
 						"商品明细商品参数不完整");
 			}
+
+			//新增调拨单时审核
+            if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
+                throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+            }
+
 		}
 		detail.setAllocateOrderCode(allocateOrderCode);
 		detail.setSkuName(jsonObj.getString("skuName"));
