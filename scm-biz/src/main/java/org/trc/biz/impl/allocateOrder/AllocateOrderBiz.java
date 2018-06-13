@@ -688,7 +688,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		}
 
 		Example example2 = new Example(WarehouseInfo.class);
-		Example.Criteria criteria2 = example1.createCriteria();
+		Example.Criteria criteria2 = example2.createCriteria();
 		criteria2.andEqualTo("code",inWarehouseCode);
 		List<WarehouseInfo> warehouseInfos2 = warehouseInfoService.selectByExample(example2);
 		if(warehouseInfos2.get(0).getIsValid().equals("0")){
