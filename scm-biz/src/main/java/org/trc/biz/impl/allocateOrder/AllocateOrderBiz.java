@@ -684,7 +684,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		List<WarehouseInfo> warehouseInfos1 = warehouseInfoService.selectByExample(example1);
 		if(warehouseInfos1.get(0).getIsValid().equals("0")){
 			//启用状态为0，停用
-			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调出仓库已停用,请先启用该仓库！");
+			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调出仓库"+warehouseInfos1.get(0).getWarehouseName()+"已停用,请修改");
 		}
 
 		Example example2 = new Example(WarehouseInfo.class);
@@ -692,7 +692,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 		criteria2.andEqualTo("code",inWarehouseCode);
 		List<WarehouseInfo> warehouseInfos2 = warehouseInfoService.selectByExample(example2);
 		if(warehouseInfos2.get(0).getIsValid().equals("0")){
-			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调入仓库已停用，请先启用该仓库！");
+			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调入仓库"+warehouseInfos2.get(0).getWarehouseName()+"已停用,请修改");
 		}
 
 
