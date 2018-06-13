@@ -223,7 +223,7 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         if (!StringUtils.isBlank(form.getEndDate())) {
             criteria.andLessThan("updateTime", DateUtils.formatDateTime(DateUtils.addDays(form.getEndDate(), DateUtils.NORMAL_DATE_FORMAT, 1)));
         }
-        example.orderBy("status").asc();
+        example.setOrderByClause("instr('0,1',`status`) DESC");
         example.orderBy("updateTime").desc();
         Pagenation<WarehouseNotice> pagenation = warehouseNoticeService.pagination(example, page, form);
         
