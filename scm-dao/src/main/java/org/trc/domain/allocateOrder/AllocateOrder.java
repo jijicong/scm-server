@@ -136,6 +136,13 @@ public class AllocateOrder extends AllocateOrderBase{
      */
     @Column(name = "create_operator")
     private String createOperator;
+    
+
+    /**
+     * 仓库返回调拨单号-京东仓间调拨用
+     */
+    @Column(name = "wms_allocate_order_code")
+    private String wmsAllocateOrderCode;
 
     /**
      * 创建时间,格式yyyy-mm-dd hh:mi:ss
@@ -471,6 +478,14 @@ public class AllocateOrder extends AllocateOrderBase{
 
 	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
+	}
+
+	public String getWmsAllocateOrderCode() {
+		return wmsAllocateOrderCode;
+	}
+
+	public void setWmsAllocateOrderCode(String wmsAllocateOrderCode) {
+		this.wmsAllocateOrderCode = wmsAllocateOrderCode;
 	}
 	
 	
