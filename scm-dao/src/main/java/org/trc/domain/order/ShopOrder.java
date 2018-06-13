@@ -120,6 +120,7 @@ public class ShopOrder extends OrderBase {
     private Date payTime;
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
     @NotEmpty
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
     // 发货时间
     @NotEmpty

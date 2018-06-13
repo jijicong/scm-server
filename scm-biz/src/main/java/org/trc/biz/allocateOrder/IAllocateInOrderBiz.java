@@ -59,4 +59,6 @@ public interface IAllocateInOrderBiz {
 
     void updateAllocateInDetail();
 
+    void retryCancelOrder();
+
 }

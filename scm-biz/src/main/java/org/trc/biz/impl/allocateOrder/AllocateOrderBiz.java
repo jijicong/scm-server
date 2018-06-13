@@ -1,19 +1,9 @@
 package org.trc.biz.impl.allocateOrder;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.Response;
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,21 +26,11 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.enums.AllocateOrderEnum;
-import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ItemNoticeStateEnum;
-import org.trc.enums.ItemTypeEnum;
-import org.trc.enums.JingdongInventoryTypeEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.NoticsWarehouseStateEnum;
+import org.trc.enums.*;
 import org.trc.enums.OperationalNatureEnum;
-import org.trc.enums.ValidStateEnum;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.AllocateOrderException;
-import org.trc.exception.AllocateOutOrderException;
 import org.trc.form.AllocateOrder.AllocateItemForm;
 import org.trc.form.AllocateOrder.AllocateOrderForm;
 import org.trc.form.AllocateOrder.QuerySkuInventory;
@@ -75,20 +55,12 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
-import org.trc.util.QueryModel;
-import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("allocateOrderBiz")
 public class AllocateOrderBiz implements IAllocateOrderBiz {
@@ -468,9 +440,31 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 											"商品明细商品参数不完整");
 								}
 
-								if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
-									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+								//提交审核的情况下,查询实时库存
+                                List<QuerySkuInventory> querySkuList = JSONArray.parseArray(skuDetail, QuerySkuInventory.class);
+
+                                Map<String, Long> inventryMap = inventoryQuery(allocateOrder.getOutWarehouseCode(),  JSON.toJSONString(querySkuList));
+                                if (inventryMap.size()==0){
+									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"所选调拨商品的调出仓商品均不存在");
+								}else {
+									for (String key : inventryMap.keySet()) {
+										if(key.equals(jsonObj.getString("skuCode"))){
+											Long inventoryNum = inventryMap.get(key);
+											if(inventoryNum==null){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓库不存在该件商品");
+											}
+											if(inventoryNum==0){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓实时库存不能为0");
+											}
+											if ( jsonObj.getLong("planAllocateNum")>inventoryNum){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+											}
+										}
+
+									}
 								}
+
+
 							}
 							detail.setInventoryType(jsonObj.getString("inventoryType"));
 							detail.setPlanAllocateNum(jsonObj.getLong("planAllocateNum"));
@@ -827,7 +821,27 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_NOTICE_EDIT_EXCEPTION, 
 					"未查到相关调拨单信息");
 		}
-		
+		//编辑页面对调入仓库和调出仓库校验,
+		String outWarehouseCode = retOrder.getOutWarehouseCode();
+		String inWarehouseCode = retOrder.getInWarehouseCode();
+		Example example1 = new Example(WarehouseInfo.class);
+		Example.Criteria criteria1 = example1.createCriteria();
+		criteria1.andEqualTo("code",outWarehouseCode);
+		List<WarehouseInfo> warehouseInfos1 = warehouseInfoService.selectByExample(example1);
+		if(warehouseInfos1.get(0).getIsValid().equals("0")){
+			//启用状态为0，停用
+			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调出仓库已停用,请先启用该仓库！");
+		}
+
+		Example example2 = new Example(WarehouseInfo.class);
+		Example.Criteria criteria2 = example2.createCriteria();
+		criteria2.andEqualTo("code",inWarehouseCode);
+		List<WarehouseInfo> warehouseInfos2 = warehouseInfoService.selectByExample(example2);
+		if(warehouseInfos2.get(0).getIsValid().equals("0")){
+			throw new WarehouseInfoException(ExceptionEnum.SYSTEM_WAREHOUSE_QUERY_EXCEPTION,"该调入仓库已停用，请先启用该仓库！");
+		}
+
+
 		AllocateSkuDetail queryDetail = new AllocateSkuDetail();
 		queryDetail.setAllocateOrderCode(orderId);
 		queryDetail.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
@@ -1241,9 +1255,38 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			}
 
 			//新增调拨单时审核
-            if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
-                throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
-            }
+			//提交审核的情况下,查询实时库存
+			Example example = new Example(AllocateOrder.class);
+			Example.Criteria criteria = example.createCriteria();
+			criteria.andEqualTo("allocateOrderCode",allocateOrderCode);
+			List<AllocateOrder> allocateOrders = allocateOrderService.selectByExample(example);
+
+			List<QuerySkuInventory> querySkuList = new ArrayList<>();
+			QuerySkuInventory querySkuInventory = new QuerySkuInventory();
+			querySkuInventory.setInventoryType(jsonObj.getString("inventoryType"));
+			querySkuInventory.setSkuCode(jsonObj.getString("skuCode"));
+			querySkuList.add(querySkuInventory);
+
+			Map<String, Long> inventryMap = inventoryQuery(allocateOrders.get(0).getOutWarehouseCode(), JSON.toJSONString(querySkuList));
+			if(inventryMap.size()==0){
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"该调拨商品的调出仓商品不存在");
+			}else {
+				for (String key : inventryMap.keySet()) {
+					if(key.equals(jsonObj.getString("skuCode"))){
+						Long inventoryNum = inventryMap.get(key);
+						if(inventoryNum==null){
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓库不存在该件商品");
+						}
+						if(inventoryNum==0){
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓实时库存不能为0");
+						}
+						if ( jsonObj.getLong("planAllocateNum")>inventoryNum){
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+						}
+					}
+
+				}
+			}
 
 		}
 		detail.setAllocateOrderCode(allocateOrderCode);
