@@ -113,6 +113,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
     @Autowired
     private IWarehouseMockService warehouseMockService;
 
+    public final static String SUCCESS = "200";
 
     /**
      * 调拨单分页查询
@@ -583,6 +584,106 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
         //调用接口
         this.deliveryOrderDetail(requests);
+    }
+
+    @Override
+    public void retryCancelOrder() {
+        if (!iRealIpService.isRealTimerService()) return;
+        AllocateOutOrder orderTemp = new AllocateOutOrder();
+        orderTemp.setStatus(AllocateOutOrderStatusEnum.CANCELLING.getCode());
+        List<AllocateOutOrder> list = allocateOutOrderService.select(orderTemp);
+
+        //组装信息
+        List<ScmOrderCancelRequest> requests = new ArrayList<>();
+        for(AllocateOutOrder order : list){
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(order.getOutWarehouseCode());
+            List<WarehouseInfo> warehouseList =warehouseInfoService.select(warehouseInfo);
+            if(warehouseList == null || warehouseList.size() < 1){
+                continue;
+            }
+            warehouseInfo = warehouseList.get(0);
+
+            ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
+            scmOrderCancelRequest.setOrderCode(order.getWmsAllocateOutOrderCode());
+            scmOrderCancelRequest.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
+            scmOrderCancelRequest.setWarehouseType("JD");
+            scmOrderCancelRequest.setOrderType(CancelOrderType.ALLOCATE_OUT.getCode());
+            requests.add(scmOrderCancelRequest);
+        }
+
+        //调用接口
+        this.retryCancelOrder(requests);
+    }
+
+    private void retryCancelOrder (List<ScmOrderCancelRequest> requests){
+        try{
+            for (ScmOrderCancelRequest request : requests) {
+                new Thread(() -> {
+                    //调用接口
+                    AppResult<ScmOrderCancelResponse> responseAppResult =
+                            warehouseApiService.orderCancel(request);
+                    //回写数据
+                    try {
+                        this.updateCancelOrder(responseAppResult, request.getOrderCode());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        logger.error("调拨出库单号:{},取消调拨出库异常：{}", request.getOrderCode(), responseAppResult.getResult());
+                    }
+                }).start();
+            }
+        }catch(Exception e){
+            logger.error("取消调拨出库失败", e);
+        }
+    }
+
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String orderCode){
+        //处理信息
+        try{
+            if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
+                AllocateOutOrder allocateOutOrderTemp = new AllocateOutOrder();
+                allocateOutOrderTemp.setWmsAllocateOutOrderCode(orderCode);
+                allocateOutOrderTemp = allocateOutOrderService.selectOne(allocateOutOrderTemp);
+
+                ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+                String flag = response.getFlag();
+
+                if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){
+                    //修改状态
+                    this.updateDetailStatus(AllocateOutOrderStatusEnum.CANCEL.getCode(), allocateOutOrderTemp.getAllocateOrderCode(),
+                            AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), true);
+
+                    allocateOrderExtService.updateOrderCancelInfo(allocateOutOrderTemp, "", false,
+                            AllocateOutOrderStatusEnum.CANCEL.getCode());
+
+                    logInfoService.recordLog(allocateOutOrderTemp, String.valueOf(allocateOutOrderTemp.getId()),"admin",
+                            "取消出库", "取消结果:取消成功",
+                            null);
+                }else if(StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){
+                    allocateOutOrderTemp.setStatus(AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode());
+                    allocateOutOrderTemp.setUpdateTime(Calendar.getInstance().getTime());
+                    allocateOutOrderTemp.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+                    allocateOutOrderTemp.setOldStatus("");
+                    allocateOutOrderService.updateByPrimaryKey(allocateOutOrderTemp);
+
+                    AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                    allocateSkuDetail.setOutStatus(AllocateOutOrderStatusEnum.OUT_RECEIVE_SUCC.getCode());
+                    allocateSkuDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    allocateSkuDetail.setOldOutStatus("");
+                    Example example = new Example(AllocateSkuDetail.class);
+                    Example.Criteria criteria = example.createCriteria();
+                    criteria.andEqualTo("allocateOrderCode", allocateOutOrderTemp.getAllocateOrderCode());
+                    allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example);
+
+                    logInfoService.recordLog(allocateOutOrderTemp, String.valueOf(allocateOutOrderTemp.getId()),"admin",
+                            "取消出库", "取消结果:取消失败,"+response.getMessage(),
+                            null);
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            logger.error("调拨出库单号:{},取消调拨出库异常：{}", orderCode, e.getMessage());
+        }
     }
 
     //调用获取商品详情接口

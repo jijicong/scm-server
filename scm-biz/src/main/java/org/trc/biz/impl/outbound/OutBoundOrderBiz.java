@@ -1557,7 +1557,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         if (!StringUtils.isBlank(form.getEndCreateDate())) {
             criteria.andLessThan("createTime", DateUtils.formatDateTime(DateUtils.addDays(form.getEndCreateDate(), DateUtils.NORMAL_DATE_FORMAT, 1)));
         }
-        example.orderBy("status").asc();
+        example.setOrderByClause("instr('1',`status`) DESC");
         example.orderBy("createTime").desc();
     }
 

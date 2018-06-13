@@ -25,4 +25,6 @@ public interface IAllocateOutOrderBiz {
     //Response noticeSendGoods(Long id, AclUserAccreditInfo aclUserAccreditInfo);
 
     void updateAllocateOutDetail();
+
+    void retryCancelOrder();
 }
