@@ -415,7 +415,9 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 								}
 
 								//提交审核的情况下,查询实时库存
-								Map<String, Long> inventryMap = inventoryQuery(allocateOrder.getOutWarehouseCode(), skuDetail);
+                                List<QuerySkuInventory> querySkuList = JSONArray.parseArray(skuDetail, QuerySkuInventory.class);
+
+                                Map<String, Long> inventryMap = inventoryQuery(allocateOrder.getOutWarehouseCode(),  JSON.toJSONString(querySkuList));
 								for (String key : inventryMap.keySet()) {
 									if(key.equals(jsonObj.getString("skuCode"))){
 										Long inventoryNum = inventryMap.get(key);
