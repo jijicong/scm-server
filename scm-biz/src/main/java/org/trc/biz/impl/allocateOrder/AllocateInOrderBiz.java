@@ -54,6 +54,8 @@ import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.util.StringUtil;
 
+import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
+
 @Service("allocateInOrderBiz")
 public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 	
@@ -538,6 +540,112 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
             }
         }else {
             logger.info("未查询到符合条件的调拨入库通知单！");
+        }
+    }
+
+    @Override
+    public void retryCancelOrder() {
+        if (!realIpService.isRealTimerService()) return;
+        AllocateInOrder orderTemp = new AllocateInOrder();
+        orderTemp.setStatus(AllocateInOrderStatusEnum.CANCELLING.getCode().toString());
+        List<AllocateInOrder> list = allocateInOrderService.select(orderTemp);
+
+        //组装信息
+        List<ScmOrderCancelRequest> requests = new ArrayList<>();
+        for(AllocateInOrder order : list){
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(order.getInWarehouseCode());
+            List<WarehouseInfo> warehouseList =warehouseInfoService.select(warehouseInfo);
+            if(warehouseList == null || warehouseList.size() < 1){
+                continue;
+            }
+            warehouseInfo = warehouseList.get(0);
+            ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
+            scmOrderCancelRequest.setOrderCode(order.getWmsAllocateInOrderCode());
+            scmOrderCancelRequest.setOwnerCode(warehouseInfo.getWarehouseOwnerId());
+            scmOrderCancelRequest.setWarehouseType("JD");
+            scmOrderCancelRequest.setOrderType(CancelOrderType.ALLOCATE_IN.getCode());
+            requests.add(scmOrderCancelRequest);
+        }
+
+        //调用接口
+        this.retryCancelOrder(requests);
+    }
+
+    private void retryCancelOrder (List<ScmOrderCancelRequest> requests){
+        try{
+            for (ScmOrderCancelRequest request : requests) {
+                new Thread(() -> {
+                    //调用接口
+                    AppResult<ScmOrderCancelResponse> responseAppResult =
+                            warehouseApiService.orderCancel(request);
+
+                    //回写数据
+                    try {
+                        this.updateCancelOrder(responseAppResult, request.getOrderCode());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        logger.error("调拨入库单号:{},取消调拨入库异常：{}", request.getOrderCode(), responseAppResult.getResult());
+                    }
+                }).start();
+            }
+        }catch(Exception e){
+            logger.error("取消调拨入库失败", e);
+        }
+    }
+
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String orderCode){
+        //处理信息
+        try{
+            if (StringUtils.equals(appResult.getAppcode(), SUCCESS)) { // 成功
+                AllocateInOrder allocateInOrder = new AllocateInOrder();
+                allocateInOrder.setWmsAllocateInOrderCode(orderCode);
+                allocateInOrder = allocateInOrderService.selectOne(allocateInOrder);
+
+                ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+                String flag = response.getFlag();
+
+                if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){
+                    AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                    allocateSkuDetail.setAllocateOrderCode(allocateInOrder.getAllocateOrderCode());
+                    List<AllocateSkuDetail> allocateSkuDetailList = allocateSkuDetailService.select(allocateSkuDetail);
+                    //修改状态
+                    allocateInOrder.setStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+
+                    for (AllocateSkuDetail detail: allocateSkuDetailList) {
+                        detail.setInStatus(AllocateInOrderStatusEnum.CANCEL.getCode().toString());
+                    }
+
+                    allocateInOrderService.updateByPrimaryKeySelective(allocateInOrder);
+                    allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailList);
+
+                    logInfoService.recordLog(allocateInOrder, String.valueOf(allocateInOrder.getId()),"admin",
+                            "取消入库", "取消结果:取消成功",
+                            null);
+                }else if(StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){
+                    allocateInOrder.setStatus(AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString());
+                    allocateInOrder.setUpdateTime(Calendar.getInstance().getTime());
+                    allocateInOrder.setIsCancel(ZeroToNineEnum.ZERO.getCode());
+                    allocateInOrder.setOldStatus("");
+                    allocateInOrderService.updateByPrimaryKey(allocateInOrder);
+
+                    AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                    allocateSkuDetail.setOutStatus(AllocateInOrderStatusEnum.RECIVE_WMS_RECIVE_SUCCESS.getCode().toString());
+                    allocateSkuDetail.setUpdateTime(Calendar.getInstance().getTime());
+                    allocateSkuDetail.setOldInStatus("");
+                    Example example = new Example(AllocateSkuDetail.class);
+                    Example.Criteria criteria = example.createCriteria();
+                    criteria.andEqualTo("allocateOrderCode", allocateInOrder.getAllocateOrderCode());
+                    allocateSkuDetailService.updateByExampleSelective(allocateSkuDetail, example);
+
+                    logInfoService.recordLog(allocateInOrder, String.valueOf(allocateInOrder.getId()),"admin",
+                            "取消入库", "取消结果:取消失败,"+response.getMessage(),
+                            null);
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            logger.error("调拨入库单号:{},取消调拨入库异常：{}", orderCode, e.getMessage());
         }
     }
 
