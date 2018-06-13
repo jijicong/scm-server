@@ -414,9 +414,31 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 											"商品明细商品参数不完整");
 								}
 
-								if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
-									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+								//提交审核的情况下,查询实时库存
+                                List<QuerySkuInventory> querySkuList = JSONArray.parseArray(skuDetail, QuerySkuInventory.class);
+
+                                Map<String, Long> inventryMap = inventoryQuery(allocateOrder.getOutWarehouseCode(),  JSON.toJSONString(querySkuList));
+                                if (inventryMap.size()==0){
+									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"所选调拨商品的调出仓商品均不存在");
+								}else {
+									for (String key : inventryMap.keySet()) {
+										if(key.equals(jsonObj.getString("skuCode"))){
+											Long inventoryNum = inventryMap.get(key);
+											if(inventoryNum==null){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓库不存在该件商品");
+											}
+											if(inventoryNum==0){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓实时库存不能为0");
+											}
+											if ( jsonObj.getLong("planAllocateNum")>inventoryNum){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+											}
+										}
+
+									}
 								}
+
+
 							}
 							detail.setInventoryType(jsonObj.getString("inventoryType"));
 							detail.setPlanAllocateNum(jsonObj.getLong("planAllocateNum"));
@@ -1093,9 +1115,38 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			}
 
 			//新增调拨单时审核
-            if (jsonObj.getLong("inventoryNum")==null || jsonObj.getLong("planAllocateNum")>jsonObj.getLong("inventoryNum")){
-                throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
-            }
+			//提交审核的情况下,查询实时库存
+			Example example = new Example(AllocateOrder.class);
+			Example.Criteria criteria = example.createCriteria();
+			criteria.andEqualTo("allocateOrderCode",allocateOrderCode);
+			List<AllocateOrder> allocateOrders = allocateOrderService.selectByExample(example);
+
+			List<QuerySkuInventory> querySkuList = new ArrayList<>();
+			QuerySkuInventory querySkuInventory = new QuerySkuInventory();
+			querySkuInventory.setInventoryType(jsonObj.getString("inventoryType"));
+			querySkuInventory.setSkuCode(jsonObj.getString("skuCode"));
+			querySkuList.add(querySkuInventory);
+
+			Map<String, Long> inventryMap = inventoryQuery(allocateOrders.get(0).getOutWarehouseCode(), JSON.toJSONString(querySkuList));
+			if(inventryMap.size()==0){
+				throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"该调拨商品的调出仓商品不存在");
+			}else {
+				for (String key : inventryMap.keySet()) {
+					if(key.equals(jsonObj.getString("skuCode"))){
+						Long inventoryNum = inventryMap.get(key);
+						if(inventoryNum==null){
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓库不存在该件商品");
+						}
+						if(inventoryNum==0){
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓实时库存不能为0");
+						}
+						if ( jsonObj.getLong("planAllocateNum")>inventoryNum){
+							throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+						}
+					}
+
+				}
+			}
 
 		}
 		detail.setAllocateOrderCode(allocateOrderCode);
