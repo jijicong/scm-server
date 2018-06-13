@@ -418,21 +418,26 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                                 List<QuerySkuInventory> querySkuList = JSONArray.parseArray(skuDetail, QuerySkuInventory.class);
 
                                 Map<String, Long> inventryMap = inventoryQuery(allocateOrder.getOutWarehouseCode(),  JSON.toJSONString(querySkuList));
-								for (String key : inventryMap.keySet()) {
-									if(key.equals(jsonObj.getString("skuCode"))){
-										Long inventoryNum = inventryMap.get(key);
-										if(inventoryNum==null){
-											throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓库不存在该商品");
+                                if (inventryMap.size()==0){
+									throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"所选调拨商品的调出仓商品均不存在");
+								}else {
+									for (String key : inventryMap.keySet()) {
+										if(key.equals(jsonObj.getString("skuCode"))){
+											Long inventoryNum = inventryMap.get(key);
+											if(inventoryNum==null){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓库不存在该件商品");
+											}
+											if(inventoryNum==0){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓实时库存不能为0");
+											}
+											if ( jsonObj.getLong("planAllocateNum")>inventoryNum){
+												throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
+											}
 										}
-										if(inventoryNum==0){
-											throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调出仓实时库存不能为0");
-										}
-										if ( jsonObj.getLong("planAllocateNum")>inventoryNum){
-											throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION,"调拨数量不能大于调出仓库的实时库存");
-										}
-									}
 
+									}
 								}
+
 
 							}
 							detail.setInventoryType(jsonObj.getString("inventoryType"));
