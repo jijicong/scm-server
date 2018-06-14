@@ -4274,7 +4274,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(_flag){
                 SkuStock _skuStock = null;
                 for(SkuStock skuStock: skuStockList){
-                    if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) && StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId())){
+                    if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) &&
+                            StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId()) &&
+                            StringUtils.equals(skuStock.getWarehouseCode(), scmInventoryQueryResponse.getWarehouseCode())){
                         _skuStock = skuStock;
                         break;
                     }
@@ -6367,6 +6369,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             detail.setFlag(true);
             String shopOrderCode = getColumVal(columVals, titleResult, SHOP_ORDER_CODE);
             if(StringUtils.isNotBlank(shopOrderCode)){
+                if(shopOrderCode.contains(SupplyConstants.Symbol.MINUS)){
+                    if(detail.getFlag()){
+                        detail.setFlag(false);
+                    }
+                    setImportOrderErrorMsg(detail, "销售渠道订单号不能抱哈符号\"-\"");
+                }
                 detail.setShopOrderCode(shopOrderCode);
             }else{
                 if(detail.getFlag()){

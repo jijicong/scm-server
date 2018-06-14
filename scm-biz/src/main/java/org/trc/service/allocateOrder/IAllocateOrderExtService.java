@@ -76,7 +76,7 @@ public interface IAllocateOrderExtService {
      * @param createOperator 当前操作人
      * @return 返回出库通知单号
      */
-    String createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator);
+    String createAllocateOutOrder(AllocateOutOrder allocateoutOrder, String createOperator, String status);
 
     /**
      * 调拨出库单作废
