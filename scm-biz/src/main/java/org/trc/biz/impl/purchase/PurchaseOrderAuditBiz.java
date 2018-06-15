@@ -114,11 +114,8 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
         List<PurchaseOrderAddAudit> pageDateList = purchaseOrderAuditService.selectPurchaseOrderAuditList(map);
 
         //更新提交审核时间为最后一次提交审核时间
+        //保证在审核驳回后，再次采购单管理提交审核时，采购单审核管理的提交审核时间确保为最后一次提交审核时间
         for (PurchaseOrderAddAudit addAudit : pageDateList) {
-           /* Long id = addAudit.getId();
-            PurchaseOrderAudit purchaseOrderAudit = purchaseOrderAuditService.selectByPrimaryKey(id);
-            addAudit.setSubmitTime(purchaseOrderAudit.getUpdateTime());*/
-
             Long id = addAudit.getId();
             PurchaseOrder purchaseOrder = iPurchaseOrderService.selectByPrimaryKey(id);
             addAudit.setSubmitTime(purchaseOrder.getUpdateTime());
