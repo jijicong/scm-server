@@ -1,19 +1,9 @@
 package org.trc.biz.impl.allocateOrder;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.Response;
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,18 +26,9 @@ import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
-import org.trc.enums.AllocateOrderEnum;
+import org.trc.enums.*;
 import org.trc.enums.AllocateOrderEnum.AllocateOrderInventoryStatusEnum;
 import org.trc.enums.AllocateOrderEnum.AllocateOutOrderStatusEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.ItemNoticeStateEnum;
-import org.trc.enums.ItemTypeEnum;
-import org.trc.enums.JingdongInventoryTypeEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.NoticsWarehouseStateEnum;
-import org.trc.enums.OperationalNatureEnum;
-import org.trc.enums.ValidStateEnum;
-import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.exception.AllocateOrderException;
 import org.trc.exception.AllocateOutOrderException;
@@ -72,20 +53,12 @@ import org.trc.service.util.ISerialUtilService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseInfo.IWarehouseItemInfoService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.CommonUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.Pagenation;
-import org.trc.util.QueryModel;
-import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
+import org.trc.util.*;
 import tk.mybatis.mapper.entity.Example;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("allocateOrderBiz")
 public class AllocateOrderBiz implements IAllocateOrderBiz {
@@ -204,8 +177,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             //  example.orderBy("orderStatus").asc();
            // example.setOrderByClause("field(order_status,0)");
            // example.setOrderByClause("field(order_status,3)");
-			example.orderBy("field('order_status',0)").desc();
-			example.orderBy("field('order_status',3)").desc();
+			example.orderBy("field(orderStatus,0)").desc();
+			example.orderBy("field(orderStatus,3)").desc();
             example.orderBy("updateTime").desc();
         }
         
