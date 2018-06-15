@@ -1,17 +1,9 @@
 package org.trc.biz.impl.warehouseNotice;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ws.rs.core.Response;
-
+import com.alibaba.fastjson.JSON;
+import com.qimen.api.request.EntryorderConfirmRequest;
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,28 +31,11 @@ import org.trc.domain.supplier.Supplier;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
-import org.trc.enums.DistributeLockEnum;
-import org.trc.enums.EntryOrderDetailItemStateEnum;
-import org.trc.enums.ExceptionEnum;
-import org.trc.enums.InventoryTypeEnum;
-import org.trc.enums.JdPurchaseOrderTypeEnum;
-import org.trc.enums.LogOperationEnum;
-import org.trc.enums.OperationalNatureEnum;
-import org.trc.enums.PurchaseOrderStatusEnum;
-import org.trc.enums.WarehouseNoticeEnum;
-import org.trc.enums.WarehouseNoticeFinishStatusEnum;
-import org.trc.enums.WarehouseNoticeStatusEnum;
-import org.trc.enums.WarehouseTypeEnum;
-import org.trc.enums.ZeroToNineEnum;
+import org.trc.enums.*;
 import org.trc.exception.WarehouseNoticeDetailException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.JDWmsConstantConfig;
-import org.trc.form.warehouse.ScmEntryOrderCreateRequest;
-import org.trc.form.warehouse.ScmEntryOrderDetailRequest;
-import org.trc.form.warehouse.ScmEntryOrderDetailResponse;
-import org.trc.form.warehouse.ScmEntryOrderDetailResponseItem;
-import org.trc.form.warehouse.ScmEntryOrderItem;
-import org.trc.form.warehouse.WarehouseNoticeForm;
+import org.trc.form.warehouse.*;
 import org.trc.form.wms.WmsInNoticeDetailRequest;
 import org.trc.form.wms.WmsInNoticeRequest;
 import org.trc.service.IQimenService;
@@ -71,11 +46,7 @@ import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
-import org.trc.service.purchase.IPurchaseDetailService;
-import org.trc.service.purchase.IPurchaseGroupService;
-import org.trc.service.purchase.IPurchaseGroupUserService;
-import org.trc.service.purchase.IPurchaseOrderService;
-import org.trc.service.purchase.IWarehouseNoticeService;
+import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
 import org.trc.service.warehouse.IWarehouseApiService;
@@ -83,21 +54,13 @@ import org.trc.service.warehouse.IWarehouseExtService;
 import org.trc.service.warehouse.IWarehouseMockService;
 import org.trc.service.warehouseInfo.IWarehouseInfoService;
 import org.trc.service.warehouseNotice.IWarehouseNoticeDetailsService;
-import org.trc.util.AppResult;
-import org.trc.util.AssertUtil;
-import org.trc.util.DateUtils;
-import org.trc.util.ListSplit;
-import org.trc.util.Pagenation;
-import org.trc.util.ResponseAck;
-import org.trc.util.ResultUtil;
+import org.trc.util.*;
 import org.trc.util.cache.WarehouseNoticeCacheEvict;
 import org.trc.util.lock.RedisLock;
-
-import com.alibaba.fastjson.JSON;
-import com.qimen.api.request.EntryorderConfirmRequest;
-import com.thoughtworks.xstream.XStream;
-
 import tk.mybatis.mapper.entity.Example;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 /**
  * @author sone
@@ -683,9 +646,13 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 			scmEntryOrderCreateRequest.setWarehouseType("TRC");
 			//判断是第三方仓库还是自营仓库
             scmEntryOrderCreateRequest.setWarehouseCode(whi.getCode());
-		} else {
+		} else if(OperationalNatureEnum.THIRD_PARTY.getCode().equals(warehouse.getOperationalNature())){
+
 			scmEntryOrderCreateRequest.setWarehouseType("JD");
-		}
+		} else{
+		    //没选择运营性质
+		    throw new WarehouseNoticeException(ExceptionEnum.SYSTEM_WAREHOUSE_SAVE_EXCEPTION,"请先选择运营仓库类型!");
+        }
 		
         AppResult<String> appResult = warehouseApiService.entryOrderCreate(scmEntryOrderCreateRequest);
         if (StringUtils.equals(appResult.getAppcode(), ResponseAck.SUCCESS_CODE)) { // 成功
