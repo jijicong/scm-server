@@ -177,7 +177,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             //  example.orderBy("orderStatus").asc();
            // example.setOrderByClause("field(order_status,0)");
            // example.setOrderByClause("field(order_status,3)");
-			example.orderBy("field(orderStatus,0,3)").desc();
+			example.orderBy("field(orderStatus,3,0)").desc();
+//			example.orderBy("field(orderStatus,3)").desc();
             example.orderBy("updateTime").desc();
         }
         
