@@ -338,7 +338,7 @@ public class AllocateInOrderBiz implements IAllocateInOrderBiz {
 			request.setWarehouseCode(warehouseExtService.getWmsWarehouseCode(allocateInOrder.getInWarehouseCode()));// 开放平台库房编号
 			request.setSupplierCode(jDWmsConstantConfig.getSupplierNo());
 			
-		} else {
+		} else if (WarehouseTypeEnum.Zy.getCode().equals(request.getWarehouseType())) {
 			List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
 			ScmAllocateOrderItem item = null;
 			for (AllocateSkuDetail detail : detailList) {

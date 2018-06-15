@@ -78,5 +78,13 @@ public class TestSql {
 	                }
 	            }).start();
 	        }
-		}
+	}
+	
+	
+	@Test
+	public void testEmptySql () {
+		OutboundDetail record = new OutboundDetail();
+//		record.setId(24L);
+		OutboundDetail selectOne = outboundDetailMapper.selectOne(record);
+	}
 }

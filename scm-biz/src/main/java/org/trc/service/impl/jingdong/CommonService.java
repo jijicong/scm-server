@@ -35,8 +35,10 @@ public class CommonService extends BaseService<Common, Long> implements ICommonS
 
         if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {
             request.setWarehouseType("TRC");
-        } else {
+        } else if (OperationalNatureEnum.THIRD_PARTY.getCode().equals(warehouse.getOperationalNature())) {
             request.setWarehouseType("JD");
+        } else {
+        	throw new RuntimeException("请确认仓库的运营性质是否正确");
         }
         return warehouse.getWarehouseName();
     }
