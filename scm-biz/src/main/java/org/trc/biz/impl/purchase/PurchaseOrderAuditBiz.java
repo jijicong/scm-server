@@ -118,7 +118,10 @@ public class PurchaseOrderAuditBiz implements IPurchaseOrderAuditBiz{
            /* Long id = addAudit.getId();
             PurchaseOrderAudit purchaseOrderAudit = purchaseOrderAuditService.selectByPrimaryKey(id);
             addAudit.setSubmitTime(purchaseOrderAudit.getUpdateTime());*/
-           addAudit.setSubmitTime(addAudit.getUpdateTime());
+
+            Long id = addAudit.getId();
+            PurchaseOrder purchaseOrder = iPurchaseOrderService.selectByPrimaryKey(id);
+            addAudit.setSubmitTime(purchaseOrder.getUpdateTime());
         }
 
         iUserNameUtilService.handleUserName(pageDateList);
