@@ -3,6 +3,7 @@ package org.trc.biz.outbuond;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.form.outbound.OutBoundOrderReceiverForm;
 import org.trc.service.IQimenService;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.Pagenation;
@@ -40,4 +41,12 @@ public interface IOutBoundOrderBiz {
 
     //重新调用取消发货单接口
     void retryCancelOrder();
+
+    /**
+     * 更新收货信息
+     * @param form
+     * @param aclUserAccreditInfo
+     * @return
+     */
+    Response updateReceiverInfo(OutBoundOrderReceiverForm form, AclUserAccreditInfo aclUserAccreditInfo);
 }

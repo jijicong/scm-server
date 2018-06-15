@@ -1005,6 +1005,11 @@ public class SupplyConstants {
          * 获取发货通知单详情
          */
         public static final String OUTBOUND_ORDER_DETAIL = "outboundOrderDetail";
+
+        /**
+         * 更新收货信息
+         */
+        public static final String UPDATE_RECEIVER_INFO = "updateReceiverInfo";
     }
 
     /**

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.trc.biz.goods.IGoodsBiz;
 import org.trc.biz.impower.IAclResourceBiz;
+import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.biz.order.IScmOrderBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.util.AppResult;
@@ -29,6 +30,8 @@ public class ScmApiResource {
     private IScmOrderBiz scmOrderBiz;
     @Autowired
     private IAclResourceBiz jurisdictionBiz;
+    @Autowired
+    private IAclUserAccreditInfoBiz aclUserAccreditInfoBiz;
 
     @POST
     @Path(SupplyConstants.Api.EXTERNAL_ITEM_UPDATE)
@@ -63,6 +66,8 @@ public class ScmApiResource {
     public Response clearSession(@Context ContainerRequestContext requestContext,@Context HttpServletRequest request){
         request.getSession().removeAttribute("channelCode");
         request.getSession().invalidate();
+        String userId= (String) requestContext.getProperty(SupplyConstants.Authorization.USER_ID);
+        aclUserAccreditInfoBiz.logOut(userId);
         return ResultUtil.createSuccessResult("设置Session失效成功!","");
     }
 

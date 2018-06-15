@@ -24,34 +24,27 @@ public class PlatformOrder  implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     // 平台订单编码
-    @NotEmpty
     @Length(max = 32)
     private String platformOrderCode;
     // 渠道编码
-    @NotEmpty
     @Length(max = 32)
     private String channelCode;
     // 销售渠道编码
-    @NotEmpty
     @Length(max = 32)
     private String sellCode;
     // 来源平台编码
-    @NotEmpty
     @Length(max = 32)
     private String platformCode;
     // 用户id
-    @NotEmpty
     @Length(max = 64)
     private String userId;
     // 会员名称
-    @NotEmpty
     @Length(max = 32)
     private String userName;
     // 买家购买的商品总数
     @NotEmpty
     private Integer itemNum;
     // 支付类型
-    @NotEmpty
     @Length(max = 16)
     private String payType;
     // 实付金额,单位/分

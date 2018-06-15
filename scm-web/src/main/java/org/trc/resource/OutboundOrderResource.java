@@ -9,6 +9,7 @@ import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.form.outbound.OutBoundOrderForm;
+import org.trc.form.outbound.OutBoundOrderReceiverForm;
 import org.trc.util.AppResult;
 import org.trc.util.Pagenation;
 import org.trc.util.ResultUtil;
@@ -100,4 +101,12 @@ public class OutboundOrderResource {
     public Response getOutboundOrderDetail(@PathParam("id") Long id){
         return outBoundOrderBiz.getOutboundOrderDetail(id);
     }
+
+    @PUT
+    @Path(SupplyConstants.OutboundOrder.UPDATE_RECEIVER_INFO + "/{outboundOrderCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateReceiverInfo(@BeanParam OutBoundOrderReceiverForm form, @Context ContainerRequestContext requestContext){
+        return outBoundOrderBiz.updateReceiverInfo(form, (AclUserAccreditInfo) requestContext.getProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO));
+    }
+
 }

@@ -24,6 +24,10 @@
     <dependencies>
 
         <dependency>
+            <groupId>com.tairanchina.csp.foundation</groupId>
+            <artifactId>sdk-kernel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http-server</artifactId>
         </dependency>

@@ -92,7 +92,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
+    //@Cacheable(value = SupplyConstants.Cache.PURCHASE_GROUP)
     public List<AclUserAccreditInfo> findPurchaseGroupPersons(String purchaseGroupCode)  {
 
         AssertUtil.notBlank(purchaseGroupCode,"根据采购组编码查询采购组人员的参数code为空");
@@ -279,7 +279,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 purchaseGroupUserRelationList.add(purchaseGroupUserRelation);
             }
         }
-        selectInvalidUser(purchaseGroupUserRelationList,purchaseGroupUserRelationList.size());
+//        selectInvalidUser(purchaseGroupUserRelationList,purchaseGroupUserRelationList.size());
 
         purchaseGroupuUserRelationService.insertList(purchaseGroupUserRelationList);
 
@@ -321,9 +321,10 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
     }
 
     @Override
-    public List<PurchaseGroupUser> findPurchaseGroupUser() {
+    public List<PurchaseGroupUser> findPurchaseGroupUser(AclUserAccreditInfo aclUserAccreditInfo) {
         PurchaseGroupUser purchaseGroupUser = new PurchaseGroupUser();
         purchaseGroupUser.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
+        purchaseGroupUser.setChannelCode(aclUserAccreditInfo.getChannelCode());
         List<PurchaseGroupUser> list = purchaseGroupUserService.select(purchaseGroupUser);
         return list;
     }
@@ -343,6 +344,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
         List<PurchaseGroupUser> valueList = JSONArray.parseArray(purchaseGroupUser.getGridValue(), PurchaseGroupUser.class);
         AssertUtil.notNull(valueList, "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
         String userId= aclUserAccreditInfo.getUserId();
+        String channelCode = aclUserAccreditInfo.getChannelCode();
         for (PurchaseGroupUser user : valueList) {
             AssertUtil.notNull(user.getName(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
             AssertUtil.notNull(user.getPhoneNumber(), "采购组管理模块根据更新采购组员信息失败，采购组员信息为空");
@@ -362,6 +364,7 @@ public class PurchaseGroupBiz implements IPurchaseGroupBiz{
                 user.setUpdateTime(Calendar.getInstance().getTime());
                 user.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
                 user.setCreateOperator(userId);
+                user.setChannelCode(channelCode);
                 purchaseGroupUserService.insert(user);
             }
             if (user.getStatus().equals(RecordStatusEnum.DELETE.getCode())) {

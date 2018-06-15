@@ -1,9 +1,8 @@
 package org.trc.filter;
 
-import com.tairanchina.beego.api.exception.AuthenticateException;
-import com.tairanchina.beego.api.model.BeegoToken;
-import com.tairanchina.beego.api.model.BeegoTokenAuthenticationRequest;
-import com.tairanchina.beego.api.service.BeegoService;
+import com.tairanchina.csp.foundation.common.sdk.CommonConfig;
+import com.tairanchina.csp.foundation.sdk.CSPKernelSDK;
+import com.tairanchina.csp.foundation.sdk.dto.TokenDeliverDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.trc.biz.impl.impower.AclResourceBiz;
+import org.trc.biz.impower.IAclUserAccreditInfoBiz;
 import org.trc.constants.SupplyConstants;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.enums.ExceptionEnum;
@@ -21,7 +21,6 @@ import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -49,12 +48,21 @@ public class AuthorizationFilter implements ContainerRequestFilter {
     @Value("${app.key}")
     private String appKey;
 
-    @Resource
-    private BeegoService beegoService;
+    @Value("${apply.id}")
+    private String applyId;
+
+    @Value("${apply.secret}")
+    private String applySecret;
+
+    @Value("${apply.uri}")
+    private String applyUri;
+
     @Autowired
     private AclResourceBiz jurisdictionBiz;
     @Autowired
     private IAclUserAccreditInfoService userAccreditInfoService;
+    @Autowired
+    private IAclUserAccreditInfoBiz aclUserAccreditInfoBiz;
     //对外提供api路径
     private final static String PASS_API_URL = "api";
     //渠道访问路径
@@ -88,15 +96,17 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         if (!url.startsWith(PASS_API_URL) && !url.startsWith(PASS_TAI_RAN_URL) &&!url.startsWith(SupplyConstants.Metadata.ROOT)&&!url.startsWith(SupplyConstants.Qimen.QI_MEN)) {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
-                BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
-                try {
-                    BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
+                TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);
                     AclUserAccreditInfo aclUserAccreditInfo =null;
-                    if (null != beegoToken) {
-                        String userId = beegoToken.getUserId();
+                    if (null != tokenInfo) {
+                        String userId = tokenInfo.getUserId();
                         String channelCode = _getCookieChannelCode(requestContext);
                         if (StringUtils.isBlank(channelCode)){
                             aclUserAccreditInfo =  userAccreditInfoService.selectOneById(userId);
+                            if (null == aclUserAccreditInfo){
+                                log.warn("用户授权信息不存在或用户已经被禁用!");
+                                logOut(tokenInfo);
+                            }else
                             if (!StringUtils.equals(aclUserAccreditInfo.getUserType(), UserTypeEnum.OVERALL_USER.getCode())){
                                 aclUserAccreditInfo =null;
                             }
@@ -117,6 +127,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                         if (aclUserAccreditInfo == null) {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
                             log.warn("用户授权信息不存在或用户已经被禁用!");
+                            logOut(tokenInfo);
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
                             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
@@ -134,16 +145,11 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                                 log.info("url:{}不需要验证放行成功",url);
                             }
                         }
+                    } else {
+                        log.info("获取tokenInfo失败,需要重新登录");
+                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
+                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                     }
-                } catch (AuthenticateException e) {
-                    //token失效需要用户重新登录
-                    log.error("message:{},e:{}",e.getMessage(),e);
-                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
-                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                } catch (Exception e) {
-                    log.error("message:{},e:{}",e.getMessage(),e);
-                    requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                }
             } else {
                 //未获取到token返回登录页面
                 log.info("页面token不存在,需要重新登录");
@@ -154,34 +160,28 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         /**
          * 获取userId用于查询当前用户下的业务线
          */
-        if (url.startsWith(CHANNEL_QUERY)) {
+        if (url.startsWith(CHANNEL_QUERY)||url.startsWith("api/clearSession")) {
             String token = _getToken(requestContext);
             if (StringUtils.isNotBlank(token)) {
-                BeegoTokenAuthenticationRequest beegoAuthRequest = new BeegoTokenAuthenticationRequest(appId, appKey, token);
-                try {
-                    BeegoToken beegoToken = beegoService.authenticationBeegoToken(beegoAuthRequest);
-                    if (null != beegoToken) {
-                        String userId = beegoToken.getUserId();
+                TokenDeliverDTO tokenInfo = getCSPKernelSDK(token,url);
+                    if (null != tokenInfo) {
+                        String userId = tokenInfo.getUserId();
                         AclUserAccreditInfo aclUserAccreditInfo = userAccreditInfoService.selectOneById(userId);
                         if (aclUserAccreditInfo == null) {
                             //说明用户已经被禁用或者失效需要将用户退出要求重新登录或者联系管理员处理问题
                             log.warn("用户授权信息不存在或用户已经被禁用!");
+                            logOut(tokenInfo);
                             AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), ExceptionEnum.USER_BE_FORBIDDEN.getMessage(), null);
                             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                         } else {
                             requestContext.setProperty(SupplyConstants.Authorization.USER_ID, userId);
                             requestContext.setProperty(SupplyConstants.Authorization.ACL_USER_ACCREDIT_INFO, aclUserAccreditInfo);
                         }
+                    } else {
+                        log.info("获取tokenInfo失败,需要重新登录");
+                        AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
+                        requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
                     }
-                } catch (AuthenticateException e) {
-                    //token失效需要用户重新登录
-                    log.error("message:{},e:{}", e.getMessage(), e);
-                    AppResult appResult = new AppResult(ResultEnum.FAILURE.getCode(), "用户未登录", Response.Status.FORBIDDEN.getStatusCode());
-                    requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(appResult).type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                } catch (Exception e) {
-                    log.error("message:{},e:{}", e.getMessage(), e);
-                    requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("").type(MediaType.APPLICATION_JSON).encoding("UTF-8").build());
-                }
             } else {
                 //未获取到token返回登录页面
                 log.info("页面token不存在,需要重新登录");
@@ -250,5 +250,19 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         return "";
     }
 
-
+    private TokenDeliverDTO getCSPKernelSDK(String token,String url){
+        CommonConfig config = new CommonConfig();
+        CommonConfig.Basic basicConfig = config.getBasic();
+        basicConfig.setUrl(applyUri);
+        basicConfig.setAppId(applyId);
+        basicConfig.setAppSecret(applySecret);
+        CSPKernelSDK sdk = CSPKernelSDK.instance(config);
+        TokenDeliverDTO tokenInfo = sdk.user.tenantValidate(token, url, config).getBody();
+        return tokenInfo;
+    }
+    private void logOut(TokenDeliverDTO tokenInfo){
+        aclUserAccreditInfoBiz.logOut(tokenInfo.getUserId());
+        request.getSession().removeAttribute("channelCode");
+        request.getSession().invalidate();
+    }
 }
