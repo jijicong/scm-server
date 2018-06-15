@@ -202,7 +202,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             	criteria.andEqualTo("orderStatus", form.getOrderStatus());
             }
             //  example.orderBy("orderStatus").asc();
-            example.setOrderByClause("field(order_status,0,3)");
+            example.setOrderByClause("field(order_status,0)");
+            example.setOrderByClause("field(order_status,3)");
             example.orderBy("updateTime").desc();
         }
         
