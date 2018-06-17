@@ -142,6 +142,12 @@ public class ShopOrder extends OrderBase {
     @Transient
     private List<OrderItem> orderItems;
 
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
+
     public ShopOrder() {
 
     }
@@ -740,5 +746,13 @@ public class ShopOrder extends OrderBase {
 
     public void setScmShopOrderCode(String scmShopOrderCode) {
         this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }

@@ -247,6 +247,12 @@ public class OrderItem implements Serializable {
     // 交易备注
     private String tradeMemo;
 
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
+
     public OrderItem(){
 
     }
@@ -1389,5 +1395,13 @@ public class OrderItem implements Serializable {
 
     public void setTradeMemo(String tradeMemo) {
         this.tradeMemo = tradeMemo;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }

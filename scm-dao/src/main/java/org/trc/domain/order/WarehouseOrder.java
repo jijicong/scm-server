@@ -161,6 +161,12 @@ public class WarehouseOrder extends OrderBaseDO {
     @Transient
     private String showCancel;
 
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
+
     public List<OrderItem> getOrderItemList() {
         return orderItemList;
     }
@@ -669,5 +675,13 @@ public class WarehouseOrder extends OrderBaseDO {
 
     public void setScmShopOrderCode(String scmShopOrderCode) {
         this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }
