@@ -588,7 +588,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     @Override
     public void retryCancelOrder() {
-        if (!iRealIpService.isRealTimerService()) return;
+//        if (!iRealIpService.isRealTimerService()) return;
         AllocateOutOrder orderTemp = new AllocateOutOrder();
         orderTemp.setStatus(AllocateOutOrderStatusEnum.CANCELLING.getCode());
         List<AllocateOutOrder> list = allocateOutOrderService.select(orderTemp);
@@ -621,8 +621,13 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
             for (ScmOrderCancelRequest request : requests) {
                 new Thread(() -> {
                     //调用接口
-                    AppResult<ScmOrderCancelResponse> responseAppResult =
-                            warehouseApiService.orderCancel(request);
+                    AppResult<ScmOrderCancelResponse> responseAppResult = null;
+                    if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
+                        responseAppResult = warehouseMockService.orderCancel(request);
+                    }else{
+                        responseAppResult = warehouseApiService.orderCancel(request);
+                    }
+
                     //回写数据
                     try {
                         this.updateCancelOrder(responseAppResult, request.getOrderCode());
@@ -649,12 +654,24 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
                 String flag = response.getFlag();
 
                 if(StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){
-                    //修改状态
-                    this.updateDetailStatus(AllocateOutOrderStatusEnum.CANCEL.getCode(), allocateOutOrderTemp.getAllocateOrderCode(),
-                            AllocateOrderEnum.AllocateOrderSkuOutStatusEnum.WAIT_OUT.getCode(), true);
+                    //修改调拨详情状态
+                    AllocateSkuDetail allocateSkuDetail = new AllocateSkuDetail();
+                    allocateSkuDetail.setAllocateOrderCode(allocateOutOrderTemp.getAllocateOrderCode());
+                    List<AllocateSkuDetail> allocateSkuDetails = allocateSkuDetailService.select(allocateSkuDetail);
+                    List<AllocateSkuDetail> allocateSkuDetailsUpdate = new ArrayList<>();
+                    if(allocateSkuDetails != null && allocateSkuDetails.size() > 0){
+                        for(AllocateSkuDetail allocateSkuDetailTemp : allocateSkuDetails){
+                            allocateSkuDetailTemp.setOutStatus(AllocateOutOrderStatusEnum.CANCEL.getCode());
+                            allocateSkuDetailTemp.setUpdateTime(Calendar.getInstance().getTime());
+                            allocateSkuDetailsUpdate.add(allocateSkuDetailTemp);
+                        }
+                        allocateSkuDetailService.updateSkuDetailList(allocateSkuDetailsUpdate);
+                    }
 
-                    allocateOrderExtService.updateOrderCancelInfo(allocateOutOrderTemp, "", false,
-                            AllocateOutOrderStatusEnum.CANCEL.getCode());
+                    //修改调拨出库状态
+                    allocateOutOrderTemp.setStatus(AllocateOutOrderStatusEnum.CANCEL.getCode());
+                    allocateOutOrderTemp.setIsCancel(ZeroToNineEnum.ONE.getCode());
+                    allocateOutOrderService.updateByPrimaryKey(allocateOutOrderTemp);
 
                     logInfoService.recordLog(allocateOutOrderTemp, String.valueOf(allocateOutOrderTemp.getId()),"admin",
                             "取消出库", "取消结果:取消成功",

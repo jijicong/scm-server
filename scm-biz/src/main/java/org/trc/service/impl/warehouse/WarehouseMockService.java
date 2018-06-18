@@ -10,6 +10,7 @@ import org.trc.domain.order.OutboundDetail;
 import org.trc.domain.order.OutboundOrder;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
+import org.trc.enums.ZeroToNineEnum;
 import org.trc.form.warehouse.*;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailService;
@@ -166,6 +167,15 @@ public class WarehouseMockService implements IWarehouseMockService {
             scmOrderDefaultResults.add(defaultResult);
             response.setScmOrderDefaultResults(scmOrderDefaultResults);
         }
+        appResult.setResult(response);
+        return appResult;
+    }
+
+    @Override
+    public AppResult<ScmOrderCancelResponse> orderCancel(ScmOrderCancelRequest request) {
+        AppResult appResult = new AppResult(ResponseAck.SUCCESS_CODE, "查询取消信息成功", "");
+        ScmOrderCancelResponse response = new ScmOrderCancelResponse();
+        response.setFlag(ZeroToNineEnum.TWO.getCode());
         appResult.setResult(response);
         return appResult;
     }

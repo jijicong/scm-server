@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class ShopOrder extends OrderBase {
 
+    private static final long serialVersionUID = 5954865299939357741L;
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
