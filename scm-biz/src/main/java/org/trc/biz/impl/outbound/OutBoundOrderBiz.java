@@ -849,10 +849,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
             List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
             for(OutboundDetail detail : outboundDetailList){
-                OutboundDetailLogistics outboundDetailLogistics = new OutboundDetailLogistics();
-                outboundDetailLogistics.setOutboundDetailId(detail.getId());
-                List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
-                detail.setOutboundDetailLogisticsList(outboundDetailLogisticsList);
+                if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){
+                    OutboundDetailLogistics outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(detail.getId());
+                    List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
+                    detail.setOutboundDetailLogisticsList(outboundDetailLogisticsList);
+                }
             }
             outboundOrder.setOutboundDetailList(outboundDetailList);
             outboundOrder.setWarehouseName(warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId()).getWarehouseName());

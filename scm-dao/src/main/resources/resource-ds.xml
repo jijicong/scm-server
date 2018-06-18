@@ -38,6 +38,9 @@
                         </value>
                     </property>
                 </bean>
+                <bean class="org.trc.interceptor.SqlSafeInterceptor">
+               	
+                </bean>
             </array>
         </property>
     </bean>

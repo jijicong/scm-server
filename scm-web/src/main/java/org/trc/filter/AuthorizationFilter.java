@@ -21,6 +21,7 @@ import org.trc.enums.UserTypeEnum;
 import org.trc.service.impower.IAclUserAccreditInfoService;
 import org.trc.util.AppResult;
 import org.trc.util.AssertUtil;
+import org.trc.util.CommonConfigUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -269,7 +270,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         basicConfig.setUrl(applyUri);
         basicConfig.setAppId(applyId);
         basicConfig.setAppSecret(applySecret);
-        CSPKernelSDK sdk = CSPKernelSDK.instance(config);
+    	CSPKernelSDK sdk = CommonConfigUtil.getCSPKernelSDK(applyUri, applyId, applySecret);
         TokenDeliverDTO tokenInfo = sdk.user.tenantValidate(token, url, config).getBody();
         return tokenInfo;
     }

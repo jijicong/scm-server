@@ -38,6 +38,7 @@ import org.trc.enums.JdDeliverOrderTypeEnum;
 import org.trc.enums.LogOperationEnum;
 import org.trc.enums.OperationalNatureEnum;
 import org.trc.enums.OrderCancelResultEnum;
+import org.trc.enums.WarehouseTypeEnum;
 import org.trc.enums.ZeroToNineEnum;
 import org.trc.enums.allocateOrder.AllocateInOrderStatusEnum;
 import org.trc.enums.warehouse.CancelOrderType;
@@ -373,8 +374,11 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 		ScmAllocateOrderOutRequest request = new ScmAllocateOrderOutRequest();
 
 		String reNoticeOrderCode = null;// 重新发货单号
+		
+		commonService.getWarehoueType(outOrder.getOutWarehouseCode(), request);
 
-		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {// 自营仓逻辑
+		if (WarehouseTypeEnum.Zy.getCode().equals(request.getWarehouseType())) {
+//		if (OperationalNatureEnum.SELF_SUPPORT.getCode().equals(warehouse.getOperationalNature())) {// 自营仓逻辑
 			List<ScmAllocateOrderItem> allocateOrderItemList = new ArrayList<>();
 			ScmAllocateOrderItem item = null;
 			for (AllocateSkuDetail detail : detailList) {
@@ -388,7 +392,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 	        request.setCreateOperatorNumber(uerAccredit.getPhone());
 			request.setWarehouseType("TRC");
 
-		} else {
+		} else if (WarehouseTypeEnum.Jingdong.getCode().equals(request.getWarehouseType())) {
 			// 京东调拨单采用发货单的逻辑
 			List<ScmDeliveryOrderDO> scmDeleveryOrderDOList = new ArrayList<>();
 			ScmDeliveryOrderDO orderDo = new ScmDeliveryOrderDO();

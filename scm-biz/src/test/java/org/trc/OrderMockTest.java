@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +24,6 @@ import org.trc.dbUnit.order.form.TrcShopOrder;
 import org.trc.dbUnit.order.form.TrcShopOrderForm;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.SupplierOrderInfo;
-import org.trc.enums.SupplierOrderStatusEnum;
-import org.trc.enums.WarehouseOrderLogisticsStatusEnum;
 import org.trc.form.LogisticNoticeForm;
 import org.trc.form.JDModel.JingDongSupplierOrder;
 import org.trc.form.JDModel.ReturnTypeDO;

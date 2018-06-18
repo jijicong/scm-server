@@ -109,4 +109,9 @@ public class OutboundOrder extends OrderBase {
 
     @Transient
     private String warehouseName;
+
+    /**
+     * 是否门店订单:1-非门店,2-门店'
+     */
+    private Integer isStoreOrder;
 }
