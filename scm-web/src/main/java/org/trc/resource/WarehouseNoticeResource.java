@@ -99,7 +99,7 @@ public class WarehouseNoticeResource {
     			e.printStackTrace();
     		}
     	}
-        return ResultUtil.createSuccessResult("发送通知收货成功","");
+        return ResultUtil.createSuccessResult("操作成功","");
 
     }
 
@@ -138,7 +138,7 @@ public class WarehouseNoticeResource {
     			e.printStackTrace();
     		}
     	}
-        return ResultUtil.createSuccessResult("发送通知收货成功","");
+        return ResultUtil.createSuccessResult("操作成功","");
 
     }
 
