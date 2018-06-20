@@ -5,9 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.qimen.api.request.DeliveryorderBatchcreateRequest;
-import com.qimen.api.request.InventoryQueryRequest;
 import com.qimen.api.response.DeliveryorderBatchcreateResponse;
-import com.qimen.api.response.InventoryQueryResponse;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -36,11 +34,13 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
-import org.trc.domain.goods.*;
+import org.trc.domain.goods.ExternalItemSku;
+import org.trc.domain.goods.SkuRelation;
+import org.trc.domain.goods.SkuStock;
+import org.trc.domain.goods.Skus;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
-import org.trc.domain.util.ExcelException;
 import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseInfo.WarehouseItemInfo;
 import org.trc.domain.warehouseInfo.WarehousePriority;
@@ -65,7 +65,10 @@ import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
-import org.trc.service.goods.*;
+import org.trc.service.goods.IExternalItemSkuService;
+import org.trc.service.goods.ISkuRelationService;
+import org.trc.service.goods.ISkuStockService;
+import org.trc.service.goods.ISkusService;
 import org.trc.service.order.*;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
@@ -95,7 +98,6 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -5642,7 +5644,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outboundDetail.setStatus(OutboundDetailStatusEnum.WAITING.getCode());
             outboundDetail.setCreateTime(currentTime);
             outboundDetail.setUpdateTime(currentTime);
-            outboundDetail.setSpecNatureInfo(orderItem.getSpecNatureInfo());
+            //商品规格
+            Example example = new Example(Skus.class);
+            example.createCriteria().andEqualTo("skuCode", orderItem.getSkuCode()).andEqualTo("isDeleted", "0");
+            List<Skus> skuses = skusService.selectByExample(example);
+            log.info("创建出库通知单 商品规格 ---- skusList size:{}, skuCode:{}", skuses.isEmpty() ? 0 : skuses.size(), orderItem.getSkuCode());
+            if(!skuses.isEmpty() && skuses.size() < 2){
+                outboundDetail.setSpecNatureInfo(skuses.get(0).getSpecInfo());
+            }
             List<SkuWarehouseDO> warehouseDOList = skuWarehouseMap.get(outboundDetail.getSkuCode());
             if(!CollectionUtils.isEmpty(warehouseDOList)){
                 outboundDetail.setWarehouseItemId(warehouseDOList.get(0).getItemId());
