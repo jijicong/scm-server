@@ -147,9 +147,9 @@
         </encoder>
     </appender>
     
-    <!-- 调拨单日志  -->
-    <appender name="allocate_order_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/scm-web/allocateOrder/allocate-order.log</file>
+    <!-- external仓库调用日志  -->
+    <appender name="warehouse_api_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/scm-web/warehouse/warehouse_api.log</file>
         <append>true</append>
         <charset>UTF-8</charset>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -158,7 +158,7 @@
 
         <!-- 每天时生成日志文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/scm-web/allocateOrder/allocate-order.%d{yyyy-MM-dd}.log
+            <fileNamePattern>${LOG_HOME}/scm-web/warehouse/warehouse_api.%d{yyyy-MM-dd}.log
             </fileNamePattern>
             <!-- 日志文件保留15天 -->
             <maxHistory>15</maxHistory>
@@ -195,7 +195,7 @@
     </logger>
     
     <logger name="warehouseApiLogger" level="DEBUG">
-    	<appender-ref ref="order_info"/>
+    	<appender-ref ref="warehouse_api_log"/>
     </logger>
 
     <root level="DEBUG">
