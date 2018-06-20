@@ -128,6 +128,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
                 		}
                 	}
                 } else {
+                	item.setInventoryType(inventoryType);
                 	item.setWarehouseCode(warehouseOwernSkuDO.getWarehouseInfo().getWmsWarehouseCode());
                 }
                 item.setOwnerCode(warehouseOwernSkuDO.getWarehouseInfo().getWarehouseOwnerId());
