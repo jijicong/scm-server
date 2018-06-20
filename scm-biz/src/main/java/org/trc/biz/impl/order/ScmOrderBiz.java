@@ -1579,6 +1579,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //设置商品明细信息
             setOrderItemDetail(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode(), orderItemList);
         }
+        for(OrderItem orderItem: orderItemList){
+            orderItem.setTotalFee(orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum())));
+        }
         //设置商品扩展信息
         OrderBase orderBase = new OrderBase();
         BeanUtils.copyProperties(platformOrder, orderBase);
@@ -2031,7 +2034,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Map<String, List<SkuWarehouseDO>> skuWarehouseMap = null;//sku和仓库可用库存关系,一个sku对应多个仓库可用库存
         if(selfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
-            setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
+            setSelfPurcharesSpuInfo(shopOrderList, selfPurcharseOrderItemList);
             //获取自采商品仓库库存
             List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
             if(skuCodes.size() > 0){
@@ -2392,7 +2395,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 设置自采商品spu编码
      * @param selfPurcharseOrderItemList
      */
-    private void setSelfPurcharesSpuInfo(List<OrderItem> selfPurcharseOrderItemList){
+    private void setSelfPurcharesSpuInfo(List<ShopOrder> shopOrderList, List<OrderItem> selfPurcharseOrderItemList){
         List<String> skuCodes = new ArrayList<>();
         for(OrderItem orderItem: selfPurcharseOrderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -2405,7 +2408,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(Skus skus: skusList){
                 if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
                     orderItem.setSpuCode(skus.getSpuCode());
+                    orderItem.setSpecNatureInfo(skus.getSpecInfo());
                     break;
+                }
+            }
+        }
+        for(ShopOrder shopOrder: shopOrderList){
+            for(OrderItem _orderItem: shopOrder.getOrderItems()){
+                for(Skus skus: skusList){
+                    if(StringUtils.equals(_orderItem.getSkuCode(), skus.getSkuCode())){
+                        _orderItem.setSpuCode(skus.getSpuCode());
+                        _orderItem.setSpecNatureInfo(skus.getSpecInfo());
+                        break;
+                    }
                 }
             }
         }
