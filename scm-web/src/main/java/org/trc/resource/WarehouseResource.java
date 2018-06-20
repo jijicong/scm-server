@@ -95,6 +95,6 @@ public class WarehouseResource {
     @Path(SupplyConstants.Warehouse.WAREHOUSE_CONFIG)
     @Produces(MediaType.APPLICATION_JSON)
     public Response findNotConfigWarehouse() {
-        return ResultUtil.createSuccessResult("查询有效的仓库成功",warehouseBiz.findWarehouse());
+        return ResultUtil.createSuccessResult("查询有效的仓库成功",warehouseBiz.findWarehouse(true));
     }
 }

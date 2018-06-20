@@ -60,7 +60,7 @@ import com.alibaba.fastjson.JSONObject;
 @Service("warehouseApiService")
 public class WarehouseApiServiceImpl implements IWarehouseApiService {
 
-    private final static Logger log = LoggerFactory.getLogger(WarehouseApiServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger("warehouseApiLogger");
 
     @Value("${mock.outer.interface}")
     private String mockOuterInterface;
@@ -198,23 +198,23 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
                 JSONObject jbo = JSONObject.parseObject(response);
                 appResult = jbo.toJavaObject(AppResult.class);
                 if(StringUtils.equals(SuccessFailureEnum.FAILURE.getCode(), appResult.getAppcode())){
-                    log.error(String.format("调用仓库%s接口失败,失败信息:%s", method, appResult.getResult()));
+                    log.error(String.format("server调用external仓库%s接口失败,失败信息:%s", method, appResult.getResult()));
                 }else{
                     setResponseData(scmWarehouseRequestBase, appResult);
                 }
             }else {
-                appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), String.format("调用仓库%s接口返回结果为空", method), "");
+                appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), String.format("server调用external仓库%s接口返回结果为空", method), "");
             }
         }catch (IOException e){
-            String msg = String.format("调用仓库%s接口网络超时,错误信息:%s", method, e.getMessage());
+            String msg = String.format("server调用external仓库%s接口网络超时,错误信息:%s", method, e.getMessage());
             log.error(msg, e);
             appResult = new AppResult(CommonExceptionEnum.REMOTE_TIMEOUT.getCode(), msg, "");
         }catch (JSONException e){
-            String msg = String.format("调用仓库%s接口返回数据格式错误,错误信息:%s", method, e.getMessage());
+            String msg = String.format("server调用external仓库%s接口返回数据格式错误,错误信息:%s", method, e.getMessage());
             log.error(msg, e);
             appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), msg, "");
         }catch (Exception e){
-            String msg = String.format("调用仓库%s接口异常,错误信息:%s", method, e.getMessage());
+            String msg = String.format("server调用external仓库%s接口异常,错误信息:%s", method, e.getMessage());
             log.error(msg, e);
             appResult = new AppResult(CommonExceptionEnum.REMOTE_ERROR.getCode(), msg, "");
         }
@@ -293,9 +293,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
         String jsonParam = JSON.toJSONString(scmWarehouseRequestBase);
-        log.debug(String.format("开始调用仓库%s接口%s,参数: %s. 开始时间%s", method, url, jsonParam,
+        log.debug(String.format("[mock]开始调用仓库%s接口%s,参数: %s. 开始时间%s", method, url, jsonParam,
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT)));
-        log.debug(String.format("结束调用仓库%s接口%s,返回结果: %s. 结束时间%s", method, url, JSON.toJSON(appResult).toString(),
+        log.debug(String.format("[mock]结束调用仓库%s接口%s,返回结果: %s. 结束时间%s", method, url, JSON.toJSON(appResult).toString(),
                 DateUtils.dateToString(Calendar.getInstance().getTime(), DateUtils.DATETIME_FORMAT)));
         return appResult;
     }

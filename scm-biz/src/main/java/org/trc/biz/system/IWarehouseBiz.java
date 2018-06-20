@@ -67,7 +67,7 @@ public interface IWarehouseBiz {
      * 查询所有仓库
      * @return
      */
-    List<WarehouseInfo> findWarehouse();
+    List<WarehouseInfo> findWarehouse(boolean isValid);
 
     /**
      * 模糊查询
