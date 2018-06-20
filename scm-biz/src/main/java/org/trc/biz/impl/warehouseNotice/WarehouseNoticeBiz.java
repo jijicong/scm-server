@@ -967,7 +967,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         }
         if (flgExp) {
         	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_GOODS_EXCEPTION.getCode());
-        	warehouseNotice.setFailureCause(req.getFailureCause());
         } else if (flgPart) {
         	warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
         } else {
