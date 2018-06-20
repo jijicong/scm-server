@@ -12,5 +12,6 @@ import java.util.List;
 @Data
 public class WmsInNoticeRequest implements Serializable{
     private String warehouseNoticeCode;
+    private String failureCause;
     private List<WmsInNoticeDetailRequest> InNoticeDetailRequests;
 }
