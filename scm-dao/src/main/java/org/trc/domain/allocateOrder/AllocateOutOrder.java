@@ -123,10 +123,36 @@ public class AllocateOutOrder extends AllocateOutInOrderBase{
      */
     @Column(name = "failed_cause")
     private String failedCause;
+    
+    /**
+     * 仓库出库单号
+     */
+    @Column(name = "wms_allocate_out_order_code")
+    private String wmsAllocateOutOrderCode;
+    
+    /**
+     * 调拨出库单序号-京东仓库重新发货用
+     */
+    @Column(name = "out_order_seq")
+    private Integer outOrderSeq;
 
+    public Integer getOutOrderSeq() {
+		return outOrderSeq;
+	}
 
+	public void setOutOrderSeq(Integer outOrderSeq) {
+		this.outOrderSeq = outOrderSeq;
+	}
 
-    public String getFailedCause() {
+	public String getWmsAllocateOutOrderCode() {
+		return wmsAllocateOutOrderCode;
+	}
+
+	public void setWmsAllocateOutOrderCode(String wmsAllocateOutOrderCode) {
+		this.wmsAllocateOutOrderCode = wmsAllocateOutOrderCode;
+	}
+
+	public String getFailedCause() {
 		return failedCause;
 	}
 

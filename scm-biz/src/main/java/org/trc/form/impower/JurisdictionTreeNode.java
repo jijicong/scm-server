@@ -28,6 +28,8 @@ public class JurisdictionTreeNode extends BaseDO{
     private Long parentId;
     @FormParam("belong")
     private Integer belong;
+    @FormParam("isBelong")
+    private Long isBelong;
     @FormParam("operationType")
     private String operationType;
 
@@ -106,5 +108,13 @@ public class JurisdictionTreeNode extends BaseDO{
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getIsBelong() {
+        return isBelong;
+    }
+
+    public void setIsBelong(Long isBelong) {
+        this.isBelong = isBelong;
     }
 }

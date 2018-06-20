@@ -1088,6 +1088,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(cancelNum > 0 && (handlerNum + cancelNum) == orderItemList.size())
                 return SupplierOrderStatusEnum.ORDER_CANCEL.getCode();
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//店铺级订单
+            //待发货：(等待供应商发货数 + 等待仓库发货数) = 商品应发数量
+            if((waitDeliverNum + waitWarehouseDeliverNum) == orderItemList.size())
+                return OrderDeliverStatusEnum.WAIT_FOR_DELIVER.getCode();
             //已取消：已取消数 = 商品应发数量
             if(cancelNum == orderItemList.size())
                 return OrderDeliverStatusEnum.ORDER_CANCEL.getCode();
@@ -1578,6 +1581,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //设置商品明细信息
             setOrderItemDetail(shopOrder.getPlatformOrderCode(), shopOrder.getShopOrderCode(), orderItemList);
         }
+        for(OrderItem orderItem: orderItemList){
+            orderItem.setTotalFee(orderItem.getPrice().multiply(new BigDecimal(orderItem.getNum())));
+        }
         //设置商品扩展信息
         OrderBase orderBase = new OrderBase();
         BeanUtils.copyProperties(platformOrder, orderBase);
@@ -1648,87 +1654,107 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andIn("warehouseOrderCode", warehouseOrderCodes);
         List<OutboundOrder> outboundOrderList = outBoundOrderService.selectByExample(example2);
-        if (!AssertUtil.collectionIsEmpty(outboundOrderList)) {
-            Map<String, OutboundOrder> outboundOrderMap = new HashMap<>();
-            Set<String> outboundOrderCodeSet = new HashSet<>();
-            for (OutboundOrder outboundOrder : outboundOrderList) {
-                outboundOrderCodeSet.add(outboundOrder.getOutboundOrderCode());
-                outboundOrderMap.put(outboundOrder.getWarehouseOrderCode(), outboundOrder);
-            }
-            //通过outboundOrderCode查询发货通知单详情
-            Example example3 = new Example(OutboundDetail.class);
-            Example.Criteria criteria3 = example3.createCriteria();
-            criteria3.andIn("outboundOrderCode", outboundOrderCodeSet);
-            List<OutboundDetail> outboundDetailList = outboundDetailService.selectByExample(example3);
-            if (!AssertUtil.collectionIsEmpty(outboundDetailList)) {
-                Map<String, List<OutboundDetail>> outboundDetailMap = new HashMap<>();
-                Set<Long> outboundDetailIds = new HashSet<>();
-                for(String outboundOrderCode: outboundOrderCodeSet){
-                    List<OutboundDetail> outboundDetails = new ArrayList<>();
-                    for (OutboundDetail outboundDetail : outboundDetailList) {
-                        if(StringUtils.equals(outboundOrderCode, outboundDetail.getOutboundOrderCode())){
-                            outboundDetails.add(outboundDetail);
-                        }
-                        outboundDetailIds.add(outboundDetail.getId());
-                    }
-                    outboundDetailMap.put(outboundOrderCode, outboundDetails);
-                }
-                //查询发货通知单物流信息
-                Example example4 = new Example(OutboundDetailLogistics.class);
-                Example.Criteria criteria4 = example4.createCriteria();
-                criteria4.andIn("outboundDetailId", outboundDetailIds);
-                List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.selectByExample(example4);
-                Map<Long, List<OutboundDetailLogistics>> outboundDetailLogisticsMap = new HashMap<>();
-                if (!AssertUtil.collectionIsEmpty(outboundDetailLogisticsList)) {
-                    for (Long detailId : outboundDetailIds) {
-                        List<OutboundDetailLogistics> detailLogisticsList = new ArrayList<>();
-                        for (OutboundDetailLogistics outboundDetailLogistics : outboundDetailLogisticsList) {
-                            if (detailId.equals(outboundDetailLogistics.getOutboundDetailId())) {
-                                detailLogisticsList.add(outboundDetailLogistics);
-                            }
-                        }
-                        outboundDetailLogisticsMap.put(detailId, detailLogisticsList);
-                    }
-                    //组装物流信息, //设置自采订单、物流信息
-                    for (OrderItem orderItem : orderItemList) {
-                        if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())) {
-                            //实发商品数量
-                            OutboundOrder outboundOrder = outboundOrderMap.get(orderItem.getWarehouseOrderCode());
-                            if (null != outboundOrder && null != outboundOrder.getOutboundOrderCode()) {
-                                List<OutboundDetail> outboundDetails = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
-                                OutboundDetail targetOutboundDetail = null;
-                                if(!CollectionUtils.isEmpty(outboundDetails)){
-                                    for(OutboundDetail detail: outboundDetails){
-                                        if(StringUtils.equals(orderItem.getSkuCode(), detail.getSkuCode()) && null != detail.getRealSentItemNum()){
-                                            orderItem.setDeliverNum(Integer.parseInt(String.valueOf(detail.getRealSentItemNum())));
-                                            targetOutboundDetail = detail;
-                                            break;
-                                        }
-                                    }
-                                }
-                                //物流信息
-                                List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(targetOutboundDetail.getId());
-                                //物流详细
-                                List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
-                                if (!AssertUtil.collectionIsEmpty(logisticsList)) {
-                                    for (OutboundDetailLogistics outboundDetailLogistics : logisticsList) {
-                                        //物流信息
-                                        DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
-                                        deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
-                                        deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
-                                        if (outboundDetailLogistics.getItemNum() != null) {
-                                        	deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
-                                        }
-                                        deliverPackageFormList.add(deliverPackageForm);
-                                    }
-                                    orderItem.setDeliverPackageFormList(deliverPackageFormList);
-                                }
-                            }
-                        }
+        if(CollectionUtils.isEmpty(outboundOrderList)){
+            return;
+        }
+        int storeItemCount = 0;
+        //设置企业购商品发货数量
+        for(OutboundOrder outboundOrder: outboundOrderList){
+            if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){//门店订单
+                for(OrderItem orderItem: orderItemList){
+                    if(StringUtils.equals(outboundOrder.getShopOrderCode(), orderItem.getShopOrderCode())){
+                        orderItem.setDeliverNum(orderItem.getNum());
+                        storeItemCount++;
                     }
                 }
             }
+        }
+        if(storeItemCount == orderItemList.size()){//全部商品都是门店的
+            return;
+        }
 
+        Map<String, OutboundOrder> outboundOrderMap = new HashMap<>();
+        Set<String> outboundOrderCodeSet = new HashSet<>();
+        for (OutboundOrder outboundOrder : outboundOrderList) {
+            outboundOrderCodeSet.add(outboundOrder.getOutboundOrderCode());
+            outboundOrderMap.put(outboundOrder.getWarehouseOrderCode(), outboundOrder);
+        }
+        //通过outboundOrderCode查询发货通知单详情
+        Example example3 = new Example(OutboundDetail.class);
+        Example.Criteria criteria3 = example3.createCriteria();
+        criteria3.andIn("outboundOrderCode", outboundOrderCodeSet);
+        List<OutboundDetail> outboundDetailList = outboundDetailService.selectByExample(example3);
+        if (!AssertUtil.collectionIsEmpty(outboundDetailList)) {
+            Map<String, List<OutboundDetail>> outboundDetailMap = new HashMap<>();
+            Set<Long> outboundDetailIds = new HashSet<>();
+            for(String outboundOrderCode: outboundOrderCodeSet){
+                List<OutboundDetail> outboundDetails = new ArrayList<>();
+                for (OutboundDetail outboundDetail : outboundDetailList) {
+                    if(StringUtils.equals(outboundOrderCode, outboundDetail.getOutboundOrderCode())){
+                        outboundDetails.add(outboundDetail);
+                    }
+                    outboundDetailIds.add(outboundDetail.getId());
+                }
+                outboundDetailMap.put(outboundOrderCode, outboundDetails);
+            }
+            //查询发货通知单物流信息
+            Example example4 = new Example(OutboundDetailLogistics.class);
+            Example.Criteria criteria4 = example4.createCriteria();
+            criteria4.andIn("outboundDetailId", outboundDetailIds);
+            List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.selectByExample(example4);
+            Map<Long, List<OutboundDetailLogistics>> outboundDetailLogisticsMap = new HashMap<>();
+            if (!AssertUtil.collectionIsEmpty(outboundDetailLogisticsList)) {
+                for (Long detailId : outboundDetailIds) {
+                    List<OutboundDetailLogistics> detailLogisticsList = new ArrayList<>();
+                    for (OutboundDetailLogistics outboundDetailLogistics : outboundDetailLogisticsList) {
+                        if (detailId.equals(outboundDetailLogistics.getOutboundDetailId())) {
+                            detailLogisticsList.add(outboundDetailLogistics);
+                        }
+                    }
+                    outboundDetailLogisticsMap.put(detailId, detailLogisticsList);
+                }
+                //组装物流信息, //设置自采订单、物流信息
+                for (OrderItem orderItem : orderItemList) {
+                    if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())) {
+                        if(orderItem.getIsStoreOrder()){//门店订单
+                            orderItem.setSendNum(orderItem.getNum());
+                            continue;
+                        }
+                        //实发商品数量
+                        OutboundOrder outboundOrder = outboundOrderMap.get(orderItem.getWarehouseOrderCode());
+                        if (null != outboundOrder && null != outboundOrder.getOutboundOrderCode()) {
+                            List<OutboundDetail> outboundDetails = outboundDetailMap.get(outboundOrder.getOutboundOrderCode());
+                            OutboundDetail targetOutboundDetail = null;
+                            if(!CollectionUtils.isEmpty(outboundDetails)){
+                                for(OutboundDetail detail: outboundDetails){
+                                    if(StringUtils.equals(orderItem.getSkuCode(), detail.getSkuCode()) && null != detail.getRealSentItemNum()){
+                                        orderItem.setDeliverNum(Integer.parseInt(String.valueOf(detail.getRealSentItemNum())));
+                                        targetOutboundDetail = detail;
+                                        break;
+                                    }
+                                }
+                            }
+                            //物流信息
+                            List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(targetOutboundDetail.getId());
+                            //物流详细
+                            List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
+                            if (!AssertUtil.collectionIsEmpty(logisticsList)) {
+                                for (OutboundDetailLogistics outboundDetailLogistics : logisticsList) {
+                                    //物流信息
+                                    DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
+                                    deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
+                                    deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
+                                    if (outboundDetailLogistics.getItemNum() != null) {
+                                        deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                                    }
+                                    deliverPackageFormList.add(deliverPackageForm);
+                                }
+                                orderItem.setDeliverPackageFormList(deliverPackageFormList);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -1981,11 +2007,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @return
      * @throws Exception
      */
-    private Map<String, Object> processOrder(PlatformOrder platformOrder, List<ShopOrder> shopOrderList, String orderType, List<ImportOrderInfo> importOrderInfoList, String operator) throws Exception {
+    private Map<String, Object> processOrder(PlatformOrder platformOrder, List<ShopOrder> shopOrderList, String orderType,
+                                             List<ImportOrderInfo> importOrderInfoList, String operator) throws Exception {
         //设置企业购商品状态
         boolean businessPurchaseFlag = setBusinessPurchaseItemStatus(shopOrderList);
         //拆分自采和代发商品
         List<OrderItem> tmpOrderItemList = new ArrayList<>();//全部商品
+        for(ShopOrder shopOrder: shopOrderList){
+            for (OrderItem orderItem : shopOrder.getOrderItems()) {
+                tmpOrderItemList.add(orderItem);
+            }
+        }
+        List<SellChannel> sellChannelList = null;
+        //校验订单金额
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
+            sellChannelList = orderMoneyCheck(platformOrder, shopOrderList, tmpOrderItemList);
+        }
+        //设置门店订单状态
+        List<WarehouseInfo> storeWarehouseInfoList = setStoreOrderStatus(shopOrderList, sellChannelList);
+        //校验商品是否从供应链新增
+        //isScmItems(tmpOrderItemList);
         List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
         List<String> skuCodes = new ArrayList<>();
         List<OrderItem> supplierOrderItemList = new ArrayList<>();//一件代发
@@ -1995,20 +2036,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if (orderItem.getSkuCode().startsWith(SP0) &&
                         !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
-                    skuCodes.add(orderItem.getSkuCode());
+                    if(!orderItem.getIsStoreOrder()){//非门店订单
+                        skuCodes.add(orderItem.getSkuCode());
+                    }
                 }
                 if (orderItem.getSkuCode().startsWith(SP1)) {
                     supplierOrderItemList.add(orderItem);
                 }
             }
         }
-        //校验订单金额
-        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
-            orderMoneyCheck(platformOrder, shopOrderList, tmpOrderItemList);
-        }
-        //校验商品是否从供应链新增
-        isScmItems(tmpOrderItemList);
-
         List<ExternalItemSku> externalItemSkuList = null;
         if(supplierOrderItemList.size() > 0){
             //校验代发商品
@@ -2020,15 +2056,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Map<String, List<SkuWarehouseDO>> skuWarehouseMap = null;//sku和仓库可用库存关系,一个sku对应多个仓库可用库存
         if(selfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
-            setSelfPurcharesSpuInfo(selfPurcharseOrderItemList);
+            setSelfPurcharesSpuInfo(shopOrderList, selfPurcharseOrderItemList);
             //获取自采商品仓库库存
-            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes,JingdongInventoryTypeEnum.SALE.getCode());
+            List<ScmInventoryQueryResponse> scmInventoryQueryResponseList = new ArrayList<>();
+            if(skuCodes.size() > 0){
+                scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(skuCodes,JingdongInventoryTypeEnum.SALE.getCode());
+            }
             //获取自采商品本地库存
             skuStockList = getSelfItemsLocalStock(selfPurcharseOrderItemList);
             //查询仓库匹配优先级
             List<WarehousePriority> warehousePriorityList = getWarehousePriority();
             //校验自采商品的可用库存
-            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList, warehousePriorityList);
+            Map<String, Object> map = checkSelfItemAvailableInventory(selfPurcharseOrderItemList, skuStockList, scmInventoryQueryResponseList, warehousePriorityList, storeWarehouseInfoList);
             List<OrderItem> checkFailureSelfPurcharseItems = (List<OrderItem>)map.get("checkFailureItems");
             skuWarehouseMap = (Map<String, List<SkuWarehouseDO>>)map.get("warehouseSkuMap");
             if(!CollectionUtils.isEmpty(checkFailureSelfPurcharseItems)){
@@ -2070,7 +2109,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 selfSkuAllException = true;
             }
             if(orderItemList1.size() > 0 && orderItemList1.size() > exceptionOrderItemList.size()){
-                warehouseOrderList.addAll(dealSelfPurcharseOrder(orderItemList1, shopOrder, skuStockList, skuWarehouseMap));
+                warehouseOrderList.addAll(dealSelfPurcharseOrder(orderItemList1, shopOrder, skuStockList, skuWarehouseMap, storeWarehouseInfoList));
             }
             if(orderItemList2.size() > 0){
                 warehouseOrderList.addAll(dealSupplierOrder(orderItemList2, shopOrder));
@@ -2276,6 +2315,75 @@ public class ScmOrderBiz implements IScmOrderBiz {
         return flag;
     }
 
+    /***
+     * 设置门店订单状态:
+     * 若发货通知单“销售渠道”的“销售渠道类型”为“门店”，
+     * 则“发货状态”自动置为“全部发货”，“物流信息”自动置为“已自提”
+     * @param shopOrderList
+     * @param sellChannelList
+     */
+    private List<WarehouseInfo> setStoreOrderStatus(List<ShopOrder> shopOrderList, List<SellChannel> sellChannelList){
+        if(CollectionUtils.isEmpty(shopOrderList) || CollectionUtils.isEmpty(sellChannelList)){
+            return null;
+        }
+        List<String> storeSellCodes = new ArrayList<>();
+        for(ShopOrder shopOrder: shopOrderList){
+            for(SellChannel sellChannel: sellChannelList){
+                if(StringUtils.equals(shopOrder.getSellCode(), sellChannel.getSellCode())){
+                    if(StringUtils.equals(String.valueOf(SellChannelTypeEnum.STORE.getCode()), sellChannel.getSellType())){
+                        storeSellCodes.add(sellChannel.getSellCode());
+                        boolean flag = false;
+                        for(OrderItem orderItem: shopOrder.getOrderItems()){
+                            if(orderItem.getSkuCode().startsWith(SP0)){
+                                orderItem.setIsStoreOrder(true);
+                                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
+                            }else {
+                                flag = true;
+                            }
+                        }
+                        if(!flag){
+                            shopOrder.setIsStoreOrder(true);
+                            shopOrder.setSupplierOrderStatus(OrderDeliverStatusEnum.ALL_DELIVER.getCode());
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if(storeSellCodes.size() == 0){
+            return null;
+        }
+        //查询门店类型销售渠道对应的仓库
+        List<WarehouseInfo> warehouseInfoList = null;
+        Example example = new Example(WarehouseInfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        String[] operationalTypes = new String[]{OperationalTypeEnum.NORMAL_STORE.getCode(), OperationalTypeEnum.UNMANNED_STORE.getCode()};
+        criteria.andIn("operationalType", Arrays.asList(operationalTypes));
+        criteria.andIn("storeCorrespondChannel", storeSellCodes);
+        warehouseInfoList = warehouseInfoService.selectByExample(example);
+        String msgPre = "门店销售渠道";
+        StringBuilder sb = new StringBuilder(msgPre);
+        for(String storeSellCode: storeSellCodes){
+            boolean flag = false;
+            for(WarehouseInfo warehouseInfo: warehouseInfoList){
+                if(StringUtils.equals(storeSellCode, warehouseInfo.getStoreCorrespondChannel())){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                sb.append(storeSellCode + SupplyConstants.Symbol.COMMA);
+            }
+        }
+        if(sb.length() > msgPre.length()){
+            sb.append("没有绑定到对应的门店仓库");
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, sb.toString());
+        }
+        return warehouseInfoList;
+    }
+
+
+
     /**
      * 设置代发商品供货价
      * @param itemList
@@ -2310,7 +2418,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 设置自采商品spu编码
      * @param selfPurcharseOrderItemList
      */
-    private void setSelfPurcharesSpuInfo(List<OrderItem> selfPurcharseOrderItemList){
+    private void setSelfPurcharesSpuInfo(List<ShopOrder> shopOrderList, List<OrderItem> selfPurcharseOrderItemList){
         List<String> skuCodes = new ArrayList<>();
         for(OrderItem orderItem: selfPurcharseOrderItemList){
             skuCodes.add(orderItem.getSkuCode());
@@ -2323,7 +2431,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(Skus skus: skusList){
                 if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
                     orderItem.setSpuCode(skus.getSpuCode());
+                    orderItem.setSpecNatureInfo(skus.getSpecInfo());
                     break;
+                }
+            }
+        }
+        for(ShopOrder shopOrder: shopOrderList){
+            for(OrderItem _orderItem: shopOrder.getOrderItems()){
+                for(Skus skus: skusList){
+                    if(StringUtils.equals(_orderItem.getSkuCode(), skus.getSkuCode())){
+                        _orderItem.setSpuCode(skus.getSpuCode());
+                        _orderItem.setSpecNatureInfo(skus.getSpecInfo());
+                        break;
+                    }
                 }
             }
         }
@@ -2404,7 +2524,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrders
      * @param orderItems
      */
-    private void orderMoneyCheck(PlatformOrder platformOrder, List<ShopOrder> shopOrders, List<OrderItem> orderItems){
+    private List<SellChannel> orderMoneyCheck(PlatformOrder platformOrder, List<ShopOrder> shopOrders, List<OrderItem> orderItems){
         //店铺订单业务线及销售渠道校验
         Set<String> channelCodes = new HashSet<>();
         Set<String> sellCodes = new HashSet<>();
@@ -2470,6 +2590,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             AssertUtil.isTrue(platformOrder.getPostageFee().compareTo(postFee) == 0, "平台订单邮费金额与所有店铺邮费总金额不相等");
         if(null != platformOrder.getTotalTax())
             AssertUtil.isTrue(platformOrder.getTotalTax().compareTo(totalTax) == 0, "平台订单税费金额与所有店铺税费总金额不相等");
+        return sellChannelList;
     }
 
     /**
@@ -2980,7 +3101,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     private ScmDeliveryOrderDO getScmDeliveryOrderDO(OutboundOrder outboundOrder, List<WarehouseItemInfo> warehouseItemInfoList){
         ScmDeliveryOrderDO scmDeliveryOrderDO = new ScmDeliveryOrderDO();
-        scmDeliveryOrderDO.setDeliveryOrderCode(outboundOrder.getOutboundOrderCode());//发货单编码
+        String code = outboundOrder.getOutboundOrderCode() + "_"  + outboundOrder.getNewCode();
+        scmDeliveryOrderDO.setDeliveryOrderCode(code);//发货单编码
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseItemInfo.getWarehouseCode())){
                 scmDeliveryOrderDO.setWarehouseCode(warehouseItemInfo.getWmsWarehouseCode());
@@ -3944,7 +4066,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for (Object obj : shopOrderArray) {
             JSONObject tmpObj = (JSONObject) obj;
             JSONObject shopOrderObj = tmpObj.getJSONObject("shopOrder");
-            AssertUtil.notNull(shopOrderObj, "接收渠道订单参数中平店铺订单信息为空");
             ShopOrder shopOrder = JSONObject.parseObject(tmpObj.getString("shopOrder"),ShopOrder.class);
             String scmShopOrderCode = serialUtilService.generateCode(SupplyConstants.Serial.SYSTEM_ORDER_LENGTH, SupplyConstants.Serial.SYSTEM_ORDER_CODE, DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
             shopOrder.setScmShopOrderCode(scmShopOrderCode);
@@ -4147,9 +4268,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             long qimenStock = 0;//奇门库存
             long localStock = 0;//本地库存
             List<ScmInventoryQueryResponse> _inventoryQueryItemList = new ArrayList<>();
-            for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                if(StringUtils.equals(orderItem.getSkuCode(), item.getItemCode())){
-                    _inventoryQueryItemList.add(item);
+            for(ScmInventoryQueryResponse items: scmInventoryQueryResponseList){
+                if(StringUtils.equals(orderItem.getSkuCode(), items.getItemCode())){
+                    _inventoryQueryItemList.add(items);
                 }
             }
             //按仓库库存降序排序
@@ -4204,9 +4325,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
                 skuWarehouseDO.setChannelCode(maxSkuStock.getChannelCode());
                 skuWarehouseDO.setWarehouseCode(maxSkuStock.getWarehouseCode());
-                for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                    if(StringUtils.equals(maxSkuStock.getSkuCode(), item.getItemCode())){
-                        skuWarehouseDO.setItemId(item.getItemId());
+                for(ScmInventoryQueryResponse items: scmInventoryQueryResponseList){
+                    if(StringUtils.equals(maxSkuStock.getSkuCode(), items.getItemCode())){
+                        skuWarehouseDO.setItemId(items.getItemId());
                     }
                 }
                 skuWarehouseDOList.add(skuWarehouseDO);
@@ -4222,21 +4343,23 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }*/
 
 
-    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList,
-                                List<ScmInventoryQueryResponse> scmInventoryQueryResponseList, List<WarehousePriority> warehousePriorityList){
+    private Map<String, Object> checkSelfItemAvailableInventory(List<OrderItem> orderItemList, List<SkuStock> skuStockList, List<ScmInventoryQueryResponse> scmInventoryQueryResponseList,
+                                                                List<WarehousePriority> warehousePriorityList, List<WarehouseInfo> storeWarehouseInfoList){
         Map<String, Object> map = new HashedMap();
         Map<String, List<SkuWarehouseDO>> warehouseSkuMap = new HashMap<>();
         //校验失败的商品
         List<OrderItem> checkFailureItems = new ArrayList<>();
-        if(CollectionUtils.isEmpty(scmInventoryQueryResponseList) || CollectionUtils.isEmpty(skuStockList)){
-            for(OrderItem orderItem: orderItemList){
-                checkFailureItems.add(orderItem);
-                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
-                log.error(String.format("自采拆单校验sku编码为[%s]的库存时查询不到商品库存信息", orderItem.getSkuCode()));
+        if(CollectionUtils.isEmpty(storeWarehouseInfoList)){//没有门店订单
+            if(CollectionUtils.isEmpty(scmInventoryQueryResponseList) || CollectionUtils.isEmpty(skuStockList)){
+                for(OrderItem orderItem: orderItemList){
+                    checkFailureItems.add(orderItem);
+                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAREHOUSE_RECIVE_FAILURE.getCode());
+                    log.error(String.format("自采拆单校验sku编码为[%s]的库存时查询不到商品库存信息", orderItem.getSkuCode()));
+                }
+                map.put("checkFailureItems", checkFailureItems);
+                map.put("warehouseSkuMap", warehouseSkuMap);
+                return map;
             }
-            map.put("checkFailureItems", checkFailureItems);
-            map.put("warehouseSkuMap", warehouseSkuMap);
-            return map;
         }
         //设置仓库库存返回结果里的skuCode值
         setScmInventoryQueryResponseItemCode(orderItemList, scmInventoryQueryResponseList);
@@ -4263,40 +4386,61 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 qimenStock = _inventoryQueryItemList.get(0).getQuantity();
             }*/
 
-            boolean _flag = false;
-            //检查库存
-            ScmInventoryQueryResponse scmInventoryQueryResponse = checkStock(orderItem.getNum().intValue(), _inventoryQueryItemList, warehousePriorityList);
-            //校验库存
-            if(null != scmInventoryQueryResponse){
-                _flag = true;
-            }else{
-                checkFailureItems.add(orderItem);
-            }
-            if(_flag){
-                SkuStock _skuStock = null;
-                for(SkuStock skuStock: skuStockList){
-                    if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) && StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId())){
-                        _skuStock = skuStock;
-                        break;
-                    }
-                }
+
+            if(orderItem.getIsStoreOrder()){
                 List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
-                skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
+                skuWarehouseDO.setSkuCode(orderItem.getSkuCode());
                 skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
-                skuWarehouseDO.setChannelCode(_skuStock.getChannelCode());
-                skuWarehouseDO.setOwnerCode(scmInventoryQueryResponse.getOwnerCode());
-                skuWarehouseDO.setWarehouseCode(_skuStock.getWarehouseCode());
-                for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
-                    if(StringUtils.equals(_skuStock.getSkuCode(), item.getItemCode())){
-                        skuWarehouseDO.setItemId(item.getItemId());
+                skuWarehouseDO.setChannelCode(orderItem.getChannelCode());
+                skuWarehouseDO.setItemId(orderItem.getSkuCode());
+                for(WarehouseInfo warehouseInfo: storeWarehouseInfoList){
+                    if(StringUtils.equals(orderItem.getSellCode(), warehouseInfo.getStoreCorrespondChannel())){
+                        skuWarehouseDO.setWarehouseCode(warehouseInfo.getCode());
+                        break;
                     }
                 }
                 skuWarehouseDOList.add(skuWarehouseDO);
                 warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
-            }else {
-                orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ORDER_FAILURE.getCode());//供应商下单失败
+            }else{
+                boolean _flag = false;
+                //检查库存
+                ScmInventoryQueryResponse scmInventoryQueryResponse = checkStock(orderItem.getNum().intValue(), _inventoryQueryItemList, warehousePriorityList);
+                //校验库存
+                if(null != scmInventoryQueryResponse){
+                    _flag = true;
+                }else{
+                    checkFailureItems.add(orderItem);
+                }
+                if(_flag){
+                    SkuStock _skuStock = null;
+                    for(SkuStock skuStock: skuStockList){
+                        if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) &&
+                                StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId()) &&
+                                StringUtils.equals(skuStock.getWarehouseCode(), scmInventoryQueryResponse.getWarehouseCode())){
+                            _skuStock = skuStock;
+                            break;
+                        }
+                    }
+                    List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
+                    SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
+                    skuWarehouseDO.setSkuCode(_skuStock.getSkuCode());
+                    skuWarehouseDO.setItemNum(orderItem.getNum().longValue());
+                    skuWarehouseDO.setChannelCode(_skuStock.getChannelCode());
+                    skuWarehouseDO.setOwnerCode(scmInventoryQueryResponse.getOwnerCode());
+                    skuWarehouseDO.setWarehouseCode(_skuStock.getWarehouseCode());
+                    for(ScmInventoryQueryResponse item: scmInventoryQueryResponseList){
+                        if(StringUtils.equals(_skuStock.getSkuCode(), item.getItemCode())){
+                            skuWarehouseDO.setItemId(item.getItemId());
+                        }
+                    }
+                    skuWarehouseDOList.add(skuWarehouseDO);
+                    warehouseSkuMap.put(orderItem.getSkuCode(), skuWarehouseDOList);
+                }else {
+                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAREHOUSE_RECIVE_FAILURE.getCode());
+                }
             }
+
         }
         map.put("checkFailureItems", checkFailureItems);
         map.put("warehouseSkuMap", warehouseSkuMap);
@@ -4559,21 +4703,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrder
      * @return
      */
-    public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder, List<SkuStock> skuStockList, Map<String, List<SkuWarehouseDO>> skuWarehouseMap) {
+    public List<WarehouseOrder> dealSelfPurcharseOrder(List<OrderItem> orderItems, ShopOrder shopOrder, List<SkuStock> skuStockList, Map<String,
+            List<SkuWarehouseDO>> skuWarehouseMap, List<WarehouseInfo> storeWarehouseInfoList) {
         List<WarehouseOrder> warehouseOrderList = new ArrayList<WarehouseOrder>();
         if(null == skuWarehouseMap && CollectionUtils.isEmpty(skuStockList)){//企业购的订单
             return warehouseOrderList;
         }
         List<WarehouseInfo> warehouseList = new ArrayList<>();
-        Set<String> warehouseCodes = new HashSet<>();
-        for(SkuStock skuStock: skuStockList){
-            warehouseCodes.add(skuStock.getWarehouseCode());
+        if(CollectionUtils.isEmpty(storeWarehouseInfoList)){//非门店订单
+            Set<String> warehouseCodes = new HashSet<>();
+            for(SkuStock skuStock: skuStockList){
+                warehouseCodes.add(skuStock.getWarehouseCode());
+            }
+            Example example2 = new Example(WarehouseInfo.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andIn("code", warehouseCodes);
+            warehouseList = warehouseInfoService.selectByExample(example2);
+            AssertUtil.notEmpty(warehouseList, String.format("根据仓库编码列表[%s]查询仓库为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes))));
+        }else{//门店订单
+            warehouseList = storeWarehouseInfoList;
         }
-        Example example2 = new Example(WarehouseInfo.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andIn("code", warehouseCodes);
-        warehouseList = warehouseInfoService.selectByExample(example2);
-        AssertUtil.notEmpty(warehouseList, String.format("根据仓库编码列表[%s]查询仓库为空", CommonUtil.converCollectionToString(new ArrayList<>(warehouseCodes))));
         Set<String> warehouses = new HashSet<>();//所有匹配库存的仓库
         for(OrderItem orderItem: orderItems){
             for(Map.Entry<String, List<SkuWarehouseDO>> entry: skuWarehouseMap.entrySet()){
@@ -4660,7 +4809,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
         warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
         warehouseOrder.setPayTime(shopOrder.getPayTime());
-        warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+        warehouseOrder.setIsStoreOrder(shopOrder.getIsStoreOrder());
+        if(shopOrder.getIsStoreOrder()){//门店订单
+            warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
+        }else{
+            warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+        }
         warehouseOrder.setOrderType(OrderTypeEnum.SELF_PURCHARSE.getCode());//自采
         //流水号
         String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER,
@@ -4926,7 +5080,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
             warehouseOrder.setStatus(ZeroToNineEnum.ONE.getCode());
             warehouseOrder.setIsDeleted(ZeroToNineEnum.ZERO.getCode());
             warehouseOrder.setPayTime(shopOrder.getPayTime());
-            warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+            if(shopOrder.getIsStoreOrder()){//门店订单
+                warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.ALL_DELIVER.getCode());
+            }else{
+                warehouseOrder.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+            }
             //流水号
             String code = serialUtilService.generateRandomCode(Integer.parseInt(ZeroToNineEnum.SEVEN.getCode()), SupplyConstants.Serial.WAREHOUSE_ORDER,
                     supplier.getSupplierCode(), ZeroToNineEnum.ONE.getCode(), DateUtils.dateToCompactString(Calendar.getInstance().getTime()));
@@ -5335,14 +5493,18 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             //创建发货通知单
             OutboundForm outboundForm  = createOutboundOrder(platformOrder, warehouseOrder, _shopOrder, orderItems, skuWarehouseMap);
-            outboundMap.put(outboundForm.getOutboundOrder().getOutboundOrderCode(), outboundForm);
+            OutboundOrder outboundOrder = outboundForm.getOutboundOrder();
+            if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){//非门店订单
+                outboundMap.put(outboundForm.getOutboundOrder().getOutboundOrderCode(), outboundForm);
+            }
         }
-        //通知仓库发货
-        noticeWarehouseSendGoods(outboundMap);
-        
-        //通知渠道发货结果 ......
-        for(String shopOrderCode: shopOrderCodes){
-            outboundOrderSubmitResultNoticeChannel(shopOrderCode);
+        if(outboundMap.keySet().size() > 0){
+            //通知仓库发货
+            noticeWarehouseSendGoods(outboundMap);
+            //通知渠道发货结果 ......
+            for(String shopOrderCode: shopOrderCodes){
+                outboundOrderSubmitResultNoticeChannel(shopOrderCode);
+            }
         }
         return new ResponseAck(ResponseAck.SUCCESS_CODE, "提交自采订单成功", "");
     }
@@ -5606,7 +5768,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
         outboundOrder.setShopOrderCode(shopOrder.getShopOrderCode());
         outboundOrder.setWarehouseId(warehouseOrder.getWarehouseId());
         outboundOrder.setOrderType(QimenOrderTypeEnum.JYCK.getCode());
-        outboundOrder.setStatus(OutboundOrderStatusEnum.WAITING.getCode());
+        if(warehouseOrder.getIsStoreOrder()){//门店订单
+            outboundOrder.setIsStoreOrder(IsStoreOrderEnum.STORE_ORDER.getCode());
+            outboundOrder.setStatus(OutboundOrderStatusEnum.ALL_GOODS.getCode());
+        }else {
+            outboundOrder.setIsStoreOrder(IsStoreOrderEnum.NOT_STORE_ORDER.getCode());
+            outboundOrder.setStatus(OutboundOrderStatusEnum.WAITING.getCode());
+        }
+
         int itemNum = 0;
         for(OrderItem orderItem: orderItemList){
             itemNum += orderItem.getNum();
@@ -5641,7 +5810,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
             outboundDetail.setInventoryType(InventoryTypeEnum.ZP.getCode());
             outboundDetail.setActualAmount(CommonUtil.getMoneyLong(orderItem.getPayment()));
             outboundDetail.setShouldSentItemNum(orderItem.getNum().longValue());
-            outboundDetail.setStatus(OutboundDetailStatusEnum.WAITING.getCode());
+            if(warehouseOrder.getIsStoreOrder()){//门店订单
+                outboundDetail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
+                outboundDetail.setRealSentItemNum(outboundDetail.getShouldSentItemNum());
+            }else {
+                outboundDetail.setStatus(OutboundDetailStatusEnum.WAITING.getCode());
+            }
             outboundDetail.setCreateTime(currentTime);
             outboundDetail.setUpdateTime(currentTime);
             //商品规格
@@ -5954,11 +6128,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 skuCodes.add(importOrderInfo.getSkuCode());
             }
             List<Skus> skusList = getImportSkus(skuCodes);
-            List<ExternalItemSku> externalItemSkuList = getImportExternalSkus(skuCodes);
+            //List<ExternalItemSku> externalItemSkuList = getImportExternalSkus(skuCodes);
             //设置商品信息
-            setImportSkuInfo(importOrderInfoList, skusList, externalItemSkuList);
+            setImportSkuInfo(importOrderInfoList, skusList);
             //校验导入订单商品是否供应链商品
-            isScmItems2(importOrderInfoList, externalItemSkuList);
+            //isScmItems2(importOrderInfoList, externalItemSkuList);
             //获取导入订单的店铺订单
             List<ShopOrder> shopOrderList = getImportShopOrders(importOrderInfoList);
             //获取导入订单的平台订单
@@ -6020,30 +6194,48 @@ public class ScmOrderBiz implements IScmOrderBiz {
        }
     }
 
-    private void setImportSkuInfo(List<ImportOrderInfo> importOrderInfoList, List<Skus> skusList, List<ExternalItemSku> externalItemSkuList){
+    private void setImportSkuInfo(List<ImportOrderInfo> importOrderInfoList, List<Skus> skusList){
         if(!CollectionUtils.isEmpty(skusList)){
             Set<String> spuCodes = new HashSet<>();
             for(Skus skus: skusList){
                 spuCodes.add(skus.getSpuCode());
             }
             for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                boolean flag = false;
                 for(Skus skus: skusList){
                     if(StringUtils.equals(importOrderInfo.getSkuCode(), skus.getSkuCode())){
                         importOrderInfo.setSkuName(skus.getSkuName());
+                        flag = true;
                         break;
                     }
                 }
+                if(!flag){
+                    importOrderInfo.setFlag(false);
+                    setImportOrderErrorMsg(importOrderInfo, "商品SKU编号不存在");
+                }
+            }
+        }else{
+            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                importOrderInfo.setFlag(false);
+                setImportOrderErrorMsg(importOrderInfo, "商品SKU编号不存在");
             }
         }
-        if(!CollectionUtils.isEmpty(externalItemSkuList)){
+        /*if(!CollectionUtils.isEmpty(externalItemSkuList)){
             for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                boolean flag = false;
                 for(ExternalItemSku externalItemSku: externalItemSkuList){
                     if(StringUtils.equals(importOrderInfo.getSkuCode(), externalItemSku.getSkuCode())){
                         importOrderInfo.setSkuName(externalItemSku.getItemName());
+                        flag = true;
+                        break;
                     }
                 }
+                if(!flag){
+                    importOrderInfo.setFlag(false);
+                    setImportOrderErrorMsg(importOrderInfo, "商品SKU编号不存在");
+                }
             }
-        }
+        }*/
     }
 
     private List<Skus> getImportSkus(Set<String> skuCodes){
@@ -6069,7 +6261,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 4000);
-            CellDefinition payTime = new CellDefinition("payTime", PAY_TIME, CellDefinition.DATE_TIME, 5000);
+            CellDefinition orignalPaytimeStr = new CellDefinition("orignalPaytimeStr", PAY_TIME, CellDefinition.TEXT, 5000);
             CellDefinition receiverName = new CellDefinition("receiverName", RECIVE_NAME, CellDefinition.TEXT, 3000);
             CellDefinition receiverMobile = new CellDefinition("receiverMobile", RECIVE_MOBILE, CellDefinition.TEXT, 4000);
             CellDefinition receiverProvince = new CellDefinition("receiverProvince", RECIVE_PROVINCE, CellDefinition.TEXT, 3000);
@@ -6086,7 +6278,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             CellDefinition shopMemo = new CellDefinition("shopMemo", SHOP_MEMO, CellDefinition.TEXT, 10000);
             CellDefinition errorMessage = new CellDefinition("errorMessage", ERROR_MESSAGE, CellDefinition.TEXT, 10000);
             cellDefinitionList.add(shopOrderCode);
-            cellDefinitionList.add(payTime);
+            cellDefinitionList.add(orignalPaytimeStr);
             cellDefinitionList.add(receiverName);
             cellDefinitionList.add(receiverMobile);
             cellDefinitionList.add(receiverProvince);
@@ -6123,7 +6315,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 校验导入订单商品是否供应链商品
      * @param importOrderInfoList
      */
-    private void isScmItems2(List<ImportOrderInfo> importOrderInfoList, List<ExternalItemSku> externalItemSkuList){
+    /*private void isScmItems2(List<ImportOrderInfo> importOrderInfoList, List<ExternalItemSku> externalItemSkuList){
         Set<String> skuCodes = new HashSet<String>();
         Set<String> channelCodes = new HashSet<String>();
         for(ImportOrderInfo detail: importOrderInfoList){
@@ -6160,7 +6352,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
-    }
+    }*/
 
 
 
@@ -6222,9 +6414,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for(ImportOrderInfo importOrderInfo: importOrderInfoList){
             importOrderInfo.setImportOrderCode(importOrdrCode);
             if(importOrderInfo.getFlag()){
-                importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());
-            }else{
                 importOrderInfo.setIsFail(ZeroToNineEnum.ZERO.getCode());
+            }else{
+                importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());
             }
         }
         if(!CollectionUtils.isEmpty(importOrderInfoList)){
@@ -6254,33 +6446,33 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     //销售渠道订单号
-    private final static String SHOP_ORDER_CODE = "销售渠道订单号";
+    private final static String SHOP_ORDER_CODE = "*销售渠道订单号";
     //收货人姓名
-    private  final static  String RECIVE_NAME = "收货人姓名";
+    private  final static  String RECIVE_NAME = "*收货人姓名(门店订单可不填)";
     //收货人手机号
-    private final static String RECIVE_MOBILE = "收货人手机号";
+    private final static String RECIVE_MOBILE = "*收货人手机号(门店订单可不填)";
     //收货省份
-    private final static String RECIVE_PROVINCE = "收货省份";
+    private final static String RECIVE_PROVINCE = "*收货省份(门店订单可不填)";
     //收货城市
-    private final static String RECIVE_CITY = "收货城市";
+    private final static String RECIVE_CITY = "*收货城市(门店订单可不填)";
     //收货地区
-    private final static String RECIVE_DISTRICT = "收货地区";
+    private final static String RECIVE_DISTRICT = "*收货地区(门店订单可不填)";
     //收货详细地址
-    private final static String RECIVE_ADDRESS = "收货详细地址";
+    private final static String RECIVE_ADDRESS = "*收货详细地址(门店订单可不填)";
     //商品SKU编号
-    private final static String SKU_CODE = "商品SKU编号";
+    private final static String SKU_CODE = "*商品SKU编号";
     //商品SKU名称
     //private final static String SKU_NAME = "商品SKU名称";
     //商品交易数量
-    private final static String NUM = "商品交易数量";
+    private final static String NUM = "*商品交易数量";
     //商品销售单价
-    private final static String PRICE = "商品销售单价";
+    private final static String PRICE = "*商品销售单价";
     //商品实付总金额
-    private final static String PAYMENT = "商品实付总金额";
+    private final static String PAYMENT = "*商品实付总金额";
     //商品运费
-    private final static String POST_FEE = "商品运费";
+    private final static String POST_FEE = "*商品运费";
     //商品税费
-    private final static String PRICE_TAX = "商品税费";
+    private final static String PRICE_TAX = "*商品税费";
     //买家留言
     private final static String BUYER_MESSAGE = "买家留言";
     //商家备注
@@ -6288,7 +6480,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //备注
     private final static String MEMO = "备注";
     //付款时间
-    private final static String PAY_TIME = "付款时间";
+    private final static String PAY_TIME = "*付款时间";
     //付款时间
     private final static String ERROR_MESSAGE = "错误提示信息";
 
@@ -6363,15 +6555,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 continue;
             }
             String record = entry.getValue();
-            String[] columVals2 = StringUtils.split(record, SupplyConstants.Symbol.COMMA);
-            System.out.println(columVals2);
             String[] columVals = record.split(SupplyConstants.Symbol.COMMA);
+            for(int i=0; i<columVals.length; i++){
+                if(StringUtils.equals(ImportExcel.NULL_STRING, columVals[i])){
+                    columVals[i] = "";
+                }
+            }
             ImportOrderInfo detail = new ImportOrderInfo();
             detail.setChannelCode(channelCode);
             detail.setSellCode(sellCode);
             detail.setFlag(true);
             String shopOrderCode = getColumVal(columVals, titleResult, SHOP_ORDER_CODE);
             if(StringUtils.isNotBlank(shopOrderCode)){
+                if(shopOrderCode.contains(SupplyConstants.Symbol.MINUS)){
+                    if(detail.getFlag()){
+                        detail.setFlag(false);
+                    }
+                    setImportOrderErrorMsg(detail, "销售渠道订单号不能抱哈符号\"-\"");
+                }
                 detail.setShopOrderCode(shopOrderCode);
             }else{
                 if(detail.getFlag()){
@@ -6458,15 +6659,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             String paytime = getColumVal(columVals, titleResult, PAY_TIME);
             if(StringUtils.isNotBlank(paytime)){
-                Date date = DateUtils.parseDateTime(paytime);
+                String dateFormate = "";
+                if(paytime.contains(SupplyConstants.Symbol.XIE_GANG)){
+                    dateFormate = DateUtils.DATETIME_FORMAT2;
+                }else if(paytime.contains(SupplyConstants.Symbol.MINUS)){
+                    dateFormate = DateUtils.DATETIME_FORMAT;
+                }
+                Date date = DateUtils.parseDateTimeFormate(paytime, dateFormate);
                 if(null == date){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
-                    setImportOrderErrorMsg(detail, "付款时间格式错误");
+                    setImportOrderErrorMsg(detail, "付款时间格式错误,必须是yyyy-MM-dd HH:mm:ss或者yyyy/MM/ dd HH:mm:ss格式字符串");
                 }else{
                     detail.setPayTime(date);
                 }
+                detail.setOrignalPaytimeStr(paytime);
             }else{
                 if(detail.getFlag()){
                     detail.setFlag(false);
@@ -6691,14 +6899,14 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         Map<String, List<ImportOrderInfo>> map = new HashedMap();
+        boolean isReaptSku = false;
         for(String key: shopOrderCodes){
             List<ImportOrderInfo> _orderItemList = new ArrayList<>();
             for(ImportOrderInfo orderItem: importOrderInfoList){
                 if(isSameShop(key, orderItem)){
                     for(ImportOrderInfo _importOrderInfo: _orderItemList){
                         if(StringUtils.equals(orderItem.getSkuCode(), _importOrderInfo.getSkuCode())){
-                            orderItem.setFlag(false);
-                            setImportOrderErrorMsg(orderItem, "同一订单中的商品SKU编号不能重复");
+                            isReaptSku = true;
                         }
                     }
                     _orderItemList.add(orderItem);
@@ -6707,23 +6915,30 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //检查店铺订单下商品的内容
             checkShopOrderItemContent(_orderItemList);
             //同一个订单下的数据要么一起导入成功，要么一起导入失败
-            boolean _flag = false;
-            ImportOrderInfo _orderInfo = null;
-            for(ImportOrderInfo orderItem: _orderItemList){
-                if(!orderItem.getFlag()){
-                    _flag = true;
-                    _orderInfo = orderItem;
-                    break;
-                }
-            }
-            if(_flag){
+            if(isReaptSku){
                 for(ImportOrderInfo orderItem: importOrderInfoList){
-                    if(orderItem.getFlag()){
-                        orderItem.setFlag(false);
-                        setImportOrderErrorMsg(orderItem, String.format("同一订单中的【%s】有误！",  _orderInfo.getSkuCode()));
+                    orderItem.setFlag(false);
+                    setImportOrderErrorMsg(orderItem, "同一订单中的商品SKU编号不能重复");
+                }
+            }else {
+                boolean _flag = false;
+                ImportOrderInfo _orderInfo = null;
+                for(ImportOrderInfo orderItem: _orderItemList){
+                    if(!orderItem.getFlag()){
+                        _flag = true;
+                        _orderInfo = orderItem;
+                        break;
                     }
                 }
-                _orderItemList = new ArrayList<>();
+                if(_flag){
+                    for(ImportOrderInfo orderItem: importOrderInfoList){
+                        if(orderItem.getFlag()){
+                            orderItem.setFlag(false);
+                            setImportOrderErrorMsg(orderItem, String.format("同一订单中的【%s】有误！",  _orderInfo.getSkuCode()));
+                        }
+                    }
+                    _orderItemList = new ArrayList<>();
+                }
             }
             map.put(key, _orderItemList);
         }
@@ -6745,7 +6960,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             shopOrder.setShopOrderCode(keys[2]);
             shopOrder.setChannelCode(importOrderInfo.getChannelCode());
             shopOrder.setSellCode(importOrderInfo.getSellCode());
-            shopOrder.setCreateTime(importOrderInfo.getPayTime());
+            shopOrder.setCreateTime(new Date());
             shopOrder.setPayTime(importOrderInfo.getPayTime());
             StringBuilder buyerMessage = new StringBuilder();
             StringBuilder shopMemo = new StringBuilder();

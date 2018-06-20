@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import org.trc.domain.impower.AclResource;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.form.impower.JurisdictionTreeNode;
+import org.trc.form.impower.MenuNode;
 
 import javax.ws.rs.BeanParam;
 import java.util.List;
@@ -104,6 +105,9 @@ public interface IAclResourceBiz {
     void updateJurisdiction(JurisdictionTreeNode jurisdictionTreeNode);
 
     List<Map<String,Object>> getHtmlJurisdiction(String userId);
+
+
+    List<MenuNode> getHtml(String userId);
 
     List<AclResource> findWholeJurisdictionAndCheckedModuleByRoleId(Long roleId, AclUserAccreditInfo userAccreditInfo);
 

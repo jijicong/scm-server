@@ -1020,6 +1020,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
             WarehouseItemInfo info = new WarehouseItemInfo();
             info.setWarehouseCode(warehouseCode);
             info.setSkuCode(synItem.getItemCode());
+            info.setIsDelete(Integer.valueOf(ZeroToNineEnum.ZERO.getCode()));
             info = warehouseItemInfoService.selectOne(info);
             if( SUCCESS.equals(synItem.getCode())){
                 itemMap.put(String.valueOf(info.getId()), synItem.getItemId());

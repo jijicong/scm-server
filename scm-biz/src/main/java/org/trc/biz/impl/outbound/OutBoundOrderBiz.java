@@ -217,6 +217,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
 
     }
 
+    private String getOutboundCode(OutboundOrder order){
+        String outboundCode = order.getOutboundOrderCode();
+        int newCode = order.getNewCode();
+        return outboundCode + "_" + newCode;
+    }
+
     private boolean isCompound(String num){
         List<String> list = new ArrayList<>();
         list.add("10017");
@@ -753,6 +759,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             skuStockService.updateSkuStock(this.getStock(outboundOrder.getOutboundOrderCode(),
                     outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), true));
         }
+
+        outboundOrder.setNewCode(outboundOrder.getNewCode() + 1);
+        outBoundOrderService.updateByPrimaryKey(outboundOrder);
+
         //设置发货通知单参数
         Map<String, OutboundForm> outboundMap = new HashMap<>();
         OutboundForm outboundForm = new OutboundForm();
@@ -768,6 +778,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         try{
             identifier = redisLock.Lock(DistributeLockEnum.DELIVERY_ORDER_CREATE.getCode() + CREATE_OUTBOUND+outboundOrderCode, 500, 3000);
             if (StringUtils.isNotBlank(identifier)) {
+
                 //查询发货通知单状态，如果是成功，则返回，不在掉用接口
                 OutboundOrder outboundOrder01 = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
                 if (StringUtils.equals(outboundOrder01.getStatus(),ZeroToNineEnum.TWO.getCode())){
@@ -780,7 +791,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 String code = result.getAppcode();
                 msg = result.getDatabuffer();
                 //调用重新发货接口插入一条日志记录
-                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送",null,null);
+                String outboundOrderSeq = outboundOrder.getOutboundOrderCode() + "_" + outboundOrder.getNewCode();
+                logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送", outboundOrderSeq,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
                     if(StringUtils.equals(SUCCESS, responses.get(0).getCode())){
@@ -837,10 +849,12 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             outboundDetail.setOutboundOrderCode(outboundOrder.getOutboundOrderCode());
             List<OutboundDetail> outboundDetailList = outboundDetailService.select(outboundDetail);
             for(OutboundDetail detail : outboundDetailList){
-                OutboundDetailLogistics outboundDetailLogistics = new OutboundDetailLogistics();
-                outboundDetailLogistics.setOutboundDetailId(detail.getId());
-                List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
-                detail.setOutboundDetailLogisticsList(outboundDetailLogisticsList);
+                if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){
+                    OutboundDetailLogistics outboundDetailLogistics = new OutboundDetailLogistics();
+                    outboundDetailLogistics.setOutboundDetailId(detail.getId());
+                    List<OutboundDetailLogistics> outboundDetailLogisticsList = outboundDetailLogisticsService.select(outboundDetailLogistics);
+                    detail.setOutboundDetailLogisticsList(outboundDetailLogisticsList);
+                }
             }
             outboundOrder.setOutboundDetailList(outboundDetailList);
             outboundOrder.setWarehouseName(warehouseInfoService.selectByPrimaryKey(outboundOrder.getWarehouseId()).getWarehouseName());
@@ -1545,7 +1559,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         if (!StringUtils.isBlank(form.getEndCreateDate())) {
             criteria.andLessThan("createTime", DateUtils.formatDateTime(DateUtils.addDays(form.getEndCreateDate(), DateUtils.NORMAL_DATE_FORMAT, 1)));
         }
-        example.orderBy("status").asc();
+        example.setOrderByClause("instr('1',`status`) DESC  ");
         example.orderBy("createTime").desc();
     }
 

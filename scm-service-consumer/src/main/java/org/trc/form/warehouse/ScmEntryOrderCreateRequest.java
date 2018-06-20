@@ -52,12 +52,12 @@ public class ScmEntryOrderCreateRequest  extends ScmWarehouseRequestBase{
     /**
      * 预期到货时间
      */
-    private Date expectStartTime;
+    private String expectStartTime;
 
     /**
      * 最迟预期到货时间
      */
-    private Date expectEndTime;
+    private String expectEndTime;
 
     /**
      * 供应商编码

@@ -1,5 +1,6 @@
 package org.trc.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
@@ -18,6 +19,8 @@ public class ImportExcel {
     private static HSSFWorkbook wb;
     private static HSSFSheet sheet;
     private static HSSFRow row;
+
+    public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private static final String SEPARATOR = ",";
 
@@ -122,7 +125,12 @@ public class ImportExcel {
                 // 也可以将每个单元格的数据设置到一个javabean的属性中，此时需要新建一个javabean
                 String colVal = "";
                 if(null != row.getCell((short) j)){
-                    colVal = getStringCellValue(row.getCell((short) j)).trim();
+                    String val = getStringCellValue(row.getCell((short) j)).trim();
+                    if(StringUtils.isNotBlank(val)){
+                        colVal = val;
+                    }else{
+                        colVal = NULL_STRING;
+                    }
                 }else{
                     colVal = NULL_STRING;
                 }
@@ -152,6 +160,17 @@ public class ImportExcel {
             case HSSFCell.CELL_TYPE_NUMERIC:
                 HSSFDataFormatter dataFormatter = new HSSFDataFormatter();
                 strCell = dataFormatter.formatCellValue(cell);
+                if(StringUtils.isNotBlank(strCell)){
+                    if(strCell.contains("/") || strCell.contains("-")){
+                        try{
+                            Date date = cell.getDateCellValue();
+                            SimpleDateFormat sdf = new SimpleDateFormat(DATETIME_FORMAT);
+                            strCell = sdf.format(date);
+                        }catch (Exception e){
+
+                        }
+                    }
+                }
                 break;
             case HSSFCell.CELL_TYPE_BOOLEAN:
                 strCell = String.valueOf(cell.getBooleanCellValue());
@@ -178,7 +197,7 @@ public class ImportExcel {
      * @param cell Excel单元格
      * @return String 单元格数据内容
      */
-    private String getDateCellValue(HSSFCell cell) {
+    private static String getDateCellValue(HSSFCell cell) {
         String result = "";
         try {
             int cellType = cell.getCellType();
@@ -187,8 +206,16 @@ public class ImportExcel {
                 result = (date.getYear() + 1900) + "-" + (date.getMonth() + 1)
                         + "-" + date.getDate();
             } else if (cellType == HSSFCell.CELL_TYPE_STRING) {
-                String date = getStringCellValue(cell);
-                result = date.replaceAll("[年月]", "-").replace("日", "").trim();
+                /*String date = getStringCellValue(cell);
+                result = date.replaceAll("[年月]", "-").replace("日", "").trim();*/
+                try{
+                    Date date = cell.getDateCellValue();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    result = sdf.format(date);
+                }catch (Exception e){
+
+                }
+                result = cell.getStringCellValue();
             } else if (cellType == HSSFCell.CELL_TYPE_BLANK) {
                 result = "";
             }
@@ -212,18 +239,24 @@ public class ImportExcel {
             switch (cell.getCellType()) {
                 // 如果当前Cell的Type为NUMERIC
                 case HSSFCell.CELL_TYPE_NUMERIC:
+                    HSSFDataFormatter dataFormatter = new HSSFDataFormatter();
+                    cellvalue = dataFormatter.formatCellValue(cell);
+                    break;
+                case HSSFCell.CELL_TYPE_BOOLEAN:
+                    cellvalue = String.valueOf(cell.getBooleanCellValue());
+                    break;
                 case HSSFCell.CELL_TYPE_FORMULA: {
                     // 判断当前的cell是否为Date
                     if (HSSFDateUtil.isCellDateFormatted(cell)) {
                         // 如果是Date类型则，转化为Data格式
 
                         //方法1：这样子的data格式是带时分秒的：2011-10-12 0:00:00
-                        //cellvalue = cell.getDateCellValue().toLocaleString();
+                        cellvalue = cell.getDateCellValue().toLocaleString();
 
                         //方法2：这样子的data格式是不带带时分秒的：2011-10-12
-                        Date date = cell.getDateCellValue();
+                        /*Date date = cell.getDateCellValue();
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        cellvalue = sdf.format(date);
+                        cellvalue = sdf.format(date);*/
 
                     }
                     // 如果是纯数字
@@ -236,7 +269,7 @@ public class ImportExcel {
                 // 如果当前Cell的Type为STRIN
                 case HSSFCell.CELL_TYPE_STRING:
                     // 取得当前的Cell字符串
-                    cellvalue = cell.getRichStringCellValue().getString();
+                    cellvalue = cell.getStringCellValue();
                     break;
                 // 默认的Cell值
                 default:

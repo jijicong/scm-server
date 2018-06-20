@@ -329,9 +329,11 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
-    public List<WarehouseInfo> findWarehouse() {
+    public List<WarehouseInfo> findWarehouse(boolean isValid) {
         WarehouseInfo warehouse = new WarehouseInfo();
-        warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
+        if(isValid){
+            warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
+        }
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         if (warehouseList == null) {
             warehouseList = new ArrayList<>();
@@ -466,8 +468,10 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         //校验运行性质字段是否符合要求
         String operationalType = _warehouseInfo.getOperationalType();
+        String operationalNature = _warehouseInfo.getOperationalNature();
         String storeCorrespondChannel = _warehouseInfo.getStoreCorrespondChannel();
-        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType) &&
+                StringUtils.equals(operationalNature, OperationalNatureEnum.SELF_SUPPORT.getCode().toString())){
             if(StringUtils.equals(ValidEnum.NOVALID.getCode(), _warehouseInfo.getIsValid())){
                 Example example = new Example(WarehouseInfo.class);
                 Example.Criteria criteria = example.createCriteria();

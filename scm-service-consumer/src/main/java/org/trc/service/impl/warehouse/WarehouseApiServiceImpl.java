@@ -44,6 +44,8 @@ import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderInResponse;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutRequest;
 import org.trc.form.warehouse.allocateOrder.ScmAllocateOrderOutResponse;
+import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderRequest;
+import org.trc.form.warehouse.allocateOrder.ScmJosAllocateOrderResponse;
 import org.trc.service.warehouse.IWarehouseApiService;
 import org.trc.util.AppResult;
 import org.trc.util.DateUtils;
@@ -133,6 +135,11 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
 		return wmsInvoke(allocateOrderInRequest);
 	}
 	
+	@Override
+	public AppResult<ScmJosAllocateOrderResponse> josAllocateOrderCreate(ScmJosAllocateOrderRequest scmJosAllocateOrderRequest) {
+		return wmsInvoke(scmJosAllocateOrderRequest);
+	}
+	
     private AppResult wmsInvoke(ScmWarehouseRequestBase scmWarehouseRequestBase){
         if(StringUtils.equals(mockOuterInterface, ZeroToNineEnum.ONE.getCode())){
             return wmsInvokeMock(scmWarehouseRequestBase);
@@ -169,6 +176,9 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
         }else if(scmWarehouseRequestBase instanceof ScmAllocateOrderInRequest){
             url = externalSupplierConfig.getAllocateOrderInUrl();
             method = "调拨入库通知单";
+        }else if(scmWarehouseRequestBase instanceof ScmJosAllocateOrderRequest){
+            url = externalSupplierConfig.getJosAllocateOrderCreateUrl();
+            method = "京东仓间调拨单创建";
         }
             
         url = String.format("%s%s", externalSupplierConfig.getScmExternalUrl(), url);
@@ -236,6 +246,8 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAllocateOrderOutResponse.class);
         }else if(scmWarehouseRequestBase instanceof ScmAllocateOrderInRequest){
             response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmAllocateOrderInResponse.class);
+        }else if(scmWarehouseRequestBase instanceof ScmJosAllocateOrderRequest){
+            response = JSON.parseObject(appResult.getResult().toString()).toJavaObject(ScmJosAllocateOrderResponse.class);
         }
         appResult.setResult(response);
     }
@@ -332,17 +344,17 @@ public class WarehouseApiServiceImpl implements IWarehouseApiService {
             response.setLockQuantity(0L);
             scmInventoryQueryResponseList.add(response);
 
-            ScmInventoryQueryResponse response2 = new ScmInventoryQueryResponse();
-            response2.setWarehouseCode(queryItem.getWarehouseCode());
-            response2.setOwnerCode(queryItem.getOwnerCode());
-            response2.setItemCode(queryItem.getItemCode());
-            response2.setItemId(queryItem.getItemId());
-            response2.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
-            response2.setTotalNum(10L);
-            response2.setQuantity(10L);
-            response2.setInventoryStatus(JingdongInventoryStateEnum.Quality.getCode());//残品
-            response2.setLockQuantity(0L);
-            scmInventoryQueryResponseList.add(response2);
+//            ScmInventoryQueryResponse response2 = new ScmInventoryQueryResponse();
+//            response2.setWarehouseCode(queryItem.getWarehouseCode());
+//            response2.setOwnerCode(queryItem.getOwnerCode());
+//            response2.setItemCode(queryItem.getItemCode());
+//            response2.setItemId(queryItem.getItemId());
+//            response2.setInventoryType(JingdongInventoryTypeEnum.SALE.getCode());//可销售
+//            response2.setTotalNum(10L);
+//            response2.setQuantity(10L);
+//            response2.setInventoryStatus(JingdongInventoryStateEnum.Quality.getCode());//残品
+//            response2.setLockQuantity(0L);
+//            scmInventoryQueryResponseList.add(response2);
         }
         appResult.setResult(scmInventoryQueryResponseList);
         return appResult;

@@ -18,6 +18,8 @@ import java.util.List;
  */
 public class ShopOrder extends OrderBase {
 
+    private static final long serialVersionUID = 5954865299939357741L;
+
     // 主键
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -120,6 +122,7 @@ public class ShopOrder extends OrderBase {
     private Date payTime;
     // 创建时间,格式yyyy-mm-dd hh:mi:ss
     @NotEmpty
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date createTime;
     // 发货时间
     @NotEmpty
@@ -140,6 +143,12 @@ public class ShopOrder extends OrderBase {
     private List<OrderExt> records;
     @Transient
     private List<OrderItem> orderItems;
+
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
 
     public ShopOrder() {
 
@@ -739,5 +748,13 @@ public class ShopOrder extends OrderBase {
 
     public void setScmShopOrderCode(String scmShopOrderCode) {
         this.scmShopOrderCode = scmShopOrderCode;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }

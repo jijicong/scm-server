@@ -60,7 +60,7 @@ public class AllocateOrder extends AllocateOrderBase{
      * 收货人
      */
    // @NotBlank(message = "收货人不能为空")
-    @Length(max = 32, message = "收货人名称不得超过32个字符")
+    @Length(max = 50, message = "收货人名称不得超过50个字符")
     @FormParam("receiver")
     private String receiver;
 
@@ -83,7 +83,7 @@ public class AllocateOrder extends AllocateOrderBase{
      * 发件人
      */
     //@NotBlank(message = "发件人不能为空")
-    @Length(max = 32, message = "发件人名称不得超过32个字符")
+    @Length(max = 50, message = "发件人名称不得超过50个字符")
     @FormParam("sender")
     private String sender;
 
@@ -103,6 +103,7 @@ public class AllocateOrder extends AllocateOrderBase{
     private String senderAddress;
 
     @FormParam("memo")
+    @Length(max = 1500, message = "备注不得超过1500个字符")
     private String memo;
 
     /**
@@ -136,6 +137,13 @@ public class AllocateOrder extends AllocateOrderBase{
      */
     @Column(name = "create_operator")
     private String createOperator;
+    
+
+    /**
+     * 仓库返回调拨单号-京东仓间调拨用
+     */
+    @Column(name = "wms_allocate_order_code")
+    private String wmsAllocateOrderCode;
 
     /**
      * 创建时间,格式yyyy-mm-dd hh:mi:ss
@@ -471,6 +479,14 @@ public class AllocateOrder extends AllocateOrderBase{
 
 	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
+	}
+
+	public String getWmsAllocateOrderCode() {
+		return wmsAllocateOrderCode;
+	}
+
+	public void setWmsAllocateOrderCode(String wmsAllocateOrderCode) {
+		this.wmsAllocateOrderCode = wmsAllocateOrderCode;
 	}
 	
 	

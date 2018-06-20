@@ -8,7 +8,7 @@ import lombok.Setter;
 public class ScmAllocateOrderInResponse {
 	
     /**
-     * 仓库调拨入库单号，三方仓才有
+     * 仓库调拨入库单号
      */
     private String wmsAllocateOrderInCode;
     

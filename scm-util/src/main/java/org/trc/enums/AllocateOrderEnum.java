@@ -282,7 +282,8 @@ public class AllocateOrderEnum {
 		OUT_RECEIVE_FAIL("2","出库仓接收失败"),
 		OUT_SUCCESS("3","出库完成"),
 		OUT_EXCEPTION("4","出库异常"),
-		CANCEL("5","已取消");
+		CANCEL("5","已取消"),
+		CANCELLING("6","取消中");
 		
 		private String code;
 		private String name;

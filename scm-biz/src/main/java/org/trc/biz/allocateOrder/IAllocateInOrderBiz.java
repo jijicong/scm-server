@@ -57,4 +57,8 @@ public interface IAllocateInOrderBiz {
      */
     Response inFinishCallBack(WmsAllocateOutInRequest req);
 
+    void updateAllocateInDetail();
+
+    void retryCancelOrder();
+
 }
