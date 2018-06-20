@@ -466,8 +466,10 @@ public class WarehouseBiz implements IWarehouseBiz {
 
         //校验运行性质字段是否符合要求
         String operationalType = _warehouseInfo.getOperationalType();
+        String operationalNature = _warehouseInfo.getOperationalNature();
         String storeCorrespondChannel = _warehouseInfo.getStoreCorrespondChannel();
-        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType)){
+        if(!StringUtils.equals(OperationalTypeEnum.ONLY_WAREHOUSE.getCode(), operationalType) &&
+                StringUtils.equals(operationalNature, OperationalNatureEnum.SELF_SUPPORT.getCode().toString())){
             if(StringUtils.equals(ValidEnum.NOVALID.getCode(), _warehouseInfo.getIsValid())){
                 Example example = new Example(WarehouseInfo.class);
                 Example.Criteria criteria = example.createCriteria();
