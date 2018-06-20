@@ -329,9 +329,11 @@ public class WarehouseBiz implements IWarehouseBiz {
 
     @Override
     @Cacheable(value = SupplyConstants.Cache.WAREHOUSE)
-    public List<WarehouseInfo> findWarehouse() {
+    public List<WarehouseInfo> findWarehouse(boolean isValid) {
         WarehouseInfo warehouse = new WarehouseInfo();
-        warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
+        if(isValid){
+            warehouse.setOperationalNature(ZeroToNineEnum.ZERO.getCode());
+        }
         List<WarehouseInfo> warehouseList = warehouseInfoService.select(warehouse);
         if (warehouseList == null) {
             warehouseList = new ArrayList<>();
