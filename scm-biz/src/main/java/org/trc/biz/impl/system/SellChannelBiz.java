@@ -117,8 +117,10 @@ public class SellChannelBiz implements ISellChannelBiz{
             throw new SellChannelException(ExceptionEnum.SYSTEM_SELL_CHANNEL_SAVE_EXCEPTION, msg);
         }
         String userId = aclUserAccreditInfo.getUserId();
-        sellChannel = sellChannelService.selectOne(sellChannel);
-        logInfoService.recordLog(sellChannel, String.valueOf(sellChannel.getId()), userId, LogOperationEnum.ADD.getMessage(), "", null);
+        SellChannel sellChannelTemp = new SellChannel();
+        sellChannelTemp.setSellName(sellChannel.getSellName());
+        sellChannelTemp = sellChannelService.selectOne(sellChannelTemp);
+        logInfoService.recordLog(sellChannel, String.valueOf(sellChannelTemp.getId()), userId, LogOperationEnum.ADD.getMessage(), "", null);
 
     }
 
