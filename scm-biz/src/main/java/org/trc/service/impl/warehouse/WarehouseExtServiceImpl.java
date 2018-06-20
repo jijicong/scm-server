@@ -49,6 +49,12 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         }
         //获取仓库绑定商品信息
         List<WarehouseItemInfo> warehouseItemInfoList = getWarehouseItemInfo(skuCodes, warehouseInfoIds);
+        return this.getWarehouseInventory(warehouseInfoList, warehouseItemInfoList, inventoryType);
+    }
+
+    @Override
+    public List<ScmInventoryQueryResponse> getWarehouseInventory(List<WarehouseInfo> warehouseInfoList,
+                                                                 List<WarehouseItemInfo> warehouseItemInfoList, String inventoryType) {
         /**
          * 获取仓库库存
          */
@@ -162,7 +168,8 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
      * @param warehouseInfoIds
      * @return
      */
-    private List<WarehouseItemInfo> getWarehouseItemInfo(List<String> skuCodes, List<String> warehouseInfoIds){
+    @Override
+    public List<WarehouseItemInfo> getWarehouseItemInfo(List<String> skuCodes, List<String> warehouseInfoIds){
         if(CollectionUtils.isEmpty(skuCodes) || CollectionUtils.isEmpty(warehouseInfoIds)){
             return new ArrayList<>();
         }

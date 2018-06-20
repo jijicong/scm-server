@@ -171,6 +171,12 @@ public class ImportOrderInfo implements Serializable{
     @Transient
     private Boolean flag = true;
 
+    /**
+     * 是否门店订单
+     */
+    @Transient
+    private boolean isStoreOrder;
+
     public Long getId() {
         return id;
     }
@@ -417,5 +423,13 @@ public class ImportOrderInfo implements Serializable{
 
     public void setFlag(Boolean flag) {
         this.flag = flag;
+    }
+
+    public boolean getIsStoreOrder() {
+        return isStoreOrder;
+    }
+
+    public void setIsStoreOrder(boolean storeOrder) {
+        isStoreOrder = storeOrder;
     }
 }

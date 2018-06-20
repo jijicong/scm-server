@@ -23,6 +23,22 @@ public interface IWarehouseExtService {
     List<ScmInventoryQueryResponse> getWarehouseInventory(List<String> skuCodes,String inventoryType);
 
     /**
+     * 获取商品库存
+     * @param warehouseInfoList
+     * @param warehouseItemInfoList
+     * @param inventoryType
+     * @return
+     */
+    List<ScmInventoryQueryResponse> getWarehouseInventory(List<WarehouseInfo> warehouseInfoList, List<WarehouseItemInfo> warehouseItemInfoList, String inventoryType);
+
+    /**
+     * 查询商品对应的仓储信息
+     * @param skuCodes sku编码列表
+     * @param warehouseInfoIds 相关仓库ID
+     * @return
+     */
+    List<WarehouseItemInfo> getWarehouseItemInfo(List<String> skuCodes, List<String> warehouseInfoIds);
+    /**
      * 获取仓库类型
      * @param warehouseCode
      * @return
