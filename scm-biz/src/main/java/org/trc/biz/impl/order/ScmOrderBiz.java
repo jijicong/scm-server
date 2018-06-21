@@ -6870,10 +6870,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
 
-            setImportOrderMoney(detail, PRICE, titleResult, columVals, true);
-            setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true);
-            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, true);
-            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, true);
+            setImportOrderMoney(detail, PRICE, titleResult, columVals, true, true);
+            setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true, true);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, false, true);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, false, true);
             skuCodes.add(detail.getSkuCode());
             importOrderInfoList.add(detail);
         }
@@ -6888,8 +6888,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param titleResult
      * @param columVals
      * @param emptyCheck 空校验
+     * @param gtZeroCheck 大于0校验
      */
-    private void setImportOrderMoney(ImportOrderInfo importOrderInfo, String colum, String[] titleResult, String[] columVals, boolean emptyCheck){
+    private void setImportOrderMoney(ImportOrderInfo importOrderInfo, String colum, String[] titleResult, String[] columVals, boolean emptyCheck, boolean gtZeroCheck){
         String money = columVals[getColumIndex(titleResult, colum)];
         if(StringUtils.isNotBlank(money)){
             try{
@@ -6902,6 +6903,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     importOrderInfo.setPostFee(bigDecimal);
                 }else if(PRICE_TAX.equals(colum)){
                     importOrderInfo.setPriceTax(bigDecimal);
+                }
+                if(gtZeroCheck && bigDecimal.compareTo(new BigDecimal(0))<= 0){
+                    importOrderInfo.setFlag(false);
+                    setImportOrderErrorMsg(importOrderInfo, colum+"必须大于0");
                 }
             }catch (Exception e){
                 importOrderInfo.setFlag(false);
@@ -7152,8 +7157,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
                 num += detail.getNum();
                 payment = payment.add(detail.getPayment());
-                postFee = postFee.add(detail.getPostFee());
-                tax = tax.add(detail.getPriceTax());
+                if(null != detail.getPostFee()){
+                    postFee = postFee.add(detail.getPostFee());
+                }
+                if(null != detail.getPriceTax()){
+                    tax = tax.add(detail.getPriceTax());
+                }
             }
             if(buyerMessage.length() > 0){
                 shopOrder.setBuyerMessage(buyerMessage.toString());
