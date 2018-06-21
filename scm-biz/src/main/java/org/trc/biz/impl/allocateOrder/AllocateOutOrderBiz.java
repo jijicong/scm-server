@@ -412,6 +412,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 	        Example example = new Example(WarehouseItemInfo.class);
 	        Example.Criteria ca = example.createCriteria();
 	        ca.andIn("skuCode", skuCodeList);
+	        ca.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
 	        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
 	        for (AllocateSkuDetail detail : detailList) {
 	        	if (AllocateOrderInventoryStatusEnum.Quality.getCode().equals(detail.getInventoryType())) {

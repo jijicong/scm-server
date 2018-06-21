@@ -1783,6 +1783,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andIn("skuCode", skuCodes);
             warehouseItemCriteria.andEqualTo("warehouseInfoId", warehouseInfoId);
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
+            warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
                 warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
             }

@@ -1112,6 +1112,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             whInfoList.add(form.getWarehouseInfoInId());
             whInfoList.add(form.getWarehouseInfoOutId());
             
+            warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             warehouseItemCriteria.andIn("skuCode", skuCodes);
             warehouseItemCriteria.andIn("warehouseCode", whInfoList);
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
@@ -1151,6 +1152,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             	Example.Criteria tmpCriteria = tmpExample.createCriteria();
             	
             	tmpCriteria.andIn("id", itemInfoIdList);
+            	tmpCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             	
             	if (null != pagenation) {
             		pagenation = warehouseItemInfoService.pagination(tmpExample, pagenation, new QueryModel());
@@ -1356,6 +1358,8 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
         criteria.andIn("skuCode", skuList);
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
+        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
+        
         whItemList = warehouseItemInfoService.selectByExample(example);
         
 		ScmInventoryQueryRequest request = new ScmInventoryQueryRequest();
