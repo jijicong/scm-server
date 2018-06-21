@@ -2506,6 +2506,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(Skus skus: skusList){
                 if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
                     orderItem.setSpuCode(skus.getSpuCode());
+                    orderItem.setItemName(skus.getSkuName());
                     orderItem.setSpecNatureInfo(skus.getSpecInfo());
                     break;
                 }
@@ -2515,6 +2516,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(OrderItem _orderItem: shopOrder.getOrderItems()){
                 for(Skus skus: skusList){
                     if(StringUtils.equals(_orderItem.getSkuCode(), skus.getSkuCode())){
+                        _orderItem.setItemName(skus.getSkuName());
                         _orderItem.setSpuCode(skus.getSpuCode());
                         _orderItem.setSpecNatureInfo(skus.getSpecInfo());
                         break;
@@ -3168,6 +3170,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("warehouseCode", warehoseCodes);
         criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("isDelete", "0");
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
         AssertUtil.notEmpty(warehouseItemInfoList, String.format("发货单[%s]的相关商品全部不可用", CommonUtil.converCollectionToString(outboudOrderCodes)));
         return warehouseItemInfoList;
@@ -6161,6 +6164,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
+    @SupplierOrderCacheEvict
     public Response importOrder(String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(sellCode, "销售渠道编码不能为空");
         AssertUtil.notNull(uploadedInputStream, "上传文件不能为空");
@@ -6780,6 +6784,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
                 setImportOrderErrorMsg(detail, "商品交易数不能为空");
             }
+
+
 
             setImportOrderMoney(detail, PRICE, titleResult, columVals, true);
             setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true);
