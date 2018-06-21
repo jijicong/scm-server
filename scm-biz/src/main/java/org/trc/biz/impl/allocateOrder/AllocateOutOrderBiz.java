@@ -593,7 +593,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     @Override
     public void retryCancelOrder() {
-//        if (!iRealIpService.isRealTimerService()) return;
+        if (!iRealIpService.isRealTimerService()) return;
         AllocateOutOrder orderTemp = new AllocateOutOrder();
         orderTemp.setStatus(AllocateOutOrderStatusEnum.CANCELLING.getCode());
         List<AllocateOutOrder> list = allocateOutOrderService.select(orderTemp);
