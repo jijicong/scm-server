@@ -6781,10 +6781,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 setImportOrderErrorMsg(detail, "商品交易数不能为空");
             }
 
-            setImportOrderMoney(detail, PRICE, titleResult, columVals);
-            setImportOrderMoney(detail, PAYMENT, titleResult, columVals);
-            setImportOrderMoney(detail, POST_FEE, titleResult, columVals);
-            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals);
+            setImportOrderMoney(detail, PRICE, titleResult, columVals, true);
+            setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, true);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, true);
             skuCodes.add(detail.getSkuCode());
             importOrderInfoList.add(detail);
         }
