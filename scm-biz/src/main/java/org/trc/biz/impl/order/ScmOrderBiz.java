@@ -2027,6 +2027,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //isScmItems(tmpOrderItemList);
         List<OrderItem> selfPurcharseOrderItemList = new ArrayList<>();//自采商品
         List<String> skuCodes = new ArrayList<>();
+        List<String> _skuCodes = new ArrayList<>();
         List<OrderItem> supplierOrderItemList = new ArrayList<>();//一件代发
         for(ShopOrder shopOrder: shopOrderList){
             for (OrderItem orderItem : shopOrder.getOrderItems()) {
@@ -2034,8 +2035,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 if (orderItem.getSkuCode().startsWith(SP0) &&
                         !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
+                    skuCodes.add(orderItem.getSkuCode());
                     if(!orderItem.getIsStoreOrder()){//非门店订单
-                        skuCodes.add(orderItem.getSkuCode());
+                        _skuCodes.add(orderItem.getSkuCode());
                     }
                 }
                 if (orderItem.getSkuCode().startsWith(SP1)) {
@@ -2063,14 +2065,22 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseInfoIds.add(warehouseInfo2.getId().toString());
             }
             List<WarehouseItemInfo> warehouseItemInfoList = warehouseExtService.getWarehouseItemInfo(skuCodes, warehouseInfoIds);
-            if(selfPurcharseOrderItemList.size() > skuCodes.size()){//存在门店订单
+            if(skuCodes.size() > _skuCodes.size()){//存在门店订单
                 //校验门店订单产品仓库绑定信息
                 checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
             }
-            if(skuCodes.size() > 0){
+            if(_skuCodes.size() > 0){
                 //查询仓库库存
                 if(!CollectionUtils.isEmpty(warehouseItemInfoList)){
-                    scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(warehouseInfoList, warehouseItemInfoList, JingdongInventoryTypeEnum.SALE.getCode());
+                    List<WarehouseItemInfo> _warehouseItemInfoList = new ArrayList<>();
+                    for(String skuCode: _skuCodes){
+                        for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+                            if(StringUtils.equals(skuCode, warehouseItemInfo.getSkuCode())){
+                                _warehouseItemInfoList.add(warehouseItemInfo);
+                            }
+                        }
+                    }
+                    scmInventoryQueryResponseList = warehouseExtService.getWarehouseInventory(warehouseInfoList, _warehouseItemInfoList, JingdongInventoryTypeEnum.SALE.getCode());
                 }
             }
             //获取自采商品本地库存
@@ -2496,6 +2506,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(Skus skus: skusList){
                 if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
                     orderItem.setSpuCode(skus.getSpuCode());
+                    orderItem.setItemName(skus.getSkuName());
                     orderItem.setSpecNatureInfo(skus.getSpecInfo());
                     break;
                 }
@@ -2505,6 +2516,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             for(OrderItem _orderItem: shopOrder.getOrderItems()){
                 for(Skus skus: skusList){
                     if(StringUtils.equals(_orderItem.getSkuCode(), skus.getSkuCode())){
+                        _orderItem.setItemName(skus.getSkuName());
                         _orderItem.setSpuCode(skus.getSpuCode());
                         _orderItem.setSpecNatureInfo(skus.getSpecInfo());
                         break;
@@ -3158,6 +3170,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("warehouseCode", warehoseCodes);
         criteria.andIn("skuCode", skuCodes);
+        criteria.andEqualTo("isDelete", "0");
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
         AssertUtil.notEmpty(warehouseItemInfoList, String.format("发货单[%s]的相关商品全部不可用", CommonUtil.converCollectionToString(outboudOrderCodes)));
         return warehouseItemInfoList;
@@ -6151,6 +6164,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
+    @SupplierOrderCacheEvict
     public Response importOrder(String sellCode, InputStream uploadedInputStream, FormDataContentDisposition fileDetail, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(sellCode, "销售渠道编码不能为空");
         AssertUtil.notNull(uploadedInputStream, "上传文件不能为空");
@@ -6771,10 +6785,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 setImportOrderErrorMsg(detail, "商品交易数不能为空");
             }
 
-            setImportOrderMoney(detail, PRICE, titleResult, columVals);
-            setImportOrderMoney(detail, PAYMENT, titleResult, columVals);
-            setImportOrderMoney(detail, POST_FEE, titleResult, columVals);
-            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals);
+
+
+            setImportOrderMoney(detail, PRICE, titleResult, columVals, true);
+            setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, true);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, true);
             skuCodes.add(detail.getSkuCode());
             importOrderInfoList.add(detail);
         }
@@ -6786,10 +6802,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 设置导入订单金额
      * @param importOrderInfo
      * @param colum
+     * @param titleResult
      * @param columVals
-     * @return
+     * @param emptyCheck 空校验
      */
-    private void setImportOrderMoney(ImportOrderInfo importOrderInfo, String colum, String[] titleResult, String[] columVals){
+    private void setImportOrderMoney(ImportOrderInfo importOrderInfo, String colum, String[] titleResult, String[] columVals, boolean emptyCheck){
         String money = columVals[getColumIndex(titleResult, colum)];
         if(StringUtils.isNotBlank(money)){
             try{
@@ -6807,6 +6824,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 importOrderInfo.setFlag(false);
                 setImportOrderErrorMsg(importOrderInfo, String.format("%s格式错误", colum));
                 log.error(String.format("商品%s的%s数据格式错误", importOrderInfo.getSkuCode(), colum), e);
+            }
+        }else{
+            if(emptyCheck){
+                importOrderInfo.setFlag(false);
+                setImportOrderErrorMsg(importOrderInfo, colum+"不能为空");
             }
         }
     }
