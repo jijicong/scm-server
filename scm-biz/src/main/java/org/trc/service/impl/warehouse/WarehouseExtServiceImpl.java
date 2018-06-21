@@ -181,7 +181,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
         criteria.andIn("skuCode", skuCodes);
         criteria.andEqualTo("itemType", ItemTypeEnum.NOEMAL.getCode());//正常的商品
         criteria.andEqualTo("noticeStatus", ItemNoticeStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        criteria.andEqualTo("isDelete", "0");
+        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
         List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
         //AssertUtil.notEmpty(warehouseItemInfoList, "还没有跟仓库绑定商品");
         if(CollectionUtils.isEmpty(warehouseItemInfoList)){

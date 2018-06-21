@@ -785,7 +785,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     msg = "已经通知仓库重新发货成功";
                     return ResultUtil.createSuccessResult("已经通知仓库重新发货成功","");
                 }
-                result = scmOrderBiz.deliveryOrderCreate(outboundMap);
+                result = scmOrderBiz.deliveryOrderCreate(outboundMap, true);
 
                 logger.info("调用奇门接口结束<--------");
                 String code = result.getAppcode();
