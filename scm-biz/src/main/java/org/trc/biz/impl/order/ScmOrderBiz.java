@@ -2930,7 +2930,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         ScmDeliveryOrderCreateRequest requestJD = new ScmDeliveryOrderCreateRequest();
         requestJD.setWarehouseType(WarehouseTypeEnum.Jingdong.getCode());
         List<ScmDeliveryOrderDO> scmDeliveryOrderDOListJD = new ArrayList<>();
-        //自营仓库下单参数
+        //自营仓库下单 参数
         ScmDeliveryOrderCreateRequest requestZY = new ScmDeliveryOrderCreateRequest();
         requestZY.setWarehouseType(WarehouseTypeEnum.Zy.getCode());
         List<ScmDeliveryOrderDO> scmDeliveryOrderDOListZY = new ArrayList<>();

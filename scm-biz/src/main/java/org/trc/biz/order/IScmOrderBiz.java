@@ -200,7 +200,7 @@ public interface IScmOrderBiz {
     void handlerOrderLogisticsInfo(SupplierOrderInfo supplierOrderInfo);
 
     /**
-     * 创建发货单
+     * 创建发货 单
      * @param outboundMap, 里面的key是采购单编码,OutboundForm是采购单对象和采购单明细列表
      * @return
      */
