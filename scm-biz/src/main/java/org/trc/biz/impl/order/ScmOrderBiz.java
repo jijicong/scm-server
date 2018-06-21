@@ -6025,7 +6025,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(successOutbound.size() > 0){
             for(ScmDeliveryOrderCreateResponse response: successOutbound){
-                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.WAITING, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
+                for(Map.Entry<String, OutboundForm> entry: entries){
+                    OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+                    if(StringUtils.equals(response.getDeliveryOrderCode(), outboundOrder.getOutboundOrderCode())){
+                        OutboundOrderStatusEnum outboundOrderStatusEnum = OutboundOrderStatusEnum.WAITING;
+                        if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){//门店订单
+                            outboundOrderStatusEnum = OutboundOrderStatusEnum.ALL_GOODS;
+                        }
+                        updateOutboundOrderAfterCreate(outboundOrderStatusEnum, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
+                    }
+                }
             }
         }
         Example example = new Example(WarehouseInfo.class);
@@ -6260,7 +6269,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //获取导入订单sku明细
             List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(aclUserAccreditInfo.getChannelCode(), sellCode, titleResult, contentResult, sellChannel);
             //检查导入订单是否重复导入
-            checkOrderRepeat(importOrderInfoList);
+            //checkOrderRepeat(importOrderInfoList);
             Set<String> skuCodes = new HashSet<>();
             for(ImportOrderInfo importOrderInfo: importOrderInfoList){
                 skuCodes.add(importOrderInfo.getSkuCode());
@@ -6304,7 +6313,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 检查导入订单是否重复导入
      * @param importOrderInfoList
      */
-    private void checkOrderRepeat(List<ImportOrderInfo> importOrderInfoList){
+    /*private void checkOrderRepeat(List<ImportOrderInfo> importOrderInfoList){
        Set<String> channelCodes = new HashSet<>();
        Set<String> sellCodes = new HashSet<>();
        Set<String> shopOrderCodes = new HashSet<>();
@@ -6330,7 +6339,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                }
            }
        }
-    }
+    }*/
 
     private void setImportSkuInfo(List<ImportOrderInfo> importOrderInfoList, List<Skus> skusList){
         if(!CollectionUtils.isEmpty(skusList)){
