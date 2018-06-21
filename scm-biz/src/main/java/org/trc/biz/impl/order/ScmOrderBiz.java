@@ -6719,67 +6719,80 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 setImportOrderErrorMsg(detail, "销售渠道订单号不能为空");
             }
 
+            String receiverName = getColumVal(columVals, titleResult, RECIVE_NAME);
+            if(StringUtils.isNotBlank(receiverName)){
+                detail.setReceiverName(receiverName);
+            }
+
+            String receiverMobil = getColumVal(columVals, titleResult, RECIVE_MOBILE);
+            if(StringUtils.isNotBlank(receiverMobil)){
+                if(!CommonUtil.checkMobilePhone(receiverMobil)){
+                    if(detail.getFlag()){
+                        detail.setFlag(false);
+                    }
+                    setImportOrderErrorMsg(detail, "收货人手机号码格式错误");
+                }
+                detail.setReceiverMobile(receiverMobil);
+            }
+
+            String receiverProvince = getColumVal(columVals, titleResult, RECIVE_PROVINCE);
+            if(StringUtils.isNotBlank(receiverProvince)){
+                detail.setReceiverProvince(receiverProvince);
+            }
+
+            String receiverCity = getColumVal(columVals, titleResult, RECIVE_CITY);
+            if(StringUtils.isNotBlank(receiverCity)){
+                detail.setReceiverCity(receiverCity);
+            }
+
+            String receiverDistrict = getColumVal(columVals, titleResult, RECIVE_DISTRICT);
+            if(StringUtils.isNotBlank(receiverDistrict)){
+                detail.setReceiverDistrict(receiverDistrict);
+            }
+
+            String receiverAddress = getColumVal(columVals, titleResult, RECIVE_ADDRESS);
+            if(StringUtils.isNotBlank(receiverAddress)){
+                detail.setReceiverAddress(receiverAddress);
+            }
             if(!StringUtils.equals(String.valueOf(SellChannelTypeEnum.STORE.getCode()), sellChannel.getSellType())){//非门店订单
-                String receiverName = getColumVal(columVals, titleResult, RECIVE_NAME);
-                if(StringUtils.isNotBlank(receiverName)){
-                    detail.setReceiverName(receiverName);
-                }else{
+                if(StringUtils.isBlank(receiverName)){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
                     setImportOrderErrorMsg(detail, "收货人姓名不能为空");
                 }
 
-                String receiverMobil = getColumVal(columVals, titleResult, RECIVE_MOBILE);
-                if(StringUtils.isNotBlank(receiverMobil)){
+                if(StringUtils.isBlank(receiverMobil)){
                     if(!CommonUtil.checkMobilePhone(receiverMobil)){
                         if(detail.getFlag()){
                             detail.setFlag(false);
                         }
-                        setImportOrderErrorMsg(detail, "收货人手机号码格式错误");
+                        setImportOrderErrorMsg(detail, "收货人手机号不能为空");
                     }
-                    detail.setReceiverMobile(receiverMobil);
-                }else{
-                    if(detail.getFlag()){
-                        detail.setFlag(false);
-                    }
-                    setImportOrderErrorMsg(detail, "收货人手机号不能为空");
                 }
 
-                String receiverProvince = getColumVal(columVals, titleResult, RECIVE_PROVINCE);
-                if(StringUtils.isNotBlank(receiverProvince)){
-                    detail.setReceiverProvince(receiverProvince);
-                }else{
+                if(StringUtils.isBlank(receiverProvince)){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
                     setImportOrderErrorMsg(detail, "收货省份不能为空");
                 }
 
-                String receiverCity = getColumVal(columVals, titleResult, RECIVE_CITY);
-                if(StringUtils.isNotBlank(receiverCity)){
-                    detail.setReceiverCity(receiverCity);
-                }else{
+                if(StringUtils.isBlank(receiverCity)){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
                     setImportOrderErrorMsg(detail, "收货城市不能为空");
                 }
 
-                String receiverDistrict = getColumVal(columVals, titleResult, RECIVE_DISTRICT);
-                if(StringUtils.isNotBlank(receiverDistrict)){
-                    detail.setReceiverDistrict(receiverDistrict);
-                }else{
+                if(StringUtils.isBlank(receiverDistrict)){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
                     setImportOrderErrorMsg(detail, "收货地区不能为空");
                 }
 
-                String receiverAddress = getColumVal(columVals, titleResult, RECIVE_ADDRESS);
-                if(StringUtils.isNotBlank(receiverAddress)){
-                    detail.setReceiverAddress(receiverAddress);
-                }else{
+                if(StringUtils.isBlank(receiverAddress)){
                     if(detail.getFlag()){
                         detail.setFlag(false);
                     }
