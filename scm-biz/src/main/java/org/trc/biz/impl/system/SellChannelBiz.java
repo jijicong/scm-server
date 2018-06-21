@@ -26,6 +26,7 @@ import org.trc.util.Pagenation;
 import org.trc.util.cache.SellChannelCacheEvict;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -128,12 +129,15 @@ public class SellChannelBiz implements ISellChannelBiz{
     }
 
     private boolean isValidStoreId(String storeId, Long id){
-        SellChannel sellChannel = new SellChannel();
-        sellChannel.setStoreId(storeId);
+        Example example = new Example(SellChannel.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("storeId", storeId);
         if (id != null ) {
-            sellChannel.setId(id);
+            List<Long> ids = new ArrayList<>();
+            ids.add(id);
+            criteria.andNotIn("id", ids);
         }
-        List<SellChannel> sellChannels = sellChannelService.select(sellChannel);
+        List<SellChannel> sellChannels = sellChannelService.selectByExample(example);
         if(sellChannels != null && sellChannels.size() > 0){
             return true;
         }else{

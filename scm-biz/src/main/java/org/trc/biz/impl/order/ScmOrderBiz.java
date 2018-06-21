@@ -2920,7 +2920,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     @Override
-    public AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap) {
+    public AppResult<List<ScmDeliveryOrderCreateResponse>> deliveryOrderCreate(Map<String, OutboundForm> outboundMap, boolean isReCreate) {
         Set<Map.Entry<String, OutboundForm>> entries = outboundMap.entrySet();
         //获取采购单相关仓库
         List<WarehouseInfo> warehouseInfoList = getOutboundWarehouseInfo(entries);
@@ -2944,13 +2944,20 @@ public class ScmOrderBiz implements IScmOrderBiz {
             sellCodes.add(outboundOrder.getSellCode());
             ScmDeliveryOrderDO scmDeliveryOrderDO = getScmDeliveryOrderDO(outboundOrder, warehouseItemInfoList);
             ScmOrderTypeEnum scmOrderType = ScmOrderTypeEnum.NOT_STORE_ORDRE;
+            String outboundOrderCode = outboundOrder.getOutboundOrderCode();
             for(WarehouseInfo warehouseInfo: warehouseInfoList){
                 if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseInfo.getCode())){
                     if(StringUtils.equals(WarehouseOperateNatureEnum.OUTER_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//第三方仓库
                         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(),warehouseInfo.getIsThroughWms().toString())){//京东仓储
+                            String code = outboundOrderCode;
+                            if(isReCreate){
+                                code = outboundOrderCode + "_"  + outboundOrder.getNewCode();
+                            }
+                            scmDeliveryOrderDO.setDeliveryOrderCode(code);//发货单编码
                             scmDeliveryOrderDOListJD.add(scmDeliveryOrderDO);
                         }
                     }else if(StringUtils.equals(WarehouseOperateNatureEnum.SELF_WAREHOUSE.getCode(), warehouseInfo.getOperationalNature())){//自营仓库
+                        scmDeliveryOrderDO.setDeliveryOrderCode(outboundOrderCode);//发货单编码
                         scmDeliveryOrderDOListZY.add(scmDeliveryOrderDO);
                     }
                     if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){//门店订单
@@ -3166,8 +3173,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
     private ScmDeliveryOrderDO getScmDeliveryOrderDO(OutboundOrder outboundOrder, List<WarehouseItemInfo> warehouseItemInfoList){
         ScmDeliveryOrderDO scmDeliveryOrderDO = new ScmDeliveryOrderDO();
-        String code = outboundOrder.getOutboundOrderCode() + "_"  + outboundOrder.getNewCode();
-        scmDeliveryOrderDO.setDeliveryOrderCode(code);//发货单编码
         for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
             if(StringUtils.equals(outboundOrder.getWarehouseCode(), warehouseItemInfo.getWarehouseCode())){
                 scmDeliveryOrderDO.setWarehouseCode(warehouseItemInfo.getWmsWarehouseCode());
@@ -5912,7 +5917,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private void noticeWarehouseSendGoods(Map<String, OutboundForm> outboundMap){
         //调用仓库接口创建发货单
-        AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = deliveryOrderCreate(outboundMap);
+        AppResult<List<ScmDeliveryOrderCreateResponse>> appResult = deliveryOrderCreate(outboundMap, false);
         //更新发货单状态
         updateOutboudOrderStatus(outboundMap, appResult);
     }
