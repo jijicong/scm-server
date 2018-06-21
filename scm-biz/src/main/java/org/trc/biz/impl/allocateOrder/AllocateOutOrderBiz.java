@@ -364,10 +364,15 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 							&& !DateCheckUtil.checkDate(outOrder.getUpdateTime()))) {
 			throw new AllocateOutOrderException(ExceptionEnum.ALLOCATE_OUT_ORDER_NOTICE_EXCEPTION, "当前状态不能通知仓库");
 		}
-		WarehouseInfo whi = new WarehouseInfo();
-		whi.setCode(outOrder.getOutWarehouseCode());
-		WarehouseInfo warehouse = warehouseInfoService.selectOne(whi);
-		AssertUtil.notNull(warehouse, "调出仓库不存在");
+		WarehouseInfo queryWhi = new WarehouseInfo();
+		
+		queryWhi.setCode(outOrder.getInWarehouseCode());
+		WarehouseInfo inWarehouse = warehouseInfoService.selectOne(queryWhi);
+		AssertUtil.notNull(inWarehouse, "调入仓库不存在");
+		
+		queryWhi.setCode(outOrder.getOutWarehouseCode());
+		WarehouseInfo outWarehouse = warehouseInfoService.selectOne(queryWhi);
+		AssertUtil.notNull(outWarehouse, "调出仓库不存在");
 		
 		List<AllocateSkuDetail> detailList = allocateSkuDetailService.getDetailListByOrderCode(outOrder.getAllocateOrderCode());
 
@@ -433,17 +438,17 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			orderDo.setIsvSource(jDWmsConstantConfig.getIsvSource());//开放平台的ISV编号，编号线下获取
 			orderDo.setOwnerCode(jDWmsConstantConfig.getDeptNo());// 开放平台事业部编号
 			orderDo.setShopNo(jDWmsConstantConfig.getShopNo());// 店铺编号
-			orderDo.setWarehouseCode(warehouse.getWmsWarehouseCode());//开放平台库房编号
+			orderDo.setWarehouseCode(outWarehouse.getWmsWarehouseCode());//开放平台库房编号
 			orderDo.setShipperNo(jDWmsConstantConfig.getShipperNo()); // 承运商编号
 			orderDo.setSalePlatformSource(jDWmsConstantConfig.getSalePlatformSource());//销售平台编号
 			orderDo.setReciverName(outOrder.getReceiver());//客户姓名
 			orderDo.setReciverMobile(outOrder.getReceiverMobile());//客户手机
 			orderDo.setOrderType(JdDeliverOrderTypeEnum.B2B.getCode()); // b2b
 			
-			orderDo.setReciverProvince(getAreaName(warehouse.getProvince(), "Province"));// 省
-			orderDo.setReciverCity(getAreaName(warehouse.getCity(), "City"));// 城市
-			orderDo.setReciverCountry(getAreaName(warehouse.getArea(), "District"));// 区
-			orderDo.setReciverDetailAddress(warehouse.getAddress()); // 地址取自仓库
+			orderDo.setReciverProvince(getAreaName(inWarehouse.getProvince(), "Province"));// 省
+			orderDo.setReciverCity(getAreaName(inWarehouse.getCity(), "City"));// 城市
+			orderDo.setReciverCountry(getAreaName(inWarehouse.getArea(), "District"));// 区
+			orderDo.setReciverDetailAddress(inWarehouse.getAddress()); // 地址取自仓库
 			orderDo.setOrderMark(jDWmsConstantConfig.getOrderMark());// 订单标记位
 			
 			scmDeleveryOrderDOList.add(orderDo);
@@ -466,7 +471,9 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			logOp = LogOperationEnum.ALLOCATE_ORDER_OUT_NOTICE_SUCC.getMessage();
 			ScmAllocateOrderOutResponse rep = (ScmAllocateOrderOutResponse) response.getResult();
 			wmsAllocatOutCode = rep.getWmsAllocateOrderOutCode();
-			orderSeq = (outOrder.getOutOrderSeq() == null ? 0 : outOrder.getOutOrderSeq()) + 1;
+			if (StringUtils.isNotBlank(outOrder.getWmsAllocateOutOrderCode())) {// 重新发货
+				orderSeq = (outOrder.getOutOrderSeq() == null ? 0 : outOrder.getOutOrderSeq()) + 1;
+			}
 			resultMsg = "调拨出库通知成功！";
 		} else {
 			status = AllocateOutOrderStatusEnum.OUT_RECEIVE_FAIL.getCode();
@@ -474,7 +481,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 			errMsg = response.getDatabuffer();
 			resultMsg = "调拨出库通知失败！";
 		}
-        logInfoService.recordLog(new AllocateOutOrder(), id.toString(), warehouse.getWarehouseName(),
+        logInfoService.recordLog(new AllocateOutOrder(), id.toString(), outWarehouse.getWarehouseName(),
         		logOp, errMsg, null);
 		
 		allocateOutOrderService.updateOutOrderById(status, id, errMsg, wmsAllocatOutCode, orderSeq);
