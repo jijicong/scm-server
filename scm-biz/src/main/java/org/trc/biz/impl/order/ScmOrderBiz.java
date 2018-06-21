@@ -4384,6 +4384,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(SkuStock.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", skuCodeList);
+        criteria.andEqualTo("isDeleted", ZeroToNineEnum.ZERO.getCode());
         return skuStockService.selectByExample(example);
     }
 
