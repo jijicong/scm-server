@@ -1007,6 +1007,9 @@ public class GoodsBiz implements IGoodsBiz {
     private ScmItemSyncRequest setItemsSynchronizeRequest(List<WarehouseItemInfo> list){
 
         WarehouseInfo warehouseInfo = warehouseInfoService.selectByPrimaryKey(list.get(0).getWarehouseInfoId());
+        if(StringUtils.equals(warehouseInfo.getOperationalNature(), OperationalNatureEnum.SELF_SUPPORT.getCode())){
+            return null;
+        }
         if(StringUtils.equals(warehouseInfo.getIsNoticeWarehouseItems(), ZeroToNineEnum.ZERO.getCode())){
             return null;
         }
