@@ -740,7 +740,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
                 throw new PurchaseOrderException(ExceptionEnum.PURCHASE_PURCHASE_ORDER_SAVE_EXCEPTION, msg);
             }
 
-            if(purchaseDetail.getTotalPurchaseAmountD() != null){
+            if(purchaseDetail.getTotalPurchaseAmountD() != null && purchaseDetail.getTotalPurchaseAmountD().compareTo(BigDecimal.ZERO) > 0){
                 totalPrice = totalPrice.add(purchaseDetail.getTotalPurchaseAmountD());
                 BigDecimal bd = purchaseDetail.getPurchasePriceD().multiply(new BigDecimal(100));
                 //设置采购价格*100
@@ -1783,6 +1783,7 @@ public class PurchaseOrderBiz implements IPurchaseOrderBiz{
             warehouseItemCriteria.andIn("skuCode", skuCodes);
             warehouseItemCriteria.andEqualTo("warehouseInfoId", warehouseInfoId);
             warehouseItemCriteria.andEqualTo("noticeStatus", NoticsWarehouseStateEnum.SUCCESS.getCode());
+            warehouseItemCriteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
             if(StringUtils.isNotBlank(barCode)){
                 warehouseItemCriteria.andLike("barCode", "%" + barCode + "%");
             }

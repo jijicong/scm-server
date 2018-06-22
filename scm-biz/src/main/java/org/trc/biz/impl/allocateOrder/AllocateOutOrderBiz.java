@@ -412,6 +412,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 	        Example example = new Example(WarehouseItemInfo.class);
 	        Example.Criteria ca = example.createCriteria();
 	        ca.andIn("skuCode", skuCodeList);
+	        ca.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
 	        List<WarehouseItemInfo> warehouseItemInfoList = warehouseItemInfoService.selectByExample(example);
 	        for (AllocateSkuDetail detail : detailList) {
 	        	if (AllocateOrderInventoryStatusEnum.Quality.getCode().equals(detail.getInventoryType())) {
@@ -592,7 +593,7 @@ public class AllocateOutOrderBiz implements IAllocateOutOrderBiz {
 
     @Override
     public void retryCancelOrder() {
-//        if (!iRealIpService.isRealTimerService()) return;
+        if (!iRealIpService.isRealTimerService()) return;
         AllocateOutOrder orderTemp = new AllocateOutOrder();
         orderTemp.setStatus(AllocateOutOrderStatusEnum.CANCELLING.getCode());
         List<AllocateOutOrder> list = allocateOutOrderService.select(orderTemp);
