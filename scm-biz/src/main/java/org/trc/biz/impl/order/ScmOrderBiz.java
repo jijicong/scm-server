@@ -2070,12 +2070,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseInfoIds.add(warehouseInfo2.getId().toString());
             }
             List<WarehouseItemInfo> warehouseItemInfoList = warehouseExtService.getWarehouseItemInfo(skuCodes, warehouseInfoIds);
-            if(skuCodes.size() > _skuCodes.size()){//存在门店订单
+            /*if(skuCodes.size() > _skuCodes.size()){//存在门店订单
                 //校验门店订单产品仓库绑定信息
                 checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
                 if(shopOrderList.size() == 0){
                     return getEmptyOrderReturnMap(skuWarehouseMap);
                 }
+            }*/
+            //校验订单产品仓库绑定信息
+            checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
+            if(shopOrderList.size() == 0){
+                return getEmptyOrderReturnMap(skuWarehouseMap);
             }
             if(_skuCodes.size() > 0){
                 //查询仓库库存
@@ -2251,12 +2256,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Iterator<ShopOrder> it = shopOrderList.iterator();
         while(it.hasNext()){
             ShopOrder shopOrder = it.next();
-            if(shopOrder.getIsStoreOrder()){
-                boolean _flag = true;
-                Iterator<OrderItem> orderItems = shopOrder.getOrderItems().iterator();
-                while (orderItems.hasNext()){
-                    OrderItem orderItem = orderItems.next();
-                    boolean flag = false;
+            boolean _flag = true;
+            Iterator<OrderItem> orderItems = shopOrder.getOrderItems().iterator();
+            while (orderItems.hasNext()){
+                OrderItem orderItem = orderItems.next();
+                boolean flag = false;
+                if(shopOrder.getIsStoreOrder()) {//门店订单
                     for(WarehouseInfo warehouseInfo: storeWarehouseInfoList){
                         if(StringUtils.equals(orderItem.getSellCode(), warehouseInfo.getStoreCorrespondChannel())){
                             for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
@@ -2268,16 +2273,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             }
                         }
                     }
-                    if(!flag){
-                        if(_flag){
-                            _flag = false;
+                }else {//非门店订单
+                    for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+                        if(StringUtils.equals(orderItem.getSkuCode(), warehouseItemInfo.getSkuCode())){
+                            flag = true;
+                            break;
                         }
-                        failShopOrderList.add(shopOrder);
-                        failOrderItems.add(orderItem);
                     }
                 }
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
-                    if(!_flag){
+
+                if(!flag){
+                    if(_flag){
+                        _flag = false;
+                    }
+                    failShopOrderList.add(shopOrder);
+                    failOrderItems.add(orderItem);
+                }
+            }
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
+                if(!_flag){
+                    if(shopOrder.getIsStoreOrder()){
                         it.remove();
                     }
                 }
@@ -7104,10 +7119,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     private void setImportOrderErrorMsg(ImportOrderInfo importOrderInfo, String msg){
-        if(StringUtils.isBlank(importOrderInfo.getErrorMessage())){
+        /*if(StringUtils.isBlank(importOrderInfo.getErrorMessage())){
             importOrderInfo.setErrorMessage(msg);
         }else{
             importOrderInfo.setErrorMessage(String.format("%s;%s", importOrderInfo.getErrorMessage(), msg));
+        }*/
+        if(StringUtils.isBlank(importOrderInfo.getErrorMessage())){
+            importOrderInfo.setErrorMessage(msg);
         }
     }
 
