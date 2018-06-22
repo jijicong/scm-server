@@ -1,5 +1,6 @@
 package org.trc.aop;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -80,7 +81,7 @@ public class JerseyApiAop {
         long endL = System.nanoTime();
         if (log.isInfoEnabled()) {
             log.info(endfix + "结束调用" + targetClass.getName() + "方法" + method.getName() + ". 结束时间" + DateUtils.dateToString(end, DateUtils.DATETIME_FORMAT) + ", 耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
-            log.info(endfix + "返回结果：" + BeanToMapUtil.convertBeanToMap(resultObj));
+            log.info(endfix + "返回结果：" + JSON.toJSONString(resultObj));
         }
         return resultObj;
     }
