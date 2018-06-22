@@ -2246,6 +2246,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private void checkStoreItemsWarehouseInfo(List<ShopOrder> shopOrderList, List<ImportOrderInfo> importOrderInfoList, List<WarehouseItemInfo> warehouseItemInfoList,
                                            List<WarehouseInfo> storeWarehouseInfoList, String orderType){
+        List<ShopOrder> failShopOrderList = new ArrayList<>();
         List<OrderItem> failOrderItems = new ArrayList<>();
         Iterator<ShopOrder> it = shopOrderList.iterator();
         while(it.hasNext()){
@@ -2271,6 +2272,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         if(_flag){
                             _flag = false;
                         }
+                        failShopOrderList.add(shopOrder);
                         failOrderItems.add(orderItem);
                     }
                 }
@@ -2292,14 +2294,45 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, sb.toString());
             }
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)){//导入订单
-            for(OrderItem orderItem: failOrderItems){
-                for(ImportOrderInfo importOrderInfo: importOrderInfoList){
-                    if(StringUtils.equals(orderItem.getChannelCode(), importOrderInfo.getChannelCode()) &&
-                            StringUtils.equals(orderItem.getSellCode(), importOrderInfo.getSellCode()) &&
-                            StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
-                            StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
-                        importOrderInfo.setFlag(false);
-                        setImportOrderErrorMsg(importOrderInfo, String.format("商品%s未绑定仓库", importOrderInfo.getSkuCode()));
+            if(failOrderItems.size() > 0){
+                for(ShopOrder fialShopOrder: failShopOrderList){
+                    StringBuilder sb = new StringBuilder();
+                    List<OrderItem> failShopOrderItems = new ArrayList<>();
+                    for(OrderItem orderItem: failOrderItems){
+                        if(StringUtils.equals(fialShopOrder.getScmShopOrderCode(), orderItem.getScmShopOrderCode()) &&
+                                StringUtils.equals(fialShopOrder.getShopOrderCode(), orderItem.getShopOrderCode())){
+                            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                                if(StringUtils.equals(orderItem.getChannelCode(), importOrderInfo.getChannelCode()) &&
+                                        StringUtils.equals(orderItem.getSellCode(), importOrderInfo.getSellCode()) &&
+                                        StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
+                                        StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
+                                    importOrderInfo.setFlag(false);
+                                    setImportOrderErrorMsg(importOrderInfo, String.format("商品%s未绑定仓库", importOrderInfo.getSkuCode()));
+                                    sb.append(importOrderInfo.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
+                                    failShopOrderItems.add(orderItem);
+                                }
+                            }
+                        }
+                    }
+                    for(OrderItem orderItem: fialShopOrder.getOrderItems()){
+                        boolean flag = false;
+                        for(OrderItem failOrderItem: failShopOrderItems){
+                            if(StringUtils.equals(orderItem.getSkuCode(), failOrderItem.getSkuCode())){
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if(!flag){
+                            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                                if(StringUtils.equals(orderItem.getChannelCode(), importOrderInfo.getChannelCode()) &&
+                                        StringUtils.equals(orderItem.getSellCode(), importOrderInfo.getSellCode()) &&
+                                        StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
+                                        StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
+                                    importOrderInfo.setFlag(false);
+                                    setImportOrderErrorMsg(importOrderInfo, String.format("同一订单中的商品%s未绑定仓库", sb.substring(0, sb.length()-1)));
+                                }
+                            }
+                        }
                     }
                 }
             }
