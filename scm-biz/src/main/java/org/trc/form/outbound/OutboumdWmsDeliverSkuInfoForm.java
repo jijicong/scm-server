@@ -1,5 +1,7 @@
 package org.trc.form.outbound;
 
+import java.util.Date;
+
 public class OutboumdWmsDeliverSkuInfoForm {
 
     //sku编码
@@ -8,6 +10,8 @@ public class OutboumdWmsDeliverSkuInfoForm {
     private String skuName;
     //商品数量
     private Long num;
+    //发货时间
+    private Date deliverTime;
 
     public String getSkuCode() {
         return skuCode;
@@ -31,5 +35,13 @@ public class OutboumdWmsDeliverSkuInfoForm {
 
     public void setNum(Long num) {
         this.num = num;
+    }
+
+    public Date getDeliverTime() {
+        return deliverTime;
+    }
+
+    public void setDeliverTime(Date deliverTime) {
+        this.deliverTime = deliverTime;
     }
 }

@@ -4294,6 +4294,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
             orderItem.setEndTime(DateUtils.timestampToDate(orderItemObj.getLong("endTime")));//结束时间
             orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_FOR_SUBMIT.getCode());//待发送供应商
+            orderItem.setIsStoreOrder(IsStoreOrderEnum.NOT_STORE_ORDER.getCode());
             orderItemList.add(orderItem);
         }
         return orderItemList;
@@ -6964,6 +6965,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderItem.setTradeMemo(detail.getMemo());
                 orderItem.setCreateTime(detail.getPayTime());
                 orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+                orderItem.setIsStoreOrder(IsStoreOrderEnum.NOT_STORE_ORDER.getCode());
                 orderItemList.add(orderItem);
             }
         }

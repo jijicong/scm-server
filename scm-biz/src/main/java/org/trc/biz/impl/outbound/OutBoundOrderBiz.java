@@ -1319,6 +1319,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             logistics.setLogisticsCode(logisticsInfoForm.getLogistictsCode());
                             logistics.setLogisticsCorporation(logisticsInfoForm.getLogistictsName());
                             logistics.setWaybillNumber(logisticsInfoForm.getWayBill());
+                            logistics.setDeliverTime(skuInfoForm.getDeliverTime());
                             logistics.setItemNum(skuInfoForm.getNum());
                             logistics.setCreateTime(new Date());
                             outboundDetailLogisticsList.add(logistics);
