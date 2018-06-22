@@ -1319,6 +1319,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                             logistics.setLogisticsCode(logisticsInfoForm.getLogistictsCode());
                             logistics.setLogisticsCorporation(logisticsInfoForm.getLogistictsName());
                             logistics.setWaybillNumber(logisticsInfoForm.getWayBill());
+                            logistics.setDeliverTime(skuInfoForm.getDeliverTime());
                             logistics.setItemNum(skuInfoForm.getNum());
                             logistics.setCreateTime(new Date());
                             outboundDetailLogisticsList.add(logistics);
@@ -1326,8 +1327,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     }
                 }
                 if(num > 0){
+                    detail.setRealSentItemNum(num);
                     if(detail.getShouldSentItemNum().longValue() <= num){
-                        detail.setRealSentItemNum(num);
                         detail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
                     }else{
                         detail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());

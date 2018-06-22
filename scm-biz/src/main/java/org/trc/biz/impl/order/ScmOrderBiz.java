@@ -4294,6 +4294,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             orderItem.setTimeoutActionTime(DateUtils.timestampToDate(orderItemObj.getLong("timeoutActionTime")));//超时确认时间
             orderItem.setEndTime(DateUtils.timestampToDate(orderItemObj.getLong("endTime")));//结束时间
             orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_FOR_SUBMIT.getCode());//待发送供应商
+            orderItem.setIsStoreOrder(IsStoreOrderEnum.NOT_STORE_ORDER.getCode());
             orderItemList.add(orderItem);
         }
         return orderItemList;
@@ -6882,8 +6883,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             setImportOrderMoney(detail, PRICE, titleResult, columVals, true, true);
             setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true, true);
-            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, false, true);
-            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, false, true);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, true, false);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, true, false);
             skuCodes.add(detail.getSkuCode());
             importOrderInfoList.add(detail);
         }
@@ -6964,6 +6965,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderItem.setTradeMemo(detail.getMemo());
                 orderItem.setCreateTime(detail.getPayTime());
                 orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+                orderItem.setIsStoreOrder(IsStoreOrderEnum.NOT_STORE_ORDER.getCode());
                 orderItemList.add(orderItem);
             }
         }
@@ -6994,9 +6996,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String receiverDistrict = importOrderInfo.getReceiverDistrict();
         //收货详细地址
         String receiverAddress = importOrderInfo.getReceiverAddress();
-
+        boolean flag = true;
+        String errorMsg = "";
         for(ImportOrderInfo _imortOrder: importOrderInfoList){
-            boolean flag = true;
             StringBuilder sb = new StringBuilder();
             sb.append("同一个订单中的");
             if(!orderContentCompare(payTime, DateUtils.dateToNormalFullString(_imortOrder.getPayTime()), _imortOrder)){
@@ -7043,9 +7045,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             sb.append("需完全一致");
             if(!flag){
-                setImportOrderErrorMsg(_imortOrder, sb.toString());
+                errorMsg = sb.toString();
+                break;
             }
         }
+        if(!flag){
+            for(ImportOrderInfo _imortOrder: importOrderInfoList){
+                _imortOrder.setFlag(false);
+                setImportOrderErrorMsg(_imortOrder, errorMsg);
+            }
+        }
+
     }
 
     private boolean orderContentCompare(String baseContent, String newContent, ImportOrderInfo importOrderInfo){
