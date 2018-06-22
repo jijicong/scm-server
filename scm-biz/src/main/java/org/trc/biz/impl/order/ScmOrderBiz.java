@@ -257,7 +257,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
@@ -282,6 +282,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if (StringUtil.isNotEmpty(queryModel.getSupplierOrderStatus())) {//发货状态
             criteria.andEqualTo("supplierOrderStatus", queryModel.getSupplierOrderStatus());
+        }
+        if (StringUtil.isNotEmpty(queryModel.getStartDate())) {//支付开始日期
+            criteria.andGreaterThanOrEqualTo("payTime", DateUtils.parseDate(queryModel.getStartDate()));
+        }
+        if (StringUtil.isNotEmpty(queryModel.getEndDate())) {//支付截止日期
+            Date endDate = DateUtils.parseDate(queryModel.getEndDate());
+            criteria.andLessThan("payTime", DateUtils.addDays(endDate, 1));
         }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(queryModel, ZeroToNineEnum.ZERO.getCode());
         if(null != platformOrderList){
@@ -339,6 +346,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(StringUtils.isNotBlank(form.getSupplierCode())){//供应商编码
             criteria.andEqualTo("supplierCode", form.getSupplierCode());
+        }
+        if (StringUtil.isNotEmpty(form.getStartDate())) {//支付开始日期
+            criteria.andGreaterThanOrEqualTo("payTime", DateUtils.parseDate(form.getStartDate()));
+        }
+        if (StringUtil.isNotEmpty(form.getEndDate())) {//支付截止日期
+            Date endDate = DateUtils.parseDate(form.getEndDate());
+            criteria.andLessThan("payTime", DateUtils.addDays(endDate, 1));
         }
         List<PlatformOrder> platformOrderList = getPlatformOrdersConditon(form, ZeroToNineEnum.ONE.getCode());
         if(null != platformOrderList){
@@ -1512,15 +1526,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         Example example = new Example(PlatformOrder.class);
         Example.Criteria criteria = example.createCriteria();
         boolean isQuery = false;
-        if (StringUtil.isNotEmpty(queryModel.getStartDate())) {//支付开始日期
-            criteria.andGreaterThanOrEqualTo("payTime", DateUtils.parseDate(queryModel.getStartDate()));
-            isQuery = true;
-        }
-        if (StringUtil.isNotEmpty(queryModel.getEndDate())) {//支付截止日期
-            Date endDate = DateUtils.parseDate(queryModel.getEndDate());
-            criteria.andLessThan("payTime", DateUtils.addDays(endDate, 1));
-            isQuery = true;
-        }
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), flag)){//店铺订单分页查询
             ShopOrderForm shopOrderForm = (ShopOrderForm)queryModel;
             if (StringUtil.isNotEmpty(shopOrderForm.getType())) {//订单类型
