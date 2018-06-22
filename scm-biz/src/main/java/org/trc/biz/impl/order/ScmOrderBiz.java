@@ -1714,7 +1714,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 //组装物流信息, //设置自采订单、物流信息
                 for (OrderItem orderItem : orderItemList) {
                     if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())) {
-                        if(orderItem.getIsStoreOrder()){//门店订单
+                        if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//门店订单
                             orderItem.setSendNum(orderItem.getNum());
                             continue;
                         }
@@ -2039,7 +2039,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
                     skuCodes.add(orderItem.getSkuCode());
-                    if(!orderItem.getIsStoreOrder()){//非门店订单
+                    if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//非门店订单
                         _skuCodes.add(orderItem.getSkuCode());
                     }
                 }
@@ -2438,7 +2438,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         boolean flag = false;
                         for(OrderItem orderItem: shopOrder.getOrderItems()){
                             if(orderItem.getSkuCode().startsWith(SP0)){
-                                orderItem.setIsStoreOrder(true);
+                                orderItem.setIsStoreOrder(IsStoreOrderEnum.STORE_ORDER.getCode());
                                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
                             }else {
                                 flag = true;
@@ -4525,7 +4525,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }*/
 
 
-            if(orderItem.getIsStoreOrder()){
+            if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){
                 List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                 skuWarehouseDO.setSkuCode(orderItem.getSkuCode());
@@ -6405,6 +6405,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         try {
             ImportOrderInfo importOrderInfo = new ImportOrderInfo();
             importOrderInfo.setImportOrderCode(orderCode);
+            importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());//失败的订单
             List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 4000);
