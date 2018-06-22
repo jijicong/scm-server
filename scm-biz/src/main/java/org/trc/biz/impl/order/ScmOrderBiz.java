@@ -2070,12 +2070,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseInfoIds.add(warehouseInfo2.getId().toString());
             }
             List<WarehouseItemInfo> warehouseItemInfoList = warehouseExtService.getWarehouseItemInfo(skuCodes, warehouseInfoIds);
-            if(skuCodes.size() > _skuCodes.size()){//存在门店订单
+            /*if(skuCodes.size() > _skuCodes.size()){//存在门店订单
                 //校验门店订单产品仓库绑定信息
                 checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
                 if(shopOrderList.size() == 0){
                     return getEmptyOrderReturnMap(skuWarehouseMap);
                 }
+            }*/
+            //校验订单产品仓库绑定信息
+            checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
+            if(shopOrderList.size() == 0){
+                return getEmptyOrderReturnMap(skuWarehouseMap);
             }
             if(_skuCodes.size() > 0){
                 //查询仓库库存
@@ -2246,16 +2251,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
      */
     private void checkStoreItemsWarehouseInfo(List<ShopOrder> shopOrderList, List<ImportOrderInfo> importOrderInfoList, List<WarehouseItemInfo> warehouseItemInfoList,
                                            List<WarehouseInfo> storeWarehouseInfoList, String orderType){
+        List<ShopOrder> failShopOrderList = new ArrayList<>();
         List<OrderItem> failOrderItems = new ArrayList<>();
         Iterator<ShopOrder> it = shopOrderList.iterator();
         while(it.hasNext()){
             ShopOrder shopOrder = it.next();
-            if(shopOrder.getIsStoreOrder()){
-                boolean _flag = true;
-                Iterator<OrderItem> orderItems = shopOrder.getOrderItems().iterator();
-                while (orderItems.hasNext()){
-                    OrderItem orderItem = orderItems.next();
-                    boolean flag = false;
+            boolean _flag = true;
+            Iterator<OrderItem> orderItems = shopOrder.getOrderItems().iterator();
+            while (orderItems.hasNext()){
+                OrderItem orderItem = orderItems.next();
+                boolean flag = false;
+                if(shopOrder.getIsStoreOrder()) {//门店订单
                     for(WarehouseInfo warehouseInfo: storeWarehouseInfoList){
                         if(StringUtils.equals(orderItem.getSellCode(), warehouseInfo.getStoreCorrespondChannel())){
                             for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
@@ -2267,15 +2273,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             }
                         }
                     }
-                    if(!flag){
-                        if(_flag){
-                            _flag = false;
+                }else {//非门店订单
+                    for(WarehouseItemInfo warehouseItemInfo: warehouseItemInfoList){
+                        if(StringUtils.equals(orderItem.getSkuCode(), warehouseItemInfo.getSkuCode())){
+                            flag = true;
+                            break;
                         }
-                        failOrderItems.add(orderItem);
                     }
                 }
-                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
-                    if(!_flag){
+
+                if(!flag){
+                    if(_flag){
+                        _flag = false;
+                    }
+                    failShopOrderList.add(shopOrder);
+                    failOrderItems.add(orderItem);
+                }
+            }
+            if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
+                if(!_flag){
+                    if(shopOrder.getIsStoreOrder()){
                         it.remove();
                     }
                 }
@@ -2292,14 +2309,45 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, sb.toString());
             }
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)){//导入订单
-            for(OrderItem orderItem: failOrderItems){
-                for(ImportOrderInfo importOrderInfo: importOrderInfoList){
-                    if(StringUtils.equals(orderItem.getChannelCode(), importOrderInfo.getChannelCode()) &&
-                            StringUtils.equals(orderItem.getSellCode(), importOrderInfo.getSellCode()) &&
-                            StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
-                            StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
-                        importOrderInfo.setFlag(false);
-                        setImportOrderErrorMsg(importOrderInfo, String.format("商品%s未绑定仓库", importOrderInfo.getSkuCode()));
+            if(failOrderItems.size() > 0){
+                for(ShopOrder fialShopOrder: failShopOrderList){
+                    StringBuilder sb = new StringBuilder();
+                    List<OrderItem> failShopOrderItems = new ArrayList<>();
+                    for(OrderItem orderItem: failOrderItems){
+                        if(StringUtils.equals(fialShopOrder.getScmShopOrderCode(), orderItem.getScmShopOrderCode()) &&
+                                StringUtils.equals(fialShopOrder.getShopOrderCode(), orderItem.getShopOrderCode())){
+                            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                                if(StringUtils.equals(orderItem.getChannelCode(), importOrderInfo.getChannelCode()) &&
+                                        StringUtils.equals(orderItem.getSellCode(), importOrderInfo.getSellCode()) &&
+                                        StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
+                                        StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
+                                    importOrderInfo.setFlag(false);
+                                    setImportOrderErrorMsg(importOrderInfo, String.format("商品%s未绑定仓库", importOrderInfo.getSkuCode()));
+                                    sb.append(importOrderInfo.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
+                                    failShopOrderItems.add(orderItem);
+                                }
+                            }
+                        }
+                    }
+                    for(OrderItem orderItem: fialShopOrder.getOrderItems()){
+                        boolean flag = false;
+                        for(OrderItem failOrderItem: failShopOrderItems){
+                            if(StringUtils.equals(orderItem.getSkuCode(), failOrderItem.getSkuCode())){
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if(!flag){
+                            for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                                if(StringUtils.equals(orderItem.getChannelCode(), importOrderInfo.getChannelCode()) &&
+                                        StringUtils.equals(orderItem.getSellCode(), importOrderInfo.getSellCode()) &&
+                                        StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
+                                        StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
+                                    importOrderInfo.setFlag(false);
+                                    setImportOrderErrorMsg(importOrderInfo, String.format("同一订单中的商品%s未绑定仓库", sb.substring(0, sb.length()-1)));
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -6883,8 +6931,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
             setImportOrderMoney(detail, PRICE, titleResult, columVals, true, true);
             setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true, true);
-            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, false, true);
-            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, false, true);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, true, false);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, true, false);
             skuCodes.add(detail.getSkuCode());
             importOrderInfoList.add(detail);
         }
@@ -6996,9 +7044,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
         String receiverDistrict = importOrderInfo.getReceiverDistrict();
         //收货详细地址
         String receiverAddress = importOrderInfo.getReceiverAddress();
-
+        boolean flag = true;
+        String errorMsg = "";
         for(ImportOrderInfo _imortOrder: importOrderInfoList){
-            boolean flag = true;
             StringBuilder sb = new StringBuilder();
             sb.append("同一个订单中的");
             if(!orderContentCompare(payTime, DateUtils.dateToNormalFullString(_imortOrder.getPayTime()), _imortOrder)){
@@ -7045,9 +7093,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
             sb.append("需完全一致");
             if(!flag){
-                setImportOrderErrorMsg(_imortOrder, sb.toString());
+                errorMsg = sb.toString();
+                break;
             }
         }
+        if(!flag){
+            for(ImportOrderInfo _imortOrder: importOrderInfoList){
+                _imortOrder.setFlag(false);
+                setImportOrderErrorMsg(_imortOrder, errorMsg);
+            }
+        }
+
     }
 
     private boolean orderContentCompare(String baseContent, String newContent, ImportOrderInfo importOrderInfo){
@@ -7063,10 +7119,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     private void setImportOrderErrorMsg(ImportOrderInfo importOrderInfo, String msg){
-        if(StringUtils.isBlank(importOrderInfo.getErrorMessage())){
+        /*if(StringUtils.isBlank(importOrderInfo.getErrorMessage())){
             importOrderInfo.setErrorMessage(msg);
         }else{
             importOrderInfo.setErrorMessage(String.format("%s;%s", importOrderInfo.getErrorMessage(), msg));
+        }*/
+        if(StringUtils.isBlank(importOrderInfo.getErrorMessage())){
+            importOrderInfo.setErrorMessage(msg);
         }
     }
 
