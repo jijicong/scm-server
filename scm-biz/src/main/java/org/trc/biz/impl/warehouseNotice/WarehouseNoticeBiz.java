@@ -914,6 +914,9 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         noticeDetail.setWarehouseNoticeCode(noticeCode);
         List<WarehouseNoticeDetails> details = warehouseNoticeDetailsService.select(noticeDetail);
 
+        String logMessage="";
+        List<String> exceptionDetail=new ArrayList<>();
+
         List<WmsInNoticeDetailRequest> inNoticeDetailRequests = req.getInNoticeDetailRequests();
         if(inNoticeDetailRequests!=null && inNoticeDetailRequests.size()>0){
             for (WmsInNoticeDetailRequest inNoticeDetailRequest : inNoticeDetailRequests) {
@@ -930,14 +933,20 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
                         if(defectiveStorageQuantity==0){
                             if(detail.getPurchasingQuantity().longValue() == normalStorageQuantity.longValue()){
                                 detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ALL_GOODS.getCode()));
+                                logMessage += detail.getSkuCode() + ":" + "全部入库<br>";
                             }else if (detail.getPurchasingQuantity().longValue() > normalStorageQuantity.longValue()){
-                            	detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+                                logMessage += detail.getSkuCode() + ":" + "部分入库<br>";
                             } else {
-                            	detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode()));
+                                detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                                logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+                                exceptionDetail.add(detail.getSkuCode()+"正品入库数量大于实际采购数量");
                             }
 
                         }else{
                             detail.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.RECEIVE_GOODS_EXCEPTION.getCode()));
+                            logMessage += detail.getSkuCode() + ":" + "入库异常<br>";
+                            exceptionDetail.add(detail.getSkuCode()+"存在残品入库");
                         }
 
                     }
@@ -953,7 +962,6 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         criteria.andEqualTo("warehouseNoticeCode",noticeCode);
         List<WarehouseNotice> warehouseNotices = warehouseNoticeService.selectByExample(example);
         warehouseNotice = warehouseNotices.get(0);
-        String result = "入库完成";
         warehouseNotice.setFinishStatus(WarehouseNoticeFinishStatusEnum.FINISHED.getCode());
         boolean flgExp = false;
         boolean flgPart = false;
@@ -983,9 +991,12 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
 //            warehouseNotice.setStatus(WarehouseNoticeEnum.RECEIVE_PARTIAL_GOODS.getCode());
 //            warehouseNotice.setFinishStatus(WarehouseNoticeStatusEnum.RECEIVE_PARTIAL_GOODS.getCode());
 //        }
+        if(exceptionDetail.size()>0){
+            warehouseNotice.setExceptionCause("["+StringUtils.join(exceptionDetail, ",")+"]");
+        }
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
-        return ResultUtil.createSuccessResult("反填入库通知单成功",result);
+        return ResultUtil.createSuccessResult("反填入库通知单成功","");
     }
 
     private void scmEntryOrder(List<WarehouseNotice> noticeList) {
