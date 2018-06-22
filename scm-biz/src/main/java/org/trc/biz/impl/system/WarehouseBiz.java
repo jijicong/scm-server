@@ -311,6 +311,7 @@ public class WarehouseBiz implements IWarehouseBiz {
         Example example = new Example(WarehouseItemInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("warehouseInfoId", warehouse.getId());
+        criteria.andEqualTo("isDelete", ZeroToNineEnum.ZERO.getCode());
         warehouseItemInfoService.updateByExampleSelective(warehouseItemInfoTemp, example);
 
     }
