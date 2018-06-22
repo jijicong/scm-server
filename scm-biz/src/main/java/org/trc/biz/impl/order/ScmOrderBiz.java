@@ -257,7 +257,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
     @Override
-    @Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
+    //@Cacheable(value = SupplyConstants.Cache.SHOP_ORDER)
     public Pagenation<ShopOrder> shopOrderPage(ShopOrderForm queryModel, Pagenation<ShopOrder> page, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(aclUserAccreditInfo, "用户授权信息为空");
         Example example = new Example(ShopOrder.class);
@@ -1587,7 +1587,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //设置商品扩展信息
         OrderBase orderBase = new OrderBase();
         BeanUtils.copyProperties(platformOrder, orderBase);
-        BeanUtils.copyProperties(orderBase, shopOrder, "buyerMessage", "shopMemo");
+        BeanUtils.copyProperties(orderBase, shopOrder, "buyerMessage", "shopMemo", "sellCode");
         orderBase.setBuyerMessage(shopOrder.getBuyerMessage());
         orderBase.setShopMemo(shopOrder.getShopMemo());
         OrderExt orderExt = new OrderExt();

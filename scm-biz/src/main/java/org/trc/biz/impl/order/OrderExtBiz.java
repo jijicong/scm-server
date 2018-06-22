@@ -43,6 +43,7 @@ public class OrderExtBiz implements IOrderExtBiz {
         }
         Example example = new Example(SellChannel.class);
         Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("sellCode", sellCodes);
         List<SellChannel> sellChannelList = sellChannelService.selectByExample(example);
         for(OrderBaseDO orderBaseDO: orderBaseDOList){
             for(SellChannel sellChannel: sellChannelList){
