@@ -242,6 +242,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private ISellChannelService sellChannelService;
     @Autowired
     private IImportOrderInfoService importOrderInfoService;
+    @Autowired
+    private IOrderIdempotentService orderIdempotentService;
 
 
     @Value("{trc.jd.logistic.url}")
@@ -1993,7 +1995,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        orderCheck(orderObj);
+        //orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -2028,6 +2030,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
             sellChannelList = orderMoneyCheck(platformOrder, shopOrderList, tmpOrderItemList);
         }
+        //保存幂等流水
+        saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
         //校验商品是否从供应链新增
         //isScmItems(tmpOrderItemList);
         //设置门店订单状态
@@ -2151,8 +2155,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         for (WarehouseOrder warehouseOrder : warehouseOrderList) {
             orderItemList.addAll(warehouseOrder.getOrderItemList());
         }
-        //保存幂等流水
-        saveIdempotentFlow(shopOrderList);
         //保存异常单信息
         if(exceptionOrderItemList.size() > 0){
             saveExceptionOrder(platformOrder, shopOrderList, exceptionOrderItemList);
@@ -4219,24 +4221,41 @@ public class ScmOrderBiz implements IScmOrderBiz {
      *
      * @param shopOrderList
      */
-    private void saveIdempotentFlow(List<ShopOrder> shopOrderList) {
-        try {
-            for (ShopOrder shopOrder : shopOrderList) {
-                OrderFlow orderFlow = new OrderFlow();
-                orderFlow.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
-                orderFlow.setShopOrderCode(shopOrder.getShopOrderCode());
-                orderFlow.setType(shopOrder.getChannelCode());
-                int count = orderFlowService.insert(orderFlow);
-                if (count == 0) {
-                    String msg = String.format("保存订单同步幂等流水%s失败", JSONObject.toJSON(orderFlow));
-                    log.error(msg);
-                    throw new OrderException(ExceptionEnum.ORDER_IDEMPOTENT_SAVE_EXCEPTION, msg);
+    private void saveIdempotentFlow(List<ShopOrder> shopOrderList, List<ImportOrderInfo> importOrderInfoList, String orderType) {
+        StringBuilder sb = new StringBuilder();
+        for (ShopOrder shopOrder : shopOrderList) {
+            try{
+                OrderIdempotent orderIdempotent = new OrderIdempotent();
+                orderIdempotent.setChannelCode(shopOrder.getChannelCode());
+                orderIdempotent.setSellCode(shopOrder.getSellCode());
+                orderIdempotent.setShopOrderCode(shopOrder.getShopOrderCode());
+                orderIdempotentService.insert(orderIdempotent);
+            }catch (DuplicateKeyException e){
+                if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
+                    for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                        if(StringUtils.equals(shopOrder.getChannelCode(), importOrderInfo.getChannelCode()) &&
+                                StringUtils.equals(shopOrder.getSellCode(), importOrderInfo.getSellCode()) &&
+                                StringUtils.equals(shopOrder.getShopOrderCode(), importOrderInfo.getShopOrderCode())){
+                            importOrderInfo.setFlag(false);
+                            importOrderInfo.setErrorMessage("该订单已导入成功，暂不支持重复导入");
+                        }
+                    }
+                }
+                String msg = String.format("业务线%s销售渠道%s订单%s", shopOrder.getChannelCode(), shopOrder.getSellCode(), shopOrder.getShopOrderCode());
+                log.error(msg+"重复");
+                sb.append(msg);
+            }
+            if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderType)) {//接收订单
+                if(sb.length() > 0){
+                    throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, sb.toString()+"重复");
                 }
             }
-        } catch (DuplicateKeyException e) {
-            log.error("重复提交订单: ",e);
-            throw new OrderException(ExceptionEnum.TRC_ORDER_PUSH_EXCEPTION, "重复提交订单");
         }
+
+
+
+
+
     }
 
     /**
