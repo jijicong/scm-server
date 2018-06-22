@@ -248,10 +248,9 @@ public class OrderItem implements Serializable {
     private String tradeMemo;
 
     /**
-     * 是否门店订单
+     * 是否门店订单:1-非门店,2-门店'
      */
-    @Transient
-    private boolean isStoreOrder;
+    private Integer isStoreOrder;
 
     public OrderItem(){
 
@@ -1397,11 +1396,11 @@ public class OrderItem implements Serializable {
         this.tradeMemo = tradeMemo;
     }
 
-    public boolean getIsStoreOrder() {
+    public Integer getIsStoreOrder() {
         return isStoreOrder;
     }
 
-    public void setIsStoreOrder(boolean storeOrder) {
-        isStoreOrder = storeOrder;
+    public void setIsStoreOrder(Integer isStoreOrder) {
+        this.isStoreOrder = isStoreOrder;
     }
 }

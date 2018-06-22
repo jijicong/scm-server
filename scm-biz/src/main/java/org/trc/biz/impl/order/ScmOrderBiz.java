@@ -1714,7 +1714,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 //组装物流信息, //设置自采订单、物流信息
                 for (OrderItem orderItem : orderItemList) {
                     if (StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderItem.getItemType())) {
-                        if(orderItem.getIsStoreOrder()){//门店订单
+                        if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//门店订单
                             orderItem.setSendNum(orderItem.getNum());
                             continue;
                         }
@@ -2039,7 +2039,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         !StringUtils.equals(OrderItemDeliverStatusEnum.OFF_LINE_DELIVER.getCode(), orderItem.getSupplierOrderStatus())) {
                     selfPurcharseOrderItemList.add(orderItem);
                     skuCodes.add(orderItem.getSkuCode());
-                    if(!orderItem.getIsStoreOrder()){//非门店订单
+                    if(IsStoreOrderEnum.NOT_STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){//非门店订单
                         _skuCodes.add(orderItem.getSkuCode());
                     }
                 }
@@ -2438,7 +2438,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         boolean flag = false;
                         for(OrderItem orderItem: shopOrder.getOrderItems()){
                             if(orderItem.getSkuCode().startsWith(SP0)){
-                                orderItem.setIsStoreOrder(true);
+                                orderItem.setIsStoreOrder(IsStoreOrderEnum.STORE_ORDER.getCode());
                                 orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.ALL_DELIVER.getCode());
                             }else {
                                 flag = true;
@@ -4525,7 +4525,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }*/
 
 
-            if(orderItem.getIsStoreOrder()){
+            if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder().intValue()){
                 List<SkuWarehouseDO> skuWarehouseDOList = new ArrayList<>();
                 SkuWarehouseDO skuWarehouseDO = new SkuWarehouseDO();
                 skuWarehouseDO.setSkuCode(orderItem.getSkuCode());
@@ -6025,7 +6025,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         if(successOutbound.size() > 0){
             for(ScmDeliveryOrderCreateResponse response: successOutbound){
-                updateOutboundOrderAfterCreate(OutboundOrderStatusEnum.WAITING, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
+                for(Map.Entry<String, OutboundForm> entry: entries){
+                    OutboundOrder outboundOrder = entry.getValue().getOutboundOrder();
+                    if(StringUtils.equals(response.getDeliveryOrderCode(), outboundOrder.getOutboundOrderCode())){
+                        OutboundOrderStatusEnum outboundOrderStatusEnum = OutboundOrderStatusEnum.WAITING;
+                        if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == outboundOrder.getIsStoreOrder().intValue()){//门店订单
+                            outboundOrderStatusEnum = OutboundOrderStatusEnum.ALL_GOODS;
+                        }
+                        updateOutboundOrderAfterCreate(outboundOrderStatusEnum, response.getDeliveryOrderCode(), response.getWmsOrderCode(), response.getMessage());
+                    }
+                }
             }
         }
         Example example = new Example(WarehouseInfo.class);
@@ -6260,7 +6269,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //获取导入订单sku明细
             List<ImportOrderInfo> importOrderInfoList = getImportOrderSkuDetail(aclUserAccreditInfo.getChannelCode(), sellCode, titleResult, contentResult, sellChannel);
             //检查导入订单是否重复导入
-            checkOrderRepeat(importOrderInfoList);
+            //checkOrderRepeat(importOrderInfoList);
             Set<String> skuCodes = new HashSet<>();
             for(ImportOrderInfo importOrderInfo: importOrderInfoList){
                 skuCodes.add(importOrderInfo.getSkuCode());
@@ -6304,7 +6313,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * 检查导入订单是否重复导入
      * @param importOrderInfoList
      */
-    private void checkOrderRepeat(List<ImportOrderInfo> importOrderInfoList){
+    /*private void checkOrderRepeat(List<ImportOrderInfo> importOrderInfoList){
        Set<String> channelCodes = new HashSet<>();
        Set<String> sellCodes = new HashSet<>();
        Set<String> shopOrderCodes = new HashSet<>();
@@ -6330,7 +6339,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                }
            }
        }
-    }
+    }*/
 
     private void setImportSkuInfo(List<ImportOrderInfo> importOrderInfoList, List<Skus> skusList){
         if(!CollectionUtils.isEmpty(skusList)){
@@ -6396,6 +6405,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         try {
             ImportOrderInfo importOrderInfo = new ImportOrderInfo();
             importOrderInfo.setImportOrderCode(orderCode);
+            importOrderInfo.setIsFail(ZeroToNineEnum.ONE.getCode());//失败的订单
             List<ImportOrderInfo> list = importOrderInfoService.select(importOrderInfo);
             List<CellDefinition> cellDefinitionList = new ArrayList<>();
             CellDefinition shopOrderCode = new CellDefinition("shopOrderCode", SHOP_ORDER_CODE, CellDefinition.TEXT, 4000);
@@ -6861,10 +6871,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
 
 
-            setImportOrderMoney(detail, PRICE, titleResult, columVals, true);
-            setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true);
-            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, true);
-            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, true);
+            setImportOrderMoney(detail, PRICE, titleResult, columVals, true, true);
+            setImportOrderMoney(detail, PAYMENT, titleResult, columVals, true, true);
+            setImportOrderMoney(detail, POST_FEE, titleResult, columVals, false, true);
+            setImportOrderMoney(detail, PRICE_TAX, titleResult, columVals, false, true);
             skuCodes.add(detail.getSkuCode());
             importOrderInfoList.add(detail);
         }
@@ -6879,8 +6889,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param titleResult
      * @param columVals
      * @param emptyCheck 空校验
+     * @param gtZeroCheck 大于0校验
      */
-    private void setImportOrderMoney(ImportOrderInfo importOrderInfo, String colum, String[] titleResult, String[] columVals, boolean emptyCheck){
+    private void setImportOrderMoney(ImportOrderInfo importOrderInfo, String colum, String[] titleResult, String[] columVals, boolean emptyCheck, boolean gtZeroCheck){
         String money = columVals[getColumIndex(titleResult, colum)];
         if(StringUtils.isNotBlank(money)){
             try{
@@ -6893,6 +6904,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     importOrderInfo.setPostFee(bigDecimal);
                 }else if(PRICE_TAX.equals(colum)){
                     importOrderInfo.setPriceTax(bigDecimal);
+                }
+                if(gtZeroCheck && bigDecimal.compareTo(new BigDecimal(0))<= 0){
+                    importOrderInfo.setFlag(false);
+                    setImportOrderErrorMsg(importOrderInfo, colum+"必须大于0");
                 }
             }catch (Exception e){
                 importOrderInfo.setFlag(false);
@@ -7143,8 +7158,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
                 num += detail.getNum();
                 payment = payment.add(detail.getPayment());
-                postFee = postFee.add(detail.getPostFee());
-                tax = tax.add(detail.getPriceTax());
+                if(null != detail.getPostFee()){
+                    postFee = postFee.add(detail.getPostFee());
+                }
+                if(null != detail.getPriceTax()){
+                    tax = tax.add(detail.getPriceTax());
+                }
             }
             if(buyerMessage.length() > 0){
                 shopOrder.setBuyerMessage(buyerMessage.toString());
