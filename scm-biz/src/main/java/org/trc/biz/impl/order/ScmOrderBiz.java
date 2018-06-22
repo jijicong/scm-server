@@ -2070,13 +2070,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 warehouseInfoIds.add(warehouseInfo2.getId().toString());
             }
             List<WarehouseItemInfo> warehouseItemInfoList = warehouseExtService.getWarehouseItemInfo(skuCodes, warehouseInfoIds);
-            /*if(skuCodes.size() > _skuCodes.size()){//存在门店订单
-                //校验门店订单产品仓库绑定信息
-                checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
-                if(shopOrderList.size() == 0){
-                    return getEmptyOrderReturnMap(skuWarehouseMap);
-                }
-            }*/
             //校验订单产品仓库绑定信息
             checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
             if(shopOrderList.size() == 0){
@@ -5158,6 +5151,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         exceptionOrderItem.setExceptionNum(orderItem.getNum());
         exceptionOrderItem.setSupplierCode(SupplyConstants.Symbol.MINUS);
         exceptionOrderItem.setSupplierName(SupplyConstants.Symbol.MINUS);
+        exceptionOrderItem.setSpecInfo(orderItem.getSpecNatureInfo());
         Date currentDate = Calendar.getInstance().getTime();
         exceptionOrderItem.setCreateTime(currentDate);
         exceptionOrderItem.setUpdateTime(currentDate);
