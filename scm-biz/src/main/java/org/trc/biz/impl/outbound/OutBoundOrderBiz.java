@@ -1326,8 +1326,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     }
                 }
                 if(num > 0){
+                    detail.setRealSentItemNum(num);
                     if(detail.getShouldSentItemNum().longValue() <= num){
-                        detail.setRealSentItemNum(num);
                         detail.setStatus(OutboundDetailStatusEnum.ALL_GOODS.getCode());
                     }else{
                         detail.setStatus(OutboundDetailStatusEnum.PART_OF_SHIPMENT.getCode());
