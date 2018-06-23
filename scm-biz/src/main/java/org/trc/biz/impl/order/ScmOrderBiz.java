@@ -7026,9 +7026,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     String[] amonts = money.split("\\.");
                     String intStr = amonts[0];//整数部分
                     String minStr = amonts[1];//小数部分
-                    if(intStr.length() > 9){
+                    if(intStr.length() > 10){
                         importOrderInfo.setFlag(false);
-                        setImportOrderErrorMsg(importOrderInfo, colum+"整数部分不能超过9位");
+                        setImportOrderErrorMsg(importOrderInfo, colum+"整数部分不能超过10位");
                     }else{
                         if(minStr.length() > 3){
                             importOrderInfo.setFlag(false);
@@ -7037,9 +7037,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
 
                 }else {
-                    if(money.length() > 9){
+                    if(money.length() > 10){
                         importOrderInfo.setFlag(false);
-                        setImportOrderErrorMsg(importOrderInfo, colum+"整数部分不能超过9位");
+                        setImportOrderErrorMsg(importOrderInfo, colum+"整数部分不能超过10位");
                     }
                 }
             }catch (Exception e){
