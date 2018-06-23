@@ -23,6 +23,7 @@ import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** 
@@ -407,6 +408,21 @@ public class CommonUtil {
 	public static boolean checkMobilePhone(String phoneNo) {
 		String regex = "^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$";
 		return Pattern.matches(regex, phoneNo);
+	}
+
+
+	/**
+	 * 检查字符串是否包含中文
+	 * @param str
+	 * @return
+	 */
+	public static boolean checkChinese(String str){
+		Pattern pattern = Pattern.compile("[\u4e00-\u9fa5]");
+		if (StringUtils.isNotBlank(str)) {
+			Matcher aMatcher = pattern.matcher(str);
+			return aMatcher.find();
+		}
+		return false;
 	}
 
 }

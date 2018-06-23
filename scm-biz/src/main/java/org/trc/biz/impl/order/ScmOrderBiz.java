@@ -6797,6 +6797,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         detail.setFlag(false);
                     }
                     setImportOrderErrorMsg(detail, "销售渠道订单号不能包含符号\"-\"");
+                }else{
+                    if(CommonUtil.checkChinese(shopOrderCode)){//校验订单里不能含有汉字
+                        setImportOrderErrorMsg(detail, "销售渠道订单号不能包含汉字");
+                    }
                 }
                 detail.setShopOrderCode(shopOrderCode);
             }else{
