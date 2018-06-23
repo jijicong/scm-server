@@ -2308,12 +2308,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderType)){//接收订单
             if(failOrderItems.size() > 0){
-                StringBuilder sb = new StringBuilder("商品");
+                StringBuilder sb = new StringBuilder();
                 for(OrderItem orderItem: failOrderItems){
-                    sb.append(orderItem.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
+                    if (orderItem.getSkuCode().startsWith(SP0)){
+                        sb.append(orderItem.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
+                    }
                 }
-                sb.append("未绑定仓库");
-                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, sb.toString());
+                if(sb.length() > 0){
+                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("商品%s未绑定仓库", sb.substring(0, sb.length() - 1)));
+                }
             }
         }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)){//导入订单
             if(failOrderItems.size() > 0){
