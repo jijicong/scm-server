@@ -378,6 +378,16 @@ public class CommonUtil {
 	}
 
 	/**
+	 *
+	 * @param moneyStr
+	 * @return
+	 */
+	public static boolean checkMoeny(String moneyStr){
+
+		return false;
+	}
+
+	/**
 	 * 获取字符串utf-8编码
 	 * @param string
 	 * @return

@@ -2030,8 +2030,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), channelOrderMoneyCheck)){
             sellChannelList = orderMoneyCheck(platformOrder, shopOrderList, tmpOrderItemList);
         }
-        //保存幂等流水
-        saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
+        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderType)) {//接收订单
+            //保存幂等流水
+            saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
+        }
         //校验商品是否从供应链新增
         //isScmItems(tmpOrderItemList);
         //设置门店订单状态
@@ -2082,7 +2084,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             //校验订单产品仓库绑定信息
             checkStoreItemsWarehouseInfo(shopOrderList, importOrderInfoList, warehouseItemInfoList, storeWarehouseInfoList, orderType);
             if(shopOrderList.size() == 0){
-                return getEmptyOrderReturnMap(skuWarehouseMap);
+                return getEmptyOrderReturnMap(new HashMap<>());
             }
             if(_skuCodes.size() > 0){
                 //查询仓库库存
@@ -2166,6 +2168,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //设置代发商品供货价
         setOrderItemSupplyPrice(itemList, externalItemSkuList);
+
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
+            //保存幂等流水
+            saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
+        }
         orderItemService.insertList(itemList);
         //保存仓库订单
         if(warehouseOrderList.size() > 0){
@@ -2364,8 +2371,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderType)){//接收订单
             return;
         }
-        List<ShopOrder> _shopOrders = new ArrayList<>();
-        for(ShopOrder shopOrder: shopOrders){
+
+        Iterator<ShopOrder> it = shopOrders.iterator();
+        while (it.hasNext()){
+            ShopOrder shopOrder = it.next();
             boolean flag = false;
             for(OrderItem item: shopOrder.getOrderItems()){
                 if(StringUtils.equals(OrderItemDeliverStatusEnum.HANDLERED.getCode(), item.getSupplierOrderStatus())){//已了结(库存不足)
@@ -2373,6 +2382,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     break;
                 }
             }
+            StringBuilder sb = new StringBuilder();
             for(ImportOrderInfo importOrderInfo: importOrderInfoList){
                 for(OrderItem item: shopOrder.getOrderItems()){
                     if(StringUtils.equals(importOrderInfo.getChannelCode(), item.getChannelCode()) &&
@@ -2382,18 +2392,30 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             StringUtils.equals(OrderItemDeliverStatusEnum.HANDLERED.getCode(), item.getSupplierOrderStatus())){
                         importOrderInfo.setFlag(false);
                         setImportOrderErrorMsg(importOrderInfo, "库存不足");
+                        sb.append(importOrderInfo.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
                         break;
                     }
                 }
             }
             if(flag){
-                shopOrder.setOrderItems(new ArrayList<>());
-                _shopOrders.add(shopOrder);
+                for(ImportOrderInfo importOrderInfo: importOrderInfoList){
+                    for(OrderItem item: shopOrder.getOrderItems()){
+                        if(StringUtils.equals(importOrderInfo.getChannelCode(), item.getChannelCode()) &&
+                                StringUtils.equals(importOrderInfo.getSellCode(), item.getSellCode()) &&
+                                StringUtils.equals(importOrderInfo.getShopOrderCode(), item.getShopOrderCode()) &&
+                                StringUtils.equals(importOrderInfo.getSkuCode(), item.getSkuCode()) &&
+                                importOrderInfo.getFlag()){
+                            importOrderInfo.setFlag(false);
+                            setImportOrderErrorMsg(importOrderInfo, String.format("同一订单中的商品%s库存不足", sb.substring(0, sb.length() - 1)));
+                            sb.append(importOrderInfo.getSkuCode());
+                            break;
+                        }
+                    }
+                }
             }
+            it.remove();
         }
-        for(ShopOrder _shopOrder: _shopOrders){
-            shopOrders.remove(_shopOrder);
-        }
+
     }
 
     private void createShopOrderLog(List<ShopOrder> shopOrderList, String orderType, String operator){
@@ -4229,6 +4251,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderIdempotent.setChannelCode(shopOrder.getChannelCode());
                 orderIdempotent.setSellCode(shopOrder.getSellCode());
                 orderIdempotent.setShopOrderCode(shopOrder.getShopOrderCode());
+                orderIdempotent.setCreateTime(new Date());
                 orderIdempotentService.insert(orderIdempotent);
             }catch (DuplicateKeyException e){
                 if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
