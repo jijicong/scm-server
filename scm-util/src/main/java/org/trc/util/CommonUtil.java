@@ -23,6 +23,7 @@ import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** 
@@ -377,6 +378,16 @@ public class CommonUtil {
 	}
 
 	/**
+	 *
+	 * @param moneyStr
+	 * @return
+	 */
+	public static boolean checkMoeny(String moneyStr){
+
+		return false;
+	}
+
+	/**
 	 * 获取字符串utf-8编码
 	 * @param string
 	 * @return
@@ -407,6 +418,40 @@ public class CommonUtil {
 	public static boolean checkMobilePhone(String phoneNo) {
 		String regex = "^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$";
 		return Pattern.matches(regex, phoneNo);
+	}
+
+
+	/**
+	 * 检查字符串是否包含中文
+	 * @param str
+	 * @return
+	 */
+	public static boolean checkChinese(String str){
+		Pattern pattern = Pattern.compile("[\u4e00-\u9fa5]");
+		if (StringUtils.isNotBlank(str)) {
+			Matcher aMatcher = pattern.matcher(str);
+			return aMatcher.find();
+		}
+		return false;
+	}
+
+	/**
+	 * 检查金额
+	 * @param str
+	 * @return
+	 */
+	public static boolean checkMoney(String str){
+		Pattern pattern=Pattern.compile("^(([1-9]{1}\\d*)|([0]{1}))(\\.(\\d){0,3})?$"); // 判断小数点后2位的数字的正则表达式
+		Matcher match=pattern.matcher(str);
+		if(match.matches()==false){
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	public static void main(String[] args){
+		System.out.println(checkMoney("0"));
 	}
 
 }
