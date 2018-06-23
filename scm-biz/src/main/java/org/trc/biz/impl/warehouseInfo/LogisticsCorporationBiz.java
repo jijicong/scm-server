@@ -85,7 +85,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
         List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
         if(logisticsCorporationList.size() > 0){
-            String msg = "物流公司编码不唯一";
+            String msg = "物流公司编码已存在";
             logger.error(msg);
             throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_SAVE_EXCEPTION, msg);
         }
@@ -122,7 +122,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
         criteria.andNotEqualTo("id", logisticsCorporation.getId());
         List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
         if(logisticsCorporationList.size() > 0){
-            String msg = "物流公司编码不唯一";
+            String msg = "物流公司编码已存在";
             logger.error(msg);
             throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_UPDATE_EXCEPTION, msg);
         }
