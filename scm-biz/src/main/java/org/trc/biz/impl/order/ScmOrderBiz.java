@@ -98,6 +98,8 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by hzwdx on 2017/6/26.
@@ -2120,7 +2122,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //过滤库存校验失败的导入订单
         filterLessStockImportOrder(orderType, shopOrderList, importOrderInfoList);
         if(shopOrderList.size() == 0){
-            return getEmptyOrderReturnMap(skuWarehouseMap);
+            return getEmptyOrderReturnMap(new HashMap<>());
         }
 
         boolean selfSkuAllException = false;//自采sku是否全部异常
@@ -2415,8 +2417,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         }
                     }
                 }
+                it.remove();
             }
-            it.remove();
+
         }
 
     }
@@ -7015,6 +7018,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     importOrderInfo.setFlag(false);
                     setImportOrderErrorMsg(importOrderInfo, colum+"必须大于0");
                 }
+
             }catch (Exception e){
                 importOrderInfo.setFlag(false);
                 setImportOrderErrorMsg(importOrderInfo, String.format("%s格式错误", colum));
@@ -7380,6 +7384,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return false;
     }
+
 
 
 
