@@ -137,7 +137,7 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
             logger.error(msg);
             throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_UPDATE_EXCEPTION, msg);
         }
-        if (!(_logisticsCorporation.getIsValid() + "").equals(logisticsCorporation.getIsValid())) {
+        if (!StringUtils.isEquals(String.valueOf(_logisticsCorporation.getIsValid()), String.valueOf(logisticsCorporation.getIsValid()))) {
             if ((logisticsCorporation.getIsValid() + "").equals(ValidEnum.VALID.getCode())) {
                 remark = remarkEnum.VALID_ON.getMessage();
             } else {
