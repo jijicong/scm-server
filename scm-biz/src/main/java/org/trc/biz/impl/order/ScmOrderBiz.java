@@ -7018,7 +7018,30 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     importOrderInfo.setFlag(false);
                     setImportOrderErrorMsg(importOrderInfo, colum+"必须大于0");
                 }
+                if(!CommonUtil.checkMoney(money)){
+                    importOrderInfo.setFlag(false);
+                    setImportOrderErrorMsg(importOrderInfo, colum+"不合规范");
+                }
+                if(money.contains(SupplyConstants.Symbol.FILE_NAME_SPLIT)){
+                    String[] amonts = money.split("\\.");
+                    String intStr = amonts[0];//整数部分
+                    String minStr = amonts[1];//小数部分
+                    if(intStr.length() > 9){
+                        importOrderInfo.setFlag(false);
+                        setImportOrderErrorMsg(importOrderInfo, colum+"整数部分不能超过9位");
+                    }else{
+                        if(minStr.length() > 3){
+                            importOrderInfo.setFlag(false);
+                            setImportOrderErrorMsg(importOrderInfo, colum+"小数部分不能超过3位");
+                        }
+                    }
 
+                }else {
+                    if(money.length() > 9){
+                        importOrderInfo.setFlag(false);
+                        setImportOrderErrorMsg(importOrderInfo, colum+"整数部分不能超过9位");
+                    }
+                }
             }catch (Exception e){
                 importOrderInfo.setFlag(false);
                 setImportOrderErrorMsg(importOrderInfo, String.format("%s格式错误", colum));
@@ -7384,6 +7407,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return false;
     }
+
 
 
 
