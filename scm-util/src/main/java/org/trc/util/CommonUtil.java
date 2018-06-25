@@ -378,16 +378,6 @@ public class CommonUtil {
 	}
 
 	/**
-	 *
-	 * @param moneyStr
-	 * @return
-	 */
-	public static boolean checkMoeny(String moneyStr){
-
-		return false;
-	}
-
-	/**
 	 * 获取字符串utf-8编码
 	 * @param string
 	 * @return
@@ -441,7 +431,7 @@ public class CommonUtil {
 	 * @return
 	 */
 	public static boolean checkMoney(String str){
-		Pattern pattern=Pattern.compile("^(([1-9]{1}\\d*)|([0]{1}))(\\.(\\d){0,3})?$"); // 判断小数点后2位的数字的正则表达式
+		Pattern pattern=Pattern.compile("^(([1-9]{1}\\d*)|([0]{1}))(\\.(\\d){0,6})?$"); // 判断小数点后6位的数字的正则表达式
 		Matcher match=pattern.matcher(str);
 		if(match.matches()==false){
 			return false;
