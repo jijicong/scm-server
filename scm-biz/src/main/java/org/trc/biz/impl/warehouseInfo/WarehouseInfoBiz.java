@@ -283,6 +283,10 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         List<WarehouseItemInfo> list = page.getResult();
         for(WarehouseItemInfo info : list){
             String status = info.getNoticeStatus().toString();
+            String warehouseItemId = info.getWarehouseItemId();
+            if(StringUtils.isBlank(warehouseItemId)){
+                info.setWarehouseItemId("");
+            }
             if(StringUtils.isEquals(status, ZeroToNineEnum.TWO.getCode()) ||
                     StringUtils.isEquals(status, ZeroToNineEnum.THREE.getCode()) ||
                     StringUtils.isEquals(status, ZeroToNineEnum.FOUR.getCode())){
