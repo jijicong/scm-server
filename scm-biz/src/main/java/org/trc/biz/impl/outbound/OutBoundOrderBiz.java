@@ -1478,7 +1478,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         AssertUtil.notBlank(warehouse.getCode(),"仓库编码不能为空");
         AssertUtil.notNull(outboundOrder.getCreateTime(),"发货单创建时间不能为空");
         AssertUtil.notNull(outboundOrder.getPayTime(),"付款时间不能为空");
-        AssertUtil.notBlank(outboundOrder.getShopName(),"店铺名称不能为空");
+        //AssertUtil.notBlank(outboundOrder.getShopName(),"店铺名称不能为空");
         AssertUtil.notBlank(warehouse.getWarehouseName(),"发货仓库名称不能为空");
 //        AssertUtil.notBlank(warehouse.getSenderPhoneNumber(),"运单发件人手机号不能为空");
         AssertUtil.notBlank(warehouse.getProvince(),"发货仓库省份不能为空");
