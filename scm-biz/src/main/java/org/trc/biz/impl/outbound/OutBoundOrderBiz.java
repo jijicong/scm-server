@@ -307,12 +307,13 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     //更新订单信息
                     this.updateItemOrderSupplierOrderStatus(outboundOrderCode, outboundOrder.getWarehouseOrderCode());
 
-                    // 发货单确认结果通知渠道
-                    deliveryOrderConfirmNotice(outboundOrder, response);
-
                     //记录日志
                     logInfoService.recordLog(outboundOrder, String.valueOf(outboundOrder.getId()), warehouse.getWarehouseName(),
                             LogOperationEnum.SEND.getMessage(),this.getPartSkuInfo(list, outboundOrder.getOutboundOrderCode()), null);
+
+                    // 发货单确认结果通知渠道
+                    deliveryOrderConfirmNotice(outboundOrder, response);
+
                 }
 
             }
