@@ -4919,7 +4919,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     if(StringUtils.equals(warehouseOrder.getWarehouseCode(), skuWarehouseDO.getWarehouseCode())){
                         boolean flag = false;
                         for(OrderItem orderItem: orderItemList){
-                            if(StringUtils.equals(skuCode, orderItem.getSkuCode())){
+                            if(StringUtils.equals(skuCode, orderItem.getSkuCode()) && StringUtils.equals(warehouseOrder.getWarehouseOrderCode(), orderItem.getWarehouseOrderCode())){
                                 OrderItem _orderItem = orderItem;
                                 _orderItem.setWarehouseOrderCode(warehouseOrder.getWarehouseOrderCode());
                                 _orderItem.setNum(skuWarehouseDO.getItemNum().intValue());
