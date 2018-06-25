@@ -171,7 +171,7 @@
     </logger>
 
     <root level="DEBUG">
-        <!--<appender-ref ref="STDOUT"/>-->
+        <appender-ref ref="STDOUT"/>
         <appender-ref ref="debug"/>
         <appender-ref ref="info"/>
         <appender-ref ref="warn"/>
