@@ -155,7 +155,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
     public List<WarehouseInfo> getWarehouseInfo(){
         WarehouseInfo warehouseInfo = new WarehouseInfo();
         warehouseInfo.setOwnerWarehouseState(OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());//通知成功
-        warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
+        //warehouseInfo.setIsValid(ZeroToNineEnum.ONE.getCode());//启用
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
         if(CollectionUtils.isEmpty(warehouseInfoList)){
             logger.error("没有查询到可用仓库");
