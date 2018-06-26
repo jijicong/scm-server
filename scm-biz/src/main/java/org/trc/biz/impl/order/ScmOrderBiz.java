@@ -1743,22 +1743,24 @@ public class ScmOrderBiz implements IScmOrderBiz {
                                     }
                                 }
                             }
-                            //物流信息
-                            List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(targetOutboundDetail.getId());
-                            //物流详细
-                            List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
-                            if (!AssertUtil.collectionIsEmpty(logisticsList)) {
-                                for (OutboundDetailLogistics outboundDetailLogistics : logisticsList) {
-                                    //物流信息
-                                    DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
-                                    deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
-                                    deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
-                                    if (outboundDetailLogistics.getItemNum() != null) {
-                                        deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                            if(null != targetOutboundDetail){
+                                //物流信息
+                                List<OutboundDetailLogistics> logisticsList = outboundDetailLogisticsMap.get(targetOutboundDetail.getId());
+                                //物流详细
+                                List<DeliverPackageForm> deliverPackageFormList = new ArrayList<>();
+                                if (!AssertUtil.collectionIsEmpty(logisticsList)) {
+                                    for (OutboundDetailLogistics outboundDetailLogistics : logisticsList) {
+                                        //物流信息
+                                        DeliverPackageForm deliverPackageForm = new DeliverPackageForm();
+                                        deliverPackageForm.setLogisticsCorporation(outboundDetailLogistics.getLogisticsCorporation());
+                                        deliverPackageForm.setWaybillNumber(outboundDetailLogistics.getWaybillNumber());
+                                        if (outboundDetailLogistics.getItemNum() != null) {
+                                            deliverPackageForm.setSkuNum(Integer.parseInt(String.valueOf(outboundDetailLogistics.getItemNum())));
+                                        }
+                                        deliverPackageFormList.add(deliverPackageForm);
                                     }
-                                    deliverPackageFormList.add(deliverPackageForm);
+                                    orderItem.setDeliverPackageFormList(deliverPackageFormList);
                                 }
-                                orderItem.setDeliverPackageFormList(deliverPackageFormList);
                             }
                         }
                     }
