@@ -1997,7 +1997,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
         AssertUtil.notBlank(orderInfo, "渠道同步订单给供应链订单信息参数不能为空");
         JSONObject orderObj = getChannelOrder(orderInfo);
         //订单检查
-        //orderCheck(orderObj);
+        orderCheck(orderObj);
         //获取平台订单信息
         PlatformOrder platformOrder = getPlatformOrder(orderObj);
         JSONArray shopOrderArray = getShopOrdersArray(orderObj);
@@ -2121,6 +2121,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //过滤库存校验失败的导入订单
         filterLessStockImportOrder(orderType, shopOrderList, importOrderInfoList);
+        //保存幂等流水
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
+            saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
+        }
         if(shopOrderList.size() == 0){
             return getEmptyOrderReturnMap(new HashMap<>());
         }
@@ -2171,10 +2175,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //设置代发商品供货价
         setOrderItemSupplyPrice(itemList, externalItemSkuList);
 
-        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
-            //保存幂等流水
-            saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
-        }
         orderItemService.insertList(itemList);
         //保存仓库订单
         if(warehouseOrderList.size() > 0){
@@ -4250,8 +4250,13 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrderList
      */
     private void saveIdempotentFlow(List<ShopOrder> shopOrderList, List<ImportOrderInfo> importOrderInfoList, String orderType) {
+        if(CollectionUtils.isEmpty(shopOrderList)){
+            return;
+        }
         StringBuilder sb = new StringBuilder();
-        for (ShopOrder shopOrder : shopOrderList) {
+        Iterator<ShopOrder> it = shopOrderList.iterator();
+        while (it.hasNext()){
+            ShopOrder shopOrder = it.next();
             try{
                 OrderIdempotent orderIdempotent = new OrderIdempotent();
                 orderIdempotent.setChannelCode(shopOrder.getChannelCode());
@@ -4269,6 +4274,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                             importOrderInfo.setErrorMessage("该订单已导入成功，暂不支持重复导入");
                         }
                     }
+                    it.remove();
                 }
                 String msg = String.format("业务线%s销售渠道%s订单%s", shopOrder.getChannelCode(), shopOrder.getSellCode(), shopOrder.getShopOrderCode());
                 log.error(msg+"重复");
@@ -4280,11 +4286,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 }
             }
         }
-
-
-
-
-
     }
 
     /**
@@ -5911,8 +5912,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
         //更新订单商品明细
         Date currentDate = Calendar.getInstance().getTime();
         for(OutboundDetail outboundDetail: outboundDetailList){
+            OutboundOrder outboundOrder = null;
+            for(OutboundOrder _outboundOrder: outboundOrderList){
+                if(StringUtils.equals(outboundDetail.getOutboundOrderCode(), _outboundOrder.getOutboundOrderCode())){
+                    outboundOrder = _outboundOrder;
+                    break;
+                }
+            }
             for(OrderItem orderItem: orderItemList){
-                if(StringUtils.equals(outboundDetail.getSkuCode(), orderItem.getSkuCode())){
+                if(StringUtils.equals(outboundDetail.getSkuCode(), orderItem.getSkuCode()) &&
+                        StringUtils.equals(orderItem.getWarehouseOrderCode(), outboundOrder.getOutboundOrderCode())){
                     OrderItemDeliverStatusEnum orderItemDeliverStatusEnum = getOrderItemDeliverStatusEnumByOutboundStatus(outboundDetail.getStatus());
                     orderItem.setSupplierOrderStatus(orderItemDeliverStatusEnum.getCode());
                     orderItem.setUpdateTime(currentDate);
