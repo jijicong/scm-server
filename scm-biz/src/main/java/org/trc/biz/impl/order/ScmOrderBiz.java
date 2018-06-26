@@ -2319,6 +2319,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
             Iterator<OrderItem> orderItems = shopOrder.getOrderItems().iterator();
             while (orderItems.hasNext()){
                 OrderItem orderItem = orderItems.next();
+                if(!orderItem.getSkuCode().startsWith(SP0)){
+                    continue;
+                }
                 boolean flag = false;
                 if(shopOrder.getIsStoreOrder()) {//门店订单
                     for(WarehouseInfo warehouseInfo: storeWarehouseInfoList){
