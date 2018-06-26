@@ -2038,8 +2038,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //校验商品是否从供应链新增
         //isScmItems(tmpOrderItemList);
+        //校验失败的商品
+        List<ExceptionOrderItem> exceptionOrderItemList = new ArrayList<>();
         //设置门店订单状态
-        List<WarehouseInfo> storeWarehouseInfoList = setStoreOrderStatus(shopOrderList, sellChannelList, importOrderInfoList, orderType);
+        List<WarehouseInfo> storeWarehouseInfoList = setStoreOrderStatus(shopOrderList, sellChannelList, importOrderInfoList, exceptionOrderItemList, orderType);
         if(shopOrderList.size() == 0){
             return getEmptyOrderReturnMap(new HashMap<>());
         }
@@ -2070,7 +2072,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         //自采商品处理
         List<SkuStock> skuStockList = new ArrayList<>();
-        List<ExceptionOrderItem> exceptionOrderItemList = new ArrayList<>();//校验失败的商品
         Map<String, List<SkuWarehouseDO>> skuWarehouseMap = null;//sku和仓库可用库存关系,一个sku对应多个仓库可用库存
         if(selfPurcharseOrderItemList.size() > 0){
             //设置自采商品spu编码
@@ -2124,7 +2125,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             selfSkuAllException = true;
         }
         //过滤库存校验失败的导入订单
-        filterLessStockImportOrder(orderType, shopOrderList, importOrderInfoList);
+        filterLessStockOrder(orderType, shopOrderList, importOrderInfoList);
         //保存幂等流水
         if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)) {//导入订单
             saveIdempotentFlow(shopOrderList, importOrderInfoList, orderType);
@@ -2327,19 +2328,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
 
-        if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderType)){//接收订单
-            if(failOrderItems.size() > 0){
-                StringBuilder sb = new StringBuilder();
-                for(OrderItem orderItem: failOrderItems){
-                    if (orderItem.getSkuCode().startsWith(SP0)){
-                        sb.append(orderItem.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
-                    }
-                }
-                if(sb.length() > 0){
-                    throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("商品%s未绑定仓库", sb.substring(0, sb.length() - 1)));
-                }
-            }
-        }else if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)){//导入订单
+        if(StringUtils.equals(ZeroToNineEnum.ONE.getCode(), orderType)){//导入订单
             if(failOrderItems.size() > 0){
                 for(ShopOrder fialShopOrder: failShopOrderList){
                     StringBuilder sb = new StringBuilder();
@@ -2386,12 +2375,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
     }
 
     /**
-     * 过滤库存校验失败的导入订单
+     * 处理库存校验失败的订单
      * @param orderType
      * @param shopOrders
      * @param importOrderInfoList
      */
-    private void filterLessStockImportOrder(String orderType, List<ShopOrder> shopOrders, List<ImportOrderInfo> importOrderInfoList){
+    private void filterLessStockOrder(String orderType, List<ShopOrder> shopOrders, List<ImportOrderInfo> importOrderInfoList){
         if(StringUtils.equals(ZeroToNineEnum.ZERO.getCode(), orderType)){//接收订单
             return;
         }
@@ -2522,7 +2511,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
      * @param shopOrderList
      * @param sellChannelList
      */
-    private List<WarehouseInfo> setStoreOrderStatus(List<ShopOrder> shopOrderList, List<SellChannel> sellChannelList, List<ImportOrderInfo> importOrderInfoList, String orderType){
+    private List<WarehouseInfo> setStoreOrderStatus(List<ShopOrder> shopOrderList, List<SellChannel> sellChannelList,
+                                                    List<ImportOrderInfo> importOrderInfoList, List<ExceptionOrderItem> exceptionOrderItemList, String orderType){
         if(CollectionUtils.isEmpty(shopOrderList) || CollectionUtils.isEmpty(sellChannelList)){
             return null;
         }
@@ -2589,7 +2579,6 @@ public class ScmOrderBiz implements IScmOrderBiz {
         }
         return warehouseInfoList;
     }
-
 
 
     /**
