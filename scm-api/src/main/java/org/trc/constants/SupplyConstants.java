@@ -576,6 +576,8 @@ public class SupplyConstants {
         public static final String WAERHOUSE_NOTICE_INFO = "warehouseNoticeInfo";
         //入库通知明细查询
         public static final String WAREHOUSE_NOTICE_DETAIL = "warehouseNoticeDetail";
+        //入库通知单的取消收货
+        public static final String CANCEL = "cancel";
 
     }
     

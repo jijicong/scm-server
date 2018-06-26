@@ -32,6 +32,8 @@ import org.trc.domain.warehouseInfo.WarehouseInfo;
 import org.trc.domain.warehouseNotice.WarehouseNotice;
 import org.trc.domain.warehouseNotice.WarehouseNoticeDetails;
 import org.trc.enums.*;
+import org.trc.enums.warehouse.CancelOrderType;
+import org.trc.exception.ParamValidException;
 import org.trc.exception.WarehouseNoticeDetailException;
 import org.trc.exception.WarehouseNoticeException;
 import org.trc.form.JDWmsConstantConfig;
@@ -45,7 +47,9 @@ import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IWarehouseNoticeCallbackService;
 import org.trc.service.goods.ISkuStockService;
 import org.trc.service.goods.ISkusService;
+import org.trc.service.impl.jingdong.CommonService;
 import org.trc.service.impower.IAclUserAccreditInfoService;
+import org.trc.service.jingdong.ICommonService;
 import org.trc.service.purchase.*;
 import org.trc.service.supplier.ISupplierService;
 import org.trc.service.util.IRealIpService;
@@ -61,6 +65,8 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
+
+import static org.trc.biz.impl.allocateOrder.AllocateOutOrderBiz.SUCCESS;
 
 /**
  * @author sone
@@ -118,6 +124,10 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
     private IWarehouseMockService warehouseMockService;
     @Autowired
     private IPurchaseGroupUserService purchaseGroupUserService;
+    @Autowired
+    private ICommonService commonService;
+    @Autowired
+    private IRealIpService realIpService;
 
     @Value("${mock.outer.interface}")
     private String mockOuterInterface;
@@ -997,6 +1007,184 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
         warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
 
         return ResultUtil.createSuccessResult("反填入库通知单成功","");
+    }
+
+    //取消收货接口调用业务
+    @Override
+    @Transactional(rollbackFor =Exception.class)
+    public void cancel(String warehouseNoticeCode, String cancelReason) {
+        AssertUtil.notBlank(cancelReason,"取消原因不能为空");
+        WarehouseNotice temp = new WarehouseNotice();
+        temp.setWarehouseNoticeCode(warehouseNoticeCode);
+
+        //入库通知单
+        WarehouseNotice warehouseNotice = warehouseNoticeService.selectOne(temp);
+        AssertUtil.notNull(warehouseNotice,String.format("根据入库通知单号%s查询入库通知单信息为空",warehouseNoticeCode));
+
+        //入库通知详情
+        WarehouseNoticeDetails noticeDetails = new WarehouseNoticeDetails();
+        noticeDetails.setWarehouseNoticeCode(warehouseNoticeCode);
+        List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(noticeDetails);
+        AssertUtil.notEmpty(list,String.format("根据入库通知单号%s查询入库通知单明细为空",warehouseNotice));
+
+        //取消结果
+        String cancelResult="";
+        LogOperationEnum logOperationEnum = null;
+        if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+            throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"当前入库通知单已经是取消状态!");
+        }
+        logOperationEnum= LogOperationEnum.CANCEL_RECIVE_GOODS;
+        Map<String, String> map = new HashMap<>();
+        //调用入库通知取消操作
+        OrderCancelResultEnum resultEnum=cancelNotice(warehouseNotice,map);
+
+        if(OrderCancelResultEnum.CANCEL_FAIL.code.equals(resultEnum.code)){
+            throw new RuntimeException("入库通知单取消失败："+map.get("msg"));
+        }else if (OrderCancelResultEnum.CANCELLING.code.equals(resultEnum.code)){
+            cancelResult= WarehouseNoticeStatusEnum.CANCELLING.getCode();
+        }else {
+            cancelResult=WarehouseNoticeStatusEnum.CANCELLATION.getCode();
+        }
+
+        //入库单状态
+        warehouseNotice.setStatus(cancelResult);
+        //入库单详情状态
+        for (WarehouseNoticeDetails detail : list) {
+            detail.setStatus(Integer.parseInt(cancelResult));
+        }
+        warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+        warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+
+        //记录操作日志
+        logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                "admin",logOperationEnum.getMessage(),cancelReason,null);
+
+    }
+
+    //取消收货 取消中状态定时任务
+    @Override
+    public void retryCancelOrder() {
+        if (!realIpService.isRealTimerService()) return;
+        WarehouseNotice orderTemp=new WarehouseNotice();
+        orderTemp.setStatus(WarehouseNoticeStatusEnum.CANCELLING.getCode());
+        List<WarehouseNotice> list = warehouseNoticeService.select(orderTemp);
+
+        List<ScmOrderCancelRequest> requests = new ArrayList<>();
+        for (WarehouseNotice warehouseNotice : list) {
+            WarehouseInfo warehouseInfo = new WarehouseInfo();
+            warehouseInfo.setCode(warehouseNotice.getWarehouseCode());
+            List<WarehouseInfo> warehouseInfoList = warehouseInfoService.select(warehouseInfo);
+            if (warehouseInfoList==null|| warehouseInfoList.size()<1){
+                continue;
+            }
+             warehouseInfo = warehouseInfoList.get(0);
+            ScmOrderCancelRequest scmOrderCancelRequest = new ScmOrderCancelRequest();
+            scmOrderCancelRequest.setOrderCode(warehouseNotice.getWarehouseNoticeCode());
+            scmOrderCancelRequest.setWarehouseType("JD");
+            scmOrderCancelRequest.setOrderType(CancelOrderType.PURCHASE.getCode());
+            requests.add(scmOrderCancelRequest);
+        }
+
+        //调用接口
+        this.retryCancelOrder(requests);
+    }
+
+    private void retryCancelOrder (List<ScmOrderCancelRequest> requests){
+        try {
+            for (ScmOrderCancelRequest request : requests) {
+                new Thread(() ->{
+                    //调用接口
+                    AppResult<ScmOrderCancelResponse> responseAppResult=warehouseApiService.orderCancel(request);
+
+                    //回写数据
+                    try {
+                        this.updateCancelOrder(responseAppResult, request.getOrderCode());
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        logger.error("入库通知单号：{}，取消收货异常：{}",request.getOrderCode(),responseAppResult.getDatabuffer());
+                    }
+
+                }).start();
+            }
+        }catch (Exception e){
+            logger.error("取消收货失败",e);
+        }
+
+    }
+
+    private void updateCancelOrder(AppResult<ScmOrderCancelResponse> appResult, String orderCode){
+        try {
+            if (StringUtils.equals(appResult.getAppcode(), SUCCESS)){// 成功
+                WarehouseNotice warehouseNotice=new WarehouseNotice();
+                warehouseNotice.setWarehouseNoticeCode(orderCode);
+                warehouseNotice= warehouseNoticeService.selectOne(warehouseNotice);
+
+                ScmOrderCancelResponse response = (ScmOrderCancelResponse)appResult.getResult();
+                String flag = response.getFlag();
+                WarehouseNoticeDetails warehouseNoticeDetails = new WarehouseNoticeDetails();
+                warehouseNoticeDetails.setWarehouseNoticeCode(orderCode);
+                List<WarehouseNoticeDetails> list = warehouseNoticeDetailsService.select(warehouseNoticeDetails);
+
+                if (StringUtils.equals(flag, ZeroToNineEnum.ONE.getCode())){//取消成功
+                    //修改入库通知单和详情的状态
+                    warehouseNotice.setStatus(WarehouseNoticeStatusEnum.CANCELLATION.getCode());
+                    for (WarehouseNoticeDetails details : list) {
+                        details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.CANCELLATION.getCode()));
+                    }
+                    warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                    warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+
+                    //日志输出
+                    logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                            "admin","取消入库","取消结果：取消成功",null);
+                }else if (StringUtils.equals(flag, ZeroToNineEnum.TWO.getCode())){//取消失败
+                    warehouseNotice.setStatus(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode());
+                    warehouseNotice.setUpdateTime(Calendar.getInstance().getTime());
+                    for (WarehouseNoticeDetails details : list) {
+                        details.setStatus(Integer.parseInt(WarehouseNoticeStatusEnum.ON_WAREHOUSE_TICKLING.getCode()));
+                    }
+                    warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
+                    warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
+
+                    //日志输出
+                    logInfoService.recordLog(warehouseNotice,warehouseNotice.getId().toString(),
+                            "admin","取消入库","取消结果：取消失败"+response.getMessage(),null);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error("入库通知单号：{}，取消入库通知异常：{}",orderCode,e.getMessage());
+        }
+
+    }
+
+    /**
+     * 入库单取消通知
+     */
+    private OrderCancelResultEnum cancelNotice(WarehouseNotice warehouseNotice,Map<String,String> errMsg){
+        OrderCancelResultEnum resultEnum = OrderCancelResultEnum.CANCEL_FAIL;// 取消失败
+        ScmOrderCancelRequest request = new ScmOrderCancelRequest();
+        request.setOrderType(CancelOrderType.PURCHASE.getCode());
+        // 自营仓 和 三方仓库 统一取warehouseNoticeCode
+        request.setOrderCode(warehouseNotice.getWarehouseCode());
+        commonService.getWarehoueType(warehouseNotice.getWarehouseCode(),request);
+
+        AppResult<ScmOrderCancelResponse> response = warehouseApiService.orderCancel(request);
+        if (StringUtils.equals(response.getAppcode(),ResponseAck.SUCCESS_CODE)){
+            ScmOrderCancelResponse respResult = (ScmOrderCancelResponse)response.getResult();
+            if (OrderCancelResultEnum.CANCEL_SUCC.code.equals(respResult.getFlag())) { // 取消成功
+                resultEnum = OrderCancelResultEnum.CANCEL_SUCC;
+            } else if (OrderCancelResultEnum.CANCELLING.code.equals(respResult.getFlag())) { // 取消中
+                resultEnum = OrderCancelResultEnum.CANCELLING;
+            } else {//取消失败
+                errMsg.put("msg", respResult.getMessage());
+            }
+        }else {
+            errMsg.put("msg",response.getDatabuffer());
+            logger.error("入库通知单取消失败：",response.getDatabuffer());
+        }
+        return  resultEnum;
+
     }
 
     private void scmEntryOrder(List<WarehouseNotice> noticeList) {

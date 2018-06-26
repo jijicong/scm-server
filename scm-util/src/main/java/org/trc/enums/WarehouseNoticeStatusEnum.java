@@ -21,7 +21,9 @@ public enum WarehouseNoticeStatusEnum {
 	RECEIVE_GOODS_EXCEPTION("4","入库异常"),
 	RECEIVE_PARTIAL_GOODS("5","部分入库"),
 	DROPPED("6","作废"),
-	CANCELLATION("7","已取消");
+	CANCELLATION("7","已取消"),
+	CANCELLING("8","取消中");
+
 
 	private String code;
 	private String name;

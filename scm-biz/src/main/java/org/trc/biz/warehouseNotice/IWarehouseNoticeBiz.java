@@ -58,4 +58,8 @@ public interface IWarehouseNoticeBiz {
      * （采购）入库通知回调
      */
     Response inFinishCallBack(WmsInNoticeRequest req);
+
+    void cancel(String warehouseNoticeCode, String cancelReason);
+
+    void retryCancelOrder();
 }
