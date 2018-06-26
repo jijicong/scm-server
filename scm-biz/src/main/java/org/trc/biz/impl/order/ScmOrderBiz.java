@@ -7160,7 +7160,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderItem.setPostDiscount(detail.getPostFee());//邮费
                 orderItem.setTradeMemo(detail.getMemo());
                 orderItem.setCreateTime(detail.getPayTime());
-                orderItem.setSupplierOrderStatus(SupplierOrderStatusEnum.WAIT_FOR_SUBMIT.getCode());
+                if(orderItem.getSkuCode().startsWith(SP0)){
+                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_WAREHOUSE_DELIVER.getCode());//等待仓库发货
+                }else if(orderItem.getSkuCode().startsWith(SP1)){
+                    orderItem.setSupplierOrderStatus(OrderItemDeliverStatusEnum.WAIT_FOR_SUBMIT.getCode());//待发送供应商
+                }
                 orderItem.setIsStoreOrder(IsStoreOrderEnum.NOT_STORE_ORDER.getCode());
                 orderItemList.add(orderItem);
             }
