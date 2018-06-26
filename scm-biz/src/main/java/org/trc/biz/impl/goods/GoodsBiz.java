@@ -2161,6 +2161,9 @@ public class GoodsBiz implements IGoodsBiz {
                                 if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.SALE.getCode()) 
                                 		&& StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.GOOD.getCode())) {
                                     skuStock.setAvailableInventory((inventoryQueryResponse.getQuantity() == null ? 0 : inventoryQueryResponse.getQuantity()) + (skuStock.getAvailableInventory() == null ? 0 : skuStock.getAvailableInventory()));
+                                    if (null == inventoryQueryResponse.getQuantity() && null == skuStock.getAvailableInventory()) {
+                                        skuStock.setAvailableInventory(null);
+                                    }
                                 }
 //                                //判断库存类型,仓库锁定
 //                                if (StringUtils.equals(inventoryQueryResponse.getInventoryType(), JingdongInventoryTypeEnum.WAREHOUSE_LOCK.getCode())) {
@@ -2177,6 +2180,9 @@ public class GoodsBiz implements IGoodsBiz {
                                 //残品库存
                                 if (StringUtils.equals(inventoryQueryResponse.getInventoryStatus(), JingdongInventoryStateEnum.Quality.getCode())) {
                                     skuStock.setDefectiveInventory((inventoryQueryResponse.getTotalNum() == null ? 0 : inventoryQueryResponse.getTotalNum()) + (skuStock.getDefectiveInventory() == null ? 0 : skuStock.getDefectiveInventory()));
+                                    if (null == inventoryQueryResponse.getTotalNum() && null == skuStock.getDefectiveInventory()) {
+                                        skuStock.setDefectiveInventory(null);
+                                    }
                                 }
                             }
                         }
@@ -2226,7 +2232,6 @@ public class GoodsBiz implements IGoodsBiz {
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("id",warehouseInfoIds);
         criteria.andEqualTo("ownerWarehouseState",OwnerWarehouseStateEnum.NOTICE_SUCCESS.getCode());
-        criteria.andEqualTo("isValid",ZeroToNineEnum.ONE.getCode());
 
          warehouseInfoList = warehouseInfoService.selectByExample(example);
         return warehouseInfoList;
