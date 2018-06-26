@@ -101,12 +101,7 @@ public class JerseyResourceAop {
         long endL = System.nanoTime();
         if (log.isInfoEnabled()) {
             log.info(endfix + "结束调用" + targetClass.getName() + "方法" + method.getName() + ". 结束时间" + DateUtils.dateToString(end, DateUtils.DATETIME_FORMAT) + ", 耗时" + DateUtils.getMilliSecondBetween(startL, endL) + "毫秒");
-            if(resultObj instanceof Response){
-                Response obj = (Response) resultObj;
-                log.info(endfix + "返回结果：" + JSON.toJSONString(obj.getEntity()));
-            } else {
-                log.info(endfix + "返回结果：" + JSON.toJSONString(resultObj));
-            }
+            log.info(endfix + "返回结果：" + BeanToMapUtil.convertBeanToMap(resultObj));
 
         }
         return resultObj;
