@@ -198,7 +198,7 @@
     	<appender-ref ref="warehouse_api_log"/>
     </logger>
 
-    <root level="DEBUG">
+    <root level="INFO">
     
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="debug"/>
@@ -206,5 +206,8 @@
         <appender-ref ref="warn"/>
         <appender-ref ref="error"/>
     </root>
+
+
+
 
 </configuration>

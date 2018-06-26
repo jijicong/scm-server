@@ -77,18 +77,18 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response saveLogisticsCorporation(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
-        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
+//        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
         AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
-        Example example = new Example(LogisticsCorporation.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
-        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
-        if(logisticsCorporationList.size() > 0){
-            String msg = "物流公司编码已存在";
-            logger.error(msg);
-            throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_SAVE_EXCEPTION, msg);
-        }
+//        Example example = new Example(LogisticsCorporation.class);
+//        Example.Criteria criteria = example.createCriteria();
+//        criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
+//        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
+//        if(logisticsCorporationList.size() > 0){
+//            String msg = "物流公司编码已存在";
+//            logger.error(msg);
+//            throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_SAVE_EXCEPTION, msg);
+//        }
         String userId = aclUserAccreditInfo.getUserId();
         AssertUtil.notBlank(userId, "获取当前登录的userId失败");
         logisticsCorporation.setCreateOperator(userId);
@@ -112,20 +112,20 @@ public class LogisticsCorporationBiz implements ILogisticsCorporationBiz {
     public void updateLogisticsCorporation(LogisticsCorporation logisticsCorporation, AclUserAccreditInfo aclUserAccreditInfo) {
         AssertUtil.notNull(logisticsCorporation.getId(), "根据ID修改物流公司，参数ID为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationName(),"物流公司名称不能为空");
-        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
+//        AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationCode(),"物流公司编码不能为空");
         AssertUtil.notBlank(logisticsCorporation.getLogisticsCorporationType(),"物流公司类型不能为空");
         AssertUtil.notNull(logisticsCorporation.getIsValid(),"物流公司状态不能为空");
 
-        Example example = new Example(LogisticsCorporation.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
-        criteria.andNotEqualTo("id", logisticsCorporation.getId());
-        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
-        if(logisticsCorporationList.size() > 0){
-            String msg = "物流公司编码已存在";
-            logger.error(msg);
-            throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_UPDATE_EXCEPTION, msg);
-        }
+//        Example example = new Example(LogisticsCorporation.class);
+//        Example.Criteria criteria = example.createCriteria();
+//        criteria.andEqualTo("logisticsCorporationCode", logisticsCorporation.getLogisticsCorporationCode());
+//        criteria.andNotEqualTo("id", logisticsCorporation.getId());
+//        List<LogisticsCorporation> logisticsCorporationList = logisticsCorporationService.selectByExample(example);
+//        if(logisticsCorporationList.size() > 0){
+//            String msg = "物流公司编码已存在";
+//            logger.error(msg);
+//            throw new LogisticsCorporationException(ExceptionEnum.LOGISTICS_CORPORATION_UPDATE_EXCEPTION, msg);
+//        }
 
         logisticsCorporation.setUpdateTime(Calendar.getInstance().getTime());
         LogisticsCorporation _logisticsCorporation = logisticsCorporationService.selectByPrimaryKey(logisticsCorporation.getId());

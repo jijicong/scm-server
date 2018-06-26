@@ -784,7 +784,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 OutboundOrder outboundOrder01 = outBoundOrderService.selectByPrimaryKey(Long.valueOf(outboundOrderId));
                 if (StringUtils.equals(outboundOrder01.getStatus(),ZeroToNineEnum.TWO.getCode())){
                     msg = "已经通知仓库重新发货成功";
-                    return ResultUtil.createSuccessResult("已经通知仓库重新发货成功","");
+                    return ResultUtil.createSuccessResult(msg,"");
                 }
                 result = scmOrderBiz.deliveryOrderCreate(outboundMap, true);
 
