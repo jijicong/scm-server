@@ -96,7 +96,6 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
         JSONArray jsonArray = JSONArray.parseArray(warehousePriorityInfo);
         List<WarehousePriority> warehousePriorityList = new ArrayList<>();
         List<WarehousePriority> addWaWarehousePrioritys = new ArrayList<>();
-        List<WarehousePriority> updateWaWarehousePrioritys = new ArrayList<>();
         List<String> warehouseCodes = new ArrayList<>();
         for(Object obj: jsonArray){
             JSONObject _obj = (JSONObject)obj;
@@ -128,10 +127,6 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
         //插入新增仓库优先级
         if(!CollectionUtils.isEmpty(addWaWarehousePrioritys)){
             warehousePriorityService.insertList(addWaWarehousePrioritys);
-            //记录操作日志
-            for(WarehousePriority priority: addWaWarehousePrioritys){
-                logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ADD_NEW_WAREHOUSE.getMessage(), null,null);
-            }
         }
 
         Example example = new Example(WarehousePriority.class);
@@ -162,6 +157,10 @@ public class WarehousePriorityBiz implements IWarehousePriorityBiz {
                     }
                 }
             }
+        }
+        //记录操新增作日志
+        for(WarehousePriority priority: addWaWarehousePrioritys){
+            logInfoService.recordLog(priority,priority.getId().toString(), aclUserAccreditInfo.getUserId(), LogOperationEnum.ADD_NEW_WAREHOUSE.getMessage(), null,null);
         }
 
     }
