@@ -6499,6 +6499,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             if(StringUtils.equals("0", contentResult.get("count").toString())){
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
             }
+            int count = Integer.parseInt(contentResult.get("count"));
+            if(count > 100){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "每次导入订单数据不能超过500条！");
+            }
             SellChannel sellChannel = new SellChannel();
             sellChannel.setSellCode(sellCode);
             sellChannel = sellChannelService.selectOne(sellChannel);
