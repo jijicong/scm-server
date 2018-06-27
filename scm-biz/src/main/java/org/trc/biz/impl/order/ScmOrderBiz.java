@@ -4856,7 +4856,12 @@ public class ScmOrderBiz implements IScmOrderBiz {
 
         List<String> skusList = new ArrayList<>();
         for(OrderItem orderItem: orderItems){
-            skusList.add(orderItem.getSkuCode());
+            if(orderItem.getSkuCode().startsWith(SP1)){
+                skusList.add(orderItem.getSkuCode());
+            }
+        }
+        if(skusList.size() == 0){
+            return;
         }
         Example example = new Example(ExternalItemSku.class);
         Example.Criteria criteria = example.createCriteria();
@@ -7304,8 +7309,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
             }
         }
         Map<String, List<ImportOrderInfo>> map = new HashedMap();
-        boolean isReaptSku = false;
         for(String key: shopOrderCodes){
+            boolean isReaptSku = false;
             List<ImportOrderInfo> _orderItemList = new ArrayList<>();
             for(ImportOrderInfo orderItem: importOrderInfoList){
                 if(isSameShop(key, orderItem)){
@@ -7321,9 +7326,16 @@ public class ScmOrderBiz implements IScmOrderBiz {
             checkShopOrderItemContent(_orderItemList);
             //同一个订单下的数据要么一起导入成功，要么一起导入失败
             if(isReaptSku){
-                for(ImportOrderInfo orderItem: importOrderInfoList){
-                    orderItem.setFlag(false);
-                    setImportOrderErrorMsg(orderItem, "同一订单中的商品SKU编号不能重复");
+                for(ImportOrderInfo orderItem: _orderItemList){
+                    for(ImportOrderInfo _orderItem: importOrderInfoList){
+                        if(StringUtils.equals(orderItem.getChannelCode(), _orderItem.getChannelCode()) &&
+                                StringUtils.equals(orderItem.getSellCode(), _orderItem.getSellCode()) &&
+                                StringUtils.equals(orderItem.getShopOrderCode(), _orderItem.getShopOrderCode()) &&
+                                StringUtils.equals(orderItem.getSkuCode(), _orderItem.getSkuCode())){
+                            _orderItem.setFlag(false);
+                            setImportOrderErrorMsg(_orderItem, "同一订单中的商品SKU编号不能重复");
+                        }
+                    }
                 }
             }else {
                 boolean _flag = false;
@@ -7336,10 +7348,15 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     }
                 }
                 if(_flag){
-                    for(ImportOrderInfo orderItem: importOrderInfoList){
-                        if(orderItem.getFlag()){
-                            orderItem.setFlag(false);
-                            setImportOrderErrorMsg(orderItem, String.format("同一订单中的【%s】有误！",  _orderInfo.getSkuCode()));
+                    for(ImportOrderInfo orderItem: _orderItemList){
+                        for(ImportOrderInfo _orderItem: importOrderInfoList){
+                            if(StringUtils.equals(orderItem.getChannelCode(), _orderItem.getChannelCode()) &&
+                                    StringUtils.equals(orderItem.getSellCode(), _orderItem.getSellCode()) &&
+                                    StringUtils.equals(orderItem.getShopOrderCode(), _orderItem.getShopOrderCode()) &&
+                                    StringUtils.equals(orderItem.getSkuCode(), _orderItem.getSkuCode())){
+                                _orderItem.setFlag(false);
+                                setImportOrderErrorMsg(_orderItem, String.format("同一订单中的【%s】有误！",  _orderInfo.getSkuCode()));
+                            }
                         }
                     }
                     _orderItemList = new ArrayList<>();
@@ -7413,7 +7430,9 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 orderItem.setPlatformOrderCode(shopOrder.getPlatformOrderCode());
             }
             shopOrder.setOrderItems(orderItemList);
-            shopOrderList.add(shopOrder);
+            if(orderItemList.size() > 0){
+                shopOrderList.add(shopOrder);
+            }
         }
         for(ImportOrderInfo importOrderInfo: importOrderInfoList){
             for(ShopOrder shopOrder: shopOrderList){
