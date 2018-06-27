@@ -30,10 +30,10 @@ public class LogisticsCorporation extends CommonDO {
     @Length(max = 100, message = "物流公司名称不能超过100个字节")
     private String logisticsCorporationName;
 
-    //物流公司编码
-    @FormParam("logisticsCorporationCode")
-    @Length(max = 10, message = "物流公司编码不能超过10个字节")
-    private String logisticsCorporationCode;
+//    //物流公司编码
+//    @FormParam("logisticsCorporationCode")
+//    @Length(max = 10, message = "物流公司编码不能超过10个字节")
+//    private String logisticsCorporationCode;
 
     //物流公司类型
     @FormParam("logisticsCorporationType")
@@ -82,13 +82,13 @@ public class LogisticsCorporation extends CommonDO {
         this.logisticsCorporationName = logisticsCorporationName;
     }
 
-    public String getLogisticsCorporationCode() {
-        return logisticsCorporationCode;
-    }
-
-    public void setLogisticsCorporationCode(String logisticsCorporationCode) {
-        this.logisticsCorporationCode = logisticsCorporationCode;
-    }
+//    public String getLogisticsCorporationCode() {
+//        return logisticsCorporationCode;
+//    }
+//
+//    public void setLogisticsCorporationCode(String logisticsCorporationCode) {
+//        this.logisticsCorporationCode = logisticsCorporationCode;
+//    }
 
     public String getLogisticsCorporationType() {
         return logisticsCorporationType;

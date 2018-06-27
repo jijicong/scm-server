@@ -1232,8 +1232,6 @@ public class SupplyConstants {
         public final static String WAREHOUSE_STOCK_LESS = "指定仓库“%s”库存不足";
         //同一仓库/供应商中存在库存不足的sku
         public final static String SKU_STOCK_LESS_OF_WAREHOUSE = "同一仓库/供应商中存在库存不足的sku";
-
-
     }
 
 
