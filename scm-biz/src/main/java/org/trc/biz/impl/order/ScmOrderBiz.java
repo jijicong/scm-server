@@ -34,10 +34,7 @@ import org.trc.domain.System.LogisticsCompany;
 import org.trc.domain.System.SellChannel;
 import org.trc.domain.config.RequestFlow;
 import org.trc.domain.config.SystemConfig;
-import org.trc.domain.goods.ExternalItemSku;
-import org.trc.domain.goods.SkuRelation;
-import org.trc.domain.goods.SkuStock;
-import org.trc.domain.goods.Skus;
+import org.trc.domain.goods.*;
 import org.trc.domain.impower.AclUserAccreditInfo;
 import org.trc.domain.order.*;
 import org.trc.domain.supplier.Supplier;
@@ -65,10 +62,7 @@ import org.trc.service.System.ISellChannelService;
 import org.trc.service.config.ILogInfoService;
 import org.trc.service.config.IRequestFlowService;
 import org.trc.service.config.ISystemConfigService;
-import org.trc.service.goods.IExternalItemSkuService;
-import org.trc.service.goods.ISkuRelationService;
-import org.trc.service.goods.ISkuStockService;
-import org.trc.service.goods.ISkusService;
+import org.trc.service.goods.*;
 import org.trc.service.order.*;
 import org.trc.service.outbound.IOutBoundOrderService;
 import org.trc.service.outbound.IOutboundDetailLogisticsService;
@@ -164,6 +158,11 @@ public class ScmOrderBiz implements IScmOrderBiz {
     //京东下单方式 0--预占库存方式 1--不是预占库存
     @Value("${jd.submit.state}")
     private String jdSubmitState;
+    //订单sku默认图片
+    @Value("${order.sku.pictrue}")
+    private String orderSkuPictrue;
+    @Value("${domain.of.bucket}")
+    private String quniuPicDomain;
     @Autowired
     private IShopOrderService shopOrderService;
     @Autowired
@@ -226,6 +225,8 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private IOutboundDetailLogisticsService outboundDetailLogisticsService;
     @Autowired
     private RedisLock redisLock;
+    @Autowired
+    private IItemsService iItemsService;
     @Autowired
     private ISkusService skusService;
     @Autowired
@@ -2676,12 +2677,25 @@ public class ScmOrderBiz implements IScmOrderBiz {
     private void setSelfPurcharesSpuInfo(List<ShopOrder> shopOrderList, List<OrderItem> selfPurcharseOrderItemList){
         List<String> skuCodes = new ArrayList<>();
         for(OrderItem orderItem: selfPurcharseOrderItemList){
-            skuCodes.add(orderItem.getSkuCode());
+            if(orderItem.getSkuCode().startsWith(SP0)){
+                skuCodes.add(orderItem.getSkuCode());
+            }
         }
         Example example = new Example(Skus.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("skuCode", skuCodes);
         List<Skus> skusList = skusService.selectByExample(example);
+        if(CollectionUtils.isEmpty(skusList)){
+            return;
+        }
+        Set<String> spuCodes = new HashSet<>();
+        for(Skus skus: skusList){
+            spuCodes.add(skus.getSpuCode());
+        }
+        Example example2 = new Example(Items.class);
+        Example.Criteria criteria2 = example2.createCriteria();
+        criteria2.andIn("spuCode", spuCodes);
+        List<Items> itemsList = iItemsService.selectByExample(example2);
         for(OrderItem orderItem: selfPurcharseOrderItemList){
             for(Skus skus: skusList){
                 if(StringUtils.equals(orderItem.getSkuCode(), skus.getSkuCode())){
@@ -2689,6 +2703,17 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     orderItem.setItemName(skus.getSkuName());
                     orderItem.setSpecNatureInfo(skus.getSpecInfo());
                     break;
+                }
+            }
+            for(Items items: itemsList){
+                if(StringUtils.equals(orderItem.getSpuCode(), items.getSpuCode())){
+                    if(StringUtils.isBlank(orderItem.getPicPath())){
+                        if(StringUtils.isNotBlank(items.getMainPicture())){
+                            orderItem.setPicPath(quniuPicDomain+"/"+items.getMainPicture());
+                        }else{
+                            orderItem.setPicPath(orderSkuPictrue);
+                        }
+                    }
                 }
             }
         }
@@ -2702,7 +2727,19 @@ public class ScmOrderBiz implements IScmOrderBiz {
                         break;
                     }
                 }
+                for(Items items: itemsList){
+                    if(StringUtils.equals(_orderItem.getSpuCode(), items.getSpuCode())){
+                        if(StringUtils.isBlank(_orderItem.getPicPath())){
+                            if(StringUtils.isNotBlank(items.getMainPicture())){
+                                _orderItem.setPicPath(quniuPicDomain+"/"+items.getMainPicture());
+                            }else{
+                                _orderItem.setPicPath(orderSkuPictrue);
+                            }
+                        }
+                    }
+                }
             }
+
         }
     }
 

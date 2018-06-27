@@ -199,13 +199,14 @@
     </logger>
 
     <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
         <appender-ref ref="debug"/>
         <appender-ref ref="info"/>
         <appender-ref ref="warn"/>
         <appender-ref ref="error"/>
     </root>
-    <root level="INFO">
+    <!--<root level="INFO">
     	<appender-ref ref="STDOUT"/>
-    </root>
+    </root>-->
 
 </configuration>
