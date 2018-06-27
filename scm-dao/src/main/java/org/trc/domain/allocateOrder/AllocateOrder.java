@@ -114,6 +114,13 @@ public class AllocateOrder extends AllocateOrderBase{
     private String auditOpinion;
     
     /**
+     * 审核状态：1-提交审核(待审核),2-审核通过,3-审核驳回
+     */
+    @FormParam("auditStatus")
+    @Column(name = "audit_status")
+    private String auditStatus;
+    
+    /**
      * 提交审核人
      */
     @Column(name = "submit_operator")
@@ -488,6 +495,16 @@ public class AllocateOrder extends AllocateOrderBase{
 	public void setWmsAllocateOrderCode(String wmsAllocateOrderCode) {
 		this.wmsAllocateOrderCode = wmsAllocateOrderCode;
 	}
+
+	public String getAuditStatus() {
+		return auditStatus;
+	}
+
+	public void setAuditStatus(String auditStatus) {
+		this.auditStatus = auditStatus;
+	}
+	
+	
 	
 	
     

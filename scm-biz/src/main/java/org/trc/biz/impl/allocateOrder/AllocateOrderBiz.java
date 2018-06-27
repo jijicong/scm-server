@@ -118,18 +118,18 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
                 statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode());
                 statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
                 statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
-                criteria.andIn("orderStatus", statusList);
+                criteria.andIn("auditStatus", statusList);
                 
         	} else if (AllocateOrderEnum.AllocateOrderAuditStatusEnum.WAIT_AUDIT.getCode().equals(auditStatus)) {
         		// 待审核
-                criteria.andEqualTo("orderStatus", AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode());
+                criteria.andEqualTo("auditStatus", AllocateOrderEnum.AllocateOrderStatusEnum.AUDIT.getCode());
                 
         	} else if (AllocateOrderEnum.AllocateOrderAuditStatusEnum.FINISH_AUDIT.getCode().equals(auditStatus)) {
         		// 已审核
                 List<String> statusList = new ArrayList<>();
                 statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
                 statusList.add(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
-                criteria.andIn("orderStatus", statusList);
+                criteria.andIn("auditStatus", statusList);
         	} else {
         		throw new AllocateOrderException(ExceptionEnum.ALLOCATE_ORDER_AUDIT_EXCEPTION, 
 						"审核状态错误");
@@ -348,6 +348,10 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
             
 			// 设置调拨单初始状态-暂存或者提交审核
 			allocateOrder.setOrderStatus(orderStatus);
+			// 设置调拨单审核状态的初始状态-提交审核
+			if (isReviewFlg) {
+				allocateOrder.setAuditStatus(orderStatus);
+			}
 			// 设置调拨单出入库初始状态-初始
 			allocateOrder.setInOutStatus(AllocateOrderEnum.AllocateOrderInOutStatusEnum.INIT.getCode());
 			allocateOrder.setCreateOperator(aclUserAccreditInfo.getUserId());
@@ -409,6 +413,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			//record.setUpdateTime(Calendar.getInstance().getTime());
 			if (isReviewFlg) {
 				record.setOrderStatus(orderStatus);
+				record.setAuditStatus(orderStatus);
 			}
 			// 设置仓库信息
 			setDetailAddress(record);
@@ -900,6 +905,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			} else {
 				allocateOrder.setAuditOpinion(auditOpinion);
 				allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
+				allocateOrder.setAuditStatus(AllocateOrderEnum.AllocateOrderStatusEnum.REJECT.getCode());
 				operation = LogOperationEnum.AUDIT_REJECT;
 			}
 		} else {
@@ -942,6 +948,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 			
 			allocateOrder.setAuditOpinion(auditOpinion);
 			allocateOrder.setOrderStatus(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
+			allocateOrder.setAuditStatus(AllocateOrderEnum.AllocateOrderStatusEnum.PASS.getCode());
 			operation = LogOperationEnum.AUDIT_PASS;
 		}
 		allocateOrderService.updateByPrimaryKeySelective(allocateOrder);
