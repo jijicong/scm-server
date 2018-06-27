@@ -1,5 +1,6 @@
 package org.trc.form.warehouseInfo;
 
+import jdk.nashorn.internal.objects.annotations.Setter;
 import org.trc.util.QueryModel;
 
 import javax.ws.rs.QueryParam;
