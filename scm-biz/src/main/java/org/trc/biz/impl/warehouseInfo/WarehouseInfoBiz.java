@@ -297,9 +297,9 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
 
     @Override
     //@Cacheable(value = SupplyConstants.Cache.WAREHOUSE_ITEM)
-    public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page) {
+    public Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, String warehouseCode, Pagenation<WarehouseItemInfo> page) {
         AssertUtil.notNull(form, "查询仓库商品信息分页参数form不能为空");
-        AssertUtil.notNull(warehouseInfoId, "查询仓库商品信息分页参数warehouseInfoId不能为空");
+        AssertUtil.notBlank(warehouseCode, "查询仓库商品信息分页参数warehouseCode不能为空");
         AssertUtil.notNull(page.getPageNo(), "分页查询参数pageNo不能为空");
         AssertUtil.notNull(page.getPageSize(), "分页查询参数pageSize不能为空");
         AssertUtil.notNull(page.getStart(), "分页查询参数start不能为空");
@@ -310,7 +310,7 @@ public class WarehouseInfoBiz implements IWarehouseInfoBiz {
         map.put("itemName", form.getItemName());
         map.put("noticeStatus", form.getNoticeStatus());
         map.put("barCode", form.getBarCode());
-        map.put("warehouseInfoId", warehouseInfoId);
+        map.put("warehouseCode", warehouseCode);
         map.put("start", page.getStart());
         map.put("pageSize", page.getPageSize());
         int count = warehouseItemInfoService.selectWarehouseItemInfoCount(map);
