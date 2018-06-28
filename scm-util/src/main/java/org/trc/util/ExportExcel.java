@@ -2,6 +2,7 @@ package org.trc.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import javax.servlet.http.HttpServletResponse;
@@ -350,6 +351,14 @@ public class ExportExcel {
                     String value = null!=object?object.toString():"";
                     HSSFCell textcell = textRow.createCell(j);
                     textcell.setCellStyle(contentCellStyle);
+                    if(null != cellDefinition.getColor()){
+                        HSSFCellStyle style = workbook.createCellStyle();
+                        // 生成一个字体
+                        HSSFFont font = workbook.createFont();
+                        font.setColor(cellDefinition.getColor().getIndex());
+                        style.setFont(font);
+                        textcell.setCellStyle(style);
+                    }
                     if(CellDefinition.TEXT.equals(cellDefinition.getFormat())){
                         textcell.setCellValue(value.toString());
                     } else if(CellDefinition.DATE.equals(cellDefinition.getFormat())){
@@ -359,6 +368,7 @@ public class ExportExcel {
                     } else if(CellDefinition.DATE_TIME.equals(cellDefinition.getFormat())){
                         if(null!=object) {
                             textcell.setCellValue(new SimpleDateFormat(CellDefinition.DATE_TIME).format(object));
+
                         }
                     }else if(CellDefinition.NUM_0.equals(cellDefinition.getFormat())){
                         if(null!=object) {
