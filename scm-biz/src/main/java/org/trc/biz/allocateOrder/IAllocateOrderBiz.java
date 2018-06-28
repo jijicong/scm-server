@@ -26,7 +26,7 @@ public interface IAllocateOrderBiz {
 
 	void noticeWarehouse(String orderId, AclUserAccreditInfo aclUserAccreditInfo);
 
-	AllocateOrder allocateOrderEditGet(String orderId);
+	AllocateOrder allocateOrderEditGet(String orderId,String flag);
 
 	Pagenation<AllocateSkuDetail> querySkuList(AllocateItemForm form, Pagenation<AllocateSkuDetail> page, String skus);
 
