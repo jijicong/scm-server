@@ -188,6 +188,10 @@ public class GoodsBiz implements IGoodsBiz {
     private IWmsItemInfoService wmsItemInfoService;
     @Autowired
     private IWarehouseExtService warehouseExtService;
+    @Autowired
+    private IBusiItemsService busiItemsService;
+    @Autowired
+    private IBusiSkusService busiSkusService;
 
 
     @Override
@@ -790,6 +794,52 @@ public class GoodsBiz implements IGoodsBiz {
         saveItemSalesPropery(itemSalesPropery, skuss, items.getCategoryId());
         //记录操作日志
         logInfoService.recordLog(items,items.getId().toString(),items.getCreateOperator(),LogOperationEnum.ADD.getMessage(),null, null);
+        //保存商品同步到企业购
+        saveItemsNotifyToBusinessPurchase(items, skuss);
+    }
+
+    /**
+     * 保存商品同步到企业购
+     * @param items
+     * @param skusList
+     */
+    private void saveItemsNotifyToBusinessPurchase(Items items, List<Skus> skusList){
+        BusiItems busiItems = new BusiItems();
+        BeanUtils.copyProperties(items, busiItems, "id");
+        busiItems.setId(GuidUtil.getNextUid("ITEM-"));
+        List<BusiSkus> busiSkusList = new ArrayList<>();
+        for(Skus skus: skusList){
+            BusiSkus busiSkus = new BusiSkus();
+            BeanUtils.copyProperties(skus, busiSkus, "id", "marketPrice");
+            if(null != skus.getMarketPrice()){
+                busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
+            }
+            busiSkus.setId(GuidUtil.getNextUid("SKU"));
+            busiSkusList.add(busiSkus);
+        }
+        //设置企业购商品分类
+        setBusinessPurchaseItemCategory(items.getCategoryId(), busiItems);
+        busiItemsService.insert(busiItems);
+        for(BusiSkus busiSkus: busiSkusList){
+            busiSkusService.insert(busiSkus);
+        }
+    }
+
+    /**
+     * 设置企业购商品分类
+     * @param categoryId
+     * @param busiItems
+     */
+    private void setBusinessPurchaseItemCategory(Long categoryId, BusiItems busiItems){
+        Category thirdCategory = categoryService.selectByPrimaryKey(categoryId);
+        AssertUtil.notNull(thirdCategory, String.format("根据第三级分类ID[%s]查询分类为空", categoryId));
+        Category secondCategory = categoryService.selectByPrimaryKey(thirdCategory.getParentId());
+        AssertUtil.notNull(secondCategory, String.format("根据第二级分类ID[%s]查询分类为空", thirdCategory.getParentId()));
+        Category firstCategory = categoryService.selectByPrimaryKey(secondCategory.getParentId());
+        AssertUtil.notNull(firstCategory, String.format("根据第一级分类ID[%s]查询分类为空", secondCategory.getParentId()));
+        busiItems.setFirstCategoryId(firstCategory.getId());
+        busiItems.setSecondCategoryId(secondCategory.getId());
+        busiItems.setThirdCategoryId(thirdCategory.getId());
     }
 
     /**
@@ -869,8 +919,78 @@ public class GoodsBiz implements IGoodsBiz {
         /*if(isValidUpdate)
             remark = String.format("SPU状态更新为%s", ValidEnum.getValidEnumByCode(items.getIsValid()).getName());*/
         logInfoService.recordLog(items,items.getId().toString(),userId ,LogOperationEnum.UPDATE.getMessage(),remark, null);
+        //更新商品同步到企业购
+        updateItemsNotifyToBusinessPurchase(items, updateSkus);
+    }
 
 
+    /**
+     * 更新商品同步到企业购
+     * @param items
+     * @param skusList
+     */
+    private void updateItemsNotifyToBusinessPurchase(Items items, List<Skus> skusList){
+        BusiItems busiItems = new BusiItems();
+        busiItems.setSpuCode(items.getSpuCode());
+        busiItems = busiItemsService.selectOne(busiItems);
+        if(null == busiItems || CollectionUtils.isEmpty(skusList)){
+            return;
+        }
+        BeanUtils.copyProperties(items, busiItems, "id");
+        //设置企业购商品分类
+        setBusinessPurchaseItemCategory(items.getCategoryId(), busiItems);
+
+        List<String> skuCodes = new ArrayList<>();
+        for(Skus skus: skusList){
+            skuCodes.add(skus.getSkuCode());
+        }
+        Example example = new Example(BusiSkus.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("skuCode", skuCodes);
+        List<BusiSkus> busiSkusList = busiSkusService.selectByExample(example);
+        List<BusiSkus> addBusiSkusList = new ArrayList<>();
+        List<BusiSkus> updateBusiSkusList = new ArrayList<>();
+        for(BusiSkus busiSkus: busiSkusList){
+            for(Skus skus: skusList){
+                if(StringUtils.equals(busiSkus.getSkuCode(), skus.getSkuCode())){
+                    BeanUtils.copyProperties(skus, busiSkus, "id", "marketPrice");
+                    if(null != skus.getMarketPrice()){
+                        busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
+                    }
+                    updateBusiSkusList.add(busiSkus);
+                    break;
+                }
+            }
+        }
+        for(Skus skus: skusList){
+            boolean flag = false;
+            for(BusiSkus busiSkus: busiSkusList){
+                if(StringUtils.equals(busiSkus.getSkuCode(), skus.getSkuCode())){
+                    flag = true;
+                    break;
+                }
+            }
+            if(!flag){
+                BusiSkus busiSkus = new BusiSkus();
+                BeanUtils.copyProperties(skus, busiSkus, "id", "marketPrice");
+                if(null != skus.getMarketPrice()){
+                    busiSkus.setMarketPrice(new BigDecimal(CommonUtil.getMoneyYuan(skus.getMarketPrice())));
+                }
+                busiSkus.setId(GuidUtil.getNextUid("SKU"));
+                addBusiSkusList.add(busiSkus);
+            }
+        }
+        busiItemsService.updateByPrimaryKeySelective(busiItems);
+        if(addBusiSkusList.size() > 0){
+            for(BusiSkus skus: addBusiSkusList){
+                busiSkusService.insert(skus);
+            }
+        }
+        if(updateBusiSkusList.size() > 0){
+            for(BusiSkus busiSkus: updateBusiSkusList){
+                busiSkusService.updateByPrimaryKeySelective(busiSkus);
+            }
+        }
     }
 
     //更新仓库商品信息和同步仓库
