@@ -87,7 +87,7 @@ public class AllocateOrderResource {
     @GET
     @Path("editGet/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response allocateOrderEditGet(@PathParam("id") String orderId,@FormParam("flag")String flag){
+    public Response allocateOrderEditGet(@PathParam("id") String orderId,String flag){
     	return ResultUtil.createSuccessResult("根据id查询调拨单成功", allocateOrderBiz.allocateOrderEditGet(orderId,flag));
     	
     }
