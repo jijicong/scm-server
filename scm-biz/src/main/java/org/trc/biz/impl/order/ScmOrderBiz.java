@@ -2400,7 +2400,21 @@ public class ScmOrderBiz implements IScmOrderBiz {
                                         StringUtils.equals(orderItem.getShopOrderCode(), importOrderInfo.getShopOrderCode()) &&
                                         StringUtils.equals(orderItem.getSkuCode(), importOrderInfo.getSkuCode())){
                                     importOrderInfo.setFlag(false);
-                                    setImportOrderErrorMsg(importOrderInfo, String.format("商品%s未绑定仓库", importOrderInfo.getSkuCode()));
+                                    String errorMsg = "";
+                                    if(IsStoreOrderEnum.STORE_ORDER.getCode().intValue() == orderItem.getIsStoreOrder()){//门店订单
+                                        SellChannel sellChannel = null;
+                                        for(SellChannel _sellChannel: sellChannelList){
+                                            if(StringUtils.equals(orderItem.getSellCode(), _sellChannel.getSellCode())){
+                                                sellChannel = _sellChannel;
+                                                break;
+                                            }
+                                        }
+                                        WarehouseInfo warehouseInfo = sellChannelWarehouseMap.get(orderItem.getSellCode());
+                                        errorMsg = String.format("门店%s商品%s未在门店仓库%s绑定", sellChannel.getSellName(), orderItem.getSkuCode(), warehouseInfo.getWarehouseName());
+                                    }else{
+                                        errorMsg = String.format("商品%s未绑定仓库", importOrderInfo.getSkuCode());
+                                    }
+                                    setImportOrderErrorMsg(importOrderInfo, errorMsg);
                                     sb.append(importOrderInfo.getSkuCode()).append(SupplyConstants.Symbol.COMMA);
                                     failShopOrderItems.add(orderItem);
                                 }
@@ -6484,6 +6498,10 @@ public class ScmOrderBiz implements IScmOrderBiz {
             Map<String, String> contentResult = ImportExcel.readExcelContent2(uploadedInputStream, SupplyConstants.Symbol.COMMA);
             if(StringUtils.equals("0", contentResult.get("count").toString())){
                 return ResultUtil.createfailureResult(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), "导入附件不能为空！", "");
+            }
+            int count = Integer.parseInt(contentResult.get("count"));
+            if(count > 100){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "每次导入订单数据不能超过500条！");
             }
             SellChannel sellChannel = new SellChannel();
             sellChannel.setSellCode(sellCode);
