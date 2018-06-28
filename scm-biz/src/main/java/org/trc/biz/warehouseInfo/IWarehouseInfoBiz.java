@@ -70,7 +70,7 @@ public interface IWarehouseInfoBiz {
      * @param page
      * @return
      */
-    Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, Long warehouseInfoId, Pagenation<WarehouseItemInfo> page);
+    Pagenation<WarehouseItemInfo> queryWarehouseItemInfoPage(WarehouseItemInfoForm form, String warehouseCode, Pagenation<WarehouseItemInfo> page);
 
     /**
      * 删除仓库商品信息

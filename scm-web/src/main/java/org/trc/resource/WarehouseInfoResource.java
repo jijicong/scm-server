@@ -94,13 +94,13 @@ public class WarehouseInfoResource {
 
 
     @GET
-    @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_INFO_PAGE + "/{warehouseInfoId}")
+    @Path(SupplyConstants.WarehouseInfo.WAREHOUSE_ITEM_INFO_PAGE + "/{warehouseCode}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryWarehouseItemInfoPage(
-            @PathParam("warehouseInfoId") Long warehouseInfoId, @BeanParam WarehouseItemInfoForm form,
+            @PathParam("warehouseCode") String warehouseCode, @BeanParam WarehouseItemInfoForm form,
             @BeanParam Pagenation<WarehouseItemInfo> page) {
-        logger.info("开始分页查询仓库商品信息，请求参数分别为：query=" + JSON.toJSONString(form) + ",page=" + JSON.toJSONString(page) + ",warehouseInfoId=" + warehouseInfoId);
-        return ResultUtil.createSuccessPageResult(warehouseInfoBiz.queryWarehouseItemInfoPage(form, warehouseInfoId, page));
+        logger.info("开始分页查询仓库商品信息，请求参数分别为：query=" + JSON.toJSONString(form) + ",page=" + JSON.toJSONString(page) + ",warehouseCode=" + warehouseCode);
+        return ResultUtil.createSuccessPageResult(warehouseInfoBiz.queryWarehouseItemInfoPage(form, warehouseCode, page));
     }
 
     @DELETE
