@@ -869,7 +869,7 @@ public class AllocateOrderBiz implements IAllocateOrderBiz {
 				querySku.setInventoryType(detail.getInventoryType());
 				querySkuList.add(querySku);
 			}
-			if(flag.equals(ZeroToNineEnum.ONE.getCode())){//编辑时才查询实时库存
+			if(ZeroToNineEnum.ONE.getCode().equals(flag)){//编辑时才查询实时库存
 				if (!CollectionUtils.isEmpty(querySkuList)) {
 					Map<String, Long> inventryMap = inventoryQuery(retOrder.getOutWarehouseCode(), JSON.toJSONString(querySkuList));
 					detailList.forEach(item -> item.setInventoryNum(inventryMap.get(item.getSkuCode())));
