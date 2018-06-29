@@ -85,7 +85,7 @@ public class AclResourceBiz implements IAclResourceBiz {
                 if (resource.getCode().equals(10402L) ||
                         resource.getCode().equals(10404L) || resource.getCode().equals(10405L) ||
                         resource.getCode().equals(10406L) || resource.getCode().equals(10501L) ||
-                        resource.getCode().equals(105L)) {
+                        resource.getCode().equals(105L)||resource.getCode().equals(10410L)) {
                 } else {
                     wholeAclResourceList2.add(resource);
                 }
