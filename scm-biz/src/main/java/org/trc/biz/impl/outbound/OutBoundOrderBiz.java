@@ -186,6 +186,15 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     @Override
     public void updateOutboundDetail(){
         if (!iRealIpService.isRealTimerService()) return;
+
+        WarehouseInfo warehouseInfoTemp = new WarehouseInfo();
+        warehouseInfoTemp.setOperationalNature(OperationalNatureEnum.SELF_SUPPORT.getCode());
+        List<WarehouseInfo> warehouseInfoTempList = warehouseInfoService.select(warehouseInfoTemp);
+        List<String> warehouseCodeList = new ArrayList<>();
+        for(WarehouseInfo info : warehouseInfoTempList){
+            warehouseCodeList.add(info.getCode());
+        }
+
         //获取所有为等待仓库发货发货单信息
         Example example = new Example(OutboundOrder.class);
         Example.Criteria criteria = example.createCriteria();
@@ -193,6 +202,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         list.add(OutboundOrderStatusEnum.WAITING.getCode());
         list.add(OutboundOrderStatusEnum.PART_OF_SHIPMENT.getCode());
         criteria.andIn("status", list);
+        criteria.andNotIn("warehouseCode", warehouseCodeList);
         List<OutboundOrder> outboundOrders = outBoundOrderService.selectByExample(example);
 
         //组装信息
@@ -408,14 +418,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     	if (StringUtils.isBlank(logisticsName)) {
     		return retMsg;
     	}
-    	LogisticsCompany queryLc = new LogisticsCompany();
-    	queryLc.setType(channelCode);
-    	queryLc.setCompanyName(logisticsName);
-        LogisticsCompany lc = logisticsCompanyService.selectOne(queryLc);
-        if (null == lc) {
-        	return retMsg;
-        }
-		return lc.getCompanyCode();
+        LogisticsCompany logisticsCompany = orderExtBiz.getLogisticsCompanyByName(LogisticsTypeEnum.TRC, logisticsName);
+		return logisticsCompany.getCompanyCode();
 	}
 
 	//更新itemOrder

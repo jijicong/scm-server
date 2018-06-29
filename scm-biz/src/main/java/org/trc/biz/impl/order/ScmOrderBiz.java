@@ -4173,11 +4173,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                 logistic.setWaybillNumber(logistic.getSupplierOrderCode());
                 logistic.setLogisticsCorporation(SupplyConstants.Order.SUPPLIER_JD_LOGISTICS_COMPANY2);
             }
-            LogisticsCompany logisticsCompany = new LogisticsCompany();
-            logisticsCompany.setType(channelCode);
-            logisticsCompany.setCompanyName(logistic.getLogisticsCorporation());
-            logisticsCompany = logisticsCompanyService.selectOne(logisticsCompany);
-            AssertUtil.notNull(logisticsCompany, String.format("根据type[%s]和companyName[%s]查询物流公司信息为空", channelCode, logistic.getLogisticsCorporation()));
+            LogisticsCompany logisticsCompany = orderExtBiz.getLogisticsCompanyByName(LogisticsTypeEnum.TRC, logistic.getLogisticsCorporation());
             logistic.setLogisticsCorporationCode(logisticsCompany.getCompanyCode());
             JSONArray skusArray = jbo.getJSONArray("skus");
             List<SkuInfo> skuInfoList = new ArrayList<SkuInfo>();
