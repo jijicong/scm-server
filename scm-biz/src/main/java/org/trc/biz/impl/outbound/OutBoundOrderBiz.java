@@ -408,14 +408,8 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
     	if (StringUtils.isBlank(logisticsName)) {
     		return retMsg;
     	}
-    	LogisticsCompany queryLc = new LogisticsCompany();
-    	queryLc.setType(channelCode);
-    	queryLc.setCompanyName(logisticsName);
-        LogisticsCompany lc = logisticsCompanyService.selectOne(queryLc);
-        if (null == lc) {
-        	return retMsg;
-        }
-		return lc.getCompanyCode();
+        LogisticsCompany logisticsCompany = orderExtBiz.getLogisticsCompanyByName(LogisticsTypeEnum.TRC, logisticsName);
+		return logisticsCompany.getCompanyCode();
 	}
 
 	//更新itemOrder
