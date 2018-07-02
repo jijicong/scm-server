@@ -1056,9 +1056,17 @@ public class WarehouseNoticeBiz implements IWarehouseNoticeBiz {
             warehouseNoticeService.updateByPrimaryKey(warehouseNotice);
             warehouseNoticeDetailsService.updateWarehouseNoticeLists(list);
         }else if (StringUtils.equals(ZeroToNineEnum.ONE.getCode(), flag)){//重新收货
-            //TODO   重新收货待完成
+            if(!StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLATION.getCode(),warehouseNotice.getStatus())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION,"入库通知单当前状态不能进行重新发货");
+            }
+            if (StringUtils.equals(WarehouseNoticeStatusEnum.CANCELLING.getCode(),warehouseNotice.getStatus()) &&
+                    DateCheckUtil.checkDate(warehouseNotice.getUpdateTime())){
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, "当前入库通知单取消时间过长，不能重新收货");
+            }
             logOperationEnum= LogOperationEnum.RE_RECIVE_GOODS;
 
+            //执行重新收货
+            receiptAdviceInfo(warehouseNotice, aclUserAccreditInfo);
 
         }
 
