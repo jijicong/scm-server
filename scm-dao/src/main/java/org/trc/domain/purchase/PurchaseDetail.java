@@ -93,6 +93,19 @@ public class PurchaseDetail extends BaseDO{
     private String specNatureInfo;//规格
     @FormParam("warehouseItemId")
     private String warehouseItemId;
+
+    /**
+     * v2.5 商品入库状态 0-等待入库,1-全部入库,2-部分入库,3-入库异常,其他情况为null
+     */
+    @FormParam("receiveStatus")
+    private String receiveStatus;
+
+    /**
+     * v2.5 税率
+     */
+    @FormParam("taxrate")
+    private BigDecimal taxRate;
+
     @Transient
     private BigDecimal totalPurchaseAmountD;
 
@@ -101,6 +114,50 @@ public class PurchaseDetail extends BaseDO{
     private String isQuality;
     @Transient
     private Long qualityDay;
+
+    /**
+     * v2.5
+     */
+    @Transient
+    private Date storageTime; //入库时间
+    @Transient
+    private Date actualInstockTime; //实际入库时间
+    @Transient
+    private Long normalStorageQuantity; //正品入库数量
+    @Transient
+    private Long defectiveStorageQuantity;  //残次品入库数量
+
+    public Date getStorageTime() {
+        return storageTime;
+    }
+
+    public void setStorageTime(Date storageTime) {
+        this.storageTime = storageTime;
+    }
+
+    public Date getActualInstockTime() {
+        return actualInstockTime;
+    }
+
+    public void setActualInstockTime(Date actualInstockTime) {
+        this.actualInstockTime = actualInstockTime;
+    }
+
+    public Long getNormalStorageQuantity() {
+        return normalStorageQuantity;
+    }
+
+    public void setNormalStorageQuantity(Long normalStorageQuantity) {
+        this.normalStorageQuantity = normalStorageQuantity;
+    }
+
+    public Long getDefectiveStorageQuantity() {
+        return defectiveStorageQuantity;
+    }
+
+    public void setDefectiveStorageQuantity(Long defectiveStorageQuantity) {
+        this.defectiveStorageQuantity = defectiveStorageQuantity;
+    }
 
     public BigDecimal getPurchasePriceD() {
         return purchasePriceD;
@@ -326,6 +383,22 @@ public class PurchaseDetail extends BaseDO{
 
     public void setQualityDay(Long qualityDay) {
         this.qualityDay = qualityDay;
+    }
+
+    public String getReceiveStatus() {
+        return receiveStatus;
+    }
+
+    public void setReceiveStatus(String receiveStatus) {
+        this.receiveStatus = receiveStatus;
+    }
+
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+
+    public void setTaxRate(BigDecimal taxRate) {
+        this.taxRate = taxRate;
     }
 }
 
