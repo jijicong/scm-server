@@ -4751,7 +4751,7 @@ public class ScmOrderBiz implements IScmOrderBiz {
                     for(SkuStock skuStock: skuStockList){
                         if(StringUtils.equals(orderItem.getSkuCode(), skuStock.getSkuCode()) &&
                                 StringUtils.equals(skuStock.getWarehouseItemId(), scmInventoryQueryResponse.getItemId()) &&
-                                StringUtils.equals(skuStock.getWarehouseCode(), scmInventoryQueryResponse.getWarehouseCode())){
+                                StringUtils.equals(skuStock.getWarehouseCode(), scmInventoryQueryResponse.getLocalWarehouseCode())){
                             _skuStock = skuStock;
                             break;
                         }
