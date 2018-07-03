@@ -104,6 +104,7 @@ public class WarehouseExtServiceImpl implements IWarehouseExtService {
                             StringUtils.equals(response.getWarehouseCode(), itemInfo.getWmsWarehouseCode()) &&
                             StringUtils.equals(response.getItemId(), itemInfo.getWarehouseItemId())){
                         response.setItemCode(itemInfo.getSkuCode());
+                        response.setWarehouseCode(itemInfo.getWarehouseCode());
                         break;
                     }
                 }
