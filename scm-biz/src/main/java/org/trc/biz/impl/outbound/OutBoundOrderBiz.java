@@ -767,10 +767,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
         }
 
         Integer newCode = outboundOrder.getNewCode();
-        if(newCode == null){
-            newCode = 0;
-        }
-        outboundOrder.setNewCode(newCode + 1);
+        outboundOrder.setNewCode((newCode == null? 0 : newCode) + 1);
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
 
         //设置发货通知单参数
