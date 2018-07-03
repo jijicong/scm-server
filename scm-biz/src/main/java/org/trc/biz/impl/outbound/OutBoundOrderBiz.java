@@ -1258,6 +1258,7 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
             scmOrderCancelRequest.setCancelReason(order.getRemark());
             scmOrderCancelRequest.setOrderCode(order.getWmsOrderCode());
             scmOrderCancelRequest.setOwnerCode(warehouse.getWarehouseOwnerId());
+            scmOrderCancelRequest.setOrderType(CancelOrderType.DELIVERY.getCode());
             requests.add(scmOrderCancelRequest);
         }
 
