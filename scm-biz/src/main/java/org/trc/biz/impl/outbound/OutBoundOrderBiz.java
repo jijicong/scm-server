@@ -766,7 +766,11 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                     outboundOrder.getWarehouseCode(), outboundOrder.getChannelCode(), true));
         }
 
-        outboundOrder.setNewCode(outboundOrder.getNewCode() + 1);
+        Integer newCode = outboundOrder.getNewCode();
+        if(newCode == null){
+            newCode = 0;
+        }
+        outboundOrder.setNewCode(newCode + 1);
         outBoundOrderService.updateByPrimaryKey(outboundOrder);
 
         //设置发货通知单参数
@@ -797,7 +801,10 @@ public class OutBoundOrderBiz implements IOutBoundOrderBiz {
                 String code = result.getAppcode();
                 msg = result.getDatabuffer();
                 //调用重新发货接口插入一条日志记录
-                String outboundOrderSeq = outboundOrder.getOutboundOrderCode() + "_" + outboundOrder.getNewCode();
+                String outboundOrderSeq = outboundOrder.getOutboundOrderCode();
+                if(StringUtils.isNotBlank(outboundOrder.getWmsOrderCode())){
+                    outboundOrderSeq = outboundOrderSeq  + "_" + outboundOrder.getNewCode();
+                }
                 logInfoService.recordLog(outboundOrder,outboundOrder.getId().toString(),aclUserAccreditInfo.getUserId(),"发送", outboundOrderSeq,null);
                 if (StringUtils.equals(code,SUCCESS)){
                     List<ScmDeliveryOrderCreateResponse> responses = (List<ScmDeliveryOrderCreateResponse>)result.getResult();
