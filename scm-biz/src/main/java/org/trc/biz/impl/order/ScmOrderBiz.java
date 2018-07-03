@@ -5789,26 +5789,26 @@ public class ScmOrderBiz implements IScmOrderBiz {
         platformOrder.setPlatformOrderCode(warehouseOrderList.get(0).getPlatformOrderCode());
         platformOrder = platformOrderService.selectOne(platformOrder);
         AssertUtil.notNull(platformOrder, String.format("提交自采订单跟据平台订单编码%s查询平台订单信息为空", warehouseOrderList.get(0).getPlatformOrderCode()));
-        Set<String> shopOrderCodes = new HashSet<>();
+        Set<String> scmShopOrderCodes = new HashSet<>();
         Set<String> warehouseOrderCodes = new HashSet<>();
         for(WarehouseOrder warehouseOrder: warehouseOrderList){
-            shopOrderCodes.add(warehouseOrder.getShopOrderCode());
+            scmShopOrderCodes.add(warehouseOrder.getScmShopOrderCode());
             warehouseOrderCodes.add(warehouseOrder.getWarehouseOrderCode());
         }
         Example shopOrderExample = new Example(ShopOrder.class);
         Example.Criteria criteria = shopOrderExample.createCriteria();
-        criteria.andIn("shopOrderCode", shopOrderCodes);
+        criteria.andIn("scmShopOrderCode", scmShopOrderCodes);
         List<ShopOrder> shopOrderList = shopOrderService.selectByExample(shopOrderExample);
-        for(String shopOrderCode : shopOrderCodes){
+        for(String scmShopOrderCode : scmShopOrderCodes){
             boolean flag = false;
             for(ShopOrder shopOrder: shopOrderList){
-                if(StringUtils.equals(shopOrderCode, shopOrder.getShopOrderCode())){
+                if(StringUtils.equals(scmShopOrderCode, shopOrder.getScmShopOrderCode())){
                     flag = true;
                     break;
                 }
             }
             if(!flag){
-                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("提交自采订单跟据店铺订单编码%s查询店铺订单信息为空", shopOrderCode));
+                throw new ParamValidException(CommonExceptionEnum.PARAM_CHECK_EXCEPTION, String.format("提交自采订单跟据系统订单号%s查询店铺订单信息为空", scmShopOrderCode));
             }
         }
         Example orderItemExample = new Example(OrderItem.class);
